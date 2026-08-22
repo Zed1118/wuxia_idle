@@ -1,8 +1,24 @@
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_player_input_adapter.dart';
+
+/// 可选的波间补给契约。null 表示普通内容完全续传 HP/真气/CD。
+final class Phase0aWaveTransitionPolicy {
+  const Phase0aWaveTransitionPolicy({
+    required this.healPlayerToFull,
+    required this.qiRecoveryPct,
+    required this.resetAttackCooldown,
+    required this.resetSkillCooldowns,
+  }) : assert(qiRecoveryPct >= 0 && qiRecoveryPct <= 1);
+
+  final bool healPlayerToFull;
+  final double qiRecoveryPct;
+  final bool resetAttackCooldown;
+  final bool resetSkillCooldowns;
+}
 
 /// Phase 0A 波次与唯一终局编排:真实包装 [Phase0aCombatSession] 的薄 flow。
 ///
@@ -22,8 +38,9 @@ import 'phase0a_player_input_adapter.dart';
 ///   达到阈值且仍存活即 victory,不要求敌方清空。
 /// - 所有 flow 自发事件消耗的 seq 都持久化回 state(终局事件也不例外);
 ///   终局后 advance 返回空事件、不推进 tick/seq、不调用 adapter/resolver。
-/// - 换波只替换 enemies:玩家 HP/真气/普攻 CD、技能槽 CD/可用态、tick/seq
-///   全部连续;换波不消耗额外拍。
+/// - 默认换波只替换 enemies，玩家 HP/真气/CD 全部连续；显式注入
+///   [waveTransitionPolicy] 的特殊内容可在同一换波点执行配置化补给。
+///   两种路径都不消耗额外拍。
 /// - 会话不带任何 public 可变后门:需要换态(预留 seq/换波/固化终局 seq)
 ///   时以新 [Phase0aArenaState] 重建私有会话,复用同一 adapter/resolver
 ///   实例,保证 seeded RNG 连续。
@@ -31,6 +48,7 @@ final class Phase0aWaveBattleFlow {
   Phase0aWaveBattleFlow({
     required Phase0aCombatSession session,
     required List<Phase0aWave> waves,
+    this.waveTransitionPolicy,
   }) : _session = session,
        _waves = _checkedWaves(waves, session.state) {
     // 首态防御性副本:外部 list(敌人/技能槽)构造后 mutation 不得污染
@@ -49,6 +67,7 @@ final class Phase0aWaveBattleFlow {
 
   Phase0aCombatSession _session;
   final List<Phase0aWave> _waves;
+  final Phase0aWaveTransitionPolicy? waveTransitionPolicy;
 
   /// 当前波 0-based 内部游标(事件 payload 一律换算 1-based,不外泄)。
   int _waveCursor = 0;
@@ -142,20 +161,59 @@ final class Phase0aWaveBattleFlow {
           ),
         );
         nextSeq += 1;
-        // 换波只替换 enemies:玩家/技能槽/tick/seq 原样连续。
+        final transitionState = _applyWaveTransition(resolved);
         _rebuildSession(
           Phase0aArenaState(
-            tick: resolved.tick,
+            tick: transitionState.tick,
             nextSeq: nextSeq,
-            player: resolved.player,
+            player: transitionState.player,
             enemies: _waves[_waveCursor].enemies,
-            skillSlots: resolved.skillSlots,
-            winCondition: resolved.winCondition,
+            skillSlots: transitionState.skillSlots,
+            winCondition: transitionState.winCondition,
           ),
         );
       }
     }
     return List.unmodifiable(events);
+  }
+
+  Phase0aArenaState _applyWaveTransition(Phase0aArenaState state) {
+    final policy = waveTransitionPolicy;
+    if (policy == null) return state;
+    final player = state.player;
+    final recoveredQi =
+        (player.qiCurrent + (player.qiMax * policy.qiRecoveryPct).round())
+            .clamp(0, player.qiMax);
+    final transitionedPlayer = player.copyWith(
+      currentHealth: policy.healPlayerToFull
+          ? player.maxHealth
+          : player.currentHealth,
+      qiCurrent: recoveredQi,
+      attackCooldownRemaining: policy.resetAttackCooldown
+          ? 0
+          : player.attackCooldownRemaining,
+    );
+    final slots = policy.resetSkillCooldowns
+        ? [
+            for (final slot in state.skillSlots)
+              slot.copyWith(
+                cooldownRemaining: 0,
+                availability: availabilityOf(
+                  cooldownRemaining: 0,
+                  qiCurrent: recoveredQi,
+                  qiCost: slot.qiCost,
+                ),
+              ),
+          ]
+        : state.skillSlots;
+    return Phase0aArenaState(
+      tick: state.tick,
+      nextSeq: state.nextSeq,
+      player: transitionedPlayer,
+      enemies: state.enemies,
+      skillSlots: slots,
+      winCondition: state.winCondition,
+    );
   }
 
   /// 以新 state 重建私有会话,复用同一 adapter/resolver 实例。

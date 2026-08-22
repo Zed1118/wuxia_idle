@@ -481,6 +481,16 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required StageDef stage,
   required int targetCycle,
 }) async {
+  final massBattleFormation = stage.stageType == StageType.massBattle
+      ? await _pickFormation(
+          context,
+          stage,
+          GameRepository.instance.numbers.massBattle,
+        )
+      : null;
+  if (!context.mounted) {
+    return (won: false, surrendered: true, settlement: null);
+  }
   final completer = Completer<MainlineBattleExit>();
   Navigator.of(context)
       .push<void>(
@@ -488,6 +498,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
           builder: (_) => Phase0aMainlineBattleHost(
             stage: stage,
             cycleIndex: targetCycle,
+            massBattleFormation: massBattleFormation,
             onVictory: (settlement) {
               if (!completer.isCompleted) {
                 completer.complete((

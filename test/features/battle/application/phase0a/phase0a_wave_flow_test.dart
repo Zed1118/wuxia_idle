@@ -147,6 +147,7 @@ Phase0aWaveBattleFlow makeFlow({
   required Phase0aArenaState initialState,
   required List<Phase0aWave> waves,
   Phase0aDamageResolver? damageResolver,
+  Phase0aWaveTransitionPolicy? waveTransitionPolicy,
 }) {
   return Phase0aWaveBattleFlow(
     session: Phase0aCombatSession(
@@ -156,6 +157,7 @@ Phase0aWaveBattleFlow makeFlow({
       damageResolver: damageResolver ?? CountingDamageResolver(damage: 15),
     ),
     waves: waves,
+    waveTransitionPolicy: waveTransitionPolicy,
   );
 }
 
@@ -482,6 +484,62 @@ void main() {
       final clear = state.skillSlots.singleWhere((s) => s.slot == 'clear');
       expect(clear.cooldownRemaining, 0);
       expect(clear.availability, Phase0aSkillAvailability.ready);
+    });
+
+    test('群战 policy 换波满血、追加 25% 真气并重置普攻/技能冷却', () {
+      final wave1 = [
+        makeEnemy(
+          id: 'e1',
+          position: const ArenaVector(50, 0),
+          currentHealth: 15,
+        ),
+      ];
+      final wave2 = [
+        makeEnemy(
+          id: 'e2',
+          position: const ArenaVector(50, 0),
+          currentHealth: 15,
+        ),
+      ];
+      final flow = makeFlow(
+        initialState: makeState(
+          player: makePlayer(currentHealth: 40, qiCurrent: 20),
+          enemies: wave1,
+          skillSlots: const [
+            Phase0aSkillSlot(
+              slot: 'gather',
+              cooldownRemaining: 2,
+              qiCost: 20,
+              availability: Phase0aSkillAvailability.cooldown,
+            ),
+          ],
+        ),
+        waves: [
+          Phase0aWave(enemies: wave1),
+          Phase0aWave(enemies: wave2),
+        ],
+        waveTransitionPolicy: const Phase0aWaveTransitionPolicy(
+          healPlayerToFull: true,
+          qiRecoveryPct: 0.25,
+          resetAttackCooldown: true,
+          resetSkillCooldowns: true,
+        ),
+      );
+
+      flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+
+      expect(flow.state.enemies.single.id, 'e2');
+      expect(flow.state.player.currentHealth, 100);
+      expect(flow.state.player.qiCurrent, 45);
+      expect(flow.state.player.attackCooldownRemaining, 0);
+      expect(flow.state.skillSlots.single.cooldownRemaining, 0);
+      expect(
+        flow.state.skillSlots.single.availability,
+        Phase0aSkillAvailability.ready,
+      );
     });
 
     test('第二波清空后 battle_victory,全场 wave/outcome 事件序完整可测', () {

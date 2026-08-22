@@ -50,6 +50,7 @@ final class Phase0aProductionFlowAssembler {
     required Random rng,
     required Phase0aPlayerInputAdapter playerAdapter,
     required Phase0aEnemyAiAdapter enemyAiAdapter,
+    Phase0aWaveTransitionPolicy? waveTransitionPolicy,
   }) {
     // —— 结构校验(零 RNG 消费,先于一切伤害组件构造)——
     _checkActorCoverage(
@@ -85,6 +86,7 @@ final class Phase0aProductionFlowAssembler {
         enemySkillDamageResolver: damageResolver,
       ),
       waves: waves,
+      waveTransitionPolicy: waveTransitionPolicy,
     );
   }
 

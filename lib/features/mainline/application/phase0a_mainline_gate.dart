@@ -11,8 +11,8 @@ import '../../../core/domain/enums.dart';
 /// 关走 0A 引擎全链。正式全量切换 + 旧入口拆除仍留路线 C 第三序
 /// (同次 merge,spec §5 非目标约束),本门届时整类删除。
 ///
-/// 门控面覆盖全部非空主线、心魔镜像关与具备地形定义的轻功关。群战
-/// (massBattle)在多波与波间契约迁完前继续走旧入口；剧情空敌主线同样拒绝。
+/// 门控面覆盖全部非空主线、心魔镜像、轻功地形与具备合法波次的群战关。
+/// 剧情空敌主线及配置不完整的特殊关继续拒绝。
 final class Phase0aMainlineGate {
   const Phase0aMainlineGate._();
 
@@ -37,5 +37,8 @@ final class Phase0aMainlineGate {
           stage.stageType == StageType.innerDemon ||
           (stage.stageType == StageType.lightFoot &&
               stage.enemyTeam.isNotEmpty &&
-              stage.terrainBiome != null));
+              stage.terrainBiome != null) ||
+          (stage.stageType == StageType.massBattle &&
+              stage.enemyTeam.isNotEmpty &&
+              (stage.massBattleEnemyCounts?.isNotEmpty ?? false)));
 }

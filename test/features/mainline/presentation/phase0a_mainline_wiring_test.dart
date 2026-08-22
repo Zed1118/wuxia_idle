@@ -146,7 +146,7 @@ void main() {
         ),
         isTrue,
       );
-      // 心魔与轻功走专属装配；塔/群战仍拒绝。
+      // 心魔、轻功与群战走专属装配；塔仍拒绝。
       const towerStage = StageDef(
         id: 'stage_test_tower',
         name: '塔测试关',
@@ -175,16 +175,13 @@ void main() {
         ),
         isTrue,
       );
-      for (final id in ['stage_mass_battle_01']) {
-        expect(
-          Phase0aMainlineGate.shouldUsePhase0a(
-            repo.getStage(id),
-            targetCycle: 1,
-          ),
-          isFalse,
-          reason: id,
-        );
-      }
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(
+          repo.getStage('stage_mass_battle_01'),
+          targetCycle: 1,
+        ),
+        isTrue,
+      );
       // 空敌队(剧情关)拒绝。
       const emptyStage = StageDef(
         id: 'stage_empty_enemy',
@@ -344,6 +341,81 @@ void main() {
         () => Phase0aStageContentMapper.mapLightFoot(
           stage: malformed,
           playerSnapshot: player,
+          numbers: repo.numbers,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        Phase0aMainlineGate.shouldUsePhase0a(malformed, targetCycle: 1),
+        isFalse,
+      );
+    });
+  });
+
+  group('Phase0a 群战多波装配', () {
+    test('5 关波次数量与每波人数逐项对齐生产配置，actor id 全场唯一', () {
+      final player = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      for (var index = 1; index <= 5; index++) {
+        final stage = repo.getStage('stage_mass_battle_0$index');
+        final mapping = Phase0aStageContentMapper.mapMassBattle(
+          stage: stage,
+          playerSnapshot: player,
+          numbers: repo.numbers,
+        );
+        final actorIds = mapping.combatants.map((c) => c.actorId).toList();
+
+        expect(
+          mapping.waves.map((wave) => wave.enemies.length).toList(),
+          stage.massBattleEnemyCounts,
+          reason: stage.id,
+        );
+        expect(actorIds.toSet(), hasLength(actorIds.length), reason: stage.id);
+        expect(mapping.initialState.enemies, mapping.waves.first.enemies);
+        expect(mapping.waveTransitionPolicy, isNotNull);
+        expect(() => Phase0aVisualRoster.fromMapping(mapping), returnsNormally);
+      }
+    });
+
+    test('阵型只修正主角，敌方不沾；缺波次配置 fail-fast', () {
+      final originalPlayer = Legacy3v3CombatantAdapter.toSnapshot(
+        _makeCh1Player(repo.numbers),
+      );
+      final stage = repo.getStage('stage_mass_battle_03');
+      final modifier = repo.numbers.massBattle.formations[Formation.fengShi]!;
+      final mapping = Phase0aStageContentMapper.mapMassBattle(
+        stage: stage,
+        playerSnapshot: originalPlayer,
+        numbers: repo.numbers,
+        formation: Formation.fengShi,
+      );
+
+      expect(
+        mapping.combatants.first.snapshot.attackPowerMultiplier,
+        modifier.damageMultiplier,
+      );
+      expect(
+        mapping.combatants
+            .skip(1)
+            .every((enemy) => enemy.snapshot.attackPowerMultiplier == 1.0),
+        isTrue,
+      );
+
+      final malformed = StageDef(
+        id: stage.id,
+        name: stage.name,
+        stageType: stage.stageType,
+        requiredRealm: stage.requiredRealm,
+        enemyTeam: stage.enemyTeam,
+        isBossStage: stage.isBossStage,
+        baseExpReward: stage.baseExpReward,
+        difficultyMultiplier: stage.difficultyMultiplier,
+      );
+      expect(
+        () => Phase0aStageContentMapper.mapMassBattle(
+          stage: malformed,
+          playerSnapshot: originalPlayer,
           numbers: repo.numbers,
         ),
         throwsArgumentError,

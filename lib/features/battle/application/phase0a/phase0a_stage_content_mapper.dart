@@ -1,6 +1,7 @@
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/light_foot_def.dart';
+import '../../../../data/defs/mass_battle_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/defs/stage_def.dart';
 import '../../../../data/defs/stage_win_condition.dart';
@@ -22,6 +23,7 @@ import 'phase0a_enemy_skill_binding.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_tactical_skill_binding.dart';
+import 'phase0a_wave_battle_flow.dart';
 
 /// Phase 1 纵切切片 1(spec 2026-08-19 · P1=α 主线 Ch1 · D1=α 机械映射):
 /// 把生产关卡内容(StageDef)装配成 [Phase0aProductionFlowAssembler.assemble]
@@ -44,6 +46,7 @@ final class Phase0aStageMapping {
     required this.playerAdapter,
     required this.enemyAiAdapter,
     required this.numericSkillBindings,
+    this.waveTransitionPolicy,
   });
 
   final Phase0aArenaState initialState;
@@ -54,6 +57,7 @@ final class Phase0aStageMapping {
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
   final Phase0aNumericSkillBindings numericSkillBindings;
+  final Phase0aWaveTransitionPolicy? waveTransitionPolicy;
 }
 
 final class Phase0aStageContentMapper {
@@ -241,6 +245,67 @@ final class Phase0aStageContentMapper {
     );
   }
 
+  /// 群战守城：默认/所选阵型仅烘焙到主角，敌人按生产 wave 模板展开；
+  /// 波间满血、恢复 25% 气海并重置普攻/技能冷却由 transition policy 执行。
+  static Phase0aStageMapping mapMassBattle({
+    required StageDef stage,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    Formation? formation,
+    String playerId = 'player',
+    int? cycleIndex,
+  }) {
+    if (stage.stageType != StageType.massBattle ||
+        stage.massBattleEnemyCounts == null ||
+        stage.massBattleEnemyCounts!.isEmpty) {
+      throw ArgumentError.value(stage.id, 'stage', 'must be massBattle waves');
+    }
+    final cycle = cycleIndex ?? 1;
+    final selectedFormation =
+        formation ??
+        numbers.massBattle.stageFormations[stage.id] ??
+        Formation.yanXing;
+    final modifier =
+        numbers.massBattle.formations[selectedFormation] ??
+        MassBattleFormationModifier.neutral();
+    final rateCap = numbers.combat.redLines.combinedRateCap;
+    final formedPlayer = playerSnapshot.copyWith(
+      criticalRate: (playerSnapshot.criticalRate + modifier.criticalRateDelta)
+          .clamp(0.0, rateCap),
+      evasionRate: (playerSnapshot.evasionRate + modifier.evasionRateDelta)
+          .clamp(0.0, rateCap),
+      defenseRate: (playerSnapshot.defenseRate + modifier.defenseRateDelta)
+          .clamp(0.0, rateCap),
+      attackPowerMultiplier: modifier.damageMultiplier,
+    );
+    final enemyWaves = EnemyCombatantSnapshotAssembler.assembleWaves(
+      stage,
+      cycleIndex: cycle,
+    );
+    if (enemyWaves.isEmpty) {
+      throw ArgumentError.value(stage.id, 'stage', 'massBattle waves empty');
+    }
+    final intermission = numbers.massBattle.waveIntermission;
+    return _mapContent(
+      contentId: stage.id,
+      enemyTeam: stage.enemyTeam,
+      isTower: false,
+      playerSnapshot: formedPlayer,
+      numbers: numbers,
+      playerId: playerId,
+      cycleIndex: cycle,
+      advanceRealmPerCycle: true,
+      winCondition: _mapWinCondition(stage.winCondition),
+      enemySnapshotWavesOverride: enemyWaves,
+      waveTransitionPolicy: Phase0aWaveTransitionPolicy(
+        healPlayerToFull: intermission.aliveHpRecoveryPct >= 1,
+        qiRecoveryPct: intermission.aliveIfRecoveryPct,
+        resetAttackCooldown: intermission.resetActionPoint,
+        resetSkillCooldowns: !intermission.preserveCooldowns,
+      ),
+    );
+  }
+
   /// 把一层生产塔定义装配到与主线相同的 Phase 0A 输入。这里只做 D1
   /// 敌队机械映射；Boss 阶段/蓄力/破招、周目脆弱窗口与
   /// 护法结界动态 ward 均由 Phase 0A reducer/伤害 resolver 消费。
@@ -294,6 +359,8 @@ final class Phase0aStageContentMapper {
     required Phase0aWinCondition? winCondition,
     List<CombatantSnapshot>? enemySnapshotsOverride,
     List<String>? enemyActorIdsOverride,
+    List<List<CombatantSnapshot>>? enemySnapshotWavesOverride,
+    Phase0aWaveTransitionPolicy? waveTransitionPolicy,
   }) {
     if (cycleIndex < 1) {
       throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be >= 1');
@@ -305,19 +372,30 @@ final class Phase0aStageContentMapper {
         '不得静默装配零参数竞技场',
       );
     }
-    if (enemyTeam.isEmpty && (enemySnapshotsOverride?.isEmpty ?? true)) {
+    if (enemyTeam.isEmpty &&
+        (enemySnapshotsOverride?.isEmpty ?? true) &&
+        (enemySnapshotWavesOverride?.isEmpty ?? true)) {
       throw ArgumentError.value(contentId, 'content', 'Phase0a 纵切装配拒绝空敌队内容');
     }
 
     // —— 敌人 neutral snapshot:复用旧战斗同一口径(零数值复制)——
-    final enemySnapshots =
-        enemySnapshotsOverride ??
-        EnemyCombatantSnapshotAssembler.assembleAll(
-          enemyTeam,
-          cycleIndex: cycleIndex,
-          isTower: isTower,
-          advanceRealmPerCycle: advanceRealmPerCycle,
-        );
+    final enemySnapshotWaves =
+        enemySnapshotWavesOverride ??
+        [
+          enemySnapshotsOverride ??
+              EnemyCombatantSnapshotAssembler.assembleAll(
+                enemyTeam,
+                cycleIndex: cycleIndex,
+                isTower: isTower,
+                advanceRealmPerCycle: advanceRealmPerCycle,
+              ),
+        ];
+    if (enemySnapshotWaves.any((wave) => wave.isEmpty)) {
+      throw ArgumentError.value(contentId, 'content', 'Phase0a 波次不得为空');
+    }
+    final enemySnapshots = enemySnapshotWaves
+        .expand((wave) => wave)
+        .toList(growable: false);
     if (enemyActorIdsOverride != null &&
         enemyActorIdsOverride.length != enemySnapshots.length) {
       throw ArgumentError.value(
@@ -326,6 +404,24 @@ final class Phase0aStageContentMapper {
         'must match enemySnapshots length',
       );
     }
+    final actorIds =
+        enemyActorIdsOverride ??
+        [
+          for (
+            var waveIndex = 0;
+            waveIndex < enemySnapshotWaves.length;
+            waveIndex++
+          )
+            for (
+              var slot = 0;
+              slot < enemySnapshotWaves[waveIndex].length;
+              slot++
+            )
+              if (enemySnapshotWaves.length == 1 && enemyTeam.length == 1)
+                enemyTeam.single.id
+              else
+                '${enemySnapshotWaves[waveIndex][slot].enemyDefId}_w${waveIndex}s$slot',
+        ];
     final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
     final tacticalSkillBindings = _tacticalSkillBindings(arena);
 
@@ -353,30 +449,36 @@ final class Phase0aStageContentMapper {
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
     final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
-    final waveEnemies = <Phase0aActor>[
-      for (var i = 0; i < enemySnapshots.length; i++)
-        _enemyActor(
+    final waveEnemies = <Phase0aActor>[];
+    final actorWaves = <List<Phase0aActor>>[];
+    var flatIndex = 0;
+    for (final snapshotWave in enemySnapshotWaves) {
+      final actorWave = <Phase0aActor>[];
+      for (var slot = 0; slot < snapshotWave.length; slot++) {
+        final snapshot = snapshotWave[slot];
+        final actor = _enemyActor(
           arena: arena,
-          snapshot: enemySnapshots[i],
-          actorId:
-              enemyActorIdsOverride?[i] ??
-              (enemyTeam.length == 1
-                  ? enemyTeam[i].id
-                  : '${enemyTeam[i].id}_w0s$i'),
+          snapshot: snapshot,
+          actorId: actorIds[flatIndex],
           position: _enemyPosition(
             arena: arena,
-            slot: i,
-            count: enemySnapshots.length,
+            slot: slot,
+            count: snapshotWave.length,
           ),
-          chargeCast: topLevelChargeCasts[i],
-          phaseChargeCasts: phaseChargeCastsByEnemy[i],
+          chargeCast: topLevelChargeCasts[flatIndex],
+          phaseChargeCasts: phaseChargeCastsByEnemy[flatIndex],
           staggerTicksTotal: staggerTicksTotal,
-          guardianDefIds: enemySnapshots[i].guardianDefIds,
-          guardianWardMult: enemySnapshots[i].guardianWardMult,
-          guardInterceptsInterrupt: enemySnapshots[i].guardInterceptsInterrupt,
-          vulnerabilityMult: enemySnapshots[i].vulnerabilityMult,
-        ),
-    ];
+          guardianDefIds: snapshot.guardianDefIds,
+          guardianWardMult: snapshot.guardianWardMult,
+          guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
+          vulnerabilityMult: snapshot.vulnerabilityMult,
+        );
+        actorWave.add(actor);
+        waveEnemies.add(actor);
+        flatIndex += 1;
+      }
+      actorWaves.add(List.unmodifiable(actorWave));
+    }
 
     final playerActor = Phase0aActor(
       id: playerId,
@@ -420,7 +522,7 @@ final class Phase0aStageContentMapper {
         tick: 0,
         nextSeq: 1,
         player: playerActor,
-        enemies: waveEnemies,
+        enemies: actorWaves.first,
         skillSlots: _skillSlots(
           arena,
           numericSkillBindings,
@@ -429,7 +531,7 @@ final class Phase0aStageContentMapper {
         ),
         winCondition: winCondition,
       ),
-      waves: [Phase0aWave(enemies: waveEnemies)],
+      waves: [for (final actors in actorWaves) Phase0aWave(enemies: actors)],
       combatants: List.unmodifiable(combatants),
       moveBindings: _moveBindings(
         arena,
@@ -453,6 +555,7 @@ final class Phase0aStageContentMapper {
       ),
       numericSkillBindings: numericSkillBindings,
       winCondition: winCondition,
+      waveTransitionPolicy: waveTransitionPolicy,
     );
   }
 

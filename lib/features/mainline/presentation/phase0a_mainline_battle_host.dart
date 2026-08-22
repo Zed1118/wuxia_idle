@@ -44,12 +44,14 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     this.cycleIndex = 1,
     this.playerSnapshotForTest,
     this.seedForTest,
+    this.massBattleFormation,
   });
 
   final StageDef stage;
   final ValueChanged<CombatSettlementSnapshot> onVictory;
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
   final int cycleIndex;
+  final Formation? massBattleFormation;
 
   @visibleForTesting
   final CombatantSnapshot? playerSnapshotForTest;
@@ -92,6 +94,13 @@ class _Phase0aMainlineBattleHostState
             numbers: numbers,
             cycleIndex: widget.cycleIndex,
           ),
+          StageType.massBattle => Phase0aStageContentMapper.mapMassBattle(
+            stage: widget.stage,
+            playerSnapshot: playerSnapshot,
+            numbers: numbers,
+            cycleIndex: widget.cycleIndex,
+            formation: widget.massBattleFormation,
+          ),
           _ => Phase0aStageContentMapper.map(
             stage: widget.stage,
             playerSnapshot: playerSnapshot,
@@ -115,6 +124,7 @@ class _Phase0aMainlineBattleHostState
           rng: rng,
           playerAdapter: mapping.playerAdapter,
           enemyAiAdapter: mapping.enemyAiAdapter,
+          waveTransitionPolicy: mapping.waveTransitionPolicy,
         );
         if (!mounted) return;
         final controller = Phase0aBattleController(
