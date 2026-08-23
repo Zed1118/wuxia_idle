@@ -1,32 +1,16 @@
 # Phase 0A 丹房在线/离线一致性诊断
 
-基线：`444612881d3372dc28eb29764c7feea300b9aa92`
+本文件由同一组 observations 生成；非更新模式逐字校验此文件与 CSV。
 
-本产物只读调用生产 `IslandProductionService.settle` 与当前
-`numbers.yaml`，未修改 `lib/`、`data/`、玩法数值或既有测试。
+- 配方：brew_ningshen、brew_peiyuan、brew_liaoshang；丹房等级：1、3、5。
+- 请求窗口：1.0、8.0、24.0、72.0、100.0 小时；分段数：4；场景总数：66。
 
-## 覆盖
+| 配方 | 场景数 | 最大差异 | 瓶颈分类 |
+|---|---:|---:|---|
+| `brew_ningshen` | 21 | 5.684341886080802e-14 | herb, product_cap, rate|herb |
+| `brew_peiyuan` | 21 | 1.4210854715202004e-14 | herb, product_cap, rate |
+| `brew_liaoshang` | 24 | 5.684341886080802e-14 | herb, product_cap, rate|herb, spring |
 
-- 配方：凝神丹、培元丹、疗伤丹。
-- 丹房等级：1、3、5。
-- 请求窗口：1、8、24、72、100 小时；生产 `cap_hours=72`，故 100 小时按 72 小时结算。
-- 每个配方/等级另测成品仓预填至 `cap - 0.5` 的 cap 场景。
-- 每个场景比较一次性结算与 4 等分分段结算；共 54 个场景，均通过严格误差上限 `1e-9`。
-
-## 汇总
-
-| 配方 | 普通场景 | cap 场景 | 最大绝对差异 | 原料瓶颈 | cap 观察 |
-|---|---:|---:|---:|---|---|
-| 凝神丹 `brew_ningshen` | 15 | 3 | 0 | 未出现 | 3/3 命中成品仓 cap |
-| 培元丹 `brew_peiyuan` | 15 | 3 | 1.7053e-13 | 未出现 | 3/3 命中成品仓 cap |
-| 疗伤丹 `brew_liaoshang` | 15 | 3 | 8.5265e-14 | 未出现 | 3/3 命中成品仓 cap |
-
-## 结论
-
-在当前配置与覆盖窗口内，一次性结算和 4 段等分结算在有效浮点误差阈值内完全一致；100 小时没有突破 72 小时 cap。正常零库存场景未出现药草或灵泉水原料瓶颈，预填成品场景按预期由成品仓 cap 限制。输出中的极小非零值仅来自 Dart double 运算顺序，测试以 `1e-9` 作为零差异硬断言。
-
-原始逐场景行由以下命令输出：
-
-```bash
-flutter test test/tools/phase0a_idle_island_parity_diagnostic_test.dart
-```
+理论产量由生产配置推导：`min(rate, herb, spring, product_cap)`。
+正常场景使用合法最低源建筑等级 1；herb_starved/spring_starved 移除对应源建筑形成零可用量 fixture，丹房等级仍为 1/3/5。
+一次结算与等分分段结算差异硬断言 `<= 1e-9`。
