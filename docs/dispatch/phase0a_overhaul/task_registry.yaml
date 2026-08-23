@@ -15,7 +15,7 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m0-coordination-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-coordination
-    status: in_progress
+    status: ready_reviewed
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -255,7 +255,8 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m1-candidate-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-integration
-    status: in_progress
+    status: ready_reviewed
+    ready_marker: "[READY][CODEX][P2-M1] 完成二阶段首批候选整合"
     owned_files:
       - docs/superpowers/plans/2026-08-23-p2-m1-candidate-integration.md
       - docs/audit/phase2_m1_candidate_integration_2026-08-23.md
