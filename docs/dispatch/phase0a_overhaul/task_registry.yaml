@@ -1161,8 +1161,25 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g0-recommended-closeout-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g0-closeout
-    status: in_progress
+    status: ready_reviewed
     base_commit: 9ea75869312d69ebe56cc1eb8af28945e95a4854
+    validated_tip: 34308c7c81e79ce11ffa7d09e171890070fcfade
+    implementation_commits:
+      - 73cec677
+      - 34308c7c
+    verification:
+      decision_ids: 49
+      g0_product_semantics: 11
+      tuning_groups: 20
+      reopen_dispositions: 6
+      active_proposed_or_proposed_reopen: 0
+      truth_source_guard_tests: 9
+      tracked_runtime_files_changed: 0
+      yaml_parse_and_id_checks: passed
+      git_diff_check: passed
+      codex_independent_review_p0_p1_p2: 0
+      pi_deepseek_review_p0_p1: 0
+      qoder_qwen_followup_p0_p1: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml

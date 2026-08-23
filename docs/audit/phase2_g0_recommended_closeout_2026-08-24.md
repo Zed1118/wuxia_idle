@@ -26,6 +26,8 @@
 
 ## 验证记录
 
+- 已验证内容 tip：`34308c7c81e79ce11ffa7d09e171890070fcfade`；后续 READY 为空提交封签，不改变已验证树。
+
 - `ruby -ryaml` 解析两份 registry：通过；decision ID 49 个且无重复，活动 `proposed` / `proposed_reopen` 为 0。
 - `TUNE-*` prefix 计数：20；统一授权锚点 `applies_to_count: 20`、`candidate_generation_authorized: true`、`production_change_authorized: false`，完整覆盖。
 - 11 项产品语义按上述组成逐项核对；6 个 reopen 为 5 个 `not_reopened` + 1 个 `partially_reopened`；rejected registry 对应 7 条历史记录均保留并追加处置。
