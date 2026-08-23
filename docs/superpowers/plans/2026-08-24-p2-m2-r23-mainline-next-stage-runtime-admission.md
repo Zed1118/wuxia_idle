@@ -71,7 +71,7 @@ private。`commit(exactPredecessor)` 成功后返回新的 final
 
 ## 当前恢复点
 
-- 状态：TDD 实现与本地验证已通过，进入 Qoder 最终只读审查。
+- 状态：TDD、本地验证与 Qoder 有效最终只读审查已通过，进入 READY。
 - 基线：`1d64c04c78a729074fc387db64375cecd3704dfd`。
 - 计划：`e723bbc6`；有效红测：`70f7613c`，精确缺失目标 source/type/API；
   最小实现：`4ee7f253`。fresh worktree 首轮 Flutter native-assets 在编译前崩溃，
@@ -83,6 +83,13 @@ private。`commit(exactPredecessor)` 成功后返回新的 final
 - 首轮 Qoder 终审曾给出 `FINAL PASS` 0/0/0，但主控 provisional review 发现
   non-success release 仍可推进的 P1；复核 R01/R19/R21 后确认 finding 成立，该轮
   终审作废。本计划与代码已改为仅接受 `successSettlement`，修正红测有效失败，
-  上述 targeted/analyze/format 已全部重跑通过，待 Qoder 有效终审。
+  上述 targeted/analyze/format 已全部重跑通过。
+- Qoder 有效终审使用同一 `qoderclicn` 1.1.28 / exact
+  `Qwen3.8-Max` / reasoning high / `dont_ask` / Read-Grep-Glob-only /
+  `--no-session-persistence`，明确要求重审上述 P1。它完整读取三个 owned files
+  及 R19/R01/R15 对照，确认 success gate 位于 stage/run/occupancy 之前，
+  failure/exit/recovery 全部零发布，exact predecessor、single-use、一次
+  `proceedToNext`、私有 successor 与 Gate 全成立；结论
+  `EFFECTIVE FINAL PASS`，P0/P1/P2=0/0/0，零写入。
 - Gate：production host、下一关 release 组合、durable run/coordinator、
   settlement/reward/claim、shared occupancy、data/candidate/tuning/Profile/G2 继续未解。
