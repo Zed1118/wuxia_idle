@@ -46,7 +46,10 @@ final class TimedStatusSpec {
     }
     if (type == TimedStatusType.slow) {
       final multiplier = movementMultiplier;
-      if (multiplier == null || multiplier <= 0 || multiplier > 1) {
+      if (multiplier == null ||
+          !multiplier.isFinite ||
+          multiplier <= 0 ||
+          multiplier > 1) {
         throw ArgumentError.value(
           multiplier,
           'movementMultiplier',

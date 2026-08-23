@@ -63,6 +63,27 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('rejects non-finite slow movement multipliers', () {
+      for (final multiplier in <double>[
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        expect(
+          () => TimedStatusSpec(
+            type: TimedStatusType.slow,
+            sourceId: 'source',
+            durationTicks: 2,
+            tickIntervalTicks: 1,
+            stackLimit: 1,
+            movementMultiplier: multiplier,
+          ),
+          throwsArgumentError,
+          reason: 'movementMultiplier=$multiplier must fail closed',
+        );
+      }
+    });
   });
 
   group('TimedStatusLedger', () {
