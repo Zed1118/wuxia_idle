@@ -53,6 +53,23 @@ void main() {
       ),
     );
     expect(
+      chain.hashCode,
+      BasicAttackChain(
+        weapon: WeaponType.sword,
+        segments: [thrust, sweep],
+        resetAfterIdleTicks: 3,
+      ).hashCode,
+    );
+    expect(
+      thrust.hashCode,
+      BasicAttackSegment(
+        id: 'thrust',
+        geometryRef: 'forward_fan.thrust',
+        timelineRef: 'timeline.basic.thrust',
+        effectRefs: ['damage.standard'],
+      ).hashCode,
+    );
+    expect(
       chain,
       isNot(
         equals(
@@ -144,34 +161,11 @@ void main() {
       throwsArgumentError,
     );
     expect(
-      () => BasicAttackChain(
-        weapon: WeaponType.sword,
-        segments: [
-          thrust,
-          BasicAttackSegment(
-            id: 'same-geometry',
-            geometryRef: thrust.geometryRef,
-            timelineRef: 'timeline.other',
-            effectRefs: ['effect'],
-          ),
-        ],
-        resetAfterIdleTicks: 1,
-      ),
-      throwsArgumentError,
-    );
-    expect(
-      () => BasicAttackChain(
-        weapon: WeaponType.sword,
-        segments: [
-          thrust,
-          BasicAttackSegment(
-            id: 'same-timeline',
-            geometryRef: 'geometry.other',
-            timelineRef: thrust.timelineRef,
-            effectRefs: ['effect'],
-          ),
-        ],
-        resetAfterIdleTicks: 1,
+      () => BasicAttackSegment(
+        id: 'invalid-whitespace',
+        geometryRef: ' geometry',
+        timelineRef: 'timeline',
+        effectRefs: ['effect'],
       ),
       throwsArgumentError,
     );
@@ -197,5 +191,24 @@ void main() {
       () => chain.nextSegmentIndex(currentIndex: 0, idleTicks: -1),
       throwsArgumentError,
     );
+  });
+
+  test('不同连段可复用同一 geometry/timeline 模板', () {
+    final shared = BasicAttackChain(
+      weapon: WeaponType.flexible,
+      segments: [
+        thrust,
+        BasicAttackSegment(
+          id: 'follow-up',
+          geometryRef: thrust.geometryRef,
+          timelineRef: thrust.timelineRef,
+          effectRefs: ['posture.light'],
+        ),
+      ],
+      resetAfterIdleTicks: 2,
+    );
+
+    expect(shared.segments, hasLength(2));
+    expect(shared.geometryRefs, ['forward_fan.thrust', 'forward_fan.thrust']);
   });
 }
