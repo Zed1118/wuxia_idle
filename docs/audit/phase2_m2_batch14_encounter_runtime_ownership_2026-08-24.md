@@ -23,4 +23,10 @@
 
 ## 验证记录
 
-待 R11 / R12a / R13 READY 后补充来源 commit、外部模型证据、联合/full test 与独立审查结论。
+### 已完成来源
+
+- R12a：计划 `d64a2065`、实现 `1f856e7b`、证据 `29079798`、READY `2e53aaf4`；16/16、scoped analyze 0、format/diff clean，独立复审 P0/P1/P2=0。集成提交 `45ca144d` / `a06a0875` / `149bf7a2`。合同明确为 immutable predecessor → prepared successor → 新 runtime；同一 predecessor 的 sibling successor 是 caller 显式 branch/fork，不虚称全局 CAS 或已接 production lifecycle。
+
+### 待完成来源与集成
+
+待 R11 / R13 READY 后补充外部模型证据、来源 commit、联合/full test 与独立审查结论。

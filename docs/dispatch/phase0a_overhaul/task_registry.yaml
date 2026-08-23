@@ -1797,8 +1797,18 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-r12a-attack-token-lease-runtime-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12a-attack-token-lease-runtime
-    status: in_progress
+    status: ready_reviewed
     base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    implementation_commit: 1f856e7bf40eaed3d08eed426a8e6970e8df4e77
+    tip_commit: 2e53aaf4633f60ce2e84ddd1ab6ebf625cc32425
+    integration_commits:
+      - 45ca144d
+      - a06a0875
+      - 149bf7a2
+    verification:
+      targeted_tests: 16
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
     owned_files:
