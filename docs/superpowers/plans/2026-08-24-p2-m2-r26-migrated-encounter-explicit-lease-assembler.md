@@ -55,3 +55,27 @@ tracker。为避免改变现有非 owned source-guard 对旧 stateless 方法的
 - 结论：组合设计成立；必须避开现有 source-guard 切片；精确透传
   用 direct mapping 等价流与 recording gate 证明；fresh lineage 必须复用
   同一 plan；失败后只声称 flow-owned state 零发布。
+
+## 实现与验证证据
+
+- 计划提交：`784d76b6`
+- 红测提交：`e8891ddb`；失败唯一原因为缺少
+  `assembleMigratedEncounterPlanWithAttackTokenLease`。
+- 实现提交：`e5816b23`；新方法仅调用
+  `assembleEncounterFromMapping`，旧 stateless 方法没有改动。
+- targeted tests：60 passed
+  - migrated composition: 10
+  - production lease wiring: 10
+  - production assembler: 23
+  - encounter mapping: 15
+  - production objective integration: 2
+- `dart analyze` 两个 owned Dart files：`No issues found!`
+- 环境：`build_runner` 产生 126 个 ignored outputs（63 个 `.g.dart`）；
+  ignored `libisar.dylib` SHA-256 =
+  `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
+
+零发布结论仅覆盖 flow-owned arena/spawn/outcome/ordered records 与
+session-owned lease successor。既有 damage resolver 可在晚失败前消费 caller RNG，
+本切片不声称 RNG 回滚，也不对 caller planner/objective source/observer 的
+外部副作提供事务。caller gate policy 与 plan budgets 的匹配仍是未在
+此 host-neutral assembler 内判定的上层责任。
