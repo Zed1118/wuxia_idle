@@ -705,8 +705,15 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch4-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch4-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 61b7bb85
+    ready_marker: "[READY][CODEX][P2-G2-BATCH4] 完成真实动态遭遇运行时"
+    verification:
+      - dynamic encounter and contract regression 120/120
+      - production assembler retry mainline and battle-screen regression 60/60
+      - scoped application domain and dynamic-flow analyze 0 issues
+      - full analyze baseline blocked by independent phase0minus_probe package dependencies
+      - two independent Codex reviews 0 P0/P1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch4-dynamic-encounter.md
@@ -724,7 +731,12 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d05-session-seams-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d05-session-seams
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: cef3bf60
+    implementation_commit: 635fbdc9
+    correction_commit: b0516996
+    integration_commit: af7cdfa3
+    integration_correction_commit: 5d831cd8
     protected_behavior:
       - session fork preserves adapters resolvers observer and RNG ownership
       - default advance path is unchanged
@@ -736,7 +748,12 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-d06-roster-events-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d06-roster-events
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: c770f74c
+    implementation_commit: 7a6a605c
+    correction_commit: cc18e947
+    integration_commit: 7b36afb3
+    integration_correction_commit: 8a6ddf4e
     protected_behavior:
       - every SpawnEntry has exactly one immutable enemy actor binding
       - duplicate missing extra player-side or player-id bindings fail closed
@@ -748,8 +765,11 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-e03-dynamic-encounter-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e03-dynamic-encounter
-    status: waiting_dependency
-    wake_condition: D05 and D06 reviewed and integrated
+    status: ready_reviewed
+    tip_commit: 00e0d628
+    implementation_commit: da8b27b6
+    integration_commit: 97c93d0a
+    correction_commit: 39b4bbf9
     protected_behavior:
       - director advances once before each reducer tick
       - entered enemies join the arena before that tick and grace units may move but not attack

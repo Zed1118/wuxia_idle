@@ -22,22 +22,22 @@
 
 ## 验收 checklist
 
-- [ ] roster 全覆盖、ID/side/player 冲突、不可变与输入顺序无关。
-- [ ] session fork 保留 adapters/resolvers/observer，不额外创建 RNG。
-- [ ] 默认 session 路径与 Batch3 parity，wave 换波后 observer 仍工作。
-- [ ] warning → entered → graceExpired 事件 tick/seq 严格有序。
-- [ ] grace 敌人可移动不可攻击，到期边界首拍恢复进攻。
-- [ ] death → exit → next-tick reinforcement 计数守恒，arena 不含 pending/warning/removed actor。
-- [ ] spawn/combat/terminal 事件共用严格递增 seq，event records 可投影。
-- [ ] victory/defeat/survive/同拍双空/终局幂等覆盖。
-- [ ] controller 和 headless sync/async 消费同一 runtime，同 seed/同 commands 结果一致。
-- [ ] AttackTokenDirector 仍为 observe-only，不猜 request kind/offscreen/highImpact/telegraph。
-- [ ] 不改 tuning、生产关卡数据、UI、奖励、伤势、存档或中文文案。
-- [ ] 主控逐 diff 复审，targeted tests + `flutter analyze --no-pub` + `git diff --check` 通过。
+- [x] roster 全覆盖、ID/side/player 冲突、不可变与输入顺序无关。
+- [x] session fork 保留 adapters/resolvers/observer，不额外创建 RNG。
+- [x] 默认 session 路径与 Batch3 parity，wave 换波后 observer 仍工作。
+- [x] warning → entered → graceExpired 事件 tick/seq 严格有序。
+- [x] grace 敌人可移动不可攻击，到期边界首拍恢复进攻。
+- [x] death → exit → next-tick reinforcement 计数守恒，arena 不含 pending/warning/removed actor。
+- [x] spawn/combat/terminal 事件共用严格递增 seq，event records 可投影。
+- [x] victory/defeat/survive/同拍优先级/终局幂等覆盖。
+- [x] controller 和 headless sync/async 消费同一 runtime，同 seed/同 commands 结果一致。
+- [x] AttackTokenDirector 仍为 observe-only，不猜 request kind/offscreen/highImpact/telegraph。
+- [x] 不改 tuning、生产关卡数据、UI、奖励、伤势、存档或中文文案。
+- [x] 主控逐 diff 复审，180 项集成回归、本批范围 analyze 与 `git diff --check` 通过，两路独立复审 0 P0/P1。
 
 ## 当前恢复点
 
-- 状态：Batch4 已立项，D05/D06 等待派单。
-- 最后完成：Batch3 READY `61b7bb85`。
-- 下一步：并行回收 D05/D06，主控冻结接口后唤醒 E03。
-- 阻塞项：无；token enforce 与关卡 tuning 仍不在本批范围。
+- 状态：D05/D06/E03 实现、主控修正、集成回归与两路独立复审已完成，等待 Batch4 READY tip。
+- 最后完成：主控验收补强 `39b4bbf9`；180/180 回归通过，本批范围 analyze 0 issues。
+- 下一步：封签 Batch4 READY；后续批次建立 production assembler 的 encounter 装配入口，不猜测黑风岭数据。
+- 阻塞项：无；全仓 analyze 被独立 `tools/phase0minus_probe` 包的既存依赖缺失污染，与本批无关。token enforce 与关卡 tuning 仍不在本批范围。
