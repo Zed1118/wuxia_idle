@@ -4,8 +4,8 @@ import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/inner_demon_def.dart';
 
-/// 心魔关战败惩罚结果（in-place 改 ch.internalForce + mainTech.cultivationProgress
-/// 已发生，此处汇总供 UI 展示 / 测试断言）。与 DispelService.DefeatPenaltyResult
+/// 心魔关战败惩罚结果（永久内力保持不变，主修进度/内息紊乱已结算，结果供 UI
+/// 展示 / 测试汇总）。与 DispelService.DefeatPenaltyResult
 /// 区别：心魔惩罚 layer 不回退（spec「不跌破当前层起点」自动满足）。
 class InnerDemonPenaltyResult {
   final int internalForceBefore;
