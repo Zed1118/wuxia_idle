@@ -21,6 +21,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
+import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 
 import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
@@ -106,7 +107,7 @@ void main() {
       );
     });
 
-    test('stage_01_01 单敌 → 单波装配,actor 覆盖与 HP 口径沿 buildEnemyTeam', () {
+    test('stage_01_01 单敌模板 → YAML 多波装配,actor 覆盖与 HP 口径沿 buildEnemyTeam', () {
       final stage = repo.getStage('stage_01_01');
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
@@ -115,17 +116,13 @@ void main() {
         numbers: numbers,
       );
 
-      // 单波,波内敌数 = enemyTeam 长度。
-      expect(mapping.waves, hasLength(1));
-      expect(mapping.waves.first.enemies, hasLength(stage.enemyTeam.length));
-      // 单敌关 actor id 不加后缀。
-      expect(mapping.waves.first.enemies.single.id, 'enemy_xueTu_thug_a');
-      // combatants = 玩家 + 全部敌人。
-      expect(mapping.combatants, hasLength(1 + stage.enemyTeam.length));
+      expect(mapping.waves.map((wave) => wave.enemies.length), [2, 3, 4]);
       expect(
-        mapping.combatants.map((c) => c.actorId),
-        containsAll(['player', 'enemy_xueTu_thug_a']),
+        mapping.waves.first.enemies.first.id,
+        contains('enemy_xueTu_thug_a'),
       );
+      expect(mapping.combatants, hasLength(1 + 2 + 3 + 4));
+      expect(mapping.combatants.map((c) => c.actorId), contains('player'));
       // 固定三 kind 全覆盖；Q/R 已由真实数据技能绑定，fixture 无数字槽。
       expect(mapping.moveBindings.keys, hasLength(3));
       expect(mapping.playerAdapter.numericSkillBindings.equipped, isEmpty);
@@ -149,17 +146,17 @@ void main() {
       expect(clearBinding.cooldownSeconds, 8);
       // 空间排布:玩家在左,敌在右。
       expect(mapping.initialState.player.position.x, lessThan(0));
-      expect(mapping.waves.first.enemies.single.position.x, greaterThan(0));
+      expect(mapping.waves.first.enemies.first.position.x, greaterThan(0));
       // 玩家 actor HP 口径 = 玩家中立快照。
       expect(mapping.initialState.player.maxHealth, 15000);
-      // 敌 actor HP 口径 = buildEnemyTeam(cycleIndex=1 零回归 = baseHp)。
-      expect(mapping.waves.first.enemies.single.maxHealth, 1500);
+      // 小怪 HP 口径 = 原快照 × YAML mainline_wave ordinary.hp_multiplier。
+      expect(mapping.waves.first.enemies.first.maxHealth, 150);
       // 非阶段敌人保持旧的中性内力/CD 路径。
       expect(
-        mapping.waves.first.enemies.single.qiCurrent,
+        mapping.waves.first.enemies.first.qiCurrent,
         numbers.phase0aArena.enemyQi,
       );
-      expect(mapping.waves.first.enemies.single.enemySkillCooldowns, isEmpty);
+      expect(mapping.waves.first.enemies.first.enemySkillCooldowns, isEmpty);
       // 技能印双槽 ready。
       expect(mapping.initialState.skillSlots, hasLength(2));
       expect(
@@ -207,7 +204,7 @@ void main() {
         tick: mapping.initialState.tick,
         nextSeq: mapping.initialState.nextSeq,
         player: mapping.initialState.player.copyWith(
-          position: mapping.initialState.enemies.single.position,
+          position: mapping.initialState.enemies.first.position,
         ),
         enemies: mapping.initialState.enemies,
         skillSlots: mapping.initialState.skillSlots,
@@ -368,7 +365,7 @@ void main() {
       }
     });
 
-    test('stage_01_03 三敌 → 三敌单波,id 加波次槽位后缀防撞', () {
+    test('stage_01_03 单敌模板 → 多波,id 全场唯一防撞', () {
       final stage = repo.getStage('stage_01_03');
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
@@ -376,12 +373,13 @@ void main() {
         playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
-      expect(mapping.waves.first.enemies, hasLength(stage.enemyTeam.length));
-      final ids = mapping.waves.first.enemies.map((e) => e.id).toSet();
-      expect(ids, hasLength(stage.enemyTeam.length));
-      // 全场 actor id 唯一(assembler 覆盖校验前提)。
+      expect(mapping.waves.map((wave) => wave.enemies.length), [2, 3, 4]);
+      final ids = mapping.waves
+          .expand((wave) => wave.enemies)
+          .map((e) => e.id)
+          .toSet();
       final allIds = {mapping.initialState.player.id, ...ids};
-      expect(allIds, hasLength(1 + stage.enemyTeam.length));
+      expect(allIds, hasLength(1 + 2 + 3 + 4));
     });
 
     test('塔薄适配复用同核并透传 isTower 敌方装配语义', () {
@@ -399,7 +397,7 @@ void main() {
         stage: StageDef(
           id: 'stage_fixture',
           name: 'fixture',
-          stageType: StageType.mainline,
+          stageType: StageType.tower,
           requiredRealm: floor.requiredRealm,
           enemyTeam: floor.enemyTeam,
           isBossStage: true,
@@ -450,6 +448,109 @@ void main() {
           numbers: numbers,
         ),
         throwsArgumentError,
+      );
+    });
+  });
+
+  group('主线群怪波次配置与包络', () {
+    test('普通关使用 YAML 波型，最大并发生命/有效输出不超过原单敌', () {
+      final numbers = repo.numbers;
+      final stage = repo.getStage('stage_01_01');
+      final mapping = Phase0aStageContentMapper.map(
+        stage: stage,
+        playerSnapshot: makeCh1Player(numbers),
+        numbers: numbers,
+      );
+      final original = EnemyCombatantSnapshotAssembler.assembleAll(
+        stage.enemyTeam,
+      ).single;
+      expect(mapping.waves.map((wave) => wave.enemies.length), [2, 3, 4]);
+      expect(
+        mapping.waves
+            .expand((wave) => wave.enemies)
+            .every((enemy) => enemy.maxHealth < original.maxHp),
+        isTrue,
+      );
+      final maxWaveHp = mapping.waves
+          .map(
+            (wave) => wave.enemies.fold<int>(0, (sum, e) => sum + e.maxHealth),
+          )
+          .reduce(max);
+      expect(maxWaveHp, lessThanOrEqualTo(original.maxHp));
+      final maxWaveEffectiveOutput = mapping.waves
+          .map(
+            (wave) => wave.enemies.fold<double>(
+              0,
+              (sum, enemy) =>
+                  sum +
+                  mapping.combatants
+                          .firstWhere((c) => c.actorId == enemy.id)
+                          .snapshot
+                          .outputMultiplier *
+                      (mapping.combatants
+                              .firstWhere((c) => c.actorId == enemy.id)
+                              .snapshot
+                              .internalForce +
+                          mapping.combatants
+                              .firstWhere((c) => c.actorId == enemy.id)
+                              .snapshot
+                              .totalEquipmentAttack),
+            ),
+          )
+          .reduce(max);
+      final originalEffectiveOutput =
+          original.internalForce + original.totalEquipmentAttack;
+      expect(
+        maxWaveEffectiveOutput,
+        lessThanOrEqualTo(originalEffectiveOutput),
+      );
+    });
+
+    test('Boss 机制只在独立终波，原快照不降级，波间不回血', () {
+      final numbers = repo.numbers;
+      final stage = repo.getStage('stage_01_05');
+      final mapping = Phase0aStageContentMapper.map(
+        stage: stage,
+        playerSnapshot: makeCh1Player(numbers),
+        numbers: numbers,
+      );
+      expect(mapping.waves.map((wave) => wave.enemies.length), [2, 3, 1]);
+      for (final enemy
+          in mapping.waves.take(2).expand((wave) => wave.enemies)) {
+        final snapshot = mapping.combatants
+            .firstWhere((combatant) => combatant.actorId == enemy.id)
+            .snapshot;
+        expect(snapshot.isBoss, isFalse);
+        expect(snapshot.chargeSkillId, isNull);
+        expect(snapshot.bossPhases, isNull);
+        expect(snapshot.vulnerabilityMult, isNull);
+        expect(snapshot.guardianDefIds, isEmpty);
+      }
+      final boss = mapping.waves.last.enemies.single;
+      final bossSnapshot = mapping.combatants
+          .firstWhere((combatant) => combatant.actorId == boss.id)
+          .snapshot;
+      expect(bossSnapshot.isBoss, isTrue);
+      expect(bossSnapshot.chargeSkillId, isNotNull);
+      expect(mapping.waveTransitionPolicy?.healPlayerToFull, isFalse);
+      expect(mapping.waveTransitionPolicy?.qiRecoveryPct, 0.25);
+    });
+
+    test('非主线塔路径继续使用 arena.enemyMoveSpeed', () {
+      final numbers = repo.numbers;
+      final floor = repo.towerFloors.firstWhere(
+        (floor) => floor.floorIndex == 1,
+      );
+      final mapping = Phase0aStageContentMapper.mapTower(
+        floor: floor,
+        playerSnapshot: makeCh1Player(numbers),
+        numbers: numbers,
+      );
+      expect(
+        mapping.initialState.enemies.every(
+          (enemy) => enemy.moveSpeed == numbers.phase0aArena.enemyMoveSpeed,
+        ),
+        isTrue,
       );
     });
   });

@@ -186,3 +186,30 @@ void enforceMainlineRedLines({required Map<String, StageDef> stageDefs}) {
     }
   }
 }
+
+/// Phase 0A 主线群怪 schema/语义红线：仅校验主线，其他战斗形态不受此配置接管。
+void enforceMainlineWaveRedLines({
+  required Map<String, StageDef> stageDefs,
+  required NumbersConfig numbers,
+}) {
+  final mainlines = stageDefs.values
+      .where((stage) => stage.stageType == StageType.mainline)
+      .toList();
+  if (mainlines.isEmpty || !numbers.mainlineWave.isEnabled) return;
+  numbers.mainlineWave.validate();
+  for (final stage in mainlines) {
+    if (stage.enemyTeam.length != 1) {
+      throw StateError(
+        '主线 stage ${stage.id} 群怪 profile 要求 enemyTeam.length=1，'
+        '实际 ${stage.enemyTeam.length}',
+      );
+    }
+    final source = stage.enemyTeam.single;
+    if (stage.isBossStage && !source.isBoss) {
+      throw StateError('主线 Boss ${stage.id} 必须有唯一 isBoss=true 主敌人');
+    }
+    if (!stage.isBossStage && source.isBoss) {
+      throw StateError('主线普通关 ${stage.id} 不得把唯一敌人标为 Boss');
+    }
+  }
+}

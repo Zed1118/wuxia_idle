@@ -312,14 +312,14 @@ void main() {
       expect(player.assetPath, 'assets/characters/battle_founder_v2.png');
       expect(player.name, '纵切玩家');
 
-      final enemy = roster.visualFor('enemy_xueTu_thug_a');
+      final enemy = roster.visualFor(mapping.waves.first.enemies.first.id);
       // iconPath 与 stages.yaml EnemyDef 同值,零口径复制。
       expect(enemy.assetPath, stage.enemyTeam.single.iconPath);
       expect(enemy.name, stage.enemyTeam.single.name);
       expect(enemy.isElite, isFalse);
     });
 
-    test('stage_01_03 三敌: 全部 actor 登记且名字来自 EnemyDef', () {
+    test('stage_01_03 多波小怪: 全部 actor 登记且名字来自 EnemyDef', () {
       final stage = repo.getStage('stage_01_03');
       final mapping = Phase0aStageContentMapper.map(
         stage: stage,
@@ -343,7 +343,7 @@ void main() {
       expect(boss.snapshot.isBoss, isTrue);
       expect(roster.visualFor(boss.actorId).isElite, isTrue);
       expect(
-        mapping.waves.first.enemies.last.defeatKind,
+        mapping.waves.last.enemies.last.defeatKind,
         Phase0aDefeatKind.elite,
       );
     });

@@ -761,6 +761,7 @@ class GameRepository {
     //   - mainline stages 总数 = 15，按 chapterIndex 分 3 章 × 5 关
     //   - narrativeDefeatId 必须仅在 isBossStage=true 关配置
     enforceMainlineRedLines(stageDefs: stageDefs);
+    enforceMainlineWaveRedLines(stageDefs: stageDefs, numbers: numbers);
 
     // Phase 3 T40（批 A 扩 49 层重排）：爬塔校验
     //   - floorIndex 从 1 起连续唯一；层数 ≤ 境界总层数 49（1:1 锚死上界）
