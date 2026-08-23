@@ -6,7 +6,7 @@ import 'boss_vulnerability_def.dart';
 /// 7 关心魔(stage_inner_demon_01..07)拦截配置的境界层突破：
 ///   - mirror_buff_per_stage：各关镜像玩家 character 强化比例
 ///   - mirror_caps：§5.4 数值红线 cap（防玩家 build 超时镜像也超）
-///   - failure_penalty：散功 ×0.5 阉割版（GDD §6 半惩罚）
+///   - failure_penalty：主修修炼度惩罚（内息紊乱走独立配置）
 ///   - unlock_triggers：触发关 victory → 下一关 unlock 链
 ///   - required_realm_layer：玩家当前境界达到该 layer 才能进入
 ///
@@ -19,7 +19,7 @@ class InnerDemonDef {
   /// §5.4 数值红线 cap。
   final InnerDemonMirrorCaps mirrorCaps;
 
-  /// 失败惩罚（散功 ×0.5 阉割版）。
+  /// 失败惩罚（主修修炼度系数）。
   final InnerDemonFailurePenalty failurePenalty;
 
   /// 触发关 victory → 下一关 unlock 链。
@@ -74,14 +74,7 @@ class InnerDemonDef {
       internalForceMax: 15000,
       attackPowerMax: 6000,
     ),
-    failurePenalty: InnerDemonFailurePenalty(
-      internalForceMultiplier: 0.85,
-      mainCultivationMultiplier: 0.90,
-      subCultivationMultiplier: 1.00,
-      debuffId: 'inner_demon_residue',
-      debuffClearViaRetreatHours: 8,
-      internalForceFloorPct: 0.50,
-    ),
+    failurePenalty: InnerDemonFailurePenalty(mainCultivationMultiplier: 0.90),
     unlockTriggers: {},
     requiredRealmLayer: {},
     mirrorVulnerabilityPerStage: {},
@@ -217,52 +210,37 @@ class InnerDemonMirrorCaps {
       );
 }
 
-/// 失败惩罚（散功 ×0.5 阉割版，GDD §6 半惩罚）。
+/// 心魔失败惩罚：主修修炼度系数；内息紊乱由独立配置提供。
 class InnerDemonFailurePenalty {
-  /// 当前内力扣减比例（new = old × 此值；0.85 = 扣 15%）。
-  final double internalForceMultiplier;
-
   /// 主修心法修炼度扣减比例（new = old × 此值；0.90 = 扣 10%）。
   final double mainCultivationMultiplier;
 
-  /// 辅修不受影响（1.00 = 不动）。
-  /// UNUSED(0 生产消费 · 审计 D5 2026-06-24):心魔惩罚仅扣主修
-  /// (mainCultivationMultiplier 真消费),辅修恒不动语义已由"不触碰辅修字段"实现,
-  /// 本字段从无读取方。保留作语义文档(显式声明辅修=1.00),真要分级扣辅修时再接。
-  final double subCultivationMultiplier;
+  const InnerDemonFailurePenalty({required this.mainCultivationMultiplier});
 
-  /// 心魔余毒 debuff id。
-  /// UNUSED(0 生产消费 · 审计 D5 2026-06-24):仅 inner_demon_service_test 断言其值,
-  /// 余毒 debuff 的实际施加/清解路径不读此字段。保留作配置锚,真要按 id 派发 debuff 时再接。
-  final String debuffId;
-
-  /// 闭关 N 小时清解 debuff。
-  final int debuffClearViaRetreatHours;
-
-  /// 内力扣减地板（new 内力不低于 internalForceMax × 此值；防无限重试归零）。
-  final double internalForceFloorPct;
-
-  const InnerDemonFailurePenalty({
-    required this.internalForceMultiplier,
-    required this.mainCultivationMultiplier,
-    required this.subCultivationMultiplier,
-    required this.debuffId,
-    required this.debuffClearViaRetreatHours,
-    required this.internalForceFloorPct,
-  });
-
-  factory InnerDemonFailurePenalty.fromYaml(Map<String, dynamic> y) =>
-      InnerDemonFailurePenalty(
-        internalForceMultiplier:
-            (y['internal_force_multiplier'] as num?)?.toDouble() ?? 0.85,
-        mainCultivationMultiplier:
-            (y['main_cultivation_multiplier'] as num?)?.toDouble() ?? 0.90,
-        subCultivationMultiplier:
-            (y['sub_cultivation_multiplier'] as num?)?.toDouble() ?? 1.00,
-        debuffId: y['debuff_id'] as String? ?? 'inner_demon_residue',
-        debuffClearViaRetreatHours:
-            (y['debuff_clear_via_retreat_hours'] as num?)?.toInt() ?? 8,
-        internalForceFloorPct:
-            (y['internal_force_floor_pct'] as num?)?.toDouble() ?? 0.50,
+  factory InnerDemonFailurePenalty.fromYaml(Map<String, dynamic> y) {
+    const legacyKeys = {
+      'internal_force_multiplier',
+      'internal_force_floor_pct',
+      'sub_cultivation_multiplier',
+      'debuff_id',
+      'debuff_clear_via_retreat_hours',
+    };
+    for (final key in legacyKeys) {
+      if (y.containsKey(key)) {
+        throw FormatException(
+          'inner_demon.failure_penalty contains retired key: $key',
+        );
+      }
+    }
+    final multiplier = (y['main_cultivation_multiplier'] as num?)?.toDouble();
+    if (multiplier == null ||
+        !multiplier.isFinite ||
+        multiplier <= 0 ||
+        multiplier > 1) {
+      throw const FormatException(
+        'inner_demon.failure_penalty.main_cultivation_multiplier must be in (0,1]',
       );
+    }
+    return InnerDemonFailurePenalty(mainCultivationMultiplier: multiplier);
+  }
 }

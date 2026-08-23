@@ -25,7 +25,7 @@ class InnerDemonPenaltyResult {
 /// 心魔系统 application 层（1.0 P2.2 §12.1）。
 ///
 /// **已实装**：[isLayerLocked] 升层 unlock 拦截（Batch 2.2.A）、
-/// [applyFailurePenalty] 战败惩罚 + 余毒（M6，2026-06-16）。
+/// [applyFailurePenalty] 战败惩罚 + 内息紊乱（M6，2026-06-16）。
 ///
 /// 设计要点（memory `feedback_avoid_over_engineer_abstraction`）：
 ///   - 全部静态方法（无 mutable state，无需 Riverpod provider 持有）
@@ -65,12 +65,11 @@ class InnerDemonService {
   /// 心魔关战败惩罚（M6）。对单个**有主修**的参战角色调用一次。
   ///
   /// in-place 改：
-  ///   - ch.internalForce = max(floor(old × internalForceMultiplier),
-  ///                            floor(internalForceMax × internalForceFloorPct))
+  ///   - 永久内力不变；内息紊乱走独立配置并受上限约束
   ///   - mainTech.cultivationProgress = floor(old × mainCultivationMultiplier)
   ///     （cultivationLayer / cultivationProgressToNext 不动 → 不跌破当前层起点）
   ///   - ch.innerBreathDisorderHoursRemaining 按配置累加并受上限约束
-  ///   - 辅修不动（subCultivationMultiplier=1.00，不触碰辅修字段）
+  ///   - 辅修不动（不触碰辅修字段）
   ///
   /// Isar 持久化由 caller 负责（沿 DispelService.applyDefeatPenalty 体例）。
   static InnerDemonPenaltyResult applyFailurePenalty({
