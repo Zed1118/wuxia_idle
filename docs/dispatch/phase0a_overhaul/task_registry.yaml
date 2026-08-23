@@ -1643,8 +1643,8 @@ tasks:
     implementation_commit: 2f68aabc699f7ca54dcf9780d3fceb442ac668a5
     tip_commit: 46bc5573cf0b79a42bb16f06ace10442fc2ffc42
     integration_commits:
-      - ac86e7b1
-      - 17e571dc
+      - b7142184
+      - 7f3ea4fe
     verification:
       targeted_tests: 71
       scoped_analyze_issues: 0
@@ -1674,11 +1674,11 @@ tasks:
       - 0c59ee91
     tip_commit: ec6d9acf09aa3506eb63dcff7252cdf85fc56db0
     integration_commits:
-      - 3bacf62d
-      - dc9c03cd
-      - 8130c9c5
-      - fd470c8e
-      - 697a4145
+      - 8422be25
+      - cdc33b25
+      - 75a2db75
+      - 1a70b9c2
+      - c6e80a0e
     verification:
       targeted_tests: 119
       scoped_analyze_issues: 0
@@ -1709,7 +1709,7 @@ tasks:
     implementation_commit: a121d15bffab179c18a812d8fc1af420ffd81f3a
     tip_commit: 6ffa3bd2c3ccaa4a607ee2b46aa6fea531f3fe08
     integration_commits:
-      - a9ea9e0e
+      - 9aba4f95
     verification:
       targeted_tests: 45
       scoped_analyze_issues: 0
@@ -1739,15 +1739,15 @@ tasks:
       - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
       - P2-M2-R10-STAGE-ENCOUNTER-ROUTE-SELECTOR
     integration_commits:
-      - ac86e7b1
-      - 17e571dc
-      - 3bacf62d
-      - dc9c03cd
-      - 8130c9c5
-      - fd470c8e
-      - 697a4145
-      - a9ea9e0e
-      - 87e84a66
+      - b7142184
+      - 7f3ea4fe
+      - 8422be25
+      - cdc33b25
+      - 75a2db75
+      - 1a70b9c2
+      - c6e80a0e
+      - 9aba4f95
+      - e6574159
     verification:
       joint_targeted_tests: 183
       full_tests: 4913

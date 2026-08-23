@@ -26,8 +26,8 @@
 
 ### 主控集成
 
-- 来源集成提交：R08 `ac86e7b1` / `17e571dc`，R09 `3bacf62d` / `dc9c03cd` / `8130c9c5` / `fd470c8e` / `697a4145`，R10 `a9ea9e0e`；逐项 stable patch-id 与 source commit 一致。
-- 主控提交 `87e84a66` 只在 assembler 的 direct/mapping bridge 成对透传显式 objective tracker/event source，并新增 2 项联合接缝测试；不构造 controller、objective、token budget、mapper、默认值或 host route。
+- 来源集成提交：R08 `b7142184` / `7f3ea4fe`，R09 `8422be25` / `cdc33b25` / `75a2db75` / `1a70b9c2` / `c6e80a0e`，R10 `9aba4f95`；逐项 stable patch-id 与 source commit 一致。
+- 主控提交 `e6574159` 只在 assembler 的 direct/mapping bridge 成对透传显式 objective tracker/event source，并新增 2 项联合接缝测试；不构造 controller、objective、token budget、mapper、默认值或 host route。
 - 19 个合同、应用与数据测试文件联合 targeted：183/183；相对 Batch12 基线的 10 个变更 Dart 项 scoped analyze 0 issue，format 0 changed，`git diff --check` 通过。
 - 批末 full Flutter test：4913/4913 通过，exit 0。
 - fresh integration worktree 已执行 `flutter pub get` 和 build_runner，生成 126 个 gitignored outputs；63 个 `.g.dart` 存在，`libisar.dylib` 与主 checkout SHA-256 均为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
