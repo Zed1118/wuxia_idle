@@ -34,7 +34,7 @@
 ## 当前恢复点
 
 - 状态：P1 补强实现、targeted test 7/7、scoped analyze 0 issues、独立只读复审、fix 提交与新 READY 空提交均已完成。
-- 最后完成：Gate 已接收并验证 caller-provided `legacyContentStageIds`，并为每个 known assignment 实际执行 E05 resolver 联合合同；独立只读终审 0 findings（P0-P3）；代码交付 tip 为 `279f42bb`。
-- 下一步：仅等待主控整合；本分支不 merge `main`、不 push。
+- 最后完成：Gate 已接收并验证 caller-provided `legacyContentStageIds`，并为每个 known assignment 实际执行 E05 resolver 联合合同；独立只读终审 0 findings（P0-P3）；代码交付 tip 为 `d0ff3f7e`，已整合进 Batch7（`6144ac09` + `7bc11fe2` + `74bf4375`）。
+- 下一步：无切片级剩余任务；本分支不 merge `main`、不 push。
 - 已跑验证：第一版有效 RED 为目标文件/API 不存在；第一版 GREEN 为 6/6。P1 补强有效 RED 为缺少 required `legacyContentStageIds` API 而编译失败；补强 GREEN 为 `flutter test --no-pub --no-test-assets -j 1 test/data/validation/combat_catalog_migration_gate_test.dart` 通过 7/7；`flutter analyze --no-pub lib/data/validation/combat_catalog_migration_gate.dart test/data/validation/combat_catalog_migration_gate_test.dart` 为 0 issues；`dart format`、JSON 解析、`git diff --check` 与严格 5 文件白名单检查通过；独立只读终审 0 findings。
-- 阻塞项：无。L02 当前未登记在 task registry，本切片不需要且不会修改 registry。
+- 阻塞项：无。L02 已在 Batch7 task registry 登记为 `ready_reviewed`，登记提交为 `16200e81`。

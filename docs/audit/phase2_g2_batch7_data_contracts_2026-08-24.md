@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provided YAML loader/validator、S01→O01 纯映射、L02+E05 migration 联合 Gate 和二阶段事实同步。当前仍为 `in_progress`：主项目 analyze、全量测试和最终独立审查尚未全部收口，因此本文件不构成 READY 声明。
+Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provided YAML loader/validator、S01→O01 纯映射、L02+E05 migration 联合 Gate 和二阶段事实同步。组合 targeted、主项目 analyze、全量 4728 项测试与最终独立审查均已收口；终审唯一 P2 文档恢复点漂移已修正。Batch7 可生成 READY 恢复点。
 
 ## 交付内容
 
@@ -29,12 +29,15 @@ Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provi
 - O02 targeted：8/8；scoped analyze 2 文件 0 issue；独立审查无阻断缺陷。
 - L02 targeted：7/7；scoped analyze 2 文件 0 issue；补强后独立审查 0 findings。
 - 最终整合态组合 targeted：134/134；18 文件 scoped analyze 0 issue。
+- fresh integration worktree 执行 `flutter pub get` 并生成 gitignored `*.g.dart` 后，`flutter analyze --no-pub lib test`：0 issue（43.6s）。生成文件不进入 tracked diff。
+- `flutter test --no-pub`：4728/4728，`All tests passed!`，退出码 0（8m50s）。
+- 最终独立只读终审：P0 0、P1 0；发现的 1 组 P2 仅为 L01/O02/L02/S01 恢复点文档漂移，已同步为当前 READY tip 与已整合状态。
 - 各任务 `dart format`、`git diff --check` 和 owned-file 白名单均已通过；任务 worktree 均以 READY tip 收口。
 
-## READY 前待完成 Gate
+## READY Gate 结论
 
-- `flutter analyze --no-pub lib test`、`flutter test --no-pub`、最终 `git diff --check`。
-- 对最终 integration tip 做独立只读终审，并把 registry、Batch7 plan、本 audit 更新到同一恢复点。
+- 代码验证 tip：`16200e81`；文档收口仅同步审计、计划、registry 和任务恢复点，不改代码语义。
+- 主项目 analyze、全量测试、最终终审、`git diff --check` 与分支清洁性全部通过后，以 `[READY][CODEX][P2-G2-BATCH7]` 空提交封签。
 
 ## 冻结边界与后续
 

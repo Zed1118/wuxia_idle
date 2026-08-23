@@ -26,12 +26,12 @@
 - [x] M0-F01 仅同步可验证事实，所有 PROPOSED 仍明确标注未冻结。
 - [x] L01 loader、O02 纯映射与 L02+E05 migration 联合 Gate 完成主控 diff 复审和独立审查。
 - [x] 整合态组合 targeted tests 134/134，18 文件 scoped analyze 0 issue。
-- [ ] `flutter analyze --no-pub lib test`、全量测试与最终独立审查通过。
-- [ ] 所有任务 worktree clean 且 tip 为 `[READY]`，集成分支生成 Batch7 READY 恢复点。
+- [x] `flutter analyze --no-pub lib test` 0 issue、全量测试 4728/4728，最终独立审查 P0/P1 0，唯一 P2 文档漂移已修正。
+- [x] 所有任务 worktree clean 且 tip 为 `[READY]`，集成分支已满足 Batch7 READY 恢复点生成条件。
 
 ## 当前恢复点
 
-- 状态：O01、S01、M0-F01、L01、O02、L02 均已完成主控复审、独立审查并整合；Batch7 尚未 READY。
-- 最后完成：整合态 S01↔O01 映射与 L02+E05 migration 联合 Gate 共 134/134；18 文件 scoped analyze 0 issue；audit 已建立。
-- 下一步：运行主项目 analyze、全量测试、最终独立只读终审，更新 audit/registry 后生成 Batch7 READY 恢复点。
+- 状态：O01、S01、M0-F01、L01、O02、L02 均已完成主控复审、独立审查并整合；Batch7 Gate 全部通过，进入 READY 封签。
+- 最后完成：整合态组合 targeted 134/134；18 文件 scoped analyze 0 issue；主项目 analyze 0 issue；全量测试 4728/4728；最终终审 P0/P1 0，唯一 P2 文档漂移已修正。
+- 下一步：接续 Batch7 READY 开启后续整合批次；本分支不合并 `main`、不 push。
 - 阻塞项：production Blackwind objective、AttackToken enforce、入口表现与主线参与/连续 Run policy 仍未冻结；不阻塞本批合同工作。

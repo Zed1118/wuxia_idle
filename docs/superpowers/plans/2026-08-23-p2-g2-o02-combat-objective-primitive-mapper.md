@@ -74,10 +74,10 @@ mapper。该基线在任务启动时尚非 READY。八类 S01 ref 必须一一�
 ## 当前恢复点
 
 - 状态：实现、动态验证、独立审查、主会话验收、实现提交与 READY 收口均已完成；
-  代码交付 tip：`1b71b371`。
+  代码交付 tip：`94d595e9`，已整合进 Batch7（`cfcfa934` + `51051000`）并完成登记（`c2675fa5`）。
 - 最后完成：新增八类穷尽纯映射、caller 显式正 tick 校验与 Duration 乘法溢出
   fail-closed 检查；完成独立静态审查与主会话复核，未修改公共合同。
-- 下一步：等待主控后续整合；本任务不合并 `main`、不 push。
+- 下一步：无切片级剩余任务；本任务不合并 `main`、不 push。
 - 已跑验证：红测 0 pass / 1 load failure（预期缺 mapper）；绿测 8/8；scoped
   analyze 2 items / 0 issue；`dart format` 两文件 0 changed；`git diff --check`
   通过；diff 仅三份允许的新文件。

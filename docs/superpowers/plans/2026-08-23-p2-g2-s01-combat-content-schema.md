@@ -38,6 +38,6 @@
 
 - 状态：实现、验证、独立审查和主控整合均已完成；任务 tip 为 READY `d7cc6531`。
 - 最后完成：三份 typed def + 三份单测已整合到 Batch7；与 O01 八原语 subtype 对齐。
-- 下一步：由 L01 消费 schema，并由独立映射测试与 L02 migration Gate 验证跨合同语义；S01 本身不切 production host。
+- 后续验证：L01 已消费 schema，O02 穷尽映射与 L02 migration Gate 已完成跨合同验证并整合；S01 仍不切 production host。
 - 已跑验证：三份 targeted test 48/48 全过；scoped analyze（6 文件）0 issue；`dart format` 0 changed；`git diff --check` 净。全仓 analyze 4512 issue 均为 fresh worktree 缺 gitignored `.g.dart` 的既有基线（build_runner 被本任务禁止），0 条涉及本切片文件。
 - 阻塞项：production objective、具体调优值与 host 路由仍未冻结；不阻塞 L01 loader、O01 映射或 L02 migration Gate。

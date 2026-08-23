@@ -944,8 +944,23 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch7-data-contracts-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch7-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 935c04e1
+    validated_code_tip: 16200e81
+    integration_commits:
+      - de499750
+      - df48a8a7
+      - cfcfa934
+      - 51051000
+      - 6144ac09
+      - 7bc11fe2
+      - 74bf4375
+    verification:
+      targeted_tests: 134
+      full_tests: 4728
+      full_analyze_issues: 0
+      independent_review_p0_p1: 0
+      independent_review_p2_fixed: 1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch7-data-contracts.md

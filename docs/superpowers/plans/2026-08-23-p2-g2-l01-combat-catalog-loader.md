@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：实现和两轮主控补强完成；第一轮独立终审指出的重复 ID 叶子定位 P1 已修复，准备复审。
+- 状态：实现和两轮主控补强完成；第一轮独立终审指出的重复 ID 叶子定位 P1 已修复，增量复审 0 findings，已整合进 Batch7。
 - 已验证：两份 targeted tests 57/57；scoped analyze 4 文件 0 issue；`dart format` 与 `git diff --check` 通过。
 - 主控补强：所有 identifier、非有限 multiplier、migrated null encounter 与 malformed YAML 均在 source + 精确字段路径 fail closed；parsed DTO 集合不可变；archetype/encounter/role/spawn entry/objective item/stage/assignment encounter 重复均携带当前与首次声明位置；typed semantic `ArgumentError` 映射回 snake_case 叶子字段。
-- 下一步：提交修复和新的 READY 标记，由独立 reviewer 复核增量；通过后才允许主控整合。
+- 交付恢复点：任务分支 READY tip `8fe87847`；Batch7 整合提交 `de499750` + `df48a8a7`，任务登记提交 `fcc2730e`。本切片无剩余阻塞项。
