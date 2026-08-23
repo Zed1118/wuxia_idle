@@ -2131,8 +2131,20 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r17-migrated-encounter-settlement-adapter-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r17-migrated-encounter-settlement-adapter
-    status: in_progress
+    status: ready_reviewed
     base_commit: a952274781a11283ff5d7675ad270034a94cfd69
+    implementation_commit: 394b442c
+    tip_commit: 5676460e82b7141c3be7f3ce6bba7af494044b24
+    integration_commits:
+      - 9dd15905
+      - ef92df28
+      - 2821fc52
+      - e8a5fad9
+      - 1e31f2a2
+    verification:
+      targeted_tests: 94
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-BATCH15-STRUCTURAL-RUNTIME-INTEGRATION
       - P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
@@ -2150,8 +2162,22 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r18-mainline-stage-runtime-admission-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r18-mainline-stage-runtime-admission
-    status: in_progress
+    status: ready_reviewed
     base_commit: a952274781a11283ff5d7675ad270034a94cfd69
+    implementation_commit: e862b308
+    tip_commit: 05edb4867b2c3bb9ec50615480040344a3bc9609
+    integration_commits:
+      - fc1817c7
+      - 475c5b82
+      - 72beb491
+      - 4b8300fd
+      - b60740d3
+      - 06e34157
+      - 8262fafd
+    verification:
+      targeted_tests: 93
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R14-MAINLINE-RUN-ADMISSION
       - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
@@ -2187,6 +2213,18 @@ tasks:
       - 0e63a2d8
       - 6ec3d462
       - 93150353
+      - 9dd15905
+      - ef92df28
+      - 2821fc52
+      - e8a5fad9
+      - 1e31f2a2
+      - fc1817c7
+      - 475c5b82
+      - 72beb491
+      - 4b8300fd
+      - b60740d3
+      - 06e34157
+      - 8262fafd
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch16-transactional-host-ready-seams.md

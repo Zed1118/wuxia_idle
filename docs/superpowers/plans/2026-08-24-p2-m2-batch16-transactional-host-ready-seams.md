@@ -36,5 +36,7 @@
 - [x] 登记 R12b/R12c/R17/R18 与 Batch16 的依赖、owned files 和 Gate。
 - [x] Batch16 integration 恢复 126 build outputs、63 个 `.g.dart` 与正确 dylib SHA。
 - [x] R12c 完成 Pi/DeepSeek 两轮只读审查、89/89 与 Codex 独立终审，五个非空提交已集成并由主控复跑 89/89。
-- [ ] 三来源完成外部工具证据、测试、独立复审与 READY。
+- [x] R17 完成 Pi/DeepSeek 两轮只读审查、94/94 与 Codex 独立终审，五个非空提交已集成并由主控复跑 94/94。
+- [x] R18 在关闭 composite commit 绕过 P1 后完成 Qoder 有效终审、93/93 与 Codex 独立终审，七个非空提交已集成并由主控复跑 93/93。
+- [x] 三来源完成外部工具证据、测试、独立复审与 READY。
 - [ ] 主控集成、联合/full 验证、终审与 Batch16 READY。
