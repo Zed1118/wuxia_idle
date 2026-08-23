@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/combat_encounter_def.dart';
 import 'package:wuxia_idle/data/validation/combat_objective_primitive_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/objective_controller.dart';
 
 void main() {
   const tickDuration = Duration(milliseconds: 25);
@@ -265,7 +266,11 @@ void main() {
           composition(rule),
           tickDuration: tickDuration,
         );
-        expect(mapped.completionRule, rule);
+        final expectedRule = switch (rule) {
+          CombatObjectiveCompletionRule.all => ObjectiveCompletionRule.all,
+          CombatObjectiveCompletionRule.any => ObjectiveCompletionRule.any,
+        };
+        expect(mapped.completionRule, expectedRule);
         expect(mapped.clauses.map((clause) => clause.id), ['clear', 'exit']);
         expect(mapped.clauses[0].objective, isA<DefeatTargetsObjective>());
         expect(mapped.clauses[1].objective, isA<ReachCheckpointObjective>());
@@ -284,15 +289,13 @@ void main() {
         tickDuration: tickDuration,
       );
 
+      expect(first, isNot(same(second)));
       expect(
         first.clauses.first.objective,
         isNot(second.clauses.first.objective),
       );
       expect(
-        () => second.clauses.first.objective.advance(
-          first.clauses.first.objective.initialProgress,
-          TargetDefeated('target'),
-        ),
+        () => second.advance(first.initialProgress, TargetDefeated('target')),
         throwsStateError,
       );
     });

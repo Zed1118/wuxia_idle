@@ -1,41 +1,16 @@
 import '../../features/battle/domain/phase0a/encounter_objective.dart';
+import '../../features/battle/domain/phase0a/objective_controller.dart';
 import '../defs/combat_encounter_def.dart';
 
-/// One mapped objective with the stable clause id preserved.
-final class MappedCombatObjectiveClause {
-  const MappedCombatObjectiveClause._({
-    required this.id,
-    required this.objective,
-  });
-
-  final String id;
-  final EncounterObjective objective;
-}
-
-/// Pure mapped gateway for a flat content composition.
-///
-/// This type deliberately carries, but does not execute, the explicit `all`
-/// or `any` rule. EncounterFlow remains responsible for aggregate progress,
-/// terminal and failure semantics after those contracts are frozen.
-final class MappedCombatObjectiveComposition {
-  MappedCombatObjectiveComposition._({
-    required this.completionRule,
-    required Iterable<MappedCombatObjectiveClause> clauses,
-  }) : clauses = List<MappedCombatObjectiveClause>.unmodifiable(clauses);
-
-  final CombatObjectiveCompletionRule completionRule;
-  final List<MappedCombatObjectiveClause> clauses;
-}
-
-/// Maps every clause in a content composition without inventing flow logic.
-MappedCombatObjectiveComposition mapCombatObjectiveComposition(
+/// Maps a content composition to a fresh pure-domain controller.
+ObjectiveController mapCombatObjectiveComposition(
   CombatObjectiveCompositionRef composition, {
   required Duration tickDuration,
-}) => MappedCombatObjectiveComposition._(
-  completionRule: composition.completionRule,
+}) => ObjectiveController(
+  completionRule: _mapCompletionRule(composition.completionRule),
   clauses: [
     for (final clause in composition.clauses)
-      MappedCombatObjectiveClause._(
+      ObjectiveClause(
         id: clause.id,
         objective: mapCombatObjectivePrimitive(
           clause.primitive,
@@ -44,6 +19,13 @@ MappedCombatObjectiveComposition mapCombatObjectiveComposition(
       ),
   ],
 );
+
+ObjectiveCompletionRule _mapCompletionRule(
+  CombatObjectiveCompletionRule completionRule,
+) => switch (completionRule) {
+  CombatObjectiveCompletionRule.all => ObjectiveCompletionRule.all,
+  CombatObjectiveCompletionRule.any => ObjectiveCompletionRule.any,
+};
 
 /// Maps one immutable content reference to a new pure-domain objective.
 ///
