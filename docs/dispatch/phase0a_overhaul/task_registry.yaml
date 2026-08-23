@@ -961,7 +961,8 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-o01-objective-primitives-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-o01-objectives
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: dc08aebb
     base_commit: 935c04e1
     owned_files:
       - lib/features/battle/domain/phase0a/encounter_objective.dart
