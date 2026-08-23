@@ -639,8 +639,15 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch3-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch3-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 1150c56a
+    ready_marker: "[READY][CODEX][P2-G2-BATCH3] 完成遭遇生产接缝"
+    verification:
+      - three new seam suites 19/19
+      - wave headless and assembler regression 44/44
+      - retry screen and mainline regression 50/50
+      - flutter analyze --no-pub 0 issues
+      - two independent Codex reviews 0 P0/P1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch3-encounter-seams.md
@@ -656,7 +663,9 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d03-battle-flow-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d03-battle-flow
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: ca3c3307
+    integration_commit: 8a5e10ed
     protected_behavior:
       - wave flow event state outcome and RNG behavior remain unchanged
       - production assembler keeps its existing concrete return type
@@ -667,7 +676,11 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-d04-token-observe-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d04-token-observe
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: b5eed546
+    implementation_commit: dd439a75
+    integration_commit: 34ae74e4
+    correction_commit: 49bc45f4
     protected_behavior:
       - default session path is byte-for-byte intent compatible
       - observation never filters reorders or mutates enemy intents
@@ -678,8 +691,10 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-e02-encounter-compat-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e02-encounter-compat
-    status: waiting_dependency
-    wake_condition: D03 interface reviewed and integrated
+    status: ready_reviewed
+    tip_commit: ac69ee42
+    integration_commit: d8e09462
+    correction_commit: 49bc45f4
     protected_behavior:
       - compatibility wrapper delegates to the legacy wave flow
       - same seed and commands yield identical state events records and outcome
