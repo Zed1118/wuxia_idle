@@ -1996,10 +1996,6 @@ tasks:
       - fc55be7d
       - 31f3fab1
       - 9c23496f
-      - c0d4e34a
-      - fc0694b6
-      - a152f164
-      - b88b16bd
     verification:
       targeted_tests: 65
       scoped_analyze_issues: 0
@@ -2039,6 +2035,10 @@ tasks:
       - fc55be7d
       - 31f3fab1
       - 9c23496f
+      - c0d4e34a
+      - fc0694b6
+      - a152f164
+      - b88b16bd
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch15-structural-runtime.md

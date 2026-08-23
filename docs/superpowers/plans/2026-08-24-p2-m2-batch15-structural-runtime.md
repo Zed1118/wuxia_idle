@@ -34,4 +34,5 @@
 - [x] R15 完成 Pi/DeepSeek 两轮只读审查、来源 65/65 与 Codex 独立终审，五个非空提交已集成。
 - [x] V01 完成 Qoder/Qwen3.8-Max 两轮只读审查、两项 P2 修正与 51/51 复验，四个非空提交已按 stable patch-id 集成。
 - [x] 三来源实现、外部 CLI 证据、独立复审与 READY 全部完成。
-- [ ] 主控集成、联合/full 验证、独立终审与 Batch15 READY。
+- [x] 主控联合 targeted 170/170、changed-Dart analyze 0、format/diff/YAML/path/main refs 闸门与 clean full 4988/4988 完成。
+- [ ] 独立集成终审复核 registry P2 已关闭，记录最终证据并追加 Batch15 READY。

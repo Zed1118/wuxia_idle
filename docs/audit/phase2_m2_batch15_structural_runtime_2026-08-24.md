@@ -26,12 +26,20 @@
 - 四 worktree 均执行 `flutter pub get --enforce-lockfile` 与 build_runner，分别生成 126 个 gitignored outputs；63 个 `.g.dart` 存在。
 - 四份 `libisar.dylib` SHA-256 均为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
 
-## 待完成验证
+## 集成验证
 
-待三来源 READY 后补充实际 Qoder/Pi 证据、来源/集成提交、联合 targeted、scoped analyze、full suite、仓库闸门、独立终审与最终 READY。
+- 三个来源共 15 个非空提交均逐项通过 stable patch-id；集成内容与 R14 `ddb931d0`、R15 `66d9a5e1`、V01 修后 `bb26671b` 的 owned-file tree 一致。
+- 15 文件去重联合 targeted 170/170 PASS；changed-Dart scoped analyze 5 items、0 issue；format 5 files、0 changed。
+- registry YAML 82 tasks、0 duplicate、0 dangling；`git diff --check`、owned-path、clean status 与中文动宾提交守卫通过。
+- 首轮 compact full 在约第 1550 项出现一次未稳定复现的 transient，未把红态作为验收证据并主动终止该轮；随后使用 `--fail-fast --reporter expanded` 从头完整重跑，越过原计数点并最终 4988/4988 PASS。集成实现未为该 transient 做掩盖性修改。
+- full 重跑后本地 `main` 与 `origin/main` 仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`；集成分支不修改或推进主分支。
 
 ## 已完成来源
 
 - R14：计划 `2f68253c`、实现 `387b44cc`、初始证据/READY 后独立复审发现两项证据 P2：canonical const 跨调用 identity 假证明与恢复点滞后。`0262adaf` 改为单次 admission 的准确异常类型/消息/零 admission，`99bddf74` / `e58d2187` 同步复审证据，新 READY `ddb931d0`；修后独立复审 P0/P1/P2=0。五文件去重 54/54、scoped analyze 0。集成提交 `7ac204e6` / `477576f9` / `faf98b48` / `6883617f` / `c6f0387b` / `9e5049cc` 的 stable patch-id 与来源逐项一致；主控复跑 54/54、analyze 0。
 - R15：计划 `a10edae6`、Pi/API 证据 `535b59e2`、红测 `cfe1e5c7`、实现 `a29206d5`、验收证据 `dfde55cb`，来源 READY `66d9a5e1`。Pi 0.84.1 使用精确 `deepseek/deepseek-v4-flash`、thinking `high`、只读工具完成设计与终审，两轮均 PASS；Codex 独立复审 P0/P1/P2=0。四文件去重 65/65、scoped analyze 0、format/diff/path/status clean。集成提交 `30d3fbc8` / `04e7f984` / `fc55be7d` / `31f3fab1` / `9c23496f` 保留来源内容；production host、persistence、共享占用反向接线、成长 cap/比例与 durable claim 继续 Gate。
 - V01：计划 `663f6e1a`、初始实现 `934d0cfd`、Qoder 验收证据 `6d545ea4`，前一 READY `277bbabd`。Qoder CLI 1.1.28 使用精确 `Qwen3.8-Max`、reasoning `high`、Read/Grep/Glob-only 完成设计与终审，P0/P1=0。Codex 初审提出“0 数值/公式”措辞过宽与五关单 test 定位粒度两项 P2，`5517ec10` 将边界精确为无 production/candidate tuning 数值/公式变更，并拆成五个 stage ID 命名 case；新 READY `bb26671b` 修后独立复审 P0/P1/P2=0。六文件去重 51/51、scoped analyze 0、format/diff/path/status clean。集成提交 `c0d4e34a` / `fc0694b6` / `a152f164` / `b88b16bd` 的 stable patch-id 与来源逐项一致；objective 可执行性、candidate 晋升、production host/data、性能/Profile 与真人试玩继续 Gate。
+
+## 待完成收口
+
+独立集成终审已确认实现与 15 个来源 patch 无行为缺陷，仅发现 V01 四个集成 commit 在 registry 误挂 R15 的文档 P2；本次已移至 Batch15 总清单。待审查者复核 P0/P1/P2 清零后，记录 validated commit 并追加精确 READY。
