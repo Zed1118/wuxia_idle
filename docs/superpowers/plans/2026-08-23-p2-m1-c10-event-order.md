@@ -11,6 +11,8 @@
 - `aggregateKey`、`priority` 和 `feedKind` 仅为聚合/优先级 schema，不生成中文文案或最终数值。
 - 表现 feed 是不可变投影；投影不回写或重算领域事件。
 - 事件 ID、tick、tie-break、priority 必须合法，单次排序输入不得重复事件 ID。
+- 非表现事件不得携带 `aggregateKey`/`priority`；表现事件必须显式提供两者。
+- `fromOrderedEvents` 只接受已按领域顺序排列且无重复 ID 的输入，违反时 fail closed。
 
 ## 验证
 
@@ -19,4 +21,4 @@
 
 ## 恢复点与边界
 
-本片只新增三白名单文件。生产接线、现有 `Phase0aEvent` 迁移、UI/VFX/SFX、聚合算法和最终数值留给 G1 审核及后续任务。
+本片只新增三白名单文件。生产接线、现有 `Phase0aEvent` 迁移、UI/VFX/SFX、聚合算法和最终数值留给 G1 审核及后续任务。此次复核补齐了 feed 输入顺序与非表现字段约束，仍未接生产。

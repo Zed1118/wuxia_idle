@@ -7,8 +7,8 @@ CombatEventRecord event(
   CombatEventStage stage, {
   int tick = 0,
   int tieBreak = 0,
-  String aggregateKey = 'action',
-  int priority = 0,
+  String? aggregateKey,
+  int? priority,
   CombatFeedKind feedKind = CombatFeedKind.none,
 }) => CombatEventRecord(
   eventId: id,
@@ -67,7 +67,7 @@ void main() {
         priority: 2,
         feedKind: CombatFeedKind.impact,
       ),
-      event('damage', CombatEventStage.damageAndPosture, priority: 99),
+      event('damage', CombatEventStage.damageAndPosture),
     ]);
 
     final feed = CombatPresentationFeed.fromOrderedEvents(ordered);
@@ -102,6 +102,34 @@ void main() {
         'wrong-stage',
         CombatEventStage.status,
         feedKind: CombatFeedKind.status,
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('feed 对未排序输入和重复 ID fail closed，非表现事件不携带 feed 字段', () {
+    final presentation = event(
+      'presentation',
+      CombatEventStage.presentation,
+      aggregateKey: 'impact',
+      priority: 1,
+      feedKind: CombatFeedKind.impact,
+    );
+    final damage = event('damage', CombatEventStage.damageAndPosture);
+    expect(
+      () => CombatPresentationFeed.fromOrderedEvents([presentation, damage]),
+      throwsArgumentError,
+    );
+    expect(
+      () => CombatPresentationFeed.fromOrderedEvents([damage, damage]),
+      throwsArgumentError,
+    );
+    expect(
+      () => event(
+        'domain-with-feed-fields',
+        CombatEventStage.damageAndPosture,
+        aggregateKey: 'not-needed',
+        priority: 1,
       ),
       throwsArgumentError,
     );

@@ -19,22 +19,32 @@ final class CombatEventRecord {
     required this.tick,
     required this.stage,
     required this.tieBreak,
-    required this.aggregateKey,
-    required this.priority,
+    this.aggregateKey,
+    this.priority,
     this.feedKind = CombatFeedKind.none,
   }) {
     _requireText(eventId, 'eventId');
-    _requireText(aggregateKey, 'aggregateKey');
     _requireNonNegative(tick, 'tick');
     _requireNonNegative(tieBreak, 'tieBreak');
-    _requireNonNegative(priority, 'priority');
-    if (feedKind != CombatFeedKind.none &&
-        stage != CombatEventStage.presentation) {
-      throw ArgumentError.value(
-        feedKind,
-        'feedKind',
-        'feed events must use the presentation stage',
-      );
+    if (feedKind == CombatFeedKind.none) {
+      if (aggregateKey != null || priority != null) {
+        throw ArgumentError(
+          'non-presentation events must not carry feed fields',
+        );
+      }
+    } else {
+      if (stage != CombatEventStage.presentation) {
+        throw ArgumentError.value(
+          feedKind,
+          'feedKind',
+          'feed events must use the presentation stage',
+        );
+      }
+      _requireText(aggregateKey, 'aggregateKey');
+      if (priority == null) {
+        throw ArgumentError.value(priority, 'priority');
+      }
+      _requireNonNegative(priority!, 'priority');
     }
   }
 
@@ -42,8 +52,8 @@ final class CombatEventRecord {
   final int tick;
   final CombatEventStage stage;
   final int tieBreak;
-  final String aggregateKey;
-  final int priority;
+  final String? aggregateKey;
+  final int? priority;
   final CombatFeedKind feedKind;
 
   @override
@@ -106,8 +116,8 @@ final class CombatPresentationFeedEntry {
 
   final String eventId;
   final int tick;
-  final String aggregateKey;
-  final int priority;
+  final String? aggregateKey;
+  final int? priority;
   final CombatFeedKind kind;
 
   @override
@@ -132,6 +142,7 @@ final class CombatPresentationFeed {
   factory CombatPresentationFeed.fromOrderedEvents(
     Iterable<CombatEventRecord> events,
   ) {
+    _validateOrdered(events);
     final entries = <CombatPresentationFeedEntry>[];
     for (final event in events) {
       if (event.feedKind == CombatFeedKind.none) continue;
@@ -139,8 +150,8 @@ final class CombatPresentationFeed {
         CombatPresentationFeedEntry(
           eventId: event.eventId,
           tick: event.tick,
-          aggregateKey: event.aggregateKey,
-          priority: event.priority,
+          aggregateKey: event.aggregateKey!,
+          priority: event.priority!,
           kind: event.feedKind,
         ),
       );
@@ -149,8 +160,22 @@ final class CombatPresentationFeed {
   }
 }
 
-void _requireText(String value, String name) {
-  if (value.trim().isEmpty) {
+void _validateOrdered(Iterable<CombatEventRecord> events) {
+  CombatEventRecord? previous;
+  final ids = <String>{};
+  for (final event in events) {
+    if (!ids.add(event.eventId)) {
+      throw ArgumentError.value(event.eventId, 'eventId', 'must be unique');
+    }
+    if (previous != null && CombatEventOrder._compare(previous, event) > 0) {
+      throw ArgumentError('events must already be ordered');
+    }
+    previous = event;
+  }
+}
+
+void _requireText(String? value, String name) {
+  if (value == null || value.trim().isEmpty) {
     throw ArgumentError.value(value, name);
   }
 }
