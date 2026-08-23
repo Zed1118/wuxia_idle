@@ -61,6 +61,16 @@ CombatCatalogReferenceIndex _referenceIndex() => CombatCatalogReferenceIndex(
   dropGroupIds: const ['fixture_drop'],
   sfxGroupIds: const ['fixture_sfx'],
   visualVariantIds: const ['fixture_visual'],
+  objectiveTargetIds: const [
+    'target_encounter_alpha',
+    'target_encounter_beta',
+    'target_encounter_unknown',
+    'target_encounter_migrated',
+  ],
+  objectiveAnchorIds: const [],
+  objectiveEntityIds: const [],
+  objectiveCheckpointIds: const [],
+  objectiveMarkerIds: const [],
 );
 
 CombatCatalogManifestDef _manifestFrom(

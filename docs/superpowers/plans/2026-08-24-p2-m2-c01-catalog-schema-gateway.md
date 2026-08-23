@@ -46,10 +46,12 @@
 
 ## 当前恢复点
 
-- 状态：实现与验证完成，准备提交并追加 READY 就绪标记。
-- 最后完成：新增 `CombatCatalogReferenceIndex`；升级 encounter/objective/archetype typed defs；同步 exact-key validator、source-path loader、composition mapper 与全部 catalog fixture。初始红测在离线生成 `.dart_tool` 后因缺少新类型/参数按预期编译失败；实现后转绿。
-- 下一步：常规实现提交，复核树干净，追加 `[READY][CODEX][P2-M2-C01]` 空提交并交主控独立验收。
-- 已跑验证：8 份 targeted test 逐文件执行，共 137/137 通过；`flutter analyze --no-pub` 覆盖 15 个相关 Dart 文件，0 issue；`dart format` 15 文件 0 changed；`git diff --check` 通过。
+- 状态：Batch10 终审 P1 返修实现、验证与普通 fix commit 完成，待主控独立验收；按主控要求不追加 Batch10 READY。返修分支 `codex/phase2-m2-c01-objective-reference-fix-20260824`，基线 `3ba090c6a076a67a06f9b11601b2d6341bcf3add`。
+- P1 事实：旧 `CombatCatalogReferenceIndex` 没有 objective 权威 namespace，`CombatCatalogManifestDef` 与 loader preflight 都未校验 7 个含 ID primitive，因此“关闭每个 cross-reference”的原声明不成立。
+- 红证据：fresh worktree 先出现 Flutter native-assets `Bad state: No element`；执行 `flutter pub get --offline` 后，`combat_catalog_schema_gateway_test.dart` 按预期在编译期因 `objectiveTargetIds` 构造参数/getter 不存在而失败，证明测试先于实现。
+- 最后完成：增加 caller-required `objectiveTargetIds / objectiveAnchorIds / objectiveEntityIds / objectiveCheckpointIds / objectiveMarkerIds`；typed manifest 穷尽遍历每个 clause 的 7 个含 ID primitive；loader 在 typed 构建前逐 leaf 校验，list 路径带索引。`defeatTargets / pursueTarget / defeatCommander` 共用 target namespace，未与 spawn entry 派生绑定。
+- 下一步：交主控独立验收；本分支不打 Batch10 READY。
+- 已跑验证：C01 8 份 targeted test 逐文件执行，共 140/140 通过；因本基线未集成 R03 controller 文件，另在已冻结 R03 worktree 逐文件复跑 objective domain/controller/mapper 3 份共 29/29。`flutter analyze --no-pub` 覆盖本分支 16 个相关 Dart 文件，0 issue；`dart format --output=none --set-exit-if-changed` 7 个变更 Dart 文件 0 changed；`git diff --check` 通过。
 - 生产接线：本切片依授权不接 `GameRepository`、production IO/YAML 或 host routing；交付的是后续 M2 内容与 host 任务的公共 gateway，不冒充 production 已上线。
 - 红线影响：未改生产 data、奖励、伤势、save、UI、数值公式或调优值；所有数值和引用均由 caller 显式提供，无 Dart 中文玩家文案。
-- 残留风险：future host 必须从权威内容源组装完整 reference index；nested objective、失败组合、阶段切换与残敌 flow 未冻结且未实现。无当前切片阻塞。
+- 残留风险：future host 必须从权威内容源组装新增的五个 namespace；nested objective、失败组合、阶段切换与残敌 flow 未冻结且未实现。无当前切片阻塞。

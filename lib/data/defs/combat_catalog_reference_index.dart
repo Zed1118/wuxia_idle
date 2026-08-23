@@ -5,8 +5,8 @@ import 'dart:collection';
 /// The catalog schema deliberately does not load or infer these external
 /// content families. A production or test caller must assemble the complete
 /// known-id universe from its own authoritative sources, then the manifest
-/// validates every archetype and spawn reference against it. No namespace has
-/// a fallback id or placeholder.
+/// validates every archetype, spawn and objective reference against it. No
+/// namespace has a fallback id or placeholder.
 final class CombatCatalogReferenceIndex {
   CombatCatalogReferenceIndex({
     required Iterable<String> entranceIds,
@@ -18,6 +18,11 @@ final class CombatCatalogReferenceIndex {
     required Iterable<String> dropGroupIds,
     required Iterable<String> sfxGroupIds,
     required Iterable<String> visualVariantIds,
+    required Iterable<String> objectiveTargetIds,
+    required Iterable<String> objectiveAnchorIds,
+    required Iterable<String> objectiveEntityIds,
+    required Iterable<String> objectiveCheckpointIds,
+    required Iterable<String> objectiveMarkerIds,
   }) : entranceIds = _checkedIds(entranceIds, 'entranceIds'),
        positionIds = _checkedIds(positionIds, 'positionIds'),
        behaviorIds = _checkedIds(behaviorIds, 'behaviorIds'),
@@ -26,7 +31,27 @@ final class CombatCatalogReferenceIndex {
        postureProfileIds = _checkedIds(postureProfileIds, 'postureProfileIds'),
        dropGroupIds = _checkedIds(dropGroupIds, 'dropGroupIds'),
        sfxGroupIds = _checkedIds(sfxGroupIds, 'sfxGroupIds'),
-       visualVariantIds = _checkedIds(visualVariantIds, 'visualVariantIds');
+       visualVariantIds = _checkedIds(visualVariantIds, 'visualVariantIds'),
+       objectiveTargetIds = _checkedIds(
+         objectiveTargetIds,
+         'objectiveTargetIds',
+       ),
+       objectiveAnchorIds = _checkedIds(
+         objectiveAnchorIds,
+         'objectiveAnchorIds',
+       ),
+       objectiveEntityIds = _checkedIds(
+         objectiveEntityIds,
+         'objectiveEntityIds',
+       ),
+       objectiveCheckpointIds = _checkedIds(
+         objectiveCheckpointIds,
+         'objectiveCheckpointIds',
+       ),
+       objectiveMarkerIds = _checkedIds(
+         objectiveMarkerIds,
+         'objectiveMarkerIds',
+       );
 
   final UnmodifiableSetView<String> entranceIds;
   final UnmodifiableSetView<String> positionIds;
@@ -37,6 +62,11 @@ final class CombatCatalogReferenceIndex {
   final UnmodifiableSetView<String> dropGroupIds;
   final UnmodifiableSetView<String> sfxGroupIds;
   final UnmodifiableSetView<String> visualVariantIds;
+  final UnmodifiableSetView<String> objectiveTargetIds;
+  final UnmodifiableSetView<String> objectiveAnchorIds;
+  final UnmodifiableSetView<String> objectiveEntityIds;
+  final UnmodifiableSetView<String> objectiveCheckpointIds;
+  final UnmodifiableSetView<String> objectiveMarkerIds;
 }
 
 UnmodifiableSetView<String> _checkedIds(Iterable<String> values, String field) {

@@ -29,4 +29,24 @@
 
 ## 验证记录
 
-待来源 READY 后补写：提交链、主控 diff 复审、targeted、scoped analyze、联合测试、独立审查和最终 READY tip。
+- C01：实现 `fb420893`、READY `925f2908`、集成 `b195571b`；主控复跑 137/137，scoped analyze 0，独立复审 P0/P1/P2=0。
+- R02：实现链 `e6800ace` → `56ff3169` → `ef18fcb0`、READY `150e518a`、集成链 `c40921cd` → `c87bb751` → `dc9f7c69`；主控复跑 60/60，scoped analyze 0，独立复审 P0/P1/P2=0。
+- R02 首版自造 claim codec/ledger 与第二版 canonical alias 均在集成前被拒绝并修复；最终复用 shared `RewardClaimKey`，不声称进程内 guard 具备 durable exactly-once。
+- R01：实现 `eefab0aa`、READY `b9d07314`、集成 `f5e6abe0`；主控复跑 36/36，scoped analyze 0，独立复审 P0/P1/P2=0。实时 replay 只允许合格闲置人类/机器人，headless replay、扫荡与首通继续使用当前领队；连续 run 锁定参与者与不透明 loadout snapshot，并要求外部 battle-eligibility 事实后才能推进下一关。
+- C01 READY 已唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`；R03 实现 `4c2c44e2`、READY `02ab6df5`，主控复跑 29/29、scoped analyze 0、独立复审 P0/P1/P2=0。该后续运行时切片以 `b195571b` 为基线，将在 Batch10 READY 后进入下一集成批，不属于 Batch10 READY 的替代验收。
+- G7：实现 `381d591b`、验证记录 `ffd32597`、READY `df6dafc5`、集成 `993e1189` → `99c6dd3f`；主控复跑 45/45，scoped analyze 0，Codex 独立复审 P0/P1/P2=0。13.5–21 万只保留为旧 3v3 历史测量记录；当前证据明确拆分 calculator 满 build 探针与 Ch1 起手画像 2310 次真实 reducer 路径，未伪称后者覆盖满 build。
+
+## 集成态联合验证
+
+- C01 + R01 + R02 + G7 联合 targeted：23 个测试文件，265/265 通过；其中 Phase 0A 全内容报告 `content=154; proficiencyStages=5; runs=2310; maxDamage=4419`。
+- `flutter analyze --no-pub`：34 个变更 Dart 项 0 issue；额外 Phase 0A 全内容诊断与 truth-source guard 2 项 0 issue。
+- task/decision registry YAML parse、试玩脚本 `bash -n`、活动范围退役 simulator 引用扫描、`git diff --check` 全部通过。
+- `main` 与 `origin/main` 均保持 `e292d3a0`，本批全部变更留在独立集成分支。
+- Batch10 仅待最终集成态独立 P0/P1/P2 复审和 READY tip。
+
+## 终审 P1 返修事实
+
+- 后续终审发现：`CombatCatalogReferenceIndex` 当时只关闭 archetype/spawn 引用，7 个含 ID objective primitive 既未被 typed manifest 校验，也未被 loader 做 source-aware preflight；因此上述“独立复审 P0/P1/P2=0”是当时记录，不能替代这个新 P1 的返修验收。
+- 返修分支：`codex/phase2-m2-c01-objective-reference-fix-20260824`，基线 `3ba090c6a076a67a06f9b11601b2d6341bcf3add`。修复增加 target/anchor/entity/checkpoint/marker 五个 caller-required namespace，typed manifest 覆盖全部 7 个含 ID primitive，loader 保留 source + clause + leaf（list 含索引）诊断。
+- 范围仍是内容中立合同：0 production 默认，0 production data/host/UI/save/reward/tuning；target namespace 由 caller 权威提供，不从 spawn entry 派生。返修普通 commit 完成后仍不直接标记 Batch10 READY，须交主控独立验收。
+- 返修验证：C01 8 份 targeted 140/140，scoped analyze 16 项 0 issue，format 0 changed，`git diff --check` 通过；已冻结 R03 worktree 的 objective domain/controller/mapper 回归 29/29。
