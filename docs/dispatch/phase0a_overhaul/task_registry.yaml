@@ -556,8 +556,15 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch2-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch2-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 6da121cf
+    ready_marker: "[READY][CODEX][P2-G2-BATCH2] 完成遭遇基础合同"
+    verification:
+      - three new contract suites 64/64
+      - realtime reducer and headless regression 63/63
+      - mainline live/headless and wave-flow regression 38/38
+      - flutter analyze --no-pub 0 issues
+      - two independent Codex reviews 0 P0/P1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
@@ -575,7 +582,10 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d01-spawn-director-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d01-spawn-director
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: e453e344
+    integration_commit: 93ef5c51
+    correction_commit: 8c9009f6
     protected_behavior:
       - total reserve count and active count are separate
       - thresholds, active cap, warning, and grace are caller supplied
@@ -591,7 +601,12 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-d02-attack-token-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d02-attack-token
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: edd88b6a
+    integration_commit: 3c12e8cc
+    correction_commits:
+      - b8746f76
+      - 8c9009f6
     protected_behavior:
       - melee ranged charge and support budgets are explicit inputs
       - offscreen high-impact and spawn-grace requests fail closed
@@ -607,7 +622,9 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-e01-participation-request-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e01-participation-request
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 7a540016
+    integration_commit: 45884053
     protected_behavior:
       - content character loadout participation controller clock and entry are explicit
       - request never resolves current leader or chooses a fallback participant
