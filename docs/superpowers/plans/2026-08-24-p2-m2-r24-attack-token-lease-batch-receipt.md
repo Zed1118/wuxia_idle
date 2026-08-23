@@ -86,17 +86,17 @@ before/mutations/after receipt。回执只观察同一批已冻结输入与已�
 
 ## CLAUDE §8.2 验收 checklist
 
-- [ ] 生产接线如实：receipt 只接 R12b Session 成功尾段；R12c
+- [x] 生产接线如实：receipt 只接 R12b Session 成功尾段；R12c
   assembler 已能透传 gate/runtime，host 激活仍为 Gate。
-- [ ] 有效红灯后完成 R24 + R12b/R12c/session/observer 逐项 targeted；
+- [x] 有效红灯后完成 R24 + R12b/R12c/session/observer 逐项 targeted；
   禁止 full suite。
-- [ ] changed Dart scoped analyze 0 issue；format/diff/path/status clean。
-- [ ] 红线影响为 0：零 YAML/数值/玩家文案/三系/在线离线/反主流/
+- [x] changed Dart scoped analyze 0 issue；format/diff/path/status clean。
+- [x] 红线影响为 0：零 YAML/数值/玩家文案/三系/在线离线/反主流/
   save/UI 变更。
-- [ ] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high
+- [x] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high
   完成实现前和最终两轮 Read/Grep/Find/Ls-only 审查；Codex 独立
   P0/P1/P2 归零。
-- [ ] 中文动宾小提交，最后追加精确 READY 空提交。
+- [x] 中文动宾小提交；本证据提交后追加精确 READY 空提交。
 
 ## Pi 实现前只读审查
 
@@ -122,8 +122,53 @@ before/mutations/after receipt。回执只观察同一批已冻结输入与已�
 4. 运行 changed analyze/format/diff/path/status，Pi 最终 diff 只读审查，回填
    证据并追加 READY。
 
-- 状态：实现前审查完成，计划已冻结，待进入红测。
-- 最后完成：Pi 两项 P1 与五项 P2 已转为实现/测试约束。
-- 下一步：补 R24 测试并获取缺失 receipt API 有效红灯。
-- 已跑验证：Pi 实现前只读审查；未跑测试。
+- 状态：代码、测试、两轮 Pi 审查与 Codex 独立终审均已收口，待追加
+  READY 空提交。
+- 最后完成：Pi final follow-up 确认 test/source guard 收紧有效，最终
+  P0/P1/P2=0/0/0。
+- 下一步：提交本证据，检查精确路径与 clean status，追加 READY。
+- 已跑验证：targeted 66/66；changed analyze 0 issue；format/diff/path/status
+  clean；Pi final 与 follow-up 均为 FINAL PASS。
 - 阻塞：无；host/durable/timeline/tuning 如上继续 Gate。
+
+## 实现与提交证据
+
+- `f630fd8a`：冻结攻击令牌租约回执计划。
+- `a79e6c7e`：先提交缺失 receipt API 的有效编译红灯与 17 项 R24
+  wiring matrix。
+- `eb139b6d`：发布三字段 immutable receipt，并在 Session 无抛尾段原子
+  发布 runtime/state/diagnostic/receipt，fork 原样保留旧 receipt identity。
+- `c4674294`：把失败断言收紧为确切异常类型，扩充 persistence/host/UI/
+  schema 等越界 source guard。
+- 本 worktree 初始缺 `.dart_tool`，执行 `flutter pub get --offline` 仅恢复
+  本地生成状态；R12c 缺生成文件后执行 `dart run build_runner build`，生成
+  126 outputs / 63 `.g.dart`，均被忽略且未进入路径 diff。
+
+## 定向验证证据
+
+- R24/R12b session wiring：17/17。
+- R12c production lease wiring：10/10。
+- session encounter seams：15/15。
+- enemy intent observer：8/8。
+- R12a attack token lease runtime：16/16。
+- 合计 targeted：66/66；未运行 full suite。
+- 三个 changed Dart 文件 `dart analyze`：0 issue；`dart format`：0 changed。
+- `git diff --check 1d64c04c..HEAD`、四路径白名单核对、`git status
+  --porcelain` 均 clean。
+
+## Pi 最终只读审查与 P2 triage
+
+- 配置与实现前审查一致：Pi CLI 0.84.1，exact
+  `deepseek/deepseek-v4-flash`，thinking high，仅 Read/Grep/Find/Ls，零写入。
+- 首轮 final 正常 exit，结论 `FINAL PASS`，原始 P0=0、P1=0、P2=5：
+  READY/计划证据待收口；source guard 可扩充；异常断言过宽；receipt
+  construction failure 未单测。
+- 低成本代码内项目已关闭：`c4674294` 将 `throwsA(anything)` 收紧为确切
+  `StateError`/`ArgumentError`，并扩充 source guard；随后 R24 17/17、
+  analyze 0、format 0。
+- READY 与计划证据为流程项，由本回填和最终空提交关闭；receipt constructor
+  在 non-null、已完成 materialization/validation 的三项输入下为无抛构造，
+  construction failure 结构不可达，不能用诚实 public seam 单测，记录而不伪造。
+- 同 exact 配置 follow-up 正常 exit，结论 `FINAL PASS`：确认收紧有效、无
+  fake-green/回归，Codex triage 后有效 P0/P1/P2=0/0/0。
+- Codex 与主控独立检查实际 diff 均未发现额外 finding；Gate 仍如实保留。
