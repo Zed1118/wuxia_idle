@@ -7,7 +7,7 @@ resource_locks:
   full_flutter_test: 1
   build_runner: 1
   visual_window: 1
-  public_schema_owner: P2-M0-COORD
+  public_schema_owner: P2-G1-BATCH1-INTEGRATION
 
 tasks:
   - id: P2-M0-COORD
@@ -264,3 +264,80 @@ tasks:
       - main
       - origin/main
     wake_condition: after_reviewed_candidates
+
+  - id: P2-G1-BATCH1-INTEGRATION
+    milestone: M1
+    owner: codex_root
+    branch: codex/phase2-g1-production-batch1-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-integration
+    status: in_progress
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g1-production-batch1.md
+      - docs/audit/phase2_g1_production_batch1_2026-08-23.md
+    exit_criteria:
+      - frozen production gaps have targeted regression evidence
+      - proposed and proposed_reopen paths remain unchanged
+      - integration tip is READY and main is untouched
+
+  - id: P2-G1-C15-WAVE-COOLDOWN
+    milestone: M1
+    owner: codex_agent_wave_cooldown
+    branch: codex/phase2-g1-wave-cooldown-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-wave-cooldown
+    status: in_progress
+    decision_ids:
+      - COMBAT-WAVE-CD-01
+    owned_files:
+      - data/numbers.yaml
+      - lib/data/defs/mainline_wave_def.dart
+      - lib/data/defs/mass_battle_def.dart
+      - lib/features/battle/application/phase0a/phase0a_stage_content_mapper.dart
+      - lib/features/battle/application/phase0a/phase0a_wave_battle_flow.dart
+      - test/data/mainline_wave_schema_test.dart
+      - test/data/game_repository_test.dart
+      - test/features/battle/application/phase0a/phase0a_wave_flow_test.dart
+      - test/features/battle/application/phase0a/phase0a_stage_content_mapper_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g1-c15-wave-cooldown.md
+
+  - id: P2-G1-C17A-INNER-DEMON-INJURY
+    milestone: M1
+    owner: codex_agent_inner_demon
+    branch: codex/phase2-g1-inner-demon-core-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-inner-demon-core
+    status: in_progress
+    decision_ids:
+      - INNER-DEMON-FAILURE-CORE-01
+      - INNER-DEMON-CULTIVATION-01
+    protected_behavior:
+      - preserve current main cultivation penalty
+    owned_globs:
+      - lib/features/combat_shared/application/combat_resolution_service.dart
+      - test/features/combat_shared/**
+      - test/features/inner_demon/**
+      - test/features/mainline/inner_demon_defeat_summary_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g1-c17a-inner-demon-injury.md
+
+  - id: P2-G1-A01-CURRENT-LEADER
+    milestone: M1
+    owner: codex_agent_current_leader
+    branch: codex/phase2-g1-current-leader-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-current-leader
+    status: in_progress
+    decision_ids:
+      - MAINLINE-PARTICIPANT-01
+      - MAINLINE-REPLAY-PARTICIPANT-01
+    protected_behavior:
+      - do not change valid-pointer participant policy
+      - do not add replay or run policy
+    owned_globs:
+      - lib/shared/battle_shared/current_leader_resolver.dart
+      - lib/features/mainline/presentation/phase0a_mainline_battle_host.dart
+      - lib/features/tower/presentation/phase0a_tower_battle_host.dart
+      - lib/features/sweep/application/phase0a_sweep_headless_runner.dart
+      - test/shared/battle_shared/current_leader_resolver_test.dart
+      - test/features/mainline/**
+      - test/features/tower/**
+      - test/features/sweep/**
+      - docs/superpowers/plans/2026-08-23-p2-g1-a01-current-leader.md
