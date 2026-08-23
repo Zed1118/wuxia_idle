@@ -637,6 +637,7 @@ void main() {
       for (final forbidden in const [
         'ActionTimeline',
         'AttackTokenLeaseRuntime.empty(',
+        'AttackTokenLeaseRuntime.restore(',
         'Phase0aExplicitAttackTokenLeaseBatchGate(',
         'Phase0aHitLanded',
         'Phase0aEnemyDefeated',

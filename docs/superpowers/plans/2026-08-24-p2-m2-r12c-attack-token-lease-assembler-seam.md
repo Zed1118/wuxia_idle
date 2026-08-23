@@ -41,12 +41,12 @@ AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
 
 ## CLAUDE.md §8.2 验收清单
 
-- [ ] 生产接线证据：两个真实 production encounter assembler 入口都原样透传给 Session；host 激活继续 Gate。
-- [ ] targeted tests：新测试、R12a/R12b、production assembler/token/objective/mapping/migrated 影响集全绿，记录真实通过数。
-- [ ] 红线：零数值/公式/YAML/玩家文案/奖励/存档/UI 变更，不触三系、在线=离线或反主流清单。
-- [ ] 残留风险：full lifecycle/migrated/host 路径必须另立 Gate 冻结 action identity 与 completion/cancel/interrupt/fail 释放语义。
-- [ ] 非 UI 任务，不需视口验收；无 debug 日志、临时资产、生成件或 dylib 误提交。
-- [ ] scoped analyze、format、`git diff --check`、owned-path/status 全绿，tip 为精确 `[READY][PI][P2-M2-R12C]`。
+- [x] 生产接线证据：两个真实 production encounter assembler 入口都原样透传给 Session；host 激活继续 Gate。
+- [x] targeted tests：新测试、R12a/R12b、production assembler/token/objective/mapping/migrated 八文件逐个复跑 89/89 PASS。
+- [x] 红线：零数值/公式/YAML/玩家文案/奖励/存档/UI 变更，不触三系、在线=离线或反主流清单。
+- [x] 残留风险：full lifecycle/migrated/host 路径必须另立 Gate 冻结 action identity 与 completion/cancel/interrupt/fail 释放语义。
+- [x] 非 UI 任务，不需视口验收；无 debug 日志、临时资产、生成件或 dylib 误提交。
+- [x] scoped analyze、format、`git diff --check`、owned-path/status 全绿；精确 READY 由本证据提交后的空提交追加。
 
 ## 任务切片
 
@@ -71,14 +71,20 @@ AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
 
 ### 最终 diff 审查
 
-- 待实现与 targeted 验证后补充真实命令和结论。
+- 版本：Pi CLI `0.84.1`
+- 模型：`deepseek/deepseek-v4-flash`
+- thinking：`high`
+- 命令摘要：用 `git diff --no-ext-diff --unified=80 72e274aa...HEAD -- <3 owned files>` 物化实际 diff，再调用 `pi --no-session --model deepseek/deepseek-v4-flash --thinking high --tools read,grep,find,ls --print <最终审查 prompt + ACTUAL DIFF>`。
+- 权限：Pi 仅 `read,grep,find,ls`，无 bash/edit/write；diff 由 Codex 在调用前只读生成并嵌入 prompt，未包含密钥。
+- 结论：`PASS`，P0=0、P1=0。Pi 确认正确性、Session 原子发布、拒绝路径 RNG 零消费、outer-flow rollback、production-path 防假绿与 owned boundary 均成立。
+- P2 triage：采纳计划证据收尾；source guard 除 `AttackTokenLeaseRuntime.empty(` 外再禁止 `AttackTokenLeaseRuntime.restore(` 默认构造绕行。记录性项保留诚实边界：objective 等后置失败可回滚 flow/session 自有状态，但不承诺回卷 caller-owned RNG 或外部副作用。
 
 ## 当前恢复点
 
-- 状态：计划与 TDD 红测已提交，生产实现尚未修改。
-- 最后完成：计划提交 `a306bd67`；新测试提交 `a6d1296d`，覆盖 direct/mapping identity、成对/互斥、RNG、no-op 回放、planner/runtime/observer/reducer/objective 原子性及 source guard。fresh worktree 环境仍为 build_runner 126 outputs、63 个 `.g.dart`、dylib SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
-- 下一步：最小修改 production assembler 的两个入口并复跑新测试。
-- 已跑验证：`flutter test --no-pub test/features/battle/application/phase0a/phase0a_production_attack_token_lease_wiring_test.dart` 按预期红，唯一根因为两个 assembler 方法均缺 `attackTokenLeaseBatchGate` / `attackTokenLeaseRuntime` 命名参数；Pi 编码前只读审查 PASS。按单 feature 任务节奏不跑 full。
+- 状态：实现、TDD、影响验证与两轮 Pi 只读审查均完成，待提交收尾证据并追加 READY。
+- 最后完成：计划 `a306bd67`；TDD 红测 `a6d1296d`；红测恢复点 `16cc71ac`；最小 production assembler 透传实现 `e6ddf3b7`。Pi 最终审查 PASS 后已收口计划漂移与 `restore` 工厂 source guard P2。fresh worktree 环境为 build_runner 126 outputs、63 个 `.g.dart`，dylib SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
+- 下一步：提交本收尾证据，复核 clean worktree/owned paths/tip，然后追加精确 READY 空提交并交回主控。
+- 已跑验证：新测试先因两入口缺冻结命名参数编译红，实现后 10/10 PASS；逐文件影响集为新测试 10、R12b session 15、R12a runtime 16、旧 production token gate 5、production assembler 23、mapping 15、objective integration 2、migrated composition 3，合计 89/89 PASS。Pi P2 source guard 加固后新测试再跑 10/10 PASS；scoped `dart analyze` 5 items 0 issue；format 0 changed，`git diff --check` 与 owned-path 守卫通过。按 CLAUDE.md §8.0 单 feature 节奏不跑 full。
 - 阻塞项：无。action completion/cancel/interrupt/timeline 和 production host 依然是未冻结 Gate，不影响本 host-neutral seam。
 
 ## READY
