@@ -2246,3 +2246,83 @@ tasks:
       - R12b R12c R17 and R18 pass source tool review root diff review and independent review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - audit registry plan and READY marker match the frozen integration tip
+
+  - id: P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r19-mainline-stage-runtime-release-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r19-mainline-stage-runtime-release
+    status: in_progress
+    base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    prerequisites:
+      - P2-M2-R18-MAINLINE-STAGE-RUNTIME-ADMISSION
+      - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
+    owned_files:
+      - lib/features/mainline/application/mainline_stage_runtime_admission.dart
+      - test/features/mainline/application/mainline_stage_runtime_release_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r19-mainline-stage-runtime-release.md
+    protected_behavior:
+      - preserve the exact companion newly admitted by this request and keep empty choice provenance null even over an occupied predecessor
+      - prepare one owner bound release successor from an explicit frozen reason with private committable state exact predecessor and single commit
+      - do not infer settlement result exit persistence claim grant host data candidate or tuning behavior
+
+  - id: P2-M2-R20-MENTOR-INSIGHT-REVERSE-ACTIVITY-GUARD
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r20-mentor-insight-reverse-activity-guard-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r20-mentor-insight-reverse-activity-guard
+    status: in_progress
+    base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    prerequisites:
+      - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
+      - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
+    owned_files:
+      - lib/features/mainline/application/mentor_insight_reverse_activity_guard.dart
+      - test/features/mainline/application/mentor_insight_reverse_activity_guard_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r20-mentor-insight-reverse-activity-guard.md
+    protected_behavior:
+      - reject retreat expedition boss gauntlet and healing only for the exact active companion character
+      - consume one immutable occupancy snapshot and never query or mutate activity character healing Isar or shared occupancy state
+      - do not add fallback activities host persistence UI data candidate tuning or production routing
+
+  - id: P2-M2-R21-MENTOR-INSIGHT-DURABLE-CLAIM-BOUNDARY
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-r21-mentor-insight-durable-claim-boundary-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r21-mentor-insight-durable-claim-boundary
+    status: in_progress
+    prerequisites:
+      - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
+      - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
+    owned_files:
+      - lib/features/mainline/application/mentor_insight_stage_claim_boundary.dart
+      - test/features/mainline/application/mentor_insight_stage_claim_boundary_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r21-mentor-insight-stage-claim-boundary.md
+    protected_behavior:
+      - derive one canonical mentor insight claim key only from the exact admission stage and admitted companion provenance
+      - require an exact caller supplied durable observation for successful settlement and delegate outcome to the frozen claim policy
+      - do not implement store query schema CAS outbox grant rate cap settlement identity host data candidate or tuning behavior
+
+  - id: P2-M2-BATCH17-MENTOR-TRANSACTION-BOUNDARIES
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch17-mentor-transaction-boundaries-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch17-mentor-transaction-boundaries
+    status: in_progress
+    base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    source_tasks:
+      - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
+      - P2-M2-R20-MENTOR-INSIGHT-REVERSE-ACTIVITY-GUARD
+      - P2-M2-R21-MENTOR-INSIGHT-DURABLE-CLAIM-BOUNDARY
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch17-mentor-transaction-boundaries.md
+      - docs/audit/phase2_m2_batch17_mentor_transaction_boundaries_2026-08-24.md
+    protected_behavior:
+      - integrate only host neutral mentor provenance release reverse activity and claim observation boundaries
+      - keep durable transaction settlement identity shared occupancy host candidate objective timeline tuning profile G2 and human playtest gates unresolved
+      - main and origin main remain untouched
+    exit_criteria:
+      - R19 R20 and R21 pass source tool review root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
