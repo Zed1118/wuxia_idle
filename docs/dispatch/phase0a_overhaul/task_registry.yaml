@@ -977,7 +977,8 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-s01-combat-content-schema-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-s01-combat-schema
-    status: dispatched
+    status: ready_reviewed
+    tip_commit: d7cc6531
     base_commit: 935c04e1
     owned_files:
       - lib/data/defs/combat_enemy_archetype_def.dart
@@ -991,6 +992,26 @@ tasks:
       - schema is distinct from legacy narrative EncounterDef
       - all tuning values and migration state are explicit caller inputs
       - no GameRepository loader production yaml or host routing
+
+  - id: P2-G2-L01-COMBAT-CATALOG-LOADER
+    milestone: G2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-g2-l01-combat-catalog-loader-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-l01-catalog-loader
+    status: dispatched
+    base_commit: 1ad14bcc
+    owned_files:
+      - lib/data/combat_encounter_catalog_loader.dart
+      - lib/data/validation/combat_encounter_catalog_validator.dart
+      - test/data/combat_encounter_catalog_loader_test.dart
+      - test/data/validation/combat_encounter_catalog_validator_test.dart
+      - test/fixtures/phase2/combat/catalog_loader/**
+      - docs/superpowers/plans/2026-08-23-p2-g2-l01-combat-catalog-loader.md
+    protected_behavior:
+      - loader accepts caller-provided YAML sources and performs no production IO
+      - schema keys types enum values and cross-file references fail closed
+      - all eight objective refs map to the frozen S01 typed defs
+      - no GameRepository production data host routing objective choice or tuning
 
   - id: P2-M0-F01-PHASE2-FACT-SYNC
     milestone: M0
