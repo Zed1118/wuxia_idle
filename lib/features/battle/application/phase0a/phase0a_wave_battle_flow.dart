@@ -54,8 +54,9 @@ final class Phase0aWaveTransitionPolicy {
 ///   [waveTransitionPolicy] 的特殊内容可在同一换波点执行配置化补给。
 ///   两种路径都不消耗额外拍。
 /// - 会话不带任何 public 可变后门:需要换态(预留 seq/换波/固化终局 seq)
-///   时以新 [Phase0aArenaState] 重建私有会话,复用同一 adapter/resolver
-///   实例,保证 seeded RNG 连续。
+///   时以新 [Phase0aArenaState] 经 [Phase0aCombatSession.forkWithState]
+///   重建私有会话,复用同一 adapter/resolver/observer/gate 实例,保证
+///   seeded RNG 连续且 D04 观察器换波后仍持续观察。
 final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
   Phase0aWaveBattleFlow({
     required Phase0aCombatSession session,
@@ -254,16 +255,9 @@ final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
     );
   }
 
-  /// 以新 state 重建私有会话,复用同一 adapter/resolver 实例。
+  /// 以新 state 重建私有会话,复用同一 adapter/resolver/observer/gate 实例。
   void _rebuildSession(Phase0aArenaState nextState) {
-    final previous = _session;
-    _session = Phase0aCombatSession(
-      initialState: nextState,
-      playerAdapter: previous.playerAdapter,
-      enemyAiAdapter: previous.enemyAiAdapter,
-      damageResolver: previous.damageResolver,
-      enemySkillDamageResolver: previous.enemySkillDamageResolver,
-    );
+    _session = _session.forkWithState(nextState);
   }
 
   static Phase0aArenaState _withNextSeq(Phase0aArenaState state, int nextSeq) {
