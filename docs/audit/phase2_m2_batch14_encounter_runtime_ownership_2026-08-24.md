@@ -41,4 +41,4 @@
 
 - 独立集成终审核对当前 14 文件 diff、12 组 stable patch-id、全部提交信息、composition 行为及 registry/audit/plan，结论 PASS，P0/P1/P2=0。明确确认新入口只显式消费 exact contracts，mapper/source/numbers/RNG 仍属 caller，lease runtime、ActionTimeline、production host、candidate 与 tuning 均未偷接。
 - composition 证据确认：melee budget=1 时三个可攻击敌人只放行最高优先级 `e3`；`e1` 显式 objective 完成时 `e2/e3` 仍存活；同 seed 的 events/state/outcome 与 RNG 尾值重放一致；错误 mapper 在 tick 发布前失败且 arena/spawn/outcome 零变化。
-- 本记录冻结后仅待写入 validated commit 并追加空 READY。production host/stage route、真实 action completion/cancel/interrupt 生命周期、candidate/tuning 晋升、Profile 与真人试玩继续保持 Gate。
+- 集成验证已由 `a0c6f2f36db866c20dca27e7da2c30df9e104a2d` 冻结；本收口记录提交后追加空 `[READY][CODEX][P2-M2-BATCH14] 冻结遭遇运行时所有权接缝`。production host/stage route、真实 action completion/cancel/interrupt 生命周期、candidate/tuning 晋升、Profile 与真人试玩继续保持 Gate。

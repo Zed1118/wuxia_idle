@@ -1868,8 +1868,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch14-encounter-runtime-ownership-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch14-encounter-runtime-ownership-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    validated_commit: a0c6f2f36db866c20dca27e7da2c30df9e104a2d
+    ready_marker: "[READY][CODEX][P2-M2-BATCH14] 冻结遭遇运行时所有权接缝"
     source_tasks:
       - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
       - P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME

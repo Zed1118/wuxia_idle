@@ -34,4 +34,4 @@
 - [x] 并行派发并完成 R11 / R12a / R13 来源实现、主控复核与 READY。
 - [x] 主控组合显式 migrated plan 入口；3/3 新测试、158/158 去重联合回归、8 项 scoped analyze、format/diff 闸门通过。
 - [x] full 4954/4954、12 组稳定 patch-id、仓库快速闸门与独立终审 P0/P1/P2=0。
-- [ ] 写入最终 validated commit 并追加 Batch14 READY。
+- [x] 最终 validated commit `a0c6f2f3` 已冻结；本记录提交后追加 Batch14 READY。
