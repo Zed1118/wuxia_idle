@@ -39,4 +39,7 @@
 - [x] R17 完成 Pi/DeepSeek 两轮只读审查、94/94 与 Codex 独立终审，五个非空提交已集成并由主控复跑 94/94。
 - [x] R18 在关闭 composite commit 绕过 P1 后完成 Qoder 有效终审、93/93 与 Codex 独立终审，七个非空提交已集成并由主控复跑 93/93。
 - [x] 三来源完成外部工具证据、测试、独立复审与 READY。
-- [ ] 主控集成、联合/full 验证、终审与 Batch16 READY。
+- [x] 主控完成 22 个来源提交 stable patch-id / owned blob 核验；17-file path guard、`git diff --check`、clean status 与 main refs 均通过。
+- [x] 集成态去重联合 targeted 261/261、changed-Dart scoped analyze 10 items / 0 issue、format 10 files / 0 changed、registry 87 tasks / 0 duplicate / 0 dangling、full 5035/5035 PASS。
+- [x] 独立代码终审复跑五个变更测试文件 55/55，P0/P1/P2=0；未发现 host/candidate/tuning/Profile/G2 越权。
+- [ ] 冻结最终 registry/audit、完成 docs-only 终审并追加 Batch16 READY。

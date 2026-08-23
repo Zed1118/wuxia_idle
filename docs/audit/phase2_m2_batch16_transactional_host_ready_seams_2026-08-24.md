@@ -27,9 +27,15 @@
 - Batch16 integration 已完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与 `libisar.dylib` SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d` 恢复。
 - R12c worktree 已创建并开始 Pi 设计审查/TDD；R17/R18 在本登记恢复点后创建独立 worktree。
 
-## 待完成验证
+## 集成验证
 
-待 R12c/R17/R18 来源 READY 后补充工具证据、来源/集成提交、联合 targeted、scoped analyze、full suite、仓库闸门、独立终审与最终 READY。
+- 主控逐项重算 22 个 R12b/R12c/R17/R18 source→integration stable patch-id，四来源 owned blobs 与各自 READY tip 完全一致。
+- 五个变更测试文件去重联合 targeted 261/261 PASS；changed-Dart scoped analyze 10 items / 0 issue；format 10 files / 0 changed。
+- `flutter test --no-pub --reporter compact` 从 clean integration 起点一次完成 5035/5035 PASS；未并行启动第二个 full 进程。
+- registry 87 tasks / 0 duplicate IDs / 0 dangling prerequisite IDs；17-file path guard、`git diff --check` 与 clean status 通过。
+- main 与 origin/main 终验仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
+- Codex 独立代码终审重跑五个变更测试文件 55/55、scoped analyze 10 items / 0 issue、format 10 files / 0 changed，结论 P0/P1/P2=0；确认 R12b 事务顺序、R12c pair 透传、R17 单一 settlement core、R18 私有 successor 与全部 Gate 均保持。
+- 最终 registry/audit/plan 与 READY marker 的 docs-only 闭环仍待本验证提交后复核，因此此处不提前宣称 READY。
 
 ## 已完成来源
 
