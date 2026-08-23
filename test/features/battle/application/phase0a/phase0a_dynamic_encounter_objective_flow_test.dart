@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/defs/boss_phase_def.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
@@ -33,6 +34,70 @@ Phase0aActor _actor(
   attackCooldownRemaining: 0,
   defeatKind: Phase0aDefeatKind.normal,
 );
+
+Phase0aActor _actorWithMutableContainers(
+  String id, {
+  required Phase0aSide side,
+  ArenaVector position = const ArenaVector(50, 0),
+}) => Phase0aActor(
+  id: id,
+  side: side,
+  position: position,
+  facing: const ArenaVector(1, 0),
+  maxHealth: 100,
+  currentHealth: 100,
+  moveSpeed: 1,
+  qiCurrent: 0,
+  qiMax: 100,
+  attackCooldownRemaining: 0,
+  defeatKind: Phase0aDefeatKind.normal,
+  bossPhases: [
+    BossPhaseDef(hpThresholdPct: 1, unlockSkillIds: ['phase-skill-$id']),
+  ],
+  unlockedEnemySkillIds: ['unlocked-skill-$id'],
+  enemySkillCooldowns: {'cooldown-skill-$id': 1},
+  phaseChargeCasts: [null],
+  guardianDefIds: ['guardian-$id'],
+);
+
+Map<String, Object?> _actorContainerSnapshot(Phase0aActor actor) => {
+  'bossPhases': [
+    for (final phase in actor.bossPhases!) [...phase.unlockSkillIds],
+  ],
+  'unlockedEnemySkillIds': [...actor.unlockedEnemySkillIds],
+  'enemySkillCooldowns': {...actor.enemySkillCooldowns},
+  'phaseChargeCastsLength': actor.phaseChargeCasts.length,
+  'guardianDefIds': [...actor.guardianDefIds],
+};
+
+void _expectActorContainersImmutable(Phase0aActor actor) {
+  expect(() => actor.bossPhases!.clear(), throwsUnsupportedError);
+  expect(
+    () => actor.bossPhases!.single.unlockSkillIds.clear(),
+    throwsUnsupportedError,
+  );
+  expect(() => actor.unlockedEnemySkillIds.clear(), throwsUnsupportedError);
+  expect(() => actor.enemySkillCooldowns.clear(), throwsUnsupportedError);
+  expect(() => actor.phaseChargeCasts.clear(), throwsUnsupportedError);
+  expect(() => actor.guardianDefIds.clear(), throwsUnsupportedError);
+}
+
+void _attemptAllActorContainerMutations(Phase0aActor actor) {
+  void attempt(void Function() mutate) {
+    try {
+      mutate();
+    } on UnsupportedError {
+      // Expected from a genuinely immutable frame snapshot.
+    }
+  }
+
+  attempt(() => actor.bossPhases!.single.unlockSkillIds.clear());
+  attempt(() => actor.bossPhases!.clear());
+  attempt(() => actor.unlockedEnemySkillIds.clear());
+  attempt(() => actor.enemySkillCooldowns.clear());
+  attempt(() => actor.phaseChargeCasts.clear());
+  attempt(() => actor.guardianDefIds.clear());
+}
 
 final class _FixedResolver implements Phase0aDamageResolver {
   const _FixedResolver({this.damage = 0, this.playerOnly = false});
@@ -95,8 +160,11 @@ final class _Fixture {
     Phase0aObjectiveRuntimeTracker? objectiveTracker,
     Phase0aEncounterObjectiveEventSource? objectiveEventSource,
     bool passObjectiveArguments = true,
+    bool startWithActiveEnemy = false,
+    Phase0aActor? player,
+    Phase0aActor Function(String enemyId)? enemyActorFactory,
   }) {
-    director = SpawnDirector(
+    var preparedDirector = SpawnDirector(
       config: SpawnDirectorConfig(
         activeLimit: 1,
         reinforcementThreshold: 0,
@@ -108,6 +176,16 @@ final class _Fixture {
           SpawnEntry(entryId: 'entry_$index', enemyId: 'enemy_$index'),
       ],
     );
+    if (startWithActiveEnemy) {
+      preparedDirector = preparedDirector.advance().director;
+    }
+    director = preparedDirector;
+    final actorsByEnemyId = {
+      for (final unit in director.state.units)
+        unit.enemyId:
+            enemyActorFactory?.call(unit.enemyId) ??
+            _actor(unit.enemyId, side: Phase0aSide.enemy),
+    };
     roster = Phase0aEncounterRoster(
       director: director,
       playerId: 'player',
@@ -115,21 +193,27 @@ final class _Fixture {
         for (final unit in director.state.units)
           Phase0aEncounterRosterBinding(
             entryId: unit.entryId,
-            actor: _actor(unit.enemyId, side: Phase0aSide.enemy),
+            actor: actorsByEnemyId[unit.enemyId]!,
           ),
       ],
     );
     final session = Phase0aCombatSession(
       initialState: Phase0aArenaState(
-        tick: 0,
+        tick: director.state.tick,
         nextSeq: nextSeq,
-        player: _actor(
-          'player',
-          side: Phase0aSide.player,
-          health: playerHealth,
-          position: ArenaVector.zero,
-        ),
-        enemies: const [],
+        player:
+            player ??
+            _actor(
+              'player',
+              side: Phase0aSide.player,
+              health: playerHealth,
+              position: ArenaVector.zero,
+            ),
+        enemies: [
+          for (final unit in director.state.units)
+            if (unit.stage == SpawnUnitStage.active)
+              actorsByEnemyId[unit.enemyId]!,
+        ],
         skillSlots: const [],
         winCondition: winCondition,
       ),
@@ -251,6 +335,110 @@ void main() {
       expect(() => frame.afterArena.enemies.clear(), throwsUnsupportedError);
     },
   );
+
+  test(
+    'frame deeply freezes every public actor container before and after',
+    () {
+      final player = _actorWithMutableContainers(
+        'player',
+        side: Phase0aSide.player,
+        position: ArenaVector.zero,
+      );
+      late final Phase0aActor enemy;
+      final playerContainers = _actorContainerSnapshot(player);
+      final tracker = _tracker([
+        ObjectiveClause(
+          id: 'target',
+          objective: DefeatTargetsObjective(const ['unreached-target']),
+        ),
+      ]);
+      final source = _CallbackSource((frame) {
+        expect(frame.beforeArena.player, isNot(same(player)));
+        expect(frame.afterArena.player, isNot(same(player)));
+        expect(frame.beforeArena.enemies.single, isNot(same(enemy)));
+        expect(frame.afterArena.enemies.single, isNot(same(enemy)));
+        _expectActorContainersImmutable(frame.beforeArena.player);
+        _expectActorContainersImmutable(frame.beforeArena.enemies.single);
+        _expectActorContainersImmutable(frame.afterArena.player);
+        _expectActorContainersImmutable(frame.afterArena.enemies.single);
+        return const <EncounterObjectiveEvent>[];
+      });
+      final fixture = _Fixture(
+        startWithActiveEnemy: true,
+        player: player,
+        enemyActorFactory: (enemyId) => enemy = _actorWithMutableContainers(
+          enemyId,
+          side: Phase0aSide.enemy,
+        ),
+        objectiveTracker: tracker,
+        objectiveEventSource: source,
+      );
+      final enemyContainers = _actorContainerSnapshot(enemy);
+
+      fixture.flow.advance(deltaSeconds: 1, command: _idle);
+
+      expect(fixture.flow.outcome, Phase0aBattleOutcome.ongoing);
+      expect(_actorContainerSnapshot(player), playerContainers);
+      expect(_actorContainerSnapshot(enemy), enemyContainers);
+    },
+  );
+
+  test('mutation attempts then source failure cannot alias old state', () {
+    final player = _actorWithMutableContainers(
+      'player',
+      side: Phase0aSide.player,
+      position: ArenaVector.zero,
+    );
+    late final Phase0aActor enemy;
+    final tracker = _tracker([
+      ObjectiveClause(
+        id: 'target',
+        objective: DefeatTargetsObjective(const ['unreached-target']),
+      ),
+    ]);
+    final source = _CallbackSource((frame) {
+      for (final actor in [
+        frame.beforeArena.player,
+        ...frame.beforeArena.enemies,
+        frame.afterArena.player,
+        ...frame.afterArena.enemies,
+      ]) {
+        _attemptAllActorContainerMutations(actor);
+      }
+      throw StateError('source failure after mutation attempts');
+    });
+    final fixture = _Fixture(
+      startWithActiveEnemy: true,
+      player: player,
+      enemyActorFactory: (enemyId) =>
+          enemy = _actorWithMutableContainers(enemyId, side: Phase0aSide.enemy),
+      objectiveTracker: tracker,
+      objectiveEventSource: source,
+    );
+    final state = fixture.flow.state;
+    final playerContainers = _actorContainerSnapshot(state.player);
+    final enemyContainers = _actorContainerSnapshot(state.enemies.single);
+    final spawnState = fixture.flow.spawnState;
+    final outcome = fixture.flow.outcome;
+    final records = fixture.flow.lastOrderedEventRecords;
+    final progress = tracker.progress;
+
+    expect(
+      () => fixture.flow.advance(deltaSeconds: 1, command: _idle),
+      throwsStateError,
+    );
+
+    expect(fixture.flow.state, same(state));
+    expect(_actorContainerSnapshot(state.player), playerContainers);
+    expect(_actorContainerSnapshot(state.enemies.single), enemyContainers);
+    expect(fixture.flow.spawnState.tick, spawnState.tick);
+    expect(fixture.flow.spawnState.units, spawnState.units);
+    expect(fixture.flow.outcome, outcome);
+    expect(fixture.flow.lastOrderedEventRecords, same(records));
+    expect(tracker.progress, same(progress));
+    expect(_actorContainerSnapshot(player), playerContainers);
+    expect(_actorContainerSnapshot(enemy), enemyContainers);
+  });
 
   test('caller may emit an explicit checkpoint only after two kills', () {
     final tracker = _tracker([
