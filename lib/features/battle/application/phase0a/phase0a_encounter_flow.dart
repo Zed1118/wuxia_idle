@@ -1,10 +1,12 @@
 import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/encounter_objective.dart';
+import '../../domain/phase0a/objective_controller.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/encounter_enemy_roster.dart';
 import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_combat_session.dart';
+import 'phase0a_attack_token_lease_batch_receipt.dart';
 import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_event_order_adapter.dart';
 import '../../domain/phase0a/phase0a_wave.dart' show Phase0aBattleOutcome;
@@ -110,6 +112,12 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
   @override
   List<CombatEventRecord> get lastOrderedEventRecords =>
       _legacy?.lastOrderedEventRecords ?? _runtimeRecords;
+
+  ObjectiveControllerProgress? get objectiveProgress =>
+      _objectiveTracker?.progress;
+
+  Phase0aAttackTokenLeaseBatchReceipt? get lastAttackTokenLeaseBatchReceipt =>
+      _session?.lastAttackTokenLeaseBatchReceipt;
 
   SpawnDirectorState get spawnState {
     final director = _director;

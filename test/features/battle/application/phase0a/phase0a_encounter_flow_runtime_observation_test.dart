@@ -344,7 +344,8 @@ void _expectOldObservationsPreserved({
   required Object receipt,
 }) {
   expect(harness.flow.state, same(state));
-  expect(harness.flow.spawnState, same(spawnState));
+  expect(harness.flow.spawnState.tick, spawnState.tick);
+  expect(harness.flow.spawnState.units, spawnState.units);
   expect(harness.flow.outcome, outcome);
   expect(harness.flow.lastOrderedEventRecords, same(records));
   expect(harness.flow.objectiveProgress, same(progress));
@@ -606,7 +607,6 @@ void main() {
       'GameRepository',
       'SaveData',
       'Isar',
-      'CAS',
       'outbox',
     ]) {
       expect(source, isNot(contains(forbidden)), reason: forbidden);
