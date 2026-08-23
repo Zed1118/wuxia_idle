@@ -1,5 +1,6 @@
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../application/phase0a/phase0a_battle_snapshot_factory.dart';
 import '../../application/phase0a/phase0a_stage_content_mapper.dart';
 
 final class Phase0aActorVisual {
@@ -55,29 +56,60 @@ final class Phase0aVisualRoster {
 
   /// Phase 1 纵切实机接线(拍板 α 灰度门):从主线内容映射结果装配真实 roster。
   ///
-  /// 玩家=单主角续传(D3)灰盒立绘,沿 [debugBattle] 已验证的祖师战斗图;
-  /// 正式立绘绑定留美术批。敌人直接取 [mapping] combatant 的 iconPath
-  /// (零口径复制自 EnemyDef);iconPath 空串 fail-fast,不静默降级。
-  factory Phase0aVisualRoster.fromMapping(Phase0aStageMapping mapping) {
-    const playerBattleAsset = WuxiaUi.battleFounderFallback;
-    final playerId = mapping.initialState.player.id;
+  /// 委托 [fromCombatants](D10 typed 合同),输出口径不变。
+  factory Phase0aVisualRoster.fromMapping(Phase0aStageMapping mapping) =>
+      Phase0aVisualRoster.fromCombatants(
+        playerId: mapping.initialState.player.id,
+        combatants: mapping.combatants,
+      );
+
+  /// D10 动态视觉名册合同:在 runtime 状态变化前为全量 [combatants]
+  /// (含 reserve / warning / active)各构造恰一个视觉。
+  ///
+  /// 玩家沿用 [WuxiaUi.battleFounderFallback](正式立绘绑定留美术批);
+  /// 敌人直接取 snapshot `iconPath`(零口径复制自 EnemyDef)。
+  /// 空 asset、重复 actor id、玩家缺失/重复均稳定 fail closed。
+  factory Phase0aVisualRoster.fromCombatants({
+    required String playerId,
+    required List<Phase0aCombatantInput> combatants,
+  }) {
+    if (playerId.trim().isEmpty) {
+      throw StateError('Phase0a roster requires a non-empty player id');
+    }
+    final seen = <String>{};
+    var playerFound = false;
     final visuals = <String, Phase0aActorVisual>{};
-    for (final combatant in mapping.combatants) {
-      final isPlayer = combatant.actorId == playerId;
+    for (final combatant in combatants) {
+      final actorId = combatant.actorId;
+      if (actorId.trim().isEmpty) {
+        throw StateError('Phase0a roster requires a non-empty actor id');
+      }
+      if (!seen.add(actorId)) {
+        throw StateError(
+          'Phase0a roster received a duplicate actor id: $actorId',
+        );
+      }
+      final isPlayer = actorId == playerId;
+      if (isPlayer) {
+        playerFound = true;
+      }
       final assetPath = isPlayer
-          ? playerBattleAsset
+          ? WuxiaUi.battleFounderFallback
           : combatant.snapshot.iconPath;
-      if (assetPath == null || assetPath.isEmpty) {
+      if (assetPath == null || assetPath.trim().isEmpty) {
         throw StateError(
           'Phase0a roster requires a non-empty asset: '
           'actor ${combatant.actorId}',
         );
       }
-      visuals[combatant.actorId] = Phase0aActorVisual(
+      visuals[actorId] = Phase0aActorVisual(
         name: combatant.snapshot.name,
         assetPath: assetPath,
         isElite: combatant.snapshot.isBoss,
       );
+    }
+    if (!playerFound) {
+      throw StateError('Phase0a roster is missing the player: $playerId');
     }
     return Phase0aVisualRoster(visuals: visuals);
   }
