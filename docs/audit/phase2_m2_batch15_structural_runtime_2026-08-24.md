@@ -40,6 +40,9 @@
 - R15：计划 `a10edae6`、Pi/API 证据 `535b59e2`、红测 `cfe1e5c7`、实现 `a29206d5`、验收证据 `dfde55cb`，来源 READY `66d9a5e1`。Pi 0.84.1 使用精确 `deepseek/deepseek-v4-flash`、thinking `high`、只读工具完成设计与终审，两轮均 PASS；Codex 独立复审 P0/P1/P2=0。四文件去重 65/65、scoped analyze 0、format/diff/path/status clean。集成提交 `30d3fbc8` / `04e7f984` / `fc55be7d` / `31f3fab1` / `9c23496f` 保留来源内容；production host、persistence、共享占用反向接线、成长 cap/比例与 durable claim 继续 Gate。
 - V01：计划 `663f6e1a`、初始实现 `934d0cfd`、Qoder 验收证据 `6d545ea4`，前一 READY `277bbabd`。Qoder CLI 1.1.28 使用精确 `Qwen3.8-Max`、reasoning `high`、Read/Grep/Glob-only 完成设计与终审，P0/P1=0。Codex 初审提出“0 数值/公式”措辞过宽与五关单 test 定位粒度两项 P2，`5517ec10` 将边界精确为无 production/candidate tuning 数值/公式变更，并拆成五个 stage ID 命名 case；新 READY `bb26671b` 修后独立复审 P0/P1/P2=0。六文件去重 51/51、scoped analyze 0、format/diff/path/status clean。集成提交 `c0d4e34a` / `fc0694b6` / `a152f164` / `b88b16bd` 的 stable patch-id 与来源逐项一致；objective 可执行性、candidate 晋升、production host/data、性能/Profile 与真人试玩继续 Gate。
 
-## 待完成收口
+## 最终收口
 
-独立集成终审已确认实现与 15 个来源 patch 无行为缺陷，仅发现 V01 四个集成 commit 在 registry 误挂 R15 的文档 P2；本次已移至 Batch15 总清单。待审查者复核 P0/P1/P2 清零后，记录 validated commit 并追加精确 READY。
+- 独立集成初审确认实现与 15 个来源 patch 无行为缺陷，仅发现 V01 四个集成 commit 在 registry 误挂 R15 的文档 P2；`e597f30c` 前已修为 R14 6 + R15 5 + V01 4，Batch15 总表精确 15 项。
+- 修后独立复核 P0/P1/P2=0，并独立重跑 analyze 5 items 0、format 5 files 0 changed、registry 82/0/0；确认 11 个预期 baseline diff 文件、clean status 与 main refs 不变。
+- 验证冻结提交为 `e597f30cda427cb010e8960538ada155335fb95f`；本证据提交后只追加精确空提交 `[READY][CODEX][P2-M2-BATCH15] 冻结结构构造与主线运行时合同`。
+- Batch15 只关闭 construction-only evidence、mainline admission 与 mentor occupancy runtime 合同；不宣称 production vertical slice、objective executable、candidate 晋升、G2、Profile 或真人验收通过。

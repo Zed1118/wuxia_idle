@@ -35,4 +35,4 @@
 - [x] V01 完成 Qoder/Qwen3.8-Max 两轮只读审查、两项 P2 修正与 51/51 复验，四个非空提交已按 stable patch-id 集成。
 - [x] 三来源实现、外部 CLI 证据、独立复审与 READY 全部完成。
 - [x] 主控联合 targeted 170/170、changed-Dart analyze 0、format/diff/YAML/path/main refs 闸门与 clean full 4988/4988 完成。
-- [ ] 独立集成终审复核 registry P2 已关闭，记录最终证据并追加 Batch15 READY。
+- [x] 独立集成终审复核 registry P2 已关闭，最终 P0/P1/P2=0；验证冻结点为 `e597f30c`，本证据提交后追加 Batch15 READY。

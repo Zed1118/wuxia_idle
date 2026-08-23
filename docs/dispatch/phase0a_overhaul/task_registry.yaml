@@ -2017,8 +2017,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch15-structural-runtime-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch15-structural-runtime-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7bc31c5f5463aac26e127912576350487ac0a8d3
+    validated_commit: e597f30cda427cb010e8960538ada155335fb95f
+    ready_marker: "[READY][CODEX][P2-M2-BATCH15] 冻结结构构造与主线运行时合同"
     source_tasks:
       - P2-M2-V01-CH1-CANDIDATE-RUNTIME-CONSTRUCTION-MATRIX
       - P2-M2-R14-MAINLINE-RUN-ADMISSION
@@ -2039,6 +2041,13 @@ tasks:
       - fc0694b6
       - a152f164
       - b88b16bd
+    verification:
+      joint_targeted_tests: 170
+      full_tests: 4988
+      changed_dart_items: 5
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch15-structural-runtime.md
