@@ -7,7 +7,7 @@ resource_locks:
   full_flutter_test: 1
   build_runner: 1
   visual_window: 1
-  public_schema_owner: P2-G2-PRODUCTION-INTEGRATION
+  public_schema_owner: P2-G2-BATCH2-INTEGRATION
 
 tasks:
   - id: P2-M0-COORD
@@ -550,3 +550,69 @@ tasks:
       - test/features/battle/application/phase0a/phase0a_wave_flow_test.dart
       - test/features/battle/application/phase0a/phase0a_headless_kernel_test.dart
       - docs/superpowers/plans/2026-08-23-p2-g2-c10-event-projection.md
+
+  - id: P2-G2-BATCH2-INTEGRATION
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-g2-batch2-integration-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch2-integration
+    status: in_progress
+    base_commit: 6da121cf
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g2-batch2-encounter-foundation.md
+      - docs/audit/phase2_g2_batch2_encounter_foundation_2026-08-23.md
+    exit_criteria:
+      - spawn and attack concurrency remain caller-configured with no tuning literals
+      - participant request is explicit and never chooses a character
+      - pure contracts are deterministic and immutable
+      - no reducer, reward, injury, save, UI, or production data behavior changes
+      - integration tip is READY and main is untouched
+
+  - id: P2-G2-D01-SPAWN-DIRECTOR
+    milestone: G2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-g2-d01-spawn-director-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d01-spawn-director
+    status: queued
+    protected_behavior:
+      - total reserve count and active count are separate
+      - thresholds, active cap, warning, and grace are caller supplied
+      - reserve and entry ordering are deterministic
+      - no enemy may spawn without an explicit entry
+    owned_files:
+      - lib/features/battle/domain/phase0a/spawn_director.dart
+      - test/features/battle/domain/phase0a/spawn_director_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-d01-spawn-director.md
+
+  - id: P2-G2-D02-ATTACK-TOKEN-DIRECTOR
+    milestone: G2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-g2-d02-attack-token-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d02-attack-token
+    status: queued
+    protected_behavior:
+      - melee ranged charge and support budgets are explicit inputs
+      - offscreen high-impact and spawn-grace requests fail closed
+      - at most one unblockable area attack may be effective by default
+      - deterministic priority and actor-id tie-breaks
+    owned_files:
+      - lib/features/battle/domain/phase0a/attack_token_director.dart
+      - test/features/battle/domain/phase0a/attack_token_director_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-d02-attack-token-director.md
+
+  - id: P2-G2-E01-PARTICIPATION-REQUEST
+    milestone: G2
+    owner: codex_luna_medium
+    branch: codex/phase2-g2-e01-participation-request-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e01-participation-request
+    status: queued
+    protected_behavior:
+      - content character loadout participation controller clock and entry are explicit
+      - request never resolves current leader or chooses a fallback participant
+      - proposed replay sweep and MainlineRun policy remains unresolved
+    owned_files:
+      - lib/features/battle/domain/phase0a/activity_participation_request.dart
+      - test/features/battle/domain/phase0a/activity_participation_request_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-e01-participation-request.md
