@@ -22,33 +22,39 @@
 | C03 `action_timeline` | 实现、测试对象相同 | 不重放 | 固定拍 windup/active/recovery/终态；首效至多一次；取消/打断/失败冷却标记显式 |
 | C04 `defense_resolution` | 当前为后续 C16 加固超集；测试新增 4 项 | 保留后续版本，不反向覆盖 | 防御 flags 正交；反击预算、typed effect allowlist、projectile redirect 和 non-recursive 语义显式 |
 | C05 `posture` | 实现、测试对象相同 | 不重放 | 单一累计姿态；破势窗口内抑制重复姿态伤害；恢复策略和 Boss 控制折算由 caller 注入 |
-| C06 `status_effects` | 测试对象相同；实现仅构造器委托形式修复 | 保留当前等价形式 | slow/root/内伤/毒固定拍；同源刷新/叠层、快照隔离、绝对逻辑 tick 和稳定伤害排序 |
+| C06 `status_effects` | 保留构造器修复并补 slow 非有限倍率 fail-closed；测试新增 1 项 | 保留并加固 | slow/root/内伤/毒固定拍；同源刷新/叠层、快照隔离、绝对逻辑 tick、稳定伤害排序与有限移动倍率 |
 | C07 `qi_resource` | 测试对象相同；实现仅 const 构造器重定向形式修复 | 保留当前等价形式 | 预留/提交/取消生命周期；动作 ID 去重；溢出可观测；击杀窗口降低 cap 不反向扣气 |
 | C08 `basic_attack_chain` | 实现、测试对象相同 | 不重放 | 五武器 identity；opaque geometry/timeline/effect 引用；不可变段快照；连段重置确定 |
 | C09 `combat_modifiers` | 实现、测试对象相同 | 不重放 | 复用 `TechniqueSchool`；三系字段正交；正有限因子；乘法溢出 fail closed；caller bounds 收口 |
 | C10 `combat_event_order` | 实现、测试对象相同 | 不重放 | 九阶段稳定顺序；重复 ID/未排序 feed fail closed；表现投影快照只读且不改领域事件 |
 
-对象比较显示六组实现+测试完全相同；C04 为有效后续功能加固；C06/C07 只改变 Dart 构造器写法，原测试对象均未变化。旧对象反向重放会让 C04 丢失 C16 合同，并回退 C06/C07 的基线编译修复。
+对象比较显示六组实现+测试完全相同；C04 为有效后续功能加固；C07 只改变 Dart 构造器写法。C06 在保留既有构造器修复基础上关闭非有限 slow 倍率缺口。旧对象反向重放会让 C04 丢失 C16 合同，并回退 C06/C07 的基线修复。
 
 ## 边界复核
 
 - 九个实现只依赖 `dart:math`、同域 `arena_vector.dart` 或核心 `TechniqueSchool`；未依赖 Flutter UI、application/presentation、data/save、host、公共 combat model 或 reducer。
 - 九个实现没有中文玩家文案；没有新增产品平衡值、关卡 ID、生产默认值或未决 policy。
 - 本分支不修改 `phase0a_combat_model.dart`、`phase0a_combat_reducer.dart`、`data/**`、save、UI、host、数值或 `docs/dispatch/**`。
-- 旧专项测试声明为 77 项；当前基线因 C16 防御加固新增 4 项，当前完整九文件专项集合为 81 项。验收时保留并运行完整 81 项，不删除有效加固测试来伪造 77 数字；77 项旧核心仍是完整集合的严格子集。
+- 旧专项测试声明为 77 项；当前基线因 C16 防御加固新增 4 项，本次 P2 闭环新增 1 项，当前完整九文件专项集合为 82 项。验收保留并运行完整 82 项；77 项旧核心仍是完整集合的严格子集。
+
+## P2 闭环
+
+- 问题：slow `movementMultiplier` 原判断仅检查 `<= 0` 与 `> 1`，`double.nan` 两个比较均为 false，可穿过构造校验并污染派生倍率。
+- 修复：构造期先要求 `movementMultiplier.isFinite`，再守 `(0, 1]` 原范围；未改 slow 的产品语义或其他状态合同。
+- 回归：同一测试覆盖 `double.nan`、`double.infinity`、`double.negativeInfinity`，三者均 fail closed。
 
 ## 验证
 
-- 九个 targeted 测试文件：当前完整 `81/81`，全部通过。旧 M1 核心为其中 `77/77`，C16 防御加固新增 `4/4`。
+- C06 targeted：`13/13`，全部通过。
+- 九个 targeted 测试文件：当前完整 `82/82`，全部通过。旧 M1 核心 `77/77`、C16 防御加固 `4/4`、本次有限值回归 `1/1`。
 - 18 文件 scoped analyze：`Analyzing 18 items... No issues found`。
 - fresh worktree 首轮测试在 0 项执行时因缺 `.dart_tool/package_config.json` 触发 Flutter native-assets `Bad state: No element`；`flutter pub get --offline` 仅恢复被忽略的本地元数据，`pubspec.lock`/`pubspec.yaml` 未变，随后同一 targeted 命令通过。
 - `git diff --check`：PASS。
-- 范围 diff check：PASS；相对冻结基线仅新增本计划与本审计，九个实现/测试均未改。
-- 独立子 agent 终审：PASS；无 P0/P1，祖先关系、零 cherry-pick、范围和 `77 + 4 = 81` 证据均成立。
+- 范围 diff check：PASS；相对冻结基线仅改 C06 实现与测试，并新增本计划与本审计。
+- 独立子 agent 终审：无 P0/P1；其发现的唯一 P2 已由本次同范围补丁闭环并通过专项验证。
 
 ## 遗留风险
 
 - 本次证明的是委派快照 `1a7ddbf9`，不覆盖 Batch7 分支在派发后新增的并发提交。
 - 九个合同中的部分已被后续 G1/G2 adapter 消费；本次没有修改这些消费方，也不宣称黑风岭产品纵切已完成。
 - `PROPOSED` / `TUNING` 决策仍保持未冻结；本审计没有从现有 API 反推产品语义。
-- 独立终审发现基线既有 P2：`status_effects.dart` 的 slow `movementMultiplier` 范围判断未显式检查 `isFinite`，因此 `double.nan` 可穿过构造校验并污染派生倍率。本次不在动态验证锁期间修改已验绿基线；后续若加固，须在同文件与对应测试内补有限值拒绝并重新运行专项验证。
