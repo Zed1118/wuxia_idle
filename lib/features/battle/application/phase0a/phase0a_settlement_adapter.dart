@@ -5,6 +5,8 @@ import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
+import 'phase0a_battle_snapshot_factory.dart';
+import 'phase0a_encounter_mapping.dart';
 import 'phase0a_stage_content_mapper.dart';
 
 /// Converts Phase 0A terminal state and semantic events into settlement input.
@@ -16,11 +18,47 @@ final class Phase0aSettlementAdapter {
     required Phase0aBattleOutcome outcome,
     required Phase0aArenaState finalState,
     required List<Phase0aEvent> events,
+  }) => _settle(
+    playerActorId: mapping.initialState.player.id,
+    combatants: mapping.combatants,
+    moveBindings: mapping.moveBindings,
+    outcome: outcome,
+    finalState: finalState,
+    events: events,
+  );
+
+  static CombatSettlementSnapshot fromEncounterMapping({
+    required Phase0aEncounterMapping mapping,
+    required Phase0aBattleOutcome outcome,
+    required Phase0aArenaState finalState,
+    required List<Phase0aEvent> events,
+  }) => _settle(
+    playerActorId: mapping.initialState.player.id,
+    combatants: mapping.combatants,
+    moveBindings: mapping.moveBindings,
+    outcome: outcome,
+    finalState: finalState,
+    events: events,
+  );
+
+  static CombatSettlementSnapshot _settle({
+    required String playerActorId,
+    required List<Phase0aCombatantInput> combatants,
+    required Map<Phase0aDamageKind, SkillDef?> moveBindings,
+    required Phase0aBattleOutcome outcome,
+    required Phase0aArenaState finalState,
+    required List<Phase0aEvent> events,
   }) {
+    final combatantSnapshot = List<Phase0aCombatantInput>.unmodifiable(
+      combatants,
+    );
+    final moveBindingSnapshot = Map<Phase0aDamageKind, SkillDef?>.unmodifiable(
+      moveBindings,
+    );
+    final eventSnapshot = List<Phase0aEvent>.unmodifiable(events);
     if (outcome == Phase0aBattleOutcome.ongoing) {
       throw StateError('Cannot settle an ongoing Phase0a battle');
     }
-    final playerActorId = mapping.initialState.player.id;
     if (finalState.player.id != playerActorId ||
         finalState.player.side != Phase0aSide.player) {
       throw StateError(
@@ -29,7 +67,7 @@ final class Phase0aSettlementAdapter {
         '${finalState.player.side.name}',
       );
     }
-    final mappedPlayerCount = mapping.combatants
+    final mappedPlayerCount = combatantSnapshot
         .where((combatant) => combatant.actorId == playerActorId)
         .length;
     if (mappedPlayerCount != 1) {
@@ -39,7 +77,7 @@ final class Phase0aSettlementAdapter {
       );
     }
     final characterIdByActor = {
-      for (final combatant in mapping.combatants)
+      for (final combatant in combatantSnapshot)
         combatant.actorId: combatant.snapshot.characterId,
     };
     final currentActors = <String, Phase0aActor>{
@@ -47,7 +85,7 @@ final class Phase0aSettlementAdapter {
       for (final enemy in finalState.enemies) enemy.id: enemy,
     };
     final participants = <CombatParticipantSnapshot>[
-      for (final combatant in mapping.combatants)
+      for (final combatant in combatantSnapshot)
         CombatParticipantSnapshot(
           characterId: combatant.snapshot.characterId,
           currentHp: combatant.actorId == playerActorId
@@ -83,7 +121,7 @@ final class Phase0aSettlementAdapter {
     }) {
       final characterId = characterIdByActor[actorId];
       if (characterId == null) return;
-      final combatant = mapping.combatants.firstWhere(
+      final combatant = combatantSnapshot.firstWhere(
         (entry) => entry.actorId == actorId,
       );
       final ownsSkill = combatant.snapshot.availableSkills.any(
@@ -93,9 +131,9 @@ final class Phase0aSettlementAdapter {
           combatant.snapshot.skillLoadout.basicAttack?.id == skillId;
       final tacticalSkill = tacticalKind == null
           ? null
-          : mapping.moveBindings[tacticalKind];
+          : moveBindingSnapshot[tacticalKind];
       final isMappedTactical =
-          actorId == mapping.initialState.player.id &&
+          actorId == playerActorId &&
           tacticalSkill?.id == skillId &&
           tacticalSkill?.source == SkillSource.special &&
           tacticalSkill?.phase0aBehavior != null;
@@ -112,12 +150,12 @@ final class Phase0aSettlementAdapter {
     }
 
     void addSkillCast(String actorId, int tick, Phase0aDamageKind kind) {
-      final skillId = mapping.moveBindings[kind]?.id;
+      final skillId = moveBindingSnapshot[kind]?.id;
       if (skillId == null) return;
       addSkillCastById(actorId, tick, skillId);
     }
 
-    for (final event in events) {
+    for (final event in eventSnapshot) {
       switch (event) {
         case Phase0aAttackStarted(:final actor, :final tick):
           hadActions = true;

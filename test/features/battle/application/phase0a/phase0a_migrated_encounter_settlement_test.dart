@@ -237,7 +237,7 @@ Phase0aEncounterMapping _encounterMapping({
   );
 }
 
-List<Phase0aEvent> _events() => const [
+List<Phase0aEvent> _events() => List<Phase0aEvent>.of(const [
   Phase0aAttackStarted(
     seq: 1,
     tick: 1,
@@ -330,7 +330,7 @@ List<Phase0aEvent> _events() => const [
     resolvedDamage: 17,
     remainingHealth: 70,
   ),
-];
+]);
 
 List<(int, int, int)> _participants(CombatSettlementSnapshot snapshot) => [
   for (final participant in snapshot.participants)
@@ -573,7 +573,7 @@ void main() {
         hasLength(1),
       );
       expect(
-        RegExp(r'for\s*\(final event in \w*[Ee]vents\w*\)').allMatches(source),
+        RegExp(r'for\s*\(final event in \w*[Ee]vent\w*\)').allMatches(source),
         hasLength(1),
       );
       expect(source, isNot(contains('mapping.director')));
