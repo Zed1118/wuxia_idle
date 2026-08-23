@@ -212,4 +212,15 @@ void main() {
     );
     expect(first.advance(complete, TargetDefeated('x')), same(complete));
   });
+
+  test('progress equality includes objective ownership', () {
+    final first = DefeatTargetsObjective(const ['x']);
+    final second = DefeatTargetsObjective(const ['x']);
+    expect(first.initialProgress, first.initialProgress);
+    expect(first.initialProgress, isNot(equals(second.initialProgress)));
+    expect(
+      first.initialProgress.hashCode,
+      isNot(second.initialProgress.hashCode),
+    );
+  });
 }

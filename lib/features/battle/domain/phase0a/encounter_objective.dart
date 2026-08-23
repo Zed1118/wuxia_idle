@@ -155,6 +155,7 @@ final class EncounterObjectiveProgress {
   @override
   bool operator ==(Object other) =>
       other is EncounterObjectiveProgress &&
+      identical(other._ownerToken, _ownerToken) &&
       other.completed == completed &&
       other.satisfied.length == satisfied.length &&
       other.satisfied.containsAll(satisfied) &&
@@ -164,6 +165,7 @@ final class EncounterObjectiveProgress {
 
   @override
   int get hashCode => Object.hash(
+    identityHashCode(_ownerToken),
     completed,
     Object.hashAll(satisfied.toList()..sort()),
     elapsed,
