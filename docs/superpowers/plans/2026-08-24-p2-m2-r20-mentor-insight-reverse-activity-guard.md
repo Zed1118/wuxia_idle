@@ -52,7 +52,16 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
 
 - CLI/version：`qoderclicn` 1.1.28；`--list-models` 实测含精确
   `Qwen3.8-Max`。
-- 编码前设计审查：待执行。
+- 编码前设计审查：实际执行 `-m Qwen3.8-Max` +
+  `--reasoning-effort high` + `--permission-mode dont_ask` +
+  `--tools Read Grep Glob` + `--no-session-persistence`，明确禁止
+  Bash/Edit/Write。Qoder 实际仅使用 Read/Grep/Glob，结论
+  `DESIGN PASS`，P0=0、P1=0。三项 P2 均纳入测试设计：import
+  正则白名单 + 文本禁词 + AST 三层 source guard；error 的
+  `activeCompanion` 用 `same()` 锁定同一实例；测试锁定
+  `MentorInsightBlockingActivity.values` 与既有互斥集合等价。
+  Qoder 自述无法内省证明底层模型，因此精确模型证据仅以
+  CLI selector 与 `--list-models` 可用性为准，不伪造额外自报。
 - 最终 diff 审查：待执行。
 
 ## 验收 checklist（CLAUDE §8.2）
@@ -79,11 +88,12 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
 
 ## 当前恢复点
 
-- 状态：设计/API 与验收矩阵已冻结，待 Qoder 编码前只读审查。
-- 最后完成：核对 Batch17 tip `88e14134`，完整读取 CLAUDE / AGENTS /
-  Batch17 R20 / R02 / R15 / R18 与已否清单。
-- 下一步：提交计划，运行 Qoder 设计审查，再开始红测。
+- 状态：设计/API 与验收矩阵已冻结，Qoder 编码前只读审查
+  `DESIGN PASS`，待红测。
+- 最后完成：提交计划恢复点 `a1330858`；Qoder 1.1.28 /
+  exact `Qwen3.8-Max` / high / Read-Grep-Glob-only 审查为
+  P0/P1=0，三项 P2 已纳入测试设计。
+- 下一步：新增测试并跑出目标 source/API 缺失的有效红灯。
 - 已跑验证：初始 `git status` clean；CLI 1.1.28 与精确模型选择器
-  已核对。
+  已核对；Qoder 设计审查 `DESIGN PASS` / P0=0 / P1=0。
 - 阻塞：无。production host/shared occupancy 接线继续为显式 Gate。
-
