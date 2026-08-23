@@ -8,15 +8,21 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/validation/combat_stage_encounter_route_selector.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/attack_token_enforcing_batch_gate.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_token_lease_batch_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_explicit_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_migrated_encounter_plan_builder.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_lease_runtime.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -61,6 +67,66 @@ const _enemyAdapter = Phase0aEnemyAiAdapter(
   attackHalfArcRadians: math.pi / 3,
   attackCooldownSeconds: 0.5,
 );
+
+final class _RecordingLeaseGate implements Phase0aAttackTokenLeaseBatchGate {
+  _RecordingLeaseGate(this.delegate);
+
+  final Phase0aAttackTokenLeaseBatchGate delegate;
+  final List<AttackTokenLeaseRuntime> runtimes = [];
+  final List<AttackTokenLeaseSnapshot> snapshots = [];
+
+  @override
+  Phase0aPreparedAttackTokenLeaseBatch prepare({
+    required AttackTokenLeaseRuntime runtime,
+    required List<Phase0aIntent> enemyIntents,
+  }) {
+    runtimes.add(runtime);
+    snapshots.add(runtime.snapshot);
+    return delegate.prepare(runtime: runtime, enemyIntents: enemyIntents);
+  }
+}
+
+final class _CountingObjectiveSource
+    implements Phase0aEncounterObjectiveEventSource {
+  _CountingObjectiveSource(this.delegate);
+
+  final Phase0aEncounterObjectiveEventSource delegate;
+  var calls = 0;
+
+  @override
+  Iterable<EncounterObjectiveEvent> eventsFor(
+    Phase0aEncounterObjectiveFrame frame,
+  ) {
+    calls++;
+    return delegate.eventsFor(frame);
+  }
+}
+
+final class _ThrowOnceObjectiveSource
+    implements Phase0aEncounterObjectiveEventSource {
+  _ThrowOnceObjectiveSource(this.delegate);
+
+  final Phase0aEncounterObjectiveEventSource delegate;
+  var calls = 0;
+
+  @override
+  Iterable<EncounterObjectiveEvent> eventsFor(
+    Phase0aEncounterObjectiveFrame frame,
+  ) {
+    calls++;
+    if (calls == 1) throw StateError('objective source failed');
+    return delegate.eventsFor(frame);
+  }
+}
+
+final class _RecordingObserver implements Phase0aEnemyIntentObserver {
+  final List<Phase0aEnemyIntentObservation> observations = [];
+
+  @override
+  void observe(Phase0aEnemyIntentObservation observation) {
+    observations.add(observation);
+  }
+}
 
 CombatEncounterSpawnEntry _entry(String id) => CombatEncounterSpawnEntry(
   entryId: 'entry_$id',
@@ -166,6 +232,20 @@ _buildFlow({
   required int seed,
   Phase0aAttackTokenEnforcementRequestMapper? tokenRequestMapper,
 }) {
+  final plan = _buildPlan();
+  final objectiveSource = _objectiveSource(plan);
+  final rng = math.Random(seed);
+  final flow = Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
+    plan: plan,
+    numbers: GameRepository.instance.numbers,
+    rng: rng,
+    tokenRequestMapper: tokenRequestMapper ?? _requestMapper(),
+    objectiveEventSource: objectiveSource,
+  );
+  return (flow: flow, rng: rng, plan: plan);
+}
+
+Phase0aMigratedEncounterPlan _buildPlan({String? omittedCombatantId}) {
   final route = MigratedCombatStageEncounterRoute(
     'batch14_stage',
     _encounter(),
@@ -196,15 +276,17 @@ _buildFlow({
       skillSlots: const [],
     ),
     combatants: [
-      Phase0aCombatantInput(
-        actorId: 'player',
-        snapshot: _snapshot(characterId: 1, player: true),
-      ),
-      for (var index = 1; index <= 3; index += 1)
+      if (omittedCombatantId != 'player')
         Phase0aCombatantInput(
-          actorId: 'e$index',
-          snapshot: _snapshot(characterId: index + 1, player: false),
+          actorId: 'player',
+          snapshot: _snapshot(characterId: 1, player: true),
         ),
+      for (var index = 1; index <= 3; index += 1)
+        if (omittedCombatantId != 'e$index')
+          Phase0aCombatantInput(
+            actorId: 'e$index',
+            snapshot: _snapshot(characterId: index + 1, player: false),
+          ),
     ],
     moveBindings: const {
       Phase0aDamageKind.basic: _basicSkill,
@@ -214,24 +296,65 @@ _buildFlow({
     playerAdapter: _playerAdapter,
     enemyAiAdapter: _enemyAdapter,
   );
-  final objectiveSource = Phase0aExplicitObjectiveEventSource(
-    roster: plan.roster,
-    defeatProjectionsByActorId: const {
-      'e1': [Phase0aTargetDefeatProjection('objective_e1')],
-      'e2': [],
-      'e3': [],
-    },
-    externalProjectors: const [],
-  );
-  final rng = math.Random(seed);
-  final flow = Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
-    plan: plan,
-    numbers: GameRepository.instance.numbers,
-    rng: rng,
-    tokenRequestMapper: tokenRequestMapper ?? _requestMapper(),
-    objectiveEventSource: objectiveSource,
-  );
-  return (flow: flow, rng: rng, plan: plan);
+  return plan;
+}
+
+Phase0aEncounterObjectiveEventSource _objectiveSource(
+  Phase0aMigratedEncounterPlan plan,
+) => Phase0aExplicitObjectiveEventSource(
+  roster: plan.roster,
+  defeatProjectionsByActorId: const {
+    'e1': [Phase0aTargetDefeatProjection('objective_e1')],
+    'e2': [],
+    'e3': [],
+  },
+  externalProjectors: const [],
+);
+
+Phase0aExplicitAttackTokenLeaseBatchGate _explicitLeaseGate(
+  Phase0aAttackTokenLeaseBatchPlanner planner,
+) => Phase0aExplicitAttackTokenLeaseBatchGate(planner: planner);
+
+Phase0aExplicitAttackTokenLeaseBatchGate _noOpLeaseGate() =>
+    _explicitLeaseGate(({
+      required AttackTokenLeaseSnapshot leaseSnapshot,
+      required List<Phase0aIntent> enemyIntents,
+    }) {
+      return Phase0aAttackTokenLeaseBatchPlan(
+        enemyIntents: enemyIntents,
+        mutations: const [],
+      );
+    });
+
+Phase0aEncounterFlow _assembleLeasePlan({
+  required Phase0aMigratedEncounterPlan plan,
+  required math.Random rng,
+  required Phase0aAttackTokenLeaseBatchGate gate,
+  required AttackTokenLeaseRuntime runtime,
+  required Phase0aEncounterObjectiveEventSource objectiveSource,
+  Phase0aEnemyIntentObserver? observer,
+}) =>
+    Phase0aProductionFlowAssembler.assembleMigratedEncounterPlanWithAttackTokenLease(
+      plan: plan,
+      numbers: GameRepository.instance.numbers,
+      rng: rng,
+      attackTokenLeaseBatchGate: gate,
+      attackTokenLeaseRuntime: runtime,
+      objectiveEventSource: objectiveSource,
+      enemyIntentObserver: observer,
+    );
+
+void _expectFlowUnchanged({
+  required Phase0aEncounterFlow flow,
+  required Phase0aArenaState state,
+  required Object spawnState,
+  required Phase0aBattleOutcome outcome,
+  required Object records,
+}) {
+  expect(flow.state, same(state));
+  expect(flow.spawnState, same(spawnState));
+  expect(flow.outcome, outcome);
+  expect(flow.lastOrderedEventRecords, same(records));
 }
 
 void main() {
@@ -307,6 +430,219 @@ void main() {
     expect(built.flow.outcome, Phase0aBattleOutcome.ongoing);
   });
 
+  test(
+    'lease bridge forwards exact dependencies without assembly mutation',
+    () {
+      final plan = _buildPlan();
+      final runtime = AttackTokenLeaseRuntime.empty();
+      final seedSnapshot = runtime.snapshot;
+      final gate = _RecordingLeaseGate(_noOpLeaseGate());
+      final observer = _RecordingObserver();
+      final source = _CountingObjectiveSource(_objectiveSource(plan));
+      final bridgeRng = math.Random(227);
+      final directRng = math.Random(227);
+      final flow = _assembleLeasePlan(
+        plan: plan,
+        rng: bridgeRng,
+        gate: gate,
+        runtime: runtime,
+        objectiveSource: source,
+        observer: observer,
+      );
+      final directFlow =
+          Phase0aProductionFlowAssembler.assembleEncounterFromMapping(
+            mapping: plan.mapping,
+            numbers: GameRepository.instance.numbers,
+            rng: directRng,
+            attackTokenLeaseBatchGate: _noOpLeaseGate(),
+            attackTokenLeaseRuntime: AttackTokenLeaseRuntime.empty(),
+            objectiveTracker: Phase0aObjectiveRuntimeTracker(
+              controller: plan.runtimeContracts.objectiveController,
+            ),
+            objectiveEventSource: _objectiveSource(plan),
+          );
+
+      expect(gate.runtimes, isEmpty);
+      expect(runtime.snapshot, same(seedSnapshot));
+      expect(runtime.snapshot.revision, 0);
+      expect(runtime.snapshot.activeLeases, isEmpty);
+      expect(bridgeRng.nextDouble(), directRng.nextDouble());
+
+      const command = Phase0aPlayerCommand(
+        attack: true,
+        attackAimDirection: ArenaVector(1, 0),
+      );
+      final bridgeEvents = flow.advance(deltaSeconds: 0.5, command: command);
+      final directEvents = directFlow.advance(
+        deltaSeconds: 0.5,
+        command: command,
+      );
+
+      expect(gate.runtimes.single, same(runtime));
+      expect(gate.snapshots.single, same(seedSnapshot));
+      expect(observer.observations, hasLength(1));
+      expect(source.calls, 1);
+      expect(bridgeEvents, directEvents);
+      expect(flow.state, directFlow.state);
+      expect(flow.outcome, directFlow.outcome);
+      expect(bridgeRng.nextDouble(), directRng.nextDouble());
+    },
+  );
+
+  test('two lease bridge calls start fresh objective lineage', () {
+    final plan = _buildPlan();
+    final firstSource = _CountingObjectiveSource(_objectiveSource(plan));
+    final secondSource = _CountingObjectiveSource(_objectiveSource(plan));
+    final first = _assembleLeasePlan(
+      plan: plan,
+      rng: math.Random(229),
+      gate: _noOpLeaseGate(),
+      runtime: AttackTokenLeaseRuntime.empty(),
+      objectiveSource: firstSource,
+    );
+    final second = _assembleLeasePlan(
+      plan: plan,
+      rng: math.Random(229),
+      gate: _noOpLeaseGate(),
+      runtime: AttackTokenLeaseRuntime.empty(),
+      objectiveSource: secondSource,
+    );
+    const command = Phase0aPlayerCommand(
+      attack: true,
+      attackAimDirection: ArenaVector(1, 0),
+    );
+
+    first.advance(deltaSeconds: 0.5, command: command);
+    expect(first.outcome, Phase0aBattleOutcome.victory);
+    expect(firstSource.calls, 1);
+    expect(second.outcome, Phase0aBattleOutcome.ongoing);
+    expect(secondSource.calls, 0);
+
+    second.advance(deltaSeconds: 0.5, command: command);
+    expect(second.outcome, Phase0aBattleOutcome.victory);
+    expect(secondSource.calls, 1);
+  });
+
+  for (final failure in ['planner', 'lease validation']) {
+    test('$failure failure publishes nothing and retries predecessor', () {
+      final plan = _buildPlan();
+      var first = true;
+      final gate = _RecordingLeaseGate(
+        _explicitLeaseGate(({
+          required AttackTokenLeaseSnapshot leaseSnapshot,
+          required List<Phase0aIntent> enemyIntents,
+        }) {
+          if (first) {
+            first = false;
+            if (failure == 'planner') throw StateError('planner failed');
+            return Phase0aAttackTokenLeaseBatchPlan(
+              enemyIntents: enemyIntents,
+              mutations: [
+                ReleaseAttackTokenLease(AttackTokenLeaseId('unknown')),
+              ],
+            );
+          }
+          return Phase0aAttackTokenLeaseBatchPlan(
+            enemyIntents: enemyIntents,
+            mutations: const [],
+          );
+        }),
+      );
+      final flow = _assembleLeasePlan(
+        plan: plan,
+        rng: math.Random(233),
+        gate: gate,
+        runtime: AttackTokenLeaseRuntime.empty(),
+        objectiveSource: _objectiveSource(plan),
+      );
+      final beforeState = flow.state;
+      final beforeSpawn = flow.spawnState;
+      final beforeOutcome = flow.outcome;
+      final beforeRecords = flow.lastOrderedEventRecords;
+
+      expect(
+        () => flow.advance(
+          deltaSeconds: 0.5,
+          command: const Phase0aPlayerCommand(),
+        ),
+        throwsStateError,
+      );
+      _expectFlowUnchanged(
+        flow: flow,
+        state: beforeState,
+        spawnState: beforeSpawn,
+        outcome: beforeOutcome,
+        records: beforeRecords,
+      );
+
+      flow.advance(deltaSeconds: 0.5, command: const Phase0aPlayerCommand());
+      expect(gate.snapshots.map((snapshot) => snapshot.revision), [0, 0]);
+    });
+  }
+
+  test(
+    'objective source failure publishes nothing and retries predecessor',
+    () {
+      final plan = _buildPlan();
+      final gate = _RecordingLeaseGate(_noOpLeaseGate());
+      final source = _ThrowOnceObjectiveSource(_objectiveSource(plan));
+      final flow = _assembleLeasePlan(
+        plan: plan,
+        rng: math.Random(239),
+        gate: gate,
+        runtime: AttackTokenLeaseRuntime.empty(),
+        objectiveSource: source,
+      );
+      final beforeState = flow.state;
+      final beforeSpawn = flow.spawnState;
+      final beforeOutcome = flow.outcome;
+      final beforeRecords = flow.lastOrderedEventRecords;
+
+      expect(
+        () => flow.advance(
+          deltaSeconds: 0.5,
+          command: const Phase0aPlayerCommand(),
+        ),
+        throwsStateError,
+      );
+      _expectFlowUnchanged(
+        flow: flow,
+        state: beforeState,
+        spawnState: beforeSpawn,
+        outcome: beforeOutcome,
+        records: beforeRecords,
+      );
+
+      flow.advance(deltaSeconds: 0.5, command: const Phase0aPlayerCommand());
+      expect(source.calls, 2);
+      expect(gate.snapshots.map((snapshot) => snapshot.revision), [0, 0]);
+    },
+  );
+
+  test('actor coverage failure precedes planner runtime and RNG', () {
+    final plan = _buildPlan(omittedCombatantId: 'e3');
+    final runtime = AttackTokenLeaseRuntime.empty();
+    final seedSnapshot = runtime.snapshot;
+    final gate = _RecordingLeaseGate(_noOpLeaseGate());
+    final rng = math.Random(241);
+    final control = math.Random(241);
+
+    expect(
+      () => _assembleLeasePlan(
+        plan: plan,
+        rng: rng,
+        gate: gate,
+        runtime: runtime,
+        objectiveSource: _objectiveSource(plan),
+      ),
+      throwsArgumentError,
+    );
+
+    expect(gate.runtimes, isEmpty);
+    expect(runtime.snapshot, same(seedSnapshot));
+    expect(rng.nextDouble(), control.nextDouble());
+  });
+
   test('migrated bridge remains explicit and does not wire lease runtime', () {
     final source = File(
       'lib/features/battle/application/phase0a/'
@@ -314,7 +650,7 @@ void main() {
     ).readAsStringSync();
     final method = source.substring(
       source.indexOf(
-        'static Phase0aEncounterFlow assembleMigratedEncounterPlan',
+        'static Phase0aEncounterFlow assembleMigratedEncounterPlan({',
       ),
       source.indexOf('  /// 全场 actor 精确覆盖'),
     );
@@ -330,6 +666,39 @@ void main() {
       'GameRepository',
       'rootBundle',
       'LegacyCombatStageEncounterRoute',
+    ]) {
+      expect(method, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
+  test('lease bridge source stays a pure explicit mapping delegate', () {
+    final source = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_production_flow_assembler.dart',
+    ).readAsStringSync();
+    final method = source.substring(
+      source.indexOf(
+        'static Phase0aEncounterFlow '
+        'assembleMigratedEncounterPlanWithAttackTokenLease',
+      ),
+    );
+
+    expect(method, contains('mapping: plan.mapping'));
+    expect(method, contains('controller: plan.runtimeContracts.'));
+    expect(method, contains('objectiveController'));
+    expect(method, contains('attackTokenLeaseBatchGate:'));
+    expect(method, contains('attackTokenLeaseRuntime:'));
+    expect(method, contains('objectiveEventSource:'));
+    for (final forbidden in const [
+      'enemyIntentBatchGate:',
+      'AttackTokenEnforcingBatchGate',
+      'tokenRequestMapper',
+      'attackTokenBudgets',
+      'AttackTokenLeaseRuntime.empty(',
+      'Phase0aExplicitAttackTokenLeaseBatchGate(',
+      'ActionTimeline',
+      'GameRepository',
+      'rootBundle',
     ]) {
       expect(method, isNot(contains(forbidden)), reason: forbidden);
     }
