@@ -82,12 +82,13 @@
 
 ## 当前恢复点
 
-- 状态：进行中，实现、回归、Pi 最终 diff 审查与终验完成，
-  待提交实现/证据并追加 READY 空提交。
+- 状态：完成，实现提交
+  `2f68aabc699f7ca54dcf9780d3fceb442ac668a5` 已冻结，待追加精确
+  READY 空提交。
 - 最后完成：专用 TDD 先以两个 assembler 入口缺参数红灯，最小
   透传后变绿；6 个相关测试文件分别 5/12/15/23/15/1，合计
-  71/71 通过。
-- 下一步：提交实现与证据，追加精确 READY 空提交。
+  71/71 通过；Pi post-triage 终审 `PASS`，0 P0 / 0 P1 / 0 P2。
+- 下一步：提交本证据更新，追加精确 READY 空提交后由主控复核/合并。
 - 已跑验证：`flutter pub get`；`dart run build_runner build`（126
   outputs）；`libisar.dylib` SHA-256 一致；targeted 71/71；两处
   scoped `dart analyze` 0 issue；`dart format --output=none
