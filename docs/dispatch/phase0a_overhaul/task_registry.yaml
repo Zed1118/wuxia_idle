@@ -2252,8 +2252,20 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r19-mainline-stage-runtime-release-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r19-mainline-stage-runtime-release
-    status: in_progress
+    status: ready_reviewed
     base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    implementation_commit: fd268f49
+    tip_commit: 45faccd077ac4f8f0e7209b46b53ed5f9b66849a
+    integration_commits:
+      - d500d1c3
+      - 7b45838a
+      - 9ccc746d
+      - edf7f206
+      - 481f781a
+    verification:
+      targeted_tests: 45
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R18-MAINLINE-STAGE-RUNTIME-ADMISSION
       - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
@@ -2304,6 +2316,7 @@ tasks:
     branch: codex/phase2-m2-r21-mentor-insight-durable-claim-boundary-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r21-mentor-insight-durable-claim-boundary
     status: in_progress
+    base_commit: edf7f206d21d605b390a793393a07c535a30703e
     prerequisites:
       - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
