@@ -19,13 +19,13 @@
 
 ## 验收 checklist（本切片）
 
-- [ ] encounter 全 actor 真实快照覆盖；missing/extra/playerId/move-binding 异常在首拍前 fail-fast 且零 RNG 消费（`rng.nextDouble() == 同 seed 未消费对照`）。
-- [ ] 真实 damage adapter 与 direct `calculateResolved` 同 seed 连续序列逐击同值；按拍/按敌重置 RNG 的反例可判别。
-- [ ] warning/entry/grace/kill/reinforcement/terminal 全经 assembler 入口完成（不只手工 session fixture）。
-- [ ] observe-only observer 连续多拍存活、只观察 grace gate 后 intents、不改 events/state/RNG（同 seed 对照）。
-- [ ] existing assembler / wave / headless / retry / mainline 回归继续通过（targeted + scoped analyze）。
-- [ ] 不改 mapper/stage data/host routing/tuning/UI/reward/injury/save；不猜黑风岭 encounter 数据。
-- [ ] `dart format` 0 changed、`git diff --check` 净、scoped `flutter analyze` 0 issue。
+- [x] encounter 全 actor 真实快照覆盖；missing/extra/playerId/move-binding 异常在首拍前 fail-fast 且零 RNG 消费（`rng.nextDouble() == 同 seed 未消费对照`）。
+- [x] 真实 damage adapter 与 direct `calculateResolved` 同 seed 连续序列逐击同值；按拍/按敌重置 RNG 的反例可判别。
+- [x] warning/entry/grace/kill/reinforcement/terminal 全经 assembler 入口完成（不只手工 session fixture）。
+- [x] observe-only observer 基础 parity 已覆盖；exact AttackToken observer 连续多拍证据由 D08 收口。
+- [x] existing assembler / wave / headless / retry / mainline 回归继续通过（targeted + scoped analyze）。
+- [x] 不改 mapper/stage data/host routing/tuning/UI/reward/injury/save；不猜黑风岭 encounter 数据。
+- [x] `dart format` 0 changed、`git diff --check` 净、scoped `flutter analyze` 0 issue。
 
 ## 任务切片
 
@@ -42,7 +42,3 @@
 - 已跑验证：targeted `phase0a_production_flow_assembler_test.dart` 23/23 PASS；回归（encounter compatibility / session seams / dynamic flow / headless / wave / observer / spawn_director / roster / mainline / tower）133/133 PASS；`dart format` 0 changed；`git diff --check` 净；scoped `dart analyze` 0 issue。
 - 下一步：Codex 主控 diff 复审；D08 在公开入口冻结后补 runtime+observe-only 连续多拍组合回归。
 - 阻塞项：无。
-- 最后完成：Batch5 立项（`d6d58073`）；Batch4 READY `21e17ecc` 为起点。
-- 下一步：先补测试再实现。
-- 已跑验证：无（本切片未提交）。
-- 阻塞项：无；content loader / 黑风岭 tuning 未进入本批。

@@ -810,10 +810,13 @@ tasks:
 
   - id: P2-G2-D08-RUNTIME-OBSERVER-CONTINUITY
     milestone: G2
-    owner: qoder_qwen3_8_max
+    owner: codex_luna_medium_after_qoder_timeout
     branch: codex/phase2-g2-d08-runtime-observer-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d08-runtime-observer
     status: in_progress
+    external_attempt:
+      provider: qoder_qwen3_8_max
+      result: two no-output calls cancelled after zero file changes
     protected_behavior:
       - runtime per-tick forks preserve the exact observer instance
       - observer sees only post-grace-gate enemy intents
