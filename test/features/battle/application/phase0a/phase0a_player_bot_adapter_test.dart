@@ -24,20 +24,23 @@ Phase0aPlayerInputAdapter _adapter() => const Phase0aPlayerInputAdapter(
   clearCooldownSeconds: 4,
 );
 
-Phase0aActor _actor({required Phase0aSide side, required String id}) =>
-    Phase0aActor(
-      id: id,
-      side: side,
-      position: const ArenaVector(0, 0),
-      facing: const ArenaVector(1, 0),
-      maxHealth: 100,
-      currentHealth: 100,
-      moveSpeed: 100,
-      qiCurrent: 100,
-      qiMax: 100,
-      attackCooldownRemaining: 0,
-      defeatKind: Phase0aDefeatKind.normal,
-    );
+Phase0aActor _actor({
+  required Phase0aSide side,
+  required String id,
+  ArenaVector position = const ArenaVector(0, 0),
+}) => Phase0aActor(
+  id: id,
+  side: side,
+  position: position,
+  facing: const ArenaVector(1, 0),
+  maxHealth: 100,
+  currentHealth: 100,
+  moveSpeed: 100,
+  qiCurrent: 100,
+  qiMax: 100,
+  attackCooldownRemaining: 0,
+  defeatKind: Phase0aDefeatKind.normal,
+);
 
 Phase0aArenaState _state() => Phase0aArenaState(
   tick: 4,
@@ -109,6 +112,84 @@ void main() {
       expect(assault.clear, isTrue);
       expect(guard.gather, isFalse);
       expect(guard.clear, isTrue);
+    },
+  );
+
+  test('seek gap holds resources outside a visible stagger window', () {
+    final enemy = _actor(side: Phase0aSide.enemy, id: 'enemy');
+    final bot = Phase0aPlayerBotAdapter(
+      playerAdapter: _adapter(),
+      policy: const Phase0aBotTacticPolicy.seekGap(),
+    );
+    final closed = bot.commandFor(_state());
+    final open = bot.commandFor(
+      Phase0aArenaState(
+        tick: 4,
+        nextSeq: 8,
+        player: _actor(side: Phase0aSide.player, id: 'player'),
+        enemies: [enemy.copyWith(staggerTicksRemaining: 1)],
+        skillSlots: _state().skillSlots,
+      ),
+    );
+
+    expect(closed.gather, isFalse);
+    expect(closed.clear, isFalse);
+    expect(closed.skillHotkey, isNull);
+    expect(open.gather, isFalse);
+    expect(open.clear, isFalse);
+  });
+
+  test('steady guard prioritizes clear during an observable enemy window', () {
+    final enemy = _actor(side: Phase0aSide.enemy, id: 'enemy');
+    final bot = Phase0aPlayerBotAdapter(
+      playerAdapter: _adapter(),
+      policy: const Phase0aBotTacticPolicy.steadyGuard(),
+    );
+    final closed = bot.commandFor(_state());
+    final open = bot.commandFor(
+      Phase0aArenaState(
+        tick: 4,
+        nextSeq: 8,
+        player: _actor(side: Phase0aSide.player, id: 'player'),
+        enemies: [enemy.copyWith(staggerTicksRemaining: 1)],
+        skillSlots: _state().skillSlots,
+      ),
+    );
+
+    expect(closed.clear, isFalse);
+    expect(open.clear, isTrue);
+    expect(open.gather, isFalse);
+  });
+
+  test(
+    'seek gap deterministically selects the nearest visible window target',
+    () {
+      final bot = Phase0aPlayerBotAdapter(
+        playerAdapter: _adapter(),
+        policy: const Phase0aBotTacticPolicy.seekGap(),
+      );
+      final normal = _actor(
+        side: Phase0aSide.enemy,
+        id: 'near-normal',
+        position: const ArenaVector(-40, 0),
+      );
+      final window = _actor(
+        side: Phase0aSide.enemy,
+        id: 'window',
+        position: const ArenaVector(100, 0),
+      ).copyWith(staggerTicksRemaining: 1);
+      final command = bot.commandFor(
+        Phase0aArenaState(
+          tick: 4,
+          nextSeq: 8,
+          player: _actor(side: Phase0aSide.player, id: 'player'),
+          enemies: [normal, window],
+          skillSlots: _state().skillSlots,
+        ),
+      );
+
+      expect(command.right, isTrue);
+      expect(command.left, isFalse);
     },
   );
 }

@@ -28,7 +28,7 @@ final class Phase0aPlayerBotAdapter {
       return const Phase0aPlayerCommand();
     }
     final player = state.player;
-    final target = _nearestEnemy(state);
+    final target = _targetFor(state);
     final toTarget = target.position - player.position;
     final distance = toTarget.length;
     final outOfRange = distance > playerAdapter.attackRange;
@@ -39,6 +39,7 @@ final class Phase0aPlayerBotAdapter {
     final clearReady = _slotReady(state, playerAdapter.clearSlot);
     final numericSkill = _firstReadyNumericSkill(state);
     final tactical = _tacticalCommands(
+      burstWindow: _isBurstWindow(target),
       gatherReady: gatherReady,
       clearReady: clearReady,
       numericSkill: numericSkill,
@@ -56,10 +57,14 @@ final class Phase0aPlayerBotAdapter {
   }
 
   _TacticalCommands _tacticalCommands({
+    required bool burstWindow,
     required bool gatherReady,
     required bool clearReady,
     required int? numericSkill,
   }) {
+    if (policy.requiresBurstWindow && !burstWindow) {
+      return const _TacticalCommands();
+    }
     if (policy.parallelTacticalActions) {
       return _TacticalCommands(
         gather: policy.allows(Phase0aBotAction.gather) && gatherReady,
@@ -89,11 +94,35 @@ final class Phase0aPlayerBotAdapter {
   }
 
   /// 最近存活敌人;等距时按 id 稳定决胜,保证确定性。
-  Phase0aActor _nearestEnemy(Phase0aArenaState state) {
-    var best = state.enemies.first;
-    var bestDistance = (best.position - state.player.position).lengthSquared;
-    for (final enemy in state.enemies.skip(1)) {
-      final distance = (enemy.position - state.player.position).lengthSquared;
+  Phase0aActor _targetFor(Phase0aArenaState state) {
+    if (policy.prioritizeBurstWindowTarget) {
+      final windowTargets = state.enemies.where(_isBurstWindow);
+      if (windowTargets.isNotEmpty) {
+        return _nearestEnemy(state, candidates: windowTargets);
+      }
+    }
+    return _nearestEnemy(state);
+  }
+
+  bool _isBurstWindow(Phase0aActor enemy) =>
+      enemy.chargingCast != null || enemy.staggerTicksRemaining > 0;
+
+  Phase0aActor _nearestEnemy(
+    Phase0aArenaState state, {
+    Iterable<Phase0aActor>? candidates,
+  }) {
+    return _nearestEnemyFrom(candidates ?? state.enemies, state.player);
+  }
+
+  Phase0aActor _nearestEnemyFrom(
+    Iterable<Phase0aActor> enemies,
+    Phase0aActor player,
+  ) {
+    final first = enemies.first;
+    var best = first;
+    var bestDistance = (best.position - player.position).lengthSquared;
+    for (final enemy in enemies.skip(1)) {
+      final distance = (enemy.position - player.position).lengthSquared;
       if (distance < bestDistance ||
           (distance == bestDistance && enemy.id.compareTo(best.id) < 0)) {
         best = enemy;
