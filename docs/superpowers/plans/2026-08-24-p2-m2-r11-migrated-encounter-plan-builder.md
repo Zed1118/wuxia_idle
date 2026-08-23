@@ -90,14 +90,14 @@ production host，不复制任何 assembler/runtime 校验。
 
 ## 当前恢复点
 
-- 状态：实现、验证、Qoder 最终 diff 审查与证据记录均完成；待提交本
-  恢复点后追加精确 READY 空提交并冻结。
-- 最后完成：计划 commit `9ecfff2f`、实现 commit `0e5fd536`；TDD 先因
+- 状态：实现、验证、Qoder 最终 diff 审查与证据记录均完成；分支已以
+  READY `697ce7fd` 冻结，无未提交改动。
+- 最后完成：计划 commit `9ecfff2f`、实现 commit `0e5fd536`、验收证据
+  commit `bc417989`与 READY commit `697ce7fd`；TDD 先因
   目标文件/API 不存在红灯，实现 runtime → same-director roster → mapping 后
   7/7 转绿。Qoder 设计审查 PASS 并采纳私有 plan 构造；最终审查 PASS，
   P0/P1/P2=0。
-- 下一步：提交本证据恢复点；重跑 format/diff/path/status 快速闸门，追加
-  `[READY][QODER][P2-M2-R11] 组合迁移遭遇运行计划` 空提交。
+- 下一步：交还主控，等待独立复审与整合决策。
 - 已跑验证：builder 7/7、runtime mapper 8/8、roster mapper 8/8、route
   selector 10/10、mapping 15/15、assembler 23/23、dynamic encounter runtime 12/12，
   合计 83/83 PASS；scoped `flutter analyze --no-pub` 2 files 0 issue；Dart format
