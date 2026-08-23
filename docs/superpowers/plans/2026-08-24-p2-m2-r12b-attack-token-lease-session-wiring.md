@@ -23,7 +23,7 @@
 - Session 的 transactional gate/runtime 必须成对配置，并与现有 stateless `enemyIntentBatchGate` 互斥。未配置时旧路径保持不变。
 - Session fork 保留 transactional gate identity 与当前 immutable runtime identity/value；只公开 nullable `attackTokenLeaseSnapshot`，不暴露 mutable owner。
 - 每拍顺序固定：adapters → per-intent gate → transactional prepare/materialize → identity-stable unique subsequence validation → observer success → reducer local success → prepared commit → 无抛尾段同时发布 state/runtime/diagnostic。
-- outer `Phase0aEncounterFlow` 继续 fork candidate Session；objective/source/order 后置失败时丢弃候选，因此 old session 的 arena/lease/diagnostic 均不变化。外部 observer 自身副作用不可回滚，本切片只承诺 Session 自有字段。
+- outer `Phase0aEncounterFlow` 继续 fork candidate Session；objective/source/order 后置失败时丢弃候选，因此 old session 的 arena/lease/diagnostic 均不变化。caller-owned planner、observer 与 resolver 的外部副作用不可回滚，本切片只承诺 Session 自有字段。
 
 ## 继续保持 Gate 的语义
 
@@ -43,7 +43,7 @@
 6. planner/R12a prepare/observer/reducer 失败均不发布 Session 自有 state/lease/diagnostic。
 7. fork 保留 gate/runtime identity；成功 candidate 只改变 candidate，原 session 不变。
 8. EncounterFlow 后置 objective/source 失败后可用同一显式 acquire 重试，证明 lease 未泄漏；成功重试只发布一次。
-9. source guard 禁止 timeline/lifecycle inference、host/repository/data/default/candidate/tuning。
+9. source guard 精确禁止 `ActionTimeline`、`rootBundle`、`GameRepository`、`tuning` 与列明的 hit/defeat/cooldown/actor-disappearance lifecycle inference；production host/data/default/candidate 的隔离由 owned-files path guard 与 diff 审查保证。
 10. 变更/受影响 targeted、scoped analyze、format/diff/path/status 全绿；独立复审后 READY。
 
 全量预检发现既有 observer source guard 仍把任意 `AttackToken` 字样视为
@@ -56,8 +56,12 @@ offscreen/telegraph 事实，因此本切片同步该 guard 为精确禁止 dire
 - [x] Batch14 READY 精确基线与 owned files 已冻结。
 - [x] 独立只读预检确认 shared mutable gate 会破坏 outer-flow rollback，runtime 必须属于 candidate Session。
 - [x] worktree 完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与 dylib SHA 恢复。
-- [ ] 提交本计划，先写有效红测，再实现最小 gate/session 接缝。
-- [ ] targeted/analyze/format/diff/path、独立复审与 READY。
+- [x] `fb448840` 提交计划，`4e9e4332` 提交有效红测，`f5b42011` 实现最小 gate/session 接缝。
+- [x] `93481ffe` 将过时的任意 `AttackToken` 禁令收窄为精确禁止 director/offscreen/telegraph 推断，并把该守卫测试纳入 owned files。
+- [x] 新测试 15/15、8 文件去重 targeted 89/89、scoped analyze 4 items 0 issue、format 4 files 0 changed、全量 4969/4969 PASS；diff/path/status clean。
+- [x] Qoder CLI 1.1.28、精确 `Qwen3.8-Max`、reasoning `high`、Read/Grep/Glob-only 终审：P0/P1 0；两个流程 P2 中 owned-files 已由 `93481ffe` 关闭，READY 由本恢复点继续收口。
+- [x] Codex 独立终审 P0/P1/P2=0；审查指出的 caller-owned 外部副作用与 source-guard 过报均已在本证据中校正，代码/测试无需再改。
+- [x] 本证据提交后追加精确 READY，交由后续集成批次消费；production assembler/host、ActionTimeline 与 lifecycle policy 继续 Gate。
 
 ## READY
 
