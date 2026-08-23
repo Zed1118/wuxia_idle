@@ -14,13 +14,25 @@ encounters:
       - entry_id: wolf_pack_a
         archetype_id: arch_wolf
         role_id: pack_hunter
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: wolf_pack_b
         archetype_id: arch_wolf
         role_id: pack_hunter
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: wolf_alpha
         archetype_id: arch_wolf
         role_id: alpha
-    objective:
-      kind: defend_entity
-      entity_id: escorted_cart
-      required_ticks: 600
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: defend_cart
+          kind: defend_entity
+          entity_id: escorted_cart
+          required_ticks: 600

@@ -241,4 +241,75 @@ void main() {
       expect(firstProgress.processedEventIds, secondProgress.processedEventIds);
     });
   });
+
+  group('mapCombatObjectiveComposition', () {
+    CombatObjectiveCompositionRef composition(
+      CombatObjectiveCompletionRule rule,
+    ) => CombatObjectiveCompositionRef(
+      completionRule: rule,
+      clauses: [
+        CombatObjectiveClauseRef(
+          id: 'clear',
+          primitive: CombatDefeatTargetsRef(const ['target']),
+        ),
+        CombatObjectiveClauseRef(
+          id: 'exit',
+          primitive: CombatReachCheckpointRef(const ['exit']),
+        ),
+      ],
+    );
+
+    test('preserves explicit all/any rules, clause ids and order', () {
+      for (final rule in CombatObjectiveCompletionRule.values) {
+        final mapped = mapCombatObjectiveComposition(
+          composition(rule),
+          tickDuration: tickDuration,
+        );
+        expect(mapped.completionRule, rule);
+        expect(mapped.clauses.map((clause) => clause.id), ['clear', 'exit']);
+        expect(mapped.clauses[0].objective, isA<DefeatTargetsObjective>());
+        expect(mapped.clauses[1].objective, isA<ReachCheckpointObjective>());
+        expect(() => mapped.clauses.clear(), throwsUnsupportedError);
+      }
+    });
+
+    test('maps fresh owner-bound objectives on each invocation', () {
+      final ref = composition(CombatObjectiveCompletionRule.all);
+      final first = mapCombatObjectiveComposition(
+        ref,
+        tickDuration: tickDuration,
+      );
+      final second = mapCombatObjectiveComposition(
+        ref,
+        tickDuration: tickDuration,
+      );
+
+      expect(
+        first.clauses.first.objective,
+        isNot(second.clauses.first.objective),
+      );
+      expect(
+        () => second.clauses.first.objective.advance(
+          first.clauses.first.objective.initialProgress,
+          TargetDefeated('target'),
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('requires the same explicit positive tick duration', () {
+      final ref = composition(CombatObjectiveCompletionRule.any);
+      expect(
+        () => mapCombatObjectiveComposition(ref, tickDuration: Duration.zero),
+        throwsArgumentError,
+      );
+      expect(
+        () => mapCombatObjectiveComposition(
+          ref,
+          tickDuration: const Duration(microseconds: -1),
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
 }

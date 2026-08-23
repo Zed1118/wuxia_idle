@@ -10,6 +10,12 @@ CombatArchetypeVariant variant({
   double attackMultiplier = 1.0,
   double defenseMultiplier = 0.5,
   double speedMultiplier = 1.0,
+  String attackSetId = 'attack_set_default',
+  List<String> attackTagIds = const ['attack_tag_default'],
+  String postureProfileId = 'posture_default',
+  String dropGroupId = 'drop_default',
+  String sfxGroupId = 'sfx_default',
+  List<String> visualVariantIds = const ['visual_default'],
 }) => CombatArchetypeVariant(
   roleId: roleId,
   attackTokenKind: attackTokenKind,
@@ -17,6 +23,12 @@ CombatArchetypeVariant variant({
   attackMultiplier: attackMultiplier,
   defenseMultiplier: defenseMultiplier,
   speedMultiplier: speedMultiplier,
+  attackSetId: attackSetId,
+  attackTagIds: attackTagIds,
+  postureProfileId: postureProfileId,
+  dropGroupId: dropGroupId,
+  sfxGroupId: sfxGroupId,
+  visualVariantIds: visualVariantIds,
 );
 
 CombatEnemyArchetypeDef archetype({

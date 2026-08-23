@@ -1,3 +1,4 @@
+import 'combat_catalog_reference_index.dart';
 import 'combat_enemy_archetype_def.dart';
 import 'combat_encounter_def.dart';
 
@@ -71,6 +72,7 @@ final class CombatStageEncounterAssignment {
 ///   variant role of that archetype.
 final class CombatCatalogManifestDef {
   CombatCatalogManifestDef({
+    required this.referenceIndex,
     required Iterable<CombatEnemyArchetypeDef> archetypes,
     required Iterable<CombatEncounterDef> encounters,
     required Iterable<CombatStageEncounterAssignment> stageAssignments,
@@ -85,6 +87,7 @@ final class CombatCatalogManifestDef {
   final List<CombatEnemyArchetypeDef> archetypes;
   final List<CombatEncounterDef> encounters;
   final List<CombatStageEncounterAssignment> stageAssignments;
+  final CombatCatalogReferenceIndex referenceIndex;
 
   /// Resolves an archetype by [id]; unknown ids return null.
   CombatEnemyArchetypeDef? archetypeById(String id) {
@@ -187,7 +190,81 @@ final class CombatCatalogManifestDef {
             'unknown roleId for archetype ${archetype.id}',
           );
         }
+        _requireKnown(
+          entry.entranceId,
+          referenceIndex.entranceIds,
+          'spawnEntries',
+          'entranceId',
+        );
+        _requireKnown(
+          entry.positionId,
+          referenceIndex.positionIds,
+          'spawnEntries',
+          'positionId',
+        );
+        _requireKnown(
+          entry.behaviorId,
+          referenceIndex.behaviorIds,
+          'spawnEntries',
+          'behaviorId',
+        );
       }
+    }
+
+    for (final archetype in archetypes) {
+      for (final variant in archetype.variants) {
+        _requireKnown(
+          variant.attackSetId,
+          referenceIndex.attackSetIds,
+          'variants',
+          'attackSetId',
+        );
+        for (final id in variant.attackTagIds) {
+          _requireKnown(
+            id,
+            referenceIndex.attackTagIds,
+            'variants',
+            'attackTagIds',
+          );
+        }
+        _requireKnown(
+          variant.postureProfileId,
+          referenceIndex.postureProfileIds,
+          'variants',
+          'postureProfileId',
+        );
+        _requireKnown(
+          variant.dropGroupId,
+          referenceIndex.dropGroupIds,
+          'variants',
+          'dropGroupId',
+        );
+        _requireKnown(
+          variant.sfxGroupId,
+          referenceIndex.sfxGroupIds,
+          'variants',
+          'sfxGroupId',
+        );
+        for (final id in variant.visualVariantIds) {
+          _requireKnown(
+            id,
+            referenceIndex.visualVariantIds,
+            'variants',
+            'visualVariantIds',
+          );
+        }
+      }
+    }
+  }
+
+  static void _requireKnown(
+    String id,
+    Set<String> knownIds,
+    String field,
+    String label,
+  ) {
+    if (!knownIds.contains(id)) {
+      throw ArgumentError.value(id, field, 'unknown $label reference');
     }
   }
 

@@ -7,9 +7,21 @@ archetypes:
         attack_multiplier: 1.1
         defense_multiplier: 0.4
         speed_multiplier: 1.3
+        attack_set_id: attack_set_fixture
+        attack_tag_ids: [attack_tag_fixture]
+        posture_profile_id: posture_fixture
+        drop_group_id: drop_fixture
+        sfx_group_id: sfx_fixture
+        visual_variant_ids: [visual_fixture]
       - role_id: alpha
         attack_token_kind: charge
         hp_multiplier: 1.4
         attack_multiplier: 1.5
         defense_multiplier: 0.6
         speed_multiplier: 0.9
+        attack_set_id: attack_set_fixture
+        attack_tag_ids: [attack_tag_fixture]
+        posture_profile_id: posture_fixture
+        drop_group_id: drop_fixture
+        sfx_group_id: sfx_fixture
+        visual_variant_ids: [visual_fixture]

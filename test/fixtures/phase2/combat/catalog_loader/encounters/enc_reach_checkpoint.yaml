@@ -14,9 +14,18 @@ encounters:
       - entry_id: road_blocker
         archetype_id: arch_bandit
         role_id: melee_brute
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: road_archer
         archetype_id: arch_bandit
         role_id: ranged_scout
-    objective:
-      kind: reach_checkpoint
-      checkpoint_ids: [checkpoint_gate, checkpoint_bridge]
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: reach_route
+          kind: reach_checkpoint
+          checkpoint_ids: [checkpoint_gate, checkpoint_bridge]

@@ -4,6 +4,7 @@
 // FormatException carrying the source name and the offending field path.
 
 import 'defs/combat_catalog_manifest_def.dart';
+import 'defs/combat_catalog_reference_index.dart';
 import 'defs/combat_encounter_def.dart';
 import 'defs/combat_enemy_archetype_def.dart';
 import 'validation/combat_encounter_catalog_validator.dart';
@@ -15,14 +16,16 @@ typedef CombatCatalogYamlSource = (String sourceName, String yaml);
 ///
 /// Merges all [archetypeSources] and [encounterSources] with the single
 /// [manifestSource] into one [CombatCatalogManifestDef]. Duplicate ids across
-/// sources, unknown archetype/role/encounter references and unassigned
-/// encounters all fail closed; the typed manifest additionally closes
-/// stage-encounter uniqueness and migration-state invariants. The result
-/// never retains caller-mutable collections.
+/// sources, unknown archetype/role/encounter/external references and
+/// unassigned encounters all fail closed; the typed manifest additionally
+/// closes stage-encounter uniqueness and migration-state invariants. The
+/// caller supplies [referenceIndex] explicitly; the loader never infers a
+/// content fallback. The result never retains caller-mutable collections.
 CombatCatalogManifestDef loadCombatCatalogManifest({
   required Iterable<CombatCatalogYamlSource> archetypeSources,
   required Iterable<CombatCatalogYamlSource> encounterSources,
   required CombatCatalogYamlSource manifestSource,
+  required CombatCatalogReferenceIndex referenceIndex,
 }) {
   final parsedArchetypeSources = [
     for (final source in archetypeSources)
@@ -53,7 +56,12 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
         );
       }
       archetypeOwners[entry.id] = (source.sourceName, i);
-      final archetype = _buildArchetype(entry, source.sourceName, i);
+      final archetype = _buildArchetype(
+        entry,
+        source.sourceName,
+        i,
+        referenceIndex,
+      );
       archetypes.add(archetype);
       archetypesById[archetype.id] = archetype;
     }
@@ -92,6 +100,27 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
             'for archetype "${spawnEntry.archetypeId}"',
           );
         }
+        _requireKnownReference(
+          spawnEntry.entranceId,
+          referenceIndex.entranceIds,
+          source.sourceName,
+          'encounters[$i].spawn_entries[$j].entrance_id',
+          'entrance',
+        );
+        _requireKnownReference(
+          spawnEntry.positionId,
+          referenceIndex.positionIds,
+          source.sourceName,
+          'encounters[$i].spawn_entries[$j].position_id',
+          'position',
+        );
+        _requireKnownReference(
+          spawnEntry.behaviorId,
+          referenceIndex.behaviorIds,
+          source.sourceName,
+          'encounters[$i].spawn_entries[$j].behavior_id',
+          'behavior',
+        );
       }
       encounters.add(_buildEncounter(entry, source.sourceName, i));
     }
@@ -166,6 +195,7 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
       archetypes: archetypes,
       encounters: encounters,
       stageAssignments: assignments,
+      referenceIndex: referenceIndex,
     );
   } on ArgumentError catch (e) {
     throw FormatException(
@@ -178,6 +208,7 @@ CombatEnemyArchetypeDef _buildArchetype(
   ParsedCombatArchetypeEntry entry,
   String sourceName,
   int index,
+  CombatCatalogReferenceIndex referenceIndex,
 ) {
   final variants = <CombatArchetypeVariant>[];
   final roleOwners = <String, int>{};
@@ -193,6 +224,57 @@ CombatEnemyArchetypeDef _buildArchetype(
       );
     }
     roleOwners[variant.roleId] = i;
+    final path = 'archetypes[$index].variants[$i]';
+    _requireKnownReference(
+      variant.attackSetId,
+      referenceIndex.attackSetIds,
+      sourceName,
+      '$path.attack_set_id',
+      'attack set',
+    );
+    for (var tagIndex = 0; tagIndex < variant.attackTagIds.length; tagIndex++) {
+      _requireKnownReference(
+        variant.attackTagIds[tagIndex],
+        referenceIndex.attackTagIds,
+        sourceName,
+        '$path.attack_tag_ids[$tagIndex]',
+        'attack tag',
+      );
+    }
+    _requireKnownReference(
+      variant.postureProfileId,
+      referenceIndex.postureProfileIds,
+      sourceName,
+      '$path.posture_profile_id',
+      'posture profile',
+    );
+    _requireKnownReference(
+      variant.dropGroupId,
+      referenceIndex.dropGroupIds,
+      sourceName,
+      '$path.drop_group_id',
+      'drop group',
+    );
+    _requireKnownReference(
+      variant.sfxGroupId,
+      referenceIndex.sfxGroupIds,
+      sourceName,
+      '$path.sfx_group_id',
+      'sfx group',
+    );
+    for (
+      var visualIndex = 0;
+      visualIndex < variant.visualVariantIds.length;
+      visualIndex++
+    ) {
+      _requireKnownReference(
+        variant.visualVariantIds[visualIndex],
+        referenceIndex.visualVariantIds,
+        sourceName,
+        '$path.visual_variant_ids[$visualIndex]',
+        'visual variant',
+      );
+    }
     try {
       variants.add(
         CombatArchetypeVariant(
@@ -204,6 +286,12 @@ CombatEnemyArchetypeDef _buildArchetype(
           attackMultiplier: variant.attackMultiplier,
           defenseMultiplier: variant.defenseMultiplier,
           speedMultiplier: variant.speedMultiplier,
+          attackSetId: variant.attackSetId,
+          attackTagIds: variant.attackTagIds,
+          postureProfileId: variant.postureProfileId,
+          dropGroupId: variant.dropGroupId,
+          sfxGroupId: variant.sfxGroupId,
+          visualVariantIds: variant.visualVariantIds,
         ),
       );
     } on ArgumentError catch (e) {
@@ -284,6 +372,9 @@ CombatEncounterDef _buildEncounter(
           entryId: spawnEntry.entryId,
           archetypeId: spawnEntry.archetypeId,
           roleId: spawnEntry.roleId,
+          entranceId: spawnEntry.entranceId,
+          positionId: spawnEntry.positionId,
+          behaviorId: spawnEntry.behaviorId,
         ),
       );
     } on ArgumentError catch (e) {
@@ -295,16 +386,11 @@ CombatEncounterDef _buildEncounter(
     }
   }
 
-  final CombatObjectivePrimitiveRef objective;
-  try {
-    objective = _buildObjective(entry.objective);
-  } on ArgumentError catch (e) {
-    throw FormatException(
-      'combat catalog source "$sourceName": '
-      '${_argumentErrorLeafPath('$path.objective', e)}: '
-      '${_argumentErrorMessage(e)}',
-    );
-  }
+  final objectives = _buildObjectiveComposition(
+    entry.objectives,
+    sourceName,
+    '$path.objectives',
+  );
 
   try {
     return CombatEncounterDef(
@@ -312,7 +398,45 @@ CombatEncounterDef _buildEncounter(
       spawnConfig: spawnConfig,
       tokenBudgets: tokenBudgets,
       spawnEntries: spawnEntries,
-      objective: objective,
+      objectives: objectives,
+    );
+  } on ArgumentError catch (e) {
+    throw FormatException(
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath(path, e)}: ${_argumentErrorMessage(e)}',
+    );
+  }
+}
+
+CombatObjectiveCompositionRef _buildObjectiveComposition(
+  ParsedCombatObjectiveComposition composition,
+  String sourceName,
+  String path,
+) {
+  final clauses = <CombatObjectiveClauseRef>[];
+  for (var i = 0; i < composition.clauses.length; i++) {
+    final clause = composition.clauses[i];
+    try {
+      clauses.add(
+        CombatObjectiveClauseRef(
+          id: clause.id,
+          primitive: _buildObjective(clause.primitive),
+        ),
+      );
+    } on ArgumentError catch (e) {
+      throw FormatException(
+        'combat catalog source "$sourceName": '
+        '${_argumentErrorLeafPath('$path.clauses[$i]', e)}: '
+        '${_argumentErrorMessage(e)}',
+      );
+    }
+  }
+  try {
+    return CombatObjectiveCompositionRef(
+      completionRule: CombatObjectiveCompletionRule.values.byName(
+        composition.completionRule,
+      ),
+      clauses: clauses,
     );
   } on ArgumentError catch (e) {
     throw FormatException(
@@ -345,6 +469,21 @@ CombatObjectivePrimitiveRef _buildObjective(ParsedCombatObjective objective) {
       return CombatDefeatCommanderRef(commanderId: objective.singleId!);
   }
   throw StateError('unreachable objective kind "${objective.kind}"');
+}
+
+void _requireKnownReference(
+  String id,
+  Set<String> knownIds,
+  String sourceName,
+  String path,
+  String label,
+) {
+  if (!knownIds.contains(id)) {
+    throw FormatException(
+      'combat catalog source "$sourceName": $path: '
+      'unknown $label reference "$id"',
+    );
+  }
 }
 
 String _argumentErrorText(ArgumentError error) {

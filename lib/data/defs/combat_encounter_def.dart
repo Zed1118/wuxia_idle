@@ -94,9 +94,15 @@ final class CombatEncounterSpawnEntry {
     required String entryId,
     required String archetypeId,
     required String roleId,
+    required String entranceId,
+    required String positionId,
+    required String behaviorId,
   }) : entryId = _checkedId(entryId, 'entryId'),
        archetypeId = _checkedId(archetypeId, 'archetypeId'),
-       roleId = _checkedId(roleId, 'roleId');
+       roleId = _checkedId(roleId, 'roleId'),
+       entranceId = _checkedId(entranceId, 'entranceId'),
+       positionId = _checkedId(positionId, 'positionId'),
+       behaviorId = _checkedId(behaviorId, 'behaviorId');
 
   /// Unique within the owning encounter.
   final String entryId;
@@ -106,6 +112,15 @@ final class CombatEncounterSpawnEntry {
 
   /// References a variant [CombatArchetypeVariant.roleId] of that archetype.
   final String roleId;
+
+  /// References a caller-declared encounter entrance.
+  final String entranceId;
+
+  /// References a caller-declared spawn position or anchor.
+  final String positionId;
+
+  /// References the behavior used when this entry is spawned.
+  final String behaviorId;
 
   static String _checkedId(String value, String field) {
     if (value.trim().isEmpty) {
@@ -203,11 +218,46 @@ final class CombatDefeatCommanderRef extends CombatObjectivePrimitiveRef {
   final String commanderId;
 }
 
+/// Explicit completion rule for a flat objective composition.
+///
+/// Flat `all` and `any` are sufficient for the frozen M2 template evidence;
+/// nested precedence, failure composition and phase transitions deliberately
+/// remain outside this schema.
+enum CombatObjectiveCompletionRule { all, any }
+
+/// Stable caller-defined identity for one primitive within a composition.
+final class CombatObjectiveClauseRef {
+  CombatObjectiveClauseRef({required String id, required this.primitive})
+    : id = _checkedId(id, 'id');
+
+  final String id;
+  final CombatObjectivePrimitiveRef primitive;
+}
+
+/// Immutable flat composition of one or more objective primitives.
+final class CombatObjectiveCompositionRef {
+  CombatObjectiveCompositionRef({
+    required this.completionRule,
+    required Iterable<CombatObjectiveClauseRef> clauses,
+  }) : clauses = List<CombatObjectiveClauseRef>.unmodifiable(clauses) {
+    if (this.clauses.isEmpty) {
+      throw ArgumentError.value(this.clauses, 'clauses', 'must not be empty');
+    }
+    final duplicates = _duplicateIds(this.clauses.map((clause) => clause.id));
+    if (duplicates.isNotEmpty) {
+      throw ArgumentError.value(duplicates, 'clauses', 'duplicate id(s)');
+    }
+  }
+
+  final CombatObjectiveCompletionRule completionRule;
+  final List<CombatObjectiveClauseRef> clauses;
+}
+
 /// Immutable typed combat encounter content definition.
 ///
 /// Deliberately distinct from the legacy narrative `EncounterDef`
 /// (encounter_def.dart); this schema carries spawn entries/config, attack
-/// token budgets and a content-neutral objective reference for the Phase 0A
+/// token budgets and a content-neutral objective composition for the Phase 0A
 /// combat runtime, and shares no fields with the narrative def. All tuning
 /// values are explicit caller inputs; no numeric defaults exist.
 final class CombatEncounterDef {
@@ -216,7 +266,7 @@ final class CombatEncounterDef {
     required this.spawnConfig,
     required this.tokenBudgets,
     required Iterable<CombatEncounterSpawnEntry> spawnEntries,
-    required this.objective,
+    required this.objectives,
   }) : id = _checkedId(id, 'id'),
        spawnEntries = List<CombatEncounterSpawnEntry>.unmodifiable(
          spawnEntries,
@@ -251,9 +301,8 @@ final class CombatEncounterDef {
   /// copy: the exposed list is unmodifiable.
   final List<CombatEncounterSpawnEntry> spawnEntries;
 
-  /// Exactly one content-neutral objective primitive reference; no default
-  /// objective exists.
-  final CombatObjectivePrimitiveRef objective;
+  /// Explicit flat composition of one or more content-neutral primitive refs.
+  final CombatObjectiveCompositionRef objectives;
 }
 
 String _checkedId(String value, String field) {

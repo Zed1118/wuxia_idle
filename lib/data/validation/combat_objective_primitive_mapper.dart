@@ -1,6 +1,50 @@
 import '../../features/battle/domain/phase0a/encounter_objective.dart';
 import '../defs/combat_encounter_def.dart';
 
+/// One mapped objective with the stable clause id preserved.
+final class MappedCombatObjectiveClause {
+  const MappedCombatObjectiveClause._({
+    required this.id,
+    required this.objective,
+  });
+
+  final String id;
+  final EncounterObjective objective;
+}
+
+/// Pure mapped gateway for a flat content composition.
+///
+/// This type deliberately carries, but does not execute, the explicit `all`
+/// or `any` rule. EncounterFlow remains responsible for aggregate progress,
+/// terminal and failure semantics after those contracts are frozen.
+final class MappedCombatObjectiveComposition {
+  MappedCombatObjectiveComposition._({
+    required this.completionRule,
+    required Iterable<MappedCombatObjectiveClause> clauses,
+  }) : clauses = List<MappedCombatObjectiveClause>.unmodifiable(clauses);
+
+  final CombatObjectiveCompletionRule completionRule;
+  final List<MappedCombatObjectiveClause> clauses;
+}
+
+/// Maps every clause in a content composition without inventing flow logic.
+MappedCombatObjectiveComposition mapCombatObjectiveComposition(
+  CombatObjectiveCompositionRef composition, {
+  required Duration tickDuration,
+}) => MappedCombatObjectiveComposition._(
+  completionRule: composition.completionRule,
+  clauses: [
+    for (final clause in composition.clauses)
+      MappedCombatObjectiveClause._(
+        id: clause.id,
+        objective: mapCombatObjectivePrimitive(
+          clause.primitive,
+          tickDuration: tickDuration,
+        ),
+      ),
+  ],
+);
+
 /// Maps one immutable content reference to a new pure-domain objective.
 ///
 /// [tickDuration] is always an explicit positive caller input. The mapper

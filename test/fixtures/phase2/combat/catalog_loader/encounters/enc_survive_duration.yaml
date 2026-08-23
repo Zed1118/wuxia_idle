@@ -14,12 +14,24 @@ encounters:
       - entry_id: bandit_brawlers
         archetype_id: arch_bandit
         role_id: melee_brute
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: bandit_archers
         archetype_id: arch_bandit
         role_id: ranged_scout
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: wolf_raider
         archetype_id: arch_wolf
         role_id: alpha
-    objective:
-      kind: survive_duration
-      required_ticks: 900
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: survive
+          kind: survive_duration
+          required_ticks: 900

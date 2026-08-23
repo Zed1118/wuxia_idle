@@ -3,9 +3,13 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/combat_encounter_catalog_loader.dart';
+import 'package:wuxia_idle/data/combat_encounter_catalog_loader.dart'
+    as catalog_loader;
 import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
+import 'package:wuxia_idle/data/defs/combat_catalog_reference_index.dart';
 import 'package:wuxia_idle/data/defs/combat_encounter_def.dart';
+
+typedef CombatCatalogYamlSource = catalog_loader.CombatCatalogYamlSource;
 
 const fixtureRoot = 'test/fixtures/phase2/combat/catalog_loader';
 
@@ -35,6 +39,40 @@ Future<List<CombatCatalogYamlSource>> encounterFixtureSources() {
     fixtureSource('encounters/enc_defeat_commander.yaml'),
   ]);
 }
+
+CombatCatalogReferenceIndex fixtureReferenceIndex({
+  Iterable<String> entranceIds = const ['entrance_fixture'],
+  Iterable<String> positionIds = const ['position_fixture'],
+  Iterable<String> behaviorIds = const ['behavior_fixture'],
+  Iterable<String> attackSetIds = const ['attack_set_fixture'],
+  Iterable<String> attackTagIds = const ['attack_tag_fixture'],
+  Iterable<String> postureProfileIds = const ['posture_fixture'],
+  Iterable<String> dropGroupIds = const ['drop_fixture'],
+  Iterable<String> sfxGroupIds = const ['sfx_fixture'],
+  Iterable<String> visualVariantIds = const ['visual_fixture'],
+}) => CombatCatalogReferenceIndex(
+  entranceIds: entranceIds,
+  positionIds: positionIds,
+  behaviorIds: behaviorIds,
+  attackSetIds: attackSetIds,
+  attackTagIds: attackTagIds,
+  postureProfileIds: postureProfileIds,
+  dropGroupIds: dropGroupIds,
+  sfxGroupIds: sfxGroupIds,
+  visualVariantIds: visualVariantIds,
+);
+
+CombatCatalogManifestDef loadCombatCatalogManifest({
+  required Iterable<CombatCatalogYamlSource> archetypeSources,
+  required Iterable<CombatCatalogYamlSource> encounterSources,
+  required CombatCatalogYamlSource manifestSource,
+  CombatCatalogReferenceIndex? referenceIndex,
+}) => catalog_loader.loadCombatCatalogManifest(
+  archetypeSources: archetypeSources,
+  encounterSources: encounterSources,
+  manifestSource: manifestSource,
+  referenceIndex: referenceIndex ?? fixtureReferenceIndex(),
+);
 
 Future<CombatCatalogManifestDef> loadFixtureCatalog() async {
   return loadCombatCatalogManifest(
@@ -95,53 +133,39 @@ void main() {
 
     test('covers all eight objective reference kinds', () async {
       final manifest = await loadFixtureCatalog();
-      final objectiveByEncounterId = <String, CombatObjectivePrimitiveRef>{
-        for (final encounter in manifest.encounters)
-          encounter.id: encounter.objective,
-      };
+      final objectives = manifest.encounters
+          .expand((encounter) => encounter.objectives.clauses)
+          .map((clause) => clause.primitive)
+          .toList(growable: false);
+      expect(objectives.whereType<CombatDefeatTargetsRef>(), hasLength(1));
+      expect(objectives.whereType<CombatDefeatTargetsRef>().single.targetIds, {
+        'bandit_brute',
+        'bandit_scout',
+      });
+      expect(objectives.whereType<CombatDestroyAnchorsRef>(), hasLength(1));
+      expect(objectives.whereType<CombatDefendEntityRef>(), hasLength(1));
       expect(
-        objectiveByEncounterId['cl_enc_defeat_targets'],
-        isA<CombatDefeatTargetsRef>(),
-      );
-      expect(
-        (objectiveByEncounterId['cl_enc_defeat_targets']
-                as CombatDefeatTargetsRef)
-            .targetIds,
-        {'bandit_brute', 'bandit_scout'},
-      );
-      expect(
-        objectiveByEncounterId['cl_enc_destroy_anchors'],
-        isA<CombatDestroyAnchorsRef>(),
-      );
-      expect(
-        objectiveByEncounterId['cl_enc_defend_entity'],
-        isA<CombatDefendEntityRef>(),
-      );
-      expect(
-        (objectiveByEncounterId['cl_enc_defend_entity']
-                as CombatDefendEntityRef)
-            .requiredTicks,
+        objectives.whereType<CombatDefendEntityRef>().single.requiredTicks,
         600,
       );
+      expect(objectives.whereType<CombatSurviveDurationRef>(), hasLength(1));
+      expect(objectives.whereType<CombatReachCheckpointRef>(), hasLength(2));
+      expect(objectives.whereType<CombatTouchMarkersRef>(), hasLength(1));
+      expect(objectives.whereType<CombatPursueTargetRef>(), hasLength(1));
+      expect(objectives.whereType<CombatDefeatCommanderRef>(), hasLength(2));
       expect(
-        objectiveByEncounterId['cl_enc_survive_duration'],
-        isA<CombatSurviveDurationRef>(),
+        manifest
+            .encounterById('cl_enc_defeat_targets')!
+            .objectives
+            .completionRule,
+        CombatObjectiveCompletionRule.all,
       );
       expect(
-        objectiveByEncounterId['cl_enc_reach_checkpoint'],
-        isA<CombatReachCheckpointRef>(),
-      );
-      expect(
-        objectiveByEncounterId['cl_enc_touch_markers'],
-        isA<CombatTouchMarkersRef>(),
-      );
-      expect(
-        objectiveByEncounterId['cl_enc_pursue_target'],
-        isA<CombatPursueTargetRef>(),
-      );
-      expect(
-        objectiveByEncounterId['cl_enc_defeat_commander'],
-        isA<CombatDefeatCommanderRef>(),
+        manifest
+            .encounterById('cl_enc_destroy_anchors')!
+            .objectives
+            .completionRule,
+        CombatObjectiveCompletionRule.any,
       );
     });
 
@@ -159,6 +183,18 @@ void main() {
       expect(encounter.spawnEntries, hasLength(3));
       expect(encounter.spawnEntries.first.archetypeId, 'arch_bandit');
       expect(encounter.spawnEntries.first.roleId, 'melee_brute');
+      expect(encounter.spawnEntries.first.entranceId, 'entrance_fixture');
+      expect(encounter.spawnEntries.first.positionId, 'position_fixture');
+      expect(encounter.spawnEntries.first.behaviorId, 'behavior_fixture');
+      final role = manifest
+          .archetypeById('arch_bandit')!
+          .variantByRole('ranged_scout')!;
+      expect(role.attackSetId, 'attack_set_fixture');
+      expect(role.attackTagIds, {'attack_tag_fixture'});
+      expect(role.postureProfileId, 'posture_fixture');
+      expect(role.dropGroupId, 'drop_fixture');
+      expect(role.sfxGroupId, 'sfx_fixture');
+      expect(role.visualVariantIds, {'visual_fixture'});
       expect(
         manifest.archetypeById('arch_bandit')?.variantByRole('ranged_scout'),
         isNotNull,
@@ -212,7 +248,13 @@ void main() {
             '        hp_multiplier: 1.0\n'
             '        attack_multiplier: 1.0\n'
             '        defense_multiplier: 0.5\n'
-            '        speed_multiplier: 1.0\n',
+            '        speed_multiplier: 1.0\n'
+            '        attack_set_id: attack_set_fixture\n'
+            '        attack_tag_ids: [attack_tag_fixture]\n'
+            '        posture_profile_id: posture_fixture\n'
+            '        drop_group_id: drop_fixture\n'
+            '        sfx_group_id: sfx_fixture\n'
+            '        visual_variant_ids: [visual_fixture]\n',
       ));
       await expectLater(
         () async => loadCombatCatalogManifest(
@@ -250,9 +292,15 @@ void main() {
             '      - entry_id: brute\n'
             '        archetype_id: arch_bandit\n'
             '        role_id: melee_brute\n'
-            '    objective:\n'
-            '      kind: survive_duration\n'
-            '      required_ticks: 10\n',
+            '        entrance_id: entrance_fixture\n'
+            '        position_id: position_fixture\n'
+            '        behavior_id: behavior_fixture\n'
+            '    objectives:\n'
+            '      completion_rule: all\n'
+            '      clauses:\n'
+            '        - id: survive\n'
+            '          kind: survive_duration\n'
+            '          required_ticks: 10\n',
       ));
       await expectLater(
         () async => loadCombatCatalogManifest(
@@ -389,9 +437,15 @@ void main() {
                   '      - entry_id: ghost\n'
                   '        archetype_id: arch_ghost\n'
                   '        role_id: wraith\n'
-                  '    objective:\n'
-                  '      kind: survive_duration\n'
-                  '      required_ticks: 10\n',
+                  '        entrance_id: entrance_fixture\n'
+                  '        position_id: position_fixture\n'
+                  '        behavior_id: behavior_fixture\n'
+                  '    objectives:\n'
+                  '      completion_rule: all\n'
+                  '      clauses:\n'
+                  '        - id: survive\n'
+                  '          kind: survive_duration\n'
+                  '          required_ticks: 10\n',
             ),
           ],
           manifestSource: (
@@ -433,9 +487,15 @@ void main() {
                   '      - entry_id: brute\n'
                   '        archetype_id: arch_bandit\n'
                   '        role_id: chief\n'
-                  '    objective:\n'
-                  '      kind: survive_duration\n'
-                  '      required_ticks: 10\n',
+                  '        entrance_id: entrance_fixture\n'
+                  '        position_id: position_fixture\n'
+                  '        behavior_id: behavior_fixture\n'
+                  '    objectives:\n'
+                  '      completion_rule: all\n'
+                  '      clauses:\n'
+                  '        - id: survive\n'
+                  '          kind: survive_duration\n'
+                  '          required_ticks: 10\n',
             ),
           ],
           manifestSource: (
@@ -476,9 +536,15 @@ void main() {
                   '      - entry_id: brute\n'
                   '        archetype_id: arch_bandit\n'
                   '        role_id: melee_brute\n'
-                  '    objective:\n'
-                  '      kind: survive_duration\n'
-                  '      required_ticks: 10\n',
+                  '        entrance_id: entrance_fixture\n'
+                  '        position_id: position_fixture\n'
+                  '        behavior_id: behavior_fixture\n'
+                  '    objectives:\n'
+                  '      completion_rule: all\n'
+                  '      clauses:\n'
+                  '        - id: survive\n'
+                  '          kind: survive_duration\n'
+                  '          required_ticks: 10\n',
             ),
           ],
           manifestSource: (
@@ -569,9 +635,15 @@ void main() {
                     '      - entry_id: brute\n'
                     '        archetype_id: arch_bandit\n'
                     '        role_id: melee_brute\n'
-                    '    objective:\n'
-                    '      kind: survive_duration\n'
-                    '      required_ticks: 10\n',
+                    '        entrance_id: entrance_fixture\n'
+                    '        position_id: position_fixture\n'
+                    '        behavior_id: behavior_fixture\n'
+                    '    objectives:\n'
+                    '      completion_rule: all\n'
+                    '      clauses:\n'
+                    '        - id: survive\n'
+                    '          kind: survive_duration\n'
+                    '          required_ticks: 10\n',
               ),
             ],
             manifestSource: (
@@ -607,6 +679,45 @@ void main() {
           ),
         ),
         failsWithFragment('stage_assignments[1]: unknown key'),
+      );
+    });
+
+    test(
+      'rejects an archetype external ref with source and leaf path',
+      () async {
+        await expectLater(
+          () async => loadCombatCatalogManifest(
+            archetypeSources: await archetypeFixtureSources(),
+            encounterSources: await encounterFixtureSources(),
+            manifestSource: await fixtureSource(
+              'manifest/stage_assignments.yaml',
+            ),
+            referenceIndex: fixtureReferenceIndex(attackSetIds: const []),
+          ),
+          failsWithFragment(
+            'combat catalog source "archetypes/bandit.yaml": '
+            'archetypes[0].variants[0].attack_set_id: '
+            'unknown attack set reference "attack_set_fixture"',
+          ),
+        );
+      },
+    );
+
+    test('rejects a spawn external ref with source and leaf path', () async {
+      await expectLater(
+        () async => loadCombatCatalogManifest(
+          archetypeSources: await archetypeFixtureSources(),
+          encounterSources: await encounterFixtureSources(),
+          manifestSource: await fixtureSource(
+            'manifest/stage_assignments.yaml',
+          ),
+          referenceIndex: fixtureReferenceIndex(entranceIds: const []),
+        ),
+        failsWithFragment(
+          'combat catalog source "encounters/enc_defeat_targets.yaml": '
+          'encounters[0].spawn_entries[0].entrance_id: '
+          'unknown entrance reference "entrance_fixture"',
+        ),
       );
     });
   });

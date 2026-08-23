@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 /// Attack token kind that an archetype variant requests, mirroring the
 /// runtime `AttackTokenKind` budget contract (P2-G2-D02). Every kind is an
 /// explicit caller input; the schema defines no defaults.
@@ -16,6 +18,12 @@ final class CombatArchetypeVariant {
     required double attackMultiplier,
     required double defenseMultiplier,
     required double speedMultiplier,
+    required String attackSetId,
+    required Iterable<String> attackTagIds,
+    required String postureProfileId,
+    required String dropGroupId,
+    required String sfxGroupId,
+    required Iterable<String> visualVariantIds,
   }) : roleId = _checkedId(roleId, 'roleId'),
        hpMultiplier = _checkedPositive(hpMultiplier, 'hpMultiplier'),
        attackMultiplier = _checkedNonNegative(
@@ -29,7 +37,13 @@ final class CombatArchetypeVariant {
        speedMultiplier = _checkedNonNegative(
          speedMultiplier,
          'speedMultiplier',
-       );
+       ),
+       attackSetId = _checkedId(attackSetId, 'attackSetId'),
+       attackTagIds = _checkedIdSet(attackTagIds, 'attackTagIds'),
+       postureProfileId = _checkedId(postureProfileId, 'postureProfileId'),
+       dropGroupId = _checkedId(dropGroupId, 'dropGroupId'),
+       sfxGroupId = _checkedId(sfxGroupId, 'sfxGroupId'),
+       visualVariantIds = _checkedIdSet(visualVariantIds, 'visualVariantIds');
 
   /// Unique within the owning archetype; non-empty and free of whitespace.
   final String roleId;
@@ -48,6 +62,25 @@ final class CombatArchetypeVariant {
 
   /// Explicit caller-supplied tuning; must be finite and non-negative.
   final double speedMultiplier;
+
+  /// References the role's complete attack-set definition.
+  final String attackSetId;
+
+  /// References the attack tags declared by the role's attack set.
+  final UnmodifiableSetView<String> attackTagIds;
+
+  /// References the role's posture-capacity/recovery profile.
+  final String postureProfileId;
+
+  /// References the role's drop group; it does not define reward values here.
+  final String dropGroupId;
+
+  /// References the role's grouped combat sound profile.
+  final String sfxGroupId;
+
+  /// References one or more presentation variants. The schema intentionally
+  /// does not impose a content-count target.
+  final UnmodifiableSetView<String> visualVariantIds;
 
   static String _checkedId(String value, String field) {
     if (value.trim().isEmpty) {
@@ -75,6 +108,27 @@ final class CombatArchetypeVariant {
       );
     }
     return value;
+  }
+
+  static UnmodifiableSetView<String> _checkedIdSet(
+    Iterable<String> values,
+    String field,
+  ) {
+    final list = values.toList(growable: false);
+    if (list.isEmpty) {
+      throw ArgumentError.value(values, field, 'must not be empty');
+    }
+    final seen = <String>{};
+    final duplicates = <String>{};
+    for (final value in list) {
+      _checkedId(value, field);
+      if (!seen.add(value)) duplicates.add(value);
+    }
+    if (duplicates.isNotEmpty) {
+      final sorted = duplicates.toList()..sort();
+      throw ArgumentError.value(sorted, field, 'duplicate id(s)');
+    }
+    return UnmodifiableSetView<String>(Set<String>.unmodifiable(list));
   }
 }
 

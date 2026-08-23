@@ -30,6 +30,9 @@ const Set<String> combatObjectiveKindNames = {
   'defeat_commander',
 };
 
+/// Allowed flat objective-composition completion rules.
+const Set<String> combatObjectiveCompletionRuleNames = {'all', 'any'};
+
 const Map<String, List<String>> _objectiveParamKeys = {
   'defeat_targets': ['target_ids'],
   'destroy_anchors': ['anchor_ids'],
@@ -72,7 +75,14 @@ final class ParsedCombatArchetypeVariantEntry {
     required this.attackMultiplier,
     required this.defenseMultiplier,
     required this.speedMultiplier,
-  });
+    required this.attackSetId,
+    required List<String> attackTagIds,
+    required this.postureProfileId,
+    required this.dropGroupId,
+    required this.sfxGroupId,
+    required List<String> visualVariantIds,
+  }) : attackTagIds = List.unmodifiable(attackTagIds),
+       visualVariantIds = List.unmodifiable(visualVariantIds);
 
   final String roleId;
 
@@ -82,6 +92,12 @@ final class ParsedCombatArchetypeVariantEntry {
   final double attackMultiplier;
   final double defenseMultiplier;
   final double speedMultiplier;
+  final String attackSetId;
+  final List<String> attackTagIds;
+  final String postureProfileId;
+  final String dropGroupId;
+  final String sfxGroupId;
+  final List<String> visualVariantIds;
 }
 
 /// One fully parsed encounter document source.
@@ -102,14 +118,14 @@ final class ParsedCombatEncounterEntry {
     required this.spawnConfig,
     required this.tokenBudgets,
     required List<ParsedCombatSpawnEntry> spawnEntries,
-    required this.objective,
+    required this.objectives,
   }) : spawnEntries = List.unmodifiable(spawnEntries);
 
   final String id;
   final ParsedCombatSpawnConfig spawnConfig;
   final ParsedCombatTokenBudgets tokenBudgets;
   final List<ParsedCombatSpawnEntry> spawnEntries;
-  final ParsedCombatObjective objective;
+  final ParsedCombatObjectiveComposition objectives;
 }
 
 /// The four explicit spawn-director configuration values.
@@ -148,11 +164,36 @@ final class ParsedCombatSpawnEntry {
     required this.entryId,
     required this.archetypeId,
     required this.roleId,
+    required this.entranceId,
+    required this.positionId,
+    required this.behaviorId,
   });
 
   final String entryId;
   final String archetypeId;
   final String roleId;
+  final String entranceId;
+  final String positionId;
+  final String behaviorId;
+}
+
+/// One structurally valid flat objective composition.
+final class ParsedCombatObjectiveComposition {
+  ParsedCombatObjectiveComposition({
+    required this.completionRule,
+    required List<ParsedCombatObjectiveClause> clauses,
+  }) : clauses = List.unmodifiable(clauses);
+
+  final String completionRule;
+  final List<ParsedCombatObjectiveClause> clauses;
+}
+
+/// One named primitive clause in a composition.
+final class ParsedCombatObjectiveClause {
+  ParsedCombatObjectiveClause({required this.id, required this.primitive});
+
+  final String id;
+  final ParsedCombatObjective primitive;
 }
 
 /// One structurally valid objective reference payload.
@@ -235,6 +276,12 @@ ParsedCombatArchetypeSource validateCombatArchetypeSource(
           'attack_multiplier',
           'defense_multiplier',
           'speed_multiplier',
+          'attack_set_id',
+          'attack_tag_ids',
+          'posture_profile_id',
+          'drop_group_id',
+          'sfx_group_id',
+          'visual_variant_ids',
         },
         variantPath,
         sourceName,
@@ -273,6 +320,36 @@ ParsedCombatArchetypeSource validateCombatArchetypeSource(
             '$variantPath.speed_multiplier',
             sourceName,
           ),
+          attackSetId: _requireString(
+            variantMap['attack_set_id'],
+            '$variantPath.attack_set_id',
+            sourceName,
+          ),
+          attackTagIds: _requireIdList(
+            variantMap['attack_tag_ids'],
+            '$variantPath.attack_tag_ids',
+            sourceName,
+          ),
+          postureProfileId: _requireString(
+            variantMap['posture_profile_id'],
+            '$variantPath.posture_profile_id',
+            sourceName,
+          ),
+          dropGroupId: _requireString(
+            variantMap['drop_group_id'],
+            '$variantPath.drop_group_id',
+            sourceName,
+          ),
+          sfxGroupId: _requireString(
+            variantMap['sfx_group_id'],
+            '$variantPath.sfx_group_id',
+            sourceName,
+          ),
+          visualVariantIds: _requireIdList(
+            variantMap['visual_variant_ids'],
+            '$variantPath.visual_variant_ids',
+            sourceName,
+          ),
         ),
       );
     }
@@ -303,7 +380,7 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
         'spawn_config',
         'token_budgets',
         'spawn_entries',
-        'objective',
+        'objectives',
       },
       path,
       sourceName,
@@ -394,7 +471,14 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
       final entryMap = _requireMap(entriesList[j], entryPath, sourceName);
       _requireExactKeys(
         entryMap,
-        const {'entry_id', 'archetype_id', 'role_id'},
+        const {
+          'entry_id',
+          'archetype_id',
+          'role_id',
+          'entrance_id',
+          'position_id',
+          'behavior_id',
+        },
         entryPath,
         sourceName,
       );
@@ -415,13 +499,28 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
             '$entryPath.role_id',
             sourceName,
           ),
+          entranceId: _requireString(
+            entryMap['entrance_id'],
+            '$entryPath.entrance_id',
+            sourceName,
+          ),
+          positionId: _requireString(
+            entryMap['position_id'],
+            '$entryPath.position_id',
+            sourceName,
+          ),
+          behaviorId: _requireString(
+            entryMap['behavior_id'],
+            '$entryPath.behavior_id',
+            sourceName,
+          ),
         ),
       );
     }
 
-    final objective = _parseObjective(
-      map['objective'],
-      '$path.objective',
+    final objectives = _parseObjectiveComposition(
+      map['objectives'],
+      '$path.objectives',
       sourceName,
     );
     entries.add(
@@ -430,7 +529,7 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
         spawnConfig: spawnConfig,
         tokenBudgets: tokenBudgets,
         spawnEntries: spawnEntries,
-        objective: objective,
+        objectives: objectives,
       ),
     );
   }
@@ -487,6 +586,59 @@ ParsedCombatAssignmentSource validateCombatAssignmentSource(
   return ParsedCombatAssignmentSource(
     sourceName: sourceName,
     assignments: entries,
+  );
+}
+
+ParsedCombatObjectiveComposition _parseObjectiveComposition(
+  dynamic value,
+  String path,
+  String sourceName,
+) {
+  final map = _requireMap(value, path, sourceName);
+  _requireExactKeys(
+    map,
+    const {'completion_rule', 'clauses'},
+    path,
+    sourceName,
+  );
+  final completionRule = _requireEnum(
+    map['completion_rule'],
+    '$path.completion_rule',
+    sourceName,
+    combatObjectiveCompletionRuleNames,
+    'objective completion rule',
+  );
+  final rawClauses = _requireList(map['clauses'], '$path.clauses', sourceName);
+  final clauses = <ParsedCombatObjectiveClause>[];
+  final owners = <String, int>{};
+  for (var i = 0; i < rawClauses.length; i++) {
+    final clausePath = '$path.clauses[$i]';
+    final clauseMap = _requireMap(rawClauses[i], clausePath, sourceName);
+    if (!clauseMap.containsKey('id')) {
+      _fail(sourceName, clausePath, 'missing required key "id"');
+    }
+    final id = _requireString(clauseMap['id'], '$clausePath.id', sourceName);
+    final existingOwner = owners[id];
+    if (existingOwner != null) {
+      _fail(
+        sourceName,
+        '$clausePath.id',
+        'duplicate objective clause id "$id"; first declared at '
+            '$path.clauses[$existingOwner].id',
+      );
+    }
+    owners[id] = i;
+    final primitiveMap = Map<String, dynamic>.from(clauseMap)..remove('id');
+    clauses.add(
+      ParsedCombatObjectiveClause(
+        id: id,
+        primitive: _parseObjective(primitiveMap, clausePath, sourceName),
+      ),
+    );
+  }
+  return ParsedCombatObjectiveComposition(
+    completionRule: completionRule,
+    clauses: clauses,
   );
 }
 

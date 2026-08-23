@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
+import 'package:wuxia_idle/data/defs/combat_catalog_reference_index.dart';
 import 'package:wuxia_idle/data/defs/combat_encounter_def.dart';
 import 'package:wuxia_idle/data/defs/combat_enemy_archetype_def.dart';
 import 'package:wuxia_idle/data/validation/combat_catalog_migration_gate.dart';
@@ -43,11 +44,24 @@ CombatCatalogManifestDef _manifestFor(
       .map((assignment) => _encounter(assignment.encounterId!))
       .toList(growable: false);
   return CombatCatalogManifestDef(
+    referenceIndex: _referenceIndex(),
     archetypes: encounters.isEmpty ? const [] : [_fixtureArchetype()],
     encounters: encounters,
     stageAssignments: assignmentList,
   );
 }
+
+CombatCatalogReferenceIndex _referenceIndex() => CombatCatalogReferenceIndex(
+  entranceIds: const ['fixture_entrance'],
+  positionIds: const ['fixture_position'],
+  behaviorIds: const ['fixture_behavior'],
+  attackSetIds: const ['fixture_attack_set'],
+  attackTagIds: const ['fixture_attack_tag'],
+  postureProfileIds: const ['fixture_posture'],
+  dropGroupIds: const ['fixture_drop'],
+  sfxGroupIds: const ['fixture_sfx'],
+  visualVariantIds: const ['fixture_visual'],
+);
 
 CombatCatalogManifestDef _manifestFrom(
   Map<String, Object?> fixture, {
@@ -67,6 +81,12 @@ CombatEnemyArchetypeDef _fixtureArchetype() => CombatEnemyArchetypeDef(
       attackMultiplier: 1,
       defenseMultiplier: 1,
       speedMultiplier: 1,
+      attackSetId: 'fixture_attack_set',
+      attackTagIds: const ['fixture_attack_tag'],
+      postureProfileId: 'fixture_posture',
+      dropGroupId: 'fixture_drop',
+      sfxGroupId: 'fixture_sfx',
+      visualVariantIds: const ['fixture_visual'],
     ),
   ],
 );
@@ -90,9 +110,20 @@ CombatEncounterDef _encounter(String id) => CombatEncounterDef(
       entryId: 'entry_$id',
       archetypeId: 'fixture_archetype',
       roleId: 'fixture_role',
+      entranceId: 'fixture_entrance',
+      positionId: 'fixture_position',
+      behaviorId: 'fixture_behavior',
     ),
   ],
-  objective: CombatDefeatTargetsRef(['target_$id']),
+  objectives: CombatObjectiveCompositionRef(
+    completionRule: CombatObjectiveCompletionRule.all,
+    clauses: [
+      CombatObjectiveClauseRef(
+        id: 'objective_$id',
+        primitive: CombatDefeatTargetsRef(['target_$id']),
+      ),
+    ],
+  ),
 );
 
 CombatCatalogMigrationCoverageException _captureFailure({

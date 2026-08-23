@@ -14,12 +14,27 @@ encounters:
       - entry_id: bandit_brute
         archetype_id: arch_bandit
         role_id: melee_brute
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: bandit_scout
         archetype_id: arch_bandit
         role_id: ranged_scout
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: wolf_hunter
         archetype_id: arch_wolf
         role_id: pack_hunter
-    objective:
-      kind: defeat_targets
-      target_ids: [bandit_brute, bandit_scout]
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: clear_blockers
+          kind: defeat_targets
+          target_ids: [bandit_brute, bandit_scout]
+        - id: reach_exit
+          kind: reach_checkpoint
+          checkpoint_ids: [checkpoint_exit]

@@ -14,6 +14,12 @@ encounters:
       - entry_id: wolf_chaser
         archetype_id: arch_wolf
         role_id: pack_hunter
-    objective:
-      kind: touch_markers
-      marker_ids: [marker_east, marker_west, marker_north]
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: touch_route
+          kind: touch_markers
+          marker_ids: [marker_east, marker_west, marker_north]

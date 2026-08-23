@@ -1,6 +1,7 @@
 // Contract tests for P2-G2-S01 CombatCatalogManifestDef.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/data/defs/combat_catalog_reference_index.dart';
 import 'package:wuxia_idle/data/defs/combat_enemy_archetype_def.dart';
 import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
 import 'package:wuxia_idle/data/defs/combat_encounter_def.dart';
@@ -15,6 +16,12 @@ CombatEnemyArchetypeDef banditArchetype() => CombatEnemyArchetypeDef(
       attackMultiplier: 1.0,
       defenseMultiplier: 0.5,
       speedMultiplier: 1.0,
+      attackSetId: 'attack_set_bandit',
+      attackTagIds: const ['attack_tag_melee'],
+      postureProfileId: 'posture_bandit',
+      dropGroupId: 'drop_bandit',
+      sfxGroupId: 'sfx_bandit',
+      visualVariantIds: const ['visual_bandit'],
     ),
     CombatArchetypeVariant(
       roleId: 'ranged_archer',
@@ -23,6 +30,12 @@ CombatEnemyArchetypeDef banditArchetype() => CombatEnemyArchetypeDef(
       attackMultiplier: 1.4,
       defenseMultiplier: 0.3,
       speedMultiplier: 1.1,
+      attackSetId: 'attack_set_bandit',
+      attackTagIds: const ['attack_tag_ranged'],
+      postureProfileId: 'posture_bandit',
+      dropGroupId: 'drop_bandit',
+      sfxGroupId: 'sfx_bandit',
+      visualVariantIds: const ['visual_bandit'],
     ),
   ],
 );
@@ -46,9 +59,32 @@ CombatEncounterDef ambushEncounter() => CombatEncounterDef(
       entryId: 'entry_01',
       archetypeId: 'bandit_swordsman',
       roleId: 'melee_brute',
+      entranceId: 'entrance_left',
+      positionId: 'position_left',
+      behaviorId: 'behavior_press',
     ),
   ],
-  objective: CombatSurviveDurationRef(requiredTicks: 60),
+  objectives: CombatObjectiveCompositionRef(
+    completionRule: CombatObjectiveCompletionRule.all,
+    clauses: [
+      CombatObjectiveClauseRef(
+        id: 'survive',
+        primitive: CombatSurviveDurationRef(requiredTicks: 60),
+      ),
+    ],
+  ),
+);
+
+CombatCatalogReferenceIndex referenceIndex() => CombatCatalogReferenceIndex(
+  entranceIds: const ['entrance_left'],
+  positionIds: const ['position_left'],
+  behaviorIds: const ['behavior_press'],
+  attackSetIds: const ['attack_set_bandit'],
+  attackTagIds: const ['attack_tag_melee', 'attack_tag_ranged'],
+  postureProfileIds: const ['posture_bandit'],
+  dropGroupIds: const ['drop_bandit'],
+  sfxGroupIds: const ['sfx_bandit'],
+  visualVariantIds: const ['visual_bandit'],
 );
 
 CombatStageEncounterAssignment migratedAssignment({
@@ -73,6 +109,7 @@ CombatCatalogManifestDef manifest({
   List<CombatEncounterDef>? encounters,
   List<CombatStageEncounterAssignment>? stageAssignments,
 }) => CombatCatalogManifestDef(
+  referenceIndex: referenceIndex(),
   archetypes: archetypes ?? const [],
   encounters: encounters ?? const [],
   stageAssignments: stageAssignments ?? const [],
@@ -175,7 +212,7 @@ void main() {
               spawnConfig: ambushEncounter().spawnConfig,
               tokenBudgets: ambushEncounter().tokenBudgets,
               spawnEntries: ambushEncounter().spawnEntries,
-              objective: ambushEncounter().objective,
+              objectives: ambushEncounter().objectives,
             ),
           ],
           stageAssignments: [
@@ -238,9 +275,12 @@ void main() {
             entryId: 'entry_01',
             archetypeId: 'ghost_archetype',
             roleId: 'melee_brute',
+            entranceId: 'entrance_left',
+            positionId: 'position_left',
+            behaviorId: 'behavior_press',
           ),
         ],
-        objective: ambushEncounter().objective,
+        objectives: ambushEncounter().objectives,
       );
       expect(
         () => manifest(
@@ -264,9 +304,12 @@ void main() {
             entryId: 'entry_01',
             archetypeId: 'bandit_swordsman',
             roleId: 'ghost_role',
+            entranceId: 'entrance_left',
+            positionId: 'position_left',
+            behaviorId: 'behavior_press',
           ),
         ],
-        objective: ambushEncounter().objective,
+        objectives: ambushEncounter().objectives,
       );
       expect(
         () => manifest(

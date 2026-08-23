@@ -14,9 +14,21 @@ encounters:
       - entry_id: totem_alpha
         archetype_id: arch_totem
         role_id: ward_anchor
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: totem_beta
         archetype_id: arch_totem
         role_id: ward_anchor
-    objective:
-      kind: destroy_anchors
-      anchor_ids: [totem_alpha, totem_beta]
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: any
+      clauses:
+        - id: destroy_wards
+          kind: destroy_anchors
+          anchor_ids: [totem_alpha, totem_beta]
+        - id: defeat_anchor_leader
+          kind: defeat_commander
+          commander_id: totem_alpha

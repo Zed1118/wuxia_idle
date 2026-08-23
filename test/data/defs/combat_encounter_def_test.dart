@@ -31,10 +31,16 @@ CombatEncounterSpawnEntry spawnEntry({
   String entryId = 'entry_01',
   String archetypeId = 'bandit_swordsman',
   String roleId = 'melee_brute',
+  String entranceId = 'entrance_left',
+  String positionId = 'position_left_low',
+  String behaviorId = 'behavior_press',
 }) => CombatEncounterSpawnEntry(
   entryId: entryId,
   archetypeId: archetypeId,
   roleId: roleId,
+  entranceId: entranceId,
+  positionId: positionId,
+  behaviorId: behaviorId,
 );
 
 CombatEncounterDef encounter({
@@ -42,13 +48,23 @@ CombatEncounterDef encounter({
   CombatEncounterSpawnConfig? config,
   CombatEncounterTokenBudgets? budgets,
   List<CombatEncounterSpawnEntry>? entries,
-  CombatObjectivePrimitiveRef? objective,
+  CombatObjectiveCompositionRef? objectives,
 }) => CombatEncounterDef(
   id: id,
   spawnConfig: config ?? spawnConfig(),
   tokenBudgets: budgets ?? tokenBudgets(),
   spawnEntries: entries ?? [spawnEntry()],
-  objective: objective ?? CombatSurviveDurationRef(requiredTicks: 60),
+  objectives:
+      objectives ??
+      CombatObjectiveCompositionRef(
+        completionRule: CombatObjectiveCompletionRule.all,
+        clauses: [
+          CombatObjectiveClauseRef(
+            id: 'survive',
+            primitive: CombatSurviveDurationRef(requiredTicks: 60),
+          ),
+        ],
+      ),
 );
 
 void main() {
@@ -113,6 +129,9 @@ void main() {
       expect(entry.entryId, 'entry_01');
       expect(entry.archetypeId, 'bandit_swordsman');
       expect(entry.roleId, 'melee_brute');
+      expect(entry.entranceId, 'entrance_left');
+      expect(entry.positionId, 'position_left_low');
+      expect(entry.behaviorId, 'behavior_press');
     });
 
     test('blank or whitespace ids fail closed', () {
@@ -120,6 +139,9 @@ void main() {
       expect(() => spawnEntry(entryId: 'entry 01'), throwsArgumentError);
       expect(() => spawnEntry(archetypeId: '  '), throwsArgumentError);
       expect(() => spawnEntry(roleId: ''), throwsArgumentError);
+      expect(() => spawnEntry(entranceId: 'bad id'), throwsArgumentError);
+      expect(() => spawnEntry(positionId: ''), throwsArgumentError);
+      expect(() => spawnEntry(behaviorId: '  '), throwsArgumentError);
     });
   });
 
@@ -190,7 +212,11 @@ void main() {
       expect(def.spawnConfig.activeLimit, 8);
       expect(def.tokenBudgets.melee, 2);
       expect(def.spawnEntries, hasLength(1));
-      expect(def.objective, isA<CombatSurviveDurationRef>());
+      expect(def.objectives.completionRule, CombatObjectiveCompletionRule.all);
+      expect(
+        def.objectives.clauses.single.primitive,
+        isA<CombatSurviveDurationRef>(),
+      );
     });
 
     test('blank or whitespace id fails closed', () {
@@ -222,7 +248,7 @@ void main() {
         spawnConfig: spawnConfig(),
         tokenBudgets: tokenBudgets(),
         spawnEntries: input,
-        objective: CombatSurviveDurationRef(requiredTicks: 60),
+        objectives: encounter().objectives,
       );
       input.clear();
       input.add(spawnEntry(entryId: 'entry_99'));

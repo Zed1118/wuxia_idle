@@ -14,9 +14,18 @@ encounters:
       - entry_id: fleeing_alpha
         archetype_id: arch_wolf
         role_id: alpha
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
       - entry_id: escort_guard
         archetype_id: arch_bandit
         role_id: ranged_scout
-    objective:
-      kind: pursue_target
-      target_id: fleeing_alpha
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: pursue
+          kind: pursue_target
+          target_id: fleeing_alpha

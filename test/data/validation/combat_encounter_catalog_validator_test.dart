@@ -26,12 +26,24 @@ archetypes:
         attack_multiplier: 1.0
         defense_multiplier: 0.5
         speed_multiplier: 1.0
+        attack_set_id: attack_set_fixture
+        attack_tag_ids: [attack_tag_fixture]
+        posture_profile_id: posture_fixture
+        drop_group_id: drop_fixture
+        sfx_group_id: sfx_fixture
+        visual_variant_ids: [visual_fixture]
       - role_id: ranged_scout
         attack_token_kind: ranged
         hp_multiplier: 0.8
         attack_multiplier: 1.2
         defense_multiplier: 0.3
         speed_multiplier: 1.1
+        attack_set_id: attack_set_fixture
+        attack_tag_ids: [attack_tag_fixture]
+        posture_profile_id: posture_fixture
+        drop_group_id: drop_fixture
+        sfx_group_id: sfx_fixture
+        visual_variant_ids: [visual_fixture]
 ''';
 
 const validEncounterYaml = '''
@@ -51,9 +63,15 @@ encounters:
       - entry_id: brute_a
         archetype_id: arch_bandit
         role_id: melee_brute
-    objective:
-      kind: defeat_targets
-      target_ids: [brute_a]
+        entrance_id: entrance_fixture
+        position_id: position_fixture
+        behavior_id: behavior_fixture
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: clear
+          kind: defeat_targets
+          target_ids: [brute_a]
 ''';
 
 const validAssignmentYaml = '''
@@ -84,6 +102,12 @@ void main() {
       expect(brute.attackMultiplier, 1.0);
       expect(brute.defenseMultiplier, 0.5);
       expect(brute.speedMultiplier, 1.0);
+      expect(brute.attackSetId, 'attack_set_fixture');
+      expect(brute.attackTagIds, ['attack_tag_fixture']);
+      expect(brute.postureProfileId, 'posture_fixture');
+      expect(brute.dropGroupId, 'drop_fixture');
+      expect(brute.sfxGroupId, 'sfx_fixture');
+      expect(brute.visualVariantIds, ['visual_fixture']);
       expect(archetype.variants[1].roleId, 'ranged_scout');
       expect(archetype.variants[1].attackTokenKind, 'ranged');
     });
@@ -139,7 +163,13 @@ void main() {
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
-              '        speed_multiplier: 1.0\n',
+              '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n',
         ),
         failsWithSource('arch.yaml', 'archetypes[0]: unknown key'),
       );
@@ -157,7 +187,13 @@ void main() {
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
-              '        speed_multiplier: 1.0\n',
+              '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n',
         ),
         failsWithSource('arch.yaml', 'archetypes[0].id'),
       );
@@ -212,6 +248,12 @@ void main() {
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
               '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n'
               '        crit_rate: 0.1\n',
         ),
         failsWithSource('arch.yaml', 'archetypes[0].variants[0]: unknown key'),
@@ -230,7 +272,13 @@ void main() {
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
-              '        speed_multiplier: 1.0\n',
+              '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n',
         ),
         failsWithSource(
           'arch.yaml',
@@ -251,7 +299,13 @@ void main() {
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
-              '        speed_multiplier: 1.0\n',
+              '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n',
         ),
         failsWithSource(
           'arch.yaml',
@@ -272,7 +326,13 @@ void main() {
               '        hp_multiplier: strong\n'
               '        attack_multiplier: 1.0\n'
               '        defense_multiplier: 0.5\n'
-              '        speed_multiplier: 1.0\n',
+              '        speed_multiplier: 1.0\n'
+              '        attack_set_id: attack_set_fixture\n'
+              '        attack_tag_ids: [attack_tag_fixture]\n'
+              '        posture_profile_id: posture_fixture\n'
+              '        drop_group_id: drop_fixture\n'
+              '        sfx_group_id: sfx_fixture\n'
+              '        visual_variant_ids: [visual_fixture]\n',
         ),
         failsWithSource(
           'arch.yaml',
@@ -307,6 +367,46 @@ void main() {
         () => source.archetypes.single.variants.clear(),
         throwsUnsupportedError,
       );
+      expect(
+        () => source.archetypes.single.variants.first.attackTagIds.clear(),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => source.archetypes.first.variants.first.visualVariantIds.clear(),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('rejects a missing explicit archetype reference', () {
+      expect(
+        () => validateCombatArchetypeSource(
+          'arch.yaml',
+          validArchetypeYaml.replaceFirst(
+            '        attack_set_id: attack_set_fixture\n',
+            '',
+          ),
+        ),
+        failsWithSource(
+          'arch.yaml',
+          'archetypes[0].variants[0]: missing required key "attack_set_id"',
+        ),
+      );
+    });
+
+    test('rejects duplicate attack tag ids at the second leaf', () {
+      expect(
+        () => validateCombatArchetypeSource(
+          'arch.yaml',
+          validArchetypeYaml.replaceFirst(
+            'attack_tag_ids: [attack_tag_fixture]',
+            'attack_tag_ids: [attack_tag_fixture, attack_tag_fixture]',
+          ),
+        ),
+        failsWithSource(
+          'arch.yaml',
+          'archetypes[0].variants[0].attack_tag_ids[1]: duplicate id',
+        ),
+      );
     });
   });
 
@@ -331,10 +431,20 @@ void main() {
       expect(entry.entryId, 'brute_a');
       expect(entry.archetypeId, 'arch_bandit');
       expect(entry.roleId, 'melee_brute');
-      expect(encounter.objective.kind, 'defeat_targets');
-      expect(encounter.objective.idList, ['brute_a']);
-      expect(encounter.objective.singleId, isNull);
-      expect(encounter.objective.requiredTicks, isNull);
+      expect(entry.entranceId, 'entrance_fixture');
+      expect(entry.positionId, 'position_fixture');
+      expect(entry.behaviorId, 'behavior_fixture');
+      expect(encounter.objectives.completionRule, 'all');
+      expect(encounter.objectives.clauses.single.id, 'clear');
+      final primitive = encounter.objectives.clauses.single.primitive;
+      expect(primitive.kind, 'defeat_targets');
+      expect(primitive.idList, ['brute_a']);
+      expect(primitive.singleId, isNull);
+      expect(primitive.requiredTicks, isNull);
+      expect(
+        () => encounter.objectives.clauses.clear(),
+        throwsUnsupportedError,
+      );
     });
 
     test('rejects an unknown top-level key', () {
@@ -400,7 +510,10 @@ void main() {
             '    spawn_entries:\n'
                 '      - entry_id: brute_a\n'
                 '        archetype_id: arch_bandit\n'
-                '        role_id: melee_brute\n',
+                '        role_id: melee_brute\n'
+                '        entrance_id: entrance_fixture\n'
+                '        position_id: position_fixture\n'
+                '        behavior_id: behavior_fixture\n',
             '    spawn_entries: []\n',
           ),
         ),
@@ -424,6 +537,82 @@ void main() {
       );
     });
 
+    test('rejects a spawn entry missing an explicit entrance reference', () {
+      expect(
+        () => validateCombatEncounterSource(
+          'enc.yaml',
+          validEncounterYaml.replaceFirst(
+            '        entrance_id: entrance_fixture\n',
+            '',
+          ),
+        ),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].spawn_entries[0]: missing required key "entrance_id"',
+        ),
+      );
+    });
+
+    test('rejects an unknown objective completion rule', () {
+      expect(
+        () => validateCombatEncounterSource(
+          'enc.yaml',
+          validEncounterYaml.replaceFirst(
+            'completion_rule: all',
+            'completion_rule: sequence',
+          ),
+        ),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].objectives.completion_rule: '
+              'unknown objective completion rule "sequence"',
+        ),
+      );
+    });
+
+    test('rejects an empty objective clause list', () {
+      expect(
+        () => validateCombatEncounterSource(
+          'enc.yaml',
+          validEncounterYaml.replaceFirst(
+            '      clauses:\n'
+                '        - id: clear\n'
+                '          kind: defeat_targets\n'
+                '          target_ids: [brute_a]\n',
+            '      clauses: []\n',
+          ),
+        ),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].objectives.clauses: must not be empty',
+        ),
+      );
+    });
+
+    test('rejects a duplicate objective clause id at the second leaf', () {
+      expect(
+        () => validateCombatEncounterSource(
+          'enc.yaml',
+          validEncounterYaml.replaceFirst(
+            '        - id: clear\n'
+                '          kind: defeat_targets\n'
+                '          target_ids: [brute_a]\n',
+            '        - id: clear\n'
+                '          kind: defeat_targets\n'
+                '          target_ids: [brute_a]\n'
+                '        - id: clear\n'
+                '          kind: survive_duration\n'
+                '          required_ticks: 1\n',
+          ),
+        ),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].objectives.clauses[1].id: '
+              'duplicate objective clause id "clear"',
+        ),
+      );
+    });
+
     test('rejects an unknown objective kind', () {
       expect(
         () => validateCombatEncounterSource(
@@ -435,7 +624,7 @@ void main() {
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.kind: unknown objective kind "capture_flag"',
+          'encounters[0].objectives.clauses[0].kind: unknown objective kind "capture_flag"',
         ),
       );
     });
@@ -445,11 +634,14 @@ void main() {
         () => validateCombatEncounterSource(
           'enc.yaml',
           validEncounterYaml.replaceFirst(
-            '      target_ids: [brute_a]\n',
-            '      target_ids: [brute_a]\n      bonus: 1\n',
+            '          target_ids: [brute_a]\n',
+            '          target_ids: [brute_a]\n          bonus: 1\n',
           ),
         ),
-        failsWithSource('enc.yaml', 'encounters[0].objective: unknown key'),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].objectives.clauses[0]: unknown key',
+        ),
       );
     });
 
@@ -458,13 +650,15 @@ void main() {
         () => validateCombatEncounterSource(
           'enc.yaml',
           validEncounterYaml.replaceFirst(
-            '      kind: defeat_targets\n      target_ids: [brute_a]\n',
-            '      kind: defend_entity\n      entity_id: cart\n',
+            '          kind: defeat_targets\n'
+                '          target_ids: [brute_a]\n',
+            '          kind: defend_entity\n'
+                '          entity_id: cart\n',
           ),
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective: missing required key "required_ticks"',
+          'encounters[0].objectives.clauses[0]: missing required key "required_ticks"',
         ),
       );
     });
@@ -474,13 +668,15 @@ void main() {
         () => validateCombatEncounterSource(
           'enc.yaml',
           validEncounterYaml.replaceFirst(
-            '      kind: defeat_targets\n      target_ids: [brute_a]\n',
-            '      kind: survive_duration\n      required_ticks: 10.5\n',
+            '          kind: defeat_targets\n'
+                '          target_ids: [brute_a]\n',
+            '          kind: survive_duration\n'
+                '          required_ticks: 10.5\n',
           ),
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.required_ticks: expected an integer',
+          'encounters[0].objectives.clauses[0].required_ticks: expected an integer',
         ),
       );
     });
@@ -496,7 +692,7 @@ void main() {
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.target_ids: must not be empty',
+          'encounters[0].objectives.clauses[0].target_ids: must not be empty',
         ),
       );
     });
@@ -512,7 +708,7 @@ void main() {
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.target_ids[0]: expected a string',
+          'encounters[0].objectives.clauses[0].target_ids[0]: expected a string',
         ),
       );
     });
@@ -528,7 +724,7 @@ void main() {
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.target_ids[0]: must not contain whitespace',
+          'encounters[0].objectives.clauses[0].target_ids[0]: must not contain whitespace',
         ),
       );
     });
@@ -544,8 +740,8 @@ void main() {
         ),
         failsWithSource(
           'enc.yaml',
-          'encounters[0].objective.target_ids[1]: duplicate id "brute_a"; '
-              'first declared at encounters[0].objective.target_ids[0]',
+          'encounters[0].objectives.clauses[0].target_ids[1]: duplicate id "brute_a"; '
+              'first declared at encounters[0].objectives.clauses[0].target_ids[0]',
         ),
       );
     });
