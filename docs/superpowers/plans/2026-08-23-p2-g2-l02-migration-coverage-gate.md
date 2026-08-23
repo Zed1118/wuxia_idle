@@ -33,8 +33,8 @@
 
 ## 当前恢复点
 
-- 状态：主控复审指出的第一版 P1 缺口已关闭；补强实现、动态验证、独立只读复审与主会话验收均完成，准备提交 fix 与新 READY 空提交。
-- 最后完成：Gate 已接收并验证 caller-provided `legacyContentStageIds`，并为每个 known assignment 实际执行 E05 resolver 联合合同；独立只读终审 0 findings（P0-P3）。
-- 下一步：主会话按批次节奏复核并集成新 tip；本分支不 merge `main`、不 push。
+- 状态：P1 补强实现、targeted test 7/7、scoped analyze 0 issues、独立只读复审、fix 提交与新 READY 空提交均已完成。
+- 最后完成：Gate 已接收并验证 caller-provided `legacyContentStageIds`，并为每个 known assignment 实际执行 E05 resolver 联合合同；独立只读终审 0 findings（P0-P3）；代码交付 tip 为 `279f42bb`。
+- 下一步：仅等待主控整合；本分支不 merge `main`、不 push。
 - 已跑验证：第一版有效 RED 为目标文件/API 不存在；第一版 GREEN 为 6/6。P1 补强有效 RED 为缺少 required `legacyContentStageIds` API 而编译失败；补强 GREEN 为 `flutter test --no-pub --no-test-assets -j 1 test/data/validation/combat_catalog_migration_gate_test.dart` 通过 7/7；`flutter analyze --no-pub lib/data/validation/combat_catalog_migration_gate.dart test/data/validation/combat_catalog_migration_gate_test.dart` 为 0 issues；`dart format`、JSON 解析、`git diff --check` 与严格 5 文件白名单检查通过；独立只读终审 0 findings。
 - 阻塞项：无。L02 当前未登记在 task registry，本切片不需要且不会修改 registry。
