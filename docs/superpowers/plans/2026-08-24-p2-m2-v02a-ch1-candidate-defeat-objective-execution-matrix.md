@@ -60,10 +60,11 @@ promotion 或全目标 executable 声明。
 ## 当前恢复点
 
 - 状态：进行中。
-- 最后完成：计划已以 `0b35f02f` 提交；新矩阵测试以显式
-  `fail` 冻结红态，证明 execution harness 尚未实现。
-- 下一步：硬编码 95 条 declaration 并完成 R11→R22→R13→R06
-  矩阵。
+- 最后完成：红测已以 `25b4e420` 提交；95 条硬编码
+  declaration、70 条独立期望事件、五关 R11→R22→R13→R06 进度
+  矩阵及真实 fixture fail-closed/source guard 已实现。
+- 下一步：提交实现，运行全部指定影响集与 scoped analyze。
 - 已跑验证：`flutter pub get`；`dart run build_runner build`（126 outputs）；
-  `git status --short` clean；新矩阵红测 0 pass / 1 fail（预期）。
+  `git status --short` clean；新矩阵红测 0 pass / 1 fail（预期）；
+  实现后新矩阵 8/8 PASS。
 - 阻塞项：无。
