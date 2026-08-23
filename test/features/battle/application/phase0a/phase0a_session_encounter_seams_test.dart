@@ -5,6 +5,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_batch_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
@@ -79,6 +80,18 @@ class CapturingObserver implements Phase0aEnemyIntentObserver {
   @override
   void observe(Phase0aEnemyIntentObservation observation) {
     observations.add(observation);
+  }
+}
+
+class PassThroughBatchGate implements Phase0aEnemyIntentBatchGate {
+  int calls = 0;
+
+  @override
+  List<Phase0aIntent> gateEnemyIntents({
+    required List<Phase0aIntent> enemyIntents,
+  }) {
+    calls++;
+    return enemyIntents;
   }
 }
 
@@ -219,6 +232,7 @@ Phase0aCombatSession makeSession({
   Phase0aEnemySkillDamageResolver? skillResolver,
   CapturingObserver? observer,
   Phase0aEnemyIntentGate? gate,
+  Phase0aEnemyIntentBatchGate? batchGate,
 }) {
   return Phase0aCombatSession(
     initialState: initialState ?? makeState(),
@@ -228,6 +242,7 @@ Phase0aCombatSession makeSession({
     enemySkillDamageResolver: skillResolver,
     enemyIntentObserver: observer,
     enemyIntentGate: gate,
+    enemyIntentBatchGate: batchGate,
   );
 }
 
@@ -237,6 +252,7 @@ Phase0aWaveBattleFlow makeFlow({
   CountingDamageResolver? resolver,
   CapturingObserver? observer,
   Phase0aEnemyIntentGate? gate,
+  Phase0aEnemyIntentBatchGate? batchGate,
 }) {
   return Phase0aWaveBattleFlow(
     session: Phase0aCombatSession(
@@ -246,6 +262,7 @@ Phase0aWaveBattleFlow makeFlow({
       damageResolver: resolver ?? CountingDamageResolver(),
       enemyIntentObserver: observer,
       enemyIntentGate: gate,
+      enemyIntentBatchGate: batchGate,
     ),
     waves: waves,
   );
@@ -260,6 +277,7 @@ void main() {
       final skillResolver = FixedEnemySkillResolver();
       final observer = CapturingObserver();
       final gate = Phase0aSpawnGraceIntentGate(canAttackActorIds: const {});
+      final batchGate = PassThroughBatchGate();
       final originalState = makeState(
         enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],
       );
@@ -269,6 +287,7 @@ void main() {
         skillResolver: skillResolver,
         observer: observer,
         gate: gate,
+        batchGate: batchGate,
       );
 
       final nextState = makeState(
@@ -282,6 +301,7 @@ void main() {
       expect(identical(forked.enemySkillDamageResolver, skillResolver), isTrue);
       expect(identical(forked.enemyIntentObserver, observer), isTrue);
       expect(identical(forked.enemyIntentGate, gate), isTrue);
+      expect(identical(forked.enemyIntentBatchGate, batchGate), isTrue);
       expect(forked.state, nextState);
       expect(forked.state.tick, nextState.tick);
       expect(forked.state.nextSeq, nextState.nextSeq);
@@ -310,10 +330,12 @@ void main() {
       final nextGate = Phase0aSpawnGraceIntentGate(
         canAttackActorIds: const {'e1'},
       );
+      final batchGate = PassThroughBatchGate();
       final session = makeSession(
         resolver: resolver,
         observer: observer,
         gate: initialGate,
+        batchGate: batchGate,
       );
       final forked = session.forkWithStateAndEnemyIntentGate(
         makeState(
@@ -327,7 +349,9 @@ void main() {
       expect(identical(forked.damageResolver, resolver), isTrue);
       expect(identical(forked.enemyIntentObserver, observer), isTrue);
       expect(identical(forked.enemyIntentGate, nextGate), isTrue);
+      expect(identical(forked.enemyIntentBatchGate, batchGate), isTrue);
       expect(identical(session.enemyIntentGate, initialGate), isTrue);
+      expect(identical(session.enemyIntentBatchGate, batchGate), isTrue);
     });
   });
 
@@ -619,6 +643,35 @@ void main() {
         isEmpty,
       );
       expect(flow.state.enemies.single.position.x, lessThan(300));
+    });
+
+    test('换波前后保留同一 batch gate 并每拍执行', () {
+      final batchGate = PassThroughBatchGate();
+      final wave1 = [
+        makeEnemy(
+          id: 'e1',
+          position: const ArenaVector(50, 0),
+          currentHealth: 15,
+        ),
+      ];
+      final wave2 = [makeEnemy(id: 'e2', position: const ArenaVector(300, 0))];
+      final flow = makeFlow(
+        initialState: makeState(enemies: wave1),
+        waves: [
+          Phase0aWave(enemies: wave1),
+          Phase0aWave(enemies: wave2),
+        ],
+        batchGate: batchGate,
+      );
+
+      flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+      flow.advance(deltaSeconds: 1.0, command: const Phase0aPlayerCommand());
+
+      expect(flow.state.enemies.single.id, 'e2');
+      expect(batchGate.calls, 2);
     });
   });
 }

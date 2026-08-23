@@ -3,6 +3,7 @@ import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import 'phase0a_enemy_ai_adapter.dart';
+import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_gate.dart';
 import 'phase0a_enemy_intent_observer.dart';
 import 'phase0a_player_input_adapter.dart';
@@ -21,6 +22,7 @@ final class Phase0aCombatSession {
     this.enemySkillDamageResolver,
     this.enemyIntentObserver,
     this.enemyIntentGate,
+    this.enemyIntentBatchGate,
   }) : _state = initialState;
 
   final Phase0aPlayerInputAdapter playerAdapter;
@@ -34,6 +36,11 @@ final class Phase0aCombatSession {
   /// 可选的逐拍敌方 intent 筛选闸;为 null 时 adapter 输出原样进入
   /// observer 与 reducer(与现有路径完全一致)。
   final Phase0aEnemyIntentGate? enemyIntentGate;
+
+  /// 可选的批次筛选闸；在逐 intent gate 之后执行，输出必须
+  /// 是输入对象 identity 的稳定、无重复子序列。为 null 时不增加
+  /// 任何批次处理，保持旧路径。
+  final Phase0aEnemyIntentBatchGate? enemyIntentBatchGate;
 
   Phase0aArenaState _state;
   Phase0aEnemyIntentObservation? _lastEnemyIntentObservation;
@@ -69,14 +76,17 @@ final class Phase0aCombatSession {
       enemySkillDamageResolver: enemySkillDamageResolver,
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentGate: enemyIntentGate,
+      enemyIntentBatchGate: enemyIntentBatchGate,
     );
   }
 
-  /// 推进一拍:玩家指令与敌方 AI 各产 intent,经 gate 筛选后合并,
+  /// 推进一拍:玩家指令与敌方 AI 各产 intent,经逐 intent gate
+  /// 与批次 gate 筛选后合并,
   /// 由同一 reducer 结算。返回本拍语义事件(已按 seq 排好)。
   ///
   /// 若配置了 [enemyIntentGate],敌方 intents 先经 gate 筛选;再配置了
-  /// [enemyIntentObserver] 时,交付观察器的是最终要交给 reducer 的
+  /// [enemyIntentBatchGate] 再只能返回前段输入的 identity 稳定子序列。
+  /// 再配置 [enemyIntentObserver] 时,交付观察器的是最终要交给 reducer 的
   /// 不可修改列表。观察器只读,不影响后续进入 reducer 的 intents 与其顺序。
   List<Phase0aEvent> advance({
     required double deltaSeconds,
@@ -88,9 +98,20 @@ final class Phase0aCombatSession {
     );
     final enemyIntents = enemyAiAdapter.intentsFor(state: _state);
     final gate = enemyIntentGate;
-    final gatedEnemyIntents = gate != null
+    final perIntentGatedEnemyIntents = gate != null
         ? List<Phase0aIntent>.unmodifiable(enemyIntents.where(gate.allows))
         : enemyIntents;
+    final batchGate = enemyIntentBatchGate;
+    final gatedEnemyIntents = batchGate == null
+        ? perIntentGatedEnemyIntents
+        : _applyBatchGate(
+            enemyIntents: gate == null
+                ? List<Phase0aIntent>.unmodifiable(
+                    List<Phase0aIntent>.of(perIntentGatedEnemyIntents),
+                  )
+                : perIntentGatedEnemyIntents,
+            batchGate: batchGate,
+          );
     final observer = enemyIntentObserver;
     if (observer != null) {
       final observation = Phase0aEnemyIntentObservation(
@@ -112,5 +133,34 @@ final class Phase0aCombatSession {
     );
     _state = result.state;
     return result.events;
+  }
+
+  static List<Phase0aIntent> _applyBatchGate({
+    required List<Phase0aIntent> enemyIntents,
+    required Phase0aEnemyIntentBatchGate batchGate,
+  }) {
+    final proposed = batchGate.gateEnemyIntents(enemyIntents: enemyIntents);
+    final accepted = <Phase0aIntent>[];
+    var inputCursor = 0;
+    for (final intent in proposed) {
+      if (accepted.any((acceptedIntent) => identical(acceptedIntent, intent))) {
+        throw StateError(
+          'enemy intent batch gate output must not repeat an input identity',
+        );
+      }
+      while (inputCursor < enemyIntents.length &&
+          !identical(enemyIntents[inputCursor], intent)) {
+        inputCursor++;
+      }
+      if (inputCursor >= enemyIntents.length) {
+        throw StateError(
+          'enemy intent batch gate output must be an identity-stable '
+          'subsequence of its input',
+        );
+      }
+      accepted.add(intent);
+      inputCursor++;
+    }
+    return List<Phase0aIntent>.unmodifiable(accepted);
   }
 }
