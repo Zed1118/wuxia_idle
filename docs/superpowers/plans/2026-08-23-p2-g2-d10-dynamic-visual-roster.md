@@ -19,8 +19,8 @@
 
 ## 当前恢复点
 
-- 状态：已接管 Qoder 候选，完成边界审查、修正空白输入校验并通过定向验证；准备提交 READY。
-- 最后完成：确认无生成物，仅两项候选改动；补充本计划文件。
-- 下一步：提交 `[READY][CODEX][P2-G2-D10]`，保持工作区 clean 交接主控复审。
+- 状态：已完成并冻结，主控复审与集成回归通过。
+- 最后完成：Qoder 候选经 Codex 接管，补齐空白输入校验并以 `4b2ce6ce` READY；集成为 `41b3414b`。
+- 下一步：随 Batch6 集成分支封签，不再修改本任务分支。
 - 已跑验证：`dart format`；visual roster + stage content mapper 共 36 tests passed；scoped `flutter analyze` 0 issues；`git diff --check` passed。
 - 阻塞项：无。

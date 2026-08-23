@@ -841,8 +841,26 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch6-host-ready-contracts-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch6-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 27c9777c
+    integration_commits:
+      - b45d23df
+      - d8e9706b
+      - 2f0f6e81
+      - c26b0a5a
+      - f29d9bd8
+      - 41b3414b
+      - faccb91f
+      - 0949156a
+      - 96effb84
+    regression_fix_ready_tips:
+      - e13c8049
+      - 38b38dd0
+    verification:
+      targeted_tests: 143
+      full_tests: 4599
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch6-host-ready-contracts.md
@@ -858,7 +876,16 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d09-typed-encounter-mapping-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d09-typed-mapping
-    status: dispatched
+    status: ready_reviewed
+    tip_commit: fe6abeff
+    implementation_commits:
+      - 2111795a
+      - ae91ead0
+      - c57fef14
+    integration_commits:
+      - b45d23df
+      - d8e9706b
+      - 2f0f6e81
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_encounter_mapping.dart
       - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
@@ -874,7 +901,12 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-d10-dynamic-visual-roster-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d10-visual-roster
-    status: dispatched
+    status: ready_reviewed
+    tip_commit: 4b2ce6ce
+    integration_commit: 41b3414b
+    external_attempt:
+      provider: qoder_qwen3_8_max
+      result: candidate retained after build_runner scope violation was cancelled and Codex corrected blank-input validation
     owned_files:
       - lib/features/battle/presentation/phase0a/phase0a_visual_roster.dart
       - test/features/battle/presentation/phase0a/phase0a_visual_roster_test.dart
@@ -889,7 +921,14 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-e05-encounter-migration-resolver-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e05-migration-resolver
-    status: dispatched
+    status: ready_reviewed
+    tip_commit: 0c340af8
+    implementation_commits:
+      - 316f7b20
+      - ecc6544b
+    integration_commits:
+      - c26b0a5a
+      - f29d9bd8
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_encounter_migration_resolver.dart
       - test/features/battle/application/phase0a/phase0a_encounter_migration_resolver_test.dart

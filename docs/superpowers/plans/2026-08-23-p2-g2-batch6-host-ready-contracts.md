@@ -22,20 +22,19 @@
 
 ## 验收 checklist
 
-- [ ] typed mapping 防御性持有全部动态 runtime 输入，并通过真实 production assembler bridge 生成 encounter flow。
-- [ ] visual roster 覆盖 reserve/warning/active 在内的全量 combatants，既有 `fromMapping` 行为保持兼容。
-- [ ] migration resolver 对 legacy/migrated 合法路径及 allowlist、count、both/neither 冲突稳定 fail closed。
-- [ ] targeted tests 给出命令与通过数；assembler/mainline/visual 相关回归继续通过。
-- [ ] 不触及数值硬红线、三系锁死、在线=离线、反主流机制或 Dart 中文文案/数值散写。
-- [ ] 生产接线证据明确：本批只到 production assembler typed bridge；主线 host 仍走 legacy `assemble`，不伪称已切生产。
-- [ ] 主控 diff 复审、`git diff --check`、scoped analyze 与至少两路独立审查通过。
-- [ ] 所有任务分支 worktree clean 且 tip 为 `[READY]`；集成分支最终生成 Batch6 READY 恢复点。
+- [x] typed mapping 防御性持有全部动态 runtime 输入，并通过真实 production assembler bridge 生成 encounter flow。
+- [x] visual roster 覆盖 reserve/warning/active 在内的全量 combatants，既有 `fromMapping` 行为保持兼容。
+- [x] migration resolver 对 legacy/migrated 合法路径及 allowlist、count、both/neither 冲突稳定 fail closed。
+- [x] targeted tests 给出命令与通过数；assembler/mainline/visual 相关回归继续通过。
+- [x] 不触及数值硬红线、三系锁死、在线=离线、反主流机制或 Dart 中文文案/数值散写。
+- [x] 生产接线证据明确：本批只到 production assembler typed bridge；主线 host 仍走 legacy `assemble`，不伪称已切生产。
+- [x] 主控 diff 复审、`git diff --check`、scoped analyze 与至少两路独立审查通过。
+- [x] 所有任务分支 worktree clean 且 tip 为 `[READY]`；集成分支最终生成 Batch6 READY 恢复点。
 
 ## 当前恢复点
 
-- 状态：Batch6 集成基线已建立，准备派发 D09/D10/E05。
-- 最后完成：确认 Batch5 READY `27c9777c`；主仓 `main` / `origin/main` 仍为 `e292d3a`。
-- 下一步：冻结协调记录并建立三个任务 worktree；Pi/Qoder/Codex 并行实现。
-- 已跑验证：Batch5 已完成 193/193 回归、范围 analyze 0 issues和两路独立终审；本批尚未产生代码 diff。
+- 状态：Batch6 已完成实现、历史集成回归修复、主控复审和独立终审，准备以 `[READY][CODEX][P2-G2-BATCH6]` 封签。
+- 最后完成：最终集成态 `flutter test --no-pub` 4599/4599；`flutter analyze --no-pub lib test` 0 issue；所有独立审查 P0/P1/P2 为 0。
+- 下一步：从本 READY 恢复点启动数据合同、loader/validator 与黑风岭非生产诊断批；继续禁止未冻结的 production host switch。
+- 已跑验证：新合同与关键消费者 266/266；回归修复集成专项 143/143；全量 4599/4599；scoped analyze 0 issue；`git diff --check` 通过。
 - 阻塞项：黑风岭 encounter 内容、伏击 objective、AttackToken enforce 与预警表现语义未冻结；不阻塞本批纯合同。
-
