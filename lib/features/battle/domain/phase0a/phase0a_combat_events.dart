@@ -724,6 +724,92 @@ final class Phase0aWaveCleared extends Phase0aEvent {
   int get hashCode => Object.hash(seq, tick, waveIndex);
 }
 
+/// 入口预警开始(SpawnDirector warningStarted 投影)。
+///
+/// [entryPosition] 为该 entry 绑定 actor 的显式入场点世界坐标快照
+/// (来自冻结遭遇名单,不是运行时插值)。
+final class Phase0aSpawnWarningStarted extends Phase0aEvent {
+  const Phase0aSpawnWarningStarted({
+    required super.seq,
+    required super.tick,
+    required this.entryId,
+    required this.enemyId,
+    required this.entryPosition,
+  });
+
+  final String entryId;
+  final String enemyId;
+  final ArenaVector entryPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aSpawnWarningStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.entryId == entryId &&
+      other.enemyId == enemyId &&
+      other.entryPosition == entryPosition;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, entryId, enemyId, entryPosition);
+}
+
+/// 敌人入场完成,本拍可加入竞技场移动但受攻击宽限约束
+/// (SpawnDirector entered 投影)。
+final class Phase0aEnemyEntered extends Phase0aEvent {
+  const Phase0aEnemyEntered({
+    required super.seq,
+    required super.tick,
+    required this.entryId,
+    required this.enemyId,
+    required this.entryPosition,
+  });
+
+  final String entryId;
+  final String enemyId;
+  final ArenaVector entryPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aEnemyEntered &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.entryId == entryId &&
+      other.enemyId == enemyId &&
+      other.entryPosition == entryPosition;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, entryId, enemyId, entryPosition);
+}
+
+/// 入场敌人攻击宽限到期,恢复进攻资格
+/// (SpawnDirector graceExpired 投影)。
+final class Phase0aSpawnGraceExpired extends Phase0aEvent {
+  const Phase0aSpawnGraceExpired({
+    required super.seq,
+    required super.tick,
+    required this.entryId,
+    required this.enemyId,
+    required this.entryPosition,
+  });
+
+  final String entryId;
+  final String enemyId;
+  final ArenaVector entryPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aSpawnGraceExpired &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.entryId == entryId &&
+      other.enemyId == enemyId &&
+      other.entryPosition == entryPosition;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, entryId, enemyId, entryPosition);
+}
+
 /// 战斗胜利终局(对齐契约 battle_victory,全场至多一条;
 /// 其后一切战斗事件被忽略)。
 final class Phase0aBattleVictory extends Phase0aEvent {

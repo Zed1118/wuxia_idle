@@ -324,6 +324,9 @@ final class Phase0aVfxController {
         case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():
         case Phase0aWaveCleared():
+        case Phase0aSpawnWarningStarted():
+        case Phase0aEnemyEntered():
+        case Phase0aSpawnGraceExpired():
           break;
       }
     }

@@ -131,6 +131,18 @@ final class Phase0aEventOrderAdapter {
       'wave_cleared',
       CombatEventStage.killAndResources,
     ),
+    Phase0aSpawnWarningStarted() => const _EventDescriptor(
+      'spawn_warning_started',
+      CombatEventStage.startup,
+    ),
+    Phase0aEnemyEntered() => const _EventDescriptor(
+      'enemy_entered',
+      CombatEventStage.displacementAndSelection,
+    ),
+    Phase0aSpawnGraceExpired() => const _EventDescriptor(
+      'spawn_grace_expired',
+      CombatEventStage.status,
+    ),
     Phase0aBattleVictory() => const _EventDescriptor(
       'battle_victory',
       CombatEventStage.presentation,
@@ -269,6 +281,30 @@ final class Phase0aEventOrderAdapter {
         ]);
       case Phase0aWaveCleared():
         values.add(_component('index', event.waveIndex));
+      case Phase0aSpawnWarningStarted():
+        values.addAll(
+          _spawnComponents(
+            entryId: event.entryId,
+            enemyId: event.enemyId,
+            entryPosition: event.entryPosition,
+          ),
+        );
+      case Phase0aEnemyEntered():
+        values.addAll(
+          _spawnComponents(
+            entryId: event.entryId,
+            enemyId: event.enemyId,
+            entryPosition: event.entryPosition,
+          ),
+        );
+      case Phase0aSpawnGraceExpired():
+        values.addAll(
+          _spawnComponents(
+            entryId: event.entryId,
+            enemyId: event.enemyId,
+            entryPosition: event.entryPosition,
+          ),
+        );
       case Phase0aBattleVictory() || Phase0aBattleDefeat():
         // seq/tick/type are the complete terminal payload.
         break;
@@ -297,6 +333,16 @@ final class Phase0aEventOrderAdapter {
 
   static String _vector(ArenaVector? value) =>
       value == null ? 'null' : 'x=${_scalar(value.x)},y=${_scalar(value.y)}';
+
+  static List<String> _spawnComponents({
+    required String entryId,
+    required String enemyId,
+    required ArenaVector entryPosition,
+  }) => [
+    _component('entry', entryId),
+    _component('enemy', enemyId),
+    _component('entryPosition', _vector(entryPosition)),
+  ];
 
   static String _outcomesComponent(List<Phase0aSkillOutcome> outcomes) {
     final encoded = outcomes.map(_outcome).join();

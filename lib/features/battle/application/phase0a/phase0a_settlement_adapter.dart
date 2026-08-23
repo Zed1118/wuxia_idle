@@ -198,6 +198,9 @@ final class Phase0aSettlementAdapter {
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||
             Phase0aWaveCleared() ||
+            Phase0aSpawnWarningStarted() ||
+            Phase0aEnemyEntered() ||
+            Phase0aSpawnGraceExpired() ||
             Phase0aBattleVictory() ||
             Phase0aBattleDefeat():
           break;
