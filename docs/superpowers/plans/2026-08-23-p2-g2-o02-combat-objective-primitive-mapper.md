@@ -2,16 +2,18 @@
 
 ## 目标
 
-在 Batch7 READY 基线 `codex/phase2-g2-batch7-data-contracts-20260823`
+在 Batch7 integration baseline
+`codex/phase2-g2-batch7-data-contracts-20260823` 的中间态提交 `e2c3da76`
 之上，新增 `CombatObjectivePrimitiveRef` 到 `EncounterObjective` 的唯一纯
-mapper。八类 S01 ref 必须一一映射到 O01 原语；`requiredTicks` 只通过 caller
-显式提供的正 `tickDuration` 转为 `Duration`，不提供默认 tick，不选择任何关卡
-objective 或平衡值。
+mapper。该基线在任务启动时尚非 READY。八类 S01 ref 必须一一映射到 O01 原语；
+`requiredTicks` 只通过 caller 显式提供的正 `tickDuration` 转为 `Duration`，不提供
+默认 tick，不选择任何关卡 objective 或平衡值。
 
 ## 分支与文件边界
 
 - 分支：`codex/phase2-g2-o02-combat-objective-mapper-20260823`
-- 基线：`e2c3da7690ed4f1ca4b8c7586e3049dd38b0483f`
+- 基线：Batch7 integration baseline 中间态
+  `e2c3da7690ed4f1ca4b8c7586e3049dd38b0483f`（任务启动时尚非 READY）
 - 新增：`lib/data/validation/combat_objective_primitive_mapper.dart`
 - 新增：`test/data/validation/combat_objective_primitive_mapper_test.dart`
 - 新增：本计划兼审计文件
@@ -71,10 +73,11 @@ objective 或平衡值。
 
 ## 当前恢复点
 
-- 状态：实现、动态验证、独立审查与主会话验收均完成，准备提交和 READY 收口。
+- 状态：实现、动态验证、独立审查、主会话验收、实现提交与 READY 收口均已完成；
+  代码交付 tip：`1b71b371`。
 - 最后完成：新增八类穷尽纯映射、caller 显式正 tick 校验与 Duration 乘法溢出
   fail-closed 检查；完成独立静态审查与主会话复核，未修改公共合同。
-- 下一步：最终 diff/路径检查，提交实现，再追加规定的空 READY commit。
+- 下一步：等待主控后续整合；本任务不合并 `main`、不 push。
 - 已跑验证：红测 0 pass / 1 load failure（预期缺 mapper）；绿测 8/8；scoped
   analyze 2 items / 0 issue；`dart format` 两文件 0 changed；`git diff --check`
   通过；diff 仅三份允许的新文件。
