@@ -68,13 +68,13 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
 
 - [ ] 编码前与最终均用 Qoder CLI 1.1.28 + exact `Qwen3.8-Max` +
   reasoning high 完成 Read/Grep/Glob-only 审查，不授权 Bash/Edit/Write。
-- [ ] TDD 红→绿并提交小切片；覆盖四活动、empty/other-character、
+- [x] TDD 红→绿并提交小切片；覆盖四活动、empty/other-character、
   restore revision、invalid ID、输入不变、error fields 和 source guard。
-- [ ] 生产接线证据如实标记为“未接”：本任务只交付 host-neutral
+- [x] 生产接线证据如实标记为“未接”：本任务只交付 host-neutral
   guard，不冒充四类活动入口已接线。
-- [ ] targeted tests、scoped analyze、format、`git diff --check`、owned-path
+- [x] targeted tests、scoped analyze、format、`git diff --check`、owned-path
   audit 与 clean status 通过；按任务约束不跑 full suite。
-- [ ] 红线影响：0 数值/YAML/玩家文案/三系/在线离线/反主流/
+- [x] 红线影响：0 数值/YAML/玩家文案/三系/在线离线/反主流/
   reward/save/UI/host 变更。
 - [ ] 中文动宾小提交完成；计划证据收口后追加精确 READY 空提交。
 
@@ -88,12 +88,18 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
 
 ## 当前恢复点
 
-- 状态：设计/API 与验收矩阵已冻结，Qoder 编码前只读审查
-  `DESIGN PASS`，待红测。
-- 最后完成：提交计划恢复点 `a1330858`；Qoder 1.1.28 /
-  exact `Qwen3.8-Max` / high / Read-Grep-Glob-only 审查为
-  P0/P1=0，三项 P2 已纳入测试设计。
-- 下一步：新增测试并跑出目标 source/API 缺失的有效红灯。
-- 已跑验证：初始 `git status` clean；CLI 1.1.28 与精确模型选择器
-  已核对；Qoder 设计审查 `DESIGN PASS` / P0=0 / P1=0。
+- 状态：实现与本地验证完成，Qoder 编码前只读审查
+  `DESIGN PASS`，待最终只读 diff 审查。
+- 最后完成：`a1330858` 冻结计划、`40dfc994` 记录设计审查、
+  `3790448d` 锁定红测、`30002ef9` 实现最小 guard。有效红灯
+  精确为目标 source/API/error 缺失；实现后 R20 12/12 通过。
+- 下一步：运行 Qoder 最终只读审查，独立复核 findings，然后
+  回填证据与 READY。
+- 已跑验证：R20 12/12、R02 policy 14/14、R15 runtime 18/18，
+  三文件分别执行、去重合计 44/44；changed-Dart scoped analyze
+  2 items 无问题；format 2 files 0 changed；baseline `git diff --check`
+  与 owned paths 检查通过，工作树干净。fresh worktree 先恢复
+  `flutter pub get`，并从 Batch16 worktree 根复制 `libisar.dylib`，
+  SHA-256 为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`；
+  本测试未需要 build_runner。按任务约束未跑 full suite。
 - 阻塞：无。production host/shared occupancy 接线继续为显式 Gate。
