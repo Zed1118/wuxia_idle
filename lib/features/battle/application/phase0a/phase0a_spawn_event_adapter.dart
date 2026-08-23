@@ -48,6 +48,13 @@ final class Phase0aSpawnEventAdapter {
           'unknown entryId in roster',
         );
       }
+      if (directorEvent.enemyId != binding.actorId) {
+        throw ArgumentError.value(
+          directorEvent.enemyId,
+          'directorEvents',
+          'enemyId must match roster binding ${binding.actorId}',
+        );
+      }
       events.add(
         _projectEvent(
           directorEvent: directorEvent,

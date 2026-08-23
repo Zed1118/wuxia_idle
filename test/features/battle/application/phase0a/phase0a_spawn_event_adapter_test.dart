@@ -259,6 +259,28 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('已知 entry 但 enemyId 与 roster 不符时拒绝', () {
+      final director = twoEntryDirector();
+      final roster = twoEntryRoster(director);
+
+      expect(
+        () => Phase0aSpawnEventAdapter.project(
+          directorEvents: const [
+            SpawnDirectorEvent(
+              SpawnDirectorEventType.entered,
+              'e1',
+              'enemy_e2',
+              1,
+            ),
+          ],
+          roster: roster,
+          seqStart: 0,
+          combatTick: 1,
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 
   group('接入 Phase0aEventOrderAdapter', () {

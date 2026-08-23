@@ -268,6 +268,17 @@ void main() {
         ),
         throwsArgumentError,
       );
+
+      for (final invalid in [' player', 'player ', 'player id']) {
+        expect(
+          () => Phase0aEncounterRoster(
+            director: director,
+            playerId: invalid,
+            bindings: bindingsFor(director),
+          ),
+          throwsArgumentError,
+        );
+      }
     });
   });
 }

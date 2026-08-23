@@ -29,19 +29,30 @@ final class Phase0aEncounterRoster {
     required String playerId,
     required List<Phase0aEncounterRosterBinding> bindings,
   }) : _director = director,
+       _playerId = _checkedPlayerId(playerId),
        _bindings = _freeze(director, playerId, bindings);
 
   final SpawnDirector _director;
+  final String _playerId;
   final List<Phase0aEncounterRosterBinding> _bindings;
+
+  static String _checkedPlayerId(String playerId) {
+    if (playerId.trim().isEmpty || RegExp(r'\s').hasMatch(playerId)) {
+      throw ArgumentError.value(
+        playerId,
+        'playerId',
+        'must be non-empty and contain no whitespace',
+      );
+    }
+    return playerId;
+  }
 
   static List<Phase0aEncounterRosterBinding> _freeze(
     SpawnDirector director,
     String playerId,
     List<Phase0aEncounterRosterBinding> bindings,
   ) {
-    if (playerId.trim().isEmpty) {
-      throw ArgumentError.value(playerId, 'playerId', 'must not be blank');
-    }
+    _checkedPlayerId(playerId);
     final entries = director.state.units;
     final entriesByEntryId = <String, SpawnUnitSnapshot>{
       for (final unit in entries) unit.entryId: unit,
@@ -112,6 +123,9 @@ final class Phase0aEncounterRoster {
 
   /// 冻结时的 director 输入(只读引用;名单不持有也不推进导演状态)。
   SpawnDirector get director => _director;
+
+  /// 与该 roster 互斥的玩家 actor ID。
+  String get playerId => _playerId;
 
   /// 全部绑定,按 entryId 升序,不可修改。
   List<Phase0aEncounterRosterBinding> get bindings => _bindings;
