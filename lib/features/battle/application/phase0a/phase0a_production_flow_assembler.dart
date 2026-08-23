@@ -12,6 +12,7 @@ import 'phase0a_combat_session.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_encounter_flow.dart';
+import 'phase0a_encounter_mapping.dart';
 import 'phase0a_enemy_intent_observer.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -147,6 +148,38 @@ final class Phase0aProductionFlowAssembler {
       session: session,
       director: director,
       roster: roster,
+    );
+  }
+
+  /// Dynamic encounter typed bridge (D09 dispatch): delegates a frozen
+  /// [Phase0aEncounterMapping] back to [assembleEncounter], copying no
+  /// damage, AI, movement, spawn, terminal or RNG rules.
+  ///
+  /// The caller still passes [numbers] and the single [rng] explicitly (the
+  /// mapping holds neither, keeping tuning and RNG ownership continuous); an
+  /// optional observe-only [Phase0aEnemyIntentObserver] is likewise explicit
+  /// here rather than frozen into the mapping. The mapping constructor has
+  /// already validated director/roster identity, player id consistency and
+  /// duplicate combatant actor ids; full actor coverage, player adapter id
+  /// and move-binding validation stay fail-closed in [assembleEncounter], so
+  /// this bridge behaves identically to a direct call.
+  static Phase0aEncounterFlow assembleEncounterFromMapping({
+    required Phase0aEncounterMapping mapping,
+    required NumbersConfig numbers,
+    required Random rng,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+  }) {
+    return assembleEncounter(
+      initialState: mapping.initialState,
+      director: mapping.director,
+      roster: mapping.roster,
+      combatants: mapping.combatants,
+      moveBindings: mapping.moveBindings,
+      numbers: numbers,
+      rng: rng,
+      playerAdapter: mapping.playerAdapter,
+      enemyAiAdapter: mapping.enemyAiAdapter,
+      enemyIntentObserver: enemyIntentObserver,
     );
   }
 
