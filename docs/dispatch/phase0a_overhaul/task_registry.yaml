@@ -1507,8 +1507,18 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r05-attack-token-batch-gate-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r05-attack-token-batch-gate
-    status: in_progress
+    status: ready_reviewed
     base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    implementation_commit: ddce919f
+    tip_commit: a674c420f494bf83d322f0a080353434f5a18d4c
+    integration_commits:
+      - 725097f5
+      - 39fb21b0
+      - 92e2310d
+    verification:
+      targeted_tests: 61
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-G2-D02-ATTACK-TOKEN-DIRECTOR
       - P2-G2-D04-TOKEN-OBSERVE-SEAM
@@ -1531,8 +1541,17 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-r06-objective-runtime-tracker-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r06-objective-runtime-tracker
-    status: in_progress
+    status: ready_reviewed
     base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    implementation_commit: b4ebdb8481bfb6633ccaf24f354db181070fe1f1
+    tip_commit: b69f5449a6728b6b6495b8e18904baeb216ae87c
+    integration_commits:
+      - 197b8a95
+      - 50a0612c
+    verification:
+      targeted_tests: 28
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R03-OBJECTIVE-CONTROLLER
       - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
@@ -1550,8 +1569,17 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r07-encounter-roster-mapper-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r07-encounter-roster-mapper
-    status: in_progress
+    status: ready_reviewed
     base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    implementation_commit: 99f90d990bbdbd3119f3256b1883ee40b64465a9
+    tip_commit: 79819c6bca89129891f2c3af4cd4e775e7f8be93
+    integration_commits:
+      - 41045cf8
+      - ee13d743
+    verification:
+      targeted_tests: 78
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R04-RUNTIME-CONTRACT-MAPPER
       - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
@@ -1575,6 +1603,21 @@ tasks:
       - P2-M2-R05-ATTACK-TOKEN-BATCH-GATE
       - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
       - P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
+    integration_commits:
+      - 197b8a95
+      - 50a0612c
+      - 41045cf8
+      - ee13d743
+      - 725097f5
+      - 39fb21b0
+      - 92e2310d
+    verification:
+      joint_targeted_tests: 167
+      full_tests: 4877
+      changed_dart_items: 9
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: pending
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch12-runtime-enforcement.md

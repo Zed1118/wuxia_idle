@@ -27,5 +27,6 @@
 
 - [x] 从 Batch11 READY 创建三个实现 worktree 与一个集成 worktree。
 - [x] 冻结任务所有权、依赖、生产隔离和 promotion Gate。
-- [ ] R05 / R06 / R07 实现、来源验证与 READY。
-- [ ] 主控集成、全量验证、独立终审与 Batch12 READY。
+- [x] R05 / R06 / R07 实现、来源验证、工具审查、独立复审与 READY。
+- [x] 主控逐项审 diff；联合 targeted 167/167、9 项 scoped analyze 0 issue、批末全量 4877/4877 与仓库审计通过。
+- [ ] 集成独立终审、证据收口与 Batch12 READY。
