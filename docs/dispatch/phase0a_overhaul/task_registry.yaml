@@ -1209,6 +1209,8 @@ tasks:
       - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
       - P2-M2-R01-MAINLINE-RUN-PARTICIPATION
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
+    auxiliary_tasks:
+      - P2-G7-BALANCE-REFERENCE-CLOSEOUT
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch10-schema-contracts.md
@@ -1328,13 +1330,42 @@ tasks:
       - domain controller cannot import data layer and all progress is owner bound
       - no production host yaml save ui or tuning changes
 
+  - id: P2-M2-D01-CH1-CANDIDATE-CATALOG
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-d01-ch1-candidate-data-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-d01-ch1-candidate-data
+    status: running
+    base_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
+    prerequisites:
+      - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
+      - P2-M2-R03-OBJECTIVE-CONTROLLER
+    owned_files:
+      - test/fixtures/phase2/combat/ch1_candidate/**
+      - test/data/phase2/ch1_candidate_combat_catalog_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-d01-ch1-candidate-catalog.md
+    protected_behavior:
+      - every numeric value and stage composition is candidate evidence only and cannot certify production tuning
+      - no production data host routing ui save reward injury or gameplay formula changes
+      - canonical bandit role ids and flat objective templates must follow the approved phase2 plan
+      - all references must close through an explicit in-memory reference index
+
   - id: P2-G7-BALANCE-REFERENCE-CLOSEOUT
     milestone: G7
     owner: codex_sol_high
     branch: codex/phase2-g7-balance-reference-closeout-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g7-balance-reference-closeout
-    status: running
+    status: ready_reviewed
     base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    implementation_commit: 381d591bfb2fda17f0c1600253c1a945c6e3088e
+    tip_commit: df6dafc579ce0eceae9d4f1813b1f10f927d62ea
+    integration_commits:
+      - 993e1189
+      - 99c6dd3f
+    verification:
+      targeted_tests: 45
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - CLAUDE.md
       - GDD.md
