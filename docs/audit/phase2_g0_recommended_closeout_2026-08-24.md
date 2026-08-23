@@ -33,4 +33,4 @@
 - `flutter test --no-pub --no-test-assets test/data/truth_source_guard_test.dart`：9/9 通过。首次运行前新 worktree 缺 `.dart_tool` 与被忽略的 Isar 生成物，先按 lockfile 执行 `flutter pub get --enforce-lockfile` 和 `dart run build_runner build`，未改变 tracked 源码。
 - `git diff --check`：通过；变更文件不含 `lib/`、`data/`、`test/` 或 UI。
 - Codex 独立审查在补齐 deferred 用户签字边界后为 P0/P1/P2 = 0/0/0；Pi + DeepSeek V4 Flash 复核为 P0/P1 = 0/0，提出的可消除 P2（11 项组成与调优覆盖证据）已在本审计补齐。
-- Qoder + Qwen3.8-Max 复核与最终 READY tip 待封签前补记。
+- Qoder + Qwen3.8-Max 首轮复核为 P0/P1/P2 = 0/1/3：唯一 P1 是把 `REOPEN-LOADOUT-PLAN-01=A` 与 `MAINLINE-RUN-01/B` 的活动快照混写，已拆成“一套持久装配”与“独立 run 快照决议”；两项文案 P2（历史句、断魂庄措辞）已修。增量复核为 P0/P1 = 0/0；其余非阻断 P2 中，GDD 历史原句已与基线逐字核对并恢复原设计源链接，交叉引用键已对齐既有 `related_decision` 体例，PROGRESS 当前 119 行与 G0 前基线相同且本批不再净增行数。

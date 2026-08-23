@@ -215,10 +215,12 @@ decisions:
 
   - id: REOPEN-LOADOUT-PLAN-01
     status: not_reopened
-    summary: 不重开 Build 方案保存；继续使用单一装配或活动内一次性版本快照
+    summary: 不重开 Build 方案保存；每个角色继续只有一套持久装配，不保存亲战与差遣双 preset
     source_registry_entry: Build 方案保存
     g0_choice: A
-    batch_action: preserve_single_loadout_and_ephemeral_activity_snapshot_only
+    related_decision: MAINLINE-RUN-01
+    related_decision_dimension: between_stage_loadout_B
+    batch_action: preserve_single_persistent_loadout
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
