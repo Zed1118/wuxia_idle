@@ -27,5 +27,6 @@
 
 - [x] Batch17 READY 已冻结，full 5079/5079、独立终审 P0/P1/P2=0，main/origin main 未修改。
 - [x] Batch18 独立 integration worktree 已从 Batch17 READY 创建。
-- [ ] 恢复 integration/source 环境并完成 R22/R23/R24 并行来源。
+- [x] integration 已完成 `flutter pub get`、build_runner 126 outputs（63 个 `.g.dart`）与 Batch17 `libisar.dylib` 恢复（SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`）；工作树保持 clean。
+- [ ] R22/R23/R24 各自在 source worktree 恢复环境并完成并行来源。
 - [ ] 联合/full 验证、独立终审与 Batch18 READY。
