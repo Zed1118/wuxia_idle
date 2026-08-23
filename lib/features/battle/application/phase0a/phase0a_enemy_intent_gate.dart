@@ -4,13 +4,11 @@ import '../../domain/phase0a/phase0a_combat_intent.dart';
 /// 之前。默认 null 路径与基线完全一致;显式 gate 先筛选 enemy intents,
 /// observer 只观察最终要交给 reducer 的不可修改列表。
 ///
-/// 实现合同:
-/// - 不得修改 [enemyIntents] 原列表(只读消费)。
-/// - 返回列表必须不可修改(最终交给 observer/reducer 的列表不可变)。
+/// 接口只能对单个原 intent 做 allow/deny；稳定子序列的
+/// 构造和不可变化由 CombatSession 唯一负责，因此 gate
+/// 无法注入、替换或重排 intent。
 abstract interface class Phase0aEnemyIntentGate {
-  List<Phase0aIntent> gateEnemyIntents({
-    required List<Phase0aIntent> enemyIntents,
-  });
+  bool allows(Phase0aIntent enemyIntent);
 }
 
 /// 出生宽限 gate:调用方显式传入可攻击 actor id 集合,集合外的 actor
@@ -30,21 +28,13 @@ final class Phase0aSpawnGraceIntentGate implements Phase0aEnemyIntentGate {
   final Set<String> _canAttackActorIds;
 
   @override
+  bool allows(Phase0aIntent enemyIntent) =>
+      _canAttackActorIds.contains(enemyIntent.actorId) ||
+      enemyIntent is Phase0aMoveIntent;
+
+  /// 便于纯合同测试的稳定过滤；生产 session 使用 [allows]
+  /// 自行构造不可修改子序列。
   List<Phase0aIntent> gateEnemyIntents({
     required List<Phase0aIntent> enemyIntents,
-  }) {
-    if (enemyIntents.every(
-      (intent) => _canAttackActorIds.contains(intent.actorId),
-    )) {
-      return List.unmodifiable(List.of(enemyIntents));
-    }
-    final gated = <Phase0aIntent>[
-      for (final intent in enemyIntents)
-        if (_canAttackActorIds.contains(intent.actorId))
-          intent
-        else if (intent is Phase0aMoveIntent)
-          intent,
-    ];
-    return List.unmodifiable(gated);
-  }
+  }) => List.unmodifiable(enemyIntents.where(allows));
 }

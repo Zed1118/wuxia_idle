@@ -48,6 +48,19 @@ final class Phase0aCombatSession {
   /// adapter、damage resolver、enemy-skill resolver、enemy-intent
   /// observer 与 gate 实例,不创建 RNG、不推进 tick/seq、不产生事件。
   Phase0aCombatSession forkWithState(Phase0aArenaState nextState) {
+    return forkWithStateAndEnemyIntentGate(
+      nextState,
+      enemyIntentGate: enemyIntentGate,
+    );
+  }
+
+  /// 原子替换 state 与逐拍 gate，其他依赖 identity 全部保留。
+  /// EncounterFlow 用此方法在不手工重建 session 的前提下
+  /// 跟随 SpawnDirector 的宽限快照逐拍更新 gate。
+  Phase0aCombatSession forkWithStateAndEnemyIntentGate(
+    Phase0aArenaState nextState, {
+    required Phase0aEnemyIntentGate? enemyIntentGate,
+  }) {
     return Phase0aCombatSession(
       initialState: nextState,
       playerAdapter: playerAdapter,
@@ -76,7 +89,7 @@ final class Phase0aCombatSession {
     final enemyIntents = enemyAiAdapter.intentsFor(state: _state);
     final gate = enemyIntentGate;
     final gatedEnemyIntents = gate != null
-        ? gate.gateEnemyIntents(enemyIntents: enemyIntents)
+        ? List<Phase0aIntent>.unmodifiable(enemyIntents.where(gate.allows))
         : enemyIntents;
     final observer = enemyIntentObserver;
     if (observer != null) {

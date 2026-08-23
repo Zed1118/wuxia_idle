@@ -300,6 +300,35 @@ void main() {
       expect(forked.state.tick, nextState.tick + 1);
       expect(observer.observations, hasLength(1));
     });
+
+    test('可原子替换每拍 gate 且保留其他依赖 identity', () {
+      final resolver = CountingDamageResolver();
+      final observer = CapturingObserver();
+      final initialGate = Phase0aSpawnGraceIntentGate(
+        canAttackActorIds: const {},
+      );
+      final nextGate = Phase0aSpawnGraceIntentGate(
+        canAttackActorIds: const {'e1'},
+      );
+      final session = makeSession(
+        resolver: resolver,
+        observer: observer,
+        gate: initialGate,
+      );
+      final forked = session.forkWithStateAndEnemyIntentGate(
+        makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],
+        ),
+        enemyIntentGate: nextGate,
+      );
+
+      expect(identical(forked.playerAdapter, session.playerAdapter), isTrue);
+      expect(identical(forked.enemyAiAdapter, session.enemyAiAdapter), isTrue);
+      expect(identical(forked.damageResolver, resolver), isTrue);
+      expect(identical(forked.enemyIntentObserver, observer), isTrue);
+      expect(identical(forked.enemyIntentGate, nextGate), isTrue);
+      expect(identical(session.enemyIntentGate, initialGate), isTrue);
+    });
   });
 
   group('无 gate 路径与基线一致', () {
