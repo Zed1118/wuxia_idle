@@ -49,7 +49,7 @@ final class Phase0aEventOrderAdapter {
         ),
       );
     }
-    return List<CombatEventRecord>.unmodifiable(records);
+    return CombatEventOrder.order(records);
   }
 
   /// Alias used by callers that name the operation after its output type.
@@ -141,109 +141,173 @@ final class Phase0aEventOrderAdapter {
   };
 
   static String _canonicalPayload(Phase0aEvent event, String type) {
-    final values = <String>[type, 'seq=${event.seq}', 'tick=${event.tick}'];
+    final values = <String>[
+      _component('type', type),
+      _component('seq', event.seq),
+      _component('tick', event.tick),
+    ];
     switch (event) {
       case Phase0aAttackStarted():
-        values.addAll(['actor=${event.actor}', 'move=${event.moveKind.name}']);
+        values.addAll([
+          _component('actor', event.actor),
+          _component('move', event.moveKind.name),
+        ]);
       case Phase0aHitLanded():
         values.addAll([
-          'actor=${event.actor}',
-          'target=${event.target}',
-          'move=${event.moveKind.name}',
-          'critical=${event.isCritical}',
-          'ultimate=${event.isUltimate}',
-          'damage=${event.resolvedDamage}',
-          'remaining=${event.remainingHealth}',
+          _component('actor', event.actor),
+          _component('target', event.target),
+          _component('move', event.moveKind.name),
+          _component('critical', event.isCritical),
+          _component('ultimate', event.isUltimate),
+          _component('damage', event.resolvedDamage),
+          _component('remaining', event.remainingHealth),
+          _component('actorPosition', _vector(event.actorPosition)),
+          _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aEnemyDefeated():
         values.addAll([
-          'target=${event.target}',
-          'kind=${event.defeatKind.name}',
+          _component('target', event.target),
+          _component('kind', event.defeatKind.name),
+          _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aBossPhaseChanged():
         values.addAll([
-          'actor=${event.actor}',
-          'phase=${event.phaseIndex}',
-          'skills=${event.unlockedSkillIds.join(',')}',
+          _component('actor', event.actor),
+          _component('phase', event.phaseIndex),
+          _listComponent('skills', event.unlockedSkillIds),
         ]);
       case Phase0aBossChargeStarted():
         values.addAll([
-          'actor=${event.actor}',
-          'skill=${event.skillId}',
-          'charge=${event.chargeTicks}',
+          _component('actor', event.actor),
+          _component('skill', event.skillId),
+          _component('charge', event.chargeTicks),
         ]);
       case Phase0aGuardianCoopStrike():
         values.addAll([
-          'main=${event.mainGuardian}',
-          'partner=${event.partner}',
-          'boss=${event.boss}',
-          'target=${event.target}',
-          'damage=${event.totalDamage}',
+          _component('main', event.mainGuardian),
+          _component('partner', event.partner),
+          _component('boss', event.boss),
+          _component('target', event.target),
+          _component('mainDamage', event.mainGuardianDamage),
+          _component('mainCritical', event.mainGuardianCritical),
+          _component('totalDamage', event.totalDamage),
+          _component('mainPosition', _vector(event.mainGuardianPosition)),
+          _component('partnerPosition', _vector(event.partnerPosition)),
+          _component('bossPosition', _vector(event.bossPosition)),
+          _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aGuardIntercepted():
         values.addAll([
-          'actor=${event.actor}',
-          'boss=${event.boss}',
-          'guardian=${event.guardian}',
-          'skill=${event.skillId}',
-          'damage=${event.resolvedDamage}',
+          _component('actor', event.actor),
+          _component('boss', event.boss),
+          _component('guardian', event.guardian),
+          _component('skill', event.skillId),
+          _component('damage', event.resolvedDamage),
+          _component('bossPosition', _vector(event.bossPosition)),
+          _component('guardianPosition', _vector(event.guardianPosition)),
         ]);
       case Phase0aBossChargeInterrupted():
         values.addAll([
-          'actor=${event.actor}',
-          'target=${event.target}',
-          'skill=${event.skillId}',
-          'stagger=${event.staggerTicks}',
+          _component('actor', event.actor),
+          _component('target', event.target),
+          _component('skill', event.skillId),
+          _component('stagger', event.staggerTicks),
         ]);
       case Phase0aEnemySkillStarted():
-        values.addAll(['actor=${event.actor}', 'skill=${event.skillId}']);
+        values.addAll([
+          _component('actor', event.actor),
+          _component('skill', event.skillId),
+        ]);
       case Phase0aGatherStarted():
-        values.addAll(['actor=${event.actor}', 'skill=${event.skillId}']);
+        values.addAll([
+          _component('actor', event.actor),
+          _component('skill', event.skillId),
+          _component('actorPosition', _vector(event.actorPosition)),
+        ]);
       case Phase0aGatherApplied():
         values.addAll([
-          'actor=${event.actor}',
-          'outcomes=${event.outcomes.length}',
+          _component('actor', event.actor),
+          _outcomesComponent(event.outcomes),
         ]);
       case Phase0aClearStarted():
-        values.addAll(['actor=${event.actor}', 'skill=${event.skillId}']);
+        values.addAll([
+          _component('actor', event.actor),
+          _component('skill', event.skillId),
+          _component('actorPosition', _vector(event.actorPosition)),
+        ]);
       case Phase0aClearApplied():
         values.addAll([
-          'actor=${event.actor}',
-          'outcomes=${event.outcomes.length}',
+          _component('actor', event.actor),
+          _outcomesComponent(event.outcomes),
         ]);
       case Phase0aSkillStarted():
         values.addAll([
-          'actor=${event.actor}',
-          'hotkey=${event.hotkey}',
-          'skill=${event.skillId}',
+          _component('actor', event.actor),
+          _component('hotkey', event.hotkey),
+          _component('skill', event.skillId),
         ]);
       case Phase0aSkillApplied():
         values.addAll([
-          'actor=${event.actor}',
-          'hotkey=${event.hotkey}',
-          'skill=${event.skillId}',
-          'outcomes=${event.outcomes.length}',
+          _component('actor', event.actor),
+          _component('hotkey', event.hotkey),
+          _component('skill', event.skillId),
+          _outcomesComponent(event.outcomes),
         ]);
       case Phase0aSkillAvailabilityChanged():
         values.addAll([
-          'slot=${event.slot}',
-          'availability=${event.availability.name}',
-          'cooldown=${event.cooldownRemaining}',
-          'qi=${event.qiCurrent}',
-          'required=${event.qiRequired}',
+          _component('slot', event.slot),
+          _component('availability', event.availability.name),
+          _component('cooldown', event.cooldownRemaining),
+          _component('qi', event.qiCurrent),
+          _component('required', event.qiRequired),
         ]);
       case Phase0aWaveStarted():
-        values.addAll(['index=${event.waveIndex}', 'total=${event.waveTotal}']);
+        values.addAll([
+          _component('index', event.waveIndex),
+          _component('total', event.waveTotal),
+        ]);
       case Phase0aWaveCleared():
-        values.add('index=${event.waveIndex}');
+        values.add(_component('index', event.waveIndex));
       case Phase0aBattleVictory() || Phase0aBattleDefeat():
         // seq/tick/type are the complete terminal payload.
         break;
     }
-    return values.map(_canonicalComponent).join('|');
+    return values.join('|');
   }
 
-  static String _canonicalComponent(String value) => '${value.length}:$value';
+  static String _component(String name, Object? value) {
+    final item = '$name=${value ?? 'null'}';
+    return '${item.length}:$item';
+  }
+
+  static String _listComponent(String name, List<String> values) {
+    final encoded = values.map(_canonicalValue).join();
+    final item = '$name=$encoded';
+    return '${item.length}:$item';
+  }
+
+  static String _canonicalValue(String value) => '${value.length}:$value';
+
+  static String _vector(Object? value) => value == null ? 'null' : '$value';
+
+  static String _outcomesComponent(List<Phase0aSkillOutcome> outcomes) {
+    final encoded = outcomes.map(_outcome).join();
+    final item = 'outcomes=$encoded';
+    return '${item.length}:$item';
+  }
+
+  static String _outcome(Phase0aSkillOutcome outcome) {
+    final fields = [
+      _component('target', outcome.target),
+      _component('damage', outcome.resolvedDamage),
+      _component('critical', outcome.isCritical),
+      _component('defeated', outcome.defeated),
+      _component('status', outcome.statusApplied.name),
+      _component('sourcePosition', _vector(outcome.sourcePosition)),
+      _component('targetPosition', _vector(outcome.targetPosition)),
+    ].join('|');
+    return '${fields.length}:$fields';
+  }
 }
 
 final class _EventDescriptor {

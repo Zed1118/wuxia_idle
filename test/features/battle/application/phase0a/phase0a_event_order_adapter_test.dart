@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_event_order_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 
@@ -94,5 +95,44 @@ void main() {
       CombatEventStage.startup,
       CombatEventStage.damageAndPosture,
     ]);
+  });
+
+  test('完整 equality payload 进入 canonical ID，列表分隔符不会碰撞', () {
+    Phase0aHitLanded hit(ArenaVector? position) => Phase0aHitLanded(
+      seq: 8,
+      tick: 9,
+      actor: 'player',
+      target: 'enemy',
+      moveKind: Phase0aMoveKind.light,
+      isCritical: false,
+      isUltimate: false,
+      resolvedDamage: 1,
+      remainingHealth: 9,
+      actorPosition: position,
+    );
+
+    final positioned = Phase0aEventOrderAdapter.project([
+      hit(const ArenaVector(1, 2)),
+    ]).single.eventId;
+    final unpositioned = Phase0aEventOrderAdapter.project([
+      hit(null),
+    ]).single.eventId;
+    expect(positioned, isNot(unpositioned));
+
+    Phase0aBossPhaseChanged phase(List<String> skills) =>
+        Phase0aBossPhaseChanged(
+          seq: 8,
+          tick: 9,
+          actor: 'boss',
+          phaseIndex: 1,
+          unlockedSkillIds: skills,
+        );
+    final commaInValue = Phase0aEventOrderAdapter.project([
+      phase(['a,b']),
+    ]).single.eventId;
+    final twoValues = Phase0aEventOrderAdapter.project([
+      phase(['a', 'b']),
+    ]).single.eventId;
+    expect(commaInValue, isNot(twoValues));
   });
 }

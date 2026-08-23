@@ -1,8 +1,10 @@
+import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import 'phase0a_combat_session.dart';
+import 'phase0a_event_order_adapter.dart';
 import 'phase0a_player_input_adapter.dart';
 
 /// 可选的波间补给契约。null 表示普通内容完全续传 HP/真气/CD。
@@ -82,10 +84,14 @@ final class Phase0aWaveBattleFlow {
   int _waveCursor = 0;
   Phase0aBattleOutcome _outcome = Phase0aBattleOutcome.ongoing;
   bool _firstWaveAnnounced = false;
+  List<CombatEventRecord> _lastOrderedEventRecords =
+      const <CombatEventRecord>[];
 
   Phase0aArenaState get state => _session.state;
   Phase0aBattleOutcome get outcome => _outcome;
   List<Phase0aWave> get waves => _waves;
+  List<CombatEventRecord> get lastOrderedEventRecords =>
+      _lastOrderedEventRecords;
 
   /// 推进一拍:终局后完全幂等(空事件、state 不变、下游零调用)。
   List<Phase0aEvent> advance({
@@ -93,6 +99,7 @@ final class Phase0aWaveBattleFlow {
     required Phase0aPlayerCommand command,
   }) {
     if (_outcome != Phase0aBattleOutcome.ongoing) {
+      _lastOrderedEventRecords = const <CombatEventRecord>[];
       return const <Phase0aEvent>[];
     }
 
@@ -183,6 +190,7 @@ final class Phase0aWaveBattleFlow {
         );
       }
     }
+    _lastOrderedEventRecords = Phase0aEventOrderAdapter.project(events);
     return List.unmodifiable(events);
   }
 

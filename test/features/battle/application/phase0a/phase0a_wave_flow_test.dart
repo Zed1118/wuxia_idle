@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_damage_ca
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
 import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
@@ -197,6 +198,18 @@ void main() {
       expect(flow.state.surviveTicksRemaining, 0);
       expect(events.whereType<Phase0aWaveCleared>(), isEmpty);
       expect(events.last, isA<Phase0aBattleVictory>());
+      expect(flow.lastOrderedEventRecords, isNotEmpty);
+      expect(flow.lastOrderedEventRecords.last.feedKind, CombatFeedKind.action);
+      expect(
+        flow.lastOrderedEventRecords.map((record) => record.tick).toSet(),
+        contains(1),
+      );
+      for (var i = 1; i < flow.lastOrderedEventRecords.length; i++) {
+        expect(
+          flow.lastOrderedEventRecords[i - 1].stage.index,
+          lessThanOrEqualTo(flow.lastOrderedEventRecords[i].stage.index),
+        );
+      }
     });
 
     test('surviveTicks 同拍玩家死亡优先 → defeat', () {
@@ -328,6 +341,7 @@ void main() {
       expect(flow.state.nextSeq, terminalState.nextSeq);
       expect(flow.outcome, Phase0aBattleOutcome.victory);
       expect(resolver.calls, callsAtTerminal, reason: '终局后 resolver 零调用');
+      expect(flow.lastOrderedEventRecords, isEmpty);
     });
   });
 

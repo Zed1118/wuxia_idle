@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../domain/phase0a/combat_event_order.dart';
 import '../../application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -46,6 +47,7 @@ final class Phase0aBattleController extends ChangeNotifier {
   Phase0aArenaState get state => _flow.state;
   Phase0aBattleOutcome get outcome => _flow.outcome;
   List<Phase0aEvent> get lastEvents => _lastEvents;
+  List<CombatEventRecord> get lastEventRecords => _flow.lastOrderedEventRecords;
   List<Phase0aEvent> get events => _events;
   List<Phase0aVfxEntry> get feedback => _feedback;
 
