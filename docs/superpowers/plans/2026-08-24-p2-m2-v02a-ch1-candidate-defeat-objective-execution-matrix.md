@@ -60,12 +60,10 @@ promotion 或全目标 executable 声明。
 ## 当前恢复点
 
 - 状态：进行中。
-- 最后完成：基线/owned path 已确认；完整读取 `CLAUDE.md`、
-  `AGENTS.md` 和 `docs/spec/rejected_task_registry.md`；环境恢复后
-  build_runner 写出 126 个 ignored outputs，`libisar.dylib` SHA-256 =
-  `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
-- 下一步：提交计划，写红测。
+- 最后完成：计划已以 `0b35f02f` 提交；新矩阵测试以显式
+  `fail` 冻结红态，证明 execution harness 尚未实现。
+- 下一步：硬编码 95 条 declaration 并完成 R11→R22→R13→R06
+  矩阵。
 - 已跑验证：`flutter pub get`；`dart run build_runner build`（126 outputs）；
-  `git status --short` clean。
+  `git status --short` clean；新矩阵红测 0 pass / 1 fail（预期）。
 - 阻塞项：无。
-
