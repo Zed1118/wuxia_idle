@@ -80,21 +80,34 @@ source 唯一 import 冻结为 `../domain/mentor_insight_policy.dart`。
   `application`/`domain` 目录为 sibling 的拓扑不符，已更正为 `../domain/...`；
   其余接口与不变量结论通过主 agent 对照。
 
+### 最终 diff 审查
+
+- CLI：`pi 0.84.1`
+- model：`deepseek/deepseek-v4-flash`
+- thinking：`high`
+- 命令摘要：同样仅启用 `read,grep,find,ls`，完整读取 baseline
+  diff 的三份 owned files，并对照 R02 policy/claim 和 attack-token lease
+  runtime/test；无 bash/edit/write。
+- 结果：`PASS`，P0/P1 均无；确认 18 个新测试无假绿、API 未过宽、
+  source guard 合理。唯一 P2 为本 plan checklist/恢复点停在中途状态，
+  已在本次更新修正。
+
 ## 验收 checklist（CLAUDE §8.2）
 
-- [ ] 计划恢复点先独立提交；Pi 0.84.x + exact
+- [x] 计划恢复点先独立提交；Pi 0.84.x + exact
   `deepseek/deepseek-v4-flash` + thinking high 完成编码前和最终 diff
   两轮只读审查并记录真实结果。
-- [ ] TDD 红→绿：empty/no-op、acquire、四种 release、ordered batch、restore、
+- [x] TDD 红→绿：empty/no-op、acquire、四种 release、ordered batch、restore、
   lazy throw、互斥拒绝、重复/错配、foreign/stale/double commit、sibling fork、
   prepared input 不可修改与失败零发布全覆盖。
-- [ ] 生产接线证据如实标记为「未接」：本任务只交付 R02 的可组合
+- [x] 生产接线证据如实标记为「未接」：本任务只交付 R02 的可组合
   application runtime，不冒充 host / shared occupancy / durable claim 已上线。
-- [ ] 新测试 + mentor policy / claim / reward claim key 去重 targeted 全绿；
+- [x] 新测试 + mentor policy / claim / reward claim key 去重 targeted 全绿；
   scoped analyze 0 issue；format、`git diff --check` 和 owned-files audit 通过。
-- [ ] 红线：0 数值/YAML/文案，0 三系/在线离线/反主流/reward/save/UI/
+- [x] 红线：0 tuning 数值/YAML/玩家文案，0 三系/在线离线/反主流/reward/save/UI/
   host 变更；source guard 证明无 claim、成长、活动查询或 tuning 依赖。
-- [ ] 中文动宾小切片 commit，最终追加精确 READY 空提交。
+- [x] 中文动宾小切片 commit 已完成；本 plan 的直接后继将追加
+  精确 READY 空提交，最终状态以分支 tip subject 为准。
 
 ## 任务切片
 
@@ -108,13 +121,16 @@ source 唯一 import 冻结为 `../domain/mentor_insight_policy.dart`。
 
 ## 当前恢复点
 
-- 状态：计划恢复点 `a10edae6` 已提交；编码前 Pi 设计审查已完成
-  并冻结上述 API/D1-D3，尚未编写生产代码。
-- 最后完成：Pi CLI `0.84.1` + exact
-  `deepseek/deepseek-v4-flash` + thinking high 只读设计审查 `PASS`；
-  主 agent 已更正其相对 import 路径误判。
-- 下一步：提交 API/证据冻结，写新测试并跑出缺 source 的红灯。
-- 已跑验证：仅基线/分支/工作树/Pi 版本只读检查；尚未运行测试。
+- 状态：R15 source/test/plan 已完成，两轮指定 Pi 只读审查均
+  `PASS`，已修正最终审查指出的中途文档漂移。
+- 已完成 commits：`a10edae6` 计划恢复点、`535b59e2` API/Pi 证据冻结、
+  `cfe1e5c7` 红测、`a29206d5` 最小实现。
+- 下一步：提交本收口恢复点，复跑最终验证，然后追加精确
+  `[READY][PI][P2-M2-R15] 建立随行听剑单关占用运行时` 空提交。
+- 已跑验证：红灯精确为缺失目标 source；新测试 18/18；新测试 + mentor
+  policy/claim + reward claim key 去重 targeted 65/65；scoped analyze 8 items
+  0 issue；format 2 files 无变化；`git diff --check` 与三份 owned-files
+  audit 通过。按任务约束未跑 full suite。
 - 阻塞项：无。
 - 生产接线：未接；当前是供后续 host/shared occupancy 消费的显式
   application runtime。
