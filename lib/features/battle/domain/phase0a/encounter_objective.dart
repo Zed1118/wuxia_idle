@@ -120,24 +120,20 @@ final class CommanderDefeated extends EncounterObjectiveEvent {
 /// Immutable reducer state. Sets are snapshots and cannot be mutated by a caller.
 final class EncounterObjectiveProgress {
   EncounterObjectiveProgress._({
+    required Object ownerToken,
     required this.completed,
     required Set<String> satisfied,
     required this.elapsed,
     required Set<String> processedEventIds,
-  }) : satisfied = UnmodifiableSetView<String>(
+  }) : _ownerToken = ownerToken,
+       satisfied = UnmodifiableSetView<String>(
          Set<String>.unmodifiable(satisfied),
        ),
        processedEventIds = UnmodifiableSetView<String>(
          Set<String>.unmodifiable(processedEventIds),
        );
 
-  factory EncounterObjectiveProgress.empty() => EncounterObjectiveProgress._(
-    completed: false,
-    satisfied: const <String>{},
-    elapsed: Duration.zero,
-    processedEventIds: const <String>{},
-  );
-
+  final Object _ownerToken;
   final bool completed;
   final UnmodifiableSetView<String> satisfied;
   final Duration elapsed;
@@ -149,6 +145,7 @@ final class EncounterObjectiveProgress {
     Duration? elapsed,
     Set<String>? processedEventIds,
   }) => EncounterObjectiveProgress._(
+    ownerToken: _ownerToken,
     completed: completed ?? this.completed,
     satisfied: satisfied ?? this.satisfied,
     elapsed: elapsed ?? this.elapsed,
@@ -175,10 +172,18 @@ final class EncounterObjectiveProgress {
 }
 
 sealed class EncounterObjective {
-  const EncounterObjective();
+  EncounterObjective() : _ownerToken = Object();
+
+  final Object _ownerToken;
 
   EncounterObjectiveProgress get initialProgress =>
-      EncounterObjectiveProgress.empty();
+      EncounterObjectiveProgress._(
+        ownerToken: _ownerToken,
+        completed: false,
+        satisfied: const <String>{},
+        elapsed: Duration.zero,
+        processedEventIds: const <String>{},
+      );
 
   EncounterObjectiveProgress advance(
     EncounterObjectiveProgress progress,
@@ -194,6 +199,9 @@ sealed class EncounterObjective {
     EncounterObjectiveProgress progress,
     EncounterObjectiveEvent event,
   ) {
+    if (!identical(progress._ownerToken, _ownerToken)) {
+      throw StateError('Objective progress belongs to another objective');
+    }
     if (progress.completed ||
         progress.processedEventIds.contains(event.dedupeKey)) {
       return progress;

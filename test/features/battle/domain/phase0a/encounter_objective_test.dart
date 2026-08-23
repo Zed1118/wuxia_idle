@@ -195,4 +195,21 @@ void main() {
       'anchorDestroyed:same',
     });
   });
+
+  test('progress is bound to its objective instance', () {
+    final first = DefeatTargetsObjective(const ['x']);
+    final second = DefeatTargetsObjective(const ['x']);
+    final incomplete = first.initialProgress;
+    expect(
+      () => second.advance(incomplete, TargetDefeated('x')),
+      throwsStateError,
+    );
+    final complete = first.advance(incomplete, TargetDefeated('x'));
+    expect(complete.completed, isTrue);
+    expect(
+      () => second.advance(complete, TargetDefeated('x')),
+      throwsStateError,
+    );
+    expect(first.advance(complete, TargetDefeated('x')), same(complete));
+  });
 }

@@ -14,6 +14,7 @@
 - 构造器拒绝空 ID、重复集合 ID 和非正持续时间；`Duration.zero` 事件可安全忽略。
 - 目标集合在构造时复制为不可变快照。
 - `EncounterObjectiveProgress` 每次推进返回新值；`satisfied` 与 `processedEventIds` 均为不可变集合。
+- progress 带有 objective 实例私有 owner token；只有创建它的 objective 能继续推进，跨实例（包括相同参数实例）会 fail-closed。
 - 事件带稳定键；相同键重复投递是 no-op。完成后继续投递任何事件也是 no-op。
 - 去重键由稳定事件 kind 与 eventId 组成；不同事件类型即使 eventId 相同也不会互吞。
 - `EntityDefended` 与 `TimeElapsed` 要求调用方显式提供非空稳定 `eventId`，避免两个合法且连续的相同 tick 被错误合并；相同 duration 但不同键会分别累计。
