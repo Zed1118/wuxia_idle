@@ -28,9 +28,10 @@
 
 ## 当前恢复点
 
-- 状态：已完成，待提交 READY
+- 状态：合并 Gate 返修已完成，待新 READY
 - 最后完成：已读 `CLAUDE.md`、GDD §5、`docs/spec/rejected_task_registry.md`；已定位 10Hz 离散绘制与 keydown repeat 根因
-- 下一步：提交切片 commit 与 `[READY]` tip，保持 worktree clean
-- 已跑验证：核心 targeted 52/52 PASS；焦点/production mapper/headless/session 53/53 PASS；最终 battle screen 24/24 PASS；切片文件范围 `flutter analyze` 0 issue；全树 analyze 被仓库内独立 phase0minus_probe 缺失依赖阻塞
+- 下一步：提交 Gate 修正 commit 与新 `[READY]` tip，保持 worktree clean
+- 已跑验证：初次核心 targeted 52/52 PASS；焦点/production mapper/headless/session 53/53 PASS；Gate 返修后 screen/retry/focus 41/41 PASS（含 retry 独立复跑 6/6）；返修文件范围 `flutter analyze` 0 issue；全树 analyze 被仓库内独立 phase0minus_probe 缺失依赖阻塞
+- Gate 返修：补 held J 跨冷却连续请求与 KeyUp 停止、失焦清移动、Esc 清理、终局后同 controller 直接 restart 不继承、retry 等待期间 held 不继承测试；`_retry()` 成功 restart 后显式清 held。
 - 红线/残留：只改普攻配置射程 360→420，扇区 0.72 弧度、伤害/冷却/真气公式不变；未覆盖实机帧率画像与 VFX 扩容（本切片明确不改 VFX）
 - 阻塞项：无

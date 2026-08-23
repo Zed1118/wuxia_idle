@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
@@ -87,6 +90,7 @@ void main() {
     Future<void> pumpScreen(
       WidgetTester tester, {
       required bool withRetryBuilder,
+      Future<Phase0aWaveBattleFlow> Function()? retryBuilderOverride,
     }) async {
       await tester.binding.setSurfaceSize(const Size(1280, 720));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -95,7 +99,7 @@ void main() {
           home: Phase0aBattleScreen(
             controller: controller,
             retryFlowBuilder: withRetryBuilder
-                ? () async => (await loadFixture()).flow
+                ? retryBuilderOverride ?? () async => (await loadFixture()).flow
                 : null,
           ),
         ),
@@ -137,6 +141,62 @@ void main() {
         controller.state.player.currentHealth,
         controller.state.player.maxHealth,
       );
+    });
+
+    testWidgets('终局清理 held movement,同 controller 直接 restart 不继承', (
+      tester,
+    ) async {
+      await pumpScreen(tester, withRetryBuilder: true);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      await tester.pump(const Duration(milliseconds: 220));
+
+      await driveToEndPumped(tester);
+      expect(find.byKey(retryButtonKey), findsOneWidget);
+
+      late Phase0aDebugBattleFixture fresh;
+      await tester.runAsync(() async {
+        fresh = await loadFixture();
+      });
+      controller.restart(fresh.flow);
+      await tester.pump();
+      final freshX = controller.state.player.position.x;
+
+      await tester.pump(const Duration(milliseconds: 220));
+      expect(controller.state.player.position.x, freshX);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+    });
+
+    testWidgets('retry restart 成功后显式清除等待期间产生的 held input', (tester) async {
+      final retryGate = Completer<Phase0aWaveBattleFlow>();
+      await pumpScreen(
+        tester,
+        withRetryBuilder: true,
+        retryBuilderOverride: () => retryGate.future,
+      );
+      await driveToEndPumped(tester);
+
+      late Phase0aDebugBattleFixture intermediate;
+      late Phase0aDebugBattleFixture retryTarget;
+      await tester.runAsync(() async {
+        intermediate = await loadFixture();
+        retryTarget = await loadFixture();
+      });
+      await tester.tap(find.byKey(retryButtonKey));
+      await tester.pump();
+
+      // 模拟 retry 异步等待期间同一 controller 被恢复为 ongoing；此时按住 D
+      // 会写入 screen held 集合。真正 retry 完成后必须显式清掉该集合。
+      controller.restart(intermediate.flow);
+      await tester.pump();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      retryGate.complete(retryTarget.flow);
+      await tester.pump();
+      await tester.pump();
+
+      final freshX = controller.state.player.position.x;
+      await tester.pump(const Duration(milliseconds: 220));
+      expect(controller.state.player.position.x, freshX);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
     });
 
     testWidgets('Enter 键终局再战与点击同效', (tester) async {

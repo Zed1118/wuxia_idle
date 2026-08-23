@@ -257,6 +257,36 @@ void main() {
       expect(controller.state.player.position.x, afterSecondTick);
     });
 
+    testWidgets('失焦清除 held movement,重新获得时间推进也不续走', (tester) async {
+      await pumpScreen(tester);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      await tester.pump(const Duration(milliseconds: 220));
+      final beforeBlur = controller.state.player.position.x;
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 220));
+
+      expect(controller.state.player.position.x, beforeBlur);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+    });
+
+    testWidgets('Esc 暂停清除 held movement,恢复后不继承旧按键', (tester) async {
+      await pumpScreen(tester);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      await tester.pump(const Duration(milliseconds: 220));
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      final pausedX = controller.state.player.position.x;
+      await tester.pump(const Duration(milliseconds: 220));
+      expect(controller.state.player.position.x, pausedX);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump(const Duration(milliseconds: 220));
+      expect(controller.state.player.position.x, pausedX);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+    });
+
     testWidgets('D/A/S/W 各一步,玩家立绘屏幕脚点按对应方向移动', (tester) async {
       await pumpScreen(tester);
 
@@ -319,6 +349,30 @@ void main() {
   });
 
   group('键盘 J 普攻:伤害数字与 event 精确一致,血条来自 state', () {
+    testWidgets('按住 J 跨冷却持续请求普攻,KeyUp 后停止', (tester) async {
+      await pumpScreen(tester);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyJ);
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final heldCount = controller.events
+          .whereType<Phase0aAttackStarted>()
+          .where((event) => event.actor == 'player')
+          .length;
+      expect(heldCount, greaterThanOrEqualTo(2));
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyJ);
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final afterUpCount = controller.events
+          .whereType<Phase0aAttackStarted>()
+          .where((event) => event.actor == 'player')
+          .length;
+      expect(afterUpCount, heldCount);
+    });
+
     testWidgets('舞台 primary click 入队一次普攻并按点击方向瞄准', (tester) async {
       await pumpScreen(tester);
       final stage = Phase0aStage(viewport: const Size(1280, 720));

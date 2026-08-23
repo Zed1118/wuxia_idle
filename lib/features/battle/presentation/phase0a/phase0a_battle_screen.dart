@@ -398,6 +398,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       final newFlow = await builder();
       if (!mounted) return;
       widget.controller.restart(newFlow);
+      _clearHeldInput();
       _heldFeedback.clear();
       _hitFlashRemaining.clear();
       _hpEmphasisRemaining.clear();
