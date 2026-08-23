@@ -1,7 +1,7 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-23"
+updated_at: "2026-08-24"
 
 resource_locks:
   full_flutter_test: 1
@@ -1155,3 +1155,28 @@ tasks:
     protected_behavior:
       - synchronize only repository facts and proposal indexes
       - never rewrite PROPOSED decisions as approved product semantics
+
+  - id: P2-G0-RECOMMENDED-CLOSEOUT
+    milestone: G0
+    owner: codex_root
+    branch: codex/phase2-g0-recommended-closeout-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g0-closeout
+    status: in_progress
+    base_commit: 9ea75869312d69ebe56cc1eb8af28945e95a4854
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/spec/rejected_task_registry.md
+      - docs/audit/phase2_g0_decision_packet_2026-08-23.md
+      - docs/audit/phase2_g0_recommended_closeout_2026-08-24.md
+      - docs/superpowers/plans/2026-08-24-p2-g0-recommended-closeout.md
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    exit_criteria:
+      - all eleven product semantics are frozen or explicitly deferred with safe defaults
+      - all six proposed_reopen entries retain history and have an explicit disposition
+      - all twenty tuning groups authorize candidate generation only and do not authorize production values
+      - living documents distinguish approved design from not-yet-implemented production state
+      - yaml markdown diff checks and independent review pass before READY

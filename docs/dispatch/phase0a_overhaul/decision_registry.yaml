@@ -2,14 +2,18 @@ schema_version: 1
 phase: phase2_phase0a_overhaul
 source_plan: /Users/a10506/Desktop/二阶段优化方案.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-23"
+updated_at: "2026-08-24"
 
 policy:
   frozen_may_implement: true
   proposed_requires_explicit_user_choice: true
+  deferred_requires_explicit_user_choice_to_freeze: true
   tuning_requires_data_and_playtest: true
   implementation_gap_requires_owner_and_targeted_test: true
   direct_main_writes_allowed: false
+  g0_recommended_closeout_approved: true
+  g0_closeout_base_commit: 9ea75869312d69ebe56cc1eb8af28945e95a4854
+  g0_approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
 decisions:
   - id: COMBAT-SCOPE-01
@@ -31,22 +35,36 @@ decisions:
     owner_task: P2-M0-PI-EVIDENCE
 
   - id: MAINLINE-PARTICIPANT-01
-    status: frozen_with_proposed_edges
+    status: frozen
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed
     batch_action: pointer_validation_candidate_integrated
     owner_task: P2-G1-A01-CURRENT-LEADER
+    related_decision: MAINLINE-REPLAY-PARTICIPANT-01
 
   - id: MAINLINE-REPLAY-PARTICIPANT-01
-    status: proposed
-    summary: 主线重打、前台 bot、headless、扫荡的实际参与者
-    batch_action: blocked_pending_user
-    safe_default: do_not_change_current_product_path
+    status: frozen
+    summary: 可见重打与前台 bot 可选 eligible 空闲角色；无人值守 headless 与扫荡固定当前掌门；归属实际参与者
+    g0_choice: C
+    visible_replay_and_front_bot: selectable_eligible_idle_character
+    unattended_headless_and_sweep: current_leader
+    record_growth_injury_owner: actual_participant
+    batch_action: implement_in_m2_m6_with_shared_participation_contract
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: MAINLINE-RUN-01
-    status: proposed
-    summary: 连续关卡间参与者锁定、换装、伤势中断规则
-    batch_action: blocked_pending_user
-    safe_default: policy_interface_only
+    status: frozen
+    summary: 连续 run 整段锁同一参与者，关间可换装并生成版本化新快照，仅下一关不再可战时中断
+    g0_choice:
+      participant_lock: A
+      between_stage_loadout: B
+      injury_interruption: B
+    participant_scope: locked_for_entire_run
+    between_stage_loadout: allowed_with_new_versioned_snapshot
+    injury_stop_condition: participant_not_battle_eligible_for_next_stage
+    batch_action: implement_in_m2_m6
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: MENTOR-INSIGHT-CORE-01
     status: frozen
@@ -54,15 +72,35 @@ decisions:
     batch_action: contract_only
 
   - id: MENTOR-INSIGHT-OCCUPANCY-01
-    status: proposed
-    summary: 随行听剑的占用粒度、释放时点与活动互斥
-    batch_action: blocked_pending_user
-    safe_default: production_path_disabled
+    status: frozen
+    summary: 随行听剑只占用单关，所有终止与幂等恢复结算后释放，并与四类既有活动互斥
+    g0_choice: A
+    occupancy_scope: single_stage
+    release_after:
+      - success_settlement
+      - failure_settlement
+      - explicit_exit
+      - idempotent_recovery_settlement
+    mutually_exclusive_with:
+      retreat: true
+      expedition: true
+      boss_gauntlet: true
+      healing: true
+    batch_action: implement_in_m2_m6_with_shared_occupancy
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: MENTOR-INSIGHT-RATE-01
-    status: tuning
-    summary: 随行听剑成长比例与每关上限
-    batch_action: defer_until_simulation
+    status: frozen_with_tuning_edges
+    summary: 随行听剑只发主修招式熟练度；比例与每关上限仍须模拟和试玩定标
+    g0_choice: B
+    growth_target: main_technique_proficiency_only
+    rate_status: tuning
+    candidate_generation_authorized: true
+    production_change_authorized: false
+    batch_action: generate_yaml_candidates_after_occupancy_and_claim_contracts
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: INNER-DEMON-FAILURE-CORE-01
     status: frozen
@@ -71,10 +109,15 @@ decisions:
     owner_task: P2-G1-C17A-INNER-DEMON-INJURY
 
   - id: INNER-DEMON-CULTIVATION-01
-    status: proposed
-    summary: 心魔失败是否扣主修修炼度
-    batch_action: blocked_pending_user
-    safe_default: preserve_current_behavior
+    status: frozen
+    summary: 心魔失败取消主修修炼度 10% 扣减，只保留有上限的内息紊乱
+    g0_choice: B
+    main_cultivation_penalty: none
+    retained_penalty: capped_inner_disorder
+    batch_action: implement_and_regress_in_m5
+    current_production_drift: ten_percent_cultivation_penalty_still_requires_migration
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: INNER-DEMON-THEME-CORE-01
     status: frozen
@@ -82,10 +125,55 @@ decisions:
     batch_action: evidence_only
 
   - id: INNER-DEMON-AI-01
-    status: proposed
-    summary: 七名心魔与七类机制考验的具体 AI 绑定
-    batch_action: blocked_pending_user
+    status: deferred_pending_matrix
+    summary: 先完成 canon、narrative、behavior、test 四列矩阵，再逐名冻结七心魔 AI
+    g0_choice: C
+    required_matrix_columns:
+      - canon
+      - narrative
+      - behavior_primitives
+      - testable_outcomes
+    freeze_requires_explicit_user_choice: true
+    batch_action: author_matrix_then_get_user_signoff_for_each_identity_before_m5_binding
     safe_default: keep_existing_ai
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
+
+  - id: PROGRESSIVE-UNLOCK-01
+    status: deferred_pending_migration_table
+    evidence_alias: UNREGISTERED-UNLOCK-01
+    summary: 每个模式先形成 current 到 target 的解锁迁移表，未签模式保持现有 gate
+    g0_choice: C
+    target_change_requires_explicit_user_choice: true
+    batch_action: author_per_mode_migration_table_then_get_user_signoff_before_m5_m6_gate_changes
+    safe_default: preserve_current_mode_gates
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
+
+  - id: COMBAT-ECOLOGY-ASSIGNMENT-01
+    status: frozen_with_batch_review_edges
+    evidence_alias: UNREGISTERED-ECOLOGY-01
+    summary: 六类地域锚与 M2 Ch1 山匪纵切冻结；其余逐关生态按章节或塔任务包分批审核
+    g0_choice: B
+    frozen_scope:
+      - six_geographic_anchors
+      - m2_chapter1_bandit_vertical_slice
+    remaining_scope: review_and_freeze_per_chapter_or_tower_batch
+    batch_freeze_requires_explicit_user_choice: true
+    batch_action: implement_only_user_signed_batches
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
+
+  - id: GAUNTLET-VISIBLE-BOT-01
+    status: frozen
+    evidence_alias: UNREGISTERED-GAUNTLET-BOT-01
+    summary: 断魂庄不开放前台可见 bot，保留完整首通后的 headless 重刷
+    g0_choice: B
+    visible_front_bot: false
+    post_full_clear_headless_replay: true
+    batch_action: enforce_in_m5_m6_automation_matrix
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: COLLAB-WIP-01
     status: frozen
@@ -106,11 +194,11 @@ decisions:
     owner_task: P2-G1-C12-BOT-TACTICS
 
   - id: FAILURE-POLICY-CORE-01
-    status: frozen_with_proposed_edges
+    status: frozen_with_tuning_edges
     summary: 失败统一解析 injury、disorder、partialReward、noPenalty 并以 session key 保证幂等
     batch_action: pure_contract_candidate_integrated
     owner_task: P2-G1-C13-FAILURE-POLICY
-    safe_default: do_not_freeze_mainline_run_or_injury_weights
+    safe_default: preserve_current_injury_weights_until_tuning_evidence
 
   - id: REWARD-POLICY-CORE-01
     status: frozen_with_tuning_edges
@@ -126,43 +214,177 @@ decisions:
     owner_task: P2-G1-C16-DEFENSE-HARDENING
 
   - id: REOPEN-LOADOUT-PLAN-01
-    status: proposed_reopen
-    summary: 方案要求每角色保存亲战与差遣两套装配，与已否的 Build 方案保存重叠
+    status: not_reopened
+    summary: 不重开 Build 方案保存；继续使用单一装配或活动内一次性版本快照
     source_registry_entry: Build 方案保存
-    batch_action: blocked_pending_user
-    safe_default: contract_not_enabled
+    g0_choice: A
+    batch_action: preserve_single_loadout_and_ephemeral_activity_snapshot_only
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-CHRONICLE-01
-    status: proposed_reopen
-    summary: 章节卷轴和江湖纪事与已否的章节回顾入口、江湖见闻录收藏百科重叠
+    status: not_reopened
+    summary: 不重开章节回顾入口或收藏百科；复用现有 timeline 与百科载体
     source_registry_entry: 章节回顾入口 / 江湖见闻录收藏百科
-    batch_action: blocked_pending_user
-    safe_default: do_not_build_new_navigation
+    g0_choice: A
+    batch_action: reuse_existing_timeline_and_compendium_without_new_primary_navigation
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-TELEGRAPH-ICON-01
-    status: proposed_reopen
-    summary: 威胁图标与 Boss 预警信息可能与已否的 Boss 技能预兆图标重叠
+    status: not_reopened
+    summary: 不重开 Boss 技能预兆图标；继续使用现有非图标预警
     source_registry_entry: Boss 技能预兆图标
-    batch_action: blocked_pending_user
-    safe_default: retain_existing_non_icon_telegraphs
+    g0_choice: A
+    batch_action: retain_existing_non_icon_telegraphs
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-RETURN-SUMMARY-01
-    status: proposed_reopen
-    summary: 统一归来报告与已否的闭关归来事件小结部分重叠
+    status: not_reopened
+    summary: 不重开统一归来事件小结；保留各活动独立摘要
     source_registry_entry: 闭关归来事件小结
-    batch_action: blocked_pending_user
-    safe_default: preserve_current_offline_summary
+    g0_choice: A
+    batch_action: preserve_per_activity_summaries
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-LIGHTFOOT-REWARD-01
-    status: proposed_reopen
-    summary: 轻功模式专属奖励定位与已否的轻功关卡收益差异化重叠
+    status: not_reopened
+    summary: 不重开轻功专属收益差异化；保持现有奖励
     source_registry_entry: 轻功关卡收益差异化
-    batch_action: blocked_pending_user
-    safe_default: keep_existing_rewards
+    g0_choice: A
+    batch_action: keep_existing_rewards
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-FAILURE-DIAGNOSIS-01
-    status: proposed_reopen
-    summary: 失败原因、返程原因与伤势展示可能与已否的失败原因诊断重叠
+    status: partially_reopened
+    summary: 仅允许事实性失败、返程原因与伤势展示；继续禁止建议型诊断和配装建议 UI
     source_registry_entry: 失败原因诊断
-    batch_action: blocked_pending_user
-    safe_default: keep_domain_failure_reason_without_new_advice_ui
+    g0_choice: B
+    allowed_scope: fact_only_failure_return_and_injury_reason_display
+    forbidden_scope:
+      - prescriptive_failure_diagnosis
+      - loadout_advice_ui
+    batch_action: implement_fact_only_consumers_in_m6
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
+
+  - id: TUNE-FORWARD-FAN-01
+    status: tuning
+    summary: 前向扇形边界候选生成
+    atomic_vectors: [range, half_angle]
+
+  - id: TUNE-OTHER-GEOMETRIES-01
+    status: tuning
+    summary: 其余五类几何默认边界候选生成
+    atomic_vectors: [circle_radius, ring_inner_outer_radius, rectangle_length_width, chain_range_jumps, single_target_range]
+
+  - id: TUNE-GEOMETRY-TARGET-CAP-01
+    status: tuning
+    summary: 各几何目标上限候选生成
+    atomic_vectors: [single_target_cap, fan_cap, circle_cap, ring_cap, rectangle_cap, chain_cap]
+
+  - id: TUNE-GEOMETRY-WALL-01
+    status: tuning
+    summary: 墙体与场地边界规则候选生成
+    atomic_vectors: [wall_blocking_policy, arena_clamp_policy]
+
+  - id: TUNE-WEAPON-TIMELINE-01
+    status: tuning
+    summary: 五武器前摇、命中与收招候选生成
+    atomic_vectors: [sword, heavy, flexible, dual, hidden]
+
+  - id: TUNE-WEAPON-QI-01
+    status: tuning
+    summary: 五武器与招式真气收支候选生成
+    atomic_vectors: [weapon_basic_gain, technique_cost, recovery_policy]
+
+  - id: TUNE-WEAPON-MULTIPLIER-01
+    status: tuning
+    summary: 五武器与招式倍率候选生成
+    atomic_vectors: [basic_multiplier, technique_multiplier, finisher_multiplier]
+
+  - id: TUNE-DODGE-WINDOW-01
+    status: tuning
+    summary: 主动闪避无敌窗与完美闪避窗候选生成
+    atomic_vectors: [iframe, perfect_dodge]
+
+  - id: TUNE-DEFENSE-01
+    status: tuning
+    summary: 护盾吸收、化解窗口与反伤上限候选生成
+    atomic_vectors: [shield_absorption, parry_window, counter_cap]
+
+  - id: TUNE-POSTURE-01
+    status: tuning
+    summary: 姿态容量、恢复与 Boss 折算候选生成
+    atomic_vectors: [capacity, recovery, boss_conversion]
+
+  - id: TUNE-ACTIVE-LIMIT-01
+    status: tuning
+    summary: 各模式同屏 activeLimit 候选生成
+    atomic_vectors: [mainline, tower, expedition, gauntlet, mass_battle]
+
+  - id: TUNE-REINFORCEMENT-01
+    status: tuning
+    summary: 不同模板补兵阈值候选生成
+    atomic_vectors: [threshold, delay, batch_size]
+
+  - id: TUNE-ATTACK-TOKEN-01
+    status: tuning
+    summary: 近战、远程、冲锋与支援令牌预算候选生成
+    atomic_vectors: [melee, ranged, charge, support]
+
+  - id: TUNE-STAGE-COUNT-01
+    status: tuning
+    summary: 各关总量区间内的精确编排候选生成
+    atomic_vectors: [total_count, wave_count, wave_composition]
+
+  - id: TUNE-INJURY-01
+    status: tuning
+    summary: 伤势概率、严重度与恢复时长候选生成
+    atomic_vectors: [light_frequency, light_stack, heavy_trigger, heavy_duration, heavy_severity]
+
+  - id: TUNE-ACTIVITY-DURATION-01
+    status: tuning
+    summary: 各活动占用时间候选生成
+    atomic_vectors: [retreat, expedition, gauntlet, healing]
+
+  - id: TUNE-REPEAT-REWARD-01
+    status: tuning
+    summary: 重复通关奖励候选生成
+    atomic_vectors: [mainline, gauntlet, cycle]
+
+  - id: TUNE-ENTRY-TICKET-01
+    status: tuning
+    summary: 世界观凭证产出候选生成
+    atomic_vectors: [tower_ticket, expedition_ticket]
+
+  - id: TUNE-PERFORMANCE-MATRIX-01
+    status: tuning
+    summary: 帧预算、高密度矩阵、headless 吞吐与 RSS 候选生成
+    atomic_vectors: [frame_budget, headless_throughput, rss_bound]
+
+  - id: TUNE-WINDOWS-PERFORMANCE-01
+    status: tuning
+    summary: 最低 Windows 配置与性能目标候选生成
+    atomic_vectors: [minimum_hardware_profile, mac_windows_parity]
+
+  # G0 对以上全部 TUNE-* 项统一只授权候选生成；closeout 审计用 prefix + count 验证完整覆盖。
+  - id: TUNING-G0-AUTHORIZATION-01
+    status: frozen_process
+    applies_to_prefix: TUNE-
+    applies_to_count: 20
+    authorization: candidate_generation_only
+    candidate_generation_authorized: true
+    production_change_authorized: false
+    current_behavior: preserved_until_evidence_gate
+    required_evidence:
+      - yaml_candidate
+      - redline_tests
+      - automated_simulation
+      - mac_windows_profile_when_applicable
+      - human_playtest_when_applicable
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'

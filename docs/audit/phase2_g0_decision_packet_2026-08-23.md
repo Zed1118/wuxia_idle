@@ -1,5 +1,7 @@
 # 二阶段 G0 只读证据决策包（2026-08-23）
 
+> **历史快照提示（2026-08-24）**：用户已明确回复“按推荐方案执行 G0”。本包保留 G0 前的事实、选项与取证原文，不再代表当前待决状态；最终决议以 `docs/dispatch/phase0a_overhaul/decision_registry.yaml` 和 `docs/audit/phase2_g0_recommended_closeout_2026-08-24.md` 为准。下文 §2、§9、§10 均应按“G0 前历史快照”阅读；正文内 decision registry 的旧行号引用解析基线为 Batch8 READY `9ea75869312d69ebe56cc1eb8af28945e95a4854`，不是 closeout 后文件行号。
+
 ## 0. 本包是什么、又不是什么
 
 本包只把待决问题整理成可回答的证据矩阵，**没有批准任何选项**。文中“安全默认/保守候选”仅表示用户尚未回答时如何保持 fail closed；它不是产品决定，也不得据此开启已否方向。
@@ -29,7 +31,7 @@ M0 实现差距报告固定在旧提交 `e292d3a0`，并明确 `PROPOSED` 不是
 
 G1 closeout 也明确这两项已修、但没有替用户决定 replay、`MainlineRun`、听剑、修炼度或 AI（`docs/audit/phase2_g1_production_batch1_2026-08-23.md:9-23,36-40`）。因此以下矩阵从当前代码重新取证，不照抄 M0 的历史缺口。
 
-## 2. 需要用户回答的总表
+## 2. 需要用户回答的总表（G0 前历史快照）
 
 | ID | 状态 | 未回答时安全默认 | 主要阻塞 |
 |---|---|---|---|
@@ -41,9 +43,9 @@ G1 closeout 也明确这两项已修、但没有替用户决定 replay、`Mainli
 | `MENTOR-INSIGHT-RATE-01` | `tuning` | 不发成长，等待模拟 | M2，M6 |
 | `INNER-DEMON-CULTIVATION-01` | `proposed` | 保持当前 10% 扣减 | M5，M6 |
 | `INNER-DEMON-AI-01` | `proposed` | 保持现有通用 AI | M5 |
-| `UNREGISTERED-UNLOCK-01` | 方案 `PROPOSED`、registry 缺 ID | 保持现有解锁 | M5，M6；M2 首章相邻入口 |
-| `UNREGISTERED-ECOLOGY-01` | 方案 `PROPOSED`、registry 缺 ID | 只做已明确的 Ch1 纵切，不批量铺开 | M2，M5 |
-| `UNREGISTERED-GAUNTLET-BOT-01` | 方案写“待 G0”、registry 缺 ID | 不加前台 bot | M5，M6 |
+| `PROGRESSIVE-UNLOCK-01`（取证别名 `UNREGISTERED-UNLOCK-01`） | 方案 `PROPOSED`、当时 registry 缺 ID | 保持现有解锁 | M5，M6；M2 首章相邻入口 |
+| `COMBAT-ECOLOGY-ASSIGNMENT-01`（取证别名 `UNREGISTERED-ECOLOGY-01`） | 方案 `PROPOSED`、当时 registry 缺 ID | 只做已明确的 Ch1 纵切，不批量铺开 | M2，M5 |
+| `GAUNTLET-VISIBLE-BOT-01`（取证别名 `UNREGISTERED-GAUNTLET-BOT-01`） | 方案写“待 G0”、当时 registry 缺 ID | 不加前台 bot | M5，M6 |
 | `REOPEN-*` 六项 | `proposed_reopen` | 分别沿用 registry safe default | 见 §7 |
 | `TUNE-*` 二十项 | 数据/模拟/实机待定 | 保持现值，不写生产数值 | M2/M5/M6，见 §8 |
 
@@ -345,7 +347,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ## 6. 方案中的其他未决与登记缺口
 
-### 6.1 `UNREGISTERED-UNLOCK-01`：渐进解锁精确章点
+### 6.1 `PROGRESSIVE-UNLOCK-01`（取证别名 `UNREGISTERED-UNLOCK-01`）：渐进解锁精确章点
 
 **当前生产事实和精确证据**
 
@@ -377,7 +379,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 > 请确认塔、轻功、差遣、群战、远征、断魂庄和心魔采用方案 §11.3 的建议章点、保持当前解锁路径，还是逐模式另定迁移表？
 
-### 6.2 `UNREGISTERED-ECOLOGY-01`：章节/塔生态分配
+### 6.2 `COMBAT-ECOLOGY-ASSIGNMENT-01`（取证别名 `UNREGISTERED-ECOLOGY-01`）：章节/塔生态分配
 
 **当前生产事实和精确证据**
 
@@ -411,7 +413,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 > 六类地域锚与 M2 Ch1 山匪纵切已确认且不在本题重开；请确认其余逐 stage 分配是 A 整体矩阵一次审核、B 按章节/塔任务包分批审核，还是 C 全部暂缓至完整矩阵签字？
 
-### 6.3 `UNREGISTERED-GAUNTLET-BOT-01`：断魂庄前台 bot
+### 6.3 `GAUNTLET-VISIBLE-BOT-01`（取证别名 `UNREGISTERED-GAUNTLET-BOT-01`）：断魂庄前台 bot
 
 **当前生产事实和精确证据**
 
@@ -881,7 +883,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 - **M2 / M5 / M6 影响**：M2 普通 8/12/16 活跃基线；M5 塔/群战 14/18/24 与总量 50/150；M6 真实 HUD 同场成本。
 - **需要用户回答的一句话**：请确认最低 Windows 配置是 A 现在指定、B 授权高密度双平台 Profile 后反推，还是 C 暂不新增声明并保留现 Gate？
 
-## 9. 建议的回答格式（只记录用户决定）
+## 9. 建议的回答格式（G0 前历史快照）
 
 用户可以只回答要先解锁的项，未回答项继续沿用本包的暂停态。例如：
 
@@ -896,7 +898,7 @@ REOPEN-* = 全部不重开。
 
 示例只展示语法，**不代表本包推荐这些答案**。收到用户回答后，下一步应先更新 decision registry / rejected history，再派发对应 M1/M2/M5/M6 实现；不能直接从本包启动被否方向。对 `TUNING` 的回答只记录候选目标或模拟授权，须在 YAML、红线、自动模拟和真人试玩/实机 Gate 全部通过后才可单独冻结与接生产。
 
-## 10. G0 当前可安全得出的唯一结论
+## 10. G0 当前可安全得出的唯一结论（G0 前历史快照）
 
 在用户回答之前，可以继续的只有不选择未决产品语义的纯合同/证据工作；所有会固定参与者、连续 run、听剑、心魔惩罚、七心魔画像、解锁、未签的逐 stage 生态分配或 `proposed_reopen` 产品行为的路径都应保持上述暂停态。已确认的六类地域锚与 M2 Ch1 山匪纵切不被本闸门回退。本结论是执行闸门，不是对任一未决选项的拍板。
 
