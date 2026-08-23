@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../defs/combat_catalog_manifest_def.dart';
 import '../defs/combat_encounter_def.dart';
+import '../../features/battle/application/phase0a/phase0a_encounter_migration_resolver.dart';
 
 /// Stable categories emitted by [validateCombatCatalogMigrationCoverage].
 enum CombatCatalogMigrationCoverageIssueCode {
@@ -10,14 +11,20 @@ enum CombatCatalogMigrationCoverageIssueCode {
   duplicateKnownStageId,
   invalidLegacyAllowlistId,
   duplicateLegacyAllowlistId,
+  invalidLegacyContentStageId,
+  duplicateLegacyContentStageId,
   duplicateStageAssignment,
   unknownAssignmentStageId,
   missingStageAssignment,
   unknownLegacyAllowlistStageId,
+  unknownLegacyContentStageId,
   legacyStageMissingAllowlist,
   migratedStageInLegacyAllowlist,
+  legacyStageMissingContent,
+  migratedStageHasLegacyContent,
   migratedStageMissingEncounter,
   legacyStageHasEncounter,
+  resolverRejectedStage,
 }
 
 /// One deterministic migration coverage failure.
@@ -76,40 +83,54 @@ final class CombatCatalogMigrationCoverageReport {
     required Iterable<String> knownStageIds,
     required Iterable<String> migratedStageIds,
     required Iterable<String> legacyStageIds,
+    required Iterable<String> legacyContentStageIds,
   }) : knownStageIds = List<String>.unmodifiable(_sortedIds(knownStageIds)),
        migratedStageIds = List<String>.unmodifiable(
          _sortedIds(migratedStageIds),
        ),
-       legacyStageIds = List<String>.unmodifiable(_sortedIds(legacyStageIds));
+       legacyStageIds = List<String>.unmodifiable(_sortedIds(legacyStageIds)),
+       legacyContentStageIds = List<String>.unmodifiable(
+         _sortedIds(legacyContentStageIds),
+       );
 
   final List<String> knownStageIds;
   final List<String> migratedStageIds;
   final List<String> legacyStageIds;
+  final List<String> legacyContentStageIds;
 
   int get knownStageCount => knownStageIds.length;
   int get migratedStageCount => migratedStageIds.length;
   int get legacyStageCount => legacyStageIds.length;
+  int get legacyContentStageCount => legacyContentStageIds.length;
 }
 
 /// Validates complete migration coverage without reading files or choosing
 /// production routes.
 ///
 /// The caller supplies the full known-stage universe, the temporary legacy
-/// allowlist, and an already typed manifest. Validation fails closed unless:
-/// - known ids and allowlist ids are clean and unique,
+/// allowlist, the stages that still have legacy content, and an already typed
+/// manifest. Validation fails closed unless:
+/// - all caller-provided id collections are clean and unique,
 /// - manifest assignment ids equal the known-stage universe,
 /// - legacy assignment ids equal the allowlist,
-/// - every migrated stage resolves to an encounter.
+/// - legacy assignments have legacy content,
+/// - migrated assignments resolve to one encounter and have no legacy content,
+/// - every known assignment is accepted by the E05 migration resolver.
 ///
 /// All failures are aggregated and sorted independently of caller iteration
 /// order. A successful report contains sorted, unmodifiable defensive copies.
 CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
   required Iterable<String> knownStageIds,
   required Iterable<String> legacyAllowlist,
+  required Iterable<String> legacyContentStageIds,
   required CombatCatalogManifestDef manifest,
 }) {
   final knownInput = List<String>.of(knownStageIds, growable: false);
   final allowlistInput = List<String>.of(legacyAllowlist, growable: false);
+  final legacyContentInput = List<String>.of(
+    legacyContentStageIds,
+    growable: false,
+  );
   final issues = <CombatCatalogMigrationCoverageIssue>{};
 
   if (knownInput.isEmpty) {
@@ -133,6 +154,14 @@ CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
         CombatCatalogMigrationCoverageIssueCode.invalidLegacyAllowlistId,
     duplicateCode:
         CombatCatalogMigrationCoverageIssueCode.duplicateLegacyAllowlistId,
+    issues: issues,
+  );
+  final legacyContent = _validatedIdSet(
+    legacyContentInput,
+    invalidCode:
+        CombatCatalogMigrationCoverageIssueCode.invalidLegacyContentStageId,
+    duplicateCode:
+        CombatCatalogMigrationCoverageIssueCode.duplicateLegacyContentStageId,
     issues: issues,
   );
 
@@ -185,12 +214,28 @@ CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
       );
     }
   }
+  for (final stageId in legacyContent) {
+    if (!known.contains(stageId)) {
+      issues.add(
+        CombatCatalogMigrationCoverageIssue(
+          CombatCatalogMigrationCoverageIssueCode.unknownLegacyContentStageId,
+          stageId: stageId,
+        ),
+      );
+    }
+  }
 
   final migrated = <String>{};
   final legacy = <String>{};
+  final migrationResolver = Phase0aEncounterMigrationResolver(
+    legacyContentIds: allowlist,
+  );
   for (final assignment in manifest.stageAssignments) {
     final stageId = assignment.stageId;
     if (!known.contains(stageId)) continue;
+
+    final hasLegacyContent = legacyContent.contains(stageId);
+    final encounterCount = manifest.encounterForStage(stageId) == null ? 0 : 1;
 
     switch (assignment.migrationState) {
       case CombatEncounterMigrationState.legacy:
@@ -208,6 +253,14 @@ CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
           issues.add(
             CombatCatalogMigrationCoverageIssue(
               CombatCatalogMigrationCoverageIssueCode.legacyStageHasEncounter,
+              stageId: stageId,
+            ),
+          );
+        }
+        if (!hasLegacyContent) {
+          issues.add(
+            CombatCatalogMigrationCoverageIssue(
+              CombatCatalogMigrationCoverageIssueCode.legacyStageMissingContent,
               stageId: stageId,
             ),
           );
@@ -233,6 +286,35 @@ CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
             ),
           );
         }
+        if (hasLegacyContent) {
+          issues.add(
+            CombatCatalogMigrationCoverageIssue(
+              CombatCatalogMigrationCoverageIssueCode
+                  .migratedStageHasLegacyContent,
+              stageId: stageId,
+            ),
+          );
+        }
+    }
+
+    try {
+      migrationResolver.resolve(
+        Phase0aEncounterMigrationRequest(
+          contentId: stageId,
+          migrationState: _resolverStateFor(assignment.migrationState),
+          encounterCount: encounterCount,
+          hasLegacyContent: hasLegacyContent,
+        ),
+      );
+    } on ArgumentError {
+      if (!_hasSpecificResolverIssue(issues, stageId)) {
+        issues.add(
+          CombatCatalogMigrationCoverageIssue(
+            CombatCatalogMigrationCoverageIssueCode.resolverRejectedStage,
+            stageId: stageId,
+          ),
+        );
+      }
     }
   }
 
@@ -244,8 +326,35 @@ CombatCatalogMigrationCoverageReport validateCombatCatalogMigrationCoverage({
     knownStageIds: known,
     migratedStageIds: migrated,
     legacyStageIds: legacy,
+    legacyContentStageIds: legacyContent,
   );
 }
+
+Phase0aEncounterMigrationState _resolverStateFor(
+  CombatEncounterMigrationState state,
+) => switch (state) {
+  CombatEncounterMigrationState.legacy => Phase0aEncounterMigrationState.legacy,
+  CombatEncounterMigrationState.migrated =>
+    Phase0aEncounterMigrationState.migrated,
+};
+
+bool _hasSpecificResolverIssue(
+  Set<CombatCatalogMigrationCoverageIssue> issues,
+  String stageId,
+) => issues.any(
+  (issue) =>
+      issue.stageId == stageId &&
+      switch (issue.code) {
+        CombatCatalogMigrationCoverageIssueCode.legacyStageMissingAllowlist ||
+        CombatCatalogMigrationCoverageIssueCode
+            .migratedStageInLegacyAllowlist ||
+        CombatCatalogMigrationCoverageIssueCode.legacyStageMissingContent ||
+        CombatCatalogMigrationCoverageIssueCode.migratedStageHasLegacyContent ||
+        CombatCatalogMigrationCoverageIssueCode.migratedStageMissingEncounter ||
+        CombatCatalogMigrationCoverageIssueCode.legacyStageHasEncounter => true,
+        _ => false,
+      },
+);
 
 Set<String> _validatedIdSet(
   Iterable<String> ids, {

@@ -10,6 +10,11 @@
     "stage_unknown_allowlisted",
     "stage_migrated_allowlisted"
   ],
+  "legacyContentStageIds": [
+    "stage_unknown_content",
+    "stage_migrated_allowlisted",
+    "stage_legacy_unallowlisted"
+  ],
   "assignments": [
     {
       "stageId": "stage_unknown_assignment",

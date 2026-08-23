@@ -98,12 +98,14 @@ CombatEncounterDef _encounter(String id) => CombatEncounterDef(
 CombatCatalogMigrationCoverageException _captureFailure({
   required Iterable<String> knownStageIds,
   required Iterable<String> legacyAllowlist,
+  required Iterable<String> legacyContentStageIds,
   required CombatCatalogManifestDef manifest,
 }) {
   try {
     validateCombatCatalogMigrationCoverage(
       knownStageIds: knownStageIds,
       legacyAllowlist: legacyAllowlist,
+      legacyContentStageIds: legacyContentStageIds,
       manifest: manifest,
     );
     fail('expected migration coverage validation to fail');
@@ -124,34 +126,47 @@ void main() {
       final manifest = _manifestFrom(fixture);
       final knownStageIds = _strings(fixture['knownStageIds']);
       final legacyAllowlist = _strings(fixture['legacyAllowlist']);
+      final legacyContentStageIds = _strings(fixture['legacyContentStageIds']);
 
       final report = validateCombatCatalogMigrationCoverage(
         knownStageIds: knownStageIds,
         legacyAllowlist: legacyAllowlist,
+        legacyContentStageIds: legacyContentStageIds,
         manifest: manifest,
       );
 
       knownStageIds.clear();
       legacyAllowlist.clear();
+      legacyContentStageIds.clear();
 
       expect(report.knownStageIds, [
         'stage_alpha_migrated',
         'stage_beta_migrated',
+        'stage_eta_legacy',
         'stage_zeta_legacy',
       ]);
       expect(report.migratedStageIds, [
         'stage_alpha_migrated',
         'stage_beta_migrated',
       ]);
-      expect(report.legacyStageIds, ['stage_zeta_legacy']);
-      expect(report.knownStageCount, 3);
+      expect(report.legacyStageIds, ['stage_eta_legacy', 'stage_zeta_legacy']);
+      expect(report.legacyContentStageIds, [
+        'stage_eta_legacy',
+        'stage_zeta_legacy',
+      ]);
+      expect(report.knownStageCount, 4);
       expect(report.migratedStageCount, 2);
-      expect(report.legacyStageCount, 1);
+      expect(report.legacyStageCount, 2);
+      expect(report.legacyContentStageCount, 2);
       for (final stageId in report.migratedStageIds) {
         expect(manifest.encounterForStage(stageId), isNotNull);
       }
       expect(
         () => report.knownStageIds.add('stage_mutation'),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => report.legacyContentStageIds.add('stage_mutation'),
         throwsUnsupportedError,
       );
     });
@@ -160,15 +175,18 @@ void main() {
       final fixture = _fixture('invalid_coverage.json');
       final knownStageIds = _strings(fixture['knownStageIds']);
       final legacyAllowlist = _strings(fixture['legacyAllowlist']);
+      final legacyContentStageIds = _strings(fixture['legacyContentStageIds']);
 
       final first = _captureFailure(
         knownStageIds: knownStageIds,
         legacyAllowlist: legacyAllowlist,
+        legacyContentStageIds: legacyContentStageIds,
         manifest: _manifestFrom(fixture),
       );
       final reversed = _captureFailure(
         knownStageIds: knownStageIds.reversed,
         legacyAllowlist: legacyAllowlist.reversed,
+        legacyContentStageIds: legacyContentStageIds.reversed,
         manifest: _manifestFrom(fixture, reverseAssignments: true),
       );
 
@@ -176,9 +194,12 @@ void main() {
         'unknownAssignmentStageId:stage_unknown_assignment',
         'missingStageAssignment:stage_missing',
         'unknownLegacyAllowlistStageId:stage_unknown_allowlisted',
+        'unknownLegacyContentStageId:stage_unknown_content',
         'legacyStageMissingAllowlist:stage_beta_legacy',
         'legacyStageMissingAllowlist:stage_legacy_unallowlisted',
         'migratedStageInLegacyAllowlist:stage_migrated_allowlisted',
+        'legacyStageMissingContent:stage_beta_legacy',
+        'migratedStageHasLegacyContent:stage_migrated_allowlisted',
       ]);
       expect(_issueKeys(reversed), _issueKeys(first));
       expect(reversed.toString(), first.toString());
@@ -188,6 +209,7 @@ void main() {
       final empty = _captureFailure(
         knownStageIds: const [],
         legacyAllowlist: const [],
+        legacyContentStageIds: const [],
         manifest: _manifestFor(const []),
       );
       expect(_issueKeys(empty), ['emptyKnownStageIds:-']);
@@ -207,6 +229,7 @@ void main() {
           'stage_valid',
         ],
         legacyAllowlist: const ['stage_valid'],
+        legacyContentStageIds: const ['stage_valid'],
         manifest: manifest,
       );
       expect(_issueKeys(dirty), [
@@ -233,6 +256,7 @@ void main() {
           'stage bad',
           'stage_unknown',
         ],
+        legacyContentStageIds: const ['stage_legacy'],
         manifest: manifest,
       );
 
@@ -240,6 +264,33 @@ void main() {
         'invalidLegacyAllowlistId:stage bad',
         'duplicateLegacyAllowlistId:stage_legacy',
         'unknownLegacyAllowlistStageId:stage_unknown',
+      ]);
+    });
+
+    test('legacy content ids must be unique clean and known', () {
+      final manifest = _manifestFor([
+        CombatStageEncounterAssignment(
+          stageId: 'stage_legacy',
+          migrationState: CombatEncounterMigrationState.legacy,
+        ),
+      ]);
+
+      final error = _captureFailure(
+        knownStageIds: const ['stage_legacy'],
+        legacyAllowlist: const ['stage_legacy'],
+        legacyContentStageIds: const [
+          'stage_legacy',
+          'stage_legacy',
+          'stage bad',
+          'stage_unknown',
+        ],
+        manifest: manifest,
+      );
+
+      expect(_issueKeys(error), [
+        'invalidLegacyContentStageId:stage bad',
+        'duplicateLegacyContentStageId:stage_legacy',
+        'unknownLegacyContentStageId:stage_unknown',
       ]);
     });
 
@@ -273,6 +324,7 @@ void main() {
       final report = validateCombatCatalogMigrationCoverage(
         knownStageIds: const ['stage_migrated'],
         legacyAllowlist: const [],
+        legacyContentStageIds: const [],
         manifest: manifest,
       );
 
