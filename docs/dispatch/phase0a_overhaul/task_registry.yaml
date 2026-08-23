@@ -1778,8 +1778,19 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r11-migrated-encounter-plan-builder-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r11-migrated-encounter-plan-builder
-    status: in_progress
+    status: ready_reviewed
     base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    implementation_commit: 0e5fd536
+    tip_commit: 4d2c016a871a1f867ba3b12869302209aed202fa
+    integration_commits:
+      - 9545fc41
+      - cf5465ed
+      - 16295176
+      - d080b9cb
+    verification:
+      targeted_tests: 83
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
     owned_files:
