@@ -257,5 +257,24 @@ void main() {
 
       expect(resolveDefense(request), resolveDefense(request));
     });
+
+    test(
+      'structurally identical counter allowlists preserve input equality',
+      () {
+        final first = input(
+          counterEffectAllowlist: const CounterEffectAllowlist(
+            allowsCritical: true,
+          ),
+        );
+        final second = input(
+          counterEffectAllowlist: const CounterEffectAllowlist(
+            allowsCritical: true,
+          ),
+        );
+
+        expect(first, second);
+        expect(first.hashCode, second.hashCode);
+      },
+    );
   });
 }

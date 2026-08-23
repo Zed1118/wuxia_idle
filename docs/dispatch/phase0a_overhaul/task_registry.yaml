@@ -373,7 +373,8 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g1-batch2-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-batch2-integration
-    status: in_progress
+    status: ready_candidate
+    ready_marker: "[READY][CODEX][P2-G1-BATCH2] 完成第二批核心合同候选"
     base_commit: 29f04073
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
@@ -390,7 +391,8 @@ tasks:
     owner: codex_terra_medium
     branch: codex/phase2-g1-c11-cooldown-seconds-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c11-cooldown-seconds
-    status: in_progress
+    status: ready_reviewed_partial
+    tip_commit: 022321df
     decision_ids:
       - SKILL-COOLDOWN-SECONDS-01
     protected_behavior:
@@ -411,7 +413,8 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g1-c12-bot-tactics-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c12-bot-tactics
-    status: in_progress
+    status: ready_reviewed_partial
+    tip_commit: b3143d1a
     decision_ids:
       - PLAYER-BOT-TACTICS-01
     protected_behavior:
@@ -429,7 +432,8 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g1-c13-failure-policy-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c13-failure-policy
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 1754d763
     decision_ids:
       - FAILURE-POLICY-CORE-01
     protected_behavior:
@@ -445,7 +449,8 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g1-c14-reward-policy-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c14-reward-policy
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: b8f737a0
     decision_ids:
       - REWARD-POLICY-CORE-01
     protected_behavior:
@@ -463,7 +468,8 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g1-c16-defense-hardening-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c16-defense-hardening
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 58b700af
     decision_ids:
       - DEFENSE-COUNTER-SAFETY-01
     protected_behavior:

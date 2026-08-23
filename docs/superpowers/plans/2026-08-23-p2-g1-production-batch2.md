@@ -28,7 +28,7 @@
 
 ## 验证与恢复点
 
-- 状态：五路任务已创建并开始执行。
-- 下一步：外部与 Codex 分支出 READY 后，主窗口检查白名单、决策边界、targeted tests 和接口冲突。
+- 状态：五路候选已完成主审并进入集成分支；C11/C12 按证据明确缩为 C11A/C12A，不虚报全量完成。
+- 主审：修复 C12 无窗口测试夹具、C13 claim key 插值/分隔符/非有限值、C14 parse 异常类型与事务边界口径、C16 allowlist 可变性与每秒预算命名。
 - 集成顺序：C16 → C12 → C13 → C14 → C11；C11 公共 SkillDef 改动最后进入，降低其他分支 stale 风险。
-- 批末：联合 targeted、全仓 analyze、YAML、diff-check、外部交叉复核、READY tip。
+- 批末证据：联合 targeted 100/100；补齐根包生成物与 `tools/phase0minus_probe` 依赖后全仓 `flutter analyze --no-pub` 0 issue；YAML 与 diff-check 通过；外部交叉复核完成后冻结 READY tip。

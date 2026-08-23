@@ -31,6 +31,17 @@ final class CounterEffectAllowlist {
     CounterEffect.lifesteal => allowsLifesteal,
     CounterEffect.onHitReflect => allowsOnHitReflect,
   };
+
+  @override
+  bool operator ==(Object other) =>
+      other is CounterEffectAllowlist &&
+      other.allowsCritical == allowsCritical &&
+      other.allowsLifesteal == allowsLifesteal &&
+      other.allowsOnHitReflect == allowsOnHitReflect;
+
+  @override
+  int get hashCode =>
+      Object.hash(allowsCritical, allowsLifesteal, allowsOnHitReflect);
 }
 
 final class AttackDefenseFlags {

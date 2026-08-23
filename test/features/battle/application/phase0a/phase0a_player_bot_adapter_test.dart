@@ -109,6 +109,27 @@ Phase0aArenaState _state({bool window = false, bool withBurst = false}) =>
     );
 
 void main() {
+  test('custom policy copies mutable collections into immutable values', () {
+    final priority = <Phase0aBotAction>[Phase0aBotAction.clear];
+    final enabled = <Phase0aBotAction>{Phase0aBotAction.clear};
+    final policy = Phase0aBotTacticPolicy(
+      tactic: Phase0aBotTactic.steadyGuard,
+      actionPriority: priority,
+      enabledActions: enabled,
+      parallelTacticalActions: false,
+      requiresBurstWindow: true,
+      prioritizeBurstWindowTarget: true,
+    );
+
+    priority.clear();
+    enabled.clear();
+
+    expect(policy.actionPriority, [Phase0aBotAction.clear]);
+    expect(policy.allows(Phase0aBotAction.clear), isTrue);
+    expect(() => policy.actionPriority.clear(), throwsUnsupportedError);
+    expect(() => policy.enabledActions.clear(), throwsUnsupportedError);
+  });
+
   test('production policy preserves the pre-C12 command', () {
     final command = Phase0aPlayerBotAdapter(
       playerAdapter: _adapter(),

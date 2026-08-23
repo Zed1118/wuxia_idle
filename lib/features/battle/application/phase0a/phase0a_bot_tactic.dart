@@ -10,14 +10,15 @@ enum Phase0aBotAction { gather, clear, numericSkill }
 /// 玩家 Bot 的 typed policy。数值门槛仍由 [Phase0aPlayerInputAdapter] 和
 /// reducer 负责；policy 只决定哪些已 ready 的 command 可以被发出。
 final class Phase0aBotTacticPolicy {
-  const Phase0aBotTacticPolicy({
+  Phase0aBotTacticPolicy({
     required this.tactic,
-    required this.actionPriority,
-    required this.enabledActions,
+    required List<Phase0aBotAction> actionPriority,
+    required Set<Phase0aBotAction> enabledActions,
     required this.parallelTacticalActions,
     required this.requiresBurstWindow,
     required this.prioritizeBurstWindowTarget,
-  });
+  }) : actionPriority = List.unmodifiable(actionPriority),
+       enabledActions = Set.unmodifiable(enabledActions);
 
   /// 兼容既有生产 Bot：三个 tactical command 均按旧逻辑独立发出。
   const Phase0aBotTacticPolicy.production()
