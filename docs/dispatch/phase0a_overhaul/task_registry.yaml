@@ -1890,9 +1890,11 @@ tasks:
       - ea86d8a8
     verification:
       joint_targeted_tests: 158
+      full_tests: 4954
       changed_dart_items: 8
       scoped_analyze_issues: 0
       source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
       - test/features/battle/application/phase0a/phase0a_migrated_encounter_composition_test.dart

@@ -29,8 +29,16 @@
 - R12a：计划 `d64a2065`、实现 `1f856e7b`、证据 `29079798`、READY `2e53aaf4`；16/16、scoped analyze 0、format/diff clean，独立复审 P0/P1/P2=0。集成提交 `45ca144d` / `a06a0875` / `149bf7a2`。合同明确为 immutable predecessor → prepared successor → 新 runtime；同一 predecessor 的 sibling successor 是 caller 显式 branch/fork，不虚称全局 CAS 或已接 production lifecycle。
 - R13：计划 `e91e6afd`、红测 `a8f50fc1`、实现 `151a4df0`、证据 `6efc0f7f`，主控校正恢复点的测试算术后以新 READY `1efe8247` 冻结。Pi CLI 0.84.1 实际使用 `deepseek/deepseek-v4-flash`、thinking high 完成设计与最终 diff 只读审查；最终 PASS，P0/P1=0。主控按真实文件逐项复跑为 64/64（新 source 15、R09 flow 15、tracker 15、production objective integration 2、roster 8、objective primitive 9），scoped analyze 0，独立复审 P0/P1/P2=0。集成提交 `de4e8b83` / `67423a31` / `27751a6f` / `a9c7160c` / `138f6598`。
 
-### 集成进行中
+### 主控集成
 
 - 主控在 assembler 新增显式 `assembleMigratedEncounterPlan`，只消费 R11 plan 的 exact mapping、token budgets 与 objective controller；request mapper、objective source、numbers 与单一 RNG 仍由 caller 显式提供。R12a lease runtime 与 ActionTimeline 均未接入 session。
 - 新 synthetic composition 测试 3/3 通过；R11/R12a/R13 去重联合回归 158/158 通过；变更 Dart 8 项 scoped analyze 0，format 与 `git diff --check` 通过。
-- 待完成：source→integration stable patch-id、full suite、registry/YAML/Markdown/path/main refs 快速闸门、独立集成终审与 READY。
+- 12 组来源非空提交与集成提交的 stable patch-id 逐项一致；相对基线共 14 个文件，精确等于 R11/R12a/R13 各 3 个来源 owned files 与 Batch14 的 5 个 integration owned files。
+- 批末 full Flutter test：4954/4954 通过，exit 0，墙钟 7 分 18 秒。
+- task registry 已验证 78 个任务 ID 唯一、prerequisite 0 悬空；YAML 可解析，`git diff --check` 通过，工作树 clean。`main` 与 `origin/main` 均保持 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
+
+### 独立终审与残留 Gate
+
+- 独立集成终审核对当前 14 文件 diff、12 组 stable patch-id、全部提交信息、composition 行为及 registry/audit/plan，结论 PASS，P0/P1/P2=0。明确确认新入口只显式消费 exact contracts，mapper/source/numbers/RNG 仍属 caller，lease runtime、ActionTimeline、production host、candidate 与 tuning 均未偷接。
+- composition 证据确认：melee budget=1 时三个可攻击敌人只放行最高优先级 `e3`；`e1` 显式 objective 完成时 `e2/e3` 仍存活；同 seed 的 events/state/outcome 与 RNG 尾值重放一致；错误 mapper 在 tick 发布前失败且 arena/spawn/outcome 零变化。
+- 本记录冻结后仅待写入 validated commit 并追加空 READY。production host/stage route、真实 action completion/cancel/interrupt 生命周期、candidate/tuning 晋升、Profile 与真人试玩继续保持 Gate。
