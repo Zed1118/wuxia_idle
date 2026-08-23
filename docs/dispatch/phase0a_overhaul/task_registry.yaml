@@ -2394,8 +2394,21 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r22-encounter-defeat-objective-projection-mapper-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r22-encounter-defeat-objective-projection-mapper
-    status: in_progress
+    status: ready_reviewed
     base_commit: 87ee892189dd1c4c1d131e4a06df649f34328769
+    implementation_commit: 079d073d
+    tip_commit: 2b644cbe57a73b838edbc439fe839917008ebe7d
+    integration_commits:
+      - 4300d7f5
+      - 654b3b70
+      - e8a1bd3f
+      - 4a09e14c
+      - d80b8fc8
+      - 9de58481
+    verification:
+      targeted_tests: 58
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
       - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
@@ -2413,8 +2426,21 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r23-mainline-next-stage-runtime-admission-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r23-mainline-next-stage-runtime-admission
-    status: in_progress
+    status: ready_reviewed
     base_commit: 87ee892189dd1c4c1d131e4a06df649f34328769
+    implementation_commit: 4ee7f253
+    tip_commit: efe1f45aa01b82d0ea8c91625678b4587f9f26a0
+    integration_commits:
+      - 660eea62
+      - 5aeeb3d6
+      - 16123fab
+      - b1704ec2
+      - 752a819e
+      - a4ba9833
+    verification:
+      targeted_tests: 59
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R01-MAINLINE-RUN-PARTICIPATION
       - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
@@ -2433,8 +2459,20 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-r24-attack-token-lease-batch-receipt-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r24-attack-token-lease-batch-receipt
-    status: in_progress
+    status: ready_reviewed
     base_commit: 87ee892189dd1c4c1d131e4a06df649f34328769
+    implementation_commit: eb139b6d
+    tip_commit: cbc2b4ec2fa48f59de74ca119e2900046f59dc46
+    integration_commits:
+      - 0c6b05fa
+      - b0d7ea4b
+      - 293bd586
+      - ef8e1ef0
+      - 245af125
+    verification:
+      targeted_tests: 66
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
       - P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
