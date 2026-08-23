@@ -1,14 +1,12 @@
 # =============================================================================
-# stages.yaml · 全关卡表（主线 + 副本 · 共 107 关，2026-07-27 实测）
+# stages.yaml · 全关卡表（主线 + 副本 · 共 122 关，2026-08-23 实测）
 # =============================================================================
-# 共 107 关：mainline 90（18 章 × 5）+ innerDemon 7 +
+# 共 122 关：mainline 105（21 章 × 5）+ innerDemon 7 +
 # lightFoot 5 + massBattle 5。stageType 按关分填（非全 mainline）。
-# （头注计数 2026-07-26 Ch17 批订正：旧值「57 关 / mainline 40（8 章）」是 Ch9 起
-#   八次加章连续漏更的历史 drift，本次按 python 逐条实测重写；2026-07-27 Ch18 批同步。）
-# 常规关尽量 3 敌人（StageDef.enemyTeam 上限 3）；三流派分布尽量覆盖
-# gangMeng / lingQiao / yinRou。stage_01_01 是 production 单人空手开局的
-# 开场战，使用 1 敌人避免首战断链。难度按章递增 xueTu → sanLiu → erLiu →
-# yiLiu → jueDing → zongShi（Ch16-18 宗师段，2026-07-26 同批订正原 stale 三阶写法）。
+# 主线 enemyTeam 保留 1 个原始敌人模板；Phase 0A 主线群怪由
+# data/numbers.yaml 的 mainline_wave profile 展开，其他 stageType 不扩群。
+# 三流派分布尽量覆盖 gangMeng / lingQiao / yinRou。难度按章递增
+# xueTu → sanLiu → erLiu → yiLiu → jueDing → zongShi。
 #
 # Phase 3 Week 5 schema：在 T33 三段 narrative 基础上加 `narrativeDefeatId`。
 #   narrativeOpeningId   —— 进入关卡前播放（联结 data/narratives/stages/<id>.yaml）

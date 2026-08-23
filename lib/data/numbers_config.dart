@@ -8,6 +8,7 @@ import 'defs/injury_config.dart';
 import 'defs/inner_demon_def.dart';
 import 'defs/light_foot_def.dart';
 import 'defs/mass_battle_def.dart';
+import 'defs/mainline_wave_def.dart';
 import 'defs/seclusion_map_def.dart';
 import 'defs/sweep_readiness.dart';
 import 'defs/taohua_island_config.dart';
@@ -196,6 +197,9 @@ class NumbersConfig {
   /// MassBattleStrategy fallback neutral modifier 不影响 BattleCharacter stat)。
   final MassBattleDef massBattle;
 
+  /// 主线普通关/Boss 关群怪波次配置。
+  final MainlineWaveDef mainlineWave;
+
   /// P1.2 江湖恩怨 + 声望(GDD §12.1 + §12.2 · spec p1_2_jianghu_enmity_spec_2026-05-24)。
   /// numbers.yaml `jianghu` 段:7 阶 reputation_tiers + enmity_combat_modifier + triggers。
   /// 空段兜底 [JianghuConfig.empty](fixture / 老存档迁移)。
@@ -309,6 +313,7 @@ class NumbersConfig {
     required this.progressionReleaseCap,
     required this.lightFoot,
     required this.massBattle,
+    required this.mainlineWave,
     required this.jianghu,
     required this.sectEvent,
     required this.sectManagement,
@@ -470,6 +475,9 @@ class NumbersConfig {
       ),
       massBattle: MassBattleDef.fromYaml(
         y['mass_battle'] as Map<String, dynamic>?,
+      ),
+      mainlineWave: MainlineWaveDef.fromYaml(
+        y['mainline_wave'] as Map<String, dynamic>?,
       ),
       jianghu: JianghuConfig.fromYaml(y['jianghu'] as Map<String, dynamic>?),
       sectEvent: SectEventDef.fromYaml(
