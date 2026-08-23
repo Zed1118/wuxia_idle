@@ -2,12 +2,14 @@
 
 ## 恢复点
 
-- 状态：计划冻结，尚未写实现。
+- 状态：实现与定向验证完成，等待 READY 标记。
 - 基线：Batch13 READY `77c5520e04355e041a5db6b40dde05b169874117`。
 - 工作树：`/Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12a-attack-token-lease-runtime`。
 - 分支：`codex/phase2-m2-r12a-attack-token-lease-runtime-20260824`。
-- 已完成：复核 `CLAUDE.md` 红线、§8 可恢复任务协议、§11 提交纪律，读取 `attack_token_director.dart`、objective runtime tracker 的 owner-bound CAS 及异常迭代测试、ActionTimeline 纯候选边界。
-- 下一步：先补失败测试，再实现纯租约合同并运行定向验证。
+- 已完成：复核 `CLAUDE.md` 红线、§8 可恢复任务协议、§11 提交纪律；读取 `attack_token_director.dart`、objective runtime tracker 的 owner-bound CAS 及异常迭代测试、ActionTimeline 纯候选边界；以 TDD 完成纯合同与 source guard。
+- 提交：`d64a2065 登记攻击令牌租约计划`；`1f856e7b 实现攻击令牌租约合同`。
+- 验证：定向测试 16/16 通过；两个 owned Dart files 的 scoped analyze 为 `No issues found`；format 与 `git diff --check` 通过；按任务要求未运行 full suite。
+- 下一步：复核从基线起只有三个 owned files 发生变化，创建空 READY 提交并交还集成方。
 - 阻塞：无。
 
 ## 目标与边界
