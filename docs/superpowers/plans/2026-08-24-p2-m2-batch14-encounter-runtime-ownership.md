@@ -28,6 +28,6 @@
 - [x] Batch13 READY `77c5520e` 冻结，main/origin main 保持 `e292d3a0`。
 - [x] 完成 R11/R12a/R13 只读 API 预检并收窄高风险语义。
 - [x] 创建三实现 worktree 与一集成 worktree。
-- [ ] 登记任务、准备环境并并行派发实现。
+- [x] 登记任务；四 worktree 完成 pub get、build_runner 126 outputs、63 个 `.g.dart` 与 dylib SHA 对齐。
+- [ ] 并行派发并完成 R11 / R12a / R13 来源实现与 READY。
 - [ ] 主控集成、联合/full 验证、独立终审与 Batch14 READY。
-
