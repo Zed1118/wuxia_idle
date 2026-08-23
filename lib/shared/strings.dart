@@ -838,6 +838,11 @@ class UiStrings {
   static String rarityTierWithTotal(String tierName, int total) =>
       '$rarityTierLabel $tierName（$total）';
 
+  /// 资质谱牒印鉴的无障碍读法与印面字。
+  static String rarityTierSemantics(String label, int total) =>
+      '$label，出生点数 $total';
+  static const String rarityTierSealGlyph = '鉴';
+
   static const String attrConstitution = '根骨';
   static const String attrEnlightenment = '悟性';
   static const String attrAgility = '身法';

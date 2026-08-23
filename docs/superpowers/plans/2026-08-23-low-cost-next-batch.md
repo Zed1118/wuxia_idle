@@ -51,8 +51,9 @@ seed、丹房/残页/熟练度证据刷新、资质六档水墨视觉。主 agen
 4. D 共享组件 → 三页接线 → 自动与双视口验收 → commit/push。
 5. 整合态 analyze、全量测试、redline/diff 检查，更新 BACKLOG/NEXT 总账。
 
-当前恢复点：`main=origin/main=833138ba`，工作区 clean；四个只读审计包已完成
-或在途，尚未修改生产代码。
+当前收口态：A/B 已独立验证并推送；C 三份可复现诊断与 D 三页共享印鉴均已实现，
+双视口后台窗口截图和主 agent 复核通过。待整合态全量测试、文档 commit、push 与
+远端 CI 验证。
 
 ## 残留风险
 

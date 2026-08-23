@@ -35,7 +35,9 @@ void main() {
         .toList();
     expect(visibleFates.length, greaterThanOrEqualTo(2));
     expect(find.byType(RarityTierBadge), findsOneWidget);
-    final initialLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
+    final initialLabel = tester
+        .getSemantics(find.byType(RarityTierBadge))
+        .label;
     expect(initialLabel, contains('资质'));
     expect(initialLabel, contains('出生点数'));
     final initialTotal = int.parse(
@@ -43,9 +45,7 @@ void main() {
     );
     final changedFate = visibleFates.firstWhere(
       (fate) => fate.attributeProfile.total != initialTotal,
-      orElse: () => throw TestFailure(
-        '可见命盘候选没有与初始出生点数不同的 fate，无法验证同步接线',
-      ),
+      orElse: () => throw TestFailure('可见命盘候选没有与初始出生点数不同的 fate，无法验证同步接线'),
     );
     final expectedTotal = changedFate.attributeProfile.total;
     final expectedTier = GameRepository.instance.numbers.rarityForTotalPoints(
@@ -53,13 +53,41 @@ void main() {
     );
     await tester.tap(find.text(changedFate.label));
     await tester.pumpAndSettle();
-    final changedLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
+    final changedLabel = tester
+        .getSemantics(find.byType(RarityTierBadge))
+        .label;
     expect(
       changedLabel,
       contains('资质 ${EnumL10n.rarityTier(expectedTier)}（$expectedTotal）'),
     );
     expect(changedLabel, contains('出生点数 $expectedTotal'));
   });
+
+  for (final viewport in const [Size(1280, 720), Size(1440, 900)]) {
+    testWidgets(
+      '创建页资质印鉴在 ${viewport.width.toInt()}×${viewport.height.toInt()} 可滚动到且不溢出',
+      (tester) async {
+        await tester.binding.setSurfaceSize(viewport);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        await tester.pumpWidget(
+          const ProviderScope(
+            child: MaterialApp(home: FounderCreationScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final badge = find.byType(RarityTierBadge);
+        expect(badge, findsOneWidget);
+        await tester.ensureVisible(badge);
+        await tester.pumpAndSettle();
+
+        final rect = tester.getRect(badge);
+        expect(rect.top, greaterThanOrEqualTo(0));
+        expect(rect.bottom, lessThanOrEqualTo(viewport.height));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('submit → 开局行装弹窗 → 确认后进入主菜单', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1280, 1800));

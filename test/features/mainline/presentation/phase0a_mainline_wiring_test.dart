@@ -365,7 +365,7 @@ void main() {
             baseHp: 1500,
             baseAttack: 80,
             baseSpeed: 100,
-            skillIds: [],
+            skillIds: ['skill_gangmeng_jichu_basic'],
             iconPath: '',
           ),
         ],

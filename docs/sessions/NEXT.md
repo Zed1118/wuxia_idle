@@ -1,7 +1,7 @@
 # 新会话开局清单
 
 > 更新时间：2026-08-23 · Route C 双平台 Gate 收口后
-> 当前主线：`main` 已包含最终 release 门禁 commit `451bc883975dbbb737d0f4cd72251f1c5379d8f3`
+> 当前主线：Route C 已收口；2026-08-23 低消四批正在完成最终整合验收，准确 SHA 以 `git rev-parse main` 为准。
 
 ## 当前结论
 
@@ -27,6 +27,8 @@
 
 ## 最新验证
 
+- 经济/熟练度证据：残页 10 万固定 seed、丹房 66 场景、全内容 2310 局均已生成可复现 CSV/Markdown；丹房分段差值 ≤1e-9，全内容 0 timeout/maxDamage 3535。三份证据只用于决策，不自动调值，BACKLOG #4/#5/#6 继续待真人判断。
+- 资质视觉：共享谱牒印鉴已接入创建、招募、门人档案，六档结构签名与真实出生点数接线回归通过；三路×1280×720/1440×900 后台窗口 ID 截图均 READY、DPR 2.0、无 overflow/异常，创建页另有双视口滚动可见性测试。全量门禁补抓 UI 中文散写与一条旧 synthetic fixture 缺 basic，修正后最终 **4244/4244 PASS**、analyze 0、diff check 通过；BACKLOG #19 销账。
 - 断魂庄槽位稳定 seed：新建会话由错误的单例 `SaveData.id=0` 改为不可变 `slotId`，同槽重开稳定、跨槽不同；旧 run（含 seed=0）在恢复/三关准备链保持原值，stage seed 仍为 1/2/3。断魂庄全族 **163/163** 覆盖续传、失败/认输、恢复、奖励选择、门票与补给事务；analyze 0、diff check 通过。无 schema bump，BACKLOG #21 销账。
 - 普攻真气单一来源：用户拍板选 A 后，删除 production `phase0a_arena.moves.basic_qi_delta` 镜像；玩家与所有敌人的普攻 intent 统一读取各自快照真实 `SkillDef.qiDelta`，敌人缺真实 basic 时 fail-closed。红测先命中实际 0 后转绿；联合 targeted **38/38**、生产预检 **149/149 eligible、447 runs、0 timeout、maxDamage 3535**、analyze 0、diff check 通过。BACKLOG #20 销账；未改 `skills.yaml` 任何数值。
 - CI 可复现性：主 CI/Windows release 均强制 `--enforce-lockfile`，主 CI analyze 覆盖根应用 `lib/test/tool`；独立归档子包 `tools/phase0minus_probe` 不借用根应用依赖分析。新增契约先红后绿，workflow + macOS release 契约 **5/5**、YAML 解析通过、根应用 analyze 0 issue。
@@ -61,5 +63,5 @@
 ### 后续工程
 
 1. `tower_49` guardian、`tower_42` 协同、`stage_21_05` survive condition、远征/断魂庄续传与扫荡 headless 均已完成，禁止按旧 TODO 重做。
-2. 先做表现可读性与高周期 vulnerability 覆盖的只读审计，再选择一个零数值、可自动验收的最小优化切片。
-3. Phase 0B MANUAL_RIG 保持独立历史口径，不得用于签署 Route C 或新的生产 Gate。
+2. 当前无“已解锁可派”工程项；下一步由用户在 BACKLOG #4/#5/#6 的真人体感证据中拍是否调值，未拍前不得凭 bot 画像自动改数值。
+3. 依赖维护仍受 isar/analyzer/Flutter 条件锁死；Phase 0B MANUAL_RIG 保持独立历史口径，不得用于签署新的生产 Gate。

@@ -20,13 +20,13 @@ class RarityTierBadge extends StatelessWidget {
 
   /// Stable visual contract used by widget tests and visual review tooling.
   static String visualSignature(RarityTier tier) => switch (tier) {
-        RarityTier.yongCai => 'single-line-square-1px',
-        RarityTier.xunChang => 'single-line-rounded-1px',
-        RarityTier.biaoZhun => 'double-line-square-1px',
-        RarityTier.ziYou => 'double-line-rounded-1px',
-        RarityTier.tianCai => 'double-line-seal-1.25px',
-        RarityTier.jueShi => 'triple-line-seal-1.5px',
-      };
+    RarityTier.yongCai => 'single-line-square-1px',
+    RarityTier.xunChang => 'single-line-rounded-1px',
+    RarityTier.biaoZhun => 'double-line-square-1px',
+    RarityTier.ziYou => 'double-line-rounded-1px',
+    RarityTier.tianCai => 'double-line-seal-1.25px',
+    RarityTier.jueShi => 'triple-line-seal-1.5px',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class RarityTierBadge extends StatelessWidget {
     return Semantics(
       container: true,
       button: false,
-      label: '$label，出生点数 $birthTotal',
+      label: UiStrings.rarityTierSemantics(label, birthTotal),
       child: CustomPaint(
         painter: _RarityFiberPainter(
           ink: colors.ink,
@@ -97,23 +97,23 @@ class _SealMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: compact ? 16 : 18,
-        height: compact ? 16 : 18,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color,
-          border: Border.all(color: WuxiaUi.ink, width: 0.7),
-          borderRadius: BorderRadius.circular(shape == 0 ? 2 : 8),
-        ),
-        child: Text(
-          '鉴',
-          style: TextStyle(
-            color: WuxiaUi.paper,
-            fontSize: compact ? 9 : 10,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
+    width: compact ? 16 : 18,
+    height: compact ? 16 : 18,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color,
+      border: Border.all(color: WuxiaUi.ink, width: 0.7),
+      borderRadius: BorderRadius.circular(shape == 0 ? 2 : 8),
+    ),
+    child: Text(
+      UiStrings.rarityTierSealGlyph,
+      style: TextStyle(
+        color: WuxiaUi.paper,
+        fontSize: compact ? 9 : 10,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
 }
 
 class _RarityFiberPainter extends CustomPainter {
@@ -174,65 +174,65 @@ class _RarityTierStyle {
   final int lineCount;
 
   static _RarityTierStyle forTier(RarityTier tier) => switch (tier) {
-        RarityTier.yongCai => const _RarityTierStyle(
-            ink: Color(0xFF51483D),
-            paper: Color(0xFFE4D9C4),
-            seal: Color(0xFF706458),
-            pattern: 0,
-            borderWidth: 1,
-            radius: 2,
-            sealShape: 0,
-            lineCount: 1,
-          ),
-        RarityTier.xunChang => const _RarityTierStyle(
-            ink: Color(0xFF4A514B),
-            paper: Color(0xFFE6DEC9),
-            seal: Color(0xFF667269),
-            pattern: 1,
-            borderWidth: 1,
-            radius: 6,
-            sealShape: 1,
-            lineCount: 1,
-          ),
-        RarityTier.biaoZhun => const _RarityTierStyle(
-            ink: Color(0xFF3E4D4A),
-            paper: Color(0xFFE8DFC8),
-            seal: Color(0xFF596F68),
-            pattern: 2,
-            borderWidth: 1,
-            radius: 2,
-            sealShape: 0,
-            lineCount: 2,
-          ),
-        RarityTier.ziYou => const _RarityTierStyle(
-            ink: Color(0xFF604C39),
-            paper: Color(0xFFE9DEC0),
-            seal: Color(0xFF816642),
-            pattern: 3,
-            borderWidth: 1,
-            radius: 6,
-            sealShape: 1,
-            lineCount: 2,
-          ),
-        RarityTier.tianCai => const _RarityTierStyle(
-            ink: Color(0xFF63352D),
-            paper: Color(0xFFE9D8BA),
-            seal: Color(0xFF8A4A3A),
-            pattern: 4,
-            borderWidth: 1.25,
-            radius: 2,
-            sealShape: 1,
-            lineCount: 2,
-          ),
-        RarityTier.jueShi => const _RarityTierStyle(
-            ink: Color(0xFF5C3B2A),
-            paper: Color(0xFFE9D8B7),
-            seal: Color(0xFF8A2B21),
-            pattern: 5,
-            borderWidth: 1.5,
-            radius: 6,
-            sealShape: 0,
-            lineCount: 3,
-          ),
-      };
+    RarityTier.yongCai => const _RarityTierStyle(
+      ink: Color(0xFF51483D),
+      paper: Color(0xFFE4D9C4),
+      seal: Color(0xFF706458),
+      pattern: 0,
+      borderWidth: 1,
+      radius: 2,
+      sealShape: 0,
+      lineCount: 1,
+    ),
+    RarityTier.xunChang => const _RarityTierStyle(
+      ink: Color(0xFF4A514B),
+      paper: Color(0xFFE6DEC9),
+      seal: Color(0xFF667269),
+      pattern: 1,
+      borderWidth: 1,
+      radius: 6,
+      sealShape: 1,
+      lineCount: 1,
+    ),
+    RarityTier.biaoZhun => const _RarityTierStyle(
+      ink: Color(0xFF3E4D4A),
+      paper: Color(0xFFE8DFC8),
+      seal: Color(0xFF596F68),
+      pattern: 2,
+      borderWidth: 1,
+      radius: 2,
+      sealShape: 0,
+      lineCount: 2,
+    ),
+    RarityTier.ziYou => const _RarityTierStyle(
+      ink: Color(0xFF604C39),
+      paper: Color(0xFFE9DEC0),
+      seal: Color(0xFF816642),
+      pattern: 3,
+      borderWidth: 1,
+      radius: 6,
+      sealShape: 1,
+      lineCount: 2,
+    ),
+    RarityTier.tianCai => const _RarityTierStyle(
+      ink: Color(0xFF63352D),
+      paper: Color(0xFFE9D8BA),
+      seal: Color(0xFF8A4A3A),
+      pattern: 4,
+      borderWidth: 1.25,
+      radius: 2,
+      sealShape: 1,
+      lineCount: 2,
+    ),
+    RarityTier.jueShi => const _RarityTierStyle(
+      ink: Color(0xFF5C3B2A),
+      paper: Color(0xFFE9D8B7),
+      seal: Color(0xFF8A2B21),
+      pattern: 5,
+      borderWidth: 1.5,
+      radius: 6,
+      sealShape: 0,
+      lineCount: 3,
+    ),
+  };
 }
