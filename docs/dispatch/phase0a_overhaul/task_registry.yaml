@@ -1020,6 +1020,30 @@ tasks:
       - all eight objective refs map to the frozen S01 typed defs
       - no GameRepository production data host routing objective choice or tuning
 
+  - id: P2-G2-O02-COMBAT-OBJECTIVE-PRIMITIVE-MAPPER
+    milestone: G2
+    owner: codex_sol_high
+    branch: codex/phase2-g2-o02-combat-objective-mapper-20260823
+    worktree: /Users/a10506/.codex/worktrees/b4ed/挂机武侠
+    status: ready_reviewed
+    tip_commit: 94d595e9
+    base_commit: e2c3da76
+    implementation_commits:
+      - cae98e88
+      - 11a01e48
+    integration_commits:
+      - cfcfa934
+      - 51051000
+    owned_files:
+      - lib/data/validation/combat_objective_primitive_mapper.dart
+      - test/data/validation/combat_objective_primitive_mapper_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-o02-combat-objective-primitive-mapper.md
+    protected_behavior:
+      - all eight S01 objective refs map one-to-one to O01 pure objectives
+      - tick duration is an explicit positive caller input with overflow checks
+      - mapping preserves immutable ids owner-bound progress and replay behavior
+      - no production wiring stage objective choice or tuning default
+
   - id: P2-M0-F01-PHASE2-FACT-SYNC
     milestone: M0
     owner: codex_luna_low
