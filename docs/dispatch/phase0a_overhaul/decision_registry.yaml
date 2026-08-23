@@ -1,0 +1,135 @@
+schema_version: 1
+phase: phase2_phase0a_overhaul
+source_plan: /Users/a10506/Desktop/二阶段优化方案.md
+base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
+updated_at: "2026-08-23"
+
+policy:
+  frozen_may_implement: true
+  proposed_requires_explicit_user_choice: true
+  tuning_requires_data_and_playtest: true
+  implementation_gap_requires_owner_and_targeted_test: true
+  direct_main_writes_allowed: false
+
+decisions:
+  - id: COMBAT-SCOPE-01
+    status: frozen
+    summary: 首批六类作用域，环形由内外半径参数表达
+    batch_action: implement_candidate
+    owner_task: P2-M1-C02-GEOMETRY
+
+  - id: COMBAT-WAVE-CD-01
+    status: implementation_gap
+    summary: 同关换波保留技能冷却，间歇自然推进，新关重置
+    batch_action: evidence_only
+    owner_task: P2-M0-PI-EVIDENCE
+
+  - id: EXP-CONCURRENCY-01
+    status: frozen
+    summary: 首版全存档同时最多一条 active expedition
+    batch_action: verify_existing
+    owner_task: P2-M0-PI-EVIDENCE
+
+  - id: MAINLINE-PARTICIPANT-01
+    status: frozen_with_proposed_edges
+    summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed
+    batch_action: evidence_only
+    owner_task: P2-M0-CODEX-GAP-AUDIT
+
+  - id: MAINLINE-REPLAY-PARTICIPANT-01
+    status: proposed
+    summary: 主线重打、前台 bot、headless、扫荡的实际参与者
+    batch_action: blocked_pending_user
+    safe_default: do_not_change_current_product_path
+
+  - id: MAINLINE-RUN-01
+    status: proposed
+    summary: 连续关卡间参与者锁定、换装、伤势中断规则
+    batch_action: blocked_pending_user
+    safe_default: policy_interface_only
+
+  - id: MENTOR-INSIGHT-CORE-01
+    status: frozen
+    summary: 首通可随行 0-1 名门人，不入战、不受伤、不分掉落、不重复发放
+    batch_action: contract_only
+
+  - id: MENTOR-INSIGHT-OCCUPANCY-01
+    status: proposed
+    summary: 随行听剑的占用粒度、释放时点与活动互斥
+    batch_action: blocked_pending_user
+    safe_default: production_path_disabled
+
+  - id: MENTOR-INSIGHT-RATE-01
+    status: tuning
+    summary: 随行听剑成长比例与每关上限
+    batch_action: defer_until_simulation
+
+  - id: INNER-DEMON-FAILURE-CORE-01
+    status: frozen
+    summary: 心魔失败不回退境界、永久内力或装备，不产生物理伤势，施加内息紊乱
+    batch_action: verify_existing
+    owner_task: P2-M0-CODEX-GAP-AUDIT
+
+  - id: INNER-DEMON-CULTIVATION-01
+    status: proposed
+    summary: 心魔失败是否扣主修修炼度
+    batch_action: blocked_pending_user
+    safe_default: preserve_current_behavior
+
+  - id: INNER-DEMON-THEME-CORE-01
+    status: frozen
+    summary: 保留贪嗔痴慢疑空真名称与既有叙事
+    batch_action: evidence_only
+
+  - id: INNER-DEMON-AI-01
+    status: proposed
+    summary: 七名心魔与七类机制考验的具体 AI 绑定
+    batch_action: blocked_pending_user
+    safe_default: keep_existing_ai
+
+  - id: COLLAB-WIP-01
+    status: frozen
+    summary: Qoder 与 DeepSeek 作为受控补丁生产者，不直写 main
+    batch_action: active
+
+  - id: REOPEN-LOADOUT-PLAN-01
+    status: proposed_reopen
+    summary: 方案要求每角色保存亲战与差遣两套装配，与已否的 Build 方案保存重叠
+    source_registry_entry: Build 方案保存
+    batch_action: blocked_pending_user
+    safe_default: contract_not_enabled
+
+  - id: REOPEN-CHRONICLE-01
+    status: proposed_reopen
+    summary: 章节卷轴和江湖纪事与已否的章节回顾入口、江湖见闻录收藏百科重叠
+    source_registry_entry: 章节回顾入口 / 江湖见闻录收藏百科
+    batch_action: blocked_pending_user
+    safe_default: do_not_build_new_navigation
+
+  - id: REOPEN-TELEGRAPH-ICON-01
+    status: proposed_reopen
+    summary: 威胁图标与 Boss 预警信息可能与已否的 Boss 技能预兆图标重叠
+    source_registry_entry: Boss 技能预兆图标
+    batch_action: blocked_pending_user
+    safe_default: retain_existing_non_icon_telegraphs
+
+  - id: REOPEN-RETURN-SUMMARY-01
+    status: proposed_reopen
+    summary: 统一归来报告与已否的闭关归来事件小结部分重叠
+    source_registry_entry: 闭关归来事件小结
+    batch_action: blocked_pending_user
+    safe_default: preserve_current_offline_summary
+
+  - id: REOPEN-LIGHTFOOT-REWARD-01
+    status: proposed_reopen
+    summary: 轻功模式专属奖励定位与已否的轻功关卡收益差异化重叠
+    source_registry_entry: 轻功关卡收益差异化
+    batch_action: blocked_pending_user
+    safe_default: keep_existing_rewards
+
+  - id: REOPEN-FAILURE-DIAGNOSIS-01
+    status: proposed_reopen
+    summary: 失败原因、返程原因与伤势展示可能与已否的失败原因诊断重叠
+    source_registry_entry: 失败原因诊断
+    batch_action: blocked_pending_user
+    safe_default: keep_domain_failure_reason_without_new_advice_ui
