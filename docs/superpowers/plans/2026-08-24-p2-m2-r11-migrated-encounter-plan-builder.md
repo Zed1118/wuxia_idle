@@ -50,15 +50,15 @@ production host，不复制任何 assembler/runtime 校验。
   move/tick/active-enemy fail-close 继续委托。
 - [x] source guard 禁止 legacy 参数、`Random`、`NumbersConfig`、IO、repository、
   host、candidate/default/tuning，且无 `switch`/`catch`/fallback。
-- [ ] 生产接线证据：这一切片交付 typed migrated plan 组合 seam；依授权
+- [x] 生产接线证据：这一切片交付 typed migrated plan 组合 seam；依授权
   不改 production host，不冒充已上线。
-- [ ] 红线说明：0 production 数值/公式/玩家文案，0 三系/在线离线/
+- [x] 红线说明：0 production 数值/公式/玩家文案，0 三系/在线离线/
   反主流/奖励/伤势/save/UI 触点。
-- [ ] targeted builder + 既有 mapper/mapping/assembler/runtime 回归通过；scoped
+- [x] targeted builder + 既有 mapper/mapping/assembler/runtime 回归通过；scoped
   analyze 0 issue；format、`git diff --check`、严格白名单通过；不跑 full。
-- [ ] Qoder CLI 1.1.x 精确 `Qwen3.8-Max` / reasoning `high` 编码前设计
+- [x] Qoder CLI 1.1.x 精确 `Qwen3.8-Max` / reasoning `high` 编码前设计
   审查与最终 diff 审查均留存真实证据。
-- [ ] 小切片中文动宾 commit；最后追加精确
+- [x] 小切片中文动宾 commit；最后追加精确
   `[READY][QODER][P2-M2-R11] 组合迁移遭遇运行计划` 空提交。
 
 ## 任务切片
@@ -81,21 +81,29 @@ production host，不复制任何 assembler/runtime 校验。
   代码和聚焦测试，结论 **PASS**：P0=0，P1=1（建议 plan 构造私有以保住
   bundle↔mapping director 组合不变量，已采纳），P2=2（source guard 用 import
   白名单；handoff 不重演既有规则，已按实际边界收口）。
-- 最终 diff 审查：待执行（必须 `Qwen3.8-Max` + `high`）。
+- 最终 diff 审查：实际执行同一 `qoderclicn` 1.1.28 /
+  `Qwen3.8-Max` / `--reasoning-effort high` / Read+Grep+Glob only /
+  `--no-session-persistence` 配置，显式禁 Edit/Write/Bash。完整读取三个
+  新增白名单文件与 route/runtime/roster/mapping/assembler/runtime 合同后结论
+  **PASS**，P0=0、P1=0、P2=0，明确可打 `[READY]`。
 - 不记录或输出 token/key。
 
 ## 当前恢复点
 
-- 状态：设计审查、TDD 红绿与薄组合实现已完成，待提交小切片后跑聚焦
-  回归/analyze 与 Qoder 最终 diff 审查。
-- 最后完成：计划恢复点 commit `9ecfff2f`；Qoder 1.1.28 /
-  `Qwen3.8-Max` / high 设计审查 PASS。新测试先因目标文件与 API 不存在编译
-  失败，实现 runtime → same-director roster → mapping 后 7/7 转绿。
-- 下一步：提交 builder/test/证据小切片；运行 mapper/mapping/assembler/runtime
-  聚焦回归与 scoped analyze，再用 Qoder 审查最终 diff。
-- 已跑验证：新 builder 测试 7/7 PASS；`dart format` 两个 Dart 文件 0
-  changed；实现前有效红灯已留证。
+- 状态：实现、验证、Qoder 最终 diff 审查与证据记录均完成；待提交本
+  恢复点后追加精确 READY 空提交并冻结。
+- 最后完成：计划 commit `9ecfff2f`、实现 commit `0e5fd536`；TDD 先因
+  目标文件/API 不存在红灯，实现 runtime → same-director roster → mapping 后
+  7/7 转绿。Qoder 设计审查 PASS 并采纳私有 plan 构造；最终审查 PASS，
+  P0/P1/P2=0。
+- 下一步：提交本证据恢复点；重跑 format/diff/path/status 快速闸门，追加
+  `[READY][QODER][P2-M2-R11] 组合迁移遭遇运行计划` 空提交。
+- 已跑验证：builder 7/7、runtime mapper 8/8、roster mapper 8/8、route
+  selector 10/10、mapping 15/15、assembler 23/23、dynamic encounter runtime 12/12，
+  合计 83/83 PASS；scoped `flutter analyze --no-pub` 2 files 0 issue；Dart format
+  2 files 0 changed；`git diff --check 77c5520e..HEAD` 与严格三文件白名单通过。
 - 阻塞项：无。
 - 生产接线：按授权仅交付后续 host 消费的 pure composition seam；不改 host。
-- 残留风险：本切片不承担 production repository/host 选择、数值与 RNG 所有权；
-  这些继续由后续接线与既有 assembler 负责。
+- 残留风险：按要求未跑 full。本切片不承担 production repository/host 选择、
+  数值与 RNG 所有权；objective controller 已在 bundle，但 tracker/event-source pair 仍归
+  后续 host seam 显式组合。caller-owned arena/adapters/actors 按冻结合同不宣称深冻结。
