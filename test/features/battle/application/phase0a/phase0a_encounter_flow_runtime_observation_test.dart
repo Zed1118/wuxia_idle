@@ -179,13 +179,9 @@ AttackTokenLease _lease() => AttackTokenLease(
 enum _SourceFailure { none, immediate, lazy }
 
 final class _ProgressSource implements Phase0aEncounterObjectiveEventSource {
-  _ProgressSource({
-    this.failure = _SourceFailure.none,
-    this.markerId = 'progress',
-  });
+  _ProgressSource({this.failure = _SourceFailure.none});
 
   final _SourceFailure failure;
-  final String markerId;
   int calls = 0;
 
   @override
@@ -199,7 +195,7 @@ final class _ProgressSource implements Phase0aEncounterObjectiveEventSource {
     if (calls == 2 && failure == _SourceFailure.lazy) {
       return _lazyFailure();
     }
-    return [MarkerTouched(markerId, eventId: 'marker:$markerId')];
+    return [MarkerTouched('progress', eventId: 'marker:progress')];
   }
 
   Iterable<EncounterObjectiveEvent> _lazyFailure() sync* {
