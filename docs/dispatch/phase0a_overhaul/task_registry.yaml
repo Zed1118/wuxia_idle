@@ -1044,6 +1044,34 @@ tasks:
       - mapping preserves immutable ids owner-bound progress and replay behavior
       - no production wiring stage objective choice or tuning default
 
+  - id: P2-G2-L02-COMBAT-CATALOG-MIGRATION-COVERAGE-GATE
+    milestone: G2
+    owner: codex_sol_high
+    branch: codex/phase2-g2-l02-migration-coverage-gate-20260823
+    worktree: /Users/a10506/.codex/worktrees/2876/挂机武侠
+    status: ready_reviewed
+    tip_commit: d0ff3f7e
+    base_commit: e2c3da76
+    implementation_commits:
+      - dc744e24
+      - aab2dfb7
+      - 29dac092
+    integration_commits:
+      - 6144ac09
+      - 7bc11fe2
+      - 74bf4375
+    owned_files:
+      - lib/data/validation/combat_catalog_migration_gate.dart
+      - test/data/validation/combat_catalog_migration_gate_test.dart
+      - test/fixtures/phase2/combat/migration_gate/invalid_coverage.json
+      - test/fixtures/phase2/combat/migration_gate/valid_mixed.json
+      - docs/superpowers/plans/2026-08-23-p2-g2-l02-migration-coverage-gate.md
+    protected_behavior:
+      - caller explicitly provides known stages allowlist and legacy-content facts
+      - every known assignment is checked through the E05 migration resolver
+      - migration coverage issues and reports are deterministic and immutable
+      - no production IO host routing stage inference objective choice or tuning
+
   - id: P2-M0-F01-PHASE2-FACT-SYNC
     milestone: M0
     owner: codex_luna_low

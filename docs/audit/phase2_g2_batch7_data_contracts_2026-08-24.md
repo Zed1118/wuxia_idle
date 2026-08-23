@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provided YAML loader/validator、S01→O01 纯映射和二阶段事实同步。当前仍为 `in_progress`：E05 migration 联合 Gate、整合态组合验证、主项目 analyze、全量测试和最终独立审查尚未全部收口，因此本文件不构成 READY 声明。
+Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provided YAML loader/validator、S01→O01 纯映射、L02+E05 migration 联合 Gate 和二阶段事实同步。当前仍为 `in_progress`：主项目 analyze、全量测试和最终独立审查尚未全部收口，因此本文件不构成 READY 声明。
 
 ## 交付内容
 
@@ -10,6 +10,7 @@ Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provi
 - S01：敌人 archetype/variant、encounter 与 catalog manifest 三份不可变 typed schema；所有数值、migration state、spawn、token budget 和 objective ref 均由 caller 显式提供。
 - L01：Qoder + `Qwen3.8-Max` 产出多具名 YAML source 的纯 loader/validator；主控补齐 source+叶子路径诊断、不可变 parsed DTO、非有限数/null/blank 和全部重复 ID 定位，再经两轮独立审查清零。
 - O02：八类 `CombatObjectivePrimitiveRef` 到 O01 objective 的穷尽纯映射；tick duration 必须由 caller 显式提供且为正，Duration 乘法溢出 fail closed。
+- L02：caller 显式提供 known stage、legacy allowlist 与 legacy-content 事实；Gate 为每个 known assignment 实际调用 E05 resolver，统一验证 allowlist、0/1 encounter 和 legacy-content 形状。
 - M0-F01：同步 21 章、105 主线关、5604 主线经验预算、满级 134 等仓库可验证事实；所有产品语义仍保持 PROPOSED/待决，不把任务状态写入长生命周期设计真相源。
 
 ## 主控审查与缺口闭环
@@ -26,12 +27,12 @@ Batch7 已完成八类纯目标原语、战斗内容 typed schema、caller-provi
 - S01 targeted：48/48；scoped analyze 0 issue；独立终审 0 P0/P1/P2。
 - L01 targeted：57/57；scoped analyze 4 文件 0 issue；第二轮独立终审 0 P0/P1/P2。
 - O02 targeted：8/8；scoped analyze 2 文件 0 issue；独立审查无阻断缺陷。
+- L02 targeted：7/7；scoped analyze 2 文件 0 issue；补强后独立审查 0 findings。
+- 最终整合态组合 targeted：134/134；18 文件 scoped analyze 0 issue。
 - 各任务 `dart format`、`git diff --check` 和 owned-file 白名单均已通过；任务 worktree 均以 READY tip 收口。
 
 ## READY 前待完成 Gate
 
-- L02：组合 S01 manifest 与 E05 resolver，验证 allowlist、legacy content、migrated content、encounter count 和 assignment shape 全部一致。
-- 整合态重跑 O01/S01/L01/O02/L02 组合 targeted tests。
 - `flutter analyze --no-pub lib test`、`flutter test --no-pub`、最终 `git diff --check`。
 - 对最终 integration tip 做独立只读终审，并把 registry、Batch7 plan、本 audit 更新到同一恢复点。
 
