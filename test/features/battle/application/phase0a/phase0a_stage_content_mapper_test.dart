@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlemen
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
@@ -179,6 +180,45 @@ void main() {
       );
       expect(mapping.initialState.player.qiCurrent, 37);
       expect(mapping.initialState.player.qiMax, 100);
+    });
+
+    test('玩家与普通敌人普攻真气只读各自真实 SkillDef.qiDelta', () {
+      final numbers = repo.numbers;
+      final player = makeCh1Player(numbers);
+      final playerBasic = player.skillLoadout.basicAttack!;
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: player,
+        numbers: numbers,
+      );
+
+      final playerAttack = mapping.playerAdapter
+          .intentsFor(
+            state: mapping.initialState,
+            command: const Phase0aPlayerCommand(attack: true),
+          )
+          .whereType<Phase0aAttackIntent>()
+          .single;
+      expect(playerAttack.qiDelta, playerBasic.qiDelta);
+
+      final enemyBasic = mapping.combatants[1].snapshot.availableSkills
+          .singleWhere((skill) => skill.type == SkillType.normalAttack);
+      final enemyState = Phase0aArenaState(
+        tick: mapping.initialState.tick,
+        nextSeq: mapping.initialState.nextSeq,
+        player: mapping.initialState.player.copyWith(
+          position: mapping.initialState.enemies.single.position,
+        ),
+        enemies: mapping.initialState.enemies,
+        skillSlots: mapping.initialState.skillSlots,
+        winCondition: mapping.initialState.winCondition,
+      );
+      final enemyAttack = mapping.enemyAiAdapter
+          .intentsFor(state: enemyState)
+          .whereType<Phase0aAttackIntent>()
+          .single;
+      expect(enemyAttack.qiDelta, enemyBasic.qiDelta);
+      expect(enemyAttack.qiDelta, isPositive);
     });
 
     test('Q/R 真实 skill id 经 intent 进入 reducer started 事件', () {

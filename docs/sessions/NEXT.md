@@ -26,6 +26,8 @@
 - Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
 
 ## 最新验证
+
+- 普攻真气单一来源：用户拍板选 A 后，删除 production `phase0a_arena.moves.basic_qi_delta` 镜像；玩家与所有敌人的普攻 intent 统一读取各自快照真实 `SkillDef.qiDelta`，敌人缺真实 basic 时 fail-closed。红测先命中实际 0 后转绿；联合 targeted **38/38**、生产预检 **149/149 eligible、447 runs、0 timeout、maxDamage 3535**、analyze 0、diff check 通过。BACKLOG #20 销账；未改 `skills.yaml` 任何数值。
 - CI 可复现性：主 CI/Windows release 均强制 `--enforce-lockfile`，主 CI analyze 覆盖根应用 `lib/test/tool`；独立归档子包 `tools/phase0minus_probe` 不借用根应用依赖分析。新增契约先红后绿，workflow + macOS release 契约 **5/5**、YAML 解析通过、根应用 analyze 0 issue。
 - CI 同口径：`flutter test --coverage --no-pub` **4230/4230 PASS**；line coverage **83.66%（32921/39351）≥81.25%**，coverage ratchet 通过。
 - macOS release 门禁：增量构建曾复现外层签名陈旧、deep verify 失败；`tool/verify_macos_release.sh` 强制 clean tree/锁文件依赖/代码生成/clean build/deep codesign/双架构/哈希，并在构建后复核 tracked tree。最终 clean `main` commit `451bc883` 完整 PASS：生成 126 outputs、x86_64+arm64、169M、launcher `2a4ed520…46ac9`、AOT `722f39ee…16f35`；工作区仍 clean，不启动 GUI、不发布。

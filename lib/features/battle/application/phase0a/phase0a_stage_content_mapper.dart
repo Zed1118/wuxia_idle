@@ -506,9 +506,10 @@ final class Phase0aStageContentMapper {
     };
     final enemyBasicQiDeltaByActor = <String, int>{
       for (var i = 0; i < enemySnapshots.length; i++)
-        waveEnemies[i].id: enemySnapshots[i].bossPhases == null
-            ? 0
-            : _basicSkillOf(enemySnapshots[i])?.qiDelta ?? 0,
+        waveEnemies[i].id: _requiredBasicSkillOf(
+          enemySnapshots[i],
+          actorId: waveEnemies[i].id,
+        ).qiDelta,
     };
 
     final combatants = <Phase0aCombatantInput>[
@@ -545,7 +546,7 @@ final class Phase0aStageContentMapper {
         playerId: playerId,
         numericSkillBindings: numericSkillBindings,
         tacticalSkillBindings: tacticalSkillBindings,
-        attackQiDelta: arena.basicQiDelta,
+        attackQiDelta: playerBasicSkill.qiDelta,
       ),
       enemyAiAdapter: Phase0aEnemyAiAdapter(
         attackRange: arena.enemyAttackRange,
@@ -774,6 +775,20 @@ final class Phase0aStageContentMapper {
       if (skill.type == SkillType.normalAttack) return skill;
     }
     return null;
+  }
+
+  static SkillDef _requiredBasicSkillOf(
+    CombatantSnapshot snapshot, {
+    required String actorId,
+  }) {
+    final skill = _basicSkillOf(snapshot);
+    if (skill == null) {
+      throw StateError(
+        'Phase0a 纵切装配 $actorId: 敌人快照缺真实 basicAttack，'
+        '禁止回退中性 qiDelta',
+      );
+    }
+    return skill;
   }
 
   static List<Phase0aSkillSlot> _skillSlots(

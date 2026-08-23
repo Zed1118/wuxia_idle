@@ -542,7 +542,6 @@ phase0a_arena:
   moves:
     basic_skill_id: phase0a_mainline_basic
     basic_power_multiplier: 500
-    basic_qi_delta: 0
     gather_skill_id: skill_phase0a_gather
     clear_skill_id: skill_phase0a_clear
     # 仅供隔离 legacy fixture 生成 synthetic clear SkillDef。

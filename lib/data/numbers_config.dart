@@ -1769,7 +1769,6 @@ class Phase0aArenaConfig {
   // —— 招式绑定(basic/clear 伤害招;gather 为 control-only 不在此) ——
   final String basicSkillId;
   final int basicPowerMultiplier;
-  final int basicQiDelta;
   final String clearSkillId;
   final int clearPowerMultiplier;
   final int clearQiDelta;
@@ -1803,7 +1802,6 @@ class Phase0aArenaConfig {
     required this.enemyQi,
     required this.basicSkillId,
     required this.basicPowerMultiplier,
-    required this.basicQiDelta,
     required this.clearSkillId,
     required this.clearPowerMultiplier,
     required this.clearQiDelta,
@@ -1839,7 +1837,6 @@ class Phase0aArenaConfig {
     enemyQi: 0,
     basicSkillId: '',
     basicPowerMultiplier: 0,
-    basicQiDelta: 0,
     clearSkillId: '',
     clearPowerMultiplier: 0,
     clearQiDelta: 0,
@@ -1922,7 +1919,6 @@ class Phase0aArenaConfig {
       enemyQi: (enemy['qi'] as num).toInt(),
       basicSkillId: moves['basic_skill_id'] as String,
       basicPowerMultiplier: (moves['basic_power_multiplier'] as num).toInt(),
-      basicQiDelta: (moves['basic_qi_delta'] as num).toInt(),
       clearSkillId: tacticalSkillId('clear_skill_id'),
       clearPowerMultiplier: (moves['clear_power_multiplier'] as num).toInt(),
       clearQiDelta: (moves['clear_qi_delta'] as num).toInt(),
