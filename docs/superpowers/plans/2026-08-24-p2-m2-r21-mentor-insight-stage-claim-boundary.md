@@ -92,19 +92,20 @@ amount/host/ActivityOccupancy/release 绑定。
 
 ## CLAUDE §8.2 验收 checklist
 
-- [ ] 生产接线证据如实：本任务仅交付 R19 → R02 的 host-neutral
+- [x] 生产接线证据如实：本任务仅交付 R19 → R02 的 host-neutral
   candidate/decision seam，production host 未接且仍为 Gate。
-- [ ] 先跑缺失 API 有效红灯，再跑 R21、新 R19、R18、R02 claim、shared
+- [x] 先跑缺失 API 有效红灯，再跑 R21、新 R19、R18、R02 claim、shared
   key targeted 全绿；不跑 full suite。
-- [ ] 两个 changed Dart item scoped analyze 0 issue；format/diff/path/status 通过。
-- [ ] 红线影响为 0：不改 tuning/YAML/玩家文案/数值/三系/在线离线/
+- [x] 两个 changed Dart item scoped analyze 0 issue；format/diff/path/status 通过。
+- [x] 红线影响为 0：不改 tuning/YAML/玩家文案/数值/三系/在线离线/
   反主流规则，不引入存档或 UI。
-- [ ] 残留风险如实：durable truth source、CAS、grant/outbox、settlement
+- [x] 残留风险如实：durable truth source、CAS、grant/outbox、settlement
   identity、release/grant/claim 原子性、host/persistence/data/tuning 继续 Gate。
-- [ ] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high 用
+- [x] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high 用
   Read/Grep/Find/Ls-only 完成实现前与最终 diff 两轮只读审查；Codex
   独立自审 P0/P1/P2 归零。
-- [ ] 中文动宾小提交，最后追加精确 READY 空提交。
+- [x] 中文动宾小提交已完成；本证据提交后只追加精确 READY
+  空提交。
 
 ## Pi 实现前只读审查
 
@@ -118,6 +119,24 @@ amount/host/ActivityOccupancy/release 绑定。
   两项 P1 与 drift/replay 两项 P2 有效，已逐项写入决策表、源码守卫和
   矩阵。
 
+## Pi 最终 diff 只读审查与独立终审
+
+- 最终审查使用与实现前完全相同的 Pi CLI 0.84.1 / exact
+  `deepseek/deepseek-v4-flash` / thinking high / Read-Grep-Find-Ls-only /
+  no-session / no-skills 配置，实际读取三个 owned files 及 R02/R18/R19
+  必要上下文，零写入，正常 exit 0。
+- 原始结论：`FINAL PASS`，P0=0、P1=0、P2=4。四项 P2 为三个
+  source guard 的未来重构可加固性与一个本计划状态待回填，零当前行为
+  影响，不阻塞 Gate。
+- triage：计划状态 P2 已由本段回填闭合；drift check 当前文本、
+  factory 计数和先后顺序均存在，且 R18 公开路径使 drift 行为分支不可达；
+  wrong-kind 已有 failure/success 两条真实运行时回归；failure exact
+  true/false 已有两条回归且人工确认都到达唯一 policy 调用点。这三项
+  作为非阻塞的未来 guard hardening 提示保留，不扩当前冻结范围。
+- Codex 与主控独立代码终审均确认当前实现 P0=0、P1=0、P2=0；
+  单 policy call 布尔短路、wrong-kind 零 getter、fresh decision 与诚实 Gate
+  均满足冻结合同。
+
 ## 任务切片与当前恢复点
 
 1. 完整读取规约和 R02/R18/R19，运行 Pi 实现前只读审查，提交本计划。
@@ -126,8 +145,17 @@ amount/host/ActivityOccupancy/release 绑定。
 4. 运行 analyze/format/diff/path/status，Pi 最终 diff 只读审查，回填证据并
    追加 READY。
 
-- 状态：实现前 Pi 审查已完成，计划已冻结，待进入红测。
-- 最后完成：将有效 Pi findings 转成决策表与 source guard。
-- 下一步：新建 R21 测试并跑缺失 API 红灯。
-- 已跑验证：Pi 实现前只读审查；未跑测试。
-- 阻塞：无；外部 Gate 如上。
+- 状态：实现、定向验证、Pi 最终审查与独立终审均完成，待追加
+  READY 空提交。
+- 最后完成：计划 `67b382e3` → 红测 `6773f630` → 实现
+  `57222498`；有效红灯为 R21 source/API 缺失，实现后新测 21/21。
+- 已跑验证：五文件逐项 targeted 为 R21 21/21 + R19 11/11 + R18
+  16/16 + R02 claim 13/13 + shared key 20/20 = 81/81；两个 changed
+  Dart item analyze 0 issue；format 2 files / 0 changed；`git diff --check`、
+  owned-path 与 status clean。首次红测曾因 fresh worktree 缺 `.dart_tool` 在
+  native-assets 阶段崩溃，不计有效红灯；`flutter pub get --offline`
+  只恢复本地生成态，零 tracked diff，随后获得上述有效缺失 API 红灯。
+- 红线/生产接线：0 tuning/YAML/数值/文案/三系/在线离线/反主流/
+  save/UI 变更；production host 未接。
+- 阻塞：无。durable truth source、CAS、grant/outbox、settlement identity、
+  release/grant/claim 原子性、host/persistence/data/tuning 继续为外部 Gate。
