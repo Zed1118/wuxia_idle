@@ -633,3 +633,54 @@ tasks:
       - lib/features/battle/domain/phase0a/activity_participation_request.dart
       - test/features/battle/domain/phase0a/activity_participation_request_test.dart
       - docs/superpowers/plans/2026-08-23-p2-g2-e01-participation-request.md
+
+  - id: P2-G2-BATCH3-INTEGRATION
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-g2-batch3-integration-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch3-integration
+    status: in_progress
+    base_commit: 1150c56a
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g2-batch3-encounter-seams.md
+      - docs/audit/phase2_g2_batch3_encounter_seams_2026-08-23.md
+    exit_criteria:
+      - live and headless consumers accept the same battle-flow contract
+      - token observation cannot alter intents events state or RNG consumption
+      - encounter compatibility flow is parity-locked to the legacy wave flow
+      - no dynamic spawn token enforcement tuning data UI reward or save changes
+
+  - id: P2-G2-D03-BATTLE-FLOW-CONTRACT
+    milestone: G2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-g2-d03-battle-flow-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d03-battle-flow
+    status: in_progress
+    protected_behavior:
+      - wave flow event state outcome and RNG behavior remain unchanged
+      - production assembler keeps its existing concrete return type
+      - controller headless and retry consume the minimal shared flow contract
+
+  - id: P2-G2-D04-TOKEN-OBSERVE-SEAM
+    milestone: G2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-g2-d04-token-observe-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d04-token-observe
+    status: in_progress
+    protected_behavior:
+      - default session path is byte-for-byte intent compatible
+      - observation never filters reorders or mutates enemy intents
+      - budgets and semantic request mapping are caller supplied
+
+  - id: P2-G2-E02-ENCOUNTER-COMPATIBILITY
+    milestone: G2
+    owner: codex_luna_medium
+    branch: codex/phase2-g2-e02-encounter-compat-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e02-encounter-compat
+    status: waiting_dependency
+    wake_condition: D03 interface reviewed and integrated
+    protected_behavior:
+      - compatibility wrapper delegates to the legacy wave flow
+      - same seed and commands yield identical state events records and outcome
+      - no SpawnDirector consumption or token enforcement in this batch
