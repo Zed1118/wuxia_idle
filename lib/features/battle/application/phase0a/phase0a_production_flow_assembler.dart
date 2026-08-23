@@ -3,11 +3,13 @@ import 'dart:math';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../domain/phase0a/encounter_enemy_roster.dart';
+import '../../domain/phase0a/attack_token_director.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_battle_snapshot_factory.dart';
+import 'attack_token_enforcing_batch_gate.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
@@ -17,6 +19,7 @@ import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_observer.dart';
 import 'phase0a_objective_runtime_tracker.dart';
+import 'phase0a_migrated_encounter_plan_builder.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
 
@@ -199,6 +202,39 @@ final class Phase0aProductionFlowAssembler {
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentBatchGate: enemyIntentBatchGate,
       objectiveTracker: objectiveTracker,
+      objectiveEventSource: objectiveEventSource,
+    );
+  }
+
+  /// Explicit opt-in bridge for one typed migrated encounter plan.
+  ///
+  /// The plan owns the exact mapping, token budgets and objective controller.
+  /// This bridge creates a stateless enforcing gate and a fresh objective
+  /// tracker from those contracts, while the request mapper, objective event
+  /// source, numbers and single RNG remain required caller dependencies. It
+  /// does not select a route, read production data or install a host default.
+  static Phase0aEncounterFlow assembleMigratedEncounterPlan({
+    required Phase0aMigratedEncounterPlan plan,
+    required NumbersConfig numbers,
+    required Random rng,
+    required Phase0aAttackTokenEnforcementRequestMapper tokenRequestMapper,
+    required Phase0aEncounterObjectiveEventSource objectiveEventSource,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+  }) {
+    final contracts = plan.runtimeContracts;
+    return assembleEncounterFromMapping(
+      mapping: plan.mapping,
+      numbers: numbers,
+      rng: rng,
+      enemyIntentObserver: enemyIntentObserver,
+      enemyIntentBatchGate: AttackTokenEnforcingBatchGate(
+        director: const AttackTokenDirector(),
+        budgets: contracts.attackTokenBudgets,
+        requestMapper: tokenRequestMapper,
+      ),
+      objectiveTracker: Phase0aObjectiveRuntimeTracker(
+        controller: contracts.objectiveController,
+      ),
       objectiveEventSource: objectiveEventSource,
     );
   }
