@@ -1377,11 +1377,16 @@ tasks:
     owned_files:
       - CLAUDE.md
       - GDD.md
+      - README.md
       - lib/shared/strings.dart
       - test/tools/stress_test.dart
+      - test/tools/idle_economy_test.dart
       - test/balance/full_build_damage_redline_test.dart
       - test/audit/cross_system_damage_test.dart
       - test/data/p1a_redline_test.dart
+      - test/features/economy/economy_balance_test.dart
+      - test/features/seclusion/application/offline_passive_redline_test.dart
+      - test/features/shop/shop_providers_test.dart
       - tools/playtest/decision_session.sh
       - docs/superpowers/plans/2026-08-24-p2-g7-balance-reference-closeout.md
       - docs/audit/phase2_g7_balance_reference_closeout_2026-08-24.md
