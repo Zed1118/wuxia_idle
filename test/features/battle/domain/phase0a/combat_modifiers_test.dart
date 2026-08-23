@@ -169,5 +169,22 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('fails closed when multiplication becomes non-finite', () {
+      expect(
+        () => applyCombatModifiers(
+          base.copyWith(knockback: double.maxFinite),
+          bounds,
+          [
+            GangMengModifier(
+              knockbackFactor: 2,
+              postureDamageFactor: 1,
+              breachPowerFactor: 1,
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
   });
 }

@@ -29,9 +29,17 @@ final class GangMengModifier extends CombatModifier {
 
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
-    knockback: values.knockback * knockbackFactor,
-    postureDamage: values.postureDamage * postureDamageFactor,
-    breachPower: values.breachPower * breachPowerFactor,
+    knockback: _multiply(values.knockback, knockbackFactor, 'knockback'),
+    postureDamage: _multiply(
+      values.postureDamage,
+      postureDamageFactor,
+      'postureDamage',
+    ),
+    breachPower: _multiply(
+      values.breachPower,
+      breachPowerFactor,
+      'breachPower',
+    ),
   );
 }
 
@@ -53,11 +61,25 @@ final class LingQiaoModifier extends CombatModifier {
   @override
   TechniqueSchool get school => TechniqueSchool.lingQiao;
 
+  // Duration direction remains a caller/G1 contract; this is only a
+  // multiplicative schema field and does not choose shortening or extension.
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
-    pursuitDistance: values.pursuitDistance * pursuitFactor,
-    dodgeTrajectory: values.dodgeTrajectory * dodgeTrajectoryFactor,
-    recoveryDuration: values.recoveryDuration * recoveryFactor,
+    pursuitDistance: _multiply(
+      values.pursuitDistance,
+      pursuitFactor,
+      'pursuitDistance',
+    ),
+    dodgeTrajectory: _multiply(
+      values.dodgeTrajectory,
+      dodgeTrajectoryFactor,
+      'dodgeTrajectory',
+    ),
+    recoveryDuration: _multiply(
+      values.recoveryDuration,
+      recoveryFactor,
+      'recoveryDuration',
+    ),
   );
 }
 
@@ -84,11 +106,18 @@ final class YinRouModifier extends CombatModifier {
 
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
-    pullStrength: values.pullStrength * pullFactor,
-    slowStrength: values.slowStrength * slowFactor,
-    internalInjuryStrength:
-        values.internalInjuryStrength * internalInjuryFactor,
-    controlDuration: values.controlDuration * controlDurationFactor,
+    pullStrength: _multiply(values.pullStrength, pullFactor, 'pullStrength'),
+    slowStrength: _multiply(values.slowStrength, slowFactor, 'slowStrength'),
+    internalInjuryStrength: _multiply(
+      values.internalInjuryStrength,
+      internalInjuryFactor,
+      'internalInjuryStrength',
+    ),
+    controlDuration: _multiply(
+      values.controlDuration,
+      controlDurationFactor,
+      'controlDuration',
+    ),
   );
 }
 
@@ -275,6 +304,14 @@ ModifierValues applyCombatModifiers(
 }
 
 double _cap(double value, double bound) => value > bound ? bound : value;
+
+double _multiply(double base, double factor, String name) {
+  final result = base * factor;
+  if (!result.isFinite) {
+    throw ArgumentError.value(result, name, 'multiplication must be finite');
+  }
+  return result;
+}
 
 void _requirePositiveFactor(double value, String name) {
   if (!value.isFinite || value <= 0) {
