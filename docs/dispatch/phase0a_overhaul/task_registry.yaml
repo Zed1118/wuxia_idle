@@ -948,6 +948,17 @@ tasks:
     base_commit: 935c04e1
     validated_code_tip: 16200e81
     integration_commits:
+      - ff229103
+      - fc110f60
+      - 327ec618
+      - 8c31e2a0
+      - ed432cc3
+      - ba83ec43
+      - 0f7f4e42
+      - c3e18405
+      - 5a18b951
+      - 16e14a0a
+      - 1ad14bcc
       - de499750
       - df48a8a7
       - cfcfa934

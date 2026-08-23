@@ -27,7 +27,7 @@
 - 有效的多文件 fixture 确定性生成 typed manifest，并覆盖全部八类 objective ref。
 - malformed/unknown-key/wrong-type/non-integer/unknown-enum/duplicate/cross-reference/migration fixture fail closed，错误包含 source 名与字段路径。
 - targeted tests、scoped analyze、`git diff --check` 通过。
-- worktree clean，tip 为 `[READY][QODER][P2-G2-L01] 完成战斗目录加载与校验`。
+- worktree clean，tip 提交标题以 `[READY][QODER][P2-G2-L01]` 开头。
 
 ## 当前恢复点
 
