@@ -1,13 +1,16 @@
 import '../../domain/phase0a/combat_event_order.dart';
+import '../../domain/phase0a/encounter_objective.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/encounter_enemy_roster.dart';
 import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_combat_session.dart';
+import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_event_order_adapter.dart';
 import '../../domain/phase0a/phase0a_wave.dart' show Phase0aBattleOutcome;
 import 'phase0a_battle_flow.dart';
 import 'phase0a_enemy_intent_gate.dart';
+import 'phase0a_objective_runtime_tracker.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_spawn_event_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -19,16 +22,27 @@ import 'phase0a_wave_battle_flow.dart';
 /// production policy.
 final class Phase0aEncounterFlow implements Phase0aBattleFlow {
   Phase0aEncounterFlow.compatibility({required Phase0aWaveBattleFlow legacy})
-    : _legacy = legacy;
+    : _legacy = legacy,
+      _objectiveTracker = null,
+      _objectiveEventSource = null;
 
   Phase0aEncounterFlow.runtime({
     required Phase0aCombatSession session,
     required SpawnDirector director,
     required Phase0aEncounterRoster roster,
+    Phase0aObjectiveRuntimeTracker? objectiveTracker,
+    Phase0aEncounterObjectiveEventSource? objectiveEventSource,
   }) : _legacy = null,
        _session = session,
        _director = director,
-       _roster = roster {
+       _roster = roster,
+       _objectiveTracker = objectiveTracker,
+       _objectiveEventSource = objectiveEventSource {
+    if ((objectiveTracker == null) != (objectiveEventSource == null)) {
+      throw ArgumentError(
+        'objectiveTracker and objectiveEventSource must be configured together',
+      );
+    }
     if (!identical(roster.director, director)) {
       throw ArgumentError.value(roster, 'roster', 'director identity mismatch');
     }
@@ -82,6 +96,8 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
   Phase0aCombatSession? _session;
   SpawnDirector? _director;
   Phase0aEncounterRoster? _roster;
+  final Phase0aObjectiveRuntimeTracker? _objectiveTracker;
+  final Phase0aEncounterObjectiveEventSource? _objectiveEventSource;
   Phase0aBattleOutcome _runtimeOutcome = Phase0aBattleOutcome.ongoing;
   List<CombatEventRecord> _runtimeRecords = const <CombatEventRecord>[];
 
@@ -126,103 +142,135 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
 
     final oldSession = _session!;
     final oldDirector = _director!;
-    final oldOutcome = _runtimeOutcome;
-    final oldRecords = _runtimeRecords;
-    try {
-      final before = oldSession.state;
-      final step = oldDirector.advance();
-      final nextDirector = step.director;
-      final combatTick = before.tick + 1;
-      if (nextDirector.state.tick != combatTick) {
-        throw StateError('director tick must match reducer tick');
-      }
-
-      final spawnEvents = Phase0aSpawnEventAdapter.project(
-        directorEvents: step.events,
-        roster: _roster!,
-        seqStart: before.nextSeq,
-        combatTick: combatTick,
-      );
-      final enemies = _arenaEnemies(nextDirector.state, before.enemies);
-      final reserved = _copyState(
-        before,
-        enemies: enemies,
-        nextSeq: before.nextSeq + spawnEvents.length,
-      );
-      final canAttack = nextDirector.state.units
-          .where((unit) => unit.canAttack)
-          .map((unit) => unit.enemyId)
-          .toSet();
-      final gatedSession = oldSession.forkWithStateAndEnemyIntentGate(
-        reserved,
-        enemyIntentGate: Phase0aSpawnGraceIntentGate(
-          canAttackActorIds: canAttack,
-        ),
-      );
-      final combatEvents = gatedSession.advance(
-        deltaSeconds: deltaSeconds,
-        command: command,
-      );
-      var directorAfterCombat = nextDirector;
-      for (final defeated in combatEvents.whereType<Phase0aEnemyDefeated>()) {
-        final binding = _roster!.bindingByEnemyId(defeated.target);
-        if (binding == null) {
-          throw ArgumentError.value(
-            defeated.target,
-            'combatEvents',
-            'unknown defeated enemy',
-          );
-        }
-        directorAfterCombat = directorAfterCombat.markExited(binding.entryId);
-      }
-
-      final events = <Phase0aEvent>[...spawnEvents, ...combatEvents];
-      final resolved = gatedSession.state;
-      if (!resolved.player.isAlive) {
-        _runtimeOutcome = Phase0aBattleOutcome.defeat;
-        events.add(
-          Phase0aBattleDefeat(seq: resolved.nextSeq, tick: resolved.tick),
-        );
-      } else if (_surviveReached(resolved)) {
-        _runtimeOutcome = Phase0aBattleOutcome.victory;
-        events.add(
-          Phase0aBattleVictory(seq: resolved.nextSeq, tick: resolved.tick),
-        );
-      } else if (directorAfterCombat.state.pendingCount == 0 &&
-          directorAfterCombat.state.warningCount == 0 &&
-          directorAfterCombat.state.activeCount == 0 &&
-          resolved.enemies.isEmpty) {
-        _runtimeOutcome = Phase0aBattleOutcome.victory;
-        events.add(
-          Phase0aBattleVictory(seq: resolved.nextSeq, tick: resolved.tick),
-        );
-      }
-
-      final terminalState = events.isEmpty ? null : events.last;
-      final nextSeq =
-          terminalState is Phase0aBattleVictory ||
-              terminalState is Phase0aBattleDefeat
-          ? resolved.nextSeq + 1
-          : resolved.nextSeq;
-      _session = gatedSession.forkWithStateAndEnemyIntentGate(
-        _copyState(resolved, nextSeq: nextSeq),
-        enemyIntentGate: Phase0aSpawnGraceIntentGate(
-          canAttackActorIds: directorAfterCombat.state.units
-              .where((unit) => unit.canAttack)
-              .map((unit) => unit.enemyId)
-              .toSet(),
-        ),
-      );
-      _director = directorAfterCombat;
-      _runtimeRecords = Phase0aEventOrderAdapter.project(events);
-      return List.unmodifiable(events);
-    } catch (_) {
-      _session = oldSession;
-      _director = oldDirector;
-      _runtimeOutcome = oldOutcome;
-      _runtimeRecords = oldRecords;
-      rethrow;
+    final before = oldSession.state;
+    final beforeSpawn = oldDirector.state;
+    final step = oldDirector.advance();
+    final nextDirector = step.director;
+    final combatTick = before.tick + 1;
+    if (nextDirector.state.tick != combatTick) {
+      throw StateError('director tick must match reducer tick');
     }
+
+    final spawnEvents = Phase0aSpawnEventAdapter.project(
+      directorEvents: step.events,
+      roster: _roster!,
+      seqStart: before.nextSeq,
+      combatTick: combatTick,
+    );
+    final enemies = _arenaEnemies(nextDirector.state, before.enemies);
+    final reserved = _copyState(
+      before,
+      enemies: enemies,
+      nextSeq: before.nextSeq + spawnEvents.length,
+    );
+    final canAttack = nextDirector.state.units
+        .where((unit) => unit.canAttack)
+        .map((unit) => unit.enemyId)
+        .toSet();
+    final gatedSession = oldSession.forkWithStateAndEnemyIntentGate(
+      reserved,
+      enemyIntentGate: Phase0aSpawnGraceIntentGate(
+        canAttackActorIds: canAttack,
+      ),
+    );
+
+    // The existing resolver may consume caller-owned RNG before a later
+    // projection fails. It exposes no rewind API, and this flow does not claim
+    // to roll that external stream back. All state owned here remains local.
+    final combatEvents = gatedSession.advance(
+      deltaSeconds: deltaSeconds,
+      command: command,
+    );
+    var directorAfterCombat = nextDirector;
+    for (final defeated in combatEvents.whereType<Phase0aEnemyDefeated>()) {
+      final binding = _roster!.bindingByEnemyId(defeated.target);
+      if (binding == null) {
+        throw ArgumentError.value(
+          defeated.target,
+          'combatEvents',
+          'unknown defeated enemy',
+        );
+      }
+      directorAfterCombat = directorAfterCombat.markExited(binding.entryId);
+    }
+
+    final resolved = gatedSession.state;
+    final events = <Phase0aEvent>[...spawnEvents, ...combatEvents];
+    var nextOutcome = Phase0aBattleOutcome.ongoing;
+    Phase0aPreparedObjectiveTransition? objectiveTransition;
+    final objectiveTracker = _objectiveTracker;
+    if (!resolved.player.isAlive) {
+      // Defeat is authoritative and deliberately bypasses objective mapping
+      // and commit, even if the same frame could otherwise complete it.
+      nextOutcome = Phase0aBattleOutcome.defeat;
+      events.add(
+        Phase0aBattleDefeat(seq: resolved.nextSeq, tick: resolved.tick),
+      );
+    } else if (objectiveTracker != null) {
+      if (objectiveTracker.progress.completed) {
+        objectiveTransition = objectiveTracker.prepareExternalEvents(
+          const <EncounterObjectiveEvent>[],
+        );
+      } else {
+        final frame = Phase0aEncounterObjectiveFrame(
+          beforeArena: before,
+          afterArena: resolved,
+          beforeSpawn: beforeSpawn,
+          afterSpawn: directorAfterCombat.state,
+          directorEvents: step.events,
+          spawnEvents: spawnEvents,
+          combatEvents: combatEvents,
+          deltaSeconds: deltaSeconds,
+        );
+        objectiveTransition = objectiveTracker.prepareExternalEvents(
+          _objectiveEventSource!.eventsFor(frame),
+        );
+      }
+      if (objectiveTransition.next.completed) {
+        nextOutcome = Phase0aBattleOutcome.victory;
+        events.add(
+          Phase0aBattleVictory(seq: resolved.nextSeq, tick: resolved.tick),
+        );
+      }
+    } else if (_surviveReached(resolved) ||
+        (directorAfterCombat.state.pendingCount == 0 &&
+            directorAfterCombat.state.warningCount == 0 &&
+            directorAfterCombat.state.activeCount == 0 &&
+            resolved.enemies.isEmpty)) {
+      nextOutcome = Phase0aBattleOutcome.victory;
+      events.add(
+        Phase0aBattleVictory(seq: resolved.nextSeq, tick: resolved.tick),
+      );
+    }
+
+    final terminalState = events.isEmpty ? null : events.last;
+    final nextSeq =
+        terminalState is Phase0aBattleVictory ||
+            terminalState is Phase0aBattleDefeat
+        ? resolved.nextSeq + 1
+        : resolved.nextSeq;
+    final nextSession = gatedSession.forkWithStateAndEnemyIntentGate(
+      _copyState(resolved, nextSeq: nextSeq),
+      enemyIntentGate: Phase0aSpawnGraceIntentGate(
+        canAttackActorIds: directorAfterCombat.state.units
+            .where((unit) => unit.canAttack)
+            .map((unit) => unit.enemyId)
+            .toSet(),
+      ),
+    );
+
+    // Finish every potentially throwing projection before the single CAS
+    // commit. The assignments after commit only publish already-built values.
+    final nextRecords = Phase0aEventOrderAdapter.project(events);
+    final returnEvents = List<Phase0aEvent>.unmodifiable(events);
+    if (objectiveTransition != null) {
+      objectiveTracker!.commit(objectiveTransition);
+    }
+    _session = nextSession;
+    _director = directorAfterCombat;
+    _runtimeOutcome = nextOutcome;
+    _runtimeRecords = nextRecords;
+    return returnEvents;
   }
 
   List<Phase0aActor> _arenaEnemies(
