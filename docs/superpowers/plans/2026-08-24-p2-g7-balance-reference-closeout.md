@@ -26,11 +26,11 @@
 - [x] 真相源与静态检查：truth-source guard 9/9（包含在上述 45）、12 文件 scoped analyze 0 issue、`bash -n`、`git diff --check` 通过；`CLAUDE.md` / `GDD.md` / `README.md` / `lib` / `test` / `tool` / `tools` 活动范围不存在已删除诊断名引用。
 - [x] 残留风险：当前仍缺 Phase 0A 满 build 真实路径极值探针，也缺同会话连续战斗稳定性替代；均明确登记为后续，不伪称已覆盖。
 - [x] 独立审查：DeepSeek V4 Flash 与 Qwen3.8-Max 首轮均为 P0/P1 = 0/0；逐项关闭 P2 后，两路最终增量复核均为 P0/P1/P2 = 0/0/0。
-- [ ] 工作树干净，tip 为 `[READY][CODEX][P2-G7]`。
+- [x] 实现 commit `381d591b` 已生成；验证记录提交后工作树保持干净，并以 `[READY][CODEX][P2-G7]` 空提交作为最终 tip。
 
 ## 当前恢复点
 
-- 状态：活动真相源、README、测试/标签和试玩脚本已完成改写；动态验证全绿，两路最终独立复核均为 P0/P1/P2 = 0/0/0。
-- 最后完成：45/45 targeted、最终 truth-source guard 9/9、12 文件 analyze 0 issue、shell/diff/活动引用扫描通过；所有审查 P2 已关闭。
-- 下一步：提交实现 commit，记录其 hash 后生成 `[READY][CODEX][P2-G7]` 空提交封签。
+- 状态：实现 commit `381d591b` 已生成；动态验证全绿，两路最终独立复核均为 P0/P1/P2 = 0/0/0，进入 READY 封签。
+- 最后完成：45/45 targeted、最终 truth-source guard 9/9、12 文件 analyze 0 issue、shell/diff/活动引用扫描通过；所有审查 P2 已关闭，验证记录已写入。
+- 下一步：追加 `[READY][CODEX][P2-G7]` 空提交，交由主控复审/整合；后续真实路径极值探针按独立任务推进。
 - 阻塞项：无。

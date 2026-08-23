@@ -31,4 +31,5 @@
 - `bash -n tools/playtest/decision_session.sh`、Markdown 非空检查、`git diff --check`：通过。
 - `rg -n 'balance_simulator_test|balance_simulator' CLAUDE.md GDD.md README.md lib test tool tools`：0 条活动引用。
 - DeepSeek V4 Flash 首轮只读审查：P0/P1 = 0/0，5 个 P2；Qwen3.8-Max 首轮只读审查：P0/P1 = 0/0，3 个 P2。已修 README 漏标、试玩步骤旧 30 关/+8.3pt 活动措辞、删除 commit 双锚点、扫描范围与冻结残留说明。DeepSeek 增量复核 P0/P1/P2 = 0/0/0；Qwen 增量复核指出的 v1.34/v1.32 跳版已按 archive 冻结边界改成同日 v1.33 in-place 订正，最终聚焦复核 P0/P1/P2 = 0/0/0。
-- 最终实现 commit 与 READY：待填。
+- 最终实现 commit：`381d591bfb2fda17f0c1600253c1a945c6e3088e`。
+- READY：本验证记录提交后的 `[READY][CODEX][P2-G7]` 空提交；该空提交不改变已验证树。
