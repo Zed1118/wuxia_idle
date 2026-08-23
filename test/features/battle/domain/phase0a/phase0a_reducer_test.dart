@@ -401,6 +401,28 @@ void main() {
       expect(result.state.player.attackCooldownRemaining, 1);
     });
 
+    test('普攻距离合同:旧 360 射程外不命中,生产 420 射程内命中', () {
+      Phase0aStepResult resolveAt({
+        required double distance,
+        required double range,
+      }) => reducePhase0aTick(
+        state: makeState(
+          enemies: [makeEnemy(id: 'e1', position: ArenaVector(distance, 0))],
+        ),
+        intents: [playerAttack(range: range)],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+
+      final outside = resolveAt(distance: 360.1, range: 360);
+      expect(outside.events.whereType<Phase0aHitLanded>(), isEmpty);
+      expect(outside.state.enemies.single.currentHealth, 60);
+
+      final inside = resolveAt(distance: 420, range: 420);
+      expect(inside.events.whereType<Phase0aHitLanded>(), hasLength(1));
+      expect(inside.state.enemies.single.currentHealth, 35);
+    });
+
     test('普攻冷却未转好被拒绝,无任何事件', () {
       final result = reducePhase0aTick(
         state: makeState(

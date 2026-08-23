@@ -518,7 +518,7 @@ phase0a_arena:
     max_y: 260.0
   player:
     move_speed: 210.0
-    attack_range: 360.0
+    attack_range: 420.0              # 普攻手感批：扩大有效接敌距离，仍由配置注入
     attack_half_arc_radians: 0.72
     attack_cooldown_seconds: 0.55
     gather_slot: gather

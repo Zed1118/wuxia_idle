@@ -465,7 +465,7 @@ void main() {
       expect(arena.arenaMinX, lessThan(arena.arenaMaxX));
       expect(arena.arenaMinY, lessThan(arena.arenaMaxY));
       expect(arena.playerMoveSpeed, greaterThan(0));
-      expect(arena.playerAttackRange, greaterThan(0));
+      expect(arena.playerAttackRange, 420);
       expect(arena.enemyMoveSpeed, greaterThan(0));
       expect(arena.basicPowerMultiplier, greaterThan(0));
       expect(arena.clearPowerMultiplier, greaterThan(0));
