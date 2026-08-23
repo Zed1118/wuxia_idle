@@ -32,12 +32,12 @@
 - [x] S2：移除反馈层重复 ticker，集中 progress 刷新并补生命周期/上限契约。
 - [x] S3：增强命中/击杀/清场 painter 的分层水墨表现，补 controller/presentation tests。
 - [x] S4：targeted tests、analyze、双常规视口 smoke，审查 diff。
-- [ ] S5：提交 `[READY]` 并确认 clean。
+- [x] S5：提交 `[READY]` 并确认 clean。
 
 ## 当前恢复点
 
-- 状态：实现与验证完成，待修正提交与 READY 冻结。
-- 最后完成：主笔锋/清场辐射/精英环接入 `vfxStrokeAlpha`；精英死亡墨散固定上限显式 token 化；alpha 单调与 painter 使用契约已补。
-- 下一步：提交视觉审查修正，追加 `[READY]` 标记，确认 clean。
-- 已跑验证：三文件 targeted analyze 0 issue；VFX/source/controller targeted 56 tests 全绿；整屏 battle screen 24 tests 全绿，覆盖 1280×720 与 1440×900。全仓 analyze 曾因 fresh worktree 生成依赖耗时被中断，未以全仓结果宣告通过。
+- 状态：已完成并冻结，等待主线程审查/整合。
+- 最后完成：主笔锋/清场辐射/精英环接入 `vfxStrokeAlpha`；精英死亡墨散固定上限显式 token 化；alpha 单调与 painter 使用契约已补；tip 已打 `[READY]`。
+- 下一步：主线程按 `e816880d`（帧刷新）→`91bb7438`（水墨层）→`037d736d`（平滑淡出修正）审查整合。
+- 已跑验证：三文件 targeted analyze 0 issue；VFX/source/controller 56 tests 全绿；整屏 battle screen 24 tests 全绿，覆盖 1280×720 与 1440×900。全仓 analyze 曾因 fresh worktree 生成依赖耗时被中断，未以全仓结果宣告通过。
 - 阻塞项：无。移动卡顿、普攻范围和主线小怪数量属于另行 gameplay/content 任务，不在本切片实现。
