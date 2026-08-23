@@ -7,7 +7,7 @@ resource_locks:
   full_flutter_test: 1
   build_runner: 1
   visual_window: 1
-  public_schema_owner: P2-G1-BATCH2-INTEGRATION
+  public_schema_owner: P2-G2-PRODUCTION-INTEGRATION
 
 tasks:
   - id: P2-M0-COORD
@@ -481,3 +481,56 @@ tasks:
       - test/features/battle/domain/phase0a/defense_resolution_test.dart
       - test/features/battle/domain/phase0a/defense_*allowlist_test.dart
       - docs/superpowers/plans/2026-08-23-p2-g1-c16-defense-hardening.md
+
+  - id: P2-G2-PRODUCTION-INTEGRATION
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-g2-production-integration-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-production-integration
+    status: in_progress
+    base_commit: 56450ba3
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g2-production-wiring-batch1.md
+      - docs/audit/phase2_g2_production_wiring_batch1_2026-08-23.md
+    exit_criteria:
+      - production wiring changes no Ch1 damage timing or reward behavior
+      - live and headless still share one reducer and event source
+      - blocked semantics remain documented rather than guessed
+      - integration tip is READY and main is untouched
+
+  - id: P2-G2-C02-FORWARD-FAN
+    milestone: G2
+    owner: codex_terra_medium
+    branch: codex/phase2-g2-c02-forward-fan-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-c02-forward-fan
+    status: in_progress
+    decision_ids:
+      - COMBAT-SCOPE-01
+    protected_behavior:
+      - preserve single-target distance then actor-id selection
+      - preserve guardian filtering and current zero-facing compatibility
+      - do not enable multi-target scopes
+    owned_globs:
+      - lib/features/battle/domain/phase0a/combat_geometry.dart
+      - lib/features/battle/domain/phase0a/realtime_combat_rules.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - test/features/battle/domain/phase0a/*geometry*wiring*_test.dart
+      - test/features/battle/domain/phase0a/realtime_combat_rules_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-c02-forward-fan.md
+
+  - id: P2-G2-C10-EVENT-PROJECTION
+    milestone: G2
+    owner: codex_luna_medium
+    branch: codex/phase2-g2-c10-event-projection-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-c10-event-projection
+    status: in_progress
+    protected_behavior:
+      - projection is read-only and never recomputes combat outcomes
+      - original reducer and VFX event sequence remains unchanged
+      - event identity and tie-breaks are deterministic
+    owned_globs:
+      - lib/features/battle/application/phase0a/phase0a_event_order_adapter.dart
+      - test/features/battle/application/phase0a/phase0a_event_order_adapter_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-c10-event-order-wiring.md
