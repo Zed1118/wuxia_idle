@@ -18,6 +18,17 @@ import '../../../support/test_data.dart';
 void main() {
   late Directory tempDir;
 
+  test('扫荡装配必须转发波间 policy，保持手动与 headless 同核', () {
+    final source = File(
+      'lib/features/sweep/application/phase0a_sweep_headless_runner.dart',
+    ).readAsStringSync();
+
+    expect(
+      source,
+      contains('waveTransitionPolicy: mapping.waveTransitionPolicy,'),
+    );
+  });
+
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) await loadTestGameRepository();

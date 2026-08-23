@@ -20,10 +20,10 @@ void main() {
       );
     });
 
-    test('fromYaml rejects missing or out-of-range main multiplier', () {
+    test('fromYaml 缺省保持 0.90，并拒绝越界主修系数', () {
       expect(
-        () => InnerDemonFailurePenalty.fromYaml({}),
-        throwsFormatException,
+        InnerDemonFailurePenalty.fromYaml({}).mainCultivationMultiplier,
+        0.90,
       );
       expect(
         () => InnerDemonFailurePenalty.fromYaml({

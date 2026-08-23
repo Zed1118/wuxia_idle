@@ -146,7 +146,7 @@ class MassBattleFormationModifier {
 ///
 /// `resetActionPoint=true` 让 wave 间走 tick 不快进(契 §5.5 在线 = 离线);
 /// `preserveHp` + `preserveInternalForce` 让守城压力跨 wave 累积;
-/// `preserveCooldowns=false` 给玩家下波大招机会。
+/// `preserveCooldowns=true` 让技能冷却仅按配置间歇自然推进。
 class MassBattleWaveIntermission {
   /// wave 间 actionPoint 归 0(走 tick 不快进)。
   final bool resetActionPoint;

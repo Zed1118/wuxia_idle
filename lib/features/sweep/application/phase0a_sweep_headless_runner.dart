@@ -84,6 +84,7 @@ final class Phase0aSweepHeadlessRunner {
       rng: rng,
       playerAdapter: mapping.playerAdapter,
       enemyAiAdapter: mapping.enemyAiAdapter,
+      waveTransitionPolicy: mapping.waveTransitionPolicy,
     );
     final result = await Phase0aHeadlessRunner.runToEndAsync(
       flow: flow,

@@ -270,7 +270,8 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g1-production-batch1-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-integration
-    status: in_progress
+    status: ready_candidate
+    ready_marker: "[READY][CODEX][P2-G1] 完成首批生产差距修复"
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -350,7 +351,8 @@ tasks:
     owner: codex_agent_inner_demon
     branch: codex/phase2-g1-inner-demon-cleanup-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-inner-demon-cleanup
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 8b13f6cc
     decision_ids:
       - INNER-DEMON-FAILURE-CORE-01
       - INNER-DEMON-CULTIVATION-01

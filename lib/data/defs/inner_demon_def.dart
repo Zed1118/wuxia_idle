@@ -232,11 +232,9 @@ class InnerDemonFailurePenalty {
         );
       }
     }
-    final multiplier = (y['main_cultivation_multiplier'] as num?)?.toDouble();
-    if (multiplier == null ||
-        !multiplier.isFinite ||
-        multiplier <= 0 ||
-        multiplier > 1) {
+    final multiplier =
+        (y['main_cultivation_multiplier'] as num?)?.toDouble() ?? 0.90;
+    if (!multiplier.isFinite || multiplier <= 0 || multiplier > 1) {
       throw const FormatException(
         'inner_demon.failure_penalty.main_cultivation_multiplier must be in (0,1]',
       );
