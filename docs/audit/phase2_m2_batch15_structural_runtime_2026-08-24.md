@@ -29,3 +29,7 @@
 ## 待完成验证
 
 待三来源 READY 后补充实际 Qoder/Pi 证据、来源/集成提交、联合 targeted、scoped analyze、full suite、仓库闸门、独立终审与最终 READY。
+
+## 已完成来源
+
+- R14：计划 `2f68253c`、实现 `387b44cc`、初始证据/READY 后独立复审发现两项证据 P2：canonical const 跨调用 identity 假证明与恢复点滞后。`0262adaf` 改为单次 admission 的准确异常类型/消息/零 admission，`99bddf74` / `e58d2187` 同步复审证据，新 READY `ddb931d0`；修后独立复审 P0/P1/P2=0。五文件去重 54/54、scoped analyze 0。集成提交 `7ac204e6` / `477576f9` / `faf98b48` / `6883617f` / `c6f0387b` / `9e5049cc` 的 stable patch-id 与来源逐项一致；主控复跑 54/54、analyze 0。

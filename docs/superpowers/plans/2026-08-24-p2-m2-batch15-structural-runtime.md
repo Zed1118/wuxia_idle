@@ -30,5 +30,6 @@
 - [x] 完成 Batch15 候选盘点与 R12b 只读 API 预检。
 - [x] 创建三来源 worktree 与一集成 worktree；四者完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与 dylib SHA 对齐。
 - [x] 登记 V01 / R14 / R15 与 Batch15 integration 的文件所有权、依赖和 Gate。
+- [x] R14 完成修后 READY、独立复审、稳定 patch-id 集成与主控 54/54 复跑。
 - [ ] 并行完成三来源实现、外部 CLI 证据、独立复审与 READY。
 - [ ] 主控集成、联合/full 验证、独立终审与 Batch15 READY。

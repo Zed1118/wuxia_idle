@@ -1941,8 +1941,21 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-r14-mainline-run-admission-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r14-mainline-run-admission
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7bc31c5f5463aac26e127912576350487ac0a8d3
+    implementation_commit: 387b44cc
+    tip_commit: ddb931d09bf18a5fff199ab4e4224b0ae23ffd07
+    integration_commits:
+      - 7ac204e6
+      - 477576f9
+      - faf98b48
+      - 6883617f
+      - c6f0387b
+      - 9e5049cc
+    verification:
+      targeted_tests: 54
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-G2-E01-PARTICIPATION-REQUEST
       - P2-G1-A01-CURRENT-LEADER
@@ -1987,6 +2000,13 @@ tasks:
       - P2-M2-V01-CH1-CANDIDATE-RUNTIME-CONSTRUCTION-MATRIX
       - P2-M2-R14-MAINLINE-RUN-ADMISSION
       - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
+    integration_commits:
+      - 7ac204e6
+      - 477576f9
+      - faf98b48
+      - 6883617f
+      - c6f0387b
+      - 9e5049cc
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch15-structural-runtime.md
