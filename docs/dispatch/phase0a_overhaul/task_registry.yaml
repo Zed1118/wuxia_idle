@@ -2195,8 +2195,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch16-transactional-host-ready-seams-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch16-transactional-host-ready-seams
-    status: in_progress
+    status: ready_reviewed
     base_commit: cf6a4ab61c06e3141658b37473cfa23b838342db
+    validated_commit: 28ecca17b6b3bf7cb882c4400a57018a3dd8fd7b
+    ready_marker: "[READY][CODEX][P2-M2-BATCH16] 冻结事务化宿主就绪接缝"
     source_tasks:
       - P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
       - P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
@@ -2225,6 +2227,13 @@ tasks:
       - b60740d3
       - 06e34157
       - 8262fafd
+    verification:
+      joint_targeted_tests: 261
+      full_tests: 5035
+      changed_dart_items: 10
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch16-transactional-host-ready-seams.md

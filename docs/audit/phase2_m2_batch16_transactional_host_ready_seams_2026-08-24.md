@@ -30,12 +30,17 @@
 ## 集成验证
 
 - 主控逐项重算 22 个 R12b/R12c/R17/R18 source→integration stable patch-id，四来源 owned blobs 与各自 READY tip 完全一致。
-- 五个变更测试文件去重联合 targeted 261/261 PASS；changed-Dart scoped analyze 10 items / 0 issue；format 10 files / 0 changed。
+- 影响集去重联合 targeted 261/261 PASS；changed-Dart scoped analyze 10 items / 0 issue；format 10 files / 0 changed。
 - `flutter test --no-pub --reporter compact` 从 clean integration 起点一次完成 5035/5035 PASS；未并行启动第二个 full 进程。
 - registry 87 tasks / 0 duplicate IDs / 0 dangling prerequisite IDs；17-file path guard、`git diff --check` 与 clean status 通过。
 - main 与 origin/main 终验仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 - Codex 独立代码终审重跑五个变更测试文件 55/55、scoped analyze 10 items / 0 issue、format 10 files / 0 changed，结论 P0/P1/P2=0；确认 R12b 事务顺序、R12c pair 透传、R17 单一 settlement core、R18 私有 successor 与全部 Gate 均保持。
-- 最终 registry/audit/plan 与 READY marker 的 docs-only 闭环仍待本验证提交后复核，因此此处不提前宣称 READY。
+- 验证提交冻结为 `28ecca17b6b3bf7cb882c4400a57018a3dd8fd7b`；registry/audit/plan 随后的 docs-only 闭环由同一独立审查者复核，READY marker 精确为 `[READY][CODEX][P2-M2-BATCH16] 冻结事务化宿主就绪接缝`。
+
+## 最终结论
+
+- Batch16 只冻结事务化 host-neutral 接缝；不宣称 candidate 已生产晋升、objective 已可执行、production host 已切换、durable CAS/outbox 已实现或 Profile/G2/真人验收已完成。
+- 最终独立审查 P0/P1/P2=0 后追加空 READY marker；后续批次继续从 READY tip 建独立 worktree，main/origin main 保持不动。
 
 ## 已完成来源
 

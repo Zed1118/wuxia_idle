@@ -42,4 +42,4 @@
 - [x] 主控完成 22 个来源提交 stable patch-id / owned blob 核验；17-file path guard、`git diff --check`、clean status 与 main refs 均通过。
 - [x] 集成态去重联合 targeted 261/261、changed-Dart scoped analyze 10 items / 0 issue、format 10 files / 0 changed、registry 87 tasks / 0 duplicate / 0 dangling、full 5035/5035 PASS。
 - [x] 独立代码终审复跑五个变更测试文件 55/55，P0/P1/P2=0；未发现 host/candidate/tuning/Profile/G2 越权。
-- [ ] 冻结最终 registry/audit、完成 docs-only 终审并追加 Batch16 READY。
+- [x] 最终 registry/audit/plan 已冻结到验证提交 `28ecca17`，docs-only 终审与 READY marker 一致性复核通过后追加 Batch16 READY。
