@@ -1919,8 +1919,19 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-v01-ch1-candidate-runtime-construction-matrix-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-v01-ch1-candidate-runtime-construction-matrix
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7bc31c5f5463aac26e127912576350487ac0a8d3
+    implementation_commit: 934d0cfd
+    tip_commit: bb26671b2c727f735be6a114dc40f1ed235a5b7d
+    integration_commits:
+      - c0d4e34a
+      - fc0694b6
+      - a152f164
+      - b88b16bd
+    verification:
+      targeted_tests: 51
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-D01-CH1-CANDIDATE-CATALOG
       - P2-M2-R10-STAGE-ENCOUNTER-ROUTE-SELECTOR
@@ -1985,6 +1996,10 @@ tasks:
       - fc55be7d
       - 31f3fab1
       - 9c23496f
+      - c0d4e34a
+      - fc0694b6
+      - a152f164
+      - b88b16bd
     verification:
       targeted_tests: 65
       scoped_analyze_issues: 0

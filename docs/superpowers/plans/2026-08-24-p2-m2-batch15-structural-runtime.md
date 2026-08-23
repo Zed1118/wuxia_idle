@@ -32,5 +32,6 @@
 - [x] 登记 V01 / R14 / R15 与 Batch15 integration 的文件所有权、依赖和 Gate。
 - [x] R14 完成修后 READY、独立复审、稳定 patch-id 集成与主控 54/54 复跑。
 - [x] R15 完成 Pi/DeepSeek 两轮只读审查、来源 65/65 与 Codex 独立终审，五个非空提交已集成。
-- [ ] 并行完成三来源实现、外部 CLI 证据、独立复审与 READY。
+- [x] V01 完成 Qoder/Qwen3.8-Max 两轮只读审查、两项 P2 修正与 51/51 复验，四个非空提交已按 stable patch-id 集成。
+- [x] 三来源实现、外部 CLI 证据、独立复审与 READY 全部完成。
 - [ ] 主控集成、联合/full 验证、独立终审与 Batch15 READY。
