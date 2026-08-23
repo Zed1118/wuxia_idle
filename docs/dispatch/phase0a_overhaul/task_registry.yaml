@@ -51,7 +51,8 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m0-qoder-baseline-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-qoder
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 37da1d57
     owned_files:
       - docs/audit/phase2_m0_performance_and_test_baseline_2026-08-23.md
       - docs/superpowers/plans/2026-08-23-p2-m0-qoder-baseline.md
