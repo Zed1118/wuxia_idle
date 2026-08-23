@@ -1,0 +1,61 @@
+# CANDIDATE-ONLY NON-PRODUCTION fixture; never load from a production path.
+# Every numeric value in this file is an unfrozen review candidate; not frozen.
+archetypes:
+  - id: candidate_ch1_bandits
+    variants:
+      - role_id: bandit_blade
+        attack_token_kind: melee
+        hp_multiplier: 1.0
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.0
+        attack_set_id: candidate_ch1_attack_set_blade
+        attack_tag_ids: [candidate_ch1_attack_tag_melee]
+        posture_profile_id: candidate_ch1_posture_blade
+        drop_group_id: candidate_ch1_drop_group_bandit_encounter
+        sfx_group_id: candidate_ch1_sfx_blade
+        visual_variant_ids:
+          - candidate_ch1_visual_blade_a
+          - candidate_ch1_visual_blade_b
+      - role_id: bandit_crossbow
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.0
+        defense_multiplier: 0.8
+        speed_multiplier: 1.0
+        attack_set_id: candidate_ch1_attack_set_crossbow
+        attack_tag_ids: [candidate_ch1_attack_tag_projectile]
+        posture_profile_id: candidate_ch1_posture_crossbow
+        drop_group_id: candidate_ch1_drop_group_bandit_encounter
+        sfx_group_id: candidate_ch1_sfx_crossbow
+        visual_variant_ids:
+          - candidate_ch1_visual_crossbow_a
+          - candidate_ch1_visual_crossbow_b
+      - role_id: bandit_rope_raider
+        attack_token_kind: charge
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.1
+        attack_set_id: candidate_ch1_attack_set_rope_raider
+        attack_tag_ids: [candidate_ch1_attack_tag_charge]
+        posture_profile_id: candidate_ch1_posture_rope_raider
+        drop_group_id: candidate_ch1_drop_group_bandit_encounter
+        sfx_group_id: candidate_ch1_sfx_rope_raider
+        visual_variant_ids:
+          - candidate_ch1_visual_rope_raider_a
+          - candidate_ch1_visual_rope_raider_b
+      - role_id: bandit_gong_leader
+        attack_token_kind: support
+        hp_multiplier: 1.3
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: candidate_ch1_attack_set_gong_leader
+        attack_tag_ids: [candidate_ch1_attack_tag_support]
+        posture_profile_id: candidate_ch1_posture_gong_leader
+        drop_group_id: candidate_ch1_drop_group_bandit_encounter
+        sfx_group_id: candidate_ch1_sfx_gong_leader
+        visual_variant_ids:
+          - candidate_ch1_visual_gong_leader_a
+          - candidate_ch1_visual_gong_leader_b
