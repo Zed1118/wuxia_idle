@@ -3,7 +3,7 @@ import 'dart:collection';
 Set<String> _immutableIds(Iterable<String> values, String name) {
   final ids = values.toList(growable: false);
   if (ids.isEmpty ||
-      ids.any((id) => id.trim().isEmpty) ||
+      ids.any((id) => id.trim().isEmpty || id.contains(RegExp(r'\s'))) ||
       ids.toSet().length != ids.length) {
     throw ArgumentError.value(values, name, 'must be unique and non-empty');
   }
@@ -11,14 +11,14 @@ Set<String> _immutableIds(Iterable<String> values, String name) {
 }
 
 String _validatedEventId(String value) {
-  if (value.trim().isEmpty) {
+  if (value.trim().isEmpty || value.contains(RegExp(r'\s'))) {
     throw ArgumentError.value(value, 'eventId');
   }
   return value;
 }
 
 String _validatedPayload(String value, String name) {
-  if (value.trim().isEmpty) {
+  if (value.trim().isEmpty || value.contains(RegExp(r'\s'))) {
     throw ArgumentError.value(value, name);
   }
   return value;
@@ -31,30 +31,40 @@ String _eventId(String? supplied, String kind, String payload, String name) {
 
 /// Content-neutral events consumed by encounter objectives.
 sealed class EncounterObjectiveEvent {
-  const EncounterObjectiveEvent(this.id);
+  const EncounterObjectiveEvent(this.kind, this.id);
+
+  final String kind;
 
   /// A stable caller-provided key. Replaying a key is a no-op.
   final String id;
+
+  String get dedupeKey => '$kind:$id';
 }
 
 final class TargetDefeated extends EncounterObjectiveEvent {
   TargetDefeated(String targetId, {String? eventId})
     : targetId = _validatedPayload(targetId, 'targetId'),
-      super(_eventId(eventId, 'defeat', targetId, 'targetId'));
+      super(
+        'targetDefeated',
+        _eventId(eventId, 'defeat', targetId, 'targetId'),
+      );
   final String targetId;
 }
 
 final class AnchorDestroyed extends EncounterObjectiveEvent {
   AnchorDestroyed(String anchorId, {String? eventId})
     : anchorId = _validatedPayload(anchorId, 'anchorId'),
-      super(_eventId(eventId, 'destroy', anchorId, 'anchorId'));
+      super(
+        'anchorDestroyed',
+        _eventId(eventId, 'destroy', anchorId, 'anchorId'),
+      );
   final String anchorId;
 }
 
 final class EntityDefended extends EncounterObjectiveEvent {
   EntityDefended(String entityId, this.duration, {required String eventId})
     : entityId = _validatedPayload(entityId, 'entityId'),
-      super(_validatedEventId(eventId)) {
+      super('entityDefended', _validatedEventId(eventId)) {
     if (duration < Duration.zero) {
       throw ArgumentError.value(duration, 'duration');
     }
@@ -65,7 +75,7 @@ final class EntityDefended extends EncounterObjectiveEvent {
 
 final class TimeElapsed extends EncounterObjectiveEvent {
   TimeElapsed(this.duration, {required String eventId})
-    : super(_validatedEventId(eventId)) {
+    : super('timeElapsed', _validatedEventId(eventId)) {
     if (duration < Duration.zero) {
       throw ArgumentError.value(duration, 'duration');
     }
@@ -76,34 +86,40 @@ final class TimeElapsed extends EncounterObjectiveEvent {
 final class CheckpointReached extends EncounterObjectiveEvent {
   CheckpointReached(String checkpointId, {String? eventId})
     : checkpointId = _validatedPayload(checkpointId, 'checkpointId'),
-      super(_eventId(eventId, 'checkpoint', checkpointId, 'checkpointId'));
+      super(
+        'checkpointReached',
+        _eventId(eventId, 'checkpoint', checkpointId, 'checkpointId'),
+      );
   final String checkpointId;
 }
 
 final class MarkerTouched extends EncounterObjectiveEvent {
   MarkerTouched(String markerId, {String? eventId})
     : markerId = _validatedPayload(markerId, 'markerId'),
-      super(_eventId(eventId, 'marker', markerId, 'markerId'));
+      super('markerTouched', _eventId(eventId, 'marker', markerId, 'markerId'));
   final String markerId;
 }
 
 final class TargetPursued extends EncounterObjectiveEvent {
   TargetPursued(String targetId, {String? eventId})
     : targetId = _validatedPayload(targetId, 'targetId'),
-      super(_eventId(eventId, 'pursue', targetId, 'targetId'));
+      super('targetPursued', _eventId(eventId, 'pursue', targetId, 'targetId'));
   final String targetId;
 }
 
 final class CommanderDefeated extends EncounterObjectiveEvent {
   CommanderDefeated(String commanderId, {String? eventId})
     : commanderId = _validatedPayload(commanderId, 'commanderId'),
-      super(_eventId(eventId, 'commander', commanderId, 'commanderId'));
+      super(
+        'commanderDefeated',
+        _eventId(eventId, 'commander', commanderId, 'commanderId'),
+      );
   final String commanderId;
 }
 
 /// Immutable reducer state. Sets are snapshots and cannot be mutated by a caller.
 final class EncounterObjectiveProgress {
-  EncounterObjectiveProgress({
+  EncounterObjectiveProgress._({
     required this.completed,
     required Set<String> satisfied,
     required this.elapsed,
@@ -115,7 +131,7 @@ final class EncounterObjectiveProgress {
          Set<String>.unmodifiable(processedEventIds),
        );
 
-  factory EncounterObjectiveProgress.empty() => EncounterObjectiveProgress(
+  factory EncounterObjectiveProgress.empty() => EncounterObjectiveProgress._(
     completed: false,
     satisfied: const <String>{},
     elapsed: Duration.zero,
@@ -127,12 +143,12 @@ final class EncounterObjectiveProgress {
   final Duration elapsed;
   final UnmodifiableSetView<String> processedEventIds;
 
-  EncounterObjectiveProgress copyWith({
+  EncounterObjectiveProgress _copyWith({
     bool? completed,
     Set<String>? satisfied,
     Duration? elapsed,
     Set<String>? processedEventIds,
-  }) => EncounterObjectiveProgress(
+  }) => EncounterObjectiveProgress._(
     completed: completed ?? this.completed,
     satisfied: satisfied ?? this.satisfied,
     elapsed: elapsed ?? this.elapsed,
@@ -178,16 +194,19 @@ sealed class EncounterObjective {
     EncounterObjectiveProgress progress,
     EncounterObjectiveEvent event,
   ) {
-    if (progress.completed || progress.processedEventIds.contains(event.id)) {
+    if (progress.completed ||
+        progress.processedEventIds.contains(event.dedupeKey)) {
       return progress;
     }
-    return progress.copyWith(
-      processedEventIds: {...progress.processedEventIds, event.id},
+    return progress._copyWith(
+      processedEventIds: {...progress.processedEventIds, event.dedupeKey},
     );
   }
 
   void _requireId(String value, String name) {
-    if (value.trim().isEmpty) throw ArgumentError.value(value, name);
+    if (value.trim().isEmpty || value.contains(RegExp(r'\s'))) {
+      throw ArgumentError.value(value, name);
+    }
   }
 
   void _requireDuration(Duration value, String name) {
@@ -205,7 +224,7 @@ final class DefeatTargetsObjective extends EncounterObjective {
     if (identical(next, p)) return p;
     if (e is TargetDefeated && targetIds.contains(e.targetId)) {
       final done = {...next.satisfied, e.targetId};
-      return next.copyWith(
+      return next._copyWith(
         satisfied: done,
         completed: done.length == targetIds.length,
       );
@@ -224,7 +243,7 @@ final class DestroyAnchorsObjective extends EncounterObjective {
     if (identical(next, p)) return p;
     if (e is AnchorDestroyed && anchorIds.contains(e.anchorId)) {
       final done = {...next.satisfied, e.anchorId};
-      return next.copyWith(
+      return next._copyWith(
         satisfied: done,
         completed: done.length == anchorIds.length,
       );
@@ -246,7 +265,7 @@ final class DefendEntityObjective extends EncounterObjective {
     if (identical(next, p)) return p;
     if (e is EntityDefended && e.entityId == entityId) {
       final elapsed = next.elapsed + e.duration;
-      return next.copyWith(
+      return next._copyWith(
         elapsed: elapsed,
         completed: elapsed >= requiredDuration,
       );
@@ -267,7 +286,7 @@ final class SurviveDurationObjective extends EncounterObjective {
     if (e is TimeElapsed) {
       if (e.duration <= Duration.zero) return next;
       final elapsed = next.elapsed + e.duration;
-      return next.copyWith(
+      return next._copyWith(
         elapsed: elapsed,
         completed: elapsed >= requiredDuration,
       );
@@ -288,7 +307,7 @@ final class ReachCheckpointObjective extends EncounterObjective {
     if (identical(next, p)) return p;
     if (e is CheckpointReached && checkpointIds.contains(e.checkpointId)) {
       final done = {...next.satisfied, e.checkpointId};
-      return next.copyWith(
+      return next._copyWith(
         satisfied: done,
         completed: done.length == checkpointIds.length,
       );
@@ -307,7 +326,7 @@ final class TouchMarkersObjective extends EncounterObjective {
     if (identical(next, p)) return p;
     if (e is MarkerTouched && markerIds.contains(e.markerId)) {
       final done = {...next.satisfied, e.markerId};
-      return next.copyWith(
+      return next._copyWith(
         satisfied: done,
         completed: done.length == markerIds.length,
       );
@@ -326,7 +345,7 @@ final class PursueTargetObjective extends EncounterObjective {
     final next = _guard(p, e);
     if (identical(next, p)) return p;
     return e is TargetPursued && e.targetId == targetId
-        ? next.copyWith(satisfied: {targetId}, completed: true)
+        ? next._copyWith(satisfied: {targetId}, completed: true)
         : next;
   }
 }
@@ -341,7 +360,7 @@ final class DefeatCommanderObjective extends EncounterObjective {
     final next = _guard(p, e);
     if (identical(next, p)) return p;
     return e is CommanderDefeated && e.commanderId == commanderId
-        ? next.copyWith(satisfied: {commanderId}, completed: true)
+        ? next._copyWith(satisfied: {commanderId}, completed: true)
         : next;
   }
 }

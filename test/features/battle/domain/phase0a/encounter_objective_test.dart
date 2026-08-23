@@ -94,6 +94,35 @@ void main() {
     for (final makeEvent in invalidEvents) {
       expect(makeEvent, throwsArgumentError);
     }
+    final whitespaceEvents = <Object Function()>[
+      () => TargetDefeated('x', eventId: 'event id'),
+      () => AnchorDestroyed('x', eventId: '\tevent'),
+      () => EntityDefended('x', Duration.zero, eventId: 'event\n'),
+      () => CheckpointReached('x', eventId: 'event id'),
+      () => MarkerTouched('x', eventId: 'event id'),
+      () => TargetPursued('x', eventId: 'event id'),
+      () => CommanderDefeated('x', eventId: 'event id'),
+      () => TargetDefeated('x id'),
+      () => AnchorDestroyed('x id'),
+      () => EntityDefended('x id', Duration.zero, eventId: 'e'),
+      () => CheckpointReached('x id'),
+      () => MarkerTouched('x id'),
+      () => TargetPursued('x id'),
+      () => CommanderDefeated('x id'),
+    ];
+    for (final makeEvent in whitespaceEvents) {
+      expect(makeEvent, throwsArgumentError);
+    }
+    expect(() => DefeatTargetsObjective(const ['x id']), throwsArgumentError);
+    expect(() => DestroyAnchorsObjective(const ['x id']), throwsArgumentError);
+    expect(() => ReachCheckpointObjective(const ['x id']), throwsArgumentError);
+    expect(() => TouchMarkersObjective(const ['x id']), throwsArgumentError);
+    expect(
+      () => DefendEntityObjective('x id', const Duration(seconds: 1)),
+      throwsArgumentError,
+    );
+    expect(() => PursueTargetObjective('x id'), throwsArgumentError);
+    expect(() => DefeatCommanderObjective('x id'), throwsArgumentError);
   });
 
   test(
@@ -154,4 +183,16 @@ void main() {
       expect(replayed.completed, isFalse);
     },
   );
+
+  test('replay keys are isolated by stable event kind', () {
+    final objective = DestroyAnchorsObjective(const ['x']);
+    var state = objective.initialProgress;
+    state = objective.advance(state, TargetDefeated('x', eventId: 'same'));
+    state = objective.advance(state, AnchorDestroyed('x', eventId: 'same'));
+    expect(state.completed, isTrue);
+    expect(state.processedEventIds, {
+      'targetDefeated:same',
+      'anchorDestroyed:same',
+    });
+  });
 }
