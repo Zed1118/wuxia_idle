@@ -1975,8 +1975,20 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r15-mentor-insight-stage-occupancy-runtime-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r15-mentor-insight-stage-occupancy-runtime
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7bc31c5f5463aac26e127912576350487ac0a8d3
+    implementation_commit: a29206d5
+    tip_commit: 66d9a5e1b2e9d18dc19b0c1c0f1b3688dd28cfff
+    integration_commits:
+      - 30d3fbc8
+      - 04e7f984
+      - fc55be7d
+      - 31f3fab1
+      - 9c23496f
+    verification:
+      targeted_tests: 65
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
     owned_files:
@@ -2007,6 +2019,11 @@ tasks:
       - 6883617f
       - c6f0387b
       - 9e5049cc
+      - 30d3fbc8
+      - 04e7f984
+      - fc55be7d
+      - 31f3fab1
+      - 9c23496f
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch15-structural-runtime.md

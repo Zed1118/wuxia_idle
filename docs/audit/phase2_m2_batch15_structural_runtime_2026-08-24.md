@@ -33,3 +33,4 @@
 ## 已完成来源
 
 - R14：计划 `2f68253c`、实现 `387b44cc`、初始证据/READY 后独立复审发现两项证据 P2：canonical const 跨调用 identity 假证明与恢复点滞后。`0262adaf` 改为单次 admission 的准确异常类型/消息/零 admission，`99bddf74` / `e58d2187` 同步复审证据，新 READY `ddb931d0`；修后独立复审 P0/P1/P2=0。五文件去重 54/54、scoped analyze 0。集成提交 `7ac204e6` / `477576f9` / `faf98b48` / `6883617f` / `c6f0387b` / `9e5049cc` 的 stable patch-id 与来源逐项一致；主控复跑 54/54、analyze 0。
+- R15：计划 `a10edae6`、Pi/API 证据 `535b59e2`、红测 `cfe1e5c7`、实现 `a29206d5`、验收证据 `dfde55cb`，来源 READY `66d9a5e1`。Pi 0.84.1 使用精确 `deepseek/deepseek-v4-flash`、thinking `high`、只读工具完成设计与终审，两轮均 PASS；Codex 独立复审 P0/P1/P2=0。四文件去重 65/65、scoped analyze 0、format/diff/path/status clean。集成提交 `30d3fbc8` / `04e7f984` / `fc55be7d` / `31f3fab1` / `9c23496f` 保留来源内容；production host、persistence、共享占用反向接线、成长 cap/比例与 durable claim 继续 Gate。
