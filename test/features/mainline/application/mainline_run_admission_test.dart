@@ -105,23 +105,28 @@ void main() {
   });
 
   group('delegation and failure', () {
-    test('policy rejection propagates as the exact error object', () {
-      final request = _request();
-      final policyError = _captureError(
-        () => MainlineParticipationPolicy.resolveParticipant(
-          request: request,
-          currentLeaderId: 7,
-          requestedIdleEligible: false,
-        ),
-      );
+    test(
+      'policy rejection preserves its type and message with no admission',
+      () {
+        final request = _request();
+        MainlineRunAdmission? published;
 
-      final admissionError = _captureError(
-        () => _admit(request, requestedIdleEligible: false),
-      );
+        final admissionError = _captureError(
+          () => published = _admit(request, requestedIdleEligible: false),
+        );
 
-      expect(admissionError, same(policyError));
-      expect(admissionError, isA<MainlineParticipationRefusedError>());
-    });
+        expect(
+          admissionError,
+          isA<MainlineParticipationRefusedError>().having(
+            (error) => error.message,
+            'message',
+            'Visible replay requires the requested character to be '
+                'eligible and idle; no leader fallback',
+          ),
+        );
+        expect(published, isNull);
+      },
+    );
 
     test(
       'policy runs before MainlineRun validation and no fallback occurs',
