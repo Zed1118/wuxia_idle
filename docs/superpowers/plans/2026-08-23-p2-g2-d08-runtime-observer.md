@@ -32,9 +32,9 @@ fork 不丢 observer、出生宽限 gate 先于 observer，以及 observe-only �
 
 ## 当前恢复点
 
-- 状态：已完成，待提交 READY 标记。
+- 状态：已完成，外部 READY `cbb1147e`，集成提交 `07b04075`。
 - 最后完成：真实 AttackToken observer 五拍回归与精确 RNG 尾值断言。
-- 下一步：提交实现 commit，再追加 `[READY]` 空提交。
+- 下一步：由 Batch5 主控完成最终审计与 READY 封签。
 - 已跑验证：`dart format`；targeted test 1/1；scoped analyze 0 issue；
   `git diff --check` 通过。
 - 阻塞项：无。

@@ -21,17 +21,17 @@
 
 ## 验收 checklist
 
-- [ ] encounter 全 actor 真实快照覆盖，missing/extra/playerId/move-binding 异常在首拍前失败。
-- [ ] 真实 damage adapter 产生的伤害与 direct adapter 同 seed 对齐，RNG 不按敌人或拍重置。
-- [ ] warning/entry/grace/kill/reinforcement/terminal 通过 assembler 入口完成，不只测手工 session fixture。
-- [ ] observe-only observer 连续多拍存活，只观察 grace gate 后 intents，不改 events/state/RNG。
-- [ ] existing assembler、wave、headless、retry、mainline 回归继续通过。
-- [ ] 不改 mapper/stage data/host routing/tuning/UI/reward/injury/save。
-- [ ] 主控 diff 复审、targeted tests、scoped analyze、`git diff --check` 与独立审查通过。
+- [x] encounter 全 actor 真实快照覆盖，missing/extra/playerId/move-binding 异常在首拍前失败。
+- [x] 真实 damage adapter 产生的伤害与 direct adapter 同 seed 对齐，RNG 不按敌人或拍重置。
+- [x] warning/entry/grace/kill/reinforcement/terminal 通过 assembler 入口完成，不只测手工 session fixture。
+- [x] observe-only observer 连续多拍存活，只观察 grace gate 后 intents，不改 events/state/RNG。
+- [x] existing assembler、wave、headless、retry、mainline 回归继续通过。
+- [x] 不改 mapper/stage data/host routing/tuning/UI/reward/injury/save。
+- [x] 主控 diff 复审、193 项集成回归、scoped analyze、`git diff --check` 与两路独立审查通过。
 
 ## 当前恢复点
 
-- 状态：D07 已交付 READY 并集成；D08 的 Qoder CLI + `Qwen3.8-Max` 两次调用均无输出且零文件改动，已安全取消并由 Codex 子 agent 接管。
-- 最后完成：D07 外部 READY `cf91c73f`，集成提交 `68cd0c4d`；主控定向集 57/57 通过。
-- 下一步：回收 D08，对 D07/D08 做独立复审和生产回归。
-- 阻塞项：无；content loader 和黑风岭 tuning 未进入本批。
+- 状态：D07/D08 实现、集成、主控回归与两路独立终审已完成，等待 Batch5 READY tip。
+- 最后完成：D07 集成 `68cd0c4d`，D08 集成 `07b04075`；193/193 回归、范围 analyze 0 issues。
+- 下一步：封签 Batch5 READY；后续先建 encounter mapping / visual roster / migration resolver 的 host-ready 合同，不在 objective、token enforce 和预警表现未冻结时切 production host。
+- 阻塞项：无；全仓 analyze 仍只被独立 `tools/phase0minus_probe` 依赖基线污染。content loader 和黑风岭 tuning 未进入本批。

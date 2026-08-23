@@ -783,8 +783,15 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-batch5-production-assembler-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch5-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 21e17ecc
+    ready_marker: "[READY][CODEX][P2-G2-BATCH5] 完成生产遭遇装配入口"
+    verification:
+      - production encounter assembler and observer focused suites 84/84
+      - encounter legacy mainline retry and battle-screen regression 193/193
+      - scoped application domain and changed-test analyze 0 issues
+      - full analyze baseline remains isolated to phase0minus_probe dependencies
+      - two independent Codex reviews 0 P0/P1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch5-production-assembler.md
@@ -801,7 +808,10 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d07-production-assembler-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d07-production-assembler
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: cf91c73f
+    implementation_commit: 26353882
+    integration_commit: 68cd0c4d
     protected_behavior:
       - assembleEncounter accepts explicit initial state director roster combatants adapters numbers and rng
       - exactly one damage resolver and one combat session are created
@@ -813,7 +823,10 @@ tasks:
     owner: codex_luna_medium_after_qoder_timeout
     branch: codex/phase2-g2-d08-runtime-observer-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d08-runtime-observer
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: cbb1147e
+    implementation_commit: 2b93beb1
+    integration_commit: 07b04075
     external_attempt:
       provider: qoder_qwen3_8_max
       result: two no-output calls cancelled after zero file changes
