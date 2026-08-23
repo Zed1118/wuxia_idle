@@ -21,7 +21,7 @@ decisions:
   - id: COMBAT-WAVE-CD-01
     status: implementation_gap
     summary: 同关换波保留技能冷却，间歇自然推进，新关重置
-    batch_action: implement_production
+    batch_action: production_candidate_integrated
     owner_task: P2-G1-C15-WAVE-COOLDOWN
 
   - id: EXP-CONCURRENCY-01
@@ -33,7 +33,7 @@ decisions:
   - id: MAINLINE-PARTICIPANT-01
     status: frozen_with_proposed_edges
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed
-    batch_action: implement_pointer_validation_only
+    batch_action: pointer_validation_candidate_integrated
     owner_task: P2-G1-A01-CURRENT-LEADER
 
   - id: MAINLINE-REPLAY-PARTICIPANT-01
@@ -67,7 +67,7 @@ decisions:
   - id: INNER-DEMON-FAILURE-CORE-01
     status: frozen
     summary: 心魔失败不回退境界、永久内力或装备，不产生物理伤势，施加内息紊乱
-    batch_action: implement_injury_exemption
+    batch_action: injury_exemption_candidate_integrated
     owner_task: P2-G1-C17A-INNER-DEMON-INJURY
 
   - id: INNER-DEMON-CULTIVATION-01

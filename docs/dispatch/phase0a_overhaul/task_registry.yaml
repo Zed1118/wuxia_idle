@@ -286,7 +286,8 @@ tasks:
     owner: codex_agent_wave_cooldown
     branch: codex/phase2-g1-wave-cooldown-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-wave-cooldown
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 3b5e926b
     decision_ids:
       - COMBAT-WAVE-CD-01
     owned_files:
@@ -306,7 +307,8 @@ tasks:
     owner: codex_agent_inner_demon
     branch: codex/phase2-g1-inner-demon-core-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-inner-demon-core
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 673557ed
     decision_ids:
       - INNER-DEMON-FAILURE-CORE-01
       - INNER-DEMON-CULTIVATION-01
@@ -324,7 +326,8 @@ tasks:
     owner: codex_agent_current_leader
     branch: codex/phase2-g1-current-leader-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-current-leader
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: cc5a84b4
     decision_ids:
       - MAINLINE-PARTICIPANT-01
       - MAINLINE-REPLAY-PARTICIPANT-01
@@ -341,3 +344,24 @@ tasks:
       - test/features/tower/**
       - test/features/sweep/**
       - docs/superpowers/plans/2026-08-23-p2-g1-a01-current-leader.md
+
+  - id: P2-G1-C17B-INNER-DEMON-LEGACY-CLEANUP
+    milestone: M1
+    owner: codex_agent_inner_demon
+    branch: codex/phase2-g1-inner-demon-cleanup-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-inner-demon-cleanup
+    status: in_progress
+    decision_ids:
+      - INNER-DEMON-FAILURE-CORE-01
+      - INNER-DEMON-CULTIVATION-01
+    protected_behavior:
+      - preserve main_cultivation_multiplier at 0.90
+      - do not change proposed cultivation policy
+      - do not remove public settlement summary fields
+    owned_globs:
+      - data/numbers.yaml
+      - lib/data/defs/inner_demon_def.dart
+      - lib/features/inner_demon/application/inner_demon_service.dart
+      - test/features/inner_demon/**
+      - test/data/**
+      - docs/superpowers/plans/2026-08-23-p2-g1-c17b-inner-demon-legacy-cleanup.md
