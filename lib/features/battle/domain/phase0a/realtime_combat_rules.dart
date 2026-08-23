@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'arena_vector.dart';
 import 'combat_geometry.dart';
 
@@ -32,13 +34,23 @@ bool isTargetInsideStrikeArc({
   final direction = aimDirection.lengthSquared == 0
       ? const ArenaVector(1, 0)
       : aimDirection;
-  return ForwardFanScope(
+  final accepted = ForwardFanScope(
     origin: origin,
     direction: direction,
     maxDistance: range,
     halfAngleRadians: halfArcRadians,
     maxTargets: 1,
   ).hitTargets([CombatGeometryTarget('_strike_target', target)]).isNotEmpty;
+  if (!accepted) return false;
+
+  // ForwardFanScope gives shared C02 validation/geometry, then this thin
+  // compatibility refinement retains the former Phase 0A strict arc edge.
+  // C02's generic epsilon is intentionally not allowed to widen production
+  // attacks just outside their configured closed boundary.
+  final delta = target - origin;
+  if (delta.lengthSquared == 0) return true;
+  final dot = direction.normalized().dot(delta.normalized()).clamp(-1.0, 1.0);
+  return math.acos(dot) <= halfArcRadians;
 }
 
 /// 聚怪目标点:环外敌人沿来向投影到以玩家为中心的可读环上,

@@ -199,6 +199,20 @@ void main() {
         isFalse,
       );
     });
+
+    test('C02 通用容差不扩大生产严格扇角边界', () {
+      const outsideAngle = 1e-7;
+      expect(
+        isTargetInsideStrikeArc(
+          origin: origin,
+          aimDirection: aimRight,
+          target: ArenaVector(math.cos(outsideAngle), math.sin(outsideAngle)),
+          range: 1,
+          halfArcRadians: 0,
+        ),
+        isFalse,
+      );
+    });
   });
 
   group('聚怪可读环', () {
