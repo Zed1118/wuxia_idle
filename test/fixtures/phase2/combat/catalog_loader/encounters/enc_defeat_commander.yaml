@@ -1,0 +1,25 @@
+encounters:
+  - id: cl_enc_defeat_commander
+    spawn_config:
+      active_limit: 5
+      reinforcement_threshold: 2
+      entry_warning_ticks: 30
+      attack_grace_ticks: 10
+    token_budgets:
+      melee: 3
+      ranged: 1
+      charge: 2
+      support: 1
+    spawn_entries:
+      - entry_id: commander_chief
+        archetype_id: arch_commander
+        role_id: warlord
+      - entry_id: commander_guard_a
+        archetype_id: arch_bandit
+        role_id: melee_brute
+      - entry_id: commander_guard_b
+        archetype_id: arch_bandit
+        role_id: ranged_scout
+    objective:
+      kind: defeat_commander
+      commander_id: commander_chief

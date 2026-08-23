@@ -1,0 +1,9 @@
+archetypes:
+  - id: arch_totem
+    variants:
+      - role_id: ward_anchor
+        attack_token_kind: support
+        hp_multiplier: 1.6
+        attack_multiplier: 0.0
+        defense_multiplier: 0.8
+        speed_multiplier: 0.0

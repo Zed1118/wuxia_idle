@@ -1,0 +1,22 @@
+encounters:
+  - id: cl_enc_destroy_anchors
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 5
+    token_budgets:
+      melee: 1
+      ranged: 1
+      charge: 0
+      support: 2
+    spawn_entries:
+      - entry_id: totem_alpha
+        archetype_id: arch_totem
+        role_id: ward_anchor
+      - entry_id: totem_beta
+        archetype_id: arch_totem
+        role_id: ward_anchor
+    objective:
+      kind: destroy_anchors
+      anchor_ids: [totem_alpha, totem_beta]

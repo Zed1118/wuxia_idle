@@ -1,0 +1,22 @@
+encounters:
+  - id: cl_enc_pursue_target
+    spawn_config:
+      active_limit: 2
+      reinforcement_threshold: 0
+      entry_warning_ticks: 12
+      attack_grace_ticks: 2
+    token_budgets:
+      melee: 1
+      ranged: 0
+      charge: 1
+      support: 0
+    spawn_entries:
+      - entry_id: fleeing_alpha
+        archetype_id: arch_wolf
+        role_id: alpha
+      - entry_id: escort_guard
+        archetype_id: arch_bandit
+        role_id: ranged_scout
+    objective:
+      kind: pursue_target
+      target_id: fleeing_alpha

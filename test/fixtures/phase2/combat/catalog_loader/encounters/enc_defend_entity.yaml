@@ -1,0 +1,26 @@
+encounters:
+  - id: cl_enc_defend_entity
+    spawn_config:
+      active_limit: 5
+      reinforcement_threshold: 2
+      entry_warning_ticks: 25
+      attack_grace_ticks: 8
+    token_budgets:
+      melee: 4
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: wolf_pack_a
+        archetype_id: arch_wolf
+        role_id: pack_hunter
+      - entry_id: wolf_pack_b
+        archetype_id: arch_wolf
+        role_id: pack_hunter
+      - entry_id: wolf_alpha
+        archetype_id: arch_wolf
+        role_id: alpha
+    objective:
+      kind: defend_entity
+      entity_id: escorted_cart
+      required_ticks: 600

@@ -1,0 +1,27 @@
+stage_assignments:
+  - stage_id: cl_stage_01
+    migration_state: migrated
+    encounter_id: cl_enc_defeat_targets
+  - stage_id: cl_stage_02
+    migration_state: migrated
+    encounter_id: cl_enc_destroy_anchors
+  - stage_id: cl_stage_03
+    migration_state: migrated
+    encounter_id: cl_enc_defend_entity
+  - stage_id: cl_stage_04
+    migration_state: migrated
+    encounter_id: cl_enc_survive_duration
+  - stage_id: cl_stage_05
+    migration_state: migrated
+    encounter_id: cl_enc_reach_checkpoint
+  - stage_id: cl_stage_06
+    migration_state: migrated
+    encounter_id: cl_enc_touch_markers
+  - stage_id: cl_stage_07
+    migration_state: migrated
+    encounter_id: cl_enc_pursue_target
+  - stage_id: cl_stage_08
+    migration_state: migrated
+    encounter_id: cl_enc_defeat_commander
+  - stage_id: cl_stage_legacy_01
+    migration_state: legacy

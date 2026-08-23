@@ -1,0 +1,25 @@
+encounters:
+  - id: cl_enc_survive_duration
+    spawn_config:
+      active_limit: 6
+      reinforcement_threshold: 3
+      entry_warning_ticks: 15
+      attack_grace_ticks: 12
+    token_budgets:
+      melee: 4
+      ranged: 2
+      charge: 2
+      support: 1
+    spawn_entries:
+      - entry_id: bandit_brawlers
+        archetype_id: arch_bandit
+        role_id: melee_brute
+      - entry_id: bandit_archers
+        archetype_id: arch_bandit
+        role_id: ranged_scout
+      - entry_id: wolf_raider
+        archetype_id: arch_wolf
+        role_id: alpha
+    objective:
+      kind: survive_duration
+      required_ticks: 900

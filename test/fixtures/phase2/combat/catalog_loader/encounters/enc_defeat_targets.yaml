@@ -1,0 +1,25 @@
+encounters:
+  - id: cl_enc_defeat_targets
+    spawn_config:
+      active_limit: 4
+      reinforcement_threshold: 1
+      entry_warning_ticks: 30
+      attack_grace_ticks: 10
+    token_budgets:
+      melee: 3
+      ranged: 2
+      charge: 1
+      support: 0
+    spawn_entries:
+      - entry_id: bandit_brute
+        archetype_id: arch_bandit
+        role_id: melee_brute
+      - entry_id: bandit_scout
+        archetype_id: arch_bandit
+        role_id: ranged_scout
+      - entry_id: wolf_hunter
+        archetype_id: arch_wolf
+        role_id: pack_hunter
+    objective:
+      kind: defeat_targets
+      target_ids: [bandit_brute, bandit_scout]

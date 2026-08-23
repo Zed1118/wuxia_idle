@@ -1,0 +1,15 @@
+archetypes:
+  - id: arch_bandit
+    variants:
+      - role_id: melee_brute
+        attack_token_kind: melee
+        hp_multiplier: 1.0
+        attack_multiplier: 1.0
+        defense_multiplier: 0.5
+        speed_multiplier: 1.0
+      - role_id: ranged_scout
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.2
+        defense_multiplier: 0.3
+        speed_multiplier: 1.1

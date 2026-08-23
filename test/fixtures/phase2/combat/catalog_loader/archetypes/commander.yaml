@@ -1,0 +1,9 @@
+archetypes:
+  - id: arch_commander
+    variants:
+      - role_id: warlord
+        attack_token_kind: charge
+        hp_multiplier: 2.0
+        attack_multiplier: 1.8
+        defense_multiplier: 0.7
+        speed_multiplier: 0.8

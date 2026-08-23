@@ -1,0 +1,19 @@
+encounters:
+  - id: cl_enc_touch_markers
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 1
+      entry_warning_ticks: 0
+      attack_grace_ticks: 4
+    token_budgets:
+      melee: 1
+      ranged: 1
+      charge: 1
+      support: 0
+    spawn_entries:
+      - entry_id: wolf_chaser
+        archetype_id: arch_wolf
+        role_id: pack_hunter
+    objective:
+      kind: touch_markers
+      marker_ids: [marker_east, marker_west, marker_north]
