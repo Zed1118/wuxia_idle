@@ -57,4 +57,34 @@ void main() {
       TechniqueSchool.lingQiao,
     );
   });
+
+  test('Phase0A behavior requires a finite nonnegative cooldownSeconds', () {
+    final base = <String, dynamic>{
+      'id': 'phase0a',
+      'name': 'n',
+      'description': 'd',
+      'type': 'powerSkill',
+      'powerMultiplier': 1000,
+      'qiDelta': -10,
+      'cooldownTurns': 3,
+      'requiresManualTrigger': true,
+      'visualEffect': 'x',
+      'source': 'special',
+      'targetType': 'aoe',
+      'phase0aBehavior': {
+        'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
+        'effects': [
+          {'type': 'pull', 'destinationRadius': 1},
+        ],
+      },
+    };
+
+    expect(() => SkillDef.fromYaml(base), throwsA(isA<StateError>()));
+    expect(
+      () => SkillDef.fromYaml({...base, 'cooldownSeconds': -1}),
+      throwsA(isA<StateError>()),
+    );
+    final skill = SkillDef.fromYaml({...base, 'cooldownSeconds': 2.5});
+    expect(skill.cooldownSeconds, 2.5);
+  });
 }

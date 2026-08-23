@@ -36,6 +36,7 @@ skills:
     powerMultiplier: 0
     qiDelta: -25
     cooldownTurns: 5
+    cooldownSeconds: 5
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: phase0a_gather
@@ -53,6 +54,7 @@ skills:
     powerMultiplier: 1500
     qiDelta: -50
     cooldownTurns: 8
+    cooldownSeconds: 8
     requiresManualTrigger: true
     parentTechniqueDefId: null
     visualEffect: phase0a_clear

@@ -41,6 +41,15 @@ class SkillDef {
 
   /// Positive = generate qi, zero = neutral, negative = spend qi.
   final int qiDelta;
+
+  /// Authoritative real-time cooldown for Phase 0A consumers, expressed in
+  /// seconds.  It stays nullable while C11A inventories the legacy
+  /// turn-based consumers; every Phase 0A behavior must provide it.
+  final double? cooldownSeconds;
+
+  /// Legacy turn-based cooldown.  C11A must not add new Phase 0A reads of
+  /// this field; the remaining role-dependent adapters are recorded in the
+  /// C11 plan until their seconds mapping is explicitly decided.
   final int cooldownTurns;
   final bool requiresManualTrigger;
   final String? parentTechniqueDefId;
@@ -110,6 +119,7 @@ class SkillDef {
     required this.powerMultiplier,
     int? qiDelta,
     @Deprecated('请使用 qiDelta') int? internalForceCost,
+    this.cooldownSeconds,
     required this.cooldownTurns,
     required this.requiresManualTrigger,
     this.parentTechniqueDefId,
@@ -150,6 +160,25 @@ class SkillDef {
       tier == null || realmTier.index >= tier! - 1;
 
   factory SkillDef.fromYaml(Map<String, dynamic> y) {
+    final rawCooldownSeconds = y['cooldownSeconds'];
+    if (rawCooldownSeconds != null &&
+        (rawCooldownSeconds is! num ||
+            !rawCooldownSeconds.isFinite ||
+            rawCooldownSeconds < 0)) {
+      throw StateError(
+        'SkillDef ${y['id']}: cooldownSeconds must be finite and nonnegative',
+      );
+    }
+    final phase0aBehavior = y['phase0aBehavior'] == null
+        ? null
+        : Phase0aSkillBehavior.fromYaml(
+            Map<String, dynamic>.from(y['phase0aBehavior'] as Map),
+          );
+    if (phase0aBehavior != null && rawCooldownSeconds == null) {
+      throw StateError(
+        'SkillDef ${y['id']}: Phase0A behavior requires cooldownSeconds',
+      );
+    }
     return SkillDef(
       id: y['id'] as String,
       name: y['name'] as String,
@@ -159,6 +188,7 @@ class SkillDef {
       qiDelta: y.containsKey('qiDelta')
           ? (y['qiDelta'] as num).toInt()
           : -((y['internalForceCost'] as num).toInt()),
+      cooldownSeconds: (rawCooldownSeconds as num?)?.toDouble(),
       cooldownTurns: (y['cooldownTurns'] as num).toInt(),
       requiresManualTrigger: y['requiresManualTrigger'] as bool,
       parentTechniqueDefId: y['parentTechniqueDefId'] as String?,
@@ -187,11 +217,7 @@ class SkillDef {
           : TargetType.single,
       defenseBreakPct: (y['defenseBreakPct'] as num?)?.toDouble() ?? 0.0,
       qiDrainPct: (y['qiDrainPct'] as num?)?.toDouble() ?? 0.0,
-      phase0aBehavior: y['phase0aBehavior'] == null
-          ? null
-          : Phase0aSkillBehavior.fromYaml(
-              Map<String, dynamic>.from(y['phase0aBehavior'] as Map),
-            ),
+      phase0aBehavior: phase0aBehavior,
     );
   }
 

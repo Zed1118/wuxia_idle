@@ -7,6 +7,8 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_tactical_
 SkillDef tacticalSkill({
   required String id,
   required Phase0aSkillBehavior behavior,
+  double? cooldownSeconds = 3,
+  int cooldownTurns = 3,
 }) => SkillDef(
   id: id,
   name: id,
@@ -14,7 +16,8 @@ SkillDef tacticalSkill({
   type: SkillType.powerSkill,
   powerMultiplier: 0,
   qiDelta: -10,
-  cooldownTurns: 3,
+  cooldownSeconds: cooldownSeconds,
+  cooldownTurns: cooldownTurns,
   requiresManualTrigger: true,
   visualEffect: '',
   source: SkillSource.special,
@@ -149,6 +152,41 @@ void main() {
         kind: Phase0aTacticalSkillKind.clear,
         slot: 'clear',
         skill: tacticalSkill(id: 'clear_no_break', behavior: noBreak),
+      ),
+      throwsStateError,
+    );
+  });
+
+  test('tactical binding reads explicit seconds instead of legacy turns', () {
+    final behavior = Phase0aSkillBehavior.fromYaml({
+      'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
+      'effects': [
+        {'type': 'pull', 'destinationRadius': 1},
+      ],
+    });
+    final skill = tacticalSkill(
+      id: 'explicit_seconds',
+      behavior: behavior,
+      cooldownSeconds: 2.5,
+      cooldownTurns: 99,
+    );
+    expect(
+      Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.gather,
+        slot: 'gather',
+        skill: skill,
+      ).cooldownSeconds,
+      2.5,
+    );
+    expect(
+      () => Phase0aTacticalSkillBinding(
+        kind: Phase0aTacticalSkillKind.gather,
+        slot: 'gather',
+        skill: tacticalSkill(
+          id: 'missing_seconds',
+          behavior: behavior,
+          cooldownSeconds: null,
+        ),
       ),
       throwsStateError,
     );

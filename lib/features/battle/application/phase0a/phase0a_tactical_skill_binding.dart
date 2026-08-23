@@ -25,7 +25,9 @@ final class Phase0aTacticalSkillBinding {
     if (skill.source != SkillSource.special) {
       throw StateError('${skill.id} tactical behavior requires special source');
     }
-    if (skill.qiDelta > 0 || skill.cooldownTurns < 0) {
+    if (skill.qiDelta > 0 ||
+        skill.cooldownSeconds == null ||
+        skill.cooldownSeconds! < 0) {
       throw StateError('${skill.id} has unsupported tactical qi/cooldown');
     }
     final effectTypes = behavior.effects.map((effect) => effect.type).toSet();
@@ -62,7 +64,6 @@ final class Phase0aTacticalSkillBinding {
   int get breakPower =>
       behavior.effectOf(Phase0aSkillEffectType.breakPower)?.points ?? 0;
 
-  /// Transitional tactical skills interpret legacy cooldown turns as seconds.
-  /// Numeric and enemy bindings retain their existing conversion policies.
-  double get cooldownSeconds => skill.cooldownTurns.toDouble();
+  /// Phase 0A tactical skills consume the explicit real-time definition.
+  double get cooldownSeconds => skill.cooldownSeconds!;
 }
