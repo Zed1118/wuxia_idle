@@ -92,6 +92,8 @@ void main() {
         numbers: GameRepository.instance.numbers,
         assetPath: 'data/phase0a_debug_boss_battle.yaml',
       );
+      expect(bossFixture.playerAdapter.gatherSkillBinding!.cooldownSeconds, 5);
+      expect(bossFixture.playerAdapter.clearSkillBinding!.cooldownSeconds, 8);
       final boss = bossFixture.flow.state.enemies.single;
       expect(boss.chargeCast, isNotNull);
       expect(boss.vulnerabilityMult, 0.15);

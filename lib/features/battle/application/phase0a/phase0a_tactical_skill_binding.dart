@@ -25,9 +25,11 @@ final class Phase0aTacticalSkillBinding {
     if (skill.source != SkillSource.special) {
       throw StateError('${skill.id} tactical behavior requires special source');
     }
+    final cooldownSeconds = skill.cooldownSeconds;
     if (skill.qiDelta > 0 ||
-        skill.cooldownSeconds == null ||
-        skill.cooldownSeconds! < 0) {
+        cooldownSeconds == null ||
+        !cooldownSeconds.isFinite ||
+        cooldownSeconds < 0) {
       throw StateError('${skill.id} has unsupported tactical qi/cooldown');
     }
     final effectTypes = behavior.effects.map((effect) => effect.type).toSet();
