@@ -532,6 +532,23 @@ void main() {
         ),
       );
     });
+
+    test('rejects a duplicate objective id at the second leaf path', () {
+      expect(
+        () => validateCombatEncounterSource(
+          'enc.yaml',
+          validEncounterYaml.replaceFirst(
+            'target_ids: [brute_a]',
+            'target_ids: [brute_a, brute_a]',
+          ),
+        ),
+        failsWithSource(
+          'enc.yaml',
+          'encounters[0].objective.target_ids[1]: duplicate id "brute_a"; '
+              'first declared at encounters[0].objective.target_ids[0]',
+        ),
+      );
+    });
   });
 
   group('validateCombatAssignmentSource', () {

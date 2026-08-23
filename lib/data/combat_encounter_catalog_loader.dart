@@ -98,10 +98,20 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
   }
 
   final assignments = <CombatStageEncounterAssignment>[];
-  final assignedEncounterIds = <String>{};
+  final stageOwners = <String, int>{};
+  final assignedEncounterOwners = <String, int>{};
   for (var i = 0; i < parsedAssignments.assignments.length; i++) {
     final entry = parsedAssignments.assignments[i];
     final path = 'stage_assignments[$i]';
+    final existingStageOwner = stageOwners[entry.stageId];
+    if (existingStageOwner != null) {
+      throw FormatException(
+        'combat catalog source "${manifestSource.$1}": $path.stage_id: '
+        'duplicate stage id "${entry.stageId}"; first declared at '
+        'stage_assignments[$existingStageOwner].stage_id',
+      );
+    }
+    stageOwners[entry.stageId] = i;
     final encounterId = entry.encounterId;
     if (encounterId != null) {
       if (!encounterOwners.containsKey(encounterId)) {
@@ -110,7 +120,16 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
           '$path.encounter_id: unknown encounter "$encounterId"',
         );
       }
-      assignedEncounterIds.add(encounterId);
+      final existingEncounterOwner = assignedEncounterOwners[encounterId];
+      if (existingEncounterOwner != null) {
+        throw FormatException(
+          'combat catalog source "${manifestSource.$1}": '
+          '$path.encounter_id: duplicate assigned encounter id '
+          '"$encounterId"; first declared at '
+          'stage_assignments[$existingEncounterOwner].encounter_id',
+        );
+      }
+      assignedEncounterOwners[encounterId] = i;
     }
     try {
       assignments.add(
@@ -124,8 +143,8 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
       );
     } on ArgumentError catch (e) {
       throw FormatException(
-        'combat catalog source "${manifestSource.$1}": $path: '
-        '${_argumentErrorText(e)}',
+        'combat catalog source "${manifestSource.$1}": '
+        '${_argumentErrorLeafPath(path, e)}: ${_argumentErrorMessage(e)}',
       );
     }
   }
@@ -133,7 +152,7 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
   for (final source in parsedEncounterSources) {
     for (var i = 0; i < source.encounters.length; i++) {
       final id = source.encounters[i].id;
-      if (!assignedEncounterIds.contains(id)) {
+      if (!assignedEncounterOwners.containsKey(id)) {
         throw FormatException(
           'combat catalog source "${source.sourceName}": encounters[$i]: '
           'encounter "$id" is not assigned to any stage',
@@ -161,8 +180,19 @@ CombatEnemyArchetypeDef _buildArchetype(
   int index,
 ) {
   final variants = <CombatArchetypeVariant>[];
+  final roleOwners = <String, int>{};
   for (var i = 0; i < entry.variants.length; i++) {
     final variant = entry.variants[i];
+    final existingRoleOwner = roleOwners[variant.roleId];
+    if (existingRoleOwner != null) {
+      throw FormatException(
+        'combat catalog source "$sourceName": '
+        'archetypes[$index].variants[$i].role_id: duplicate role id '
+        '"${variant.roleId}"; first declared at '
+        'archetypes[$index].variants[$existingRoleOwner].role_id',
+      );
+    }
+    roleOwners[variant.roleId] = i;
     try {
       variants.add(
         CombatArchetypeVariant(
@@ -179,7 +209,8 @@ CombatEnemyArchetypeDef _buildArchetype(
     } on ArgumentError catch (e) {
       throw FormatException(
         'combat catalog source "$sourceName": '
-        'archetypes[$index].variants[$i]: ${_argumentErrorText(e)}',
+        '${_argumentErrorLeafPath('archetypes[$index].variants[$i]', e)}: '
+        '${_argumentErrorMessage(e)}',
       );
     }
   }
@@ -187,8 +218,9 @@ CombatEnemyArchetypeDef _buildArchetype(
     return CombatEnemyArchetypeDef(id: entry.id, variants: variants);
   } on ArgumentError catch (e) {
     throw FormatException(
-      'combat catalog source "$sourceName": archetypes[$index]: '
-      '${_argumentErrorText(e)}',
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath('archetypes[$index]', e)}: '
+      '${_argumentErrorMessage(e)}',
     );
   }
 }
@@ -210,8 +242,9 @@ CombatEncounterDef _buildEncounter(
     );
   } on ArgumentError catch (e) {
     throw FormatException(
-      'combat catalog source "$sourceName": $path.spawn_config: '
-      '${_argumentErrorText(e)}',
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath('$path.spawn_config', e)}: '
+      '${_argumentErrorMessage(e)}',
     );
   }
 
@@ -225,14 +258,26 @@ CombatEncounterDef _buildEncounter(
     );
   } on ArgumentError catch (e) {
     throw FormatException(
-      'combat catalog source "$sourceName": $path.token_budgets: '
-      '${_argumentErrorText(e)}',
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath('$path.token_budgets', e)}: '
+      '${_argumentErrorMessage(e)}',
     );
   }
 
   final spawnEntries = <CombatEncounterSpawnEntry>[];
+  final entryOwners = <String, int>{};
   for (var i = 0; i < entry.spawnEntries.length; i++) {
     final spawnEntry = entry.spawnEntries[i];
+    final existingEntryOwner = entryOwners[spawnEntry.entryId];
+    if (existingEntryOwner != null) {
+      throw FormatException(
+        'combat catalog source "$sourceName": '
+        '$path.spawn_entries[$i].entry_id: duplicate spawn entry id '
+        '"${spawnEntry.entryId}"; first declared at '
+        '$path.spawn_entries[$existingEntryOwner].entry_id',
+      );
+    }
+    entryOwners[spawnEntry.entryId] = i;
     try {
       spawnEntries.add(
         CombatEncounterSpawnEntry(
@@ -243,8 +288,9 @@ CombatEncounterDef _buildEncounter(
       );
     } on ArgumentError catch (e) {
       throw FormatException(
-        'combat catalog source "$sourceName": $path.spawn_entries[$i]: '
-        '${_argumentErrorText(e)}',
+        'combat catalog source "$sourceName": '
+        '${_argumentErrorLeafPath('$path.spawn_entries[$i]', e)}: '
+        '${_argumentErrorMessage(e)}',
       );
     }
   }
@@ -254,8 +300,9 @@ CombatEncounterDef _buildEncounter(
     objective = _buildObjective(entry.objective);
   } on ArgumentError catch (e) {
     throw FormatException(
-      'combat catalog source "$sourceName": $path.objective: '
-      '${_argumentErrorText(e)}',
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath('$path.objective', e)}: '
+      '${_argumentErrorMessage(e)}',
     );
   }
 
@@ -269,7 +316,8 @@ CombatEncounterDef _buildEncounter(
     );
   } on ArgumentError catch (e) {
     throw FormatException(
-      'combat catalog source "$sourceName": $path: ${_argumentErrorText(e)}',
+      'combat catalog source "$sourceName": '
+      '${_argumentErrorLeafPath(path, e)}: ${_argumentErrorMessage(e)}',
     );
   }
 }
@@ -304,3 +352,16 @@ String _argumentErrorText(ArgumentError error) {
   final name = error.name;
   return name == null || name.isEmpty ? message : '$name: $message';
 }
+
+String _argumentErrorLeafPath(String prefix, ArgumentError error) {
+  final name = error.name;
+  if (name == null || name.isEmpty) return prefix;
+  final snakeCase = name.replaceAllMapped(
+    RegExp(r'[A-Z]'),
+    (match) => '_${match.group(0)!.toLowerCase()}',
+  );
+  return '$prefix.$snakeCase';
+}
+
+String _argumentErrorMessage(ArgumentError error) =>
+    error.message?.toString() ?? 'invalid argument';

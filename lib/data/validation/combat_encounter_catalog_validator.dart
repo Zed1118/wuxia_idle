@@ -722,10 +722,22 @@ String _requireEnum(
 
 List<String> _requireIdList(dynamic value, String path, String sourceName) {
   final list = _requireList(value, path, sourceName);
-  return [
-    for (var i = 0; i < list.length; i++)
-      _requireString(list[i], '$path[$i]', sourceName),
-  ];
+  final result = <String>[];
+  final owners = <String, int>{};
+  for (var i = 0; i < list.length; i++) {
+    final id = _requireString(list[i], '$path[$i]', sourceName);
+    final existingOwner = owners[id];
+    if (existingOwner != null) {
+      _fail(
+        sourceName,
+        '$path[$i]',
+        'duplicate id "$id"; first declared at $path[$existingOwner]',
+      );
+    }
+    owners[id] = i;
+    result.add(id);
+  }
+  return result;
 }
 
 String _typeName(dynamic value) => value?.runtimeType.toString() ?? 'null';

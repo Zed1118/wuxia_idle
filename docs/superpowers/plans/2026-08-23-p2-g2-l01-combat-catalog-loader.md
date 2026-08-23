@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：实现和主控补强完成，准备提交并做独立终审。
-- 已验证：两份 targeted tests 53/53；scoped analyze 4 文件 0 issue；`dart format` 与 `git diff --check` 通过。
-- 主控补强：所有 identifier、非有限 multiplier、migrated null encounter 与 malformed YAML 均在 source + 精确字段路径 fail closed；parsed DTO 集合不可变；重复 ID 错误同时携带当前与首次声明位置。
-- 下一步：提交实现和 READY 标记，再由独立 reviewer 检查真实 diff 与测试覆盖；通过后才允许主控整合。
+- 状态：实现和两轮主控补强完成；第一轮独立终审指出的重复 ID 叶子定位 P1 已修复，准备复审。
+- 已验证：两份 targeted tests 57/57；scoped analyze 4 文件 0 issue；`dart format` 与 `git diff --check` 通过。
+- 主控补强：所有 identifier、非有限 multiplier、migrated null encounter 与 malformed YAML 均在 source + 精确字段路径 fail closed；parsed DTO 集合不可变；archetype/encounter/role/spawn entry/objective item/stage/assignment encounter 重复均携带当前与首次声明位置；typed semantic `ArgumentError` 映射回 snake_case 叶子字段。
+- 下一步：提交修复和新的 READY 标记，由独立 reviewer 复核增量；通过后才允许主控整合。

@@ -271,6 +271,101 @@ void main() {
       );
     });
 
+    test('locates a duplicate role id at the second leaf field', () async {
+      final archetypes = await archetypeFixtureSources();
+      final bandit = archetypes.first;
+      archetypes[0] = (
+        bandit.$1,
+        bandit.$2.replaceFirst('role_id: ranged_scout', 'role_id: melee_brute'),
+      );
+      await expectLater(
+        () async => loadCombatCatalogManifest(
+          archetypeSources: archetypes,
+          encounterSources: await encounterFixtureSources(),
+          manifestSource: await fixtureSource(
+            'manifest/stage_assignments.yaml',
+          ),
+        ),
+        failsWithFragment(
+          'archetypes[0].variants[1].role_id: duplicate role id '
+          '"melee_brute"; first declared at '
+          'archetypes[0].variants[0].role_id',
+        ),
+      );
+    });
+
+    test(
+      'locates a duplicate spawn entry id at the second leaf field',
+      () async {
+        final encounters = await encounterFixtureSources();
+        final defeatTargets = encounters.first;
+        encounters[0] = (
+          defeatTargets.$1,
+          defeatTargets.$2.replaceFirst(
+            'entry_id: bandit_scout',
+            'entry_id: bandit_brute',
+          ),
+        );
+        await expectLater(
+          () async => loadCombatCatalogManifest(
+            archetypeSources: await archetypeFixtureSources(),
+            encounterSources: encounters,
+            manifestSource: await fixtureSource(
+              'manifest/stage_assignments.yaml',
+            ),
+          ),
+          failsWithFragment(
+            'encounters[0].spawn_entries[1].entry_id: duplicate spawn entry id '
+            '"bandit_brute"; first declared at '
+            'encounters[0].spawn_entries[0].entry_id',
+          ),
+        );
+      },
+    );
+
+    test('locates duplicate stage and encounter assignments', () async {
+      final manifest = await fixtureSource('manifest/stage_assignments.yaml');
+      final archetypes = await archetypeFixtureSources();
+      final encounters = await encounterFixtureSources();
+
+      await expectLater(
+        () => loadCombatCatalogManifest(
+          archetypeSources: archetypes,
+          encounterSources: encounters,
+          manifestSource: (
+            manifest.$1,
+            manifest.$2.replaceFirst(
+              'stage_id: cl_stage_02',
+              'stage_id: cl_stage_01',
+            ),
+          ),
+        ),
+        failsWithFragment(
+          'stage_assignments[1].stage_id: duplicate stage id "cl_stage_01"; '
+          'first declared at stage_assignments[0].stage_id',
+        ),
+      );
+
+      await expectLater(
+        () => loadCombatCatalogManifest(
+          archetypeSources: archetypes,
+          encounterSources: encounters,
+          manifestSource: (
+            manifest.$1,
+            manifest.$2.replaceFirst(
+              'encounter_id: cl_enc_destroy_anchors',
+              'encounter_id: cl_enc_defeat_targets',
+            ),
+          ),
+        ),
+        failsWithFragment(
+          'stage_assignments[1].encounter_id: duplicate assigned encounter id '
+          '"cl_enc_defeat_targets"; first declared at '
+          'stage_assignments[0].encounter_id',
+        ),
+      );
+    });
+
     test('rejects a spawn entry referencing an unknown archetype', () async {
       await expectLater(
         () async => loadCombatCatalogManifest(
@@ -489,7 +584,7 @@ void main() {
           ),
           failsWithFragment(
             'combat catalog source "encounters/negative_budget.yaml": '
-            'encounters[0].token_budgets: melee: must not be negative',
+            'encounters[0].token_budgets.melee: must not be negative',
           ),
         );
       },
