@@ -21,15 +21,15 @@
 
 ## 验收 checklist
 
-- [ ] O01 八类目标原语逐类验证完成、输入顺序与重复事件确定性明确。
-- [ ] S01 三类 typed def 对非法 ID、重复引用、非有限/负数和集合 mutation fail closed。
-- [ ] M0-F01 仅同步可验证事实，所有 PROPOSED 仍明确标注未冻结。
+- [x] O01 八类目标原语逐类验证完成、输入顺序与重复事件确定性明确。
+- [x] S01 三类 typed def 对非法 ID、重复引用、非有限/负数和集合 mutation fail closed。
+- [x] M0-F01 仅同步可验证事实，所有 PROPOSED 仍明确标注未冻结。
 - [ ] 主控 diff 复审、targeted tests、`flutter analyze --no-pub lib test` 与独立审查通过。
 - [ ] 所有任务 worktree clean 且 tip 为 `[READY]`，集成分支生成 Batch7 READY 恢复点。
 
 ## 当前恢复点
 
-- 状态：Batch7 集成基线已建立，准备并行派发 O01、S01、M0-F01。
-- 最后完成：Batch6 READY `935c04e1`，全量 4599/4599，主项目 analyze 0 issue。
-- 下一步：冻结本计划和 registry 后建立三个独立任务 worktree。
+- 状态：O01、S01、M0-F01 已完成独立审查并整合；L01 loader/validator 已派发，Batch7 尚未 READY。
+- 最后完成：O01 tip `dc08aebb`、S01 tip `d7cc6531`、M0-F01 tip `e54308bf` 均已登记为 `ready_reviewed`；交叉合同审查已完成。
+- 下一步：主审并整合 L01，完成 S01↔O01 映射与 E05 migration 联合 Gate，随后运行 Batch7 组合验证、生成 audit 与 READY 恢复点。
 - 阻塞项：production Blackwind objective、AttackToken enforce、入口表现与主线参与/连续 Run policy 仍未冻结；不阻塞本批合同工作。
