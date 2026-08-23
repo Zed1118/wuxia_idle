@@ -17,6 +17,18 @@ String _validatedEventId(String value) {
   return value;
 }
 
+String _validatedPayload(String value, String name) {
+  if (value.trim().isEmpty) {
+    throw ArgumentError.value(value, name);
+  }
+  return value;
+}
+
+String _eventId(String? supplied, String kind, String payload, String name) {
+  final validPayload = _validatedPayload(payload, name);
+  return _validatedEventId(supplied ?? '$kind:$validPayload');
+}
+
 /// Content-neutral events consumed by encounter objectives.
 sealed class EncounterObjectiveEvent {
   const EncounterObjectiveEvent(this.id);
@@ -26,22 +38,23 @@ sealed class EncounterObjectiveEvent {
 }
 
 final class TargetDefeated extends EncounterObjectiveEvent {
-  const TargetDefeated(String targetId, {String? eventId})
-    : targetId = targetId,
-      super(eventId ?? 'defeat:$targetId');
+  TargetDefeated(String targetId, {String? eventId})
+    : targetId = _validatedPayload(targetId, 'targetId'),
+      super(_eventId(eventId, 'defeat', targetId, 'targetId'));
   final String targetId;
 }
 
 final class AnchorDestroyed extends EncounterObjectiveEvent {
-  const AnchorDestroyed(String anchorId, {String? eventId})
-    : anchorId = anchorId,
-      super(eventId ?? 'destroy:$anchorId');
+  AnchorDestroyed(String anchorId, {String? eventId})
+    : anchorId = _validatedPayload(anchorId, 'anchorId'),
+      super(_eventId(eventId, 'destroy', anchorId, 'anchorId'));
   final String anchorId;
 }
 
 final class EntityDefended extends EncounterObjectiveEvent {
-  EntityDefended(this.entityId, this.duration, {required String eventId})
-    : super(_validatedEventId(eventId)) {
+  EntityDefended(String entityId, this.duration, {required String eventId})
+    : entityId = _validatedPayload(entityId, 'entityId'),
+      super(_validatedEventId(eventId)) {
     if (duration < Duration.zero) {
       throw ArgumentError.value(duration, 'duration');
     }
@@ -61,30 +74,30 @@ final class TimeElapsed extends EncounterObjectiveEvent {
 }
 
 final class CheckpointReached extends EncounterObjectiveEvent {
-  const CheckpointReached(String checkpointId, {String? eventId})
-    : checkpointId = checkpointId,
-      super(eventId ?? 'checkpoint:$checkpointId');
+  CheckpointReached(String checkpointId, {String? eventId})
+    : checkpointId = _validatedPayload(checkpointId, 'checkpointId'),
+      super(_eventId(eventId, 'checkpoint', checkpointId, 'checkpointId'));
   final String checkpointId;
 }
 
 final class MarkerTouched extends EncounterObjectiveEvent {
-  const MarkerTouched(String markerId, {String? eventId})
-    : markerId = markerId,
-      super(eventId ?? 'marker:$markerId');
+  MarkerTouched(String markerId, {String? eventId})
+    : markerId = _validatedPayload(markerId, 'markerId'),
+      super(_eventId(eventId, 'marker', markerId, 'markerId'));
   final String markerId;
 }
 
 final class TargetPursued extends EncounterObjectiveEvent {
-  const TargetPursued(String targetId, {String? eventId})
-    : targetId = targetId,
-      super(eventId ?? 'pursue:$targetId');
+  TargetPursued(String targetId, {String? eventId})
+    : targetId = _validatedPayload(targetId, 'targetId'),
+      super(_eventId(eventId, 'pursue', targetId, 'targetId'));
   final String targetId;
 }
 
 final class CommanderDefeated extends EncounterObjectiveEvent {
-  const CommanderDefeated(String commanderId, {String? eventId})
-    : commanderId = commanderId,
-      super(eventId ?? 'commander:$commanderId');
+  CommanderDefeated(String commanderId, {String? eventId})
+    : commanderId = _validatedPayload(commanderId, 'commanderId'),
+      super(_eventId(eventId, 'commander', commanderId, 'commanderId'));
   final String commanderId;
 }
 

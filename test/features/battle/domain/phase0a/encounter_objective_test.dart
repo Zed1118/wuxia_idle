@@ -6,22 +6,22 @@ void main() {
   test('all set objectives are order independent and idempotent', () {
     final cases = <EncounterObjective, List<EncounterObjectiveEvent>>{
       DefeatTargetsObjective(const ['a', 'b']): [
-        const TargetDefeated('b'),
-        const TargetDefeated('a'),
-        const TargetDefeated('a'),
+        TargetDefeated('b'),
+        TargetDefeated('a'),
+        TargetDefeated('a'),
       ],
       DestroyAnchorsObjective(const ['a', 'b']): [
-        const AnchorDestroyed('b'),
-        const AnchorDestroyed('a'),
-        const AnchorDestroyed('b'),
+        AnchorDestroyed('b'),
+        AnchorDestroyed('a'),
+        AnchorDestroyed('b'),
       ],
       ReachCheckpointObjective(const ['a', 'b']): [
-        const CheckpointReached('b'),
-        const CheckpointReached('a'),
+        CheckpointReached('b'),
+        CheckpointReached('a'),
       ],
       TouchMarkersObjective(const ['a', 'b']): [
-        const MarkerTouched('b'),
-        const MarkerTouched('a'),
+        MarkerTouched('b'),
+        MarkerTouched('a'),
       ],
     };
     for (final entry in cases.entries) {
@@ -75,6 +75,25 @@ void main() {
     expect(() => SurviveDurationObjective(Duration.zero), throwsArgumentError);
     expect(() => TimeElapsed(Duration.zero, eventId: 'zero'), returnsNormally);
     expect(() => TimeElapsed(Duration.zero, eventId: ''), throwsArgumentError);
+    final invalidEvents = <Object Function()>[
+      () => TargetDefeated('x', eventId: ''),
+      () => AnchorDestroyed('x', eventId: ''),
+      () => EntityDefended('x', Duration.zero, eventId: ''),
+      () => CheckpointReached('x', eventId: ''),
+      () => MarkerTouched('x', eventId: ''),
+      () => TargetPursued('x', eventId: ''),
+      () => CommanderDefeated('x', eventId: ''),
+      () => TargetDefeated('', eventId: 'e'),
+      () => AnchorDestroyed('', eventId: 'e'),
+      () => EntityDefended('', Duration.zero, eventId: 'e'),
+      () => CheckpointReached('', eventId: 'e'),
+      () => MarkerTouched('', eventId: 'e'),
+      () => TargetPursued('', eventId: 'e'),
+      () => CommanderDefeated('', eventId: 'e'),
+    ];
+    for (final makeEvent in invalidEvents) {
+      expect(makeEvent, throwsArgumentError);
+    }
   });
 
   test(
@@ -86,7 +105,7 @@ void main() {
       expect(objective.targetIds, {'a'});
       final state = objective.advance(
         objective.initialProgress,
-        const TargetDefeated('a'),
+        TargetDefeated('a'),
       );
       expect(() => state.satisfied.add('x'), throwsUnsupportedError);
       expect(() => objective.targetIds.add('x'), throwsUnsupportedError);
@@ -95,18 +114,15 @@ void main() {
 
   test('pursue and commander objectives require matching targets', () {
     final pursue = PursueTargetObjective('target');
-    var state = pursue.advance(
-      pursue.initialProgress,
-      const TargetPursued('other'),
-    );
+    var state = pursue.advance(pursue.initialProgress, TargetPursued('other'));
     expect(state.completed, isFalse);
-    state = pursue.advance(state, const TargetPursued('target'));
+    state = pursue.advance(state, TargetPursued('target'));
     expect(state.completed, isTrue);
 
     final commander = DefeatCommanderObjective('boss');
     state = commander.advance(
       commander.initialProgress,
-      const CommanderDefeated('boss'),
+      CommanderDefeated('boss'),
     );
     expect(state.completed, isTrue);
   });
