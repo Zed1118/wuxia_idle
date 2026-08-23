@@ -8,7 +8,11 @@ owner-bound immutable predecessor → prepared successor → successor runtime�
 
 - 工作树：`/Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r15-mentor-insight-stage-occupancy-runtime`
 - 分支：`codex/phase2-m2-r15-mentor-insight-stage-occupancy-runtime-20260824`
-- owned files 仅本 plan、新 source 和新 test；不改 registry、audit、main。
+- owned files 仅：
+  - `lib/features/mainline/application/mentor_insight_stage_occupancy_runtime.dart`
+  - `test/features/mainline/application/mentor_insight_stage_occupancy_runtime_test.dart`
+  - `docs/superpowers/plans/2026-08-24-p2-m2-r15-mentor-insight-stage-occupancy-runtime.md`
+  不改 registry、audit、main。
 - 本切片不查询活动、不接 host / persistence / data / UI，不执行
   `MentorInsightClaimPolicy`、`RewardClaimKey` 或成长 grant。
 - 比例、每关 cap 与所有 tuning 继续受 Gate 锁定。
@@ -32,6 +36,49 @@ owner-bound immutable predecessor → prepared successor → successor runtime�
 - `commit` 仅允许 exact predecessor、同 owner、未消费 prepared；foreign/
   stale/double commit 拒绝。同一 predecessor 可显式产生隔离的 sibling
   successors，不冒充全局 CAS。
+
+### 编码前冻结 API
+
+- `sealed class MentorInsightStageOccupancyMutation`
+- `AcquireMentorInsightStageOccupancy({required MentorInsightChoice choice,
+  required MentorInsightBlockingStatus blockingStatus})`
+- `ReleaseMentorInsightStageOccupancy({required MentorInsightCompanion companion,
+  required MentorInsightReleaseReason reason})`
+- `MentorInsightStageOccupancyRuntime.empty()`
+- `MentorInsightStageOccupancyRuntime.restore({required int revision,
+  MentorInsightCompanion? companion})`
+- `MentorInsightStageOccupancyPreparedSuccessor prepare(
+  Iterable<MentorInsightStageOccupancyMutation> mutations)`
+- `MentorInsightStageOccupancyRuntime commit(
+  MentorInsightStageOccupancyPreparedSuccessor prepared)`
+
+`MentorInsightStageOccupancySnapshot` 与
+`MentorInsightStageOccupancyPreparedSuccessor` 均仅能由 runtime 内部构造。
+source 唯一 import 冻结为 `../domain/mentor_insight_policy.dart`。
+
+### 二义性决议
+
+- D1：unknown/mismatched release 抛 `StateError`，整批拒绝；不作静默 no-op。
+- D2：批内只要发生过一次成功 acquire/release，即使净状态未变，
+  revision 也只增加一次。
+- D3：no-op prepared 的 `next` 与 `base` 为同一 snapshot；成功 commit
+  仍消费 prepared 并返回同 owner 的新 runtime，与 owner-bound runtime
+  现有体例一致。
+
+## Pi 证据
+
+### 编码前设计审查
+
+- CLI：`pi 0.84.1`
+- model：`deepseek/deepseek-v4-flash`
+- thinking：`high`
+- 命令摘要：`--no-session --no-skills --no-prompt-templates --tools
+  read,grep,find,ls --print`，读取本 plan、R02 policy/claim 与现有
+  owner-bound runtime/test；无 bash/edit/write。
+- 结果：`PASS`，无 P0 阻塞；建议冻结 D1/D2/D3，已按上述决议采纳。
+- 独立校验：Pi 建议的 `../../domain/mentor_insight_policy.dart` 与实际
+  `application`/`domain` 目录为 sibling 的拓扑不符，已更正为 `../domain/...`；
+  其余接口与不变量结论通过主 agent 对照。
 
 ## 验收 checklist（CLAUDE §8.2）
 
@@ -61,12 +108,12 @@ owner-bound immutable predecessor → prepared successor → successor runtime�
 
 ## 当前恢复点
 
-- 状态：已核对精确基线与三份 owned files，已复读 R02 决策/合同和
-  owner-bound runtime 原子性体例；待提交计划后做 Pi 设计审查。
-- 最后完成：确认 `HEAD=7bc31c5f5463aac26e127912576350487ac0a8d3`、
-  工作树初始干净、Pi CLI `0.84.1`；确认 rate/cap 与 production
-  host/persistence 均不属于本切片。
-- 下一步：提交本计划，调用指定 Pi 只读审查冻结 API，再写红测。
+- 状态：计划恢复点 `a10edae6` 已提交；编码前 Pi 设计审查已完成
+  并冻结上述 API/D1-D3，尚未编写生产代码。
+- 最后完成：Pi CLI `0.84.1` + exact
+  `deepseek/deepseek-v4-flash` + thinking high 只读设计审查 `PASS`；
+  主 agent 已更正其相对 import 路径误判。
+- 下一步：提交 API/证据冻结，写新测试并跑出缺 source 的红灯。
 - 已跑验证：仅基线/分支/工作树/Pi 版本只读检查；尚未运行测试。
 - 阻塞项：无。
 - 生产接线：未接；当前是供后续 host/shared occupancy 消费的显式
