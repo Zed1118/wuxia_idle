@@ -77,18 +77,18 @@ projector 提供。本任务不切换 production host，不构造 objective trac
 
 ## 当前恢复点
 
-- 状态：实现、验证、两轮 Pi 只读审查与证据均已完成，待提交本恢复点并
-  追加 READY 空提交后交付主控。
+- 状态：实现、验证、两轮 Pi 只读审查与三份 owned files 已由
+  旧 READY `5f8a2266` 冻结；本恢复点仅校正主控独立复跑发现的证据计数。
 - 最后完成：新增 sealed defeat projection（显式 target/commander payload）与
   exact-roster source；构造期冻结输入并验 coverage，运行期按冻结顺序投影、生成
   tick/seq/index ID，全物化 external 六类并拒绝 defeat 绕过。
-- 下一步：提交最终证据，追加精确 READY 空提交；主控按 CLAUDE §8.2
-  复核三份 owned files 后决定整合。
+- 下一步：交还主控按 CLAUDE §8.2 独立复审三份 owned files
+  及修正后的验证证据，由主控决定是否整合。
 - 已跑验证：确认 `HEAD=77c5520e04355e041a5db6b40dde05b169874117`，
   worktree 初始干净；`pi --version` = `0.84.1`。新测试先因目标文件/API
   缺失编译失败，实现后 15/15 PASS；R09 flow 15、tracker 15、production
-  objective integration 2、roster 9、objective primitive 9，连同新测试共
-  65/65 PASS；scoped `flutter analyze --no-pub` 4 items 0 issue；format 通过。
+  objective integration 2、roster 8、objective primitive 9，连同新测试共
+  64/64 PASS；scoped `flutter analyze --no-pub` 4 items 0 issue；format 通过。
 - Pi 设计审查：`pi` 0.84.1，model `deepseek/deepseek-v4-flash`，thinking
   `high`，`--no-session --tools read,grep,find,ls --print` 只读命令；结论「有条件
   PASS，无 P0」。其 P1 要求冻结类型/constructor 已采纳；marker-only projection
@@ -100,7 +100,7 @@ projector 提供。本任务不切换 production host，不构造 objective trac
   P0=0、P1=0。两条信息级 P2 为「收口同步 checklist」与「文本 source guard
   对未来注释较敏感」；前者已本次同步，后者保留为已知取舍，行为测试已补强。
 - 提交：计划 `e91e6afd`；TDD 红测 `a8f50fc1`；实现 + 中期证据
-  `151a4df0`。
+  `151a4df0`；收口证据 `6efc0f7f`；旧 READY `5f8a2266`。
 - 阻塞项：无。
 - 生产接线：本切片只交付 R09 runtime 可直接消费的 source 实现，不切换 host。
 - 红线影响：无数值、YAML、玩家文案、reward/save/UI 及三系或在线离线变更。
