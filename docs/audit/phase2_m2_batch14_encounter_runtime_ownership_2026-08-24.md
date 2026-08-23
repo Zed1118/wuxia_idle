@@ -17,10 +17,10 @@
 - 第二真相源：R11 不复制 assembler/runtime 校验，只证明组合与既有 fail-closed 委托。
 - 隐式语义：R12a/R13 禁止按 actor ID、role、intent/event 类型、位置或缺席猜 token lifecycle/objective identity。
 - 原子性：所有 lazy iterable 在发布前物化；prepared successor 未成功完成前不污染已发布 owner/snapshot。
+- 集成职责：主控入口只消费 R11 plan 的 exact budgets/controller/mapping，显式构造现有 token gate 与 fresh objective tracker；R12a 不伪装成已接 session 的 production lifecycle。
 - promotion 泄漏：owned files 不含 production data/host/GDD/CLAUDE/PROGRESS；批末再查 TUNE 状态。
 - 可恢复性：四 worktree 从同一 READY 创建，来源小切片 commit，主控稳定 patch-id 集成并独立终审。
 
 ## 验证记录
 
 待 R11 / R12a / R13 READY 后补充来源 commit、外部模型证据、联合/full test 与独立审查结论。
-

@@ -1842,11 +1842,15 @@ tasks:
       - P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME
       - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
     owned_files:
+      - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
+      - test/features/battle/application/phase0a/phase0a_migrated_encounter_composition_test.dart
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch14-encounter-runtime-ownership.md
       - docs/audit/phase2_m2_batch14_encounter_runtime_ownership_2026-08-24.md
     protected_behavior:
       - integrate only explicit opt-in encounter runtime ownership contracts without switching a production host
+      - construct a stateless token gate and fresh objective tracker only from exact migrated plan contracts and caller mappers
+      - keep the immutable lease runtime outside session until the separate R12b transactional wiring task
       - keep timeline session wiring production data candidate tuning profile and human gates unresolved
       - main and origin main remain untouched
     exit_criteria:

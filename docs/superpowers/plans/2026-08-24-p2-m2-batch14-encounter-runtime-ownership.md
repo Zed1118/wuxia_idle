@@ -21,6 +21,8 @@
 
 - 每项在独立 branch/worktree 小切片实现，来源提交与空 READY marker 可恢复；R11/R13 必须记录实际外部 CLI/model 与审查证据。
 - 主控逐项核对 actual diff、source→integration stable patch-id、中文动宾提交、owned files 与生产隔离。
+- 来源 READY 后由主控在 assembler 新增显式 `assembleMigratedEncounterPlan`：只从 plan 取 exact mapping、attack-token budgets 与 objective controller，构造 stateless enforcing gate 与 fresh objective tracker；token request mapper、objective event source、numbers 和单一 RNG 仍由 caller 必填。R12a 不在此伪接 session，留给后续 R12b。
+- 新增 `phase0a_migrated_encounter_composition_test.dart`，用 synthetic encounter 同时证明 typed plan、same-director roster、token 稳定子序列、objective 唯一胜利源、单 RNG stream 与既有 fail-closed/回滚；legacy 入口保持不变。
 - 集成态只组合显式 opt-in seam，不构造 host/default。执行联合 targeted、变更 Dart analyze、format、YAML/Markdown/diff/path 检查、full Flutter test 与独立终审；P0/P1/P2 清零后追加 Batch14 READY。
 
 ## 当前恢复点
