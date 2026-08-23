@@ -23,3 +23,10 @@
 ## 待完成验证
 
 待三来源 READY 后补充外部工具证据、来源/集成提交、targeted/analyze/format/full、仓库闸门、独立终审与最终 READY。
+
+## 集成环境恢复点
+
+- Batch19 integration 已执行 `flutter pub get`；依赖解析成功，未改动受版本控制文件。
+- build_runner 成功写入 126 个生成输出，其中 `.g.dart` 共 63 个；生成后工作树保持 clean。
+- 从 Batch18 READY worktree 恢复 ignored `libisar.dylib`，SHA-256 为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`；该运行库不进入提交。
+- R25/R26/V02A source worktree 均从登记提交 `cc09030ce371be064425f3fef929f53f0c562a33` 创建，owned files 互不重叠并已并行派发。
