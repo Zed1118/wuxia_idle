@@ -56,6 +56,19 @@ void main() {
     expect(timeline.advance(3), isEmpty);
   });
 
+  test('事件按值相等，不依赖 const identity', () {
+    final tick = 0;
+    final event = ActionTimelineEvent(
+      ActionTimelineEventType.started,
+      tick: tick,
+    );
+
+    expect(
+      event,
+      const ActionTimelineEvent(ActionTimelineEventType.started, tick: 0),
+    );
+  });
+
   test('取消仅在配置窗口生效并标记取消冷却', () {
     final timeline = ActionTimeline(
       config(cancelStartTick: 1, cancelEndTick: 1),
@@ -72,6 +85,33 @@ void main() {
       timeline.drainTerminalEvents().single.type,
       ActionTimelineEventType.cancelled,
     );
+    expect(timeline.drainTerminalEvents(), isEmpty);
+    expect(timeline.cancel(), isFalse);
+  });
+
+  test('零前摇与零收招仍有正确首效和一次性终态', () {
+    final instant = ActionTimeline(
+      ActionTimelineConfig(
+        windupTicks: 0,
+        activeTicks: 1,
+        recoveryTicks: 0,
+        firstEffectTick: 0,
+        cancelWindowStartTick: 0,
+        cancelWindowEndTick: 0,
+        interruptedCooldownTicks: 1,
+        cancelledCooldownTicks: 1,
+        failedCooldownTicks: 1,
+      ),
+    );
+
+    expect(instant.start().single.type, ActionTimelineEventType.started);
+    expect(instant.advance(1).map((event) => event.type), [
+      ActionTimelineEventType.firstEffect,
+      ActionTimelineEventType.completed,
+    ]);
+    expect(instant.phase, ActionTimelinePhase.completed);
+    expect(instant.start(), isEmpty);
+    expect(instant.advance(1), isEmpty);
   });
 
   test('被打断与主动失败是终态并分别标记冷却', () {
@@ -111,6 +151,34 @@ void main() {
         firstEffectTick: 0,
         cancelWindowStartTick: 0,
         cancelWindowEndTick: 0,
+        interruptedCooldownTicks: 0,
+        cancelledCooldownTicks: 0,
+        failedCooldownTicks: 0,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => ActionTimelineConfig(
+        windupTicks: 1,
+        activeTicks: 2,
+        recoveryTicks: 1,
+        firstEffectTick: 1,
+        cancelWindowStartTick: 0,
+        cancelWindowEndTick: 4,
+        interruptedCooldownTicks: 0,
+        cancelledCooldownTicks: 0,
+        failedCooldownTicks: 0,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => ActionTimelineConfig(
+        windupTicks: 1,
+        activeTicks: 2,
+        recoveryTicks: 1,
+        firstEffectTick: 3,
+        cancelWindowStartTick: 0,
+        cancelWindowEndTick: 3,
         interruptedCooldownTicks: 0,
         cancelledCooldownTicks: 0,
         failedCooldownTicks: 0,

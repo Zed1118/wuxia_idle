@@ -46,6 +46,14 @@ final class ActionTimelineConfig {
       throw ArgumentError.value(firstEffectTick, 'firstEffectTick');
     }
     _requireWindow(cancelWindowStartTick, cancelWindowEndTick);
+    final total = windupTicks + activeTicks + recoveryTicks;
+    if (cancelWindowEndTick >= total) {
+      throw ArgumentError.value(
+        cancelWindowEndTick,
+        'cancelWindowEndTick',
+        'must be within the action tick range',
+      );
+    }
     _requireNonNegative(interruptedCooldownTicks, 'interruptedCooldownTicks');
     _requireNonNegative(cancelledCooldownTicks, 'cancelledCooldownTicks');
     _requireNonNegative(failedCooldownTicks, 'failedCooldownTicks');
@@ -69,6 +77,13 @@ final class ActionTimelineEvent {
 
   final ActionTimelineEventType type;
   final int tick;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ActionTimelineEvent && other.type == type && other.tick == tick;
+
+  @override
+  int get hashCode => Object.hash(type, tick);
 }
 
 final class ActionTimeline {

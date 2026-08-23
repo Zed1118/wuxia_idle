@@ -4,7 +4,7 @@
 
 - 新增 fixed-tick `ActionTimeline`，覆盖 idle、windup、active、recovery、completed 及取消/打断/失败终态。
 - 所有首效 tick、取消窗口、各类失败 cooldown 由调用方注入；一次动作最多产生一个 `firstEffect` 事件。
-- 测试覆盖跨 tick advance 不丢事件、确定性状态推进、非法 tick/窗口拒绝、主动取消、被打断及失败冷却标记。
+- 事件是按字段相等的值对象，不依赖 const identity；取消窗口必须落在动作总 tick 范围内；测试覆盖零前摇/零收招、重复 start、一次性终态事件、跨 tick advance、非法首效/窗口、主动取消、被打断及失败冷却标记。
 - 不处理真气、伤害、命中、表现或生产 reducer 接线。
 
 ## 恢复点与 G1 风险
