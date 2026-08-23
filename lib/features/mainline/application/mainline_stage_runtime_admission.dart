@@ -10,10 +10,12 @@ final class MainlineStageRuntimeAdmissionPrepared {
     this._occupancyPreparedSuccessor, {
     required this.runAdmission,
     required this.occupancyPredecessor,
+    required this.admittedCompanion,
   });
 
   final MainlineRunAdmission runAdmission;
   final MentorInsightStageOccupancyRuntime occupancyPredecessor;
+  final MentorInsightCompanion? admittedCompanion;
   final MentorInsightStageOccupancyPreparedSuccessor
   _occupancyPreparedSuccessor;
 
@@ -48,6 +50,7 @@ final class MainlineStageRuntimeAdmissionPrepared {
     return MainlineStageRuntimeAdmission._(
       runAdmission: runAdmission,
       occupancyRuntime: occupancyRuntime,
+      admittedCompanion: admittedCompanion,
     );
   }
 }
@@ -57,9 +60,75 @@ final class MainlineStageRuntimeAdmission {
   const MainlineStageRuntimeAdmission._({
     required this.runAdmission,
     required this.occupancyRuntime,
+    required this.admittedCompanion,
   });
 
   final MainlineRunAdmission runAdmission;
+  final MentorInsightStageOccupancyRuntime occupancyRuntime;
+  final MentorInsightCompanion? admittedCompanion;
+}
+
+final class MainlineStageRuntimeReleasePrepared {
+  MainlineStageRuntimeReleasePrepared._(
+    this._occupancyPreparedSuccessor, {
+    required this.admission,
+    required this.releaseReason,
+    required this.releasePredecessor,
+  });
+
+  final MainlineStageRuntimeAdmission admission;
+  final MentorInsightReleaseReason releaseReason;
+  final MentorInsightStageOccupancyRuntime releasePredecessor;
+  final MentorInsightStageOccupancyPreparedSuccessor
+  _occupancyPreparedSuccessor;
+
+  MentorInsightStageOccupancySnapshot get occupancyBase =>
+      _occupancyPreparedSuccessor.base;
+
+  MentorInsightStageOccupancySnapshot get occupancyNext =>
+      _occupancyPreparedSuccessor.next;
+
+  List<MentorInsightStageOccupancyMutation> get occupancyMutations =>
+      _occupancyPreparedSuccessor.mutations;
+
+  bool _committed = false;
+
+  MainlineStageRuntimeRelease commit(
+    MentorInsightStageOccupancyRuntime exactPredecessor,
+  ) {
+    if (!identical(exactPredecessor, releasePredecessor)) {
+      throw StateError(
+        'Prepared mainline stage runtime release has another '
+        'occupancy predecessor',
+      );
+    }
+    if (_committed) {
+      throw StateError(
+        'Prepared mainline stage runtime release was already committed',
+      );
+    }
+
+    final occupancyRuntime = exactPredecessor.commit(
+      _occupancyPreparedSuccessor,
+    );
+    _committed = true;
+    return MainlineStageRuntimeRelease._(
+      admission: admission,
+      releaseReason: releaseReason,
+      occupancyRuntime: occupancyRuntime,
+    );
+  }
+}
+
+final class MainlineStageRuntimeRelease {
+  const MainlineStageRuntimeRelease._({
+    required this.admission,
+    required this.releaseReason,
+    required this.occupancyRuntime,
+  });
+
+  final MainlineStageRuntimeAdmission admission;
+  final MentorInsightReleaseReason releaseReason;
   final MentorInsightStageOccupancyRuntime occupancyRuntime;
 }
 
@@ -111,5 +180,53 @@ MainlineStageRuntimeAdmissionPrepared prepareMainlineStageRuntimeAdmission({
     occupancyPreparedSuccessor,
     runAdmission: runAdmission,
     occupancyPredecessor: occupancyPredecessor,
+    admittedCompanion: mentorChoice.hasCompanion
+        ? occupancyPreparedSuccessor.next.companion
+        : null,
+  );
+}
+
+MainlineStageRuntimeReleasePrepared prepareMainlineStageRuntimeRelease({
+  required MainlineStageRuntimeAdmission admission,
+  required MentorInsightReleaseReason releaseReason,
+}) {
+  if (!MentorInsightPolicy.releaseReasons.contains(releaseReason)) {
+    throw StateError('Mainline stage runtime release reason is unsupported');
+  }
+
+  final releasePredecessor = admission.occupancyRuntime;
+  final companion = admission.admittedCompanion;
+  final List<MentorInsightStageOccupancyMutation> mutations;
+  if (companion == null) {
+    mutations = const [];
+  } else {
+    final active = releasePredecessor.snapshot.companion;
+    if (active == null) {
+      throw StateError(
+        'Mainline stage runtime release has no active companion',
+      );
+    }
+    if (active.stageId != companion.stageId) {
+      throw StateError('Mainline stage runtime release stage does not match');
+    }
+    if (active.characterId != companion.characterId) {
+      throw StateError(
+        'Mainline stage runtime release character does not match',
+      );
+    }
+    mutations = [
+      ReleaseMentorInsightStageOccupancy(
+        companion: companion,
+        reason: releaseReason,
+      ),
+    ];
+  }
+
+  final occupancyPreparedSuccessor = releasePredecessor.prepare(mutations);
+  return MainlineStageRuntimeReleasePrepared._(
+    occupancyPreparedSuccessor,
+    admission: admission,
+    releaseReason: releaseReason,
+    releasePredecessor: releasePredecessor,
   );
 }
