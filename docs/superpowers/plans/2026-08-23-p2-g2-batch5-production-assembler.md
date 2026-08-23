@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：Batch5 已立项，等待 D07 派单；D08 等待 D07 公开入口冻结。
+- 状态：D07 已派给 Pi + DeepSeek `deepseek-v4-flash`；D08 等待 D07 公开入口冻结。
 - 最后完成：Batch4 READY `21e17ecc`。
 - 下一步：Pi 实现 D07，Codex 并行审计 assembler 受影响面；集成后唤醒 Qoder D08。
 - 阻塞项：无；content loader 和黑风岭 tuning 未进入本批。

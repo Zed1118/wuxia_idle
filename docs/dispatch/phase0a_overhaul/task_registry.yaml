@@ -801,7 +801,7 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-g2-d07-production-assembler-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d07-production-assembler
-    status: waiting_dispatch
+    status: in_progress
     protected_behavior:
       - assembleEncounter accepts explicit initial state director roster combatants adapters numbers and rng
       - exactly one damage resolver and one combat session are created
