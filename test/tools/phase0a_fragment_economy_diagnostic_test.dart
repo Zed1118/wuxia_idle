@@ -65,7 +65,7 @@ void main() {
 
     final csv = StringBuffer()
       ..writeln(
-        'kind,id,name,source,threshold,drop_probability,mean_runs,p50_runs,p90_runs,p95_runs,not_complete_rate',
+        'kind,id,name,source,unit,threshold,drop_probability,mean,p50,p90,p95,not_complete_rate',
       );
     for (final skillId in mainlineManuals) {
       final skill = repo.skillDefs[skillId];
@@ -75,6 +75,7 @@ void main() {
           skillId,
           skill?.name ?? skillId,
           'mainline Boss first clear',
+          'not_applicable',
           '',
           '',
           '',
@@ -94,6 +95,7 @@ void main() {
           skillId,
           skill?.name ?? skillId,
           'tower Boss repeat clear',
+          'boss_clears_for_one_skill',
           threshold,
           probability,
           s.mean,
@@ -106,17 +108,34 @@ void main() {
     }
     csv.writeln(
       _csv([
-        'tower_fragment_set',
+        'tower_fragment_set_rounds',
         'ALL_TOWER_FRAGMENT_SKILLS',
-        '全部塔残页技能集齐',
-        'tower Boss repeat clear; one run per mapped Boss',
+        '全技能集齐所需映射 Boss 轮数',
+        'each round clears at most one mapped Boss per skill',
+        'rounds_across_all_mapped_bosses_max',
         threshold,
         probability,
-        setStats.mean,
-        setStats.p50,
-        setStats.p90,
-        setStats.p95,
-        setStats.notCompleteRate,
+        setStats.rounds.mean,
+        setStats.rounds.p50,
+        setStats.rounds.p90,
+        setStats.rounds.p95,
+        setStats.rounds.notCompleteRate,
+      ]),
+    );
+    csv.writeln(
+      _csv([
+        'tower_fragment_set_total_clears',
+        'ALL_TOWER_FRAGMENT_SKILLS',
+        '全技能集齐所需 Boss 总胜场',
+        'sum of mapped Boss clears across skills',
+        'total_boss_clears_sum',
+        threshold,
+        probability,
+        setStats.totalBossClears.mean,
+        setStats.totalBossClears.p50,
+        setStats.totalBossClears.p90,
+        setStats.totalBossClears.p95,
+        setStats.totalBossClears.notCompleteRate,
       ]),
     );
 
@@ -161,23 +180,31 @@ void main() {
     }
     md
       ..writeln()
-      ..writeln('### 全部塔残页技能集齐')
+      ..writeln('### 全部塔残页技能集齐：两种单位')
       ..writeln()
-      ..writeln('| 均值 | P50 | P90 | P95 | 未集齐率 |')
-      ..writeln('|---:|---:|---:|---:|---:|')
       ..writeln(
-        '| ${setStats.mean} | ${setStats.p50} | ${setStats.p90} | ${setStats.p95} | ${setStats.notCompleteRate} |',
+        '以下两组数字不可互换：`rounds_across_all_mapped_bosses` 是轮数（每轮最多打 5 个对应 Boss）；`total_boss_clears` 是实际 Boss 胜场总数。',
+      )
+      ..writeln()
+      ..writeln('| 单位 | 均值 | P50 | P90 | P95 | 100 场未集齐率 |')
+      ..writeln('|---|---:|---:|---:|---:|---:|')
+      ..writeln(
+        '| `rounds_across_all_mapped_bosses`（max） | ${setStats.rounds.mean} | ${setStats.rounds.p50} | ${setStats.rounds.p90} | ${setStats.rounds.p95} | ${setStats.rounds.notCompleteRate} |',
+      )
+      ..writeln(
+        '| `total_boss_clears`（sum） | ${setStats.totalBossClears.mean} | ${setStats.totalBossClears.p50} | ${setStats.totalBossClears.p90} | ${setStats.totalBossClears.p95} | ${setStats.totalBossClears.notCompleteRate} |',
       )
       ..writeln()
       ..writeln(
-        '“全部集齐”按每个塔残页技能分别刷其映射 Boss，并取所有技能完成所需刷数的最大值；不是把不同 Boss 的掉落池错误合并为一个池。',
+        '每个技能仍只统计其映射 Boss 的胜场；集合统计同时保留 max（轮数）与 sum（总 Boss 胜场），避免把轮数误读为总刷数。',
       );
 
     if (Platform.environment[_updateEvidence] == '1') {
       await File(_csvPath).writeAsString(csv.toString());
       await File(_mdPath).writeAsString(md.toString());
     }
-    expect(csv.toString(), contains('tower_fragment_set'));
+    expect(csv.toString(), contains('rounds_across_all_mapped_bosses_max'));
+    expect(csv.toString(), contains('total_boss_clears_sum'));
     expect(md.toString(), contains('主线首通真解'));
     print(csv);
   });
@@ -204,7 +231,7 @@ _MonteCarloStats _simulate({
   return _stats(runs, notCompleteHorizonRuns);
 }
 
-_MonteCarloStats _simulateSet({
+_SetMonteCarloStats _simulateSet({
   required List<String> skillIds,
   required int threshold,
   required double probability,
@@ -213,9 +240,11 @@ _MonteCarloStats _simulateSet({
   required int notCompleteHorizonRuns,
 }) {
   final random = math.Random(seed);
-  final runs = <int>[];
+  final maxRuns = <int>[];
+  final totalBossClears = <int>[];
   for (var trial = 0; trial < trials; trial++) {
     var maxAttempts = 0;
+    var totalAttempts = 0;
     for (final _ in skillIds) {
       var fragments = 0;
       var attempts = 0;
@@ -224,10 +253,15 @@ _MonteCarloStats _simulateSet({
         if (random.nextDouble() < probability) fragments++;
       }
       if (attempts > maxAttempts) maxAttempts = attempts;
+      totalAttempts += attempts;
     }
-    runs.add(maxAttempts);
+    maxRuns.add(maxAttempts);
+    totalBossClears.add(totalAttempts);
   }
-  return _stats(runs, notCompleteHorizonRuns);
+  return _SetMonteCarloStats(
+    rounds: _stats(maxRuns, notCompleteHorizonRuns),
+    totalBossClears: _stats(totalBossClears, notCompleteHorizonRuns),
+  );
 }
 
 _MonteCarloStats _stats(List<int> values, int notCompleteHorizonRuns) {
@@ -275,4 +309,14 @@ class _MonteCarloStats {
   final double p90;
   final double p95;
   final double notCompleteRate;
+}
+
+class _SetMonteCarloStats {
+  const _SetMonteCarloStats({
+    required this.rounds,
+    required this.totalBossClears,
+  });
+
+  final _MonteCarloStats rounds;
+  final _MonteCarloStats totalBossClears;
 }

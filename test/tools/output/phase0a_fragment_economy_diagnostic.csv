@@ -1,25 +1,26 @@
-kind,id,name,source,threshold,drop_probability,mean_runs,p50_runs,p90_runs,p95_runs,not_complete_rate
-mainline_first_clear,skill_chen_sha_yi_jue,沉沙一诀,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_feng_juan_liu_sha,风卷流沙,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_gu_cheng_bi,孤城闭,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_gu_cheng_kai,孤城开,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_hui_xiu_hui_feng,灰袖回风,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_liu_jin_jue,鎏金诀,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_mian_li_cang_zhen,绵里藏针,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_ping_sha_luo_yan,平沙落雁,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_qian_jun_zhui_yue,千钧坠岳,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_qingshan_qingfeng,青锋绝,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_shan_wai_wu_shan,山外无山,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_shi_dang_shi_jue,十荡十决,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_tie_ma_bing_he,铁马冰河,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_xie_yu_chuan_lian,斜雨穿帘,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_yang_guan_wu_gu_ren,阳关无故人,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_yi_jing_shuang_zhao,一镜双照,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_yi_lan_zhong_shan,一览众山,mainline Boss first clear,,,,,,,
-mainline_first_clear,skill_zhi_shui_jue,止水诀,mainline Boss first clear,,,,,,,
-tower_fragment,skill_guan_shan_ba_ji,关山拔戟,tower Boss repeat clear,5,0.2,25.05091,24.0,38.0,44.0,0.0
-tower_fragment,skill_jin_gang_fu_mo,金刚伏魔,tower Boss repeat clear,5,0.2,24.97111,23.0,38.0,44.0,0.0
-tower_fragment,skill_kai_bei_shou,开碑手,tower Boss repeat clear,5,0.2,24.99511,23.0,38.0,44.0,0.0
-tower_fragment,skill_ma_ta_fei_yan,马踏飞燕,tower Boss repeat clear,5,0.2,24.96716,24.0,38.0,44.0,0.0
-tower_fragment,skill_yan_zi_san_chao,燕子三抄,tower Boss repeat clear,5,0.2,24.97158,23.0,38.0,43.0,0.0
-tower_fragment_set,ALL_TOWER_FRAGMENT_SKILLS,全部塔残页技能集齐,tower Boss repeat clear; one run per mapped Boss,5,0.2,37.52778,36.0,50.0,54.0,0.00002
+kind,id,name,source,unit,threshold,drop_probability,mean,p50,p90,p95,not_complete_rate
+mainline_first_clear,skill_chen_sha_yi_jue,沉沙一诀,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_feng_juan_liu_sha,风卷流沙,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_gu_cheng_bi,孤城闭,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_gu_cheng_kai,孤城开,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_hui_xiu_hui_feng,灰袖回风,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_liu_jin_jue,鎏金诀,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_mian_li_cang_zhen,绵里藏针,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_ping_sha_luo_yan,平沙落雁,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_qian_jun_zhui_yue,千钧坠岳,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_qingshan_qingfeng,青锋绝,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_shan_wai_wu_shan,山外无山,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_shi_dang_shi_jue,十荡十决,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_tie_ma_bing_he,铁马冰河,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_xie_yu_chuan_lian,斜雨穿帘,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_yang_guan_wu_gu_ren,阳关无故人,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_yi_jing_shuang_zhao,一镜双照,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_yi_lan_zhong_shan,一览众山,mainline Boss first clear,not_applicable,,,,,,,
+mainline_first_clear,skill_zhi_shui_jue,止水诀,mainline Boss first clear,not_applicable,,,,,,,
+tower_fragment,skill_guan_shan_ba_ji,关山拔戟,tower Boss repeat clear,boss_clears_for_one_skill,5,0.2,25.05091,24.0,38.0,44.0,0.0
+tower_fragment,skill_jin_gang_fu_mo,金刚伏魔,tower Boss repeat clear,boss_clears_for_one_skill,5,0.2,24.97111,23.0,38.0,44.0,0.0
+tower_fragment,skill_kai_bei_shou,开碑手,tower Boss repeat clear,boss_clears_for_one_skill,5,0.2,24.99511,23.0,38.0,44.0,0.0
+tower_fragment,skill_ma_ta_fei_yan,马踏飞燕,tower Boss repeat clear,boss_clears_for_one_skill,5,0.2,24.96716,24.0,38.0,44.0,0.0
+tower_fragment,skill_yan_zi_san_chao,燕子三抄,tower Boss repeat clear,boss_clears_for_one_skill,5,0.2,24.97158,23.0,38.0,43.0,0.0
+tower_fragment_set_rounds,ALL_TOWER_FRAGMENT_SKILLS,全技能集齐所需映射 Boss 轮数,each round clears at most one mapped Boss per skill,rounds_across_all_mapped_bosses_max,5,0.2,37.52778,36.0,50.0,54.0,0.00002
+tower_fragment_set_total_clears,ALL_TOWER_FRAGMENT_SKILLS,全技能集齐所需 Boss 总胜场,sum of mapped Boss clears across skills,total_boss_clears_sum,5,0.2,124.94778,124.0,154.0,164.0,0.86781
