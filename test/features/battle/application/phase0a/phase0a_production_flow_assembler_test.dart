@@ -6,20 +6,35 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import 'package:wuxia_idle/features/combat_shared/domain/damage_calculator.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_enemy_roster.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import '../../../../support/combatant_snapshot_fixture.dart';
 import '../../../../support/test_data.dart';
+
+/// D07:observe-only 敌方 intent 观察器(只收集,不消费 RNG、不改状态)。
+class _CapturingObserver implements Phase0aEnemyIntentObserver {
+  final List<Phase0aEnemyIntentObservation> observations = [];
+
+  @override
+  void observe(Phase0aEnemyIntentObservation observation) {
+    observations.add(observation);
+  }
+}
 
 /// Phase 0A 生产 flow 装配器红测(第六批派单 §必测证伪点):
 /// ① 两波真实穿透(装配器→工厂→adapter→session→wave flow),与 direct
@@ -275,6 +290,145 @@ void main() {
       playerAdapter: playerAdapter ?? makePlayerAdapter(),
       enemyAiAdapter: makeEnemyAdapter(),
     );
+  }
+
+  // —— D07:动态遭遇装配 helper(沿 legacy 体例,roster actor 与快照分离)——
+  /// player + e1 + e2 三个真实快照源(defaultCharacters 去掉 e3)。
+  Map<String, CombatantSnapshot> encounterCharacters() {
+    return defaultCharacters()..remove('e3');
+  }
+
+  SpawnDirector encounterDirector({
+    int activeLimit = 2,
+    int entryWarningTicks = 0,
+    int attackGraceTicks = 0,
+  }) {
+    return SpawnDirector(
+      config: SpawnDirectorConfig(
+        activeLimit: activeLimit,
+        reinforcementThreshold: 0,
+        entryWarningTicks: entryWarningTicks,
+        attackGraceTicks: attackGraceTicks,
+      ),
+      entries: [
+        SpawnEntry(entryId: 'entry_e1', enemyId: 'e1'),
+        SpawnEntry(entryId: 'entry_e2', enemyId: 'e2'),
+      ],
+    );
+  }
+
+  Phase0aEncounterRoster encounterRoster(
+    SpawnDirector director, {
+    int e1Health = 100000,
+    int e2Health = 100000,
+  }) {
+    return Phase0aEncounterRoster(
+      director: director,
+      playerId: 'player',
+      bindings: [
+        Phase0aEncounterRosterBinding(
+          entryId: 'entry_e1',
+          actor: arenaActor(
+            id: 'e1',
+            side: Phase0aSide.enemy,
+            position: const ArenaVector(50, 0),
+            currentHealth: e1Health,
+          ),
+        ),
+        Phase0aEncounterRosterBinding(
+          entryId: 'entry_e2',
+          actor: arenaActor(
+            id: 'e2',
+            side: Phase0aSide.enemy,
+            position: const ArenaVector(60, 0),
+            currentHealth: e2Health,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 初始 arena:director tick0 无 active 单位 → enemies 必须为空,
+  /// 一致性由 [Phase0aEncounterFlow.runtime] 构造器校验穿透。
+  Phase0aArenaState encounterInitialState() {
+    return Phase0aArenaState(
+      tick: 0,
+      nextSeq: 1,
+      player: arenaActor(
+        id: 'player',
+        side: Phase0aSide.player,
+        position: ArenaVector.zero,
+      ),
+      enemies: const [],
+      skillSlots: const [],
+    );
+  }
+
+  Phase0aEncounterFlow assembleEncounter({
+    Phase0aArenaState? initialState,
+    SpawnDirector? director,
+    Phase0aEncounterRoster? roster,
+    List<Phase0aCombatantInput>? combatants,
+    Map<Phase0aDamageKind, SkillDef?>? moveBindings,
+    math.Random? rng,
+    Phase0aPlayerInputAdapter? playerAdapter,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+  }) {
+    final resolvedDirector = director ?? encounterDirector();
+    return Phase0aProductionFlowAssembler.assembleEncounter(
+      initialState: initialState ?? encounterInitialState(),
+      director: resolvedDirector,
+      roster: roster ?? encounterRoster(resolvedDirector),
+      combatants: combatants ?? combatantsFrom(encounterCharacters()),
+      moveBindings: moveBindings ?? fullBindings(),
+      numbers: numbers(),
+      rng: rng ?? math.Random(99),
+      playerAdapter: playerAdapter ?? makePlayerAdapter(),
+      enemyAiAdapter: makeEnemyAdapter(),
+      enemyIntentObserver: enemyIntentObserver,
+    );
+  }
+
+  /// 同 seed 驱动 encounter flow 推进 [ticks] 拍,返回事件/flow/显式 rng
+  /// (供终局后 RNG 零消费对照与 observer 不改 RNG 对照)。
+  (List<Phase0aEvent>, Phase0aEncounterFlow, math.Random) runEncounterTicks(
+    int seed,
+    int ticks,
+  ) {
+    final rng = math.Random(seed);
+    final flow = assembleEncounter(rng: rng);
+    final events = <Phase0aEvent>[];
+    for (var i = 0; i < ticks; i++) {
+      events.addAll(
+        flow.advance(
+          deltaSeconds: 0.5,
+          command: const Phase0aPlayerCommand(attack: true),
+        ),
+      );
+    }
+    return (events, flow, rng);
+  }
+
+  /// 同 seed 驱动带 observer 的 encounter flow 推进 [ticks] 拍。
+  (List<Phase0aEvent>, Phase0aEncounterFlow, math.Random) runEncounterObserved(
+    int seed,
+    int ticks,
+  ) {
+    final rng = math.Random(seed);
+    final flow = assembleEncounter(
+      rng: rng,
+      enemyIntentObserver: _CapturingObserver(),
+    );
+    final events = <Phase0aEvent>[];
+    for (var i = 0; i < ticks; i++) {
+      events.addAll(
+        flow.advance(
+          deltaSeconds: 0.5,
+          command: const Phase0aPlayerCommand(attack: true),
+        ),
+      );
+    }
+    return (events, flow, rng);
   }
 
   /// 结构校验不得消费 RNG:失败后下一值仍等于同 seed 未消费对照首值。
@@ -709,6 +863,400 @@ void main() {
         () => assemble(combatants: combatantsFrom(characters), rng: rng),
         returnsNormally,
       );
+    });
+  });
+
+  group('D07 encounter:actor 覆盖与装配校验 fail-fast 且零 RNG 消费', () {
+    test('missing actor:错误信息列稳定排序 id,RNG 未消费', () {
+      const seed = 23;
+      final rng = math.Random(seed);
+      final missing = encounterCharacters()..remove('e2');
+      expect(
+        () => assembleEncounter(combatants: combatantsFrom(missing), rng: rng),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            contains('missing=[e2]'),
+          ),
+        ),
+      );
+      expectRngUntouched(rng, seed);
+    });
+
+    test('extra actor:多余 id 稳定排序列出,RNG 未消费', () {
+      const seed = 24;
+      final rng = math.Random(seed);
+      final extra = encounterCharacters()
+        ..['a9'] = makeCharacter(characterId: 9)
+        ..['z1'] = makeCharacter(characterId: 10);
+      expect(
+        () => assembleEncounter(combatants: combatantsFrom(extra), rng: rng),
+        throwsA(
+          isA<ArgumentError>().having(
+            (e) => e.message,
+            'message',
+            contains('extra=[a9, z1]'),
+          ),
+        ),
+      );
+      expectRngUntouched(rng, seed);
+    });
+
+    test('playerAdapter.playerId 与首态玩家不一致 fail-fast,RNG 未消费', () {
+      const seed = 25;
+      final rng = math.Random(seed);
+      expect(
+        () => assembleEncounter(
+          rng: rng,
+          playerAdapter: makePlayerAdapter(playerId: 'other'),
+        ),
+        throwsArgumentError,
+      );
+      expectRngUntouched(rng, seed);
+    });
+
+    test('缺 basic/gather/clear 任一 binding 均 fail-fast,RNG 未消费', () {
+      for (final (kind, bindings) in [
+        (
+          Phase0aDamageKind.basic,
+          <Phase0aDamageKind, SkillDef?>{
+            Phase0aDamageKind.gather: null,
+            Phase0aDamageKind.clear: null,
+          },
+        ),
+        (
+          Phase0aDamageKind.gather,
+          <Phase0aDamageKind, SkillDef?>{
+            Phase0aDamageKind.basic: basicSkill,
+            Phase0aDamageKind.clear: null,
+          },
+        ),
+        (
+          Phase0aDamageKind.clear,
+          <Phase0aDamageKind, SkillDef?>{
+            Phase0aDamageKind.basic: basicSkill,
+            Phase0aDamageKind.gather: null,
+          },
+        ),
+      ]) {
+        const seed = 26;
+        final rng = math.Random(seed);
+        expect(
+          () => assembleEncounter(moveBindings: bindings, rng: rng),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              contains(kind.name),
+            ),
+          ),
+          reason: '缺 ${kind.name} binding 必须 fail-fast',
+        );
+        expectRngUntouched(rng, seed);
+      }
+    });
+
+    test('runtime 校验穿透:roster 与 director 非同一实例即拒绝,RNG 未消费', () {
+      const seed = 27;
+      final rng = math.Random(seed);
+      final director = encounterDirector();
+      final otherDirector = encounterDirector();
+      expect(
+        () => Phase0aProductionFlowAssembler.assembleEncounter(
+          initialState: encounterInitialState(),
+          director: otherDirector,
+          roster: encounterRoster(director),
+          combatants: combatantsFrom(encounterCharacters()),
+          moveBindings: fullBindings(),
+          numbers: numbers(),
+          rng: rng,
+          playerAdapter: makePlayerAdapter(),
+          enemyAiAdapter: makeEnemyAdapter(),
+        ),
+        throwsArgumentError,
+      );
+      expectRngUntouched(rng, seed);
+    });
+
+    test('initialState 敌人与 director active 不一致由 runtime 拒绝,RNG 未消费', () {
+      const seed = 28;
+      final rng = math.Random(seed);
+      final director = encounterDirector();
+      final inconsistent = Phase0aArenaState(
+        tick: 0,
+        nextSeq: 1,
+        player: arenaActor(
+          id: 'player',
+          side: Phase0aSide.player,
+          position: ArenaVector.zero,
+        ),
+        enemies: [
+          arenaActor(
+            id: 'e1',
+            side: Phase0aSide.enemy,
+            position: const ArenaVector(50, 0),
+          ),
+        ],
+        skillSlots: const [],
+      );
+      expect(
+        () => Phase0aProductionFlowAssembler.assembleEncounter(
+          initialState: inconsistent,
+          director: director,
+          roster: encounterRoster(director),
+          combatants: combatantsFrom(encounterCharacters()),
+          moveBindings: fullBindings(),
+          numbers: numbers(),
+          rng: rng,
+          playerAdapter: makePlayerAdapter(),
+          enemyAiAdapter: makeEnemyAdapter(),
+        ),
+        throwsArgumentError,
+      );
+      expectRngUntouched(rng, seed);
+    });
+  });
+
+  group('D07 encounter:真实伤害穿透与同 seed direct 连续序列逐击同值', () {
+    test('三拍 9 击逐击同值,按拍/按敌重置 RNG 反例可判别', () {
+      const seed = 42;
+      final (events, flow, _) = runEncounterTicks(seed, 3);
+
+      // 事件骨架:首拍两敌同时进场(activeLimit 2 / 无 warning / 无 grace)。
+      expect(
+        events.whereType<Phase0aEnemyEntered>().map((e) => e.enemyId).toList(),
+        ['e1', 'e2'],
+      );
+      expect(events.whereType<Phase0aSpawnWarningStarted>(), isEmpty);
+      expect(events.whereType<Phase0aSpawnGraceExpired>(), isEmpty);
+      expect(flow.outcome, Phase0aBattleOutcome.ongoing);
+      expect(flow.state.enemies.map((e) => e.id), ['e1', 'e2']);
+
+      final hits = events.whereType<Phase0aHitLanded>().toList();
+      expect(hits, hasLength(9), reason: '三拍×每拍 player/e1/e2 各一击');
+
+      // 连续序列:同 seed 单条 RNG 流按事件序复算,逐击同值(damage+crit)。
+      final characters = encounterCharacters();
+      final directRng = math.Random(seed);
+      for (final hit in hits) {
+        final expected = directResolve(
+          attacker: characters[hit.actor]!,
+          defender: characters[hit.target]!,
+          rng: directRng,
+        );
+        expect(
+          (hit.resolvedDamage, hit.isCritical),
+          expected,
+          reason: '${hit.actor}→${hit.target} @tick${hit.tick} 须等于 direct 连续序列',
+        );
+      }
+
+      // 重置反例:若实现按拍/按敌重建 RNG,后两拍命中序列必等于「同 seed
+      // 新流从头复算」;实测不同 → 本测试对「RNG 跨敌跨拍连续」有判别力。
+      final lateHits = hits.where((h) => h.tick >= 2).toList();
+      expect(lateHits, isNotEmpty);
+      final lateActual = [
+        for (final h in lateHits) (h.resolvedDamage, h.isCritical),
+      ];
+      final resetRng = math.Random(seed);
+      final resetExpected = [
+        for (final h in lateHits)
+          directResolve(
+            attacker: characters[h.actor]!,
+            defender: characters[h.target]!,
+            rng: resetRng,
+          ),
+      ];
+      expect(
+        lateActual,
+        isNot(equals(resetExpected)),
+        reason: '「按拍/按敌重置 RNG」假设序列必须与实测不同,否则本测试无判别力',
+      );
+      // 随机分支确实参与:命中伤害不止一个取值。
+      expect(
+        hits.map((h) => h.resolvedDamage).toSet().length,
+        greaterThan(1),
+        reason: '命中须含随机判定分支(暴击与否改变伤害)',
+      );
+    });
+
+    test('同 seed 两装配实例回放:事件/state/outcome 全等', () {
+      final (eventsA, flowA, _) = runEncounterTicks(7, 3);
+      final (eventsB, flowB, _) = runEncounterTicks(7, 3);
+      expect(eventsB, eventsA);
+      expect(flowB.state, flowA.state);
+      expect(flowB.outcome, flowA.outcome);
+    });
+  });
+
+  group('D07 encounter:完整生命周期经 assembler 入口完成', () {
+    test('warning→entry→grace→kill→reinforcement→terminal 全链', () {
+      // 低血敌人:玩家一击必杀;activeLimit 1 + warning 1 + grace 1 逐敌补入。
+      // e1/e2 各 1 HP → 上场当拍被秒;grace 语义由「上场当拍玩家不掉血」
+      // 断言钉死(敌人攻击 intent 被 gate 过滤)。
+      final director = encounterDirector(
+        activeLimit: 1,
+        entryWarningTicks: 1,
+        attackGraceTicks: 1,
+      );
+      final rng = math.Random(13);
+      final flow = Phase0aProductionFlowAssembler.assembleEncounter(
+        initialState: encounterInitialState(),
+        director: director,
+        roster: encounterRoster(director, e1Health: 1, e2Health: 1),
+        combatants: combatantsFrom(encounterCharacters()),
+        moveBindings: fullBindings(),
+        numbers: numbers(),
+        rng: rng,
+        playerAdapter: makePlayerAdapter(),
+        enemyAiAdapter: makeEnemyAdapter(),
+      );
+
+      final allEvents = <Phase0aEvent>[];
+      var guard = 0;
+      while (flow.outcome == Phase0aBattleOutcome.ongoing && guard < 10) {
+        allEvents.addAll(
+          flow.advance(
+            deltaSeconds: 0.5,
+            command: const Phase0aPlayerCommand(attack: true),
+          ),
+        );
+        guard++;
+      }
+
+      expect(flow.outcome, Phase0aBattleOutcome.victory);
+      expect(flow.state.enemies, isEmpty);
+      // warning→entry→kill 骨架(按敌序):
+      final warnings = allEvents
+          .whereType<Phase0aSpawnWarningStarted>()
+          .map((e) => e.enemyId)
+          .toList();
+      expect(warnings, ['e1', 'e2']);
+      final entered = allEvents
+          .whereType<Phase0aEnemyEntered>()
+          .map((e) => e.enemyId)
+          .toList();
+      expect(entered, ['e1', 'e2']);
+      final defeated = allEvents
+          .whereType<Phase0aEnemyDefeated>()
+          .map((e) => e.target)
+          .toList();
+      expect(defeated, ['e1', 'e2']);
+      // 唯一终局 + 严格递增连续 seq:
+      expect(allEvents.whereType<Phase0aBattleVictory>(), hasLength(1));
+      expect(allEvents.last, isA<Phase0aBattleVictory>());
+      expect(allEvents.whereType<Phase0aBattleDefeat>(), isEmpty);
+      final seqs = allEvents.map((e) => e.seq).toList();
+      for (var i = 1; i < seqs.length; i++) {
+        expect(seqs[i], greaterThan(seqs[i - 1]));
+      }
+      // grace gate 生效:敌人上场当拍(宽限内)攻击被过滤,玩家整场不掉血。
+      expect(flow.state.player.currentHealth, 100000);
+    });
+  });
+
+  group('D07 encounter:observe-only observer 只观察 grace gate 后 intents', () {
+    test('宽限期内攻击被过滤为空观察,到期当拍放行攻击', () {
+      final observer = _CapturingObserver();
+      final director = encounterDirector(
+        activeLimit: 1,
+        entryWarningTicks: 0,
+        attackGraceTicks: 1,
+      );
+      final flow = Phase0aProductionFlowAssembler.assembleEncounter(
+        initialState: encounterInitialState(),
+        director: director,
+        roster: encounterRoster(director),
+        combatants: combatantsFrom(encounterCharacters()),
+        moveBindings: fullBindings(),
+        numbers: numbers(),
+        rng: math.Random(31),
+        playerAdapter: makePlayerAdapter(),
+        enemyAiAdapter: makeEnemyAdapter(),
+        enemyIntentObserver: observer,
+      );
+
+      final first = flow.advance(
+        deltaSeconds: 0.5,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+      expect(first.whereType<Phase0aEnemyEntered>(), hasLength(1));
+      // 宽限拍:攻击被 gate 过滤 → 观察列表为空,玩家不掉血。
+      expect(observer.observations, hasLength(1));
+      expect(observer.observations.single.enemyIntents, isEmpty);
+      expect(flow.state.player.currentHealth, 100000);
+
+      final second = flow.advance(
+        deltaSeconds: 0.5,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+      expect(second.whereType<Phase0aSpawnGraceExpired>(), hasLength(1));
+      // 到期当拍:攻击放行 → 观察器收到 attack intent,玩家掉血。
+      expect(observer.observations, hasLength(2));
+      final secondObservation = observer.observations[1].enemyIntents;
+      expect(secondObservation, hasLength(1));
+      expect(secondObservation.single.actorId, 'e1');
+      expect(secondObservation.single, isA<Phase0aAttackIntent>());
+      expect(flow.state.player.currentHealth, lessThan(100000));
+      // 观察快照只读:observe-only 边界。
+      expect(
+        () => secondObservation.add(
+          const Phase0aMoveIntent(actorId: 'e9', direction: ArenaVector(1, 0)),
+        ),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('连续多拍跨击杀/补员存活,每拍都观察 gate 后列表', () {
+      final observer = _CapturingObserver();
+      final director = encounterDirector(
+        activeLimit: 1,
+        entryWarningTicks: 0,
+        attackGraceTicks: 1,
+      );
+      final flow = Phase0aProductionFlowAssembler.assembleEncounter(
+        initialState: encounterInitialState(),
+        director: director,
+        roster: encounterRoster(director, e1Health: 1, e2Health: 1),
+        combatants: combatantsFrom(encounterCharacters()),
+        moveBindings: fullBindings(),
+        numbers: numbers(),
+        rng: math.Random(37),
+        playerAdapter: makePlayerAdapter(),
+        enemyAiAdapter: makeEnemyAdapter(),
+        enemyIntentObserver: observer,
+      );
+
+      final allEvents = <Phase0aEvent>[];
+      var guard = 0;
+      while (flow.outcome == Phase0aBattleOutcome.ongoing && guard < 10) {
+        allEvents.addAll(
+          flow.advance(
+            deltaSeconds: 0.5,
+            command: const Phase0aPlayerCommand(attack: true),
+          ),
+        );
+        guard++;
+      }
+      expect(flow.outcome, Phase0aBattleOutcome.victory);
+      // 有敌人的 combat 拍观察器每拍都被调用;敌人均在宽限内被秒 →
+      // 观察列表恒为空(gate 过滤后交付),观察器跨击杀/补员存活不丢。
+      expect(observer.observations, isNotEmpty);
+      for (final observation in observer.observations) {
+        expect(observation.enemyIntents, isEmpty);
+      }
+    });
+
+    test('observer 不改 events/state/RNG:同 seed 有/无观察器全等', () {
+      const seed = 43;
+      final (eventsA, flowA, rngA) = runEncounterTicks(seed, 3);
+      final (eventsB, flowB, rngB) = runEncounterObserved(seed, 3);
+      expect(eventsB, eventsA);
+      expect(flowB.state, flowA.state);
+      expect(flowB.outcome, flowA.outcome);
+      // 消费序列一致 → 后续 RNG 值相等(observer 不消费也不改 RNG)。
+      expect(rngA.nextDouble(), rngB.nextDouble());
     });
   });
 }

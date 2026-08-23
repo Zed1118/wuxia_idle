@@ -2,13 +2,17 @@ import 'dart:math';
 
 import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
+import '../../domain/phase0a/encounter_enemy_roster.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
+import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
+import 'phase0a_encounter_flow.dart';
+import 'phase0a_enemy_intent_observer.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
 
@@ -58,13 +62,7 @@ final class Phase0aProductionFlowAssembler {
       waves: waves,
       combatants: combatants,
     );
-    if (playerAdapter.playerId != initialState.player.id) {
-      throw ArgumentError.value(
-        playerAdapter.playerId,
-        'playerAdapter',
-        'playerId 必须等于首态玩家 id(${initialState.player.id})',
-      );
-    }
+    _checkPlayerAdapterId(playerAdapter, initialState);
     _checkMoveBindings(moveBindings, playerAdapter);
 
     // —— 组合既有组件(工厂动态机制 fail-fast 原样穿透)——
@@ -90,6 +88,68 @@ final class Phase0aProductionFlowAssembler {
     );
   }
 
+  /// 动态遭遇装配入口(D07 派单):返回已接好真实伤害的
+  /// [Phase0aEncounterFlow],把 Batch4 动态 runtime 接入同一套生产快照/
+  /// 伤害 adapter 与单一 caller RNG 所有权。
+  ///
+  /// 与 [assemble] 同一层纪律:本方法只做组合与启动期结构校验,不复制任何
+  /// 伤害、移动、AI、CD、真气、生成或终局规则。expected actor ids =
+  /// `initialState.player.id` + roster 全部敌人 actor id;missing/extra 稳定
+  /// 排序后 fail closed(消息格式与 [assemble] 同体例)。playerId / move-binding
+  /// 校验复用既有口径([_checkPlayerAdapterId] / [_checkMoveBindings])。
+  /// 只创建一个 damage adapter 与一个 session,同一 caller [rng] 跨所有
+  /// 敌人与拍连续消费(换敌由 flow 每拍 fork 保留同一 resolver 实例)。
+  /// director/roster identity、tick、active arena 与 side/alive 的 fail-closed
+  /// 校验继续由 [Phase0aEncounterFlow.runtime] 构造器负责,本方法不复制也不
+  /// 吞掉;一切结构错误均在首拍前失败、不推进 RNG。
+  static Phase0aEncounterFlow assembleEncounter({
+    required Phase0aArenaState initialState,
+    required SpawnDirector director,
+    required Phase0aEncounterRoster roster,
+    required List<Phase0aCombatantInput> combatants,
+    required Map<Phase0aDamageKind, SkillDef?> moveBindings,
+    required NumbersConfig numbers,
+    required Random rng,
+    required Phase0aPlayerInputAdapter playerAdapter,
+    required Phase0aEnemyAiAdapter enemyAiAdapter,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+  }) {
+    // —— 结构校验(零 RNG 消费,先于一切伤害组件构造)——
+    _checkEncounterActorCoverage(
+      initialState: initialState,
+      roster: roster,
+      combatants: combatants,
+    );
+    _checkPlayerAdapterId(playerAdapter, initialState);
+    _checkMoveBindings(moveBindings, playerAdapter);
+
+    // —— 组合既有组件(工厂动态机制 fail-fast 原样穿透)——
+    final bundle = Phase0aBattleSnapshotFactory(
+      numbers: numbers,
+    ).create(combatants: combatants, moveBindings: moveBindings);
+    final damageResolver = Phase0aDamageCalculatorAdapter(
+      combatants: bundle.combatants,
+      moveBindings: bundle.moveBindings,
+      numbers: numbers,
+      rng: rng,
+    );
+    final session = Phase0aCombatSession(
+      initialState: initialState,
+      playerAdapter: playerAdapter,
+      enemyAiAdapter: enemyAiAdapter,
+      damageResolver: damageResolver,
+      enemySkillDamageResolver: damageResolver,
+      enemyIntentObserver: enemyIntentObserver,
+    );
+    // runtime 构造继续校验 director/roster identity、tick、active arena 与
+    // side/alive;校验失败在首拍前 fail closed,不推进 RNG。
+    return Phase0aEncounterFlow.runtime(
+      session: session,
+      director: director,
+      roster: roster,
+    );
+  }
+
   /// 全场 actor 精确覆盖:expected = 首态玩家 + 每一波敌人;missing/extra
   /// 均 fail-fast,错误 id 稳定排序。
   static void _checkActorCoverage({
@@ -109,6 +169,41 @@ final class Phase0aProductionFlowAssembler {
     if (missing.isNotEmpty || extra.isNotEmpty) {
       throw ArgumentError(
         'Phase0a 装配 actor 覆盖错误: missing=$missing, extra=$extra',
+      );
+    }
+  }
+
+  /// 玩家 adapter 的 playerId 必须等于首态玩家 id(两个装配入口共用)。
+  static void _checkPlayerAdapterId(
+    Phase0aPlayerInputAdapter playerAdapter,
+    Phase0aArenaState initialState,
+  ) {
+    if (playerAdapter.playerId != initialState.player.id) {
+      throw ArgumentError.value(
+        playerAdapter.playerId,
+        'playerAdapter',
+        'playerId 必须等于首态玩家 id(${initialState.player.id})',
+      );
+    }
+  }
+
+  /// 动态遭遇全场 actor 精确覆盖:expected = 首态玩家 + roster 全部敌人
+  /// actor id;missing/extra 均 fail-fast,错误 id 稳定排序。
+  static void _checkEncounterActorCoverage({
+    required Phase0aArenaState initialState,
+    required Phase0aEncounterRoster roster,
+    required List<Phase0aCombatantInput> combatants,
+  }) {
+    final expected = <String>{initialState.player.id};
+    for (final binding in roster.bindings) {
+      expected.add(binding.actorId);
+    }
+    final actual = combatants.map((combatant) => combatant.actorId).toSet();
+    final missing = expected.difference(actual).toList()..sort();
+    final extra = actual.difference(expected).toList()..sort();
+    if (missing.isNotEmpty || extra.isNotEmpty) {
+      throw ArgumentError(
+        'Phase0a 装配 encounter actor 覆盖错误: missing=$missing, extra=$extra',
       );
     }
   }
