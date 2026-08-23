@@ -998,8 +998,15 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-l01-combat-catalog-loader-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-l01-catalog-loader
-    status: dispatched
-    base_commit: 1ad14bcc
+    status: ready_reviewed
+    tip_commit: 8fe87847
+    base_commit: 995c1a6b
+    implementation_commits:
+      - 2047c18e
+      - 8fd4c22b
+    integration_commits:
+      - de499750
+      - df48a8a7
     owned_files:
       - lib/data/combat_encounter_catalog_loader.dart
       - lib/data/validation/combat_encounter_catalog_validator.dart
