@@ -28,6 +28,9 @@ final class BasicAttackSegment {
     if (_effectRefs.isEmpty || _effectRefs.any((ref) => ref.trim().isEmpty)) {
       throw ArgumentError.value(_effectRefs, 'effectRefs');
     }
+    if (_effectRefs.length != _effectRefs.toSet().length) {
+      throw ArgumentError.value(_effectRefs, 'effectRefs');
+    }
   }
 
   @override
@@ -60,10 +63,18 @@ final class BasicAttackChain {
       throw ArgumentError.value(resetAfterIdleTicks, 'resetAfterIdleTicks');
     }
     final ids = <String>{};
+    final geometryRefs = <String>{};
+    final timelineRefs = <String>{};
     for (final segment in _segments) {
       segment.validate();
       if (!ids.add(segment.id)) {
         throw ArgumentError('segment ids must be unique');
+      }
+      if (!geometryRefs.add(segment.geometryRef)) {
+        throw ArgumentError('geometry refs must be unique');
+      }
+      if (!timelineRefs.add(segment.timelineRef)) {
+        throw ArgumentError('timeline refs must be unique');
       }
     }
   }
@@ -73,6 +84,10 @@ final class BasicAttackChain {
   final int resetAfterIdleTicks;
 
   List<BasicAttackSegment> get segments => _segments;
+
+  List<String> get timelineRefs => List<String>.unmodifiable(
+    _segments.map((segment) => segment.timelineRef),
+  );
 
   List<String> get geometryRefs => List<String>.unmodifiable(
     _segments.map((segment) => segment.geometryRef),
@@ -84,6 +99,24 @@ final class BasicAttackChain {
     }
     return _segments[index];
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is BasicAttackChain &&
+      other.weapon == weapon &&
+      other.resetAfterIdleTicks == resetAfterIdleTicks &&
+      _sameSegments(other._segments);
+
+  bool _sameSegments(List<BasicAttackSegment> other) =>
+      other.length == _segments.length &&
+      List.generate(
+        other.length,
+        (index) => other[index] == _segments[index],
+      ).every((same) => same);
+
+  @override
+  int get hashCode =>
+      Object.hash(weapon, resetAfterIdleTicks, Object.hashAll(_segments));
 
   /// Computes the next segment without mutating state.
   ///

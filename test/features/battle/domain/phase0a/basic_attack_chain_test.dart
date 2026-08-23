@@ -38,11 +38,50 @@ void main() {
     expect(chain.segmentAt(0), thrust);
     expect(chain.segmentAt(1), sweep);
     expect(chain.geometryRefs, ['forward_fan.thrust', 'forward_fan.sweep']);
+    expect(chain.timelineRefs, [
+      'timeline.basic.thrust',
+      'timeline.basic.sweep',
+    ]);
+    expect(
+      chain,
+      equals(
+        BasicAttackChain(
+          weapon: WeaponType.sword,
+          segments: [thrust, sweep],
+          resetAfterIdleTicks: 3,
+        ),
+      ),
+    );
+    expect(
+      chain,
+      isNot(
+        equals(
+          BasicAttackChain(
+            weapon: WeaponType.heavy,
+            segments: [thrust, sweep],
+            resetAfterIdleTicks: 3,
+          ),
+        ),
+      ),
+    );
   });
 
   test('效果引用按声明顺序保留，且暴露集合不可变', () {
     expect(sweep.effectRefs, ['damage.standard', 'posture.light']);
     expect(() => sweep.effectRefs.add('unexpected'), throwsUnsupportedError);
+  });
+
+  test('同 tick 阈值只在达到阈值时重置且链快照不可变', () {
+    final chain = BasicAttackChain(
+      weapon: WeaponType.sword,
+      segments: [thrust, sweep],
+      resetAfterIdleTicks: 2,
+    );
+
+    expect(chain.nextSegmentIndex(currentIndex: 0, idleTicks: 1), 1);
+    expect(chain.nextSegmentIndex(currentIndex: 1, idleTicks: 2), 0);
+    expect(() => chain.segments.removeAt(0), throwsUnsupportedError);
+    expect(() => chain.timelineRefs.add('unexpected'), throwsUnsupportedError);
   });
 
   test('连段推进是确定性的，空闲达到阈值或中断后重置', () {
@@ -92,6 +131,47 @@ void main() {
         geometryRef: '',
         timelineRef: 'timeline',
         effectRefs: ['effect'],
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => BasicAttackSegment(
+        id: 'duplicate-effects',
+        geometryRef: 'geometry',
+        timelineRef: 'timeline',
+        effectRefs: ['effect', 'effect'],
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => BasicAttackChain(
+        weapon: WeaponType.sword,
+        segments: [
+          thrust,
+          BasicAttackSegment(
+            id: 'same-geometry',
+            geometryRef: thrust.geometryRef,
+            timelineRef: 'timeline.other',
+            effectRefs: ['effect'],
+          ),
+        ],
+        resetAfterIdleTicks: 1,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => BasicAttackChain(
+        weapon: WeaponType.sword,
+        segments: [
+          thrust,
+          BasicAttackSegment(
+            id: 'same-timeline',
+            geometryRef: 'geometry.other',
+            timelineRef: thrust.timelineRef,
+            effectRefs: ['effect'],
+          ),
+        ],
+        resetAfterIdleTicks: 1,
       ),
       throwsArgumentError,
     );

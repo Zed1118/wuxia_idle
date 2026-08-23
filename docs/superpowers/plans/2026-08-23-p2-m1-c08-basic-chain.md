@@ -5,6 +5,7 @@
 - 在纯领域层提出五种武器身份：剑、重兵器、软兵器、双持/奇门、暗器。
 - 用共享 `BasicAttackSegment` 表达每段的 geometry、timeline 与有序 effect 引用；链只保存 typed 引用，不执行效果。
 - 提供确定性的连段推进与空闲/中断重置校验，拒绝空链、重复段 ID、空引用、非法重置 tick 和越界索引。
+- geometry/timeline 引用在链内唯一，单段 effect 引用非空且唯一并保留声明顺序；链与段均按字段提供值语义，所有公开集合不可变。
 - 不写中文文案、最终平衡数值、生产接线、`SkillDef`/数据/YAML/model/reducer 修改。
 
 ## 恢复点与 G1 风险
