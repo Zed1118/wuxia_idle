@@ -1772,3 +1772,84 @@ tasks:
       - R08 R09 and R10 pass root diff review and independent review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - audit registry plan and READY marker match the frozen integration tip
+
+  - id: P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r11-migrated-encounter-plan-builder-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r11-migrated-encounter-plan-builder
+    status: in_progress
+    base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    prerequisites:
+      - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_migrated_encounter_plan_builder.dart
+      - test/features/battle/application/phase0a/phase0a_migrated_encounter_plan_builder_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r11-migrated-encounter-plan-builder.md
+    protected_behavior:
+      - accept only a typed migrated route and compose runtime bundle same-director roster and mapping without fallback
+      - create fresh builder-owned runtime owners while preserving caller ownership of arena adapters and actor objects
+      - delegate coverage adapter move-binding tick and active-enemy checks to existing assembler and runtime truths
+      - no rng numbers io repository host production data candidate defaults or tuning promotion
+
+  - id: P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME
+    milestone: M2
+    owner: codex_sol_high
+    branch: codex/phase2-m2-r12a-attack-token-lease-runtime-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12a-attack-token-lease-runtime
+    status: in_progress
+    base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    prerequisites:
+      - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
+    owned_files:
+      - lib/features/battle/domain/phase0a/attack_token_lease_runtime.dart
+      - test/features/battle/domain/phase0a/attack_token_lease_runtime_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r12a-attack-token-lease-runtime.md
+    protected_behavior:
+      - caller explicitly supplies lease identity request facts and acquire or release mutations with no event inference
+      - immutable snapshots and owner-bound prepared successors do not mutate published state on failure
+      - no session timeline adapter reducer host production data candidate defaults or tuning promotion
+      - actual cross-tick lifecycle integration remains a separate R12b task
+
+  - id: P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r13-explicit-objective-event-source-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r13-explicit-objective-event-source
+    status: in_progress
+    base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    prerequisites:
+      - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_explicit_objective_event_source.dart
+      - test/features/battle/application/phase0a/phase0a_explicit_objective_event_source_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r13-explicit-objective-event-source.md
+    protected_behavior:
+      - require exact roster actor coverage including explicit empty defeat projection lists
+      - map defeat identity only from caller declarations and reject target or commander events from external projectors
+      - preserve combat declaration and projector order with stable replay ids and full lazy materialization
+      - no entry role name position checkpoint time host production data candidate default or tuning inference
+
+  - id: P2-M2-BATCH14-ENCOUNTER-RUNTIME-OWNERSHIP-INTEGRATION
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch14-encounter-runtime-ownership-integration-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch14-encounter-runtime-ownership-integration
+    status: in_progress
+    base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    source_tasks:
+      - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
+      - P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME
+      - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch14-encounter-runtime-ownership.md
+      - docs/audit/phase2_m2_batch14_encounter_runtime_ownership_2026-08-24.md
+    protected_behavior:
+      - integrate only explicit opt-in encounter runtime ownership contracts without switching a production host
+      - keep timeline session wiring production data candidate tuning profile and human gates unresolved
+      - main and origin main remain untouched
+    exit_criteria:
+      - R11 R12a and R13 pass source tool review root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
