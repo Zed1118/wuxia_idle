@@ -1,0 +1,18 @@
+# CANDIDATE-ONLY NON-PRODUCTION fixture; never load from a production path.
+# Every numeric value in this file is an unfrozen review candidate; not frozen.
+stage_assignments:
+  - stage_id: stage_01_01
+    migration_state: migrated
+    encounter_id: candidate_ch1_encounter_01_roadbreak
+  - stage_id: stage_01_02
+    migration_state: migrated
+    encounter_id: candidate_ch1_encounter_02_stronghold
+  - stage_id: stage_01_03
+    migration_state: migrated
+    encounter_id: candidate_ch1_encounter_03_ambush
+  - stage_id: stage_01_04
+    migration_state: migrated
+    encounter_id: candidate_ch1_encounter_04_commander
+  - stage_id: stage_01_05
+    migration_state: migrated
+    encounter_id: candidate_ch1_encounter_05_commander
