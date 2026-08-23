@@ -24,3 +24,8 @@
 ## 待完成验证
 
 待来源 READY 后补充外部工具证据、来源/集成提交、targeted/analyze/format/full、仓库闸门、独立终审与最终 READY。
+
+## 环境恢复点
+
+- Batch17 integration 完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与根目录 `libisar.dylib` 恢复；dylib SHA-256 为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
+- R19/R20 worktree 均从登记提交 `88e1413486889a0b98d027bd56f56b7ba51cbc5d` 创建并并行派发；两个来源 owned files 不重叠。
