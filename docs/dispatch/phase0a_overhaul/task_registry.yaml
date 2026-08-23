@@ -1361,6 +1361,25 @@ tasks:
       - domain controller cannot import data layer and all progress is owner bound
       - no production host yaml save ui or tuning changes
 
+  - id: P2-M2-R04-RUNTIME-CONTRACT-MAPPER
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r04-runtime-contract-mapper-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r04-runtime-contract-mapper
+    status: running
+    base_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
+    prerequisites:
+      - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
+      - P2-M2-R03-OBJECTIVE-CONTROLLER
+    owned_files:
+      - lib/data/validation/combat_encounter_runtime_contract_mapper.dart
+      - test/data/validation/combat_encounter_runtime_contract_mapper_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r04-runtime-contract-mapper.md
+    protected_behavior:
+      - map caller-explicit catalog contracts to existing spawn token and objective runtime contracts only
+      - enemy instance ids remain caller-provided and are never derived by an invented convention
+      - no actor roster production host yaml io ui save reward injury or tuning defaults
+
   - id: P2-M2-D01-CH1-CANDIDATE-CATALOG
     milestone: M2
     owner: pi_deepseek_v4_flash
