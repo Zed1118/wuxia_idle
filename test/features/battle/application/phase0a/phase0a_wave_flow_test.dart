@@ -518,7 +518,7 @@ void main() {
           Phase0aWave(enemies: wave1),
           Phase0aWave(enemies: wave2),
         ],
-        waveTransitionPolicy: const Phase0aWaveTransitionPolicy(
+        waveTransitionPolicy: Phase0aWaveTransitionPolicy(
           healPlayerToFull: true,
           qiRecoveryPct: 0.25,
           resetAttackCooldown: true,
@@ -539,6 +539,81 @@ void main() {
       expect(
         flow.state.skillSlots.single.availability,
         Phase0aSkillAvailability.ready,
+      );
+    });
+
+    test('配置间歇按秒自然推进剩余技能冷却，不清零', () {
+      final wave1 = [
+        makeEnemy(
+          id: 'e1',
+          position: const ArenaVector(50, 0),
+          currentHealth: 15,
+        ),
+      ];
+      final wave2 = [
+        makeEnemy(
+          id: 'e2',
+          position: const ArenaVector(50, 0),
+          currentHealth: 15,
+        ),
+      ];
+      final flow = makeFlow(
+        initialState: makeState(
+          enemies: wave1,
+          skillSlots: const [
+            Phase0aSkillSlot(
+              slot: 'gather',
+              cooldownRemaining: 2.1,
+              qiCost: 20,
+              availability: Phase0aSkillAvailability.cooldown,
+            ),
+          ],
+        ),
+        waves: [
+          Phase0aWave(enemies: wave1),
+          Phase0aWave(enemies: wave2),
+        ],
+        waveTransitionPolicy: Phase0aWaveTransitionPolicy(
+          healPlayerToFull: false,
+          qiRecoveryPct: 0,
+          resetAttackCooldown: false,
+          resetSkillCooldowns: false,
+          intermissionSeconds: 0.5,
+        ),
+      );
+
+      flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+
+      expect(flow.state.skillSlots.single.cooldownRemaining, 1.5);
+      expect(
+        flow.state.skillSlots.single.availability,
+        Phase0aSkillAvailability.cooldown,
+      );
+    });
+
+    test('换波策略拒绝负数或非有限间歇秒数', () {
+      expect(
+        () => Phase0aWaveTransitionPolicy(
+          healPlayerToFull: false,
+          qiRecoveryPct: 0,
+          resetAttackCooldown: false,
+          resetSkillCooldowns: false,
+          intermissionSeconds: -0.1,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => Phase0aWaveTransitionPolicy(
+          healPlayerToFull: false,
+          qiRecoveryPct: 0,
+          resetAttackCooldown: false,
+          resetSkillCooldowns: false,
+          intermissionSeconds: double.infinity,
+        ),
+        throwsArgumentError,
       );
     });
 

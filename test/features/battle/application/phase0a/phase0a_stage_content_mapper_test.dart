@@ -534,6 +534,8 @@ void main() {
       expect(bossSnapshot.chargeSkillId, isNotNull);
       expect(mapping.waveTransitionPolicy?.healPlayerToFull, isFalse);
       expect(mapping.waveTransitionPolicy?.qiRecoveryPct, 0.25);
+      expect(mapping.waveTransitionPolicy?.resetSkillCooldowns, isFalse);
+      expect(mapping.waveTransitionPolicy?.intermissionSeconds, 0.0);
     });
 
     test('非主线塔路径继续使用 arena.enemyMoveSpeed', () {

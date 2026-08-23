@@ -170,6 +170,7 @@ final class Phase0aStageContentMapper {
         qiRecoveryPct: intermission.aliveIfRecoveryPct,
         resetAttackCooldown: intermission.resetActionPoint,
         resetSkillCooldowns: !intermission.preserveCooldowns,
+        intermissionSeconds: intermission.intermissionSeconds,
       ),
     );
   }
@@ -446,6 +447,7 @@ final class Phase0aStageContentMapper {
         qiRecoveryPct: intermission.aliveIfRecoveryPct,
         resetAttackCooldown: intermission.resetActionPoint,
         resetSkillCooldowns: !intermission.preserveCooldowns,
+        intermissionSeconds: intermission.intermissionSeconds,
       ),
     );
   }

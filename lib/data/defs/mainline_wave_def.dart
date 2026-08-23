@@ -127,19 +127,22 @@ final class MainlineWaveIntermission {
   final bool resetActionPoint;
   final bool preserveHp;
   final bool preserveCooldowns;
+  final double intermissionSeconds;
   final double aliveIfRecoveryPct;
 
   const MainlineWaveIntermission({
     required this.resetActionPoint,
     required this.preserveHp,
     required this.preserveCooldowns,
+    required this.intermissionSeconds,
     required this.aliveIfRecoveryPct,
   });
 
   const MainlineWaveIntermission.defaults()
     : resetActionPoint = true,
       preserveHp = true,
-      preserveCooldowns = false,
+      preserveCooldowns = true,
+      intermissionSeconds = 0.0,
       aliveIfRecoveryPct = 0.25;
 
   factory MainlineWaveIntermission.fromYaml(Map? y) {
@@ -152,7 +155,9 @@ final class MainlineWaveIntermission {
     return MainlineWaveIntermission(
       resetActionPoint: map['reset_action_point'] as bool? ?? true,
       preserveHp: map['preserve_hp'] as bool? ?? true,
-      preserveCooldowns: map['preserve_cooldowns'] as bool? ?? false,
+      preserveCooldowns: map['preserve_cooldowns'] as bool? ?? true,
+      intermissionSeconds:
+          (map['intermission_seconds'] as num?)?.toDouble() ?? 0.0,
       aliveIfRecoveryPct:
           (map['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
     );
@@ -162,6 +167,11 @@ final class MainlineWaveIntermission {
     if (aliveIfRecoveryPct < 0 || aliveIfRecoveryPct > 1) {
       throw StateError(
         'mainline_wave.wave_intermission.alive_if_recovery_pct 必须 ∈ [0, 1]',
+      );
+    }
+    if (!intermissionSeconds.isFinite || intermissionSeconds < 0) {
+      throw StateError(
+        'mainline_wave.wave_intermission.intermission_seconds 必须为非负有限秒数',
       );
     }
   }
