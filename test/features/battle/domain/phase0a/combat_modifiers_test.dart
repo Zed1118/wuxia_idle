@@ -1,22 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_modifiers.dart';
 
 void main() {
   group('typed style modifiers', () {
     test('rigid exposes only knockback, posture and breach parameters', () {
-      final modifier = RigidModifier(
+      final modifier = GangMengModifier(
         knockbackFactor: 1.2,
         postureDamageFactor: 1.3,
         breachPowerFactor: 1.1,
       );
 
-      expect(modifier.style, ModifierStyle.rigid);
+      expect(modifier.school, TechniqueSchool.gangMeng);
       expect(modifier.knockbackFactor, 1.2);
     });
 
     test('rejects non-finite or negative factors', () {
       expect(
-        () => RigidModifier(
+        () => GangMengModifier(
           knockbackFactor: -1,
           postureDamageFactor: 1,
           breachPowerFactor: 1,
@@ -24,10 +25,19 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => AgileModifier(
+        () => LingQiaoModifier(
           pursuitFactor: double.nan,
           dodgeTrajectoryFactor: 1,
           recoveryFactor: 1,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => YinRouModifier(
+          pullFactor: 1,
+          slowFactor: 0,
+          internalInjuryFactor: 1,
+          controlDurationFactor: 1,
         ),
         throwsArgumentError,
       );
@@ -35,7 +45,7 @@ void main() {
 
     test('cannot construct a cross-domain parameter set', () {
       expect(
-        () => SinisterModifier(
+        () => YinRouModifier(
           pullFactor: 1,
           slowFactor: 1,
           internalInjuryFactor: 1,
@@ -76,17 +86,17 @@ void main() {
 
     test('composes only each style legal domain', () {
       final result = applyCombatModifiers(base, bounds, [
-        RigidModifier(
+        GangMengModifier(
           knockbackFactor: 2,
           postureDamageFactor: 2,
           breachPowerFactor: 2,
         ),
-        AgileModifier(
+        LingQiaoModifier(
           pursuitFactor: 2,
           dodgeTrajectoryFactor: 2,
           recoveryFactor: 2,
         ),
-        SinisterModifier(
+        YinRouModifier(
           pullFactor: 2,
           slowFactor: 2,
           internalInjuryFactor: 2,
@@ -107,7 +117,7 @@ void main() {
         base,
         bounds.copyWith(knockback: 15, postureDamage: 25),
         [
-          RigidModifier(
+          GangMengModifier(
             knockbackFactor: 2,
             postureDamageFactor: 2,
             breachPowerFactor: 1,
@@ -122,12 +132,12 @@ void main() {
 
     test('ordered composition is deterministic and repeatable', () {
       final modifiers = <CombatModifier>[
-        RigidModifier(
+        GangMengModifier(
           knockbackFactor: 1.1,
           postureDamageFactor: 1,
           breachPowerFactor: 1,
         ),
-        RigidModifier(
+        GangMengModifier(
           knockbackFactor: 1.2,
           postureDamageFactor: 1,
           breachPowerFactor: 1,

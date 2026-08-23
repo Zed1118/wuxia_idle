@@ -1,23 +1,23 @@
-/// Typed, composable modifier candidate for the M1 combat domain.
-enum ModifierStyle { rigid, agile, sinister }
+import 'package:wuxia_idle/core/domain/enums.dart';
 
+/// Typed, composable modifier candidate for the M1 combat domain.
 sealed class CombatModifier {
   const CombatModifier();
 
-  ModifierStyle get style;
+  TechniqueSchool get school;
 
   ModifierValues applyTo(ModifierValues values);
 }
 
-final class RigidModifier extends CombatModifier {
-  RigidModifier({
+final class GangMengModifier extends CombatModifier {
+  GangMengModifier({
     required this.knockbackFactor,
     required this.postureDamageFactor,
     required this.breachPowerFactor,
   }) {
-    _requireFactor(knockbackFactor, 'knockbackFactor');
-    _requireFactor(postureDamageFactor, 'postureDamageFactor');
-    _requireFactor(breachPowerFactor, 'breachPowerFactor');
+    _requirePositiveFactor(knockbackFactor, 'knockbackFactor');
+    _requirePositiveFactor(postureDamageFactor, 'postureDamageFactor');
+    _requirePositiveFactor(breachPowerFactor, 'breachPowerFactor');
   }
 
   final double knockbackFactor;
@@ -25,7 +25,7 @@ final class RigidModifier extends CombatModifier {
   final double breachPowerFactor;
 
   @override
-  ModifierStyle get style => ModifierStyle.rigid;
+  TechniqueSchool get school => TechniqueSchool.gangMeng;
 
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
@@ -35,15 +35,15 @@ final class RigidModifier extends CombatModifier {
   );
 }
 
-final class AgileModifier extends CombatModifier {
-  AgileModifier({
+final class LingQiaoModifier extends CombatModifier {
+  LingQiaoModifier({
     required this.pursuitFactor,
     required this.dodgeTrajectoryFactor,
     required this.recoveryFactor,
   }) {
-    _requireFactor(pursuitFactor, 'pursuitFactor');
-    _requireFactor(dodgeTrajectoryFactor, 'dodgeTrajectoryFactor');
-    _requireFactor(recoveryFactor, 'recoveryFactor');
+    _requirePositiveFactor(pursuitFactor, 'pursuitFactor');
+    _requirePositiveFactor(dodgeTrajectoryFactor, 'dodgeTrajectoryFactor');
+    _requirePositiveFactor(recoveryFactor, 'recoveryFactor');
   }
 
   final double pursuitFactor;
@@ -51,7 +51,7 @@ final class AgileModifier extends CombatModifier {
   final double recoveryFactor;
 
   @override
-  ModifierStyle get style => ModifierStyle.agile;
+  TechniqueSchool get school => TechniqueSchool.lingQiao;
 
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
@@ -61,17 +61,17 @@ final class AgileModifier extends CombatModifier {
   );
 }
 
-final class SinisterModifier extends CombatModifier {
-  SinisterModifier({
+final class YinRouModifier extends CombatModifier {
+  YinRouModifier({
     required this.pullFactor,
     required this.slowFactor,
     required this.internalInjuryFactor,
     required this.controlDurationFactor,
   }) {
-    _requireFactor(pullFactor, 'pullFactor');
-    _requireFactor(slowFactor, 'slowFactor');
-    _requireFactor(internalInjuryFactor, 'internalInjuryFactor');
-    _requireFactor(controlDurationFactor, 'controlDurationFactor');
+    _requirePositiveFactor(pullFactor, 'pullFactor');
+    _requirePositiveFactor(slowFactor, 'slowFactor');
+    _requirePositiveFactor(internalInjuryFactor, 'internalInjuryFactor');
+    _requirePositiveFactor(controlDurationFactor, 'controlDurationFactor');
   }
 
   final double pullFactor;
@@ -80,7 +80,7 @@ final class SinisterModifier extends CombatModifier {
   final double controlDurationFactor;
 
   @override
-  ModifierStyle get style => ModifierStyle.sinister;
+  TechniqueSchool get school => TechniqueSchool.yinRou;
 
   @override
   ModifierValues applyTo(ModifierValues values) => values.copyWith(
@@ -222,19 +222,30 @@ final class ModifierBounds {
   final double internalInjuryStrength;
   final double controlDuration;
 
-  ModifierBounds copyWith({double? knockback, double? postureDamage}) =>
-      ModifierBounds(
-        knockback: knockback ?? this.knockback,
-        postureDamage: postureDamage ?? this.postureDamage,
-        breachPower: breachPower,
-        pursuitDistance: pursuitDistance,
-        dodgeTrajectory: dodgeTrajectory,
-        recoveryDuration: recoveryDuration,
-        pullStrength: pullStrength,
-        slowStrength: slowStrength,
-        internalInjuryStrength: internalInjuryStrength,
-        controlDuration: controlDuration,
-      );
+  ModifierBounds copyWith({
+    double? knockback,
+    double? postureDamage,
+    double? breachPower,
+    double? pursuitDistance,
+    double? dodgeTrajectory,
+    double? recoveryDuration,
+    double? pullStrength,
+    double? slowStrength,
+    double? internalInjuryStrength,
+    double? controlDuration,
+  }) => ModifierBounds(
+    knockback: knockback ?? this.knockback,
+    postureDamage: postureDamage ?? this.postureDamage,
+    breachPower: breachPower ?? this.breachPower,
+    pursuitDistance: pursuitDistance ?? this.pursuitDistance,
+    dodgeTrajectory: dodgeTrajectory ?? this.dodgeTrajectory,
+    recoveryDuration: recoveryDuration ?? this.recoveryDuration,
+    pullStrength: pullStrength ?? this.pullStrength,
+    slowStrength: slowStrength ?? this.slowStrength,
+    internalInjuryStrength:
+        internalInjuryStrength ?? this.internalInjuryStrength,
+    controlDuration: controlDuration ?? this.controlDuration,
+  );
 }
 
 ModifierValues applyCombatModifiers(
@@ -265,14 +276,21 @@ ModifierValues applyCombatModifiers(
 
 double _cap(double value, double bound) => value > bound ? bound : value;
 
-void _requireFactor(double value, String name) {
-  if (!value.isFinite || value < 0) {
-    throw ArgumentError.value(value, name, 'must be finite and non-negative');
+void _requirePositiveFactor(double value, String name) {
+  if (!value.isFinite || value <= 0) {
+    throw ArgumentError.value(value, name, 'must be finite and positive');
   }
 }
 
 void _validateFields(Map<String, double> fields) {
   for (final entry in fields.entries) {
-    _requireFactor(entry.value, entry.key);
+    final value = entry.value;
+    if (!value.isFinite || value < 0) {
+      throw ArgumentError.value(
+        value,
+        entry.key,
+        'must be finite and non-negative',
+      );
+    }
   }
 }
