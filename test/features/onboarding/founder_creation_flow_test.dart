@@ -5,8 +5,11 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
 import 'package:wuxia_idle/features/onboarding/presentation/founder_creation_screen.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/rarity_tier_badge.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
+import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 import '../../support/test_data.dart';
 
 void main() {
@@ -20,7 +23,10 @@ void main() {
     await tester.binding.setSurfaceSize(const Size(1280, 1800));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: FounderCreationScreen())),
+      ProviderScope(
+        overrides: [rngProvider.overrideWithValue(_LastIndexRng())],
+        child: const MaterialApp(home: FounderCreationScreen()),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -32,12 +38,27 @@ void main() {
     final initialLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
     expect(initialLabel, contains('资质'));
     expect(initialLabel, contains('出生点数'));
-    await tester.tap(find.text(visibleFates[1].label));
+    final initialTotal = int.parse(
+      RegExp(r'（(\d+)）').firstMatch(initialLabel)!.group(1)!,
+    );
+    final changedFate = visibleFates.firstWhere(
+      (fate) => fate.attributeProfile.total != initialTotal,
+      orElse: () => throw TestFailure(
+        '可见命盘候选没有与初始出生点数不同的 fate，无法验证同步接线',
+      ),
+    );
+    final expectedTotal = changedFate.attributeProfile.total;
+    final expectedTier = GameRepository.instance.numbers.rarityForTotalPoints(
+      expectedTotal,
+    );
+    await tester.tap(find.text(changedFate.label));
     await tester.pumpAndSettle();
     final changedLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
-    expect(changedLabel, contains('资质'));
-    expect(changedLabel, contains('出生点数'));
-    expect(changedLabel, isNot(initialLabel));
+    expect(
+      changedLabel,
+      contains('资质 ${EnumL10n.rarityTier(expectedTier)}（$expectedTotal）'),
+    );
+    expect(changedLabel, contains('出生点数 $expectedTotal'));
   });
 
   testWidgets('submit → 开局行装弹窗 → 确认后进入主菜单', (tester) async {
@@ -136,4 +157,15 @@ void main() {
     expect(find.text(UiStrings.founderCreateStartModeSection), findsNothing);
     expect(find.text(UiStrings.founderCreateQuickMode), findsNothing);
   });
+}
+
+class _LastIndexRng implements Rng {
+  @override
+  int nextInt(int max) => max - 1;
+
+  @override
+  double nextDouble() => 0;
+
+  @override
+  T pick<T>(List<T> list) => list.last;
 }
