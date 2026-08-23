@@ -69,8 +69,10 @@ void main() {
   });
 
   group('request validation', () {
-    test('empty actorId throws', () {
+    test('actorId must already be a trimmed non-empty ID', () {
       expect(() => _request(actorId: ''), throwsArgumentError);
+      expect(() => _request(actorId: '   '), throwsArgumentError);
+      expect(() => _request(actorId: ' actor '), throwsArgumentError);
     });
 
     test('negative priority throws', () {
@@ -86,6 +88,19 @@ void main() {
         () => director.allocate(
           budgets: _budgets(melee: 4),
           requests: [_request(actorId: 'dup'), _request(actorId: 'dup')],
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('unnormalized actorId cannot bypass duplicate checks', () {
+      expect(
+        () => director.allocate(
+          budgets: _budgets(melee: 4),
+          requests: [
+            _request(actorId: 'dup'),
+            _request(actorId: ' dup '),
+          ],
         ),
         throwsArgumentError,
       );
@@ -172,6 +187,64 @@ void main() {
         requests: [_request(actorId: 'a', spawnGraceTicksRemaining: 1)],
       );
       expect(allocation.decisions.single.denial, AttackTokenDenial.spawnGraceActive);
+    });
+
+    test('all safety gates keep a stable precedence over exhausted budgets', () {
+      final telegraph = director.allocate(
+        budgets: _budgets(melee: 0),
+        requests: [_request(actorId: 'a', telegraphReady: false)],
+      );
+      expect(
+        telegraph.decisions.single.denial,
+        AttackTokenDenial.telegraphIncomplete,
+      );
+
+      final offscreen = director.allocate(
+        budgets: _budgets(melee: 0),
+        requests: [
+          _request(actorId: 'a', isOffscreen: true, isHighImpact: true),
+        ],
+      );
+      expect(
+        offscreen.decisions.single.denial,
+        AttackTokenDenial.offscreenHighImpact,
+      );
+
+      final unblockable = director.allocate(
+        budgets: _budgets(melee: 1, ranged: 0),
+        requests: [
+          _request(
+            actorId: 'first',
+            kind: AttackTokenKind.melee,
+            priority: 2,
+            isUnblockableArea: true,
+          ),
+          _request(
+            actorId: 'second',
+            kind: AttackTokenKind.ranged,
+            priority: 1,
+            isUnblockableArea: true,
+          ),
+        ],
+      );
+      expect(
+        unblockable.decisions.last.denial,
+        AttackTokenDenial.unblockableAreaLimit,
+      );
+    });
+
+    test('grace boundary is open at zero and allocator has no cross-call state', () {
+      final request = _request(actorId: 'a', spawnGraceTicksRemaining: 0);
+      final first = director.allocate(
+        budgets: _budgets(melee: 1),
+        requests: [request],
+      );
+      final second = director.allocate(
+        budgets: _budgets(melee: 1),
+        requests: [request],
+      );
+      expect(first.decisions.single.granted, isTrue);
+      expect(second.decisions, first.decisions);
     });
   });
 

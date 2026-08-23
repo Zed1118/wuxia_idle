@@ -63,7 +63,7 @@ final class AttackTokenBudgets {
 /// validated at construction; invalid input fails closed with [ArgumentError].
 final class AttackTokenRequest {
   AttackTokenRequest({
-    required this.actorId,
+    required String actorId,
     required this.kind,
     required this.priority,
     required this.isOffscreen,
@@ -71,10 +71,7 @@ final class AttackTokenRequest {
     required this.isUnblockableArea,
     required this.spawnGraceTicksRemaining,
     required this.telegraphReady,
-  }) {
-    if (actorId.isEmpty) {
-      throw ArgumentError.value(actorId, 'actorId', 'must be non-empty');
-    }
+  }) : actorId = _canonicalId(actorId, 'actorId') {
     _requireNonNegative(priority, 'priority');
     _requireNonNegative(spawnGraceTicksRemaining, 'spawnGraceTicksRemaining');
   }
@@ -126,7 +123,7 @@ final class AttackTokenRequest {
 
 /// Immutable outcome for one actor.
 final class AttackTokenDecision {
-  const AttackTokenDecision({
+  const AttackTokenDecision._({
     required this.actorId,
     required this.kind,
     required this.granted,
@@ -216,7 +213,7 @@ final class AttackTokenDirector {
       final denial = _denialFor(request, remaining, unblockableGrants);
       if (denial != null) {
         decisions.add(
-          AttackTokenDecision(
+          AttackTokenDecision._(
             actorId: request.actorId,
             kind: request.kind,
             granted: false,
@@ -228,7 +225,7 @@ final class AttackTokenDirector {
       remaining[request.kind] = remaining[request.kind]! - 1;
       if (request.isUnblockableArea) unblockableGrants++;
       decisions.add(
-        AttackTokenDecision(
+        AttackTokenDecision._(
           actorId: request.actorId,
           kind: request.kind,
           granted: true,
@@ -268,4 +265,16 @@ void _requireNonNegative(int value, String name) {
   if (value < 0) {
     throw ArgumentError.value(value, name, 'must be non-negative');
   }
+}
+
+String _canonicalId(String value, String name) {
+  final canonical = value.trim();
+  if (canonical.isEmpty || canonical != value) {
+    throw ArgumentError.value(
+      value,
+      name,
+      'must be a trimmed non-empty ID',
+    );
+  }
+  return canonical;
 }

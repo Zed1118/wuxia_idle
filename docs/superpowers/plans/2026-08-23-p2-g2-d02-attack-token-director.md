@@ -11,7 +11,7 @@
 ## 验收标准
 
 - [x] 四类预算（melee/ranged/charge/support）全部调用方显式输入并严格校验，Dart 无 2-4 之类默认值。
-- [x] 请求必含字段：actorId / kind / priority / isOffscreen / isHighImpact / isUnblockableArea / spawnGraceTicksRemaining / telegraphReady，构造期校验。
+- [x] 请求必含字段：actorId / kind / priority / isOffscreen / isHighImpact / isUnblockableArea / spawnGraceTicksRemaining / telegraphReady，构造期校验；actorId 必须已是 trimmed non-empty canonical ID。
 - [x] spawn grace 未完成（>0）或 telegraph 未完成 → fail closed。
 - [x] 屏外 + 高威胁 → fail closed；屏外非高威胁 / 屏内高威胁不受影响。
 - [x] 同批最多一个不可阻挡大范围攻击生效；该上限跨类别生效，不得通过类别预算绕过。
