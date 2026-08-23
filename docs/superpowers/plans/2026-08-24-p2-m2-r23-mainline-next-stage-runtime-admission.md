@@ -68,7 +68,14 @@ private。`commit(exactPredecessor)` 成功后返回新的 final
 
 ## 当前恢复点
 
-- 状态：设计审查已 PASS，进入 TDD 红测。
+- 状态：TDD 实现与本地验证已通过，进入 Qoder 最终只读审查。
 - 基线：`1d64c04c78a729074fc387db64375cecd3704dfd`。
+- 计划：`e723bbc6`；有效红测：`70f7613c`，精确缺失目标 source/type/API；
+  最小实现：`4ee7f253`。fresh worktree 首轮 Flutter native-assets 在编译前崩溃，
+  执行 `flutter pub get` 恢复忽略态依赖后取得上述有效红灯；自动 crash log
+  已清理，未保留白名单外路径。
+- targeted 逐文件实测：R23 11/11、R19 11/11、R01 18/18、R15 18/18，
+  合计 58/58 PASS；changed-Dart scoped analyze 2 items / 0 issue；format 2 files /
+  0 changed；`git diff --check` 通过。
 - Gate：production host、下一关 release 组合、durable run/coordinator、
   settlement/reward/claim、shared occupancy、data/candidate/tuning/Profile/G2 继续未解。
