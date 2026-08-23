@@ -40,15 +40,15 @@ production host，不复制任何 assembler/runtime 校验。
 
 ## 验收 checklist（CLAUDE §8.2）
 
-- [ ] TDD 红测由目标 builder/API 缺失触发，后续转绿。
-- [ ] exact stage/encounter identity；resolver/factory content order exact once。
-- [ ] resolver throw 时 factory 零调用；factory throw 原样透传。
-- [ ] bundle/mapping/roster director identity 同一；重复 build 的 builder-owned
+- [x] TDD 红测由目标 builder/API 缺失触发，后续转绿。
+- [x] exact stage/encounter identity；resolver/factory content order exact once。
+- [x] resolver throw 时 factory 零调用；factory throw 原样透传。
+- [x] bundle/mapping/roster director identity 同一；重复 build 的 builder-owned
   director/controller/roster/mapping 均 fresh。
-- [ ] caller combatants/moveBindings 后续突变不回渗。
-- [ ] 将 `plan.mapping` 交给既有 assembler/runtime，证明 coverage/playerAdapter/
+- [x] caller combatants/moveBindings 后续突变不回渗。
+- [x] 将 `plan.mapping` 交给既有 assembler/runtime，证明 coverage/playerAdapter/
   move/tick/active-enemy fail-close 继续委托。
-- [ ] source guard 禁止 legacy 参数、`Random`、`NumbersConfig`、IO、repository、
+- [x] source guard 禁止 legacy 参数、`Random`、`NumbersConfig`、IO、repository、
   host、candidate/default/tuning，且无 `switch`/`catch`/fallback。
 - [ ] 生产接线证据：这一切片交付 typed migrated plan 组合 seam；依授权
   不改 production host，不冒充已上线。
@@ -73,21 +73,28 @@ production host，不复制任何 assembler/runtime 校验。
 
 ## Qoder 审查
 
-- CLI/version：待实测。
-- 设计审查：待执行（必须 `Qwen3.8-Max` + `high`）。
+- CLI/version：`qoderclicn` 1.1.28；`--list-models` 实测返回精确标识
+  `Qwen3.8-Max`。
+- 设计审查：实际执行 `Qwen3.8-Max` + `--reasoning-effort high` +
+  `--permission-mode dont_ask`，仅允许 Read/Grep/Glob，显式禁用 Edit/Write/Bash；
+  `--no-session-persistence`。审查读取计划与 route/runtime/roster/mapping/assembler
+  代码和聚焦测试，结论 **PASS**：P0=0，P1=1（建议 plan 构造私有以保住
+  bundle↔mapping director 组合不变量，已采纳），P2=2（source guard 用 import
+  白名单；handoff 不重演既有规则，已按实际边界收口）。
 - 最终 diff 审查：待执行（必须 `Qwen3.8-Max` + `high`）。
 - 不记录或输出 token/key。
 
 ## 当前恢复点
 
-- 状态：计划已写，待提交恢复点与 Qoder 编码前设计审查。
-- 最后完成：核对 worktree 干净且 `HEAD=77c5520e`；完整读取 CLAUDE
-  红线/§8/§11、已否清单、migrated route、runtime/roster mapper 与
-  mapping/assembler 委托边界。
-- 下一步：提交计划；用 Qoder/Qwen3.8-Max/high 只读审查冻结合同和
-  测试矩阵。
-- 已跑验证：`git status` 干净，`git diff --check` 通过，三个目标文件
-  起始均不存在。
+- 状态：设计审查、TDD 红绿与薄组合实现已完成，待提交小切片后跑聚焦
+  回归/analyze 与 Qoder 最终 diff 审查。
+- 最后完成：计划恢复点 commit `9ecfff2f`；Qoder 1.1.28 /
+  `Qwen3.8-Max` / high 设计审查 PASS。新测试先因目标文件与 API 不存在编译
+  失败，实现 runtime → same-director roster → mapping 后 7/7 转绿。
+- 下一步：提交 builder/test/证据小切片；运行 mapper/mapping/assembler/runtime
+  聚焦回归与 scoped analyze，再用 Qoder 审查最终 diff。
+- 已跑验证：新 builder 测试 7/7 PASS；`dart format` 两个 Dart 文件 0
+  changed；实现前有效红灯已留证。
 - 阻塞项：无。
 - 生产接线：按授权仅交付后续 host 消费的 pure composition seam；不改 host。
 - 残留风险：本切片不承担 production repository/host 选择、数值与 RNG 所有权；
