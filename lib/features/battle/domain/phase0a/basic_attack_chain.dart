@@ -19,14 +19,17 @@ final class BasicAttackSegment {
   final String timelineRef;
   final List<String> _effectRefs;
 
-  List<String> get effectRefs => List<String>.unmodifiable(_effectRefs);
+  List<String> get effectRefs => _effectRefs;
 
   void validate() {
     _requireRef(id, 'id');
     _requireRef(geometryRef, 'geometryRef');
     _requireRef(timelineRef, 'timelineRef');
-    if (_effectRefs.isEmpty || _effectRefs.any((ref) => ref.trim().isEmpty)) {
+    if (_effectRefs.isEmpty) {
       throw ArgumentError.value(_effectRefs, 'effectRefs');
+    }
+    for (final ref in _effectRefs) {
+      _requireRef(ref, 'effectRefs');
     }
     if (_effectRefs.length != _effectRefs.toSet().length) {
       throw ArgumentError.value(_effectRefs, 'effectRefs');
@@ -49,7 +52,8 @@ final class BasicAttackSegment {
       ).every((same) => same);
 
   @override
-  int get hashCode => Object.hash(id, geometryRef, timelineRef, effectRefs);
+  int get hashCode =>
+      Object.hash(id, geometryRef, timelineRef, Object.hashAll(_effectRefs));
 }
 
 final class BasicAttackChain {
@@ -63,18 +67,10 @@ final class BasicAttackChain {
       throw ArgumentError.value(resetAfterIdleTicks, 'resetAfterIdleTicks');
     }
     final ids = <String>{};
-    final geometryRefs = <String>{};
-    final timelineRefs = <String>{};
     for (final segment in _segments) {
       segment.validate();
       if (!ids.add(segment.id)) {
         throw ArgumentError('segment ids must be unique');
-      }
-      if (!geometryRefs.add(segment.geometryRef)) {
-        throw ArgumentError('geometry refs must be unique');
-      }
-      if (!timelineRefs.add(segment.timelineRef)) {
-        throw ArgumentError('timeline refs must be unique');
       }
     }
   }
@@ -138,5 +134,7 @@ final class BasicAttackChain {
 }
 
 void _requireRef(String value, String name) {
-  if (value.trim().isEmpty) throw ArgumentError.value(value, name);
+  if (value.isEmpty || value != value.trim()) {
+    throw ArgumentError.value(value, name, 'must be a trimmed non-empty ID');
+  }
 }
