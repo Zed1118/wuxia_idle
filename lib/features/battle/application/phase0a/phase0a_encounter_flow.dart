@@ -39,6 +39,13 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
         'playerId must match session player id',
       );
     }
+    if (session.state.player.side != Phase0aSide.player) {
+      throw ArgumentError.value(
+        session.state.player.id,
+        'session',
+        'session player must be on the player side',
+      );
+    }
     if (director.state.tick != session.state.tick) {
       throw ArgumentError.value(
         director.state.tick,
@@ -59,6 +66,15 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
         'session',
         'session enemies must equal director active units',
       );
+    }
+    for (final enemy in session.state.enemies) {
+      if (enemy.side != Phase0aSide.enemy || !enemy.isAlive) {
+        throw ArgumentError.value(
+          enemy.id,
+          'session',
+          'active session enemies must be alive and on the enemy side',
+        );
+      }
     }
   }
 
