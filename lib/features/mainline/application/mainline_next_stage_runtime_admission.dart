@@ -81,6 +81,13 @@ prepareNextMainlineStageRuntimeAdmission({
   required MentorInsightChoice mentorChoice,
   required MentorInsightBlockingStatus blockingStatus,
 }) {
+  if (previousRelease.releaseReason !=
+      MentorInsightReleaseReason.successSettlement) {
+    throw StateError(
+      'Mainline next-stage runtime admission requires a successful '
+      'previous stage release',
+    );
+  }
   if (mentorChoice.stageId != nextStageId) {
     throw ArgumentError.value(
       mentorChoice.stageId,

@@ -28,20 +28,23 @@ private。`commit(exactPredecessor)` 成功后返回新的 final
 
 ## 顺序与不变量
 
-1. 先要求 `mentorChoice.stageId == nextStageId`，失配抛
+1. 先要求 `previousRelease.releaseReason == successSettlement`；failure / explicit
+   exit / idempotent recovery 只证明 occupancy 已释放，不是可推进事实，必须
+   fail closed。恢复结算若要推进，留给未来持有 durable outcome 的 coordinator。
+2. 再要求 `mentorChoice.stageId == nextStageId`，失配抛
    `ArgumentError` (`name: mentorChoice.stageId`)，不 trim 或推断邻接关。
-2. 只调用一次
+3. 只调用一次
    `previousRelease.admission.runAdmission.run.proceedToNext(...)`；保持 runId / participant，
    快照版本 +1，不重建 run 或 participant。
-3. 推进成功后才从 `previousRelease.occupancyRuntime` 以恰好一条
+4. 推进成功后才从 `previousRelease.occupancyRuntime` 以恰好一条
    `AcquireMentorInsightStageOccupancy` 准备 successor；R01/R15 异常原样透传。
-4. `admittedCompanion` 只能是本次 choice 非空时的
+5. `admittedCompanion` 只能是本次 choice 非空时的
    `occupancyNext.companion` exact object；empty choice 恒为 null，不读旧 admission
-   provenance 或 release reason。
-5. commit 先验 `identical(exactPredecessor, occupancyPredecessor)`，再验 single-use；
+   provenance；release reason 只用于上述 success fail-closed gate，不推断其他事实。
+6. commit 先验 `identical(exactPredecessor, occupancyPredecessor)`，再验 single-use；
    foreign/stale/double commit 均不消费合法提交机会。sibling prepared 可各自从
    immutable exact predecessor 提交，不冒充全局 CAS。
-6. 任一 prepare 失败均不发布 run 或 occupancy successor；输入对象不变。
+7. 任一 prepare 失败均不发布 run 或 occupancy successor；输入对象不变。
 
 ## Qoder 设计审查
 
@@ -74,8 +77,12 @@ private。`commit(exactPredecessor)` 成功后返回新的 final
   最小实现：`4ee7f253`。fresh worktree 首轮 Flutter native-assets 在编译前崩溃，
   执行 `flutter pub get` 恢复忽略态依赖后取得上述有效红灯；自动 crash log
   已清理，未保留白名单外路径。
-- targeted 逐文件实测：R23 11/11、R19 11/11、R01 18/18、R15 18/18，
-  合计 58/58 PASS；changed-Dart scoped analyze 2 items / 0 issue；format 2 files /
+- targeted 修正后逐文件实测：R23 12/12、R19 11/11、R01 18/18、R15 18/18，
+  合计 59/59 PASS；changed-Dart scoped analyze 2 items / 0 issue；format 2 files /
   0 changed；`git diff --check` 通过。
+- 首轮 Qoder 终审曾给出 `FINAL PASS` 0/0/0，但主控 provisional review 发现
+  non-success release 仍可推进的 P1；复核 R01/R19/R21 后确认 finding 成立，该轮
+  终审作废。本计划与代码已改为仅接受 `successSettlement`，修正红测有效失败，
+  上述 targeted/analyze/format 已全部重跑通过，待 Qoder 有效终审。
 - Gate：production host、下一关 release 组合、durable run/coordinator、
   settlement/reward/claim、shared occupancy、data/candidate/tuning/Profile/G2 继续未解。

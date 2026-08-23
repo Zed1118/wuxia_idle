@@ -29,6 +29,8 @@ MentorInsightChoice _choice(String stageId, [int? characterId]) =>
 MainlineStageRuntimeRelease _previousRelease({
   MentorInsightStageOccupancyRuntime? occupancyPredecessor,
   int? admittedCharacterId = 91,
+  MentorInsightReleaseReason releaseReason =
+      MentorInsightReleaseReason.successSettlement,
 }) {
   final predecessor =
       occupancyPredecessor ?? MentorInsightStageOccupancyRuntime.empty();
@@ -45,7 +47,7 @@ MainlineStageRuntimeRelease _previousRelease({
   ).commit(predecessor);
   final prepared = prepareMainlineStageRuntimeRelease(
     admission: admission,
-    releaseReason: MentorInsightReleaseReason.successSettlement,
+    releaseReason: releaseReason,
   );
   return prepared.commit(admission.occupancyRuntime);
 }
@@ -182,6 +184,36 @@ void main() {
         'mentorChoice.stageId',
       ),
     );
+  });
+
+  test('only an explicit successful release may advance to the next stage', () {
+    for (final releaseReason in const [
+      MentorInsightReleaseReason.failureSettlement,
+      MentorInsightReleaseReason.explicitExit,
+      MentorInsightReleaseReason.idempotentRecoverySettlement,
+    ]) {
+      final previousRelease = _previousRelease(releaseReason: releaseReason);
+      final run = previousRelease.admission.runAdmission.run;
+      final predecessor = previousRelease.occupancyRuntime;
+      final snapshot = predecessor.snapshot;
+
+      final error = _captureError(
+        () => _prepare(previousRelease: previousRelease),
+      );
+
+      expect(
+        error,
+        isA<StateError>().having(
+          (value) => value.message,
+          'message',
+          'Mainline next-stage runtime admission requires a successful '
+              'previous stage release',
+        ),
+      );
+      expect(run.currentStageId, 'stage_a');
+      expect(run.currentLoadoutVersion, 1);
+      expect(predecessor.snapshot, same(snapshot));
+    }
   });
 
   test('ineligible participant preserves run and occupancy inputs', () {
@@ -356,7 +388,14 @@ void main() {
     expect(contract.identifierCount('admitMainlineRun'), 0);
     expect(contract.identifierCount('MainlineRunAdmission'), 0);
     expect(contract.identifierCount('ReleaseMentorInsightStageOccupancy'), 0);
-    expect(contract.identifierCount('releaseReason'), 0);
+    expect(
+      contract.memberAccessCount(
+        'releaseReason',
+        receiverSource: 'previousRelease',
+      ),
+      1,
+    );
+    expect(contract.identifierCount('successSettlement'), 1);
 
     for (final forbidden in const [
       'RewardClaimKey',
@@ -364,7 +403,6 @@ void main() {
       'RewardGrantGuard',
       'ActivityOccupancy',
       'Isar',
-      'settlement',
       'outbox',
       'production',
       'candidate',
