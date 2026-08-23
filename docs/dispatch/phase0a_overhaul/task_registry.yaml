@@ -32,8 +32,8 @@ tasks:
     owner: pi_deepseek_flash
     branch: codex/phase2-m0-pi-evidence-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-pi
-    status: ready_external_review
-    tip_commit: e71cbefe
+    status: ready_reviewed
+    tip_commit: 6254f764
     owned_files:
       - docs/audit/phase2_m0_implementation_gap_evidence_2026-08-23.md
       - docs/superpowers/plans/2026-08-23-p2-m0-pi-evidence.md
@@ -70,7 +70,7 @@ tasks:
     branch: codex/phase2-m1-geometry-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-geometry
     status: ready_reviewed
-    tip_commit: 1778bc4ce78d12a7632445ec4360bffd3d333e4c
+    tip_commit: ed28b6f6
     owned_files:
       - lib/features/battle/domain/phase0a/combat_geometry.dart
       - test/features/battle/domain/phase0a/combat_geometry_test.dart
@@ -109,8 +109,8 @@ tasks:
     owner: codex_agent_defense
     branch: codex/phase2-m1-defense-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-defense
-    status: ready_independent_review
-    tip_commit: 165601f3
+    status: ready_reviewed
+    tip_commit: 05ce58f7
     owned_files:
       - lib/features/battle/domain/phase0a/defense_resolution.dart
       - test/features/battle/domain/phase0a/defense_resolution_test.dart
@@ -140,7 +140,8 @@ tasks:
     owner: codex_agent_status
     branch: codex/phase2-m1-status-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-status
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: ce55c486
     owned_files:
       - lib/features/battle/domain/phase0a/status_effects.dart
       - test/features/battle/domain/phase0a/status_effects_test.dart
@@ -159,7 +160,8 @@ tasks:
     owner: codex_agent_action_timeline
     branch: codex/phase2-m1-action-timeline-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-action-timeline
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 6a5f9734
     owned_files:
       - lib/features/battle/domain/phase0a/action_timeline.dart
       - test/features/battle/domain/phase0a/action_timeline_test.dart
@@ -178,8 +180,8 @@ tasks:
     owner: codex_agent_qi_resource
     branch: codex/phase2-m1-qi-resource-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-qi-resource
-    status: ready_root_review
-    tip_commit: 33f6a3e6
+    status: ready_reviewed
+    tip_commit: 97583183
     owned_files:
       - lib/features/battle/domain/phase0a/qi_resource.dart
       - test/features/battle/domain/phase0a/qi_resource_test.dart
@@ -192,3 +194,71 @@ tasks:
       - CLAUDE.md
       - PROGRESS.md
     wake_condition: immediate_candidate_branch
+
+  - id: P2-M1-C08-BASIC-CHAIN
+    milestone: M1
+    owner: codex_agent_basic_chain
+    branch: codex/phase2-m1-basic-chain-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-basic-chain
+    status: ready_reviewed
+    tip_commit: eea0b3ac
+    owned_files:
+      - lib/features/battle/domain/phase0a/basic_attack_chain.dart
+      - test/features/battle/domain/phase0a/basic_attack_chain_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c08-basic-chain.md
+    forbidden_files:
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: after_c02_to_c07_candidate_integration
+
+  - id: P2-M1-C09-MODIFIERS
+    milestone: M1
+    owner: codex_agent_modifiers
+    branch: codex/phase2-m1-modifiers-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-modifiers
+    status: ready_reviewed
+    tip_commit: cbd161cd
+    owned_files:
+      - lib/features/battle/domain/phase0a/combat_modifiers.dart
+      - test/features/battle/domain/phase0a/combat_modifiers_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c09-modifiers.md
+    forbidden_files:
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: after_c02_to_c07_candidate_integration
+
+  - id: P2-M1-C10-EVENT-ORDER
+    milestone: M1
+    owner: codex_agent_event_order
+    branch: codex/phase2-m1-event-order-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-event-order
+    status: ready_reviewed
+    tip_commit: bb108f36
+    owned_files:
+      - lib/features/battle/domain/phase0a/combat_event_order.dart
+      - test/features/battle/domain/phase0a/combat_event_order_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c10-event-order.md
+    forbidden_files:
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: after_c02_to_c07_candidate_integration
+
+  - id: P2-M1-CANDIDATE-INTEGRATION
+    milestone: M1
+    owner: codex_root
+    branch: codex/phase2-m1-candidate-integration-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-integration
+    status: in_progress
+    owned_files:
+      - docs/superpowers/plans/2026-08-23-p2-m1-candidate-integration.md
+      - docs/audit/phase2_m1_candidate_integration_2026-08-23.md
+    forbidden_files:
+      - main
+      - origin/main
+    wake_condition: after_reviewed_candidates
