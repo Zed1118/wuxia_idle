@@ -3823,7 +3823,7 @@ class UiStrings {
   static String redlineNoteNormalDamage(int typicalTarget) =>
       '软红线：典型目标 $typicalTarget，满 build 极值可越过；唯一硬线是不进百万。';
   static const String redlineNoteUltimateCrit =
-      '软红线：使用当前最高 ultimate 倍率和满 build 暴击探针；真实战斗峰值仍由 balance_simulator 兜底。';
+      '软红线：使用当前最高 ultimate 倍率和满 build calculator 暴击探针；Phase 0A 真实路径现仅覆盖 Ch1 起手画像，满 build 真实路径极值待补。';
 
   // ── 材料来源反查一期（MaterialSourceSheet · 夜间批 L 2026-07-05）──────────
   static const String materialSourceSheetSourcesTitle = '来源';

@@ -30,7 +30,7 @@ void main() {
   setUpAll(() async {
     await initializeTestIsarCore();
     // shopItemListProvider 依赖 GameRepository.instance.shopItemDefs
-    // 用 File loader 加载真实 shop.yaml（沿 balance_simulator_test 体例）
+    // 用 File loader 加载真实 shop.yaml（沿 repository 真实加载体例）
     await loadTestGameRepository();
   });
 

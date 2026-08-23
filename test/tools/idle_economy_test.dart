@@ -17,7 +17,7 @@
 // 当前可达图以三流角色测试；未来图仍以 requiredRealm 测试。
 //
 // 纯 config 算术 + 真实 applyExperience 升层逻辑。Isar-free(GameRepository
-// .loadAllDefs File loader,沿 balance_simulator_test 体例)。
+// .loadAllDefs 真实 File loader 体例)。
 // 输出 test/tools/output/idle_economy_2026-05-29.md。
 //
 // 跑法:flutter test test/tools/idle_economy_test.dart

@@ -6,8 +6,8 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import '../../support/test_data.dart';
 
 /// 材料经济节奏 balance 验证(确定性算式,非战斗模拟)。
-/// balance_simulator 只模拟战斗 winRate/伤害,不建模挂机银两收入 → 经济节奏
-/// (日收入 vs 消费锚 / 无套利)用本确定性算式单测验证。锚定 design 意图,数值
+/// 战斗诊断不建模挂机银两收入 → 经济节奏(日收入 vs 消费锚 / 无套利)
+/// 用本确定性算式单测验证。锚定 design 意图,数值
 /// 在区间内即可(不钉死单点,数值仍可 balance 微调)。
 ///
 /// 设计锚(docs/spec/2026-06-21-p4-material-economy-balance-design.md):

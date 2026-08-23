@@ -176,12 +176,12 @@ void main() {
 
     test('软红线:满 build 普攻(含暴击)不进百万 < 1000000(唯一硬线·保可读)', () {
       final m = measureMaxBuild();
-      // 本测点 calculator 裸值下界:非暴击 ~57902 / 暴击 ~86854(进十万但远不进百万)。
-      // 注:此为 calculator 探针,未含 per-skill 熟练度 ×1.30 + terrain/formation/enmity
-      // APM 末端乘 + 飞升 +1 阶差距;真实战斗峰值 ~13.5 万(普攻)/~21 万(大招),由
-      // test/tools/balance_simulator_test.dart 极值×周目诊断测实测兜底(硬断言不进百万)。
-      // 软红线唯一硬线 = 不进百万(2026-06-14 诊断实测峰值 13-21 万后用户拍板,从「不进
-      // 十万」放宽,6 位数仍玩家可读)。若未来乘子上调把峰值顶进百万 → 本测+诊断测 FAIL。
+      // 本测点 calculator 裸值:非暴击 ~57902 / 暴击 ~86854(远不进百万)。
+      // 注:此为满 build calculator 探针,未经过 Phase 0A reducer,也未含完整的
+      // per-skill 熟练度、地形/阵型/恩怨末端乘、飞升阶差或周目组合。旧 3v3 诊断曾
+      // 记录普攻 ~13.5 万/大招 ~21 万,但已随旧核退役,不是当前可重跑守卫。
+      // 当前真实路径守卫 phase0a_full_content_balance_diagnostic_test 使用的是 Ch1 起手
+      // 画像,不能替代满 build 极值。Phase 0A 满 build 真实路径探针须另立后续任务。
       expect(
         m.crit,
         lessThan(1000000),
@@ -244,8 +244,8 @@ void main() {
         reason: '暴击路径同理:aoe 单次暴击伤害 == single 暴击伤害',
       );
 
-      // 全体场景(3 敌)总输出不进百万:A 方案下每目标 = 单体峰值(本探针 calculator
-      // 裸值,真实战斗大招峰值 ~21 万,见 §5.4),即便 ×3 ≈ 60+ 万级仍 < 100 万。
+      // 全体场景(3 敌)总输出不进百万:A 方案下每目标 = 单体 calculator 探针值。
+      // 旧 3v3 诊断的大招 ~21 万仅为历史记录,不拿来证明当前 Phase 0A 极值。
       // 因单次不抬高,红线本质不受 aoe 冲击——单次峰值已由上面软红线测覆盖,此处只补
       // 「aoe 单次 == single」对照断言,不重复钉单次峰值。
       expect(
@@ -262,8 +262,8 @@ void main() {
     // + Boss 弱点(schoolDamageTakenMult gangMeng=1.25)双乘。
     // 预期 calculator 探针:~57902(基准非暴击)× 1.25(弱点) ≈ ~72K 非暴击;
     //   暴击 ~86854 × 1.25 ≈ ~108K;两者均远低于 1,000,000。
-    // 注:此为 calculator 探针下界(未含熟练度 ×1.30 / APM / 飞升阶差),
-    // 真实战斗峰值更高但仍在十万级,不进百万是唯一硬线(§5.4 2026-06-14 拍板)。
+    // 注:此为 calculator 探针(未含熟练度 / APM / 飞升阶差等完整真实路径组合)。
+    // 旧 3v3 的十万级峰值已退役为历史记录；当前只由本探针证明此覆盖面不进百万。
     test('最坏叠乘:满 build 普攻 × 克制(×1.25)× Boss 弱点(×1.25)暴击 < 1000000', () {
       final m = measureMaxBuild(defenderSchoolDamageMult: 1.25);
       // ignore: avoid_print

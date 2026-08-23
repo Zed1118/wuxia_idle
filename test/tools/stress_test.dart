@@ -9,7 +9,9 @@
 // 覆盖边界(Phase 0 侦察 + 亲验后收窄,只补真空白,不重复现有覆盖):
 //   A · GameEvent 累积压测 —— 唯一真新覆盖(top 隐患:表无界增长)
 //   B · 极端时长结算双防线(capHours 截断 + 产出 clamp)回归锚点
-//   C · 连续战斗稳定性 —— 已由 balance_simulator_test(1000 场 runToEnd)覆盖,不重写
+//   C · 连续战斗稳定性 —— 旧 3v3 诊断曾覆盖 1000 场连续 runToEnd,现已随旧核退役。
+//       Phase 0A 全内容诊断覆盖 2310 次独立 headless run,但不等价于同会话连续稳定性；
+//       当前缺口应另立 Phase 0A 连续稳定性任务,本文件不伪称已有替代覆盖。
 //   leak(资源 dispose)/ ANR(零同步 IO)—— 已由架构 + battle_screen 测覆盖
 //
 // 跑法:flutter test test/tools/stress_test.dart

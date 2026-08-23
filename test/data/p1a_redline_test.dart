@@ -13,8 +13,9 @@ import '../support/test_data.dart';
 /// 注:§5.4「普通伤害 ≤8000」是设计层指南(满内力+满修炼 ×3.0 的极值组合
 /// pre-P1a 即已越此值,非 calculateResolved 的硬数学界);故此处不做极值绝对断言
 /// (会是 master 上也 fail 的假红),只钉死 P1a 真正引入的 +30% 相对界。
-/// fresh-char(uses=0 → profMult 1.0)零回归已由 balance_simulator 3000 run 验证;
-/// 高熟练度全量平衡扫描见 backlog(simulator 未 seed skillUsageCount)。
+/// 旧 3v3 诊断曾给 fresh-char(uses=0 → profMult 1.0)做 3000 run 零回归,
+/// 该证据现为历史记录。当前 Phase 0A 全内容诊断覆盖 uses=0/30/100/300/800
+/// 的 Ch1 起手画像真实路径,但不继承旧 floor/ceiling 或满 build 极值口径。
 void main() {
   setUpAll(loadTestGameRepository);
 

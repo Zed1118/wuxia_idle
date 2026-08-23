@@ -18,8 +18,9 @@ import '../support/test_data.dart';
 ///       attackPowerMultiplier 接入点叠加 worst-case 是否破 §5.4 红线。
 ///       注:本 audit 走**扁平 equipmentAttack=2000** 路径(非派生 ~15000),故其界
 ///       (普攻 ≤ 8000 / 暴击 ≤ 100000 / 玩家血 ≤ 20000 / 内力 ≤ 15000)是比 §5.4
-///       软红线(2026-06-14 放宽为「不进百万」)更紧的扁平路径 sanity 界;真实派生满
-///       build 峰值(普攻 ~13.5万 / 大招 ~21万)由 full_build / balance_simulator 测兜底。
+///       软红线(2026-06-14 放宽为「不进百万」)更紧的扁平路径 sanity 界。当前满
+///       build 只由 full_build calculator 探针守卫；普攻 ~13.5万 / 大招 ~21万是
+///       旧 3v3 已退役诊断的历史记录，不是当前 Phase 0A 可重跑证据。
 ///
 /// 实测路径:
 /// - DamageCalculator.calculate(damage_calculator.dart:126)**不含** APM
@@ -153,8 +154,8 @@ void main() {
         // worst-case 刚猛打阴柔 1.25 + 心法 jiJing 3.0 + 暴击 1.5 + 三 APM 累乘
         //           1.15*1.10*1.25 ≈ 1.58 → 结果 ~5 万 = 扁平路径紧界。
         // 注意:实际 stages 隔离(light_foot vs mass_battle stage 不重)。本界远低于
-        // §5.4 软红线(2026-06-14 放宽后「不进百万」);真实派生满 build 大招峰值 ~21 万
-        // 由 full_build / balance_simulator 极值×周目诊断测兜底。
+        // §5.4 软红线(2026-06-14 放宽后「不进百万」)。当前只由 full_build
+        // calculator 探针覆盖此构造；旧 3v3 ~21 万峰值是历史记录，非活动守卫。
         final r = _calcBoundary(
           attackerTier: RealmTier.wuSheng,
           defenderTier: RealmTier.wuSheng,
@@ -174,7 +175,8 @@ void main() {
           lessThanOrEqualTo(100000),
           reason:
               '扁平 equipmentAttack=2000 路径 worst-case 紧界(~5万);§5.4 软红线'
-              '已放宽「不进百万」,真实派生满 build 峰值见 full_build/balance_simulator',
+              '已放宽「不进百万」；当前满 build 证据见 full_build calculator 探针，'
+              'Phase 0A 满 build 真实路径极值仍待后续任务',
         );
       },
     );
