@@ -6,15 +6,25 @@ import 'mentor_insight_stage_occupancy_runtime.dart';
 
 /// A validated admission that has not yet published its occupancy successor.
 final class MainlineStageRuntimeAdmissionPrepared {
-  MainlineStageRuntimeAdmissionPrepared._({
+  MainlineStageRuntimeAdmissionPrepared._(
+    this._occupancyPreparedSuccessor, {
     required this.runAdmission,
     required this.occupancyPredecessor,
-    required this.occupancyPreparedSuccessor,
   });
 
   final MainlineRunAdmission runAdmission;
   final MentorInsightStageOccupancyRuntime occupancyPredecessor;
-  final MentorInsightStageOccupancyPreparedSuccessor occupancyPreparedSuccessor;
+  final MentorInsightStageOccupancyPreparedSuccessor
+  _occupancyPreparedSuccessor;
+
+  MentorInsightStageOccupancySnapshot get occupancyBase =>
+      _occupancyPreparedSuccessor.base;
+
+  MentorInsightStageOccupancySnapshot get occupancyNext =>
+      _occupancyPreparedSuccessor.next;
+
+  List<MentorInsightStageOccupancyMutation> get occupancyMutations =>
+      _occupancyPreparedSuccessor.mutations;
 
   bool _committed = false;
 
@@ -33,7 +43,7 @@ final class MainlineStageRuntimeAdmissionPrepared {
       );
     }
 
-    final occupancyRuntime = predecessor.commit(occupancyPreparedSuccessor);
+    final occupancyRuntime = predecessor.commit(_occupancyPreparedSuccessor);
     _committed = true;
     return MainlineStageRuntimeAdmission._(
       runAdmission: runAdmission,
@@ -98,8 +108,8 @@ MainlineStageRuntimeAdmissionPrepared prepareMainlineStageRuntimeAdmission({
     ),
   ]);
   return MainlineStageRuntimeAdmissionPrepared._(
+    occupancyPreparedSuccessor,
     runAdmission: runAdmission,
     occupancyPredecessor: occupancyPredecessor,
-    occupancyPreparedSuccessor: occupancyPreparedSuccessor,
   );
 }

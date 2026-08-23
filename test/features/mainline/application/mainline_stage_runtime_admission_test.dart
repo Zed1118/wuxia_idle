@@ -472,11 +472,11 @@ void main() {
       reason: 'the committable R15 successor must stay library-private',
     );
     expect(
-      source,
-      contains(
-        'final MentorInsightStageOccupancyPreparedSuccessor '
-        '_occupancyPreparedSuccessor;',
-      ),
+      RegExp(
+        r'final\s+MentorInsightStageOccupancyPreparedSuccessor\s+'
+        r'_occupancyPreparedSuccessor;',
+      ).hasMatch(source),
+      isTrue,
     );
 
     expect(
