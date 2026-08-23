@@ -2101,8 +2101,20 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r12c-attack-token-lease-assembler-seam-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12c-attack-token-lease-assembler-seam
-    status: in_progress
+    status: ready_reviewed
     base_commit: 72e274aa8156cf5adbe5e2f9b7c0290fe433f265
+    implementation_commit: e6ddf3b7
+    tip_commit: f48f3d4516dc98dc7a12e8c844ea291bfad25f61
+    integration_commits:
+      - c6238b5d
+      - 02192e4b
+      - 0e63a2d8
+      - 6ec3d462
+      - 93150353
+    verification:
+      targeted_tests: 89
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
     owned_files:
@@ -2170,6 +2182,11 @@ tasks:
       - 04a4d637
       - ff1d89f6
       - a9522747
+      - c6238b5d
+      - 02192e4b
+      - 0e63a2d8
+      - 6ec3d462
+      - 93150353
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch16-transactional-host-ready-seams.md

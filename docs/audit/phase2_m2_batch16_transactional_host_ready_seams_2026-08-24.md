@@ -30,3 +30,7 @@
 ## 待完成验证
 
 待 R12c/R17/R18 来源 READY 后补充工具证据、来源/集成提交、联合 targeted、scoped analyze、full suite、仓库闸门、独立终审与最终 READY。
+
+## 已完成来源
+
+- R12c：计划 `a306bd67`、红测 `a6d1296d`、红测恢复点 `16cc71ac`、实现 `e6ddf3b7`、验收证据 `a6f77288`，来源 READY `f48f3d45`。Pi 0.84.1 使用精确 `deepseek/deepseek-v4-flash`、thinking `high`、只读工具完成设计与终审，P0/P1=0；Codex 独立终审 P0/P1/P2=0。八文件 targeted 89/89、scoped analyze 5 items 0、format/diff/path/status clean。集成提交 `c6238b5d` / `02192e4b` / `0e63a2d8` / `6ec3d462` / `93150353` 的 stable patch-id 与来源逐项一致；migrated host、ActionTimeline、action lifecycle 与 tuning 继续 Gate。
