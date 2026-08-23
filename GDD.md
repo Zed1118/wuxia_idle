@@ -5,6 +5,7 @@
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
 > **版本**:v1.32
+> **2026-08-23 二阶段事实同步（P2-M0-F01）**：核对 `data/stages.yaml` 确认主线为 **21 章 105 关**；二阶段 READY 基础设施仅按 registry 中已 `ready_reviewed` 的 P2-G1/P2-G2 项记录，Batch7 仍进行中，O01/S01 仍已派发。主线重打参与者、连续 Run 锁定/换装/伤势中断、扫荡参与者、随行听剑占用、七类心魔 AI 映射及相关比例仍为 `PROPOSED`/`TUNING`，不是已拍板语义。
 > **v1.32 变更**(2026-08-23 Phase 0A 战斗爽感批):主线普通关采用 2/3/4 人三波小怪，Boss 关采用 2/3 人铺垫波 + 原 Boss 单独收尾；波次参数由 `numbers.yaml mainline_wave` 统一配置，在线/headless 同核。键盘持续移动、普攻 420 范围与水墨击杀反馈同步升级，Boss 蓄力/破招/踉跄/脆弱窗口及既有数值红线保持。
 > **v1.31 变更**(2026-08-23 路线 C 双平台 Gate 收口 · 0 改玩法数值):旧 3v3 原子删除已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 合入 `main`；同 commit 的 Mac 与 Windows 本地物理机生产兼容性矩阵均 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0。六人真人 Gate 已取消；Windows 结果不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 >
