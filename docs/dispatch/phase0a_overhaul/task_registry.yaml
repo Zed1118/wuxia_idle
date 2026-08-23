@@ -982,6 +982,39 @@ tasks:
       - long-lived documents reflect current facts without promoting proposals
       - no production data host routing token enforcement UI reward or save changes
 
+  - id: P2-BATCH8-M1-G0-INTEGRATION
+    milestone: G0-M1
+    owner: codex_root
+    branch: codex/phase2-batch8-m1-g0-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-batch8-integration
+    status: in_progress
+    base_commit: 1a4e1dd3
+    source_ready_tips:
+      - b66f8a74
+      - 0ae5f45a
+    integration_commits:
+      - 379b7e38
+      - 9bddabc5
+      - f05d2a20
+      - 47a5bfa1
+      - bf42c324
+      - dcee2230
+      - f7b3a296
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-batch8-m1-g0-integration.md
+      - docs/audit/phase2_m1_c02_c10_revalidation_2026-08-23.md
+      - docs/superpowers/plans/2026-08-23-p2-m1-c02-c10-revalidation.md
+      - docs/audit/phase2_g0_decision_packet_2026-08-23.md
+      - docs/superpowers/plans/2026-08-23-p2-g0-decision-packet.md
+      - lib/features/battle/domain/phase0a/status_effects.dart
+      - test/features/battle/domain/phase0a/status_effects_test.dart
+    exit_criteria:
+      - non-finite slow movement multipliers fail closed
+      - G0 packet preserves already frozen product boundaries
+      - unanswered product and tuning items remain explicitly paused
+      - no production data host routing save UI reward or long-lived design changes
+
   - id: P2-G2-O01-OBJECTIVE-PRIMITIVES
     milestone: G2
     owner: codex_luna_medium
