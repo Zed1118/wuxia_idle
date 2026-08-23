@@ -207,16 +207,19 @@ void main() {
         playerHealth: 100,
         enemyHealth: 10,
         enemyPosition: const ArenaVector(50, 0),
+        expected: Phase0aBattleOutcome.victory,
       ),
       (
         playerHealth: 10,
         enemyHealth: 100,
         enemyPosition: const ArenaVector(50, 0),
+        expected: Phase0aBattleOutcome.defeat,
       ),
       (
         playerHealth: 100,
         enemyHealth: 1000,
         enemyPosition: const ArenaVector(500, 0),
+        expected: Phase0aBattleOutcome.ongoing,
       ),
     ];
     for (final scenario in scenarios) {
@@ -246,6 +249,66 @@ void main() {
         deltaSeconds: 1,
         maxTicks: 3,
       );
+      expect(legacyResult.outcome, scenario.expected);
+      expect(compatibilityResult.outcome, legacyResult.outcome);
+      expect(compatibilityResult.ticks, legacyResult.ticks);
+      expect(compatibilityResult.finalState, legacyResult.finalState);
+      expect(compatibilityResult.events, legacyResult.events);
+      expect(compatibilityResult.eventRecords, legacyResult.eventRecords);
+    }
+  });
+
+  test('async headless victory, defeat, and ongoing preserve parity', () async {
+    final scenarios = [
+      (
+        playerHealth: 100,
+        enemyHealth: 10,
+        enemyPosition: const ArenaVector(50, 0),
+        expected: Phase0aBattleOutcome.victory,
+      ),
+      (
+        playerHealth: 10,
+        enemyHealth: 100,
+        enemyPosition: const ArenaVector(50, 0),
+        expected: Phase0aBattleOutcome.defeat,
+      ),
+      (
+        playerHealth: 100,
+        enemyHealth: 1000,
+        enemyPosition: const ArenaVector(500, 0),
+        expected: Phase0aBattleOutcome.ongoing,
+      ),
+    ];
+    for (final scenario in scenarios) {
+      final legacy = _legacy(
+        seed: 42,
+        playerHealth: scenario.playerHealth,
+        enemyHealth: scenario.enemyHealth,
+        enemyPosition: scenario.enemyPosition,
+      );
+      final compatibility = Phase0aEncounterFlow.compatibility(
+        legacy: _legacy(
+          seed: 42,
+          playerHealth: scenario.playerHealth,
+          enemyHealth: scenario.enemyHealth,
+          enemyPosition: scenario.enemyPosition,
+        ),
+      );
+      final legacyResult = await Phase0aHeadlessRunner.runToEndAsync(
+        flow: legacy,
+        bot: Phase0aPlayerBotAdapter(playerAdapter: _playerAdapter),
+        deltaSeconds: 1,
+        maxTicks: 3,
+        yieldEveryTicks: 1,
+      );
+      final compatibilityResult = await Phase0aHeadlessRunner.runToEndAsync(
+        flow: compatibility,
+        bot: Phase0aPlayerBotAdapter(playerAdapter: _playerAdapter),
+        deltaSeconds: 1,
+        maxTicks: 3,
+        yieldEveryTicks: 1,
+      );
+      expect(legacyResult.outcome, scenario.expected);
       expect(compatibilityResult.outcome, legacyResult.outcome);
       expect(compatibilityResult.ticks, legacyResult.ticks);
       expect(compatibilityResult.finalState, legacyResult.finalState);

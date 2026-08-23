@@ -21,6 +21,17 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer
 
 class CountingDamageResolver implements Phase0aDamageResolver {
   int calls = 0;
+  final List<
+    ({
+      String attackerId,
+      String targetId,
+      Phase0aDamageKind kind,
+      bool defenderStaggered,
+      bool defenderCharging,
+      double defenderWardMult,
+    })
+  >
+  transcript = [];
 
   @override
   Phase0aResolvedHit resolve({
@@ -32,6 +43,14 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     double defenderWardMult = 1.0,
   }) {
     calls++;
+    transcript.add((
+      attackerId: attackerId,
+      targetId: targetId,
+      kind: kind,
+      defenderStaggered: defenderStaggered,
+      defenderCharging: defenderCharging,
+      defenderWardMult: defenderWardMult,
+    ));
     return const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 15);
   }
 }
@@ -256,6 +275,7 @@ void main() {
       expect(sessionB.state, sessionA.state);
       expect(sessionB.state.nextSeq, sessionA.state.nextSeq);
       expect(resolverB.calls, resolverA.calls);
+      expect(resolverB.transcript, resolverA.transcript);
     });
 
     test('request actorId 与 intent.actorId 不一致时 reducer 前 fail closed', () {
@@ -292,6 +312,44 @@ void main() {
       expect(session.lastEnemyIntentObservation, isNull);
       expect(session.state, initial);
       expect(session.state, same(initial));
+    });
+
+    test('成功后的下一拍观察失败不污染已提交诊断', () {
+      var fail = false;
+      final observer = makeObserveOnlyObserver(
+        requestMapper: (intent) => AttackTokenRequest(
+          actorId: fail ? 'wrong-actor' : intent.actorId,
+          kind: AttackTokenKind.melee,
+          priority: 0,
+          isOffscreen: false,
+          isHighImpact: false,
+          isUnblockableArea: false,
+          spawnGraceTicksRemaining: 0,
+          telegraphReady: true,
+        ),
+      );
+      final session = makeSession(
+        initialState: makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],
+        ),
+        observer: observer,
+      );
+      session.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
+      final committedState = session.state;
+      final committedObservation = session.lastEnemyIntentObservation;
+      final committedAllocation = observer.lastAllocation;
+
+      fail = true;
+      expect(
+        () => session.advance(
+          deltaSeconds: 0.1,
+          command: const Phase0aPlayerCommand(),
+        ),
+        throwsArgumentError,
+      );
+      expect(session.state, same(committedState));
+      expect(session.lastEnemyIntentObservation, same(committedObservation));
+      expect(observer.lastAllocation, same(committedAllocation));
     });
 
     test('mapper 返回 null = 调用方明确标记非候选,不报错也不进批', () {
