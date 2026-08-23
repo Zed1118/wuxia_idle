@@ -2,8 +2,8 @@ import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
+import 'phase0a_battle_flow.dart';
 import 'phase0a_player_bot_adapter.dart';
-import 'phase0a_wave_battle_flow.dart';
 
 /// Phase 0A headless 快进结果:终局态 + 消耗拍数 + 终态快照。
 ///
@@ -27,7 +27,7 @@ final class Phase0aHeadlessResult {
 }
 
 /// Phase 0A headless 快进 runner(headless 内核批,路线 C 子项①落地):
-/// 以固定拍长驱动已装配的 [Phase0aWaveBattleFlow],bot 指令替代真人输入,
+/// 以固定拍长驱动已装配的 [Phase0aBattleFlow],bot 指令替代真人输入,
 /// 跑到终局(victory/defeat)或拍数预算耗尽。
 ///
 /// 纯函数式消费,零 Flutter 依赖,供远征/断魂庄托管与离线快进复用同一
@@ -51,7 +51,7 @@ final class Phase0aHeadlessRunner {
   }
 
   static Phase0aHeadlessResult runToEnd({
-    required Phase0aWaveBattleFlow flow,
+    required Phase0aBattleFlow flow,
     required Phase0aPlayerBotAdapter bot,
     required double deltaSeconds,
     required int maxTicks,
@@ -82,7 +82,7 @@ final class Phase0aHeadlessRunner {
   /// 与 [runToEnd] 相同的 reducer/bot 循环，但按固定拍块归还事件循环，供 UI
   /// isolate 上的批量消费面避免长关整段冻结。yield 不改变 flow/RNG 消费顺序。
   static Future<Phase0aHeadlessResult> runToEndAsync({
-    required Phase0aWaveBattleFlow flow,
+    required Phase0aBattleFlow flow,
     required Phase0aPlayerBotAdapter bot,
     required double deltaSeconds,
     required int maxTicks,

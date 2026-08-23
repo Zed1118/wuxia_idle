@@ -3,6 +3,7 @@ import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
+import 'phase0a_battle_flow.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_event_order_adapter.dart';
 import 'phase0a_player_input_adapter.dart';
@@ -55,7 +56,7 @@ final class Phase0aWaveTransitionPolicy {
 /// - 会话不带任何 public 可变后门:需要换态(预留 seq/换波/固化终局 seq)
 ///   时以新 [Phase0aArenaState] 重建私有会话,复用同一 adapter/resolver
 ///   实例,保证 seeded RNG 连续。
-final class Phase0aWaveBattleFlow {
+final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
   Phase0aWaveBattleFlow({
     required Phase0aCombatSession session,
     required List<Phase0aWave> waves,
@@ -87,13 +88,17 @@ final class Phase0aWaveBattleFlow {
   List<CombatEventRecord> _lastOrderedEventRecords =
       const <CombatEventRecord>[];
 
+  @override
   Phase0aArenaState get state => _session.state;
+  @override
   Phase0aBattleOutcome get outcome => _outcome;
   List<Phase0aWave> get waves => _waves;
+  @override
   List<CombatEventRecord> get lastOrderedEventRecords =>
       _lastOrderedEventRecords;
 
   /// 推进一拍:终局后完全幂等(空事件、state 不变、下游零调用)。
+  @override
   List<Phase0aEvent> advance({
     required double deltaSeconds,
     required Phase0aPlayerCommand command,

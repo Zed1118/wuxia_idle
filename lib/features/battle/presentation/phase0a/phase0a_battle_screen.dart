@@ -10,9 +10,9 @@ import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
-import '../../application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
@@ -41,7 +41,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
 
   /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
   /// (静态验收路由等纯展示场景保持只读)。
-  final Future<Phase0aWaveBattleFlow> Function()? retryFlowBuilder;
+  final Future<Phase0aBattleFlow> Function()? retryFlowBuilder;
 
   final Phase0aNumericSkillBindings numericSkillBindings;
 

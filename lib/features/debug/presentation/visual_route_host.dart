@@ -70,7 +70,7 @@ import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
-import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
+import '../../battle/application/phase0a/phase0a_battle_flow.dart';
 import '../../battle/domain/phase0a/phase0a_combat_events.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
@@ -962,7 +962,7 @@ class _Phase0aFeedbackPreview extends StatefulWidget {
 
   final Phase0aBattleController controller;
   final Phase0aPlayerCommand? initialCommand;
-  final Future<Phase0aWaveBattleFlow> Function()? retryFlowBuilder;
+  final Future<Phase0aBattleFlow> Function()? retryFlowBuilder;
 
   @override
   State<_Phase0aFeedbackPreview> createState() =>

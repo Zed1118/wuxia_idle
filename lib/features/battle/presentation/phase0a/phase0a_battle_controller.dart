@@ -2,9 +2,9 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 
+import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../domain/phase0a/combat_event_order.dart';
-import '../../application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
@@ -14,7 +14,7 @@ import 'phase0a_visual_roster.dart';
 
 final class Phase0aBattleController extends ChangeNotifier {
   Phase0aBattleController({
-    required Phase0aWaveBattleFlow flow,
+    required Phase0aBattleFlow flow,
     required this.roster,
     required this.fixedDeltaSeconds,
   }) : _flow = flow {
@@ -29,7 +29,7 @@ final class Phase0aBattleController extends ChangeNotifier {
   }
 
   /// 当前 flow。`restart` 换入新实例,故非 final。
-  Phase0aWaveBattleFlow _flow;
+  Phase0aBattleFlow _flow;
   final Phase0aVisualRoster roster;
   final double fixedDeltaSeconds;
 
@@ -54,7 +54,7 @@ final class Phase0aBattleController extends ChangeNotifier {
   /// 终局重开(9B):换入调用方装配的全新 flow,重建排序器与 VFX 控制器,
   /// 清空 pending/事件/反馈缓存。只换实例,不触碰 domain 任何规则;
   /// 新 flow 的装配责任在调用方(debug 路由 = 重载 fixture 同 seed 新会话)。
-  void restart(Phase0aWaveBattleFlow newFlow) {
+  void restart(Phase0aBattleFlow newFlow) {
     _flow = newFlow;
     _sequencer = Phase0aEventSequencer();
     _vfx = Phase0aVfxController();
