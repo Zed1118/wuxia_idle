@@ -100,7 +100,7 @@ void main() {
       expect(ch.internalForce, 520);
     });
 
-    test('已在地板附近：500 × 0.85 = 425 < 地板 500 → clamp 500', () {
+    test('已有低于历史地板的内力也保持不变', () {
       final ch = newChar(internalForce: 500, internalForceMax: 1000);
       final tech = newTech(progress: 100);
 
@@ -114,7 +114,7 @@ void main() {
       expect(ch.internalForce, 500);
     });
 
-    test('奇数内力不受取整影响', () {
+    test('奇数内力保持原值', () {
       final ch = newChar(internalForce: 1001, internalForceMax: 1000);
       final tech = newTech(progress: 100);
 
@@ -167,8 +167,7 @@ void main() {
     });
 
     test('最低层（chuKui）progress ×0.90 也不回退 layer', () {
-      // chuKui 是最低层，散功（dispel）体例此处会在最低层停；
-      // 心魔惩罚更简单：layer 根本不动
+      // chuKui 是最低层；心魔失败不回退境界层，仅按当前主修系数扣修炼度。
       final ch = newChar();
       final tech = newTech(layer: CultivationLayer.chuKui, progress: 50);
 

@@ -3,17 +3,34 @@ import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 void main() {
   group('InnerDemonFailurePenalty', () {
-    test('fromYaml 解析 internal_force_floor_pct', () {
+    test('fromYaml 保留主修修炼度系数', () {
       final p = InnerDemonFailurePenalty.fromYaml({
-        'internal_force_multiplier': 0.85,
-        'internal_force_floor_pct': 0.50,
+        'main_cultivation_multiplier': 0.90,
       });
-      expect(p.internalForceFloorPct, 0.50);
+      expect(p.mainCultivationMultiplier, 0.90);
     });
 
-    test('fromYaml 缺字段默认 0.50', () {
-      final p = InnerDemonFailurePenalty.fromYaml({});
-      expect(p.internalForceFloorPct, 0.50);
+    test('fromYaml rejects retired legacy fields', () {
+      expect(
+        () => InnerDemonFailurePenalty.fromYaml({
+          'internal_force_multiplier': 0.85,
+          'main_cultivation_multiplier': 0.90,
+        }),
+        throwsFormatException,
+      );
+    });
+
+    test('fromYaml rejects missing or out-of-range main multiplier', () {
+      expect(
+        () => InnerDemonFailurePenalty.fromYaml({}),
+        throwsFormatException,
+      );
+      expect(
+        () => InnerDemonFailurePenalty.fromYaml({
+          'main_cultivation_multiplier': 1.1,
+        }),
+        throwsFormatException,
+      );
     });
   });
 }
