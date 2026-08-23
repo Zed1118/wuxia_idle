@@ -4,10 +4,12 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../../data/numbers_config.dart';
 import '../../domain/phase0a/encounter_enemy_roster.dart';
 import '../../domain/phase0a/attack_token_director.dart';
+import '../../domain/phase0a/attack_token_lease_runtime.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../domain/phase0a/spawn_director.dart';
+import 'phase0a_attack_token_lease_batch_gate.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'attack_token_enforcing_batch_gate.dart';
 import 'phase0a_combat_session.dart';
@@ -111,6 +113,10 @@ final class Phase0aProductionFlowAssembler {
   /// 吞掉;显式 objective runtime 也只允许 tracker/event source 成对透传,
   /// assembler 不创建 controller、objective event 或默认 mapper。一切结构错误
   /// 均在首拍前失败、不推进 RNG。
+  /// Transactional attack-token lease gate/runtime 同样只允许 caller 成对
+  /// 显式透传；本层不默认构造，不推断 action identity 或 acquire/
+  /// release 生命周期。它与 stateless batch gate 的互斥继续由
+  /// [Phase0aCombatSession] 单一校验。
   static Phase0aEncounterFlow assembleEncounter({
     required Phase0aArenaState initialState,
     required SpawnDirector director,
@@ -123,6 +129,8 @@ final class Phase0aProductionFlowAssembler {
     required Phase0aEnemyAiAdapter enemyAiAdapter,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
     Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
+    Phase0aAttackTokenLeaseBatchGate? attackTokenLeaseBatchGate,
+    AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
     Phase0aObjectiveRuntimeTracker? objectiveTracker,
     Phase0aEncounterObjectiveEventSource? objectiveEventSource,
   }) {
@@ -153,6 +161,8 @@ final class Phase0aProductionFlowAssembler {
       enemySkillDamageResolver: damageResolver,
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentBatchGate: enemyIntentBatchGate,
+      attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
+      attackTokenLeaseRuntime: attackTokenLeaseRuntime,
     );
     // runtime 构造继续校验 director/roster identity、tick、active arena 与
     // side/alive;校验失败在首拍前 fail closed,不推进 RNG。
@@ -173,11 +183,14 @@ final class Phase0aProductionFlowAssembler {
   /// mapping holds neither, keeping tuning and RNG ownership continuous); an
   /// optional observe-only [Phase0aEnemyIntentObserver] and optional caller-
   /// supplied [Phase0aEnemyIntentBatchGate] are likewise explicit here rather
-  /// than frozen into the mapping. An objective tracker and event source may
-  /// only be supplied as the same explicit pair accepted by the runtime flow;
-  /// this bridge constructs neither. The mapping constructor has already
-  /// validated director/roster identity, player id consistency and duplicate
-  /// combatant actor ids; full actor coverage, player adapter id and move-
+  /// than frozen into the mapping. A transactional lease gate/runtime pair is
+  /// also forwarded only when supplied explicitly; this bridge constructs no
+  /// default and infers no action lifecycle. An objective tracker and event
+  /// source may only be supplied as the same explicit pair accepted by the
+  /// runtime flow; this bridge constructs neither. The mapping constructor has
+  /// already validated director/roster identity, player id consistency and
+  /// duplicate combatant actor ids; full actor coverage, player adapter id and
+  /// move-
   /// binding validation stay fail-closed in [assembleEncounter], so this
   /// bridge behaves identically to a direct call.
   static Phase0aEncounterFlow assembleEncounterFromMapping({
@@ -186,6 +199,8 @@ final class Phase0aProductionFlowAssembler {
     required Random rng,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
     Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
+    Phase0aAttackTokenLeaseBatchGate? attackTokenLeaseBatchGate,
+    AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
     Phase0aObjectiveRuntimeTracker? objectiveTracker,
     Phase0aEncounterObjectiveEventSource? objectiveEventSource,
   }) {
@@ -201,6 +216,8 @@ final class Phase0aProductionFlowAssembler {
       enemyAiAdapter: mapping.enemyAiAdapter,
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentBatchGate: enemyIntentBatchGate,
+      attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
+      attackTokenLeaseRuntime: attackTokenLeaseRuntime,
       objectiveTracker: objectiveTracker,
       objectiveEventSource: objectiveEventSource,
     );
