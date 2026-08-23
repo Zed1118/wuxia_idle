@@ -270,11 +270,7 @@ void _requireNonNegative(int value, String name) {
 String _canonicalId(String value, String name) {
   final canonical = value.trim();
   if (canonical.isEmpty || canonical != value) {
-    throw ArgumentError.value(
-      value,
-      name,
-      'must be a trimmed non-empty ID',
-    );
+    throw ArgumentError.value(value, name, 'must be a trimmed non-empty ID');
   }
   return canonical;
 }

@@ -12,7 +12,7 @@
 /// 合同要点：
 /// - 入口列表构造时做防御性不可修改副本并排序，输入顺序无关；输出确定性且
 ///   不可变（快照/事件列表均不可变，advance/markExited 返回新 director）。
-/// - entryId 全量唯一（重复 fail closed）；entryId/enemyId 非空且不含空白。
+/// - entryId/enemyId 全量唯一（重复 fail closed），且非空、不含空白。
 /// - 空入口列表 → 永不生成，仅推进 tick。
 /// - 生命周期：pending → warning → active → removed（仅 active 可离场）。
 /// - 补兵条件：activeCount <= reinforcementThreshold 且
@@ -73,8 +73,9 @@ final class SpawnDirectorConfig {
 
 /// 一个显式生成入口：什么敌人从哪个入口生成。
 ///
-/// [entryId] 全量唯一（重复 fail closed）；[entryId]/[enemyId] 均须非空且
-/// 不含任何空白字符。同一 [enemyId] 可出现在多个入口。
+/// [entryId]/[enemyId] 全量唯一（重复 fail closed），且均须非空、
+/// 不含任何空白字符。[enemyId] 表示敌人实例 ID；敌人类型应由后续
+/// 数据合同以独立字段表达，不得复用实例 ID。
 final class SpawnEntry {
   SpawnEntry({required this.entryId, required this.enemyId}) {
     _requireCleanId(entryId, 'entryId');
@@ -234,16 +235,24 @@ final class SpawnDirector {
   final int _tick;
 
   static List<_SpawnUnit> _initUnits(List<SpawnEntry> entries) {
-    final seen = <String>{};
+    final seenEntryIds = <String>{};
+    final seenEnemyIds = <String>{};
     final sorted = List<SpawnEntry>.of(entries)
       ..sort((a, b) => a.entryId.compareTo(b.entryId));
     final units = <_SpawnUnit>[];
     for (final entry in sorted) {
-      if (!seen.add(entry.entryId)) {
+      if (!seenEntryIds.add(entry.entryId)) {
         throw ArgumentError.value(
           entry.entryId,
           'entries',
           'duplicate entryId',
+        );
+      }
+      if (!seenEnemyIds.add(entry.enemyId)) {
+        throw ArgumentError.value(
+          entry.enemyId,
+          'entries',
+          'duplicate enemyId',
         );
       }
       units.add(_SpawnUnit(entry));

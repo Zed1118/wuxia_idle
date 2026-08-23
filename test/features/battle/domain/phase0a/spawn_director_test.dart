@@ -25,6 +25,16 @@ void expectSameState(SpawnDirectorState a, SpawnDirectorState b) {
   expect(a.units, b.units);
 }
 
+void expectCountsConserved(SpawnDirectorState state) {
+  expect(
+    state.activeCount +
+        state.warningCount +
+        state.pendingCount +
+        state.removedCount,
+    state.totalCount,
+  );
+}
+
 List<String> unitIds(SpawnDirectorState state) =>
     state.units.map((u) => u.entryId).toList();
 
@@ -138,16 +148,25 @@ void main() {
       );
     });
 
-    test('重复 enemyId 允许（同一敌人类型可多入口）', () {
-      final d = SpawnDirector(
-        config: cfg(activeLimit: 3, threshold: 0, warning: 0, grace: 0),
-        entries: [
-          SpawnEntry(entryId: 'a', enemyId: 'bandit_blade'),
-          SpawnEntry(entryId: 'b', enemyId: 'bandit_blade'),
+    test('重复 enemyId 拒绝（实例 ID fail closed）', () {
+      for (final entries in [
+        [
+          SpawnEntry(entryId: 'a', enemyId: 'bandit_blade_1'),
+          SpawnEntry(entryId: 'b', enemyId: 'bandit_blade_1'),
         ],
-      );
-      expect(d.state.totalCount, 2);
-      expect(d.state.units.map((u) => u.enemyId).toSet(), {'bandit_blade'});
+        [
+          SpawnEntry(entryId: 'b', enemyId: 'bandit_blade_1'),
+          SpawnEntry(entryId: 'a', enemyId: 'bandit_blade_1'),
+        ],
+      ]) {
+        expect(
+          () => SpawnDirector(
+            config: cfg(activeLimit: 3, threshold: 0, warning: 0, grace: 0),
+            entries: entries,
+          ),
+          throwsArgumentError,
+        );
+      }
     });
   });
 
@@ -523,6 +542,53 @@ void main() {
   });
 
   group('不可变性与防御性副本', () {
+    test('生命周期全程保持状态计数守恒', () {
+      var d = SpawnDirector(
+        config: cfg(activeLimit: 3, threshold: 1, warning: 1, grace: 1),
+        entries: [entry('a'), entry('b'), entry('c'), entry('d')],
+      );
+      expectCountsConserved(d.state);
+      d = d.advance().director;
+      expectCountsConserved(d.state);
+      d = d.advance().director;
+      expectCountsConserved(d.state);
+      d = d.markExited('a');
+      expectCountsConserved(d.state);
+      d = d.markExited('b').advance().director;
+      expectCountsConserved(d.state);
+      d = d.advance().director;
+      expectCountsConserved(d.state);
+    });
+
+    test('同拍事件固定先 graceExpired 后 entered', () {
+      var d = SpawnDirector(
+        config: cfg(activeLimit: 4, threshold: 2, warning: 1, grace: 2),
+        entries: [
+          entry('a'),
+          entry('b'),
+          entry('c'),
+          entry('d'),
+          entry('e'),
+          entry('f'),
+          entry('g'),
+        ],
+      );
+      d = d.advance().director;
+      d = d.advance().director;
+      d = d.markExited('b').markExited('c').markExited('d');
+      d = d.advance().director;
+
+      final result = d.advance();
+      expect(result.events.map((event) => event.type).toList(), [
+        SpawnDirectorEventType.graceExpired,
+        SpawnDirectorEventType.entered,
+        SpawnDirectorEventType.entered,
+        SpawnDirectorEventType.entered,
+      ]);
+      expect(result.events.map((event) => event.tick).toSet(), {4});
+      expectCountsConserved(result.director.state);
+    });
+
     test('构造后修改调用方入口列表不污染 director', () {
       final list = [entry('a'), entry('b'), entry('c')];
       final d = SpawnDirector(

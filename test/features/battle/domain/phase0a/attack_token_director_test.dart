@@ -44,28 +44,48 @@ void main() {
 
   group('budget validation (caller-supplied, no hardcoded defaults)', () {
     test('negative budgets throw', () {
-      expect(() => AttackTokenBudgets(melee: -1, ranged: 0, charge: 0, support: 0), throwsArgumentError);
-      expect(() => AttackTokenBudgets(melee: 0, ranged: -1, charge: 0, support: 0), throwsArgumentError);
-      expect(() => AttackTokenBudgets(melee: 0, ranged: 0, charge: -1, support: 0), throwsArgumentError);
-      expect(() => AttackTokenBudgets(melee: 0, ranged: 0, charge: 0, support: -1), throwsArgumentError);
+      expect(
+        () => AttackTokenBudgets(melee: -1, ranged: 0, charge: 0, support: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => AttackTokenBudgets(melee: 0, ranged: -1, charge: 0, support: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => AttackTokenBudgets(melee: 0, ranged: 0, charge: -1, support: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => AttackTokenBudgets(melee: 0, ranged: 0, charge: 0, support: -1),
+        throwsArgumentError,
+      );
     });
 
-    test('zero budgets are accepted and deny everything via budgetExhausted', () {
-      final allocation = director.allocate(
-        budgets: AttackTokenBudgets(melee: 0, ranged: 0, charge: 0, support: 0),
-        requests: [
-          _request(actorId: 'a', kind: AttackTokenKind.melee),
-          _request(actorId: 'b', kind: AttackTokenKind.ranged),
-          _request(actorId: 'c', kind: AttackTokenKind.charge),
-          _request(actorId: 'd', kind: AttackTokenKind.support),
-        ],
-      );
-      expect(allocation.grantedCount, 0);
-      for (final decision in allocation.decisions) {
-        expect(decision.granted, isFalse);
-        expect(decision.denial, AttackTokenDenial.budgetExhausted);
-      }
-    });
+    test(
+      'zero budgets are accepted and deny everything via budgetExhausted',
+      () {
+        final allocation = director.allocate(
+          budgets: AttackTokenBudgets(
+            melee: 0,
+            ranged: 0,
+            charge: 0,
+            support: 0,
+          ),
+          requests: [
+            _request(actorId: 'a', kind: AttackTokenKind.melee),
+            _request(actorId: 'b', kind: AttackTokenKind.ranged),
+            _request(actorId: 'c', kind: AttackTokenKind.charge),
+            _request(actorId: 'd', kind: AttackTokenKind.support),
+          ],
+        );
+        expect(allocation.grantedCount, 0);
+        for (final decision in allocation.decisions) {
+          expect(decision.granted, isFalse);
+          expect(decision.denial, AttackTokenDenial.budgetExhausted);
+        }
+      },
+    );
   });
 
   group('request validation', () {
@@ -87,7 +107,10 @@ void main() {
       expect(
         () => director.allocate(
           budgets: _budgets(melee: 4),
-          requests: [_request(actorId: 'dup'), _request(actorId: 'dup')],
+          requests: [
+            _request(actorId: 'dup'),
+            _request(actorId: 'dup'),
+          ],
         ),
         throwsArgumentError,
       );
@@ -146,7 +169,10 @@ void main() {
         requests: [_request(actorId: 'a', spawnGraceTicksRemaining: 2)],
       );
       expect(allocation.grantedCount, 0);
-      expect(allocation.decisions.single.denial, AttackTokenDenial.spawnGraceActive);
+      expect(
+        allocation.decisions.single.denial,
+        AttackTokenDenial.spawnGraceActive,
+      );
     });
 
     test('incomplete telegraph denies', () {
@@ -154,21 +180,31 @@ void main() {
         budgets: _budgets(melee: 4),
         requests: [_request(actorId: 'a', telegraphReady: false)],
       );
-      expect(allocation.decisions.single.denial, AttackTokenDenial.telegraphIncomplete);
+      expect(
+        allocation.decisions.single.denial,
+        AttackTokenDenial.telegraphIncomplete,
+      );
     });
 
     test('offscreen high-impact denies', () {
       final allocation = director.allocate(
         budgets: _budgets(melee: 4),
-        requests: [_request(actorId: 'a', isOffscreen: true, isHighImpact: true)],
+        requests: [
+          _request(actorId: 'a', isOffscreen: true, isHighImpact: true),
+        ],
       );
-      expect(allocation.decisions.single.denial, AttackTokenDenial.offscreenHighImpact);
+      expect(
+        allocation.decisions.single.denial,
+        AttackTokenDenial.offscreenHighImpact,
+      );
     });
 
     test('offscreen without high impact can be granted', () {
       final allocation = director.allocate(
         budgets: _budgets(melee: 4),
-        requests: [_request(actorId: 'a', isOffscreen: true, isHighImpact: false)],
+        requests: [
+          _request(actorId: 'a', isOffscreen: true, isHighImpact: false),
+        ],
       );
       expect(allocation.grantedCount, 1);
     });
@@ -176,7 +212,9 @@ void main() {
     test('high impact onscreen can be granted', () {
       final allocation = director.allocate(
         budgets: _budgets(melee: 4),
-        requests: [_request(actorId: 'a', isOffscreen: false, isHighImpact: true)],
+        requests: [
+          _request(actorId: 'a', isOffscreen: false, isHighImpact: true),
+        ],
       );
       expect(allocation.grantedCount, 1);
     });
@@ -186,66 +224,75 @@ void main() {
         budgets: _budgets(melee: 0),
         requests: [_request(actorId: 'a', spawnGraceTicksRemaining: 1)],
       );
-      expect(allocation.decisions.single.denial, AttackTokenDenial.spawnGraceActive);
-    });
-
-    test('all safety gates keep a stable precedence over exhausted budgets', () {
-      final telegraph = director.allocate(
-        budgets: _budgets(melee: 0),
-        requests: [_request(actorId: 'a', telegraphReady: false)],
-      );
       expect(
-        telegraph.decisions.single.denial,
-        AttackTokenDenial.telegraphIncomplete,
-      );
-
-      final offscreen = director.allocate(
-        budgets: _budgets(melee: 0),
-        requests: [
-          _request(actorId: 'a', isOffscreen: true, isHighImpact: true),
-        ],
-      );
-      expect(
-        offscreen.decisions.single.denial,
-        AttackTokenDenial.offscreenHighImpact,
-      );
-
-      final unblockable = director.allocate(
-        budgets: _budgets(melee: 1, ranged: 0),
-        requests: [
-          _request(
-            actorId: 'first',
-            kind: AttackTokenKind.melee,
-            priority: 2,
-            isUnblockableArea: true,
-          ),
-          _request(
-            actorId: 'second',
-            kind: AttackTokenKind.ranged,
-            priority: 1,
-            isUnblockableArea: true,
-          ),
-        ],
-      );
-      expect(
-        unblockable.decisions.last.denial,
-        AttackTokenDenial.unblockableAreaLimit,
+        allocation.decisions.single.denial,
+        AttackTokenDenial.spawnGraceActive,
       );
     });
 
-    test('grace boundary is open at zero and allocator has no cross-call state', () {
-      final request = _request(actorId: 'a', spawnGraceTicksRemaining: 0);
-      final first = director.allocate(
-        budgets: _budgets(melee: 1),
-        requests: [request],
-      );
-      final second = director.allocate(
-        budgets: _budgets(melee: 1),
-        requests: [request],
-      );
-      expect(first.decisions.single.granted, isTrue);
-      expect(second.decisions, first.decisions);
-    });
+    test(
+      'all safety gates keep a stable precedence over exhausted budgets',
+      () {
+        final telegraph = director.allocate(
+          budgets: _budgets(melee: 0),
+          requests: [_request(actorId: 'a', telegraphReady: false)],
+        );
+        expect(
+          telegraph.decisions.single.denial,
+          AttackTokenDenial.telegraphIncomplete,
+        );
+
+        final offscreen = director.allocate(
+          budgets: _budgets(melee: 0),
+          requests: [
+            _request(actorId: 'a', isOffscreen: true, isHighImpact: true),
+          ],
+        );
+        expect(
+          offscreen.decisions.single.denial,
+          AttackTokenDenial.offscreenHighImpact,
+        );
+
+        final unblockable = director.allocate(
+          budgets: _budgets(melee: 1, ranged: 0),
+          requests: [
+            _request(
+              actorId: 'first',
+              kind: AttackTokenKind.melee,
+              priority: 2,
+              isUnblockableArea: true,
+            ),
+            _request(
+              actorId: 'second',
+              kind: AttackTokenKind.ranged,
+              priority: 1,
+              isUnblockableArea: true,
+            ),
+          ],
+        );
+        expect(
+          unblockable.decisions.last.denial,
+          AttackTokenDenial.unblockableAreaLimit,
+        );
+      },
+    );
+
+    test(
+      'grace boundary is open at zero and allocator has no cross-call state',
+      () {
+        final request = _request(actorId: 'a', spawnGraceTicksRemaining: 0);
+        final first = director.allocate(
+          budgets: _budgets(melee: 1),
+          requests: [request],
+        );
+        final second = director.allocate(
+          budgets: _budgets(melee: 1),
+          requests: [request],
+        );
+        expect(first.decisions.single.granted, isTrue);
+        expect(second.decisions, first.decisions);
+      },
+    );
   });
 
   group('unblockable area cap', () {
@@ -268,10 +315,26 @@ void main() {
       final allocation = director.allocate(
         budgets: _budgets(melee: 4, ranged: 4, charge: 4, support: 4),
         requests: [
-          _request(actorId: 'a', kind: AttackTokenKind.melee, isUnblockableArea: true),
-          _request(actorId: 'b', kind: AttackTokenKind.charge, isUnblockableArea: true),
-          _request(actorId: 'c', kind: AttackTokenKind.ranged, isUnblockableArea: true),
-          _request(actorId: 'd', kind: AttackTokenKind.support, isUnblockableArea: true),
+          _request(
+            actorId: 'a',
+            kind: AttackTokenKind.melee,
+            isUnblockableArea: true,
+          ),
+          _request(
+            actorId: 'b',
+            kind: AttackTokenKind.charge,
+            isUnblockableArea: true,
+          ),
+          _request(
+            actorId: 'c',
+            kind: AttackTokenKind.ranged,
+            isUnblockableArea: true,
+          ),
+          _request(
+            actorId: 'd',
+            kind: AttackTokenKind.support,
+            isUnblockableArea: true,
+          ),
         ],
       );
       expect(allocation.grantedCount, 1);
@@ -322,7 +385,10 @@ void main() {
         _request(actorId: 'd', priority: 4),
       ];
       final first = director.allocate(budgets: budgets, requests: requests);
-      final second = director.allocate(budgets: budgets, requests: requests.reversed.toList());
+      final second = director.allocate(
+        budgets: budgets,
+        requests: requests.reversed.toList(),
+      );
       expect(second.decisions, first.decisions);
       expect(second.grantedActorIds, ['b', 'd']);
     });
@@ -336,16 +402,20 @@ void main() {
           _request(actorId: 'b', priority: 2),
         ],
       );
-      expect(
-        allocation.decisions.map((d) => d.actorId).toList(),
-        ['a', 'b', 'c'],
-      );
+      expect(allocation.decisions.map((d) => d.actorId).toList(), [
+        'a',
+        'b',
+        'c',
+      ]);
     });
   });
 
   group('output contract', () {
     test('empty requests yield empty allocation', () {
-      final allocation = director.allocate(budgets: _budgets(), requests: const []);
+      final allocation = director.allocate(
+        budgets: _budgets(),
+        requests: const [],
+      );
       expect(allocation.decisions, isEmpty);
       expect(allocation.grantedCount, 0);
       expect(allocation.grantedActorIds, isEmpty);
@@ -364,11 +434,11 @@ void main() {
 
     test('request and budget inputs are defensively copied', () {
       final requests = [_request(actorId: 'a')];
-      final allocation = director.allocate(budgets: _budgets(), requests: requests);
-      expect(
-        () => allocation.decisions.length,
-        returnsNormally,
+      final allocation = director.allocate(
+        budgets: _budgets(),
+        requests: requests,
       );
+      expect(() => allocation.decisions.length, returnsNormally);
       requests.add(_request(actorId: 'b'));
       expect(allocation.decisions, hasLength(1));
     });

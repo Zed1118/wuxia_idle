@@ -26,7 +26,7 @@
 ## 冻结合同
 
 - `SpawnDirectorConfig`：`activeLimit`(>0)、`reinforcementThreshold`([0, activeLimit))、`entryWarningTicks`(≥0)、`attackGraceTicks`(≥0) 全部 required、构造期严格校验，**Dart 内无任何默认 tuning 值**。
-- `SpawnEntry`：`entryId` + `enemyId` 均非空、去首尾空白后仍非空、且不含任何空白字符；`entryId` 全量唯一（重复 fail closed）；同一 `enemyId` 可出现在多个入口。
+- `SpawnEntry`：`entryId` + `enemyId` 均非空、去首尾空白后仍非空、且不含任何空白字符；两者均全量唯一（重复 fail closed）。`enemyId` 是敌人实例 ID，敌人类型由后续数据合同独立表达。
 - 生成只来自显式入口：空入口列表 → 永不生成，仅推进 tick。
 - reserve 顺序 = 按 `entryId` 字典序的稳定排序，与输入顺序无关；构造时对入口列表做防御性不可修改副本，调用方 list 后续 mutation 不污染 director。
 - 生命周期：`pending`(后备) → `warning`(入口预警) → `active`(上场，带攻击宽限) → `removed`(离场，仅 `markExited` 且仅 active 可离场)。
