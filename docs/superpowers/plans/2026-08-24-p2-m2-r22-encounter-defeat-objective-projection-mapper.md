@@ -78,21 +78,21 @@ mapCombatEncounterDefeatObjectiveEventSource(
 
 ## CLAUDE §8.2 验收 checklist
 
-- [ ] TDD 先因 mapper/API 缺失跑出有效红灯，实现后转绿。
-- [ ] R22/R07/R13/objective mapper/schema/V01 按独立文件运行
+- [x] TDD 先因 mapper/API 缺失跑出有效红灯，实现后转绿。
+- [x] R22/R07/R13/objective mapper/schema/V01 按独立文件运行
   targeted，每份均确认 `All tests passed`，不跑 full。
-- [ ] 两个 changed Dart item scoped analyze 0 issue；format/diff/path/status
+- [x] 两个 changed Dart item scoped analyze 0 issue；format/diff/path/status
   全绿。
-- [ ] Pi CLI 0.84.1 精确 `deepseek/deepseek-v4-flash` thinking high，
+- [x] Pi CLI 0.84.1 精确 `deepseek/deepseek-v4-flash` thinking high，
   Read/Grep/Find/Ls-only 完成实现前与最终 diff 两轮只读审查。
-- [ ] 生产接线证据如实：交付 R13 真实 event source 映射网关，
+- [x] 生产接线证据如实：交付 R13 真实 event source 映射网关，
   但 production host 未调用，不冒充上线。
-- [ ] 红线影响为 0：无 YAML/数值/玩家文案/三系/在线离线/
+- [x] 红线影响为 0：无 YAML/数值/玩家文案/三系/在线离线/
   反主流/reward/save/UI 触点。
-- [ ] 残留 Gate 诚实：checkpoint/anchor 等六类 projector、objective
+- [x] 残留 Gate 诚实：checkpoint/anchor 等六类 projector、objective
   全流程 executable、Ch1 candidate promotion、production route/host、
   tuning/Profile/G2/真人验收均未解决。
-- [ ] Pi findings 经 Codex 证伪/修复后 P0/P1/P2 清零；小提交
+- [x] Pi findings 经 Codex 证伪/修复后 P0/P1/P2 清零；小提交
   使用中文动宾，tip 追加指定 READY 空提交。
 
 ## 任务切片与当前恢复点
@@ -104,9 +104,17 @@ mapCombatEncounterDefeatObjectiveEventSource(
 4. 运行 Pi 最终 diff 只读审查与 Codex 独立复核，完成全部 Gate。
 5. 回填恢复点和证据，提交后追加 READY。
 
-- 状态：已完成基线、规约与 Batch18 边界核对，待 Pi 实现前审查。
-- 最后完成：确认登记 tip `1d64c04c`、三条 owned files 与预审 API
-  对齐，worktree 初始干净。
-- 下一步：运行指定 Pi 只读实现前审查，然后写 R22 红测。
-- 已跑验证：只读规约/registry/Batch18 核对；未跑测试。
+- 状态：实现、定向 Gate 与最终审查完成，待 READY 空提交。
+- 最后完成：实现三层 exact cover、typed defeat closure、单次物化和
+  `bindingByEntryId` 唯一组装；Pi 最终首轮两个 P2（独立 wrong-kind
+  证据与 sealed switch）已修复，修正后复审 P0/P1/P2 均为 0。
+- 已跑验证：R22 9、R07 8、R13 15、objective mapper 11、schema 8、
+  V01 7，合计 58 tests 通过；V01 首跑因 fresh worktree 缺忽略的
+  `*.g.dart` 失败，依 CLAUDE 要求运行 `dart run build_runner build` 后 7/7
+  通过，生成物未进 Git。两个 Dart item analyze 0 issue，未跑 full。
+- Pi 证据：0.84.1；实现前审查 P0=0/P1=0/P2=6（均纳入实现/测试）；
+  最终首轮 P0=0/P1=0/P2=2；修正后 exact 配置复审 P0=0/P1=0/P2=0。
+- 非空提交：`88b11641`、`670b4999`、`079d073d`、`f74ab37e`、
+  `5151a900`；计划证据将单独提交。
+- 下一步：核对 format/diff/path/status 后追加指定 READY 空提交。
 - 阻塞：无。
