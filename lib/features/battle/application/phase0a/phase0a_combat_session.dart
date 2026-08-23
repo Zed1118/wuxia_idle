@@ -4,6 +4,7 @@ import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import 'phase0a_attack_token_lease_batch_gate.dart';
+import 'phase0a_attack_token_lease_batch_receipt.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_gate.dart';
@@ -18,17 +19,45 @@ import 'phase0a_player_input_adapter.dart';
 final class Phase0aCombatSession {
   Phase0aCombatSession({
     required Phase0aArenaState initialState,
+    required Phase0aPlayerInputAdapter playerAdapter,
+    required Phase0aEnemyAiAdapter enemyAiAdapter,
+    required Phase0aDamageResolver damageResolver,
+    Phase0aEnemySkillDamageResolver? enemySkillDamageResolver,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+    Phase0aEnemyIntentGate? enemyIntentGate,
+    Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
+    Phase0aAttackTokenLeaseBatchGate? attackTokenLeaseBatchGate,
+    AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
+  }) : this._(
+         initialState: initialState,
+         playerAdapter: playerAdapter,
+         enemyAiAdapter: enemyAiAdapter,
+         damageResolver: damageResolver,
+         enemySkillDamageResolver: enemySkillDamageResolver,
+         enemyIntentObserver: enemyIntentObserver,
+         enemyIntentGate: enemyIntentGate,
+         enemyIntentBatchGate: enemyIntentBatchGate,
+         attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
+         attackTokenLeaseRuntime: attackTokenLeaseRuntime,
+         lastAttackTokenLeaseBatchReceipt: null,
+       );
+
+  Phase0aCombatSession._({
+    required Phase0aArenaState initialState,
     required this.playerAdapter,
     required this.enemyAiAdapter,
     required this.damageResolver,
-    this.enemySkillDamageResolver,
-    this.enemyIntentObserver,
-    this.enemyIntentGate,
-    this.enemyIntentBatchGate,
-    this.attackTokenLeaseBatchGate,
-    AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
+    required this.enemySkillDamageResolver,
+    required this.enemyIntentObserver,
+    required this.enemyIntentGate,
+    required this.enemyIntentBatchGate,
+    required this.attackTokenLeaseBatchGate,
+    required AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
+    required Phase0aAttackTokenLeaseBatchReceipt?
+    lastAttackTokenLeaseBatchReceipt,
   }) : _state = initialState,
-       _attackTokenLeaseRuntime = attackTokenLeaseRuntime {
+       _attackTokenLeaseRuntime = attackTokenLeaseRuntime,
+       _lastAttackTokenLeaseBatchReceipt = lastAttackTokenLeaseBatchReceipt {
     if ((attackTokenLeaseBatchGate == null) !=
         (attackTokenLeaseRuntime == null)) {
       throw ArgumentError(
@@ -69,6 +98,7 @@ final class Phase0aCombatSession {
   Phase0aArenaState _state;
   AttackTokenLeaseRuntime? _attackTokenLeaseRuntime;
   Phase0aEnemyIntentObservation? _lastEnemyIntentObservation;
+  Phase0aAttackTokenLeaseBatchReceipt? _lastAttackTokenLeaseBatchReceipt;
 
   Phase0aArenaState get state => _state;
 
@@ -80,6 +110,9 @@ final class Phase0aCombatSession {
   /// plumbing is not configured. The owning runtime is never exposed.
   AttackTokenLeaseSnapshot? get attackTokenLeaseSnapshot =>
       _attackTokenLeaseRuntime?.snapshot;
+
+  Phase0aAttackTokenLeaseBatchReceipt? get lastAttackTokenLeaseBatchReceipt =>
+      _lastAttackTokenLeaseBatchReceipt;
 
   /// 返回仅替换 state 的候选会话:复用同一 player adapter、enemy AI
   /// adapter、damage resolver、enemy-skill resolver、enemy-intent
@@ -98,7 +131,7 @@ final class Phase0aCombatSession {
     Phase0aArenaState nextState, {
     required Phase0aEnemyIntentGate? enemyIntentGate,
   }) {
-    return Phase0aCombatSession(
+    return Phase0aCombatSession._(
       initialState: nextState,
       playerAdapter: playerAdapter,
       enemyAiAdapter: enemyAiAdapter,
@@ -109,6 +142,7 @@ final class Phase0aCombatSession {
       enemyIntentBatchGate: enemyIntentBatchGate,
       attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
       attackTokenLeaseRuntime: _attackTokenLeaseRuntime,
+      lastAttackTokenLeaseBatchReceipt: _lastAttackTokenLeaseBatchReceipt,
     );
   }
 
@@ -178,9 +212,17 @@ final class Phase0aCombatSession {
       damageResolver: damageResolver,
       enemySkillDamageResolver: enemySkillDamageResolver,
     );
-    final nextLeaseRuntime = preparedLeaseBatch?.commit(
-      _attackTokenLeaseRuntime!,
-    );
+    final leaseRuntimeBefore = preparedLeaseBatch == null
+        ? null
+        : _attackTokenLeaseRuntime!;
+    final nextLeaseRuntime = preparedLeaseBatch?.commit(leaseRuntimeBefore!);
+    final nextLeaseReceipt = nextLeaseRuntime == null
+        ? null
+        : Phase0aAttackTokenLeaseBatchReceipt(
+            before: leaseRuntimeBefore!.snapshot,
+            mutations: preparedLeaseBatch!.mutations,
+            after: nextLeaseRuntime.snapshot,
+          );
 
     // No throwing work follows these assignments. Arena state, immutable
     // lease runtime and diagnostic therefore publish as one session-owned
@@ -191,6 +233,9 @@ final class Phase0aCombatSession {
     }
     if (nextObservation != null) {
       _lastEnemyIntentObservation = nextObservation;
+    }
+    if (nextLeaseReceipt != null) {
+      _lastAttackTokenLeaseBatchReceipt = nextLeaseReceipt;
     }
     return result.events;
   }
