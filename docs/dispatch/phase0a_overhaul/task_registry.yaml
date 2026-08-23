@@ -1638,8 +1638,17 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r08-production-encounter-token-gate-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r08-production-encounter-token-gate
-    status: in_progress
+    status: ready_reviewed
     base_commit: 81d47f16880b2b9d7a860379cf308cca3f6110e2
+    implementation_commit: 2f68aabc699f7ca54dcf9780d3fceb442ac668a5
+    tip_commit: 46bc5573cf0b79a42bb16f06ace10442fc2ffc42
+    integration_commits:
+      - ac86e7b1
+      - 17e571dc
+    verification:
+      targeted_tests: 71
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R05-ATTACK-TOKEN-BATCH-GATE
       - P2-M2-BATCH12-RUNTIME-ENFORCEMENT-INTEGRATION
@@ -1657,8 +1666,23 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-r09-objective-aware-encounter-flow-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r09-objective-aware-encounter-flow
-    status: in_progress
+    status: ready_reviewed
     base_commit: 81d47f16880b2b9d7a860379cf308cca3f6110e2
+    implementation_commits:
+      - b20bdd7449b9
+      - bb6a3792e384
+      - 0c59ee91
+    tip_commit: ec6d9acf09aa3506eb63dcff7252cdf85fc56db0
+    integration_commits:
+      - 3bacf62d
+      - dc9c03cd
+      - 8130c9c5
+      - fd470c8e
+      - 697a4145
+    verification:
+      targeted_tests: 119
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
       - P2-M2-BATCH12-RUNTIME-ENFORCEMENT-INTEGRATION
@@ -1680,8 +1704,16 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r10-stage-encounter-route-selector-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r10-stage-encounter-route-selector
-    status: in_progress
+    status: ready_reviewed
     base_commit: 81d47f16880b2b9d7a860379cf308cca3f6110e2
+    implementation_commit: a121d15bffab179c18a812d8fc1af420ffd81f3a
+    tip_commit: 6ffa3bd2c3ccaa4a607ee2b46aa6fea531f3fe08
+    integration_commits:
+      - a9ea9e0e
+    verification:
+      targeted_tests: 45
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-G2-E05-ENCOUNTER-MIGRATION-RESOLVER
       - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
@@ -1706,6 +1738,22 @@ tasks:
       - P2-M2-R08-PRODUCTION-ENCOUNTER-TOKEN-GATE
       - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
       - P2-M2-R10-STAGE-ENCOUNTER-ROUTE-SELECTOR
+    integration_commits:
+      - ac86e7b1
+      - 17e571dc
+      - 3bacf62d
+      - dc9c03cd
+      - 8130c9c5
+      - fd470c8e
+      - 697a4145
+      - a9ea9e0e
+      - 87e84a66
+    verification:
+      joint_targeted_tests: 183
+      full_tests: 4913
+      changed_dart_items: 10
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
       - test/features/battle/application/phase0a/phase0a_production_encounter_objective_integration_test.dart

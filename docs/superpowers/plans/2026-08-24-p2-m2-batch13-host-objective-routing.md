@@ -27,5 +27,7 @@
 
 - [x] 从 Batch12 READY 创建三实现 worktree 与一集成 worktree。
 - [x] 冻结所有权、冲突面、RNG 真实边界和 promotion Gate。
-- [ ] R08 / R09 / R10 实现、来源验证与 READY。
-- [ ] 主控集成、联合/全量验证、独立终审与 Batch13 READY。
+- [x] R08 / R09 / R10 实现、来源验证、独立复审与修后 READY。
+- [x] 主控成对 objective 透传、183/183 联合 targeted、10 项 scoped analyze 与仓库审计。
+- [x] 批末 full Flutter test 4913/4913 通过，exit 0。
+- [ ] 独立集成终审、证据收口与 Batch13 READY。
