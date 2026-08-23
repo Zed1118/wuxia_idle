@@ -1197,3 +1197,82 @@ tasks:
       - all twenty tuning groups authorize candidate generation only and do not authorize production values
       - living documents distinguish approved design from not-yet-implemented production state
       - yaml markdown diff checks and independent review pass before READY
+
+  - id: P2-M2-BATCH10-INTEGRATION
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch10-integration-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch10-integration
+    status: in_progress
+    base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    source_tasks:
+      - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
+      - P2-M2-R01-MAINLINE-RUN-PARTICIPATION
+      - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch10-schema-contracts.md
+      - docs/audit/phase2_m2_batch10_schema_contracts_2026-08-24.md
+    exit_criteria:
+      - public combat catalog schema expresses only frozen M2 concepts with no production defaults
+      - mainline run and replay participation semantics match G0 exactly
+      - mentor insight occupancy and claim contracts contain no rate or production award
+      - source diffs are independently reviewed and integration tests pass before READY
+
+  - id: P2-M2-C01-CATALOG-SCHEMA-GATEWAY
+    milestone: M2
+    owner: codex_sol_high
+    branch: codex/phase2-m2-c01-catalog-schema-gateway-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-c01-schema
+    status: running
+    base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    owned_files:
+      - lib/data/defs/combat_enemy_archetype_def.dart
+      - lib/data/defs/combat_encounter_def.dart
+      - lib/data/defs/combat_catalog_manifest_def.dart
+      - lib/data/combat_encounter_catalog_loader.dart
+      - lib/data/validation/combat_encounter_catalog_validator.dart
+      - lib/data/validation/combat_objective_primitive_mapper.dart
+      - test/data/**
+      - test/fixtures/phase2/combat/**
+      - docs/superpowers/plans/2026-08-24-p2-m2-c01-catalog-schema-gateway.md
+    protected_behavior:
+      - no production yaml io host routing UI save reward or tuning defaults
+      - all numeric and reference fields are explicit caller inputs
+      - ambiguous objective combination semantics remain blocked instead of invented
+
+  - id: P2-M2-R01-MAINLINE-RUN-PARTICIPATION
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r01-mainline-run-participation-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r01-mainline-run
+    status: running
+    base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    owned_files:
+      - lib/features/mainline/domain/mainline_participation_policy.dart
+      - lib/features/mainline/domain/mainline_run.dart
+      - test/features/mainline/domain/mainline_participation_policy_test.dart
+      - test/features/mainline/domain/mainline_run_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r01-mainline-run-participation.md
+    protected_behavior:
+      - no production host sweep data save ui or persistent dual presets
+      - eligibility and battle readiness remain explicit caller facts
+      - actual participant owns records growth and injury
+
+  - id: P2-M2-R02-MENTOR-INSIGHT-CONTRACT
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r02-mentor-insight-contract-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r02-mentor
+    status: running
+    base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    owned_files:
+      - lib/features/mainline/domain/mentor_insight_policy.dart
+      - lib/features/mainline/application/mentor_insight_claim_policy.dart
+      - test/features/mainline/domain/mentor_insight_policy_test.dart
+      - test/features/mainline/application/mentor_insight_claim_policy_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r02-mentor-insight-contract.md
+    protected_behavior:
+      - no proficiency rate cap production award persistence or ui
+      - mentor never enters battle takes injury or shares drops
+      - occupancy release and first-clear claim are deterministic and idempotent
