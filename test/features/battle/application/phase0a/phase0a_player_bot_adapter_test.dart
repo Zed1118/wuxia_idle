@@ -1,28 +1,60 @@
 import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_numeric_skill_binding.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 
-Phase0aPlayerInputAdapter _adapter() => const Phase0aPlayerInputAdapter(
-  playerId: 'player',
-  attackRange: 120,
-  attackHalfArcRadians: math.pi / 4,
-  attackCooldownSeconds: 1,
-  attackQiDelta: 0,
-  gatherSlot: 'gather',
-  gatherRingRadius: 90,
-  gatherEffectRadius: 500,
-  gatherQiCost: 20,
-  gatherCooldownSeconds: 3,
-  clearSlot: 'clear',
-  clearEffectRadius: 500,
-  clearQiCost: 30,
-  clearCooldownSeconds: 4,
+const _burstSkill = SkillDef(
+  id: 'c12_burst',
+  name: 'c12_burst',
+  description: 'c12_burst',
+  type: SkillType.powerSkill,
+  powerMultiplier: 1,
+  qiDelta: -30,
+  cooldownTurns: 2,
+  requiresManualTrigger: false,
+  visualEffect: 'none',
+  targetType: TargetType.aoe,
 );
+
+Phase0aNumericSkillBinding _burstBinding() => Phase0aNumericSkillBinding(
+  hotkey: 1,
+  loadoutSlot: CombatantSkillLoadout.numericSlots[0],
+  skill: _burstSkill,
+  slotId: 'burst',
+  attackRange: 100,
+  halfArc: math.pi / 4,
+  effectRadius: 200,
+  cooldownSeconds: 1,
+);
+
+Phase0aPlayerInputAdapter _adapter({bool withBurst = false}) =>
+    Phase0aPlayerInputAdapter(
+      playerId: 'player',
+      attackRange: 120,
+      attackHalfArcRadians: math.pi / 4,
+      attackCooldownSeconds: 1,
+      attackQiDelta: 0,
+      gatherSlot: 'gather',
+      gatherRingRadius: 90,
+      gatherEffectRadius: 500,
+      gatherQiCost: 20,
+      gatherCooldownSeconds: 3,
+      clearSlot: 'clear',
+      clearEffectRadius: 500,
+      clearQiCost: 30,
+      clearCooldownSeconds: 4,
+      numericSkillBindings: withBurst
+          ? Phase0aNumericSkillBindings(one: _burstBinding())
+          : const Phase0aNumericSkillBindings.empty(),
+    );
 
 Phase0aActor _actor({
   required Phase0aSide side,
@@ -42,26 +74,39 @@ Phase0aActor _actor({
   defeatKind: Phase0aDefeatKind.normal,
 );
 
-Phase0aArenaState _state() => Phase0aArenaState(
-  tick: 4,
-  nextSeq: 8,
-  player: _actor(side: Phase0aSide.player, id: 'player'),
-  enemies: [_actor(side: Phase0aSide.enemy, id: 'enemy')],
-  skillSlots: const [
-    Phase0aSkillSlot(
-      slot: 'gather',
-      cooldownRemaining: 0,
-      qiCost: 20,
-      availability: Phase0aSkillAvailability.ready,
-    ),
-    Phase0aSkillSlot(
-      slot: 'clear',
-      cooldownRemaining: 0,
-      qiCost: 30,
-      availability: Phase0aSkillAvailability.ready,
-    ),
-  ],
-);
+Phase0aArenaState _state({bool window = false, bool withBurst = false}) =>
+    Phase0aArenaState(
+      tick: 4,
+      nextSeq: 8,
+      player: _actor(side: Phase0aSide.player, id: 'player'),
+      enemies: [
+        _actor(
+          side: Phase0aSide.enemy,
+          id: 'enemy',
+        ).copyWith(staggerTicksRemaining: window ? 1 : 0),
+      ],
+      skillSlots: [
+        const Phase0aSkillSlot(
+          slot: 'gather',
+          cooldownRemaining: 0,
+          qiCost: 20,
+          availability: Phase0aSkillAvailability.ready,
+        ),
+        const Phase0aSkillSlot(
+          slot: 'clear',
+          cooldownRemaining: 0,
+          qiCost: 30,
+          availability: Phase0aSkillAvailability.ready,
+        ),
+        if (withBurst)
+          const Phase0aSkillSlot(
+            slot: 'burst',
+            cooldownRemaining: 0,
+            qiCost: 30,
+            availability: Phase0aSkillAvailability.ready,
+          ),
+      ],
+    );
 
 void main() {
   test('production policy preserves the pre-C12 command', () {
@@ -98,9 +143,9 @@ void main() {
     () {
       Phase0aPlayerCommand command(Phase0aBotTacticPolicy policy) =>
           Phase0aPlayerBotAdapter(
-            playerAdapter: _adapter(),
+            playerAdapter: _adapter(withBurst: true),
             policy: policy,
-          ).commandFor(_state());
+          ).commandFor(_state(window: true, withBurst: true));
 
       final seek = command(const Phase0aBotTacticPolicy.seekGap());
       final assault = command(const Phase0aBotTacticPolicy.assault());
@@ -116,33 +161,25 @@ void main() {
   );
 
   test('seek gap holds resources outside a visible stagger window', () {
-    final enemy = _actor(side: Phase0aSide.enemy, id: 'enemy');
     final bot = Phase0aPlayerBotAdapter(
-      playerAdapter: _adapter(),
+      playerAdapter: _adapter(withBurst: true),
       policy: const Phase0aBotTacticPolicy.seekGap(),
     );
-    final closed = bot.commandFor(_state());
-    final open = bot.commandFor(
-      Phase0aArenaState(
-        tick: 4,
-        nextSeq: 8,
-        player: _actor(side: Phase0aSide.player, id: 'player'),
-        enemies: [enemy.copyWith(staggerTicksRemaining: 1)],
-        skillSlots: _state().skillSlots,
-      ),
-    );
+    final closed = bot.commandFor(_state(withBurst: true));
+    final open = bot.commandFor(_state(window: true, withBurst: true));
 
     expect(closed.gather, isFalse);
     expect(closed.clear, isFalse);
     expect(closed.skillHotkey, isNull);
     expect(open.gather, isFalse);
     expect(open.clear, isFalse);
+    expect(open.skillHotkey, 1);
   });
 
   test('steady guard prioritizes clear during an observable enemy window', () {
     final enemy = _actor(side: Phase0aSide.enemy, id: 'enemy');
     final bot = Phase0aPlayerBotAdapter(
-      playerAdapter: _adapter(),
+      playerAdapter: _adapter(withBurst: true),
       policy: const Phase0aBotTacticPolicy.steadyGuard(),
     );
     final closed = bot.commandFor(_state());
@@ -176,7 +213,7 @@ void main() {
       final window = _actor(
         side: Phase0aSide.enemy,
         id: 'window',
-        position: const ArenaVector(100, 0),
+        position: const ArenaVector(200, 0),
       ).copyWith(staggerTicksRemaining: 1);
       final command = bot.commandFor(
         Phase0aArenaState(
@@ -184,7 +221,7 @@ void main() {
           nextSeq: 8,
           player: _actor(side: Phase0aSide.player, id: 'player'),
           enemies: [normal, window],
-          skillSlots: _state().skillSlots,
+          skillSlots: _state(withBurst: true).skillSlots,
         ),
       );
 
