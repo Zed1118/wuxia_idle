@@ -24,5 +24,22 @@ void main() {
     expect(Phase0aPresentationTokens.vfxInkSplatCount, 6);
     expect(Phase0aPresentationTokens.vfxResidualStrokeCount, 2);
     expect(Phase0aPresentationTokens.vfxInkSplatCount, lessThanOrEqualTo(8));
+    expect(Phase0aPresentationTokens.vfxNormalDefeatSplatCount, 12);
+    expect(Phase0aPresentationTokens.vfxEliteDefeatSplatCount, 24);
+    expect(
+      Phase0aPresentationTokens.vfxEliteDefeatSplatCount,
+      lessThanOrEqualTo(24),
+    );
+  });
+
+  test('主笔锋 alpha 在起始/中间/末段单调淡出', () {
+    final start = Phase0aPresentationTokens.vfxStrokeAlpha(0);
+    final middle = Phase0aPresentationTokens.vfxStrokeAlpha(0.5);
+    final end = Phase0aPresentationTokens.vfxStrokeAlpha(1);
+
+    expect(start, 1);
+    expect(middle, 0.5);
+    expect(end, 0);
+    expect(start >= middle && middle >= end, isTrue);
   });
 }

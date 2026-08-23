@@ -1838,6 +1838,9 @@ class _InkEffectPainter extends CustomPainter {
       ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
     final reveal = Phase0aPresentationTokens.vfxReveal(progress);
     final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final strokeAlpha = Phase0aPresentationTokens.vfxStrokeAlpha(progress);
+    ink.color = WuxiaUi.ink.withValues(alpha: 0.72 * strokeAlpha);
+    wash.color = WuxiaUi.jiang.withValues(alpha: 0.30 * strokeAlpha);
     final washFill = Paint()
       ..color = WuxiaUi.qing.withValues(
         alpha: Phase0aPresentationTokens.vfxInkWashMaxOpacity * fade,
@@ -1867,7 +1870,7 @@ class _InkEffectPainter extends CustomPainter {
         canvas.drawPath(
           rising,
           Paint()
-            ..color = WuxiaUi.qing.withValues(alpha: 0.90)
+            ..color = WuxiaUi.qing.withValues(alpha: 0.90 * strokeAlpha)
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round
             ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * 1.35,
@@ -1914,7 +1917,7 @@ class _InkEffectPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(size.width * 0.72, size.height * 0.28),
           Phase0aPresentationTokens.gatherPullTargetDotRadius,
-          Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.58),
+          Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.58 * strokeAlpha),
         );
       case _InkEffect.palm:
         final reveal = Curves.easeOut.transform(
@@ -2002,7 +2005,7 @@ class _InkEffectPainter extends CustomPainter {
         canvas.drawCircle(
           center,
           size.width * (0.08 + clearReveal * 0.16),
-          Paint()..color = WuxiaUi.ink.withValues(alpha: 0.72 * fade),
+          Paint()..color = WuxiaUi.ink.withValues(alpha: 0.72 * strokeAlpha),
         );
         for (var i = 0; i < Phase0aPresentationTokens.vfxInkSplatCount; i++) {
           final angle =
@@ -2027,14 +2030,14 @@ class _InkEffectPainter extends CustomPainter {
       case _InkEffect.defeat:
         final elite = defeatKind == Phase0aDefeatKind.elite;
         final count = elite
-            ? Phase0aPresentationTokens.vfxSpokeCount * 2
-            : Phase0aPresentationTokens.vfxSpokeCount;
+            ? Phase0aPresentationTokens.vfxEliteDefeatSplatCount
+            : Phase0aPresentationTokens.vfxNormalDefeatSplatCount;
         if (elite) {
           canvas.drawCircle(
             center,
             size.width * (0.14 + reveal * 0.14),
             Paint()
-              ..color = WuxiaUi.jiang.withValues(alpha: 0.42)
+              ..color = WuxiaUi.jiang.withValues(alpha: 0.42 * strokeAlpha)
               ..style = PaintingStyle.stroke
               ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth,
           );

@@ -36,8 +36,8 @@
 
 ## 当前恢复点
 
-- 状态：实现与验证完成，待第二块 commit 与 READY 冻结。
-- 最后完成：父级唯一帧 notifier、固定上限水墨层、critical 透传、帧参数行为测试已落地。
-- 下一步：提交第二块 `[READY]` 之前的真实实现 commit，随后做 READY 标记 commit 与最终 clean 检查。
-- 已跑验证：三文件 analyze 0 issue；VFX/source/controller targeted 54 tests 全绿；整屏 battle screen 24 tests 全绿，覆盖 1280×720 与 1440×900。
+- 状态：实现与验证完成，待修正提交与 READY 冻结。
+- 最后完成：主笔锋/清场辐射/精英环接入 `vfxStrokeAlpha`；精英死亡墨散固定上限显式 token 化；alpha 单调与 painter 使用契约已补。
+- 下一步：提交视觉审查修正，追加 `[READY]` 标记，确认 clean。
+- 已跑验证：三文件 targeted analyze 0 issue；VFX/source/controller targeted 56 tests 全绿；整屏 battle screen 24 tests 全绿，覆盖 1280×720 与 1440×900。全仓 analyze 曾因 fresh worktree 生成依赖耗时被中断，未以全仓结果宣告通过。
 - 阻塞项：无。移动卡顿、普攻范围和主线小怪数量属于另行 gameplay/content 任务，不在本切片实现。

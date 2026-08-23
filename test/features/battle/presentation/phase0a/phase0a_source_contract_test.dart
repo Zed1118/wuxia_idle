@@ -183,6 +183,11 @@ void main() {
         source,
         contains('Phase0aPresentationTokens.vfxResidualStrokeCount'),
       );
+      expect(source, contains('vfxStrokeAlpha(progress)'));
+      expect(
+        source,
+        contains('Phase0aPresentationTokens.vfxEliteDefeatSplatCount'),
+      );
     });
 
     test('水墨帧参数在起始/中间/末段可观察变化', () {
@@ -191,6 +196,7 @@ void main() {
       ).readAsStringSync();
       expect(source, contains('static double vfxReveal(double progress)'));
       expect(source, contains('static double vfxFade(double progress)'));
+      expect(source, contains('static double vfxStrokeAlpha(double progress)'));
     });
   });
 }

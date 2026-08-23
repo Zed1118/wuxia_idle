@@ -136,6 +136,8 @@ abstract final class Phase0aPresentationTokens {
   /// 普攻/击杀/清场 painter 的固定墨滴绘制上限。
   static const int vfxInkSplatCount = 6;
   static const int vfxResidualStrokeCount = 2;
+  static const int vfxNormalDefeatSplatCount = 12;
+  static const int vfxEliteDefeatSplatCount = 24;
   static const double vfxInkSplatRadius = 3.5;
   static const double vfxInkSplatTravelFraction = 0.22;
   static const double vfxInkWashMaxOpacity = 0.18;
@@ -195,4 +197,9 @@ abstract final class Phase0aPresentationTokens {
   static double vfxReveal(double progress) => progress.clamp(0.0, 1.0);
 
   static double vfxFade(double progress) => (1.0 - progress).clamp(0.0, 1.0);
+
+  /// 主笔锋、清场辐射线与精英环的统一淡出 alpha。
+  /// 几何 reveal 仍由 painter 单独控制，避免末帧突然消失。
+  static double vfxStrokeAlpha(double progress) =>
+      (1.0 - progress).clamp(0.0, 1.0);
 }
