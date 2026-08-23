@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
-import 'package:wuxia_idle/features/mainline/application/mainline_run_admission.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_stage_runtime_admission.dart';
 import 'package:wuxia_idle/features/mainline/application/mentor_insight_stage_occupancy_runtime.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_participation_policy.dart';
@@ -331,10 +330,13 @@ void main() {
     });
 
     test('R15 active occupancy conflicts pass through unchanged', () {
-      final cases = [_choice('stage_a', 91), _choice('stage_a', 92)];
+      final cases = [
+        (_companion('stage_a', 91), _choice('stage_a', 91)),
+        (_companion('stage_a', 91), _choice('stage_a', 92)),
+        (_companion('stage_other', 91), _choice('stage_a', 91)),
+      ];
 
-      for (final choice in cases) {
-        final active = _companion('stage_a', 91);
+      for (final (active, choice) in cases) {
         final predecessor = MentorInsightStageOccupancyRuntime.restore(
           revision: 3,
           companion: active,
