@@ -33,5 +33,5 @@
 - [x] R20 完成 Qoder 两轮只读审查、44/44、scoped analyze 0 与 Codex 终审，六个非空提交已按 stable patch-id 集成。
 - [x] R19 完成 Pi 两轮只读审查、45/45、scoped analyze 0 与 Codex 终审，五个非空提交已按 stable patch-id 集成。
 - [x] 完成 R19/R20 并行来源，并从 R19 集成 code tip 创建 R21 独立 worktree。
-- [ ] 完成 R21 来源。
+- [x] R21 完成 Pi 两轮只读审查、81/81、scoped analyze 0 与独立终审，四个非空提交已按 stable patch-id 集成。
 - [ ] 联合/full 验证、独立终审与 Batch17 READY。

@@ -2315,8 +2315,19 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-r21-mentor-insight-durable-claim-boundary-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r21-mentor-insight-durable-claim-boundary
-    status: in_progress
+    status: ready_reviewed
     base_commit: edf7f206d21d605b390a793393a07c535a30703e
+    implementation_commit: 57222498
+    tip_commit: ee2ee81529fb4dcc3be1c73e6e2302443902521e
+    integration_commits:
+      - c4a64fb1
+      - 6d0de95e
+      - 6118a75e
+      - 4e511c5a
+    verification:
+      targeted_tests: 81
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
@@ -2340,6 +2351,22 @@ tasks:
       - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
       - P2-M2-R20-MENTOR-INSIGHT-REVERSE-ACTIVITY-GUARD
       - P2-M2-R21-MENTOR-INSIGHT-DURABLE-CLAIM-BOUNDARY
+    integration_commits:
+      - d500d1c3
+      - 7b45838a
+      - 9ccc746d
+      - edf7f206
+      - 481f781a
+      - 9036f6ca
+      - 7504e49f
+      - a1a11e6b
+      - 090aa89d
+      - 6ef11663
+      - 14383743
+      - c4a64fb1
+      - 6d0de95e
+      - 6118a75e
+      - 4e511c5a
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch17-mentor-transaction-boundaries.md
