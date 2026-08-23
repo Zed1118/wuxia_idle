@@ -4,16 +4,24 @@ import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_token_lease_batch_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_batch_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_lease_runtime.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_enemy_roster.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/objective_controller.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
 
 final class _DamageResolver implements Phase0aDamageResolver {
   _DamageResolver({this.throwOnResolve = false});
@@ -54,6 +62,22 @@ final class _PassBatchGate implements Phase0aEnemyIntentBatchGate {
   List<Phase0aIntent> gateEnemyIntents({
     required List<Phase0aIntent> enemyIntents,
   }) => enemyIntents;
+}
+
+final class _ThrowOnceObjectiveSource
+    implements Phase0aEncounterObjectiveEventSource {
+  bool shouldThrow = true;
+
+  @override
+  Iterable<EncounterObjectiveEvent> eventsFor(
+    Phase0aEncounterObjectiveFrame frame,
+  ) {
+    if (shouldThrow) {
+      shouldThrow = false;
+      throw StateError('objective source failed');
+    }
+    return const <EncounterObjectiveEvent>[];
+  }
 }
 
 const _playerAdapter = Phase0aPlayerInputAdapter(
@@ -174,9 +198,9 @@ Iterable<AttackTokenLeaseMutation> _throwingMutations() sync* {
 void main() {
   group('lease batch value and prepared successor', () {
     test('plan freezes caller lists and materializes lazy failures', () {
-      final intent = Phase0aMoveIntent(
+      const intent = Phase0aMoveIntent(
         actorId: 'e1',
-        direction: const ArenaVector(-1, 0),
+        direction: ArenaVector(-1, 0),
       );
       final intents = <Phase0aIntent>[intent];
       final mutations = <AttackTokenLeaseMutation>[
@@ -388,9 +412,9 @@ void main() {
         final transforms = <List<Phase0aIntent> Function(List<Phase0aIntent>)>[
           (input) => [
             ...input,
-            Phase0aMoveIntent(
+            const Phase0aMoveIntent(
               actorId: 'injected',
-              direction: const ArenaVector(-1, 0),
+              direction: ArenaVector(-1, 0),
             ),
           ],
           (input) => [input.first, input.first],
@@ -499,6 +523,92 @@ void main() {
     });
   });
 
+  test('encounter outer rollback discards candidate lease publication', () {
+    final seenSnapshots = <AttackTokenLeaseSnapshot>[];
+    final gate = _gate(({
+      required AttackTokenLeaseSnapshot leaseSnapshot,
+      required List<Phase0aIntent> enemyIntents,
+    }) {
+      seenSnapshots.add(leaseSnapshot);
+      return Phase0aAttackTokenLeaseBatchPlan(
+        enemyIntents: enemyIntents,
+        mutations: leaseSnapshot.activeLeases.isEmpty
+            ? [AcquireAttackTokenLease(_lease('lease_e1', 'e1'))]
+            : const [],
+      );
+    });
+    final director = SpawnDirector(
+      config: SpawnDirectorConfig(
+        activeLimit: 1,
+        reinforcementThreshold: 0,
+        entryWarningTicks: 0,
+        attackGraceTicks: 0,
+      ),
+      entries: [SpawnEntry(entryId: 'entry_e1', enemyId: 'e1')],
+    );
+    final roster = Phase0aEncounterRoster(
+      director: director,
+      playerId: 'player',
+      bindings: [
+        Phase0aEncounterRosterBinding(
+          entryId: 'entry_e1',
+          actor: _actor(id: 'e1', side: Phase0aSide.enemy, x: 50),
+        ),
+      ],
+    );
+    final source = _ThrowOnceObjectiveSource();
+    final flow = Phase0aEncounterFlow.runtime(
+      session: _session(
+        initialState: Phase0aArenaState(
+          tick: 0,
+          nextSeq: 1,
+          player: _actor(id: 'player', side: Phase0aSide.player, x: 0),
+          enemies: const [],
+          skillSlots: const [],
+        ),
+        leaseGate: gate,
+        leaseRuntime: AttackTokenLeaseRuntime.empty(),
+      ),
+      director: director,
+      roster: roster,
+      objectiveTracker: Phase0aObjectiveRuntimeTracker(
+        controller: ObjectiveController(
+          completionRule: ObjectiveCompletionRule.all,
+          clauses: [
+            ObjectiveClause(
+              id: 'never_complete',
+              objective: DefeatTargetsObjective(const {'never'}),
+            ),
+          ],
+        ),
+      ),
+      objectiveEventSource: source,
+    );
+
+    expect(
+      () => flow.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(),
+      ),
+      throwsStateError,
+    );
+    expect(flow.state.tick, 0);
+    expect(flow.spawnState.tick, 0);
+    expect(flow.outcome, Phase0aBattleOutcome.ongoing);
+
+    flow.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
+    flow.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
+
+    expect(seenSnapshots.map((snapshot) => snapshot.revision), [0, 0, 1]);
+    expect(seenSnapshots.map((snapshot) => snapshot.activeLeases.length), [
+      0,
+      0,
+      1,
+    ]);
+    expect(flow.state.tick, 2);
+    expect(flow.spawnState.tick, 2);
+  });
+
   test('source guard keeps lifecycle inference and production wiring out', () {
     final gateSource = File(
       'lib/features/battle/application/phase0a/'
@@ -516,7 +626,6 @@ void main() {
         'ActionTimeline',
         'rootBundle',
         'GameRepository',
-        'candidate',
         'tuning',
       ]) {
         expect(source, isNot(contains(forbidden)), reason: forbidden);

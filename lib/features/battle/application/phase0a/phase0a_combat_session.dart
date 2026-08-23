@@ -1,7 +1,9 @@
+import '../../domain/phase0a/attack_token_lease_runtime.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
+import 'phase0a_attack_token_lease_batch_gate.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_gate.dart';
@@ -23,7 +25,24 @@ final class Phase0aCombatSession {
     this.enemyIntentObserver,
     this.enemyIntentGate,
     this.enemyIntentBatchGate,
-  }) : _state = initialState;
+    this.attackTokenLeaseBatchGate,
+    AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
+  }) : _state = initialState,
+       _attackTokenLeaseRuntime = attackTokenLeaseRuntime {
+    if ((attackTokenLeaseBatchGate == null) !=
+        (attackTokenLeaseRuntime == null)) {
+      throw ArgumentError(
+        'attackTokenLeaseBatchGate and attackTokenLeaseRuntime must be '
+        'configured together',
+      );
+    }
+    if (enemyIntentBatchGate != null && attackTokenLeaseBatchGate != null) {
+      throw ArgumentError(
+        'enemyIntentBatchGate and attackTokenLeaseBatchGate are mutually '
+        'exclusive',
+      );
+    }
+  }
 
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aEnemyAiAdapter enemyAiAdapter;
@@ -42,7 +61,13 @@ final class Phase0aCombatSession {
   /// 任何批次处理，保持旧路径。
   final Phase0aEnemyIntentBatchGate? enemyIntentBatchGate;
 
+  /// Optional transactional lease batch gate. The paired immutable runtime
+  /// belongs to this session value and is copied into candidate forks. It is
+  /// deliberately mutually exclusive with [enemyIntentBatchGate].
+  final Phase0aAttackTokenLeaseBatchGate? attackTokenLeaseBatchGate;
+
   Phase0aArenaState _state;
+  AttackTokenLeaseRuntime? _attackTokenLeaseRuntime;
   Phase0aEnemyIntentObservation? _lastEnemyIntentObservation;
 
   Phase0aArenaState get state => _state;
@@ -50,6 +75,11 @@ final class Phase0aCombatSession {
   /// 最近一拍交付给观察器的只读快照;未配置观察器时为 null。
   Phase0aEnemyIntentObservation? get lastEnemyIntentObservation =>
       _lastEnemyIntentObservation;
+
+  /// Current immutable lease snapshot, or null when transactional lease
+  /// plumbing is not configured. The owning runtime is never exposed.
+  AttackTokenLeaseSnapshot? get attackTokenLeaseSnapshot =>
+      _attackTokenLeaseRuntime?.snapshot;
 
   /// 返回仅替换 state 的候选会话:复用同一 player adapter、enemy AI
   /// adapter、damage resolver、enemy-skill resolver、enemy-intent
@@ -77,6 +107,8 @@ final class Phase0aCombatSession {
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentGate: enemyIntentGate,
       enemyIntentBatchGate: enemyIntentBatchGate,
+      attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
+      attackTokenLeaseRuntime: _attackTokenLeaseRuntime,
     );
   }
 
@@ -102,26 +134,41 @@ final class Phase0aCombatSession {
         ? List<Phase0aIntent>.unmodifiable(enemyIntents.where(gate.allows))
         : enemyIntents;
     final batchGate = enemyIntentBatchGate;
-    final gatedEnemyIntents = batchGate == null
-        ? perIntentGatedEnemyIntents
-        : _applyBatchGate(
-            enemyIntents: gate == null
-                ? List<Phase0aIntent>.unmodifiable(
-                    List<Phase0aIntent>.of(perIntentGatedEnemyIntents),
-                  )
-                : perIntentGatedEnemyIntents,
-            batchGate: batchGate,
-          );
+    final leaseBatchGate = attackTokenLeaseBatchGate;
+    Phase0aPreparedAttackTokenLeaseBatch? preparedLeaseBatch;
+    late final List<Phase0aIntent> gatedEnemyIntents;
+    if (leaseBatchGate != null) {
+      final leaseInput = List<Phase0aIntent>.unmodifiable(
+        List<Phase0aIntent>.of(perIntentGatedEnemyIntents),
+      );
+      preparedLeaseBatch = leaseBatchGate.prepare(
+        runtime: _attackTokenLeaseRuntime!,
+        enemyIntents: leaseInput,
+      );
+      gatedEnemyIntents = _validateBatchGateOutput(
+        enemyIntents: leaseInput,
+        proposed: preparedLeaseBatch.enemyIntents,
+      );
+    } else if (batchGate != null) {
+      gatedEnemyIntents = _applyBatchGate(
+        enemyIntents: gate == null
+            ? List<Phase0aIntent>.unmodifiable(
+                List<Phase0aIntent>.of(perIntentGatedEnemyIntents),
+              )
+            : perIntentGatedEnemyIntents,
+        batchGate: batchGate,
+      );
+    } else {
+      gatedEnemyIntents = perIntentGatedEnemyIntents;
+    }
     final observer = enemyIntentObserver;
+    Phase0aEnemyIntentObservation? nextObservation;
     if (observer != null) {
-      final observation = Phase0aEnemyIntentObservation(
+      nextObservation = Phase0aEnemyIntentObservation(
         tick: _state.tick,
         enemyIntents: gatedEnemyIntents,
       );
-      observer.observe(observation);
-      // 只在 observer 成功返回后公布快照；mapper/director
-      // fail closed 时会话状态与诊断状态均不提前提交。
-      _lastEnemyIntentObservation = observation;
+      observer.observe(nextObservation);
     }
     final intents = <Phase0aIntent>[...playerIntents, ...gatedEnemyIntents];
     final result = reducePhase0aTick(
@@ -131,7 +178,20 @@ final class Phase0aCombatSession {
       damageResolver: damageResolver,
       enemySkillDamageResolver: enemySkillDamageResolver,
     );
+    final nextLeaseRuntime = preparedLeaseBatch?.commit(
+      _attackTokenLeaseRuntime!,
+    );
+
+    // No throwing work follows these assignments. Arena state, immutable
+    // lease runtime and diagnostic therefore publish as one session-owned
+    // tail after planner, observer, reducer and lease commit all succeed.
     _state = result.state;
+    if (nextLeaseRuntime != null) {
+      _attackTokenLeaseRuntime = nextLeaseRuntime;
+    }
+    if (nextObservation != null) {
+      _lastEnemyIntentObservation = nextObservation;
+    }
     return result.events;
   }
 
@@ -140,6 +200,16 @@ final class Phase0aCombatSession {
     required Phase0aEnemyIntentBatchGate batchGate,
   }) {
     final proposed = batchGate.gateEnemyIntents(enemyIntents: enemyIntents);
+    return _validateBatchGateOutput(
+      enemyIntents: enemyIntents,
+      proposed: proposed,
+    );
+  }
+
+  static List<Phase0aIntent> _validateBatchGateOutput({
+    required List<Phase0aIntent> enemyIntents,
+    required Iterable<Phase0aIntent> proposed,
+  }) {
     final accepted = <Phase0aIntent>[];
     var inputCursor = 0;
     for (final intent in proposed) {
