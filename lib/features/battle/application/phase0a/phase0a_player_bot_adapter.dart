@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import 'phase0a_bot_tactic.dart';
 import 'phase0a_player_input_adapter.dart';
 
 /// Phase 0A 玩家 bot(headless 内核批,路线 C 子项①落地):每拍从状态
@@ -14,9 +15,13 @@ import 'phase0a_player_input_adapter.dart';
 /// - 普攻常按:冷却/射程/扇区判定全部由 reducer 结算。
 /// - 技能印 availability 为 ready 即按(真气/冷却已合成在可用态,bot 不重算)。
 final class Phase0aPlayerBotAdapter {
-  const Phase0aPlayerBotAdapter({required this.playerAdapter});
+  const Phase0aPlayerBotAdapter({
+    required this.playerAdapter,
+    this.policy = const Phase0aBotTacticPolicy.production(),
+  });
 
   final Phase0aPlayerInputAdapter playerAdapter;
+  final Phase0aBotTacticPolicy policy;
 
   Phase0aPlayerCommand commandFor(Phase0aArenaState state) {
     if (!state.player.isAlive || state.enemies.isEmpty) {
@@ -30,16 +35,57 @@ final class Phase0aPlayerBotAdapter {
     final facingOffTarget =
         player.facing.dot(toTarget.normalized()) <
         math.cos(playerAdapter.attackHalfArcRadians);
+    final gatherReady = _slotReady(state, playerAdapter.gatherSlot);
+    final clearReady = _slotReady(state, playerAdapter.clearSlot);
+    final numericSkill = _firstReadyNumericSkill(state);
+    final tactical = _tacticalCommands(
+      gatherReady: gatherReady,
+      clearReady: clearReady,
+      numericSkill: numericSkill,
+    );
     return Phase0aPlayerCommand(
       left: (outOfRange || facingOffTarget) && toTarget.x < 0,
       right: (outOfRange || facingOffTarget) && toTarget.x > 0,
       up: (outOfRange || facingOffTarget) && toTarget.y < 0,
       down: (outOfRange || facingOffTarget) && toTarget.y > 0,
       attack: true,
-      gather: _slotReady(state, playerAdapter.gatherSlot),
-      clear: _slotReady(state, playerAdapter.clearSlot),
-      skillHotkey: _firstReadyNumericSkill(state),
+      gather: tactical.gather,
+      clear: tactical.clear,
+      skillHotkey: tactical.skillHotkey,
     );
+  }
+
+  _TacticalCommands _tacticalCommands({
+    required bool gatherReady,
+    required bool clearReady,
+    required int? numericSkill,
+  }) {
+    if (policy.parallelTacticalActions) {
+      return _TacticalCommands(
+        gather: policy.allows(Phase0aBotAction.gather) && gatherReady,
+        clear: policy.allows(Phase0aBotAction.clear) && clearReady,
+        skillHotkey: policy.allows(Phase0aBotAction.numericSkill)
+            ? numericSkill
+            : null,
+      );
+    }
+    for (final action in policy.actionPriority) {
+      switch (action) {
+        case Phase0aBotAction.gather:
+          if (policy.allows(action) && gatherReady) {
+            return const _TacticalCommands(gather: true);
+          }
+        case Phase0aBotAction.clear:
+          if (policy.allows(action) && clearReady) {
+            return const _TacticalCommands(clear: true);
+          }
+        case Phase0aBotAction.numericSkill:
+          if (policy.allows(action) && numericSkill != null) {
+            return _TacticalCommands(skillHotkey: numericSkill);
+          }
+      }
+    }
+    return const _TacticalCommands();
   }
 
   /// 最近存活敌人;等距时按 id 稳定决胜,保证确定性。
@@ -72,4 +118,16 @@ final class Phase0aPlayerBotAdapter {
     }
     return null;
   }
+}
+
+final class _TacticalCommands {
+  const _TacticalCommands({
+    this.gather = false,
+    this.clear = false,
+    this.skillHotkey,
+  });
+
+  final bool gather;
+  final bool clear;
+  final int? skillHotkey;
 }
