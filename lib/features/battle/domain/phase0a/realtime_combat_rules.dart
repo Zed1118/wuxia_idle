@@ -31,6 +31,7 @@ bool isTargetInsideStrikeArc({
   required double range,
   required double halfArcRadians,
 }) {
+  if (!halfArcRadians.isFinite || halfArcRadians < 0) return false;
   final direction = aimDirection.lengthSquared == 0
       ? const ArenaVector(1, 0)
       : aimDirection;
@@ -38,7 +39,11 @@ bool isTargetInsideStrikeArc({
     origin: origin,
     direction: direction,
     maxDistance: range,
-    halfAngleRadians: halfArcRadians,
+    // Phase 0A historically permits a half arc above pi as a full-circle
+    // sentinel. The shared geometry scope models the canonical angular range,
+    // so clamp only for that backend while retaining the caller's original
+    // value for the strict compatibility refinement below.
+    halfAngleRadians: math.min(halfArcRadians, math.pi),
     maxTargets: 1,
   ).hitTargets([CombatGeometryTarget('_strike_target', target)]).isNotEmpty;
   if (!accepted) return false;

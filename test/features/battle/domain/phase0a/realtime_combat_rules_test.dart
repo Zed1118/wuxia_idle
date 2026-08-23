@@ -213,6 +213,40 @@ void main() {
         isFalse,
       );
     });
+
+    test('大于 pi 的既有全向哨兵经 C02 后仍覆盖背向目标', () {
+      expect(
+        isTargetInsideStrikeArc(
+          origin: origin,
+          aimDirection: aimRight,
+          target: const ArenaVector(-50, 0),
+          range: 145,
+          halfArcRadians: 3.2,
+        ),
+        isTrue,
+      );
+    });
+
+    test('非有限与负扇角继续 fail closed', () {
+      for (final halfArc in <double>[
+        -0.1,
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        expect(
+          isTargetInsideStrikeArc(
+            origin: origin,
+            aimDirection: aimRight,
+            target: const ArenaVector(50, 0),
+            range: 145,
+            halfArcRadians: halfArc,
+          ),
+          isFalse,
+          reason: 'halfArcRadians=$halfArc',
+        );
+      }
+    });
   });
 
   group('聚怪可读环', () {
