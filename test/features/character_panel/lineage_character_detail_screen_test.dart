@@ -299,6 +299,7 @@ void main() {
       ),
       findsOneWidget,
     );
+    expect(find.bySemanticsLabel(RegExp('资质.*寻常.*19')), findsOneWidget);
   });
 }
 

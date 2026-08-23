@@ -11,6 +11,7 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/portrait_frame.dart';
+import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/battle_shared/qi_cycle.dart';
 import 'lineage_widgets.dart';
@@ -300,13 +301,11 @@ class _AttributesSection extends StatelessWidget {
               // 总点数会与锁死的档名自相矛盾：祖师出生 22（资优）吃满生涯 cap +5
               // 后显示「资优（27）」，而资优区间是 21-22。四项属性各自的 chip 已在
               // 上方显示当前值，出生总点数不与它们重复。
-              // ⚠ 视觉表现为临时版（沿用 _AttrChip 同款样式，未做色阶/印章等档位化
-              // 表达），待视觉终拍。
-              _AttrChip(
-                UiStrings.rarityTierWithTotal(
-                  EnumL10n.rarityTier(character.rarity),
-                  character.birthAttributeTotal,
-                ),
+              // 资质档位使用谱牒印鉴；四项属性仍保持轻量文字读数。
+              RarityTierBadge(
+                tier: character.rarity,
+                birthTotal: character.birthAttributeTotal,
+                compact: true,
               ),
             ],
           ),

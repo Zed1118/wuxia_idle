@@ -575,6 +575,17 @@ class _PreviewPanel extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          if (GameRepository.isLoaded)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: RarityTierBadge(
+                tier: GameRepository.instance.numbers.rarityForTotalPoints(
+                  attrs.total,
+                ),
+                birthTotal: attrs.total,
+              ),
+            ),
           const SizedBox(height: 12),
           _PreviewLine(
             label: UiStrings.founderCreateStartingTechnique,
