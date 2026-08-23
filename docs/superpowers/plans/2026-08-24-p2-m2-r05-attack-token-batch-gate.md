@@ -52,8 +52,8 @@
 
 ## 当前恢复点
 
-- 状态：完成，待 READY 空提交冻结。
-- 最后完成：实现提交 `ddce919f`；Pi/DeepSeek 设计审查经 triage 后落实，最终 diff 终审 PASS，P0/P1/P2=0。
-- 下一步：提交本证据更新，追加 `[READY][PI][P2-M2-R05]` 空提交。
+- 状态：完成，已以分支当前 `[READY][PI][P2-M2-R05]` tip 冻结。
+- 最后完成：实现提交 `ddce919f`、证据提交 `2c7409e5`；Pi/DeepSeek 设计审查经 triage 后落实，最终 diff 终审 PASS，P0/P1/P2=0。
+- 下一步：由 Batch12 主控审查、集成并跑批末验证。
 - 已跑验证：`flutter test --no-pub` 四文件联合 61/61；变更 5 个 Dart 文件 scoped `dart analyze` 0 issue；`dart format` 0 pending；`git diff --check` 干净。fresh worktree 首次 `--no-pub` 命中 Flutter 3.41.5 native-assets `Bad state: No element`，执行 `flutter pub get` + `dart run build_runner build`（126 outputs）并复制 shasum 一致的 `libisar.dylib` 后消解，属环境而非代码缺陷。
 - 阻塞项：无；production tuning/host promotion 明确不在本切片。
