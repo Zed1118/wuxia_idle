@@ -21,7 +21,7 @@
 ## 验收 checklist（CLAUDE §8.2）
 
 - [x] tracker 覆盖原子批 prepare/commit、all/any、foreign/stale/double commit、duplicate 与 terminal no-op。
-- [x] frame 只暴露 before/after arena、before/after spawn、director/spawn/combat events 与 delta 真实事实，容器防御性不可变。
+- [x] frame 只暴露 before/after arena、before/after spawn、director/spawn/combat events 与 delta 真实事实；arena actor 也做深快照，五组公开容器与 `BossPhaseDef.unlockSkillIds` 嵌套列表均防御性不可变。
 - [x] flow 覆盖成对配置、显式 target/commander、kill 后 checkpoint、场空未完成 ongoing、活敌下 objective victory、玩家死亡优先、duplicate、terminal no-op 和 null 旧语义。
 - [x] source immediate/lazy 失败与可达投影失败动态证明四类 flow 状态和 objective progress 不提交。
 - [x] `ObjectiveController`/八 primitive 现为 `final`/sealed，无可注入 throw 实现；不扩大 domain 或新增测试缝。controller throw 的回滚以局部归约后才返回 transition 的结构保证，不伪造不可达测试。
@@ -40,10 +40,11 @@
 
 ## 当前恢复点
 
-- 状态：实现、验证、证据与 READY 冻结完成，待主控独立评审。
-- 最后完成：tracker 新增 owner-bound prepared transition/CAS；flow 新增不可变 frame + 显式 source，objective 成对配置后以 completion 作唯一 victory 真相源，并把 objective commit 推迟到所有可抛投影之后。实现提交：`b20bdd74`、`bb6a3792`。
-- 下一步：主控核对真实 diff、原子性、验证证据与 P0/P1/P2 后决定整合。
-- 已跑验证：11 份 targeted/受影响回归逐文件执行，tracker 15 + objective flow 13 + dynamic flow 12 + compatibility 4 + consumers 2 + production assembler 23 + observer 1 + encounter mapping 15 + session seams 15 + controller 8 + objective primitives 9 = 117/117 通过；scoped `flutter analyze --no-pub` 5 项 0 issue；Dart format 5 文件 0 changed；`git diff --check` 通过。
+- 状态：独立评审发现的 actor 嵌套容器别名 P2 已修复，回归与证据已重新冻结，待主控复审。
+- 最后完成：tracker 新增 owner-bound prepared transition/CAS；flow 新增不可变 frame + 显式 source，objective 成对配置后以 completion 作唯一 victory 真相源，并把 objective commit 推迟到所有可抛投影之后。评审修复提交 `0c59ee91` 对 before/after 的 player/enemy actor 重建快照，深冻 `bossPhases` 及每个 `unlockSkillIds`，并冻结 `unlockedEnemySkillIds`、`enemySkillCooldowns`、`phaseChargeCasts`、`guardianDefIds`。
+- 评审闭环：新增测试先证明旧 frame 复用 actor 实例，source 可在抛错前清空五组容器并污染旧 session；修复后 before/after 玩家和敌人的全部容器修改均抛 `UnsupportedError`，mutation-then-throw 下 session/director/outcome/records/objective progress 全部不变。
+- 下一步：主控或独立 reviewer 复核 actor 深快照真实 diff、回滚证据与 P0/P1/P2 后决定整合。
+- 已跑验证：11 份 targeted/受影响回归合并执行，tracker 15 + objective flow 15 + dynamic flow 12 + compatibility 4 + consumers 2 + production assembler 23 + observer 1 + encounter mapping 15 + session seams 15 + controller 8 + objective primitives 9 = 119/119 通过；scoped `flutter analyze --no-pub` 5 项 0 issue；Dart format 5 文件 0 changed；`git diff --check` 通过。
 - 阻塞项：无。
-- 自审：P0=0、P1=0、P2=0。确认无 objective 身份/角色/时间推断，无部分 objective 提交，无 null 路径胜负漂移，无越界生产接线。
+- 自审：修复后 P0=0、P1=0、P2=0。确认 frame 不再向 source 暴露 session actor 容器别名；无 objective 身份/角色/时间推断，无部分 objective 提交，无 null 路径胜负漂移，无越界生产接线。
 - 残留风险：本任务只配置 flow 明确消费的 objective source，不切换 assembler/host；objective 事件语义正确性由后续 caller source 负责；resolver 失败前已消费的 RNG 不可回卷；controller throw 回滚为结构保证，现有 sealed/final API 下无诚实的直接注入测试。
