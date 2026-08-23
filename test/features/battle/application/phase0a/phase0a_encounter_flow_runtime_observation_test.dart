@@ -593,12 +593,21 @@ void main() {
     expect(objectiveCommit, greaterThan(orderProjection));
     expect(sessionPublication, greaterThan(objectiveCommit));
 
+    for (final forbiddenOwnerGetter in const [
+      r'Phase0aPreparedObjectiveTransition\??\s+get\s+',
+      r'Phase0aCombatSession\??\s+get\s+',
+      r'Phase0aObjectiveRuntimeTracker\??\s+get\s+',
+    ]) {
+      expect(
+        RegExp(forbiddenOwnerGetter).hasMatch(source),
+        isFalse,
+        reason: forbiddenOwnerGetter,
+      );
+    }
+
     for (final forbidden in const [
       'AttackTokenLeaseRuntime',
       'Phase0aPreparedAttackTokenLeaseBatch',
-      'Phase0aPreparedObjectiveTransition get',
-      'Phase0aCombatSession get',
-      'Phase0aObjectiveRuntimeTracker get',
       'ActionTimeline',
       'GameRepository',
       'SaveData',
