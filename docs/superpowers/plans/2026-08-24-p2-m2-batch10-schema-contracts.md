@@ -14,7 +14,7 @@
 
 G7 退役平衡诊断引用包已通过主控与独立复审并作为辅助证据并入；集成态 23 文件 265/265、变更 Dart analyze 0、额外两项 balance guard analyze 0，当前只等待最终集成态独立复审与 READY。
 
-C01 P1 已由 `e4762e71` 修复并以 `d409779c` 集成；返修后联合 targeted 268/268、变更 Dart analyze 0、两项额外 guard analyze 0。Batch10 现在只等待返修后的第二次独立终审，未提前打 READY。
+C01 P1 已由 `e4762e71` 修复并以 `d409779c` 集成；返修后联合 targeted 268/268、变更 Dart analyze 0、两项额外 guard analyze 0。第二次独立终审聚焦复跑 50/50，P0/P1/P2=0；Batch10 可在验收记录提交后追加空 READY。
 
 ## 硬边界
 

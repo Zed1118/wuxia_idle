@@ -57,4 +57,5 @@
 - 返修实现 `e4762e71` 已由主控逐项复审并以 `d409779c` 集成；五个 namespace 均为 caller-required，不提供默认，typed manifest 与 loader 分别关闭 direct typed 与 source-aware YAML 两条入口。
 - 返修后的 C01 + R01 + R02 + G7 联合 targeted：23 个测试文件，268/268 通过；Phase 0A 报告仍为 `content=154; proficiencyStages=5; runs=2310; maxDamage=4419`。
 - 34 个变更 Dart 项 analyze 0；额外 Phase 0A 全内容诊断与 truth-source guard 2 项 analyze 0；registries YAML、`bash -n`、活动引用扫描、`git diff --check` 继续通过。
-- G7 registry owned-files 漏项已由 `edace43a` 补齐。当前仅待返修后独立终审；通过前 Batch10 仍不是 READY。
+- G7 registry owned-files 漏项已由 `edace43a` 补齐。
+- 返修后独立终审聚焦复跑 50/50，确认五 namespace、7 个含 ID primitive、source-aware leaf diagnostics 与 G7 owned-files 均闭合；P0/P1/P2=0。Batch10 可在本记录提交后追加空 READY。

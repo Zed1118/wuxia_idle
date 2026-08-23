@@ -1203,7 +1203,7 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch10-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch10-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
     source_tasks:
       - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
@@ -1221,6 +1221,7 @@ tasks:
       shell_syntax: passed
       active_retired_simulator_references: 0
       git_diff_check: passed
+      independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch10-schema-contracts.md
@@ -1266,7 +1267,7 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-c01-objective-reference-fix-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-c01-objective-reference-fix
-    status: ready_candidate
+    status: ready_reviewed
     base_commit: 3ba090c6a076a67a06f9b11601b2d6341bcf3add
     implementation_commit: e4762e71ef922f39fd88ca649ef64a28e72eba38
     integration_commit: d409779c
@@ -1276,6 +1277,7 @@ tasks:
       integrated_joint_targeted_tests: 268
       scoped_analyze_issues: 0
       git_diff_check: passed
+      independent_review_p0_p1_p2: 0
     trigger: Batch10 independent review P1
     owned_files:
       - lib/data/defs/combat_catalog_reference_index.dart
