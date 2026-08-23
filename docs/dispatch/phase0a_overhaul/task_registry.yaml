@@ -949,7 +949,7 @@ tasks:
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-23-p2-g2-batch7-data-contracts.md
-      - docs/audit/phase2_g2_batch7_data_contracts_2026-08-23.md
+      - docs/audit/phase2_g2_batch7_data_contracts_2026-08-24.md
     exit_criteria:
       - objective primitives stay content-neutral and deterministic
       - combat content schema carries explicit values without production defaults
