@@ -32,6 +32,9 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
 - prepared 的 `commit(exactPredecessor)` 先校验 predecessor identity，再校验
   R18 自有 single-use flag，最后委托 R15 commit；成功后才置位并
   返回不可变 `MainlineStageRuntimeAdmission`。
+- prepared 内部持有的可提交 R15 successor 为 library-private；只公开
+  immutable `occupancyBase/occupancyNext` 与不可修改的
+  `occupancyMutations` 视图，调用方不能取出 exact successor 绕过组合提交。
 - final admission 只持有 exact `runAdmission` 和 occupancy successor runtime。
 - empty mentor choice 仍经 R15 prepare/commit，必须保持 snapshot identity 与
   revision；不另建 no-op 规则。
@@ -62,7 +65,8 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
 5. R14 participation/run 校验异常原样穿透；R15 四类 blocked 与已占用
    异常原样穿透，predecessor 始终不变。
 6. foreign/stale/double commit 拒绝；先提交 sibling 后 exact predecessor
-   仍可提交本 prepared。
+   仍可提交本 prepared；source guard 禁止公开可提交 R15 successor，关闭
+   先单独发布 occupancy 的 split-brain 绕过。
 7. mentee ID 与 participant ID 相同时仍原样通过，证明本层不推断关系。
 8. source contract 锁定校验→R14→R15 顺序、无 catch/switch/fallback/
    default，且禁止所有越界依赖与 `blockingStatus` 成员访问。
@@ -81,7 +85,10 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
   stage ID 原始字面比较；R18 自有 single-use flag。两项已写入
   上述 API/测试矩阵。其建议的 `[READY][CODEX]` 标记与本任务
   用户精确要求冲突，将使用用户指定的 `[READY][QODER]`。
-- 最终 diff 审查：待实现与本地验证后追加真实证据。
+- 首次启动的最终审查尚未返回时，主控预审发现公开 R15 successor 的 P1；
+  该轮已主动中止且不计作最终审查。P1 已以 private successor + read-only
+  views + TDD/source guard 闭合。
+- 有效最终 diff 审查：待上述修复后的本地验证完成后重新调用并追加真实证据。
 
 ## 任务切片
 
@@ -92,14 +99,16 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
 
 ## 当前恢复点
 
-- 状态：设计已冻结，未编码。
-- 最后完成：精确基线验证；`flutter pub get --enforce-lockfile`；
-  build_runner 126 outputs / 63 `*.g.dart`；`libisar.dylib` SHA-256
-  `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`；
-  Qoder 编码前审查 `DESIGN PASS`。
-- 下一步：先写 `mainline_stage_runtime_admission_test.dart`，运行缺失源文件
-  红灯后提交。
-- 已跑验证：仅环境恢复与 Qoder 设计审查；尚未跑任务测试。
+- 状态：实现与绕过修复已完成，等待有效 Qoder 最终只读审查。
+- 最后完成：提交至 `e862b308`；先记录缺失 API 红灯，再实现最小组合层；
+  主控指出公开 R15 successor 可绕过组合提交后，再次以缺失 read-only API
+  红灯驱动 private successor 修复。环境仍为 build_runner 126 outputs / 63
+  `*.g.dart`，`libisar.dylib` SHA-256
+  `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
+- 下一步：运行有效 Qoder 最终 diff 审查；若 P0/P1/P2=0，追加证据与 READY。
+- 已跑验证：R18 16/16；六文件逐项 targeted 93/93
+  （16+9+18+18+18+14）；scoped analyze 无问题；format 0 changed；
+  baseline diff-check 与三 owned paths 检查通过。
 - 阻塞：无。production/durable/tuning/G2 继续作为明示 Gate。
 
 ## READY
