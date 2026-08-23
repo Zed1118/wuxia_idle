@@ -39,6 +39,8 @@
 
 恢复点：初次取证为 `e2c3da7690ed4f1ca4b8c7586e3049dd38b0483f`；指定 Batch7 后续先前移至 `6594dde268dfe2d484593ebbb08127dd4fdb8ac4`，再前移至已含 L01 loader/validator 与验收登记的 `fcc2730e6d9ccbad0a9dc371aecc4cf3c244eccb`。主控已明确要求在 `fcc2730e` 冻结事实快照；本包不再自动 fast-forward，只在后续整合时复核快照后增量是否影响结论。
 
+Batch8 整合预检已复核 `fcc2730e`→`1a4e1dd352552929cb9d762f6de1f1d32e2391c7`：O02 目标引用纯映射、L02 迁移覆盖 Gate、对应测试/fixture 与 Batch7 验收文档均未增加生产数据、host routing、调参或用户产品语义，不改变 G0 结论。
+
 ### Slice 2：并行只读取证
 
 - [x] 方案/长寿文档证据核对。
@@ -79,7 +81,7 @@
 
 ## 动态测试说明
 
-本批次只有文档新增，不需要也不再启动 `flutter test`、`flutter analyze`、`dart test`、`build_runner` 或 full test。资源锁协调更新到达前，代码/测试核对子 agent 已启动并完成三组 `flutter test --no-pub --no-test-assets` 纯合同/策略测试，共 23 个断言通过；依赖 Isar 生成文件的目标未进入断言，且没有运行 `build_runner` 或补写生成文件。协调更新到达后不再启动任何 Flutter/Dart 命令。该结果只辅助核对当前纯合同，不是对未实现方向的动态验收；后续实现批次如需 Flutter 验收，必须先执行指定 `ps` 锁检查并等外部放行。
+本批次只有文档新增，不需要也不再启动 `flutter test`、`flutter analyze`、`dart test`、`build_runner` 或 full test。资源锁协调更新到达前，代码/测试核对子 agent 已启动并完成三组 `flutter test --no-pub --no-test-assets` 纯合同/策略测试，共 23 个测试用例通过；依赖 Isar 生成文件的相关测试未执行，且没有运行 `build_runner` 或补写生成文件。协调更新到达后不再启动任何 Flutter/Dart 命令。该结果只辅助核对当前纯合同，不是对未实现方向的动态验收；后续实现批次如需 Flutter 验收，必须先执行指定 `ps` 锁检查并等外部放行。
 
 ## 剩余风险
 

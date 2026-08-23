@@ -4,7 +4,7 @@
 
 本包只把待决问题整理成可回答的证据矩阵，**没有批准任何选项**。文中“安全默认/保守候选”仅表示用户尚未回答时如何保持 fail closed；它不是产品决定，也不得据此开启已否方向。
 
-- 事实快照基线：`codex/phase2-g2-batch7-data-contracts-20260823` @ `fcc2730e6d9ccbad0a9dc371aecc4cf3c244eccb`（短哈希 `fcc2730e`）。该快照已含 L01 loader 验收登记；本包收口不再自动 fast-forward，后续主控整合只需复核此快照后的增量是否影响结论。
+- 事实快照基线：`codex/phase2-g2-batch7-data-contracts-20260823` @ `fcc2730e6d9ccbad0a9dc371aecc4cf3c244eccb`（短哈希 `fcc2730e`）。该快照已含 L01 loader 验收登记；本包收口不再自动 fast-forward。Batch8 整合预检已复核 `fcc2730e`→`1a4e1dd3`：增量只包含 O02 目标引用纯映射、L02 迁移覆盖 Gate、对应测试/fixture 与 Batch7 验收文档，未增加生产数据、host routing、调参或用户产品语义，因此不改变本 G0 结论。
 - 取证工作分支：`codex/phase2-g0-decision-packet-20260823`
 - 外部方案快照：`/Users/a10506/Desktop/二阶段优化方案.md`，SHA-256 `887eefe07d3cc6afcdfee29ac7f00e7cf6b3a6bb2d634c1cca170c99b9a95217`；下文行号只对该快照有效。
 - 权威状态：`docs/dispatch/phase0a_overhaul/decision_registry.yaml:7-12` 规定 `proposed` 必须由用户明确决定，`tuning` 必须经数据/模拟/试玩定标。
@@ -170,7 +170,9 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 - A：一产生新伤势即在本关结算后中断。
 - B：仅当伤势导致下一关不再可战时中断；否则提示后继续。
-- C：伤势永不自动中断，玩家在关间主动决定；无人值守路径按独立安全规则停止。
+- C：可见连续路径只提示伤势，由玩家在关间主动决定；若同时要开放无人值守连续路径，还必须另答“无人值守按 A 任意新伤即停”或“按 B 不再可战才停”。
+
+若用户只回答 C 而未签无人值守停机规则，`MAINLINE-RUN-01` 仍不完整，整个父项继续 `policy_interface_only`。
 
 **推荐安全默认（不是决定）**
 
@@ -184,7 +186,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **需要用户回答的一句话**
 
-> 请确认连续 MainlineRun 是出现任意新伤即中断、仅“不再可战”时中断，还是只提示并由玩家决定继续？
+> 请确认连续 MainlineRun 是出现任意新伤即中断、仅“不再可战”时中断，还是可见路径只提示并由玩家决定；若选最后一项，请同时确认无人值守路径按“任意新伤即停”还是“不再可战才停”？
 
 ## 4. 随行听剑
 
@@ -207,7 +209,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 - B：占用整个 `MainlineRun`；run 成功、失败、主动退出或恢复终止才释放。
 - C：不持久占用，只在结算发成长时再次校验；接受并发状态变化导致不发奖励。
 
-每个选项还必须明确与闭关、远征、断魂庄、疗伤等的互斥关系。
+每个选项还必须逐项回答与闭关、远征、断魂庄、疗伤是否互斥。A/B/C 只回答占用粒度，不代表这四个布尔决定已被签字；任一互斥项未答时，整个决策仍保持 `production_path_disabled`。
 
 **推荐安全默认（不是决定）**
 
@@ -221,7 +223,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **需要用户回答的一句话**
 
-> 请确认随行听剑是 A 只占用单关、B 锁定整个 MainlineRun，还是 C 不持久占用而只在结算时复核，并明确退出、中断和崩溃恢复时的释放点？
+> 请确认随行听剑是 A 只占用单关、B 锁定整个 MainlineRun，还是 C 不持久占用而只在结算时复核；同时明确退出/中断/崩溃恢复的释放点，并逐项回答与闭关、远征、断魂庄、疗伤是否互斥？
 
 ### 4.2 `MENTOR-INSIGHT-RATE-01`：成长对象、比例与上限
 
@@ -241,7 +243,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 - B：只发主修熟练。
 - C：二者拆分发放；比例和每关 cap 分别配置。
 
-定标方式还需二选一：用户现在给值，或授权在占用/幂等合同签后经 YAML + 模拟定标。
+候选值来源还需二选一：用户现在给出候选值，或授权在占用/幂等合同签后经数据与模拟生成候选值。两种来源都不是定标；候选值仍必须经 YAML、经济/红线模拟与真人试玩验证，验证前不得标记 frozen 或接入生产。
 
 **推荐安全默认（不是决定）**
 
@@ -255,7 +257,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **需要用户回答的一句话**
 
-> 请确认听剑首通成长发个人经验、主修熟练或二者，以及比例与每关上限是现在指定还是授权模拟后定标？
+> 请确认听剑首通成长发个人经验、主修熟练或二者，以及比例与每关上限的候选值是现在提供还是授权模拟生成？无论哪种来源，都仍需完成 YAML、模拟与真人试玩 Gate 后才能定标。
 
 ## 5. 心魔
 
@@ -381,7 +383,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 - 方案把“部分章节生态分配”列为 `PROPOSED`（方案 `:29-30`）。
 - 方案已给山匪、官军、门派、西凉、毒虫和寺院六类地域锚，但明确每个 stage 的最终主包、混入职责与数量仍待冻结：`:636-664`。
-- 当前 `StageDef` 仍直接承载逐关 `enemyTeam`：`lib/data/defs/stage_def.dart:15-42,130-150`。L01 已加入由 caller 显式传入 YAML 的 `loadCombatCatalogManifest` 与纯结构 validator：loader 文件头明确是 `No IO, no defaults, no placeholders`：`lib/data/combat_encounter_catalog_loader.dart:1-25`；validator 也明确 pure/fail closed 且无 defaults/placeholders：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`。验收登记同时锁定“无 `GameRepository` / production IO / production YAML/data / host routing / tuning”：`docs/dispatch/phase0a_overhaul/task_registry.yaml:996-1021`。
+- 当前 `StageDef` 仍直接承载逐关 `enemyTeam`：`lib/data/defs/stage_def.dart:15-42,130-150`。L01 已加入由 caller 显式传入 YAML 的 `loadCombatCatalogManifest` 与纯结构 validator：loader 文件头明确是 `No IO, no defaults, no placeholders`：`lib/data/combat_encounter_catalog_loader.dart:1-25`；validator 也明确 pure/fail closed 且无 defaults/placeholders：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`。验收登记同时锁定“无 `GameRepository` / production IO / production YAML/data / host routing / tuning”：`docs/dispatch/phase0a_overhaul/task_registry.yaml:1055-1080`。
 - 可复核检查 `rg --files data | rg 'combat_(catalog|encounter|archetype).*\.ya?ml$'` 仍无输出；现有 catalog YAML 只在 `test/fixtures/phase2/combat/catalog_loader/`，其读取也只见 loader 合同测试：`test/data/combat_encounter_catalog_loader_test.dart:1-45`。因此 typed loader 已存在，但上述六包仍未成为全局生产合同。
 - decision registry 没有本项独立 ID。
 
@@ -391,13 +393,13 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **互斥选项**
 
-- A：直接把六类地域锚冻结为章节/塔生态合同，再在数据层铺开。
-- B：只冻结 M2 Ch1 山匪纵切，其余等 M4/M7 逐 stage 审核。
-- C：六类锚也不冻结，先提交完整 stage × 主包 × 混入 × 数量矩阵。
+- A：保持六类地域锚与 M2 Ch1 山匪纵切不变；其余逐 stage 分配先交付一张完整矩阵，经用户整体审核后再冻结与实现。
+- B：保持六类地域锚与 M2 Ch1 山匪纵切不变；其余逐 stage 分配按 M7 章节/塔任务包分批审核，只冻结和实现已签批次。
+- C：保持六类地域锚与 M2 Ch1 山匪纵切不变；其余所有逐 stage 分配继续暂缓，在完整矩阵获得用户签字前不实现。
 
 **推荐安全默认（不是决定）**
 
-只允许已明确的 Ch1 山匪纵切继续取证；其余不批量铺开，等待独立 registry ID 和逐 stage 表。
+六类已确认地域锚与 Ch1 山匪纵切保持不变；其余逐 stage 主包、混入职责与数量不批量铺开，等待独立 registry ID、分配矩阵和用户签字。
 
 **M2 / M5 / M6 影响**
 
@@ -407,7 +409,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **需要用户回答的一句话**
 
-> 请确认 §13.1 地域锚是直接冻结为章节/塔生态合同、仅冻结 Ch1 山匪纵切，还是等完整逐 stage 矩阵后再定？
+> 六类地域锚与 M2 Ch1 山匪纵切已确认且不在本题重开；请确认其余逐 stage 分配是 A 整体矩阵一次审核、B 按章节/塔任务包分批审核，还是 C 全部暂缓至完整矩阵签字？
 
 ### 6.3 `UNREGISTERED-GAUNTLET-BOT-01`：断魂庄前台 bot
 
@@ -423,9 +425,9 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **互斥选项**
 
-- A：完整首通后同时允许前台可见 bot 和 headless 重刷。
-- B：只允许完整首通后的 headless 重刷，不开放前台 bot。
-- C：两者都不开放，继续人工首通/重打。
+- A：保留完整首通后的 headless 重刷，并另外开放前台可见 bot。
+- B：保留完整首通后的 headless 重刷，明确不开放前台 bot。
+- C：保留完整首通后的 headless 重刷，前台 bot 决策继续暂缓；未回答期间不开放前台 bot。
 
 **推荐安全默认（不是决定）**
 
@@ -439,7 +441,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 **需要用户回答的一句话**
 
-> 请确认断魂庄完整首通后允许可见前台 bot、只允许 headless 重刷，还是两者都不开放？
+> 完整首通后的 headless 重刷已确认且不在本题重开；请确认前台可见 bot 是 A 开放、B 明确不开放，还是 C 继续暂缓？
 
 ## 7. 六个 `proposed_reopen`
 
@@ -639,7 +641,9 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ## 8. 全部广义 `TUNING` 的原子暂停队列
 
-方案把秒数、倍率、数量预算、上限与性能目标定义为 `TUNING`（`/Users/a10506/Desktop/二阶段优化方案.md:29-31`），附录 B 列出十组待校准参数（`:1526-1540`）。为避免“总体同意”歧义，本节把复合行拆为二十个可测试参数向量；仍含多个独立旋钮的向量另列“原子答复清单”。每个子 ID 继承所在小节的当前证据、旧否决、A/B/C 选项、安全默认和 M2/M5/M6 影响，用户可逐项回答；一句“全按建议值”不构成任何值的批准。它们的方向已 frozen，问题只是在何时、用什么证据定值。听剑 rate 已在 §4.2 单列，不在此重复。
+方案把秒数、倍率、数量预算、上限与性能目标定义为 `TUNING`（`/Users/a10506/Desktop/二阶段优化方案.md:29-31`），附录 B 列出十一组待校准参数（`:1526-1540`）。为避免“总体同意”歧义，本节把复合行拆为二十个可测试参数向量；仍含多个独立旋钮的向量另列“原子答复清单”。每个子 ID 继承所在小节的当前证据、旧否决、A/B/C 选项、安全默认和 M2/M5/M6 影响，用户可逐项回答；一句“全按建议值”不构成任何值的批准。它们的方向已 frozen，问题只是在何时、用什么证据定值。听剑 rate 已在 §4.2 单列，不在此重复。
+
+本节所有 A 选项中的“给值”“冻结”“签硬 Gate”都只表示用户提供候选目标，不表示数值已定标，也不能绕过证据 Gate。无论选 A 还是 B，都必须经 YAML、红线验证、自动模拟和对应的真人试玩/双平台实机证据；验证前不得写入生产、不得把 `tuning` 改为 `frozen`。
 
 ### 8.1 `TUNE-FORWARD-FAN-01`：前向扇形边界
 
@@ -758,7 +762,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ### 8.11 `TUNE-ACTIVE-LIMIT-01`：各模式同屏 activeLimit
 
-- **当前生产事实和精确证据**：当前主线普通关是 2/3/4 三波、Boss 是 2/3 铺垫 + 1 Boss，单波最高 4：`data/numbers.yaml:1836-1865`；typed `CombatEncounterSpawnConfig.activeLimit` 要求 caller 显式给值：`lib/data/defs/combat_encounter_def.dart:37-83`。L01 纯结构 validator 验输入，loader 再把 caller-provided 值原样组装进 typed def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-249`；这两者的验收边界仍明确无 `GameRepository` / production IO / production YAML/data / host routing / tuning：`docs/dispatch/phase0a_overhaul/task_registry.yaml:1017-1021`。方案候选为普通主线 8/12/16、塔 14、群战 18/24 等（`:601-612,1434-1440`）。
+- **当前生产事实和精确证据**：当前主线普通关是 2/3/4 三波、Boss 是 2/3 铺垫 + 1 Boss，单波最高 4：`data/numbers.yaml:1836-1865`；typed `CombatEncounterSpawnConfig.activeLimit` 要求 caller 显式给值：`lib/data/defs/combat_encounter_def.dart:37-83`。L01 纯结构 validator 验输入，loader 再把 caller-provided 值原样组装进 typed def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-249`；这两者的验收边界仍明确无 `GameRepository` / production IO / production YAML/data / host routing / tuning：`docs/dispatch/phase0a_overhaul/task_registry.yaml:1076-1080`。方案候选为普通主线 8/12/16、塔 14、群战 18/24 等（`:601-612,1434-1440`）。
 - **旧否决冲突**：无直接项；不得靠降低真实敌人数做画质选项。
 - **互斥选项**：A 现在冻结各模式 activeLimit 表；B 授权 M2/M5 按档压测后定标；C 保持当前单波最高 4。
 - **推荐安全默认（不是决定）**：C；typed 字段不接生产默认。
@@ -767,7 +771,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ### 8.12 `TUNE-REINFORCEMENT-01`：不同模板的补兵阈值
 
-- **当前生产事实和精确证据**：typed `CombatEncounterSpawnConfig` 要求 caller 显式给 `activeLimit` 与 `reinforcementThreshold`，schema 不提供默认值：`lib/data/defs/combat_encounter_def.dart:37-83`；L01 纯结构 validator 验输入，loader 只将两值从 caller-provided YAML 透传到 def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-249`。其验收边界仍排除 `GameRepository` / production IO / production YAML/data / host routing / tuning：`docs/dispatch/phase0a_overhaul/task_registry.yaml:1017-1021`。方案 20%–30% 只是候选（`:599-612,1533`）。
+- **当前生产事实和精确证据**：typed `CombatEncounterSpawnConfig` 要求 caller 显式给 `activeLimit` 与 `reinforcementThreshold`，schema 不提供默认值：`lib/data/defs/combat_encounter_def.dart:37-83`；L01 纯结构 validator 验输入，loader 只将两值从 caller-provided YAML 透传到 def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-249`。其验收边界仍排除 `GameRepository` / production IO / production YAML/data / host routing / tuning：`docs/dispatch/phase0a_overhaul/task_registry.yaml:1076-1080`。方案 20%–30% 只是候选（`:599-612,1533`）。
 - **旧否决冲突**：无直接项；不得与未签生态分配合并批准。
 - **互斥选项**：A 冻结各模板具体百分比；B 授权 M2/M5 密度压测后定；C 暂缓，继续当前 wave/spawn。
 - **推荐安全默认（不是决定）**：C。
@@ -792,7 +796,7 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ### 8.14 `TUNE-STAGE-COUNT-01`：各关总量区间内的精确编排
 
-- **当前生产事实和精确证据**：当前 `StageDef` 直接读取逐关 `enemyTeam`，群战另读 wave/count 列表：`lib/data/defs/stage_def.dart:15-42,63-71,130-164`；`CombatEncounterDef` 要求显式 spawn entries/config：`lib/data/defs/combat_encounter_def.dart:206-256`。L01 纯结构 validator 验输入，loader 已能把 caller-provided encounter YAML 组装成 typed def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-316`；但只有 test fixtures，验收边界明确无 `GameRepository` / production IO / production YAML/data / host routing / tuning：`test/data/combat_encounter_catalog_loader_test.dart:10-45`、`docs/dispatch/phase0a_overhaul/task_registry.yaml:1017-1021`。方案总量区间见 `:599-612`，不是逐关定值。
+- **当前生产事实和精确证据**：当前 `StageDef` 直接读取逐关 `enemyTeam`，群战另读 wave/count 列表：`lib/data/defs/stage_def.dart:15-42,63-71,130-164`；`CombatEncounterDef` 要求显式 spawn entries/config：`lib/data/defs/combat_encounter_def.dart:206-256`。L01 纯结构 validator 验输入，loader 已能把 caller-provided encounter YAML 组装成 typed def：`lib/data/validation/combat_encounter_catalog_validator.dart:1-8`、`lib/data/combat_encounter_catalog_loader.dart:228-316`；但只有 test fixtures，验收边界明确无 `GameRepository` / production IO / production YAML/data / host routing / tuning：`test/data/combat_encounter_catalog_loader_test.dart:10-45`、`docs/dispatch/phase0a_overhaul/task_registry.yaml:1076-1080`。方案总量区间见 `:599-612`，不是逐关定值。
 - **旧否决冲突**：无直接项；须与 §6.2 生态分配分开签。
 - **互斥选项**：A 现在逐关给精确数量；B 授权每个 M2/M5 纵切压测后定；C 保持当前逐关数据。
 - **推荐安全默认（不是决定）**：C。
@@ -883,22 +887,22 @@ registry 中只有一个父 ID `MAINLINE-RUN-01`（`docs/dispatch/phase0a_overha
 
 ```text
 MAINLINE-REPLAY-PARTICIPANT-01 = C，实际参与者承担记录/成长/伤势。
-MAINLINE-RUN-01 = A（锁人=A；换装=B；伤势中断=B）。
+MAINLINE-RUN-01 = 锁人:A；换装:B；伤势中断:B。
 MENTOR-INSIGHT-OCCUPANCY-01 = A；RATE = 授权模拟后定标。
 INNER-DEMON-CULTIVATION-01 = B。
 INNER-DEMON-AI-01 = C。
 REOPEN-* = 全部不重开。
 ```
 
-示例只展示语法，**不代表本包推荐这些答案**。收到用户回答后，下一步应先更新 decision registry / rejected history，再派发对应 M1/M2/M5/M6 实现；不能直接从本包启动被否方向。
+示例只展示语法，**不代表本包推荐这些答案**。收到用户回答后，下一步应先更新 decision registry / rejected history，再派发对应 M1/M2/M5/M6 实现；不能直接从本包启动被否方向。对 `TUNING` 的回答只记录候选目标或模拟授权，须在 YAML、红线、自动模拟和真人试玩/实机 Gate 全部通过后才可单独冻结与接生产。
 
 ## 10. G0 当前可安全得出的唯一结论
 
-在用户回答之前，可以继续的只有不选择产品语义的纯合同/证据工作；所有会固定参与者、连续 run、听剑、心魔惩罚、七心魔画像、解锁、生态或 `proposed_reopen` 产品行为的路径都应保持上述暂停态。本结论是执行闸门，不是对任一选项的拍板。
+在用户回答之前，可以继续的只有不选择未决产品语义的纯合同/证据工作；所有会固定参与者、连续 run、听剑、心魔惩罚、七心魔画像、解锁、未签的逐 stage 生态分配或 `proposed_reopen` 产品行为的路径都应保持上述暂停态。已确认的六类地域锚与 M2 Ch1 山匪纵切不被本闸门回退。本结论是执行闸门，不是对任一未决选项的拍板。
 
 ## 11. 本包验收证据边界
 
 - 三路子 agent 分别核对长寿文档/方案、registry/M0、当前代码/测试；主会话交叉审查生产事实并校验引用路径。
-- 在资源锁协调更新到达前，代码/测试核对子 agent 已启动三组 `flutter test --no-pub --no-test-assets` 纯合同/策略测试：`test/features/battle/domain/phase0a/activity_participation_request_test.dart` 5 个、`test/shared/battle_shared/failure_policy_resolver_test.dart` 11 个、`test/features/battle/application/phase0a/phase0a_player_bot_adapter_test.dart` 7 个，共 23 个断言通过。
-- 依赖 Isar 的目标因当前只读 worktree 缺少被忽略的生成文件而未进入断言；没有运行 `build_runner`、没有补写生成文件，也没有把未运行的目标写成通过。
+- 在资源锁协调更新到达前，代码/测试核对子 agent 已启动三组 `flutter test --no-pub --no-test-assets` 纯合同/策略测试：`test/features/battle/domain/phase0a/activity_participation_request_test.dart` 5 个、`test/shared/battle_shared/failure_policy_resolver_test.dart` 11 个、`test/features/battle/application/phase0a/phase0a_player_bot_adapter_test.dart` 7 个，共 23 个测试用例通过。
+- 依赖 Isar 的目标因当前只读 worktree 缺少被忽略的生成文件而未执行相关测试；没有运行 `build_runner`、没有补写生成文件，也没有把未运行的目标写成通过。
 - 协调更新到达后没有再启动 Flutter/Dart/build_runner；最终收口只运行 `rg`、路径存在性、白名单、`git diff --check`、`git status` 等静态检查。
