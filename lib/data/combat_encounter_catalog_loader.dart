@@ -122,7 +122,9 @@ CombatCatalogManifestDef loadCombatCatalogManifest({
           'behavior',
         );
       }
-      encounters.add(_buildEncounter(entry, source.sourceName, i));
+      encounters.add(
+        _buildEncounter(entry, source.sourceName, i, referenceIndex),
+      );
     }
   }
 
@@ -317,6 +319,7 @@ CombatEncounterDef _buildEncounter(
   ParsedCombatEncounterEntry entry,
   String sourceName,
   int index,
+  CombatCatalogReferenceIndex referenceIndex,
 ) {
   final path = 'encounters[$index]';
 
@@ -390,6 +393,7 @@ CombatEncounterDef _buildEncounter(
     entry.objectives,
     sourceName,
     '$path.objectives',
+    referenceIndex,
   );
 
   try {
@@ -412,10 +416,17 @@ CombatObjectiveCompositionRef _buildObjectiveComposition(
   ParsedCombatObjectiveComposition composition,
   String sourceName,
   String path,
+  CombatCatalogReferenceIndex referenceIndex,
 ) {
   final clauses = <CombatObjectiveClauseRef>[];
   for (var i = 0; i < composition.clauses.length; i++) {
     final clause = composition.clauses[i];
+    _validateObjectiveReferences(
+      clause.primitive,
+      referenceIndex,
+      sourceName,
+      '$path.clauses[$i]',
+    );
     try {
       clauses.add(
         CombatObjectiveClauseRef(
@@ -443,6 +454,86 @@ CombatObjectiveCompositionRef _buildObjectiveComposition(
       'combat catalog source "$sourceName": '
       '${_argumentErrorLeafPath(path, e)}: ${_argumentErrorMessage(e)}',
     );
+  }
+}
+
+void _validateObjectiveReferences(
+  ParsedCombatObjective objective,
+  CombatCatalogReferenceIndex referenceIndex,
+  String sourceName,
+  String path,
+) {
+  switch (objective.kind) {
+    case 'defeat_targets':
+      _requireKnownReferenceList(
+        objective.idList,
+        referenceIndex.objectiveTargetIds,
+        sourceName,
+        '$path.target_ids',
+        'objective target',
+      );
+    case 'destroy_anchors':
+      _requireKnownReferenceList(
+        objective.idList,
+        referenceIndex.objectiveAnchorIds,
+        sourceName,
+        '$path.anchor_ids',
+        'objective anchor',
+      );
+    case 'defend_entity':
+      _requireKnownReference(
+        objective.singleId!,
+        referenceIndex.objectiveEntityIds,
+        sourceName,
+        '$path.entity_id',
+        'objective entity',
+      );
+    case 'survive_duration':
+      break;
+    case 'reach_checkpoint':
+      _requireKnownReferenceList(
+        objective.idList,
+        referenceIndex.objectiveCheckpointIds,
+        sourceName,
+        '$path.checkpoint_ids',
+        'objective checkpoint',
+      );
+    case 'touch_markers':
+      _requireKnownReferenceList(
+        objective.idList,
+        referenceIndex.objectiveMarkerIds,
+        sourceName,
+        '$path.marker_ids',
+        'objective marker',
+      );
+    case 'pursue_target':
+      _requireKnownReference(
+        objective.singleId!,
+        referenceIndex.objectiveTargetIds,
+        sourceName,
+        '$path.target_id',
+        'objective target',
+      );
+    case 'defeat_commander':
+      _requireKnownReference(
+        objective.singleId!,
+        referenceIndex.objectiveTargetIds,
+        sourceName,
+        '$path.commander_id',
+        'objective target',
+      );
+  }
+}
+
+void _requireKnownReferenceList(
+  List<String> ids,
+  Set<String> knownIds,
+  String sourceName,
+  String path,
+  String label,
+) {
+  for (var i = 0; i < ids.length; i++) {
+    _requireKnownReference(ids[i], knownIds, sourceName, '$path[$i]', label);
   }
 }
 

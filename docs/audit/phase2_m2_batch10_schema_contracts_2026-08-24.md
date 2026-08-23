@@ -44,3 +44,10 @@
 - task/decision registry YAML parse、试玩脚本 `bash -n`、活动范围退役 simulator 引用扫描、`git diff --check` 全部通过。
 - `main` 与 `origin/main` 均保持 `e292d3a0`，本批全部变更留在独立集成分支。
 - Batch10 仅待最终集成态独立 P0/P1/P2 复审和 READY tip。
+
+## 终审 P1 返修事实
+
+- 后续终审发现：`CombatCatalogReferenceIndex` 当时只关闭 archetype/spawn 引用，7 个含 ID objective primitive 既未被 typed manifest 校验，也未被 loader 做 source-aware preflight；因此上述“独立复审 P0/P1/P2=0”是当时记录，不能替代这个新 P1 的返修验收。
+- 返修分支：`codex/phase2-m2-c01-objective-reference-fix-20260824`，基线 `3ba090c6a076a67a06f9b11601b2d6341bcf3add`。修复增加 target/anchor/entity/checkpoint/marker 五个 caller-required namespace，typed manifest 覆盖全部 7 个含 ID primitive，loader 保留 source + clause + leaf（list 含索引）诊断。
+- 范围仍是内容中立合同：0 production 默认，0 production data/host/UI/save/reward/tuning；target namespace 由 caller 权威提供，不从 spawn entry 派生。返修普通 commit 完成后仍不直接标记 Batch10 READY，须交主控独立验收。
+- 返修验证：C01 8 份 targeted 140/140，scoped analyze 16 项 0 issue，format 0 changed，`git diff --check` 通过；已冻结 R03 worktree 的 objective domain/controller/mapper 回归 29/29。

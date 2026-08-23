@@ -85,6 +85,11 @@ CombatCatalogReferenceIndex referenceIndex() => CombatCatalogReferenceIndex(
   dropGroupIds: const ['drop_bandit'],
   sfxGroupIds: const ['sfx_bandit'],
   visualVariantIds: const ['visual_bandit'],
+  objectiveTargetIds: const [],
+  objectiveAnchorIds: const [],
+  objectiveEntityIds: const [],
+  objectiveCheckpointIds: const [],
+  objectiveMarkerIds: const [],
 );
 
 CombatStageEncounterAssignment migratedAssignment({

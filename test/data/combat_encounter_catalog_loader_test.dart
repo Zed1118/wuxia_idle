@@ -50,6 +50,25 @@ CombatCatalogReferenceIndex fixtureReferenceIndex({
   Iterable<String> dropGroupIds = const ['drop_fixture'],
   Iterable<String> sfxGroupIds = const ['sfx_fixture'],
   Iterable<String> visualVariantIds = const ['visual_fixture'],
+  Iterable<String> objectiveTargetIds = const [
+    'bandit_brute',
+    'bandit_scout',
+    'fleeing_alpha',
+    'commander_chief',
+    'totem_alpha',
+  ],
+  Iterable<String> objectiveAnchorIds = const ['totem_alpha', 'totem_beta'],
+  Iterable<String> objectiveEntityIds = const ['escorted_cart'],
+  Iterable<String> objectiveCheckpointIds = const [
+    'checkpoint_exit',
+    'checkpoint_gate',
+    'checkpoint_bridge',
+  ],
+  Iterable<String> objectiveMarkerIds = const [
+    'marker_east',
+    'marker_west',
+    'marker_north',
+  ],
 }) => CombatCatalogReferenceIndex(
   entranceIds: entranceIds,
   positionIds: positionIds,
@@ -60,6 +79,11 @@ CombatCatalogReferenceIndex fixtureReferenceIndex({
   dropGroupIds: dropGroupIds,
   sfxGroupIds: sfxGroupIds,
   visualVariantIds: visualVariantIds,
+  objectiveTargetIds: objectiveTargetIds,
+  objectiveAnchorIds: objectiveAnchorIds,
+  objectiveEntityIds: objectiveEntityIds,
+  objectiveCheckpointIds: objectiveCheckpointIds,
+  objectiveMarkerIds: objectiveMarkerIds,
 );
 
 CombatCatalogManifestDef loadCombatCatalogManifest({
@@ -131,7 +155,7 @@ void main() {
       },
     );
 
-    test('covers all eight objective reference kinds', () async {
+    test('covers all eight objective kinds and known all/any refs', () async {
       final manifest = await loadFixtureCatalog();
       final objectives = manifest.encounters
           .expand((encounter) => encounter.objectives.clauses)
@@ -720,5 +744,75 @@ void main() {
         ),
       );
     });
+
+    test(
+      'rejects every objective namespace with source and exact leaf path',
+      () async {
+        final cases =
+            <({CombatCatalogReferenceIndex references, String message})>[
+              (
+                references: fixtureReferenceIndex(
+                  objectiveTargetIds: const ['bandit_brute'],
+                ),
+                message:
+                    'combat catalog source '
+                    '"encounters/enc_defeat_targets.yaml": '
+                    'encounters[0].objectives.clauses[0].target_ids[1]: '
+                    'unknown objective target reference "bandit_scout"',
+              ),
+              (
+                references: fixtureReferenceIndex(objectiveAnchorIds: const []),
+                message:
+                    'combat catalog source '
+                    '"encounters/enc_destroy_anchors.yaml": '
+                    'encounters[0].objectives.clauses[0].anchor_ids[0]: '
+                    'unknown objective anchor reference "totem_alpha"',
+              ),
+              (
+                references: fixtureReferenceIndex(objectiveEntityIds: const []),
+                message:
+                    'combat catalog source '
+                    '"encounters/enc_defend_entity.yaml": '
+                    'encounters[0].objectives.clauses[0].entity_id: '
+                    'unknown objective entity reference "escorted_cart"',
+              ),
+              (
+                references: fixtureReferenceIndex(
+                  objectiveCheckpointIds: const [],
+                ),
+                message:
+                    'combat catalog source '
+                    '"encounters/enc_defeat_targets.yaml": '
+                    'encounters[0].objectives.clauses[1].checkpoint_ids[0]: '
+                    'unknown objective checkpoint reference "checkpoint_exit"',
+              ),
+              (
+                references: fixtureReferenceIndex(objectiveMarkerIds: const []),
+                message:
+                    'combat catalog source '
+                    '"encounters/enc_touch_markers.yaml": '
+                    'encounters[0].objectives.clauses[0].marker_ids[0]: '
+                    'unknown objective marker reference "marker_east"',
+              ),
+            ];
+
+        final archetypes = await archetypeFixtureSources();
+        final encounters = await encounterFixtureSources();
+        final assignments = await fixtureSource(
+          'manifest/stage_assignments.yaml',
+        );
+        for (final testCase in cases) {
+          await expectLater(
+            () => loadCombatCatalogManifest(
+              archetypeSources: archetypes,
+              encounterSources: encounters,
+              manifestSource: assignments,
+              referenceIndex: testCase.references,
+            ),
+            failsWithFragment(testCase.message),
+          );
+        }
+      },
+    );
   });
 }

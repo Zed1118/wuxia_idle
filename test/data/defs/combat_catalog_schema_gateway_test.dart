@@ -14,6 +14,11 @@ CombatCatalogReferenceIndex _references({
   Iterable<String> dropGroupIds = const ['drop_group_bandit'],
   Iterable<String> sfxGroupIds = const ['sfx_group_bandit_blade'],
   Iterable<String> visualVariantIds = const ['visual_bandit_blade_a'],
+  Iterable<String> objectiveTargetIds = const ['bandit_blade_01'],
+  Iterable<String> objectiveAnchorIds = const ['ward_anchor'],
+  Iterable<String> objectiveEntityIds = const ['escort_cart'],
+  Iterable<String> objectiveCheckpointIds = const ['checkpoint_exit'],
+  Iterable<String> objectiveMarkerIds = const ['route_marker'],
 }) => CombatCatalogReferenceIndex(
   entranceIds: entranceIds,
   positionIds: positionIds,
@@ -24,6 +29,11 @@ CombatCatalogReferenceIndex _references({
   dropGroupIds: dropGroupIds,
   sfxGroupIds: sfxGroupIds,
   visualVariantIds: visualVariantIds,
+  objectiveTargetIds: objectiveTargetIds,
+  objectiveAnchorIds: objectiveAnchorIds,
+  objectiveEntityIds: objectiveEntityIds,
+  objectiveCheckpointIds: objectiveCheckpointIds,
+  objectiveMarkerIds: objectiveMarkerIds,
 );
 
 CombatArchetypeVariant _variant({
@@ -77,35 +87,38 @@ CombatObjectiveCompositionRef _objectives({
   ],
 );
 
-CombatEncounterDef _encounter({CombatEncounterSpawnEntry? spawn}) =>
-    CombatEncounterDef(
-      id: 'encounter_roadbreak',
-      spawnConfig: CombatEncounterSpawnConfig(
-        activeLimit: 1,
-        reinforcementThreshold: 0,
-        entryWarningTicks: 1,
-        attackGraceTicks: 1,
-      ),
-      tokenBudgets: CombatEncounterTokenBudgets(
-        melee: 1,
-        ranged: 0,
-        charge: 0,
-        support: 0,
-      ),
-      spawnEntries: [spawn ?? _spawn()],
-      objectives: _objectives(),
-    );
+CombatEncounterDef _encounter({
+  CombatEncounterSpawnEntry? spawn,
+  CombatObjectiveCompositionRef? objectives,
+}) => CombatEncounterDef(
+  id: 'encounter_roadbreak',
+  spawnConfig: CombatEncounterSpawnConfig(
+    activeLimit: 1,
+    reinforcementThreshold: 0,
+    entryWarningTicks: 1,
+    attackGraceTicks: 1,
+  ),
+  tokenBudgets: CombatEncounterTokenBudgets(
+    melee: 1,
+    ranged: 0,
+    charge: 0,
+    support: 0,
+  ),
+  spawnEntries: [spawn ?? _spawn()],
+  objectives: objectives ?? _objectives(),
+);
 
 CombatCatalogManifestDef _manifest({
   CombatCatalogReferenceIndex? references,
   CombatArchetypeVariant? variant,
   CombatEncounterSpawnEntry? spawn,
+  CombatObjectiveCompositionRef? objectives,
 }) => CombatCatalogManifestDef(
   referenceIndex: references ?? _references(),
   archetypes: [
     CombatEnemyArchetypeDef(id: 'bandit', variants: [variant ?? _variant()]),
   ],
-  encounters: [_encounter(spawn: spawn)],
+  encounters: [_encounter(spawn: spawn, objectives: objectives)],
   stageAssignments: [
     CombatStageEncounterAssignment(
       stageId: 'stage_01_01',
@@ -162,18 +175,52 @@ void main() {
         () => _references(behaviorIds: const ['behavior_a', 'behavior_a']),
         throwsArgumentError,
       );
+      expect(
+        () => _references(objectiveTargetIds: const ['target', 'target']),
+        throwsArgumentError,
+      );
+      expect(
+        () => _references(objectiveAnchorIds: const ['bad anchor']),
+        throwsArgumentError,
+      );
+      expect(
+        () => _references(objectiveEntityIds: const ['']),
+        throwsArgumentError,
+      );
+      expect(
+        () => _references(
+          objectiveCheckpointIds: const ['checkpoint', 'checkpoint'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => _references(objectiveMarkerIds: const ['bad\nmarker']),
+        throwsArgumentError,
+      );
     });
 
     test('reference index snapshots caller sets and exposes no mutation', () {
       final entrances = <String>['entrance_left'];
-      final references = _references(entranceIds: entrances);
+      final targets = <String>['bandit_blade_01'];
+      final references = _references(
+        entranceIds: entrances,
+        objectiveTargetIds: targets,
+      );
       entrances
         ..clear()
         ..add('entrance_mutated');
+      targets
+        ..clear()
+        ..add('target_mutated');
 
       expect(references.entranceIds, {'entrance_left'});
+      expect(references.objectiveTargetIds, {'bandit_blade_01'});
       expect(
         () => references.entranceIds.add('entrance_other'),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => references.objectiveTargetIds.add('target_other'),
         throwsUnsupportedError,
       );
     });
@@ -244,5 +291,41 @@ void main() {
         }
       },
     );
+
+    test('typed manifest validates every id-bearing objective primitive', () {
+      final cases = <CombatObjectivePrimitiveRef>[
+        CombatDefeatTargetsRef(const ['unknown_target']),
+        CombatDestroyAnchorsRef(const ['unknown_anchor']),
+        CombatDefendEntityRef(entityId: 'unknown_entity', requiredTicks: 1),
+        CombatReachCheckpointRef(const ['unknown_checkpoint']),
+        CombatTouchMarkersRef(const ['unknown_marker']),
+        CombatPursueTargetRef(targetId: 'unknown_target'),
+        CombatDefeatCommanderRef(commanderId: 'unknown_target'),
+      ];
+
+      for (final primitive in cases) {
+        expect(
+          () => _manifest(
+            objectives: CombatObjectiveCompositionRef(
+              completionRule: CombatObjectiveCompletionRule.all,
+              clauses: [
+                CombatObjectiveClauseRef(id: 'objective', primitive: primitive),
+              ],
+            ),
+          ),
+          throwsArgumentError,
+        );
+      }
+    });
+
+    test('typed manifest accepts known objective refs under all and any', () {
+      expect(_manifest, returnsNormally);
+      expect(
+        () => _manifest(
+          objectives: _objectives(rule: CombatObjectiveCompletionRule.any),
+        ),
+        returnsNormally,
+      );
+    });
   });
 }

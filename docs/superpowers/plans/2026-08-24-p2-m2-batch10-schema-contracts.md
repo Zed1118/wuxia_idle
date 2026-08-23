@@ -10,7 +10,7 @@
 2. R01 / Qoder Qwen3.8-Max：MainlineRun 与 replay/headless/sweep 参与者纯合同。
 3. R02 / Pi DeepSeek V4 Flash：随行听剑单关占用、四类互斥、释放和首通 claim 纯合同。
 
-当前状态：C01、R01 与 R02 均已通过主控复跑和独立复审并进入集成。R01 的 transition 绕过 eligibility 问题已由 Qoder 修复；连续 run 现要求外部 battle-eligibility 事实，失败走 typed refusal 且不创建新状态或 snapshot。
+当前状态：C01、R01 与 R02 已进入集成；Batch10 终审后续发现 C01 的 objective primitive ID 未进入权威 namespace 校验（P1），现由 `codex/phase2-m2-c01-objective-reference-fix-20260824` 返修，未重新打 READY。R01 的 transition 绕过 eligibility 问题已由 Qoder 修复；连续 run 现要求外部 battle-eligibility 事实，失败走 typed refusal 且不创建新状态或 snapshot。
 
 G7 退役平衡诊断引用包已通过主控与独立复审并作为辅助证据并入；集成态 23 文件 265/265、变更 Dart analyze 0、额外两项 balance guard analyze 0，当前只等待最终集成态独立复审与 READY。
 
@@ -31,4 +31,5 @@ R01 与 R02 文件独立，可在任意顺序整合；C01 修改公共 schema，
 C01 READY 后才能启动 objective/token runtime 和 Ch1 候选数据包；R01/R02 READY 只解除合同层，不代表生产 host、成长发放或 UI 已完成。
 
 - C01 已于 `b195571b` 集成，并已从该稳定基线唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`。
+- Batch10 终审 P1 返修只扩充 caller-required objective reference namespaces，并在 typed manifest 与 source-aware loader preflight 双层 fail closed；不改 production data/host/UI/save/reward/tuning，不把 target 推导或绑定为 spawn entry。
 - Ch1 候选数据包仍只允许 candidate/fixture，不得在 tuning 证据 Gate 前提升为 production YAML。

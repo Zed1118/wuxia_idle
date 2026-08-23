@@ -69,7 +69,9 @@ final class CombatStageEncounterAssignment {
 ///   assignment (each stage owns exactly one encounter),
 /// - `migrated` assignments must reference an existing encounter,
 /// - every spawn entry must reference an existing archetype and an existing
-///   variant role of that archetype.
+///   variant role of that archetype,
+/// - every id-bearing objective primitive must resolve in its caller-provided
+///   objective namespace; survive-duration carries no external id.
 final class CombatCatalogManifestDef {
   CombatCatalogManifestDef({
     required this.referenceIndex,
@@ -209,6 +211,9 @@ final class CombatCatalogManifestDef {
           'behaviorId',
         );
       }
+      for (final clause in encounter.objectives.clauses) {
+        _validateObjectiveReference(clause.primitive);
+      }
     }
 
     for (final archetype in archetypes) {
@@ -254,6 +259,70 @@ final class CombatCatalogManifestDef {
           );
         }
       }
+    }
+  }
+
+  void _validateObjectiveReference(CombatObjectivePrimitiveRef primitive) {
+    switch (primitive) {
+      case CombatDefeatTargetsRef(:final targetIds):
+        for (final id in targetIds) {
+          _requireKnown(
+            id,
+            referenceIndex.objectiveTargetIds,
+            'objectives',
+            'targetIds',
+          );
+        }
+      case CombatDestroyAnchorsRef(:final anchorIds):
+        for (final id in anchorIds) {
+          _requireKnown(
+            id,
+            referenceIndex.objectiveAnchorIds,
+            'objectives',
+            'anchorIds',
+          );
+        }
+      case CombatDefendEntityRef(:final entityId):
+        _requireKnown(
+          entityId,
+          referenceIndex.objectiveEntityIds,
+          'objectives',
+          'entityId',
+        );
+      case CombatSurviveDurationRef():
+        break;
+      case CombatReachCheckpointRef(:final checkpointIds):
+        for (final id in checkpointIds) {
+          _requireKnown(
+            id,
+            referenceIndex.objectiveCheckpointIds,
+            'objectives',
+            'checkpointIds',
+          );
+        }
+      case CombatTouchMarkersRef(:final markerIds):
+        for (final id in markerIds) {
+          _requireKnown(
+            id,
+            referenceIndex.objectiveMarkerIds,
+            'objectives',
+            'markerIds',
+          );
+        }
+      case CombatPursueTargetRef(:final targetId):
+        _requireKnown(
+          targetId,
+          referenceIndex.objectiveTargetIds,
+          'objectives',
+          'targetId',
+        );
+      case CombatDefeatCommanderRef(:final commanderId):
+        _requireKnown(
+          commanderId,
+          referenceIndex.objectiveTargetIds,
+          'objectives',
+          'commanderId',
+        );
     }
   }
 
