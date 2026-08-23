@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
-
 import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/defs/tower_floor_def.dart';
@@ -9,6 +7,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
@@ -118,14 +117,11 @@ class _Phase0aTowerBattleHostState
   Future<CombatantSnapshot> _buildPlayerSnapshot() async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
-    var playerId = save?.founderCharacterId;
-    if (playerId == null) {
-      final fallback = await isar.characters.where().findFirst();
-      if (fallback == null) {
-        throw StateError('Phase0a 塔宿主: Isar 没有任何 Character');
-      }
-      playerId = fallback.id;
-    }
+    final playerId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (characterId) async =>
+          await isar.characters.get(characterId) != null,
+    );
     final team = await PlayerCombatantSnapshotAssembler(
       isar: isar,
     ).loadExactRoster([playerId]);

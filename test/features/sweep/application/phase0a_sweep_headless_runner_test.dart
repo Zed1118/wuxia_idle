@@ -27,6 +27,14 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('phase0a_sweep_runner_');
     await IsarSetup.init(directory: tempDir, inspector: false);
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    final firstCharacter = await IsarSetup.instance.characters
+        .where()
+        .findFirst();
+    await IsarSetup.instance.writeTxn(() async {
+      save!.founderCharacterId = firstCharacter!.id;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
   });
 
   tearDown(() async {
@@ -38,9 +46,7 @@ void main() {
   test('真实 Ch1/Ch21、cycle 2 与代表塔层含机制 Boss 均终局，正 id 参与者只有祖师', () async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
-    final founderId =
-        save?.founderCharacterId ??
-        (await isar.characters.where().findFirst())!.id;
+    final founderId = save!.founderCharacterId!;
     final results = <Phase0aSweepRunResult>[];
     for (var index = 1; index <= 5; index++) {
       results.add(
@@ -102,9 +108,7 @@ void main() {
   test('祖师已在远征时拒绝双占用，不进入战斗与结算', () async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
-    final founderId =
-        save?.founderCharacterId ??
-        (await isar.characters.where().findFirst())!.id;
+    final founderId = save!.founderCharacterId!;
     await isar.writeTxn(() async {
       await isar.expeditionRuns.put(
         ExpeditionRun()

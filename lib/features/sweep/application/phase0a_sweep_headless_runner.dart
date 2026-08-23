@@ -9,6 +9,7 @@ import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_occupancy.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
@@ -106,14 +107,11 @@ final class Phase0aSweepHeadlessRunner {
 
   Future<CombatantSnapshot> _loadPlayerSnapshot() async {
     final save = await isar.saveDatas.get(0);
-    var playerId = save?.founderCharacterId;
-    if (playerId == null) {
-      final fallback = await isar.characters.where().findFirst();
-      if (fallback == null) {
-        throw StateError('Phase0a 扫荡: Isar 没有任何 Character');
-      }
-      playerId = fallback.id;
-    }
+    final playerId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (characterId) async =>
+          await isar.characters.get(characterId) != null,
+    );
     final occupancy = await CharacterOccupancyService(isar).snapshot();
     final activity = occupancy.activityOf(playerId);
     if (activity == ActivityKind.expedition ||
