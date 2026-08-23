@@ -169,7 +169,7 @@ void main() {
         nextStageId: 'stage_b',
         loadoutSnapshotId: 'snapshot_2',
         participantBattleEligibleForNextStage: false,
-        mentorChoice: _choice(' stage_b ', 92),
+        mentorChoice: _choice('stage_c', 92),
         blockingStatus: _unblocked,
       ),
     );
