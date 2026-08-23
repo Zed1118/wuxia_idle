@@ -10,6 +10,13 @@ Set<String> _immutableIds(Iterable<String> values, String name) {
   return Set<String>.unmodifiable(ids);
 }
 
+String _validatedEventId(String value) {
+  if (value.trim().isEmpty) {
+    throw ArgumentError.value(value, 'eventId');
+  }
+  return value;
+}
+
 /// Content-neutral events consumed by encounter objectives.
 sealed class EncounterObjectiveEvent {
   const EncounterObjectiveEvent(this.id);
@@ -33,8 +40,8 @@ final class AnchorDestroyed extends EncounterObjectiveEvent {
 }
 
 final class EntityDefended extends EncounterObjectiveEvent {
-  EntityDefended(this.entityId, this.duration, {String? eventId})
-    : super(eventId ?? 'defend:$entityId:${duration.inMicroseconds}') {
+  EntityDefended(this.entityId, this.duration, {required String eventId})
+    : super(_validatedEventId(eventId)) {
     if (duration < Duration.zero) {
       throw ArgumentError.value(duration, 'duration');
     }
@@ -44,8 +51,8 @@ final class EntityDefended extends EncounterObjectiveEvent {
 }
 
 final class TimeElapsed extends EncounterObjectiveEvent {
-  TimeElapsed(this.duration, {String? eventId})
-    : super(eventId ?? 'elapsed:${duration.inMicroseconds}') {
+  TimeElapsed(this.duration, {required String eventId})
+    : super(_validatedEventId(eventId)) {
     if (duration < Duration.zero) {
       throw ArgumentError.value(duration, 'duration');
     }

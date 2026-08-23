@@ -39,23 +39,29 @@ void main() {
     var state = defend.initialProgress;
     state = defend.advance(
       state,
-      EntityDefended('other', const Duration(seconds: 9)),
+      EntityDefended('other', const Duration(seconds: 9), eventId: 'other'),
     );
     expect(state.elapsed, Duration.zero);
     state = defend.advance(
       state,
-      EntityDefended('npc', const Duration(seconds: 2)),
+      EntityDefended('npc', const Duration(seconds: 2), eventId: 'defend-1'),
     );
     state = defend.advance(
       state,
-      EntityDefended('npc', const Duration(seconds: 1)),
+      EntityDefended('npc', const Duration(seconds: 1), eventId: 'defend-2'),
     );
     expect(state.completed, isTrue);
 
     final survive = SurviveDurationObjective(const Duration(seconds: 3));
     state = survive.initialProgress;
-    state = survive.advance(state, TimeElapsed(const Duration(seconds: 2)));
-    state = survive.advance(state, TimeElapsed(const Duration(seconds: 1)));
+    state = survive.advance(
+      state,
+      TimeElapsed(const Duration(seconds: 2), eventId: 'survive-1'),
+    );
+    state = survive.advance(
+      state,
+      TimeElapsed(const Duration(seconds: 1), eventId: 'survive-2'),
+    );
     expect(state.completed, isTrue);
   });
 
@@ -67,7 +73,8 @@ void main() {
       throwsArgumentError,
     );
     expect(() => SurviveDurationObjective(Duration.zero), throwsArgumentError);
-    expect(() => TimeElapsed(Duration.zero), returnsNormally);
+    expect(() => TimeElapsed(Duration.zero, eventId: 'zero'), returnsNormally);
+    expect(() => TimeElapsed(Duration.zero, eventId: ''), throwsArgumentError);
   });
 
   test(
@@ -103,4 +110,32 @@ void main() {
     );
     expect(state.completed, isTrue);
   });
+
+  test(
+    'identical duration ticks accumulate, while explicit replay is idempotent',
+    () {
+      final survive = SurviveDurationObjective(const Duration(seconds: 2));
+      var state = survive.initialProgress;
+      final first = TimeElapsed(const Duration(seconds: 1), eventId: 'tick-1');
+      state = survive.advance(state, first);
+      state = survive.advance(
+        state,
+        TimeElapsed(const Duration(seconds: 1), eventId: 'tick-2'),
+      );
+      expect(state.elapsed, const Duration(seconds: 2));
+      expect(state.completed, isTrue);
+
+      final defend = DefendEntityObjective('npc', const Duration(seconds: 2));
+      state = defend.initialProgress;
+      final event = EntityDefended(
+        'npc',
+        const Duration(seconds: 1),
+        eventId: 'defend-tick-1',
+      );
+      state = defend.advance(state, event);
+      final replayed = defend.advance(state, event);
+      expect(replayed.elapsed, const Duration(seconds: 1));
+      expect(replayed.completed, isFalse);
+    },
+  );
 }
