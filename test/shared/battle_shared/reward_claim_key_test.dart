@@ -195,4 +195,113 @@ void main() {
       );
     });
   });
+
+  group('mentorInsight kind', () {
+    test('same inputs produce equal keys with the mentorInsight canonical', () {
+      final a = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
+      );
+      final b = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
+      );
+
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
+      expect(a.canonical, 'v1|mentorInsight|stage_01_03|42');
+      expect(a.stageId, 'stage_01_03');
+      expect(a.characterId, 42);
+    });
+
+    test('parse round-trips mentorInsight canonicals exactly', () {
+      final key = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
+      );
+
+      expect(RewardClaimKey.parse(key.canonical), key);
+      expect(key.version, RewardClaimKey.currentVersion);
+    });
+
+    test('distinct stages or characters never collide', () {
+      final base = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
+      );
+      final otherStage = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_04',
+        characterId: 42,
+      );
+      final otherCharacter = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 43,
+      );
+
+      expect(otherStage, isNot(base));
+      expect(otherCharacter, isNot(base));
+      expect(otherStage.canonical, isNot(base.canonical));
+      expect(otherCharacter.canonical, isNot(base.canonical));
+    });
+
+    test('mentorInsight never collides with other kinds', () {
+      final mentorKey = RewardClaimKey.mentorInsight(
+        stageId: 'x',
+        characterId: 1,
+      );
+      final runKey = RewardClaimKey.runChoice(runId: 'x', rewardChoiceId: '1');
+      final battleKey = RewardClaimKey.battleSessionGrant(
+        battleSessionId: 'x',
+        stageId: 'y',
+        rewardGrantId: '1',
+      );
+
+      expect(mentorKey, isNot(runKey));
+      expect(mentorKey, isNot(battleKey));
+    });
+
+    test('blank stageId and non-positive characterId are rejected', () {
+      expect(
+        () => RewardClaimKey.mentorInsight(stageId: '  ', characterId: 42),
+        throwsArgumentError,
+      );
+      expect(
+        () => RewardClaimKey.mentorInsight(
+          stageId: 'stage_01_03',
+          characterId: 0,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => RewardClaimKey.mentorInsight(
+          stageId: 'stage_01_03',
+          characterId: -1,
+        ),
+        throwsArgumentError,
+      );
+    });
+
+    test('parse rejects malformed mentorInsight canonicals fail-closed', () {
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage_01_03'),
+        throwsFormatException,
+      );
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage_01_03|42|extra'),
+        throwsFormatException,
+      );
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight||42'),
+        throwsFormatException,
+      );
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage_01_03|0'),
+        throwsFormatException,
+      );
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage_01_03|x'),
+        throwsFormatException,
+      );
+    });
+  });
 }

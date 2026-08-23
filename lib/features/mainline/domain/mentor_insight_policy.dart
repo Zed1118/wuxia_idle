@@ -110,6 +110,11 @@ final class MentorInsightPolicy {
 
   /// 四种结算全部释放单关占用（success / failure / explicit exit /
   /// idempotent recovery settlement）。
+  ///
+  /// 释放与成长发放完全解耦：release 只负责占用生命周期；failure /
+  /// explicit exit / recovery 一律释放占用，不自动触发成长（grant eligibility
+  /// 只由 application 层 claim 决策面的事实决定，见
+  /// application/mentor_insight_claim_policy.dart）。
   static const Set<MentorInsightReleaseReason> releaseReasons = {
     MentorInsightReleaseReason.successSettlement,
     MentorInsightReleaseReason.failureSettlement,
@@ -136,12 +141,21 @@ final class MentorInsightPolicy {
 
 /// 一次首通随行选择：0 或 1 名门人（MENTOR-INSIGHT-CORE-01）。
 ///
-/// [stageId] 必填非空（trim 规范化）；[menteeCharacterId] 为空 = 不随行。
+/// [stageId] 必填非空（trim 规范化）；[menteeCharacterId] 为空 = 不随行，
+/// 非空必须 > 0。
 final class MentorInsightChoice {
   MentorInsightChoice({required String stageId, this.menteeCharacterId})
     : stageId = stageId.trim() {
     if (this.stageId.isEmpty) {
       throw ArgumentError.value(stageId, 'stageId', 'must not be empty');
+    }
+    final menteeId = menteeCharacterId;
+    if (menteeId != null && menteeId <= 0) {
+      throw ArgumentError.value(
+        menteeCharacterId,
+        'menteeCharacterId',
+        'must be > 0 when provided',
+      );
     }
   }
 
@@ -160,6 +174,9 @@ final class MentorInsightCompanion {
     : stageId = stageId.trim() {
     if (this.stageId.isEmpty) {
       throw ArgumentError.value(stageId, 'stageId', 'must not be empty');
+    }
+    if (characterId <= 0) {
+      throw ArgumentError.value(characterId, 'characterId', 'must be > 0');
     }
   }
 

@@ -3,6 +3,7 @@
 /// Two claim-key shapes are supported:
 /// - battle session grants: `battleSessionId + stageId + rewardGrantId`
 /// - run choice grants: `runId + rewardChoiceId`
+/// - mentor insight first-clear grants: `stageId + characterId`
 ///
 /// The canonical string is the single source of identity: two keys are equal
 /// if and only if their canonical strings are equal. The version segment lets
@@ -10,7 +11,15 @@
 /// silently colliding or matching.
 library;
 
-enum RewardClaimKeyKind { battleSessionGrant, runChoice }
+enum RewardClaimKeyKind {
+  battleSessionGrant,
+  runChoice,
+
+  /// 随行听剑首通成长发放键（P2-M2-R02 · MENTOR-INSIGHT-CORE-01 不重复发放）。
+  /// 键形 `stageId + characterId`：只锁关 + 门人，不含 session，崩溃恢复
+  /// 重放同一键；重打 / 自动重刷 / 扫荡也命中同一键 → 不重复发放。
+  mentorInsight,
+}
 
 final class RewardClaimKey {
   RewardClaimKey._({
@@ -29,6 +38,7 @@ final class RewardClaimKey {
   /// Canonical component order per kind:
   /// - [RewardClaimKeyKind.battleSessionGrant]: battleSessionId, stageId, rewardGrantId
   /// - [RewardClaimKeyKind.runChoice]: runId, rewardChoiceId
+  /// - [RewardClaimKeyKind.mentorInsight]: stageId, characterId
   final List<String> parts;
 
   factory RewardClaimKey.battleSessionGrant({
@@ -57,6 +67,27 @@ final class RewardClaimKey {
       parts: [
         _validatedComponent(runId, 'runId'),
         _validatedComponent(rewardChoiceId, 'rewardChoiceId'),
+      ],
+    );
+  }
+
+  /// 随行听剑首通成长发放键（P2-M2-R02 · MENTOR-INSIGHT-CORE-01）。
+  ///
+  /// 键形 `stageId + characterId`，个人作用域（按门人记账）。
+  /// [characterId] 必须 > 0；[stageId] trim 后非空且不含分隔符。
+  factory RewardClaimKey.mentorInsight({
+    required String stageId,
+    required int characterId,
+  }) {
+    if (characterId <= 0) {
+      throw ArgumentError.value(characterId, 'characterId', 'must be > 0');
+    }
+    return RewardClaimKey._(
+      version: currentVersion,
+      kind: RewardClaimKeyKind.mentorInsight,
+      parts: [
+        _validatedComponent(stageId.trim(), 'stageId'),
+        characterId.toString(),
       ],
     );
   }
@@ -122,6 +153,15 @@ final class RewardClaimKey {
         );
       }
     }
+    if (kind == RewardClaimKeyKind.mentorInsight) {
+      final characterId = int.tryParse(parts[1]);
+      if (characterId == null || characterId <= 0) {
+        throw FormatException(
+          'Reward claim key kind "$kindName" requires a positive integer '
+          'characterId, got "${parts[1]}": "$canonical"',
+        );
+      }
+    }
 
     return RewardClaimKey._(version: version, kind: kind, parts: parts);
   }
@@ -129,11 +169,33 @@ final class RewardClaimKey {
   String get canonical =>
       ['$versionPrefix$version', kind.name, ...parts].join(componentSeparator);
 
+  /// mentorInsight 形态的 stageId（其他 kind 抛 [StateError]）。
+  String get stageId {
+    if (kind != RewardClaimKeyKind.mentorInsight) {
+      throw StateError(
+        'RewardClaimKey kind ${kind.name} has no stageId component',
+      );
+    }
+    return parts[0];
+  }
+
+  /// mentorInsight 形态的 characterId（其他 kind 抛 [StateError]）。
+  int get characterId {
+    if (kind != RewardClaimKeyKind.mentorInsight) {
+      throw StateError(
+        'RewardClaimKey kind ${kind.name} has no characterId component',
+      );
+    }
+    return int.parse(parts[1]);
+  }
+
   static int _expectedPartCount(RewardClaimKeyKind kind) {
     switch (kind) {
       case RewardClaimKeyKind.battleSessionGrant:
         return 3;
       case RewardClaimKeyKind.runChoice:
+        return 2;
+      case RewardClaimKeyKind.mentorInsight:
         return 2;
     }
   }

@@ -26,6 +26,26 @@ void main() {
       expect(choice.stageId, 'stage_01_03');
     });
 
+    test('非空门人 id 与已成立随行门人 id 均要求 > 0', () {
+      expect(
+        () => MentorInsightChoice(stageId: 'stage_01_03', menteeCharacterId: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () =>
+            MentorInsightChoice(stageId: 'stage_01_03', menteeCharacterId: -1),
+        throwsArgumentError,
+      );
+      expect(
+        () => MentorInsightCompanion(stageId: 'stage_01_03', characterId: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => MentorInsightCompanion(stageId: 'stage_01_03', characterId: -1),
+        throwsArgumentError,
+      );
+    });
+
     test('固定保证：0-1 名、不入战、不受伤、不分掉落、不重复发放', () {
       expect(MentorInsightPolicy.maxCompanions, 1);
       expect(MentorInsightPolicy.noCombatParticipation, isTrue);

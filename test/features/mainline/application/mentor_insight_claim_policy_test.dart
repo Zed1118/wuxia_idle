@@ -3,225 +3,144 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/mainline/application/mentor_insight_claim_policy.dart';
 import 'package:wuxia_idle/features/mainline/domain/mentor_insight_policy.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_policy.dart';
 
 import '../../../support/dart_source_contract.dart';
 
-MentorInsightClaimKey key({
-  String stageId = 'stage_01_03',
-  int characterId = 42,
-}) => MentorInsightClaimKey(stageId: stageId, characterId: characterId);
-
 void main() {
-  group('MentorInsightClaimKey 幂等键', () {
-    test('同 (stageId, characterId) 恒同键且规范串确定', () {
-      final a = key();
-      final b = key();
-      expect(a.canonical, 'v1|mentorInsight|stage_01_03|42');
-      expect(a, b);
-      expect(a.hashCode, b.hashCode);
-      expect(a.toString(), a.canonical);
-    });
-
-    test('不同门人或不同关是不同键', () {
-      expect(key(characterId: 43), isNot(key()));
-      expect(key(stageId: 'stage_01_04'), isNot(key()));
-    });
-
-    test('规范串 round-trip 解析', () {
-      final parsed = MentorInsightClaimKey.parse(key().canonical);
-      expect(parsed, key());
-    });
-
-    test('组件校验：空 stageId / 分隔符 / 非正角色 id 拒绝', () {
-      expect(() => key(stageId: '  '), throwsArgumentError);
-      expect(() => key(stageId: 'a|b'), throwsArgumentError);
-      expect(() => key(characterId: 0), throwsArgumentError);
-      expect(() => key(characterId: -1), throwsArgumentError);
-    });
-
-    test('未知版本 / 畸形 / 错误 kind / 组件数 fail closed', () {
+  group('MentorInsightClaimPolicy 决策表（调用方事实 → grant/skip/fail-closed）', () {
+    test('首通且 durable 未 claim → grant', () {
       expect(
-        () => MentorInsightClaimKey.parse('v2|mentorInsight|s|1'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('noprefix|s|1'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|other|s|1'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|mentorInsight|s'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|mentorInsight|s|1|extra'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|mentorInsight||1'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|mentorInsight|s|0'),
-        throwsFormatException,
-      );
-      expect(
-        () => MentorInsightClaimKey.parse('v1|mentorInsight|s|x'),
-        throwsFormatException,
+        MentorInsightClaimPolicy.decide(
+          isFirstClear: true,
+          externallyDurablyClaimed: false,
+        ),
+        MentorInsightClaimOutcome.grant,
       );
     });
-  });
 
-  group('MentorInsightClaimPolicy 声明', () {
-    test('成长对象仅主修招式熟练度（RATE-01）', () {
+    test('首通但 durable 已 claim → skip（不重复发放）', () {
+      expect(
+        MentorInsightClaimPolicy.decide(
+          isFirstClear: true,
+          externallyDurablyClaimed: true,
+        ),
+        MentorInsightClaimOutcome.skip,
+      );
+    });
+
+    test('非首通一律 fail closed，不猜测重打 / 扫荡发放', () {
+      expect(
+        MentorInsightClaimPolicy.decide(
+          isFirstClear: false,
+          externallyDurablyClaimed: false,
+        ),
+        MentorInsightClaimOutcome.failClosed,
+      );
+      expect(
+        MentorInsightClaimPolicy.decide(
+          isFirstClear: false,
+          externallyDurablyClaimed: true,
+        ),
+        MentorInsightClaimOutcome.failClosed,
+      );
+    });
+
+    test('decide 为纯函数：同输入恒同输出，无副作用', () {
+      const inputs = [
+        (isFirstClear: true, claimed: false),
+        (isFirstClear: true, claimed: true),
+        (isFirstClear: false, claimed: false),
+        (isFirstClear: false, claimed: true),
+      ];
+      for (final input in inputs) {
+        final a = MentorInsightClaimPolicy.decide(
+          isFirstClear: input.isFirstClear,
+          externallyDurablyClaimed: input.claimed,
+        );
+        final b = MentorInsightClaimPolicy.decide(
+          isFirstClear: input.isFirstClear,
+          externallyDurablyClaimed: input.claimed,
+        );
+        expect(a, b);
+      }
+    });
+
+    test('决策面不消费 release reason：释放与成长解耦，失败/退出不自动成长', () {
+      // 合同层面 decide 输入只有 isFirstClear + externallyDurablyClaimed，
+      // 不接收 release reason —— 四种结算一律释放占用，与 grant eligibility
+      // 完全解耦；失败 / 主动退出不会自动触发成长（宿主不会以非首通调 grant）。
+      expect(
+        MentorInsightClaimPolicy.decide(
+          isFirstClear: false,
+          externallyDurablyClaimed: false,
+        ),
+        MentorInsightClaimOutcome.failClosed,
+      );
+    });
+
+    test('声明：成长对象仅主修招式熟练度（RATE-01）', () {
       expect(
         MentorInsightClaimPolicy.growthTarget,
         MentorInsightGrowthTarget.mainTechniqueProficiency,
       );
     });
 
-    test('个人作用域 + 仅首通（CORE-01 不重复发放）', () {
+    test('声明：个人作用域 + 仅首通（CORE-01 不重复发放）', () {
       expect(MentorInsightClaimPolicy.personalScope, isTrue);
       expect(MentorInsightClaimPolicy.firstClearOnly, isTrue);
     });
+  });
 
-    test('非首通 fail closed，不猜测重打 / 扫荡发放', () {
-      expect(
-        () => MentorInsightClaimPolicy.enforceFirstClear(false),
-        throwsA(isA<MentorInsightNotFirstClearException>()),
+  group('共享 RewardClaimKey mentorInsight 键（复用 shared canonical/parser）', () {
+    test('claim 键由 shared 构造与解析，键形 stageId + characterId', () {
+      final key = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
       );
-      expect(
-        () => MentorInsightClaimPolicy.enforceFirstClear(true),
-        returnsNormally,
-      );
+      expect(key.canonical, 'v1|mentorInsight|stage_01_03|42');
+      expect(RewardClaimKey.parse(key.canonical), key);
+      expect(key.stageId, 'stage_01_03');
+      expect(key.characterId, 42);
     });
   });
 
-  group('MentorInsightClaimLedger 首通幂等发放', () {
-    test('首通发放一次并记账', () {
-      final ledger = MentorInsightClaimLedger();
-      final granted = <MentorInsightGrowthTarget>[];
-      ledger.claimFirstClear(
-        key: key(),
-        isFirstClear: true,
-        grant: (target) => granted.add(target),
+  group('shared RewardGrantGuard 重复拒绝纪律演示', () {
+    test('进程内 guard 拒绝同键重复（不重复发放纪律）', () {
+      final guard = RewardGrantGuard();
+      final key = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
       );
-      expect(granted, [MentorInsightGrowthTarget.mainTechniqueProficiency]);
-      expect(ledger.isClaimed(key()), isTrue);
+
+      expect(guard.claim(key: key, apply: () => 'granted'), 'granted');
+      expect(guard.isClaimed(key), isTrue);
+      expect(
+        () => guard.claim(key: key, apply: () => 'granted again'),
+        throwsA(isA<RewardAlreadyClaimedException>()),
+      );
     });
 
-    test('同键重复发放被拒，不重复执行 grant（不重复发放）', () {
-      final ledger = MentorInsightClaimLedger();
-      var grants = 0;
-      ledger.claimFirstClear(
-        key: key(),
-        isFirstClear: true,
-        grant: (_) => grants++,
+    test('RewardGrantGuard 仅内存态，不代表 durable storage', () {
+      final guardA = RewardGrantGuard();
+      final guardB = RewardGrantGuard();
+      final key = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
       );
-      expect(
-        () => ledger.claimFirstClear(
-          key: key(),
-          isFirstClear: true,
-          grant: (_) => grants++,
-        ),
-        throwsA(isA<MentorInsightClaimConflictException>()),
-      );
-      expect(grants, 1);
-    });
 
-    test('重打 / 扫荡（非首通）一律拒绝，不记账', () {
-      final ledger = MentorInsightClaimLedger();
-      var grants = 0;
-      expect(
-        () => ledger.claimFirstClear(
-          key: key(),
-          isFirstClear: false,
-          grant: (_) => grants++,
-        ),
-        throwsA(isA<MentorInsightNotFirstClearException>()),
-      );
-      expect(grants, 0);
-      expect(ledger.isClaimed(key()), isFalse);
-    });
+      guardA.claim(key: key, apply: () => null);
 
-    test('grant 回调抛错不记账，可重试', () {
-      final ledger = MentorInsightClaimLedger();
-      expect(
-        () => ledger.claimFirstClear(
-          key: key(),
-          isFirstClear: true,
-          grant: (_) => throw StateError('grant failed'),
-        ),
-        throwsStateError,
-      );
-      expect(ledger.isClaimed(key()), isFalse);
-      ledger.claimFirstClear(key: key(), isFirstClear: true, grant: (_) {});
-      expect(ledger.isClaimed(key()), isTrue);
-    });
-
-    test('幂等恢复结算：已发放则 no-op，未发放才发放', () {
-      final ledger = MentorInsightClaimLedger();
-      var grants = 0;
-      expect(
-        ledger.settleIdempotently(
-          key: key(),
-          isFirstClear: true,
-          grant: (_) => grants++,
-        ),
-        isTrue,
-      );
-      expect(grants, 1);
-      expect(
-        ledger.settleIdempotently(
-          key: key(),
-          isFirstClear: true,
-          grant: (_) => grants++,
-        ),
-        isFalse,
-      );
-      expect(grants, 1);
-    });
-
-    test('幂等恢复结算同样受首通闸门约束', () {
-      final ledger = MentorInsightClaimLedger();
-      expect(
-        () => ledger.settleIdempotently(
-          key: key(),
-          isFirstClear: false,
-          grant: (_) {},
-        ),
-        throwsA(isA<MentorInsightNotFirstClearException>()),
-      );
-      expect(ledger.isClaimed(key()), isFalse);
-    });
-
-    test('不同 (关, 门人) 键互不干扰', () {
-      final ledger = MentorInsightClaimLedger();
-      ledger.claimFirstClear(key: key(), isFirstClear: true, grant: (_) {});
-      expect(
-        ledger.settleIdempotently(
-          key: key(characterId: 43),
-          isFirstClear: true,
-          grant: (_) {},
-        ),
-        isTrue,
-      );
-      expect(
-        ledger.settleIdempotently(
-          key: key(stageId: 'stage_01_04'),
-          isFirstClear: true,
-          grant: (_) {},
-        ),
-        isTrue,
-      );
+      // 新实例不继承任何 claim 状态：guard 只是进程内重复拒绝纪律演示，
+      // 生产 exactly-once 必须依赖宿主 durable claim 层，本合同不拥有 ledger、
+      // 不声称持久化。
+      expect(guardB.isClaimed(key), isFalse);
     });
   });
 
-  group('纯合同边界：claim 合同无生产发放 / 存储', () {
-    test('claim 合同文件不依赖 Isar / 存储 / schema', () async {
+  group('纯合同边界：无生产发放 / 存储 / 第二套 codec', () {
+    test('claim 合同文件无 Isar / 存储 / schema / UI 依赖', () async {
       final source = await File(
         'lib/features/mainline/application/mentor_insight_claim_policy.dart',
       ).readAsString();
@@ -230,6 +149,17 @@ void main() {
       expect(source, isNot(contains('SaveData')));
       expect(source, isNot(contains('saveDataId')));
       expect(source, isNot(contains('Isar')));
+    });
+
+    test('claim 合同无第二套 codec：不自造键 / parser / ledger', () async {
+      final source = await File(
+        'lib/features/mainline/application/mentor_insight_claim_policy.dart',
+      ).readAsString();
+      expect(source, isNot(contains('MentorInsightClaimKey')));
+      expect(source, isNot(contains('Ledger')));
+      expect(source, isNot(contains('parse(')));
+      expect(source, isNot(contains('componentSeparator')));
+      expect(source, isNot(contains('versionPrefix')));
     });
 
     test('claim 合同无比例 / 每关 cap / 金额成员', () async {
