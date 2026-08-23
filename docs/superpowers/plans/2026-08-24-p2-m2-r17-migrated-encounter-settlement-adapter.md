@@ -27,9 +27,10 @@ static CombatSettlementSnapshot fromEncounterMapping({
 })
 ```
 
-- `fromMapping` 与新入口只解包各自 mapping 已冻结的
-  `initialState` / `combatants` / `moveBindings`，随即委托同一个私有
-  settlement core。
+- `fromMapping` 与新入口只解包各自 mapping 的
+  `initialState.player.id` / `combatants` / `moveBindings`，随即委托
+  同一个私有 settlement core。core 不接收整个 initial state，从
+  类型上防止误读 encounter 初态的空 enemies。
 - core 只消费现有显式事实：初始玩家 actor ID、combatant 与
   character ID、move binding、终局 arena、终局 outcome 与语义事件。
 - `ongoing` 拒绝结算；终局玩家 ID/阵营必须精确匹配；已映射
@@ -72,7 +73,19 @@ static CombatSettlementSnapshot fromEncounterMapping({
 
 ### 编码前设计审查
 
-- 待执行。
+- CLI：Pi `0.84.1`；model：`deepseek/deepseek-v4-flash`；thinking：
+  `high`。
+- 命令只启用 `read,grep,find,ls`，并使用 `--no-session
+  --no-skills --no-prompt-templates --print`；无 bash / edit / write，未执行
+  测试。
+- 结论：`PASS`，P0=0；指出三个实施期 P1 陷阱：core 只收
+  `playerActorId`，等价 fixture 必须共享同一组解包输入，source
+  guard 不得以裸 `data` 子串误伤既有 `data/defs/skill_def.dart`
+  import；全部采纳。
+- P2 实施提醒：保留既有三类错误文本；在共享 core 入口防御
+  性复制 combatants / bindings / events；mutation 行为证据放在本身已
+  冻结输入的 encounter 路径；不顺手改动 gather 空 skillId、
+  guardian 或终局事件的旧口径。
 
 ### 最终 diff 审查
 
@@ -81,11 +94,13 @@ static CombatSettlementSnapshot fromEncounterMapping({
 ## 当前恢复点
 
 - 状态：已确认精确 baseline / branch / 三份 owned files 与结算
-  语义无缺口；尚未编写新测试或修改生产码。
+  语义无缺口；指定 Pi 编码前只读审查 `PASS`；尚未编写
+  新测试或修改生产码。
 - 环境：`flutter pub get --enforce-lockfile` 通过；`build_runner`
   写入 126 outputs，仓库现有 63 个 `.g.dart`；`libisar.dylib`
   SHA-256 = `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
-- 下一步：提交本恢复点，执行指定 Pi 编码前只读审查，再
-  先写红测。
+- 提交：`439c57e8` 计划恢复点。
+- 下一步：提交本 API / Pi 证据恢复点，先写新测试并跑出
+  精确 API 缺失红灯。
 - 阻塞项：无。
 - 生产接线：未接；本切片只新增显式 adapter 入口。
