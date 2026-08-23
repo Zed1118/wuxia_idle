@@ -20,7 +20,7 @@
 ## 集成与验收
 
 - 三项在独立 branch/worktree TDD 实现；Pi/Qoder 需留下实际版本、确切模型和最终 PASS 证据。
-- 主控逐项审 diff、独立来源复审；集成后补最小联合接缝测试，但不启用生产 route。
+- 主控逐项审 diff、独立来源复审；集成后由主控在 R08 assembler 上只增加显式成对的 objective tracker/event-source 透传，并补最小联合接缝测试，但不启用 production route。
 - 联合 targeted、变更 Dart analyze、YAML/Markdown/diff/path 检查、full Flutter test 与集成独立终审全部通过后追加 Batch13 READY。
 
 ## 当前状态

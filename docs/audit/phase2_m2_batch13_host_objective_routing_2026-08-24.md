@@ -11,6 +11,7 @@
 - assembler 偷带默认调优：R08 仅透传 exact optional gate，source guard 禁止预算/角色推断与 host 改动。
 - objective 双真相源：R09 在配置 objective runtime 时屏蔽旧 survive/director 自动胜利；null 时保持旧语义，玩家死亡始终优先。
 - objective 半提交：R09 用 prepared transition 在 flow 其余可失败投影完成后单次 commit；source/lazy iterable/controller 异常不提交 objective progress。
+- 集成误启用：R08 合入后，主控只允许 assembler 成对透传 caller 显式提供的 objective tracker/event source；不构造 controller、objective、默认 mapper 或 host route。
 - RNG 过度承诺：当前 resolver/RNG 无 rewind 接口；审计只要求本任务不新增随机消费且保留既有行为，不宣称异常可回退 RNG。
 - route fallback：R10 必须让现有 migration resolver 复核 assignment/allowlist/encounterCount/legacyContent shape；migrated 异常不得走 legacy。
 - production promotion：生产 YAML、host、mainline mapper、candidate fixtures 全部不在 owned files。

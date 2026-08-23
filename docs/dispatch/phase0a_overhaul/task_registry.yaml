@@ -1707,11 +1707,14 @@ tasks:
       - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
       - P2-M2-R10-STAGE-ENCOUNTER-ROUTE-SELECTOR
     owned_files:
+      - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
+      - test/features/battle/application/phase0a/phase0a_production_encounter_objective_integration_test.dart
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch13-host-objective-routing.md
       - docs/audit/phase2_m2_batch13_host_objective_routing_2026-08-24.md
     protected_behavior:
       - compose explicit opt-in application seams without enabling a production stage route
+      - objective runtime is forwarded only as an explicit tracker and event-source pair after R08 integration
       - candidate fixtures and tuning remain outside production paths
       - main and origin main remain untouched
     exit_criteria:
