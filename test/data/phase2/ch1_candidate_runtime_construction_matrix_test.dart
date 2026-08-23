@@ -305,6 +305,72 @@ _explicitEmptyDefeatProjections(Phase0aMigratedEncounterPlan plan) {
   };
 }
 
+Future<void> _expectCandidateStageConstructs(int stageIndex) async {
+  final manifest = await _loadCandidateCatalog();
+  final resolver = Phase0aEncounterMigrationResolver(
+    legacyContentIds: const [],
+  );
+  final stageId = _stageIds[stageIndex];
+  final expectedEncounter = manifest.encounterForStage(stageId)!;
+
+  expect(manifest.encounters, hasLength(5));
+  expect(manifest.stageAssignments, hasLength(5));
+
+  final selected = selectCombatStageEncounterRoute(
+    manifest: manifest,
+    stageId: stageId,
+    migrationResolver: resolver,
+    hasLegacyContent: false,
+  );
+
+  expect(selected, isA<MigratedCombatStageEncounterRoute>());
+  final route = selected as MigratedCombatStageEncounterRoute;
+  expect(route.stageId, stageId);
+  expect(route.encounter, same(expectedEncounter));
+
+  final plan = _buildPlan(route, stageIndex: stageIndex);
+  final rosterActorIds = {
+    for (final binding in plan.roster.bindings) binding.actorId,
+  };
+  final projections = _explicitEmptyDefeatProjections(plan);
+
+  expect(projections.keys.toSet(), rosterActorIds);
+  expect(projections.values, everyElement(isEmpty));
+
+  final objectiveSource = Phase0aExplicitObjectiveEventSource(
+    roster: plan.roster,
+    defeatProjectionsByActorId: projections,
+    externalProjectors: const [],
+  );
+  final seed = 1501 + stageIndex;
+  final rng = math.Random(seed);
+  final untouchedRng = math.Random(seed);
+  var tokenMapperCalls = 0;
+  final flow = Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
+    plan: plan,
+    numbers: GameRepository.instance.numbers,
+    rng: rng,
+    tokenRequestMapper: (_) {
+      tokenMapperCalls += 1;
+      return null;
+    },
+    objectiveEventSource: objectiveSource,
+  );
+
+  expect(plan.stageId, stageId);
+  expect(plan.encounter, same(expectedEncounter));
+  expect(plan.mapping.director, same(plan.runtimeContracts.spawnDirector));
+  expect(plan.roster.director, same(plan.runtimeContracts.spawnDirector));
+  expect(plan.roster.size, expectedEncounter.spawnEntries.length);
+  expect(flow.state.tick, 0);
+  expect(flow.state.enemies, isEmpty);
+  expect(flow.spawnState.tick, 0);
+  expect(flow.outcome, Phase0aBattleOutcome.ongoing);
+  expect(flow.lastOrderedEventRecords, isEmpty);
+  expect(tokenMapperCalls, 0);
+  expect(rng.nextDouble(), untouchedRng.nextDouble());
+}
+
 void main() {
   setUp(() async {
     await loadTestGameRepository();
@@ -312,80 +378,14 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
-  test(
-    'all five candidate encounters construct through the typed migrated seam without a tick',
-    () async {
-      final manifest = await _loadCandidateCatalog();
-      final resolver = Phase0aEncounterMigrationResolver(
-        legacyContentIds: const [],
-      );
-
-      expect(manifest.encounters, hasLength(5));
-      expect(manifest.stageAssignments, hasLength(5));
-
-      for (var stageIndex = 0; stageIndex < _stageIds.length; stageIndex++) {
-        final stageId = _stageIds[stageIndex];
-        final expectedEncounter = manifest.encounterForStage(stageId)!;
-        final selected = selectCombatStageEncounterRoute(
-          manifest: manifest,
-          stageId: stageId,
-          migrationResolver: resolver,
-          hasLegacyContent: false,
-        );
-
-        expect(selected, isA<MigratedCombatStageEncounterRoute>());
-        final route = selected as MigratedCombatStageEncounterRoute;
-        expect(route.stageId, stageId);
-        expect(route.encounter, same(expectedEncounter));
-
-        final plan = _buildPlan(route, stageIndex: stageIndex);
-        final rosterActorIds = {
-          for (final binding in plan.roster.bindings) binding.actorId,
-        };
-        final projections = _explicitEmptyDefeatProjections(plan);
-
-        expect(projections.keys.toSet(), rosterActorIds);
-        expect(projections.values, everyElement(isEmpty));
-
-        final objectiveSource = Phase0aExplicitObjectiveEventSource(
-          roster: plan.roster,
-          defeatProjectionsByActorId: projections,
-          externalProjectors: const [],
-        );
-        final seed = 1501 + stageIndex;
-        final rng = math.Random(seed);
-        final untouchedRng = math.Random(seed);
-        var tokenMapperCalls = 0;
-        final flow =
-            Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
-              plan: plan,
-              numbers: GameRepository.instance.numbers,
-              rng: rng,
-              tokenRequestMapper: (_) {
-                tokenMapperCalls += 1;
-                return null;
-              },
-              objectiveEventSource: objectiveSource,
-            );
-
-        expect(plan.stageId, stageId);
-        expect(plan.encounter, same(expectedEncounter));
-        expect(
-          plan.mapping.director,
-          same(plan.runtimeContracts.spawnDirector),
-        );
-        expect(plan.roster.director, same(plan.runtimeContracts.spawnDirector));
-        expect(plan.roster.size, expectedEncounter.spawnEntries.length);
-        expect(flow.state.tick, 0);
-        expect(flow.state.enemies, isEmpty);
-        expect(flow.spawnState.tick, 0);
-        expect(flow.outcome, Phase0aBattleOutcome.ongoing);
-        expect(flow.lastOrderedEventRecords, isEmpty);
-        expect(tokenMapperCalls, 0);
-        expect(rng.nextDouble(), untouchedRng.nextDouble());
-      }
-    },
-  );
+  for (var index = 0; index < _stageIds.length; index++) {
+    final stageIndex = index;
+    final stageId = _stageIds[stageIndex];
+    test(
+      '$stageId constructs through the typed migrated seam without a tick',
+      () => _expectCandidateStageConstructs(stageIndex),
+    );
+  }
 
   test(
     'R13 source keeps missing and extra roster coverage fail closed',

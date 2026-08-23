@@ -33,7 +33,8 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
 
 ## 验收 checklist（CLAUDE §8.2）
 
-- [x] TDD 先因目标测试的结构期望失败，再补齐五关矩阵并转绿。
+- [x] TDD 先因目标测试的结构期望失败，再补齐五关矩阵并转绿；
+  五关分别作为含 stage ID 的独立命名 test case。
 - [x] 真实 loader 加载 5 assignments / 5 encounters，五关均选出 exact typed
   migrated route。
 - [x] 每关 plan 保持 route/encounter identity 与 bundle/mapping/roster director identity。
@@ -47,8 +48,8 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
   去重 targeted，并完成 scoped analyze、format、diff/path/status 守卫；不跑 full。
 - [x] Qoder CLI 1.1.x 精确 `Qwen3.8-Max` / reasoning `high` 完成编码前
   设计审查和最终 diff 只读审查，如实记录结论。
-- [x] 红线：0 数值/公式/production data/玩家文案，0 三系/在线离线/
-  反主流/reward/save/UI/host/tuning 触点。
+- [x] 红线：0 production/candidate tuning 数值/公式变更，0 production
+  data/玩家文案/三系/在线离线/反主流/reward/save/UI/host 接线变更。
 - [x] 所有非空提交使用中文动宾，tip 追加精确 READY 空提交。
 
 ## 任务切片
@@ -76,27 +77,37 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
   owned files 并对照 fixture/catalog/route/R11/R13/Batch14 合同后结论
   **PASS**，P0=0、P1=0。三条信息级 P2：误宣称边界并非全部机器守卫
   （已修正 checklist 文字）；五关单 test 循环的失败定位粒度较粗；
-  exact key set 断言为无害的契约文档化重复。后两项按本最小切片保留，
-  不影响构造矩阵正确性。
+  exact key set 断言为无害的契约文档化重复。后续 Codex 独立复审已将
+  五关拆为五个命名 case；exact key set 断言仍保留为合同证据。
 - 不记录或输出 token/key。
+
+## Codex 独立复审收口
+
+- 独立复审确认 P0=0、P1=0，并提出两条非阻塞 P2：红线文字对测试
+  scaffold 数字过宽，以及五关单 test loop 定位粒度较粗。
+- 本收口将红线精确为「0 production/candidate tuning 数值/公式变更」；
+  五关分别命名为 `stage_01_01..05` 的独立 test，复用同一 helper 与同一组
+  构造/边界断言，不扩大行为面。
+- Qoder 最终审查证据指向前一 READY `277bbabd`；本次仅按独立复审
+  收口两条 P2，不冒充 Qoder 对收口 diff 做了第三轮审查。
 
 ## 当前恢复点
 
-- 状态：五关候选运行时构造矩阵、指定验证、Qoder 两轮只读审查
-  与 owned-files 守卫全部完成；本证据提交后立即追加指定 READY。
-- 最后完成：计划 commit `663f6e1a`、测试 commit `934d0cfd`；五关逐关
-  经 loader/typed route/R11 plan/Batch14 assembler 构造，R13 使用 exact roster
-  coverage 与逐 actor 显式空 projection；零 tick 且 caller RNG 未消费。
-  Qoder 最终审查 PASS，P0/P1=0。
-- 下一步：提交本恢复点证据，追加指定 READY 空提交，交还主控
-  独立复审。
+- 状态：前一 READY `277bbabd` 的独立复审 P2 已收口；计划边界表述
+  已精确化，五关已拆为五个命名 test case，其余行为与断言不变。
+- 最后完成：新测试 7/7 PASS；同一六文件去重 targeted 因新增四个
+  命名 case，真实计数从 47 变为 51，实测 51/51 PASS；scoped analyze
+  0 issue；format 0 changed。
+- 下一步：提交本收口修正，追加与前一次同文本的 READY 空提交，
+  交还主控。
 - 已跑验证：只读确认初始 `HEAD=7bc31c5f5463aac26e127912576350487ac0a8d3`
   且工作树干净；`qoderclicn --version` = 1.1.28，model catalog 含精确
   `Qwen3.8-Max`；设计审查真实返回附条件 PASS。TDD 红灯为 0 pass /
-  1 fail（矩阵尚未实现）；补齐后新测试 3/3 PASS。去重逐文件
-  targeted：新测试 3、Ch1 catalog 9、route selector 10、R11 7、R13 15、
-  Batch14 composition 3，合计 47/47 PASS；scoped `flutter analyze --no-pub`
-  新测试 0 issue；`dart format --output=none --set-exit-if-changed` 0 changed；
+  1 fail（矩阵尚未实现）；初次补齐后新测试 3/3、六文件去重 targeted
+  47/47 PASS。独立复审收口后：新测试 7、Ch1 catalog 9、route selector
+  10、R11 7、R13 15、Batch14 composition 3，合计 51/51 PASS；scoped
+  `flutter analyze --no-pub` 新测试 0 issue；
+  `dart format --output=none --set-exit-if-changed` 0 changed；
   `git diff --check 7bc31c5f..HEAD`、精确两 owned files 与 clean status 通过。
 - 阻塞项：无。
 - 残留 Gate：objective 事件生成与可执行性、production host/data 接线、
