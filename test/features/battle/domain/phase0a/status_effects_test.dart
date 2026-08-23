@@ -78,6 +78,39 @@ void main() {
       expect(ledger.active.single.elapsedTicks, 0);
     });
 
+    test('same source refresh adopts the complete new spec', () {
+      final ledger = TimedStatusLedger.empty
+        ..apply(
+          _poison(
+            durationTicks: 4,
+            tickIntervalTicks: 2,
+            sourceId: 'a',
+            damagePerTick: 3,
+          ),
+        )
+        ..advance(1);
+
+      ledger.apply(
+        _poison(
+          durationTicks: 6,
+          tickIntervalTicks: 1,
+          sourceId: 'a',
+          damagePerTick: 9,
+        ),
+      );
+
+      expect(ledger.advance(1).damages, [
+        const StatusDamage(
+          sourceId: 'a',
+          type: TimedStatusType.poison,
+          amount: 9,
+        ),
+      ]);
+      expect(ledger.active.single.remainingTicks, 5);
+      expect(ledger.active.single.spec.damagePerTick, 9);
+      expect(ledger.active.single.spec.tickIntervalTicks, 1);
+    });
+
     test('same source stacks only when explicit stack limit allows it', () {
       final ledger = TimedStatusLedger.empty;
       ledger.apply(_poison(durationTicks: 4, sourceId: 'a', stackLimit: 2));
@@ -86,6 +119,64 @@ void main() {
       expect(ledger.active.single.stacks, 2);
       expect(ledger.active.single.remainingTicks, 6);
     });
+
+    test('refresh uses the new stack cap and movement multiplier', () {
+      final ledger = TimedStatusLedger.empty
+        ..apply(
+          TimedStatusSpec(
+            type: TimedStatusType.slow,
+            sourceId: 'mud',
+            durationTicks: 4,
+            tickIntervalTicks: 4,
+            stackLimit: 3,
+            movementMultiplier: 0.5,
+          ),
+        )
+        ..apply(
+          TimedStatusSpec(
+            type: TimedStatusType.slow,
+            sourceId: 'mud',
+            durationTicks: 5,
+            tickIntervalTicks: 5,
+            stackLimit: 2,
+            movementMultiplier: 0.8,
+          ),
+        )
+        ..apply(
+          TimedStatusSpec(
+            type: TimedStatusType.slow,
+            sourceId: 'mud',
+            durationTicks: 6,
+            tickIntervalTicks: 6,
+            stackLimit: 2,
+            movementMultiplier: 0.7,
+          ),
+        );
+
+      expect(ledger.active.single.stacks, 2);
+      expect(ledger.active.single.spec.stackLimit, 2);
+      expect(ledger.movementMultiplier, 0.7);
+    });
+
+    test('active snapshots cannot mutate ledger internals', () {
+      final ledger = TimedStatusLedger.empty
+        ..apply(_poison(durationTicks: 4, sourceId: 'a'));
+      final snapshot = ledger.active.single;
+
+      snapshot.remainingTicks = 0;
+      expect(ledger.active.single.remainingTicks, 4);
+    });
+
+    test(
+      'expiration tick damage is emitted before the instance is removed',
+      () {
+        final ledger = TimedStatusLedger.empty
+          ..apply(_poison(durationTicks: 1, sourceId: 'a', damagePerTick: 7));
+
+        expect(ledger.advance(1).damages.single.amount, 7);
+        expect(ledger.active, isEmpty);
+      },
+    );
 
     test('fixed ticks schedule damage and expire deterministically', () {
       final ledger = TimedStatusLedger.empty;

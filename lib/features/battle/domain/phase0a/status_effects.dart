@@ -76,7 +76,13 @@ final class TimedStatusInstance {
       elapsedTicks = 0,
       stacks = 1;
 
-  final TimedStatusSpec spec;
+  TimedStatusInstance._snapshot(TimedStatusInstance source)
+    : spec = source.spec,
+      remainingTicks = source.remainingTicks,
+      elapsedTicks = source.elapsedTicks,
+      stacks = source.stacks;
+
+  TimedStatusSpec spec;
   int remainingTicks;
   int elapsedTicks;
   int stacks;
@@ -126,7 +132,9 @@ final class TimedStatusLedger {
 
   final List<TimedStatusInstance> _statuses = [];
 
-  List<TimedStatusInstance> get active => List.unmodifiable(_sortedStatuses());
+  /// Returns detached snapshots; mutating an item cannot mutate this ledger.
+  List<TimedStatusInstance> get active =>
+      List.unmodifiable(_sortedStatuses().map(TimedStatusInstance._snapshot));
 
   bool get blocksRegularMovement =>
       _statuses.any((status) => status.type == TimedStatusType.root);
@@ -148,13 +156,14 @@ final class TimedStatusLedger {
       return;
     }
 
+    final mayStack = existing.spec.stackLimit > 1 && spec.stackLimit > 1;
+    existing.spec = spec;
     existing.remainingTicks = spec.durationTicks;
     existing.elapsedTicks = 0;
-    if (existing.spec.stackLimit > 1 && spec.stackLimit > 1) {
-      existing.stacks = (existing.stacks + 1).clamp(
-        1,
-        existing.spec.stackLimit,
-      );
+    if (mayStack) {
+      existing.stacks = existing.stacks < spec.stackLimit
+          ? existing.stacks + 1
+          : spec.stackLimit;
     } else {
       existing.stacks = 1;
     }
