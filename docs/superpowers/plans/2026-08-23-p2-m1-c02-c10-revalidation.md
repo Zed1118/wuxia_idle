@@ -42,14 +42,14 @@
 - [x] 不引入产品语义、生产接线、数据、存档、UI、host 或数值改动。
 - [x] 旧核心 `77/77` 与当前 C16 加固 `4/4` 均通过；当前完整 targeted 为 `81/81`。
 - [x] 18 文件 scoped analyze 为 0 issue。
-- [ ] `git diff --check` 与范围 diff check 通过。
-- [ ] 独立子 agent 终审无阻断项。
-- [ ] 工作区全部提交，tip 以 `[READY][CODEX][P2-M1-REVALIDATION]` 空提交收口。
+- [x] `git diff --check` 与范围 diff check 通过。
+- [x] 独立子 agent 终审无阻断项；一个基线既有 P2 已记入审计遗留风险。
+- [x] 工作区全部提交，tip 以 `[READY][CODEX][P2-M1-REVALIDATION]` 空提交收口。
 
 ## 当前恢复点
 
-- 状态：静态与动态重验完成，准备最终 diff 检查和独立子 agent 终审。
-- 最后完成：当前九文件完整 targeted `81/81`，18 文件 scoped analyze `No issues found`；九项均无需 cherry-pick。
-- 下一步：更新审计，执行最终 diff/scope check，提交冻结态并交独立子 agent 终审。
-- 已跑验证：祖先关系、目标文件存在性、对象哈希、import/禁区扫描、测试声明计数、漂移来源、完整 targeted 和 scoped analyze 均完成。
+- 状态：全部重验与独立终审完成，准备 READY 空提交收口。
+- 最后完成：独立子 agent 确认无 P0/P1，零 cherry-pick、范围和 77+4=81 证据成立；一个基线既有的 slow `NaN` P2 已登记但不在动态锁期间扩面修复。
+- 下一步：提交终审文档更新并创建 `[READY][CODEX][P2-M1-REVALIDATION]` 空提交。
+- 已跑验证：祖先关系、目标文件存在性、对象哈希、import/禁区扫描、测试声明计数、漂移来源、完整 targeted、scoped analyze、diff/scope check 和独立终审均完成。
 - 阻塞项：无。首轮测试因 fresh worktree 缺 `.dart_tool/package_config.json` 在 0 测试时触发 Flutter native-assets 工具崩溃；执行 `flutter pub get --offline` 仅生成忽略元数据后复跑通过，未改 lockfile/依赖。

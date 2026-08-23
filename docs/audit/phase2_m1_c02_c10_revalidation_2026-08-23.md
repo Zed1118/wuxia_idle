@@ -44,10 +44,11 @@
 - fresh worktree 首轮测试在 0 项执行时因缺 `.dart_tool/package_config.json` 触发 Flutter native-assets `Bad state: No element`；`flutter pub get --offline` 仅恢复被忽略的本地元数据，`pubspec.lock`/`pubspec.yaml` 未变，随后同一 targeted 命令通过。
 - `git diff --check`：PASS。
 - 范围 diff check：PASS；相对冻结基线仅新增本计划与本审计，九个实现/测试均未改。
-- 独立子 agent 终审：待动态验证完成后运行。
+- 独立子 agent 终审：PASS；无 P0/P1，祖先关系、零 cherry-pick、范围和 `77 + 4 = 81` 证据均成立。
 
 ## 遗留风险
 
 - 本次证明的是委派快照 `1a7ddbf9`，不覆盖 Batch7 分支在派发后新增的并发提交。
 - 九个合同中的部分已被后续 G1/G2 adapter 消费；本次没有修改这些消费方，也不宣称黑风岭产品纵切已完成。
 - `PROPOSED` / `TUNING` 决策仍保持未冻结；本审计没有从现有 API 反推产品语义。
+- 独立终审发现基线既有 P2：`status_effects.dart` 的 slow `movementMultiplier` 范围判断未显式检查 `isFinite`，因此 `double.nan` 可穿过构造校验并污染派生倍率。本次不在动态验证锁期间修改已验绿基线；后续若加固，须在同文件与对应测试内补有限值拒绝并重新运行专项验证。
