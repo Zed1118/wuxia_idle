@@ -325,4 +325,121 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('prepared batch is atomic and commits all completion once', () {
+    final objectives = controller([
+      ObjectiveClause(
+        id: 'target-a',
+        objective: DefeatTargetsObjective(const ['target-a']),
+      ),
+      ObjectiveClause(
+        id: 'target-b',
+        objective: DefeatTargetsObjective(const ['target-b']),
+      ),
+    ]);
+    final tracker = Phase0aObjectiveRuntimeTracker(controller: objectives);
+    final initial = tracker.progress;
+
+    final prepared = tracker.prepareExternalEvents([
+      TargetDefeated('target-a', eventId: 'prepared-a'),
+      TargetDefeated('target-b', eventId: 'prepared-b'),
+    ]);
+
+    expect(prepared.base, same(initial));
+    expect(prepared.next.completed, isTrue);
+    expect(tracker.progress, same(initial));
+    expect(tracker.commit(prepared), same(prepared.next));
+    expect(tracker.progress.completed, isTrue);
+    expect(() => tracker.commit(prepared), throwsStateError);
+  });
+
+  test('prepared transitions preserve all and any completion rules', () {
+    Phase0aObjectiveRuntimeTracker trackerFor(ObjectiveCompletionRule rule) {
+      return Phase0aObjectiveRuntimeTracker(
+        controller: controller([
+          ObjectiveClause(
+            id: 'target-a',
+            objective: DefeatTargetsObjective(const ['target-a']),
+          ),
+          ObjectiveClause(
+            id: 'target-b',
+            objective: DefeatTargetsObjective(const ['target-b']),
+          ),
+        ], rule: rule),
+      );
+    }
+
+    final all = trackerFor(ObjectiveCompletionRule.all);
+    final any = trackerFor(ObjectiveCompletionRule.any);
+    final allPrepared = all.prepareExternalEvents([
+      TargetDefeated('target-a', eventId: 'all-a'),
+    ]);
+    final anyPrepared = any.prepareExternalEvents([
+      TargetDefeated('target-a', eventId: 'any-a'),
+    ]);
+
+    expect(allPrepared.next.completed, isFalse);
+    expect(anyPrepared.next.completed, isTrue);
+    expect(all.progress.completed, isFalse);
+    expect(any.progress.completed, isFalse);
+  });
+
+  test('foreign and stale prepared transitions fail closed', () {
+    final first = Phase0aObjectiveRuntimeTracker(
+      controller: controller([
+        ObjectiveClause(
+          id: 'targets',
+          objective: DefeatTargetsObjective(const ['target-a', 'target-b']),
+        ),
+      ]),
+    );
+    final second = Phase0aObjectiveRuntimeTracker(
+      controller: controller([
+        ObjectiveClause(
+          id: 'targets',
+          objective: DefeatTargetsObjective(const ['target-a', 'target-b']),
+        ),
+      ]),
+    );
+    final prepared = first.prepareExternalEvents([
+      TargetDefeated('target-a', eventId: 'prepared-a'),
+    ]);
+    final secondInitial = second.progress;
+
+    expect(() => second.commit(prepared), throwsStateError);
+    expect(second.progress, same(secondInitial));
+
+    final advanced = first.advanceExternal(
+      TargetDefeated('target-b', eventId: 'committed-b'),
+    );
+    expect(() => first.commit(prepared), throwsStateError);
+    expect(first.progress, same(advanced));
+  });
+
+  test('terminal prepare is a strict no-op without iterating input', () {
+    final tracker = Phase0aObjectiveRuntimeTracker(
+      controller: controller([
+        ObjectiveClause(
+          id: 'target',
+          objective: DefeatTargetsObjective(const ['target-a']),
+        ),
+      ]),
+    );
+    final terminal = tracker.advanceExternal(
+      TargetDefeated('target-a', eventId: 'terminal-a'),
+    );
+    var iterations = 0;
+
+    Iterable<EncounterObjectiveEvent> events() sync* {
+      iterations += 1;
+      throw StateError('must not iterate terminal input');
+    }
+
+    final prepared = tracker.prepareExternalEvents(events());
+    expect(prepared.base, same(terminal));
+    expect(prepared.next, same(terminal));
+    expect(iterations, 0);
+    expect(tracker.commit(prepared), same(terminal));
+    expect(iterations, 0);
+  });
 }
