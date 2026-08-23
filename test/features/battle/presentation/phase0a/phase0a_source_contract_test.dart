@@ -153,5 +153,24 @@ void main() {
         );
       }
     });
+
+    test('active VFX 只由父帧 notifier 驱动,反馈层不自建 ticker', () {
+      final source = File(
+        'lib/features/battle/presentation/phase0a/phase0a_battle_screen.dart',
+      ).readAsStringSync();
+      expect(source, contains('ValueListenableBuilder<int>'));
+      expect(
+        RegExp(
+          r'class _FeedbackLayerState[\s\S]*?createTicker',
+        ).hasMatch(source),
+        isFalse,
+        reason: 'active VFX 不得拥有第二个 ticker 重复驱动中间帧重绘',
+      );
+      expect(source, contains('feedbackFrame: _feedbackFrame'));
+      expect(
+        source,
+        contains('if (_heldFeedback.isNotEmpty) _feedbackFrame.value++'),
+      );
+    });
   });
 }

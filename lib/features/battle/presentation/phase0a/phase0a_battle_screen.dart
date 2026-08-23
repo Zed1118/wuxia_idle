@@ -52,6 +52,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
   late final Ticker _ticker;
+  late final ValueNotifier<int> _feedbackFrame;
   Duration? _lastElapsed;
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
@@ -73,6 +74,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   void initState() {
     super.initState();
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
+    _feedbackFrame = ValueNotifier<int>(0);
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
   }
@@ -101,6 +103,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   void dispose() {
     widget.controller.removeListener(_refresh);
     _ticker.dispose();
+    _feedbackFrame.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -358,6 +361,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
     final previousFeedbackCount = _heldFeedback.length;
     _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
+    if (_heldFeedback.isNotEmpty) _feedbackFrame.value++;
     final transientChanged =
         _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
         _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds) |
@@ -529,7 +533,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                         _FeedbackLayer(
                           controller: controller,
                           stage: stage,
-                          entries: [..._heldFeedback],
+                          entries: _heldFeedback,
+                          feedbackFrame: _feedbackFrame,
                         ),
                       ],
                     ),
@@ -1310,37 +1315,28 @@ class _FeedbackLayer extends StatefulWidget {
     required this.controller,
     required this.stage,
     required this.entries,
+    required this.feedbackFrame,
   });
 
   final Phase0aBattleController controller;
   final Phase0aStage stage;
   final List<_HeldFeedback> entries;
+  final ValueListenable<int> feedbackFrame;
 
   @override
   State<_FeedbackLayer> createState() => _FeedbackLayerState();
 }
 
-class _FeedbackLayerState extends State<_FeedbackLayer>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker;
-
-  @override
-  void initState() {
-    super.initState();
-    _ticker = createTicker((_) {
-      // 动画只重建反馈层，不牵动静态背景和角色树。
-      if (widget.entries.isNotEmpty && mounted) setState(() {});
-    })..start();
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
+class _FeedbackLayerState extends State<_FeedbackLayer> {
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: widget.feedbackFrame,
+      builder: (context, _, child) => _buildFeedbackLayer(),
+    );
+  }
+
+  Widget _buildFeedbackLayer() {
     final children = <Widget>[];
     var popupIndex = 0;
     for (final held in widget.entries) {
