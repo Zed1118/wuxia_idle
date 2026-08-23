@@ -21,9 +21,15 @@
 - durable 过报：R21 不查询或写入 durable store；成功场景只接受 caller 提供的 exact-key observation，错误或缺失 fail closed。
 - production/candidate/objective/timeline/tuning/Profile/G2/真人验收继续 Gate。
 
-## 待完成验证
+## 集成验证
 
-待来源 READY 后补充外部工具证据、来源/集成提交、targeted/analyze/format/full、仓库闸门、独立终审与最终 READY。
+- 主控逐项重算 15 个 R19/R20/R21 source→integration stable patch-id，三个来源 9 个 owned blobs 与各自 READY tip 完全一致。
+- 影响集去重联合 targeted 125/125 PASS；changed-Dart scoped analyze 6 items / 0 issue；format 6 files / 0 changed。
+- `flutter test --no-pub --reporter compact` 从 clean integration 起点一次完成 5079/5079 PASS；未并行启动第二个 full 进程。
+- registry 91 tasks / 0 duplicate IDs / 0 dangling prerequisite IDs；相对 Batch16 精确 12-file path guard、`git diff --check` 与 clean status 通过。
+- main 与 origin/main 终验仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
+- Codex 独立集成代码终审重算 15/15 patch-id、9/9 blobs、复跑 scoped analyze 6 items / 0 issue 与 format 6 files / 0 changed，结论 P0/P1/P2=0；确认新 API 无 production caller，未触及 host/data/candidate/objective/timeline/schema/persistence。
+- 最终 registry/audit/plan 与 READY marker 的 docs-only 闭环仍待本验证提交后复核，因此此处不提前宣称 READY。
 
 ## 环境恢复点
 
