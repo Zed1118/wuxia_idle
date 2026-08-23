@@ -62,11 +62,21 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
   `MentorInsightBlockingActivity.values` 与既有互斥集合等价。
   Qoder 自述无法内省证明底层模型，因此精确模型证据仅以
   CLI selector 与 `--list-models` 可用性为准，不伪造额外自报。
-- 最终 diff 审查：待执行。
+- 最终 diff 审查：实际使用同一 `qoderclicn` 1.1.28 /
+  exact `-m Qwen3.8-Max` / `--reasoning-effort high` /
+  `--permission-mode dont_ask` / Read-Grep-Glob-only /
+  `--no-session-persistence`，明确禁止 Bash/Edit/Write。本任务三文件
+  相对 baseline 均为新增，Qoder 完整读取三文件与 R02/R15
+  对照文件，实际使用 7 Read / 1 Glob / 1 Grep、零写入，
+  结论 `FINAL PASS`，P0/P1/P2=0/0/0。它明确确认 invalid ID
+  先拒绝、R02 集合唯一真相源、exact companion 对象同一性、四活动
+  决策表、revision 无关、输入不变与三层 source guard 全成立。
+  Qoder 仍诚实声明无法内省证明底层模型，精确模型证据继续以
+  CLI selector 和 model catalog 为准。
 
 ## 验收 checklist（CLAUDE §8.2）
 
-- [ ] 编码前与最终均用 Qoder CLI 1.1.28 + exact `Qwen3.8-Max` +
+- [x] 编码前与最终均用 Qoder CLI 1.1.28 + exact `Qwen3.8-Max` +
   reasoning high 完成 Read/Grep/Glob-only 审查，不授权 Bash/Edit/Write。
 - [x] TDD 红→绿并提交小切片；覆盖四活动、empty/other-character、
   restore revision、invalid ID、输入不变、error fields 和 source guard。
@@ -76,7 +86,7 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
   audit 与 clean status 通过；按任务约束不跑 full suite。
 - [x] 红线影响：0 数值/YAML/玩家文案/三系/在线离线/反主流/
   reward/save/UI/host 变更。
-- [ ] 中文动宾小提交完成；计划证据收口后追加精确 READY 空提交。
+- [x] 中文动宾小提交完成；本证据提交后直接追加精确 READY 空提交。
 
 ## 任务切片
 
@@ -88,13 +98,15 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
 
 ## 当前恢复点
 
-- 状态：实现与本地验证完成，Qoder 编码前只读审查
-  `DESIGN PASS`，待最终只读 diff 审查。
+- 状态：实现、本地验证与 Qoder 两轮只读审查全部完成，
+  进入 READY 交付。
 - 最后完成：`a1330858` 冻结计划、`40dfc994` 记录设计审查、
   `3790448d` 锁定红测、`30002ef9` 实现最小 guard。有效红灯
   精确为目标 source/API/error 缺失；实现后 R20 12/12 通过。
-- 下一步：运行 Qoder 最终只读审查，独立复核 findings，然后
-  回填证据与 READY。
+  Qoder 终审 `FINAL PASS` / 0/0/0；Codex 独立复核三文件 actual
+  baseline diff，P0/P1/P2=0/0/0。
+- 下一步：提交本终审证据，复跑 diff/path/status，然后追加精确
+  `[READY][QODER][P2-M2-R20] 冻结听剑反向活动互斥` 空提交。
 - 已跑验证：R20 12/12、R02 policy 14/14、R15 runtime 18/18，
   三文件分别执行、去重合计 44/44；changed-Dart scoped analyze
   2 items 无问题；format 2 files 0 changed；baseline `git diff --check`
@@ -103,3 +115,8 @@ guard。本切片只拒绝已在当前 snapshot 中听剑的同一角色进入�
   SHA-256 为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`；
   本测试未需要 build_runner。按任务约束未跑 full suite。
 - 阻塞：无。production host/shared occupancy 接线继续为显式 Gate。
+
+## READY
+
+最终精确空提交：
+`[READY][QODER][P2-M2-R20] 冻结听剑反向活动互斥`。
