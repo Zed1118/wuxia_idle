@@ -384,11 +384,13 @@ void main() {
   });
 
   group('session 源码合同', () {
-    test('session 不从 intent 推断 AttackToken 语义(不引用 director 类型)', () {
+    test('session 只接显式 lease 合同且不引用 director 或推断事实', () {
       final source = File(
         'lib/features/battle/application/phase0a/phase0a_combat_session.dart',
       ).readAsStringSync();
-      expect(source.contains('AttackToken'), isFalse);
+      expect(source, contains('Phase0aAttackTokenLeaseBatchGate'));
+      expect(source.contains('AttackTokenDirector'), isFalse);
+      expect(source.contains('attack_token_director.dart'), isFalse);
       expect(source.contains('offscreen'), isFalse);
       expect(source.contains('telegraph'), isFalse);
     });

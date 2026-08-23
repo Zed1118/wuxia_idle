@@ -10,6 +10,7 @@
   - `lib/features/battle/application/phase0a/phase0a_attack_token_lease_batch_gate.dart`
   - `lib/features/battle/application/phase0a/phase0a_combat_session.dart`
   - `test/features/battle/application/phase0a/phase0a_attack_token_lease_session_wiring_test.dart`
+  - `test/features/battle/application/phase0a/phase0a_enemy_intent_observer_test.dart`
   - 本计划
 - 禁止：assembler、现有 stateless batch gate、R12a runtime、EncounterFlow、ActionTimeline、host/repository/data/save/UI/tuning/candidate。
 
@@ -44,6 +45,11 @@
 8. EncounterFlow 后置 objective/source 失败后可用同一显式 acquire 重试，证明 lease 未泄漏；成功重试只发布一次。
 9. source guard 禁止 timeline/lifecycle inference、host/repository/data/default/candidate/tuning。
 10. 变更/受影响 targeted、scoped analyze、format/diff/path/status 全绿；独立复审后 READY。
+
+全量预检发现既有 observer source guard 仍把任意 `AttackToken` 字样视为
+director 推断。R12b 现在显式依赖 lease runtime/gate，但仍不依赖 director 或
+offscreen/telegraph 事实，因此本切片同步该 guard 为精确禁止 director/inference，
+不扩大 production 行为。
 
 ## 当前恢复点
 
