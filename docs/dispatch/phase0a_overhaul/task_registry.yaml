@@ -7,7 +7,7 @@ resource_locks:
   full_flutter_test: 1
   build_runner: 1
   visual_window: 1
-  public_schema_owner: P2-G2-BATCH2-INTEGRATION
+  public_schema_owner: P2-G2-BATCH4-INTEGRATION
 
 tasks:
   - id: P2-M0-COORD
@@ -699,3 +699,61 @@ tasks:
       - compatibility wrapper delegates to the legacy wave flow
       - same seed and commands yield identical state events records and outcome
       - no SpawnDirector consumption or token enforcement in this batch
+
+  - id: P2-G2-BATCH4-INTEGRATION
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-g2-batch4-integration-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch4-integration
+    status: in_progress
+    base_commit: 61b7bb85
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g2-batch4-dynamic-encounter.md
+      - docs/audit/phase2_g2_batch4_dynamic_encounter_2026-08-23.md
+    exit_criteria:
+      - one current combat session and the existing reducer own all combat resolution
+      - SpawnDirector drives warning entry grace exit and reinforcement deterministically
+      - grace blocks offensive enemy intents while allowing movement
+      - spawn combat and terminal events share one strictly increasing seq stream
+      - controller and sync async headless consume the real encounter runtime
+      - attack token allocation remains observe-only and no tuning data UI reward or save changes occur
+
+  - id: P2-G2-D05-SESSION-ENCOUNTER-SEAMS
+    milestone: G2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-g2-d05-session-seams-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d05-session-seams
+    status: in_progress
+    protected_behavior:
+      - session fork preserves adapters resolvers observer and RNG ownership
+      - default advance path is unchanged
+      - an explicit per-tick gate may deny enemy intents without mutating the source list
+      - wave transitions preserve the D04 observer
+
+  - id: P2-G2-D06-ENCOUNTER-ROSTER-EVENTS
+    milestone: G2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-g2-d06-roster-events-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d06-roster-events
+    status: in_progress
+    protected_behavior:
+      - every SpawnEntry has exactly one immutable enemy actor binding
+      - duplicate missing extra player-side or player-id bindings fail closed
+      - warning entered and grace-expired events use caller-reserved seq and combat tick
+      - event projection does not consume RNG or mutate director roster or arena state
+
+  - id: P2-G2-E03-DYNAMIC-ENCOUNTER-RUNTIME
+    milestone: G2
+    owner: codex_luna_medium
+    branch: codex/phase2-g2-e03-dynamic-encounter-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-e03-dynamic-encounter
+    status: waiting_dependency
+    wake_condition: D05 and D06 reviewed and integrated
+    protected_behavior:
+      - director advances once before each reducer tick
+      - entered enemies join the arena before that tick and grace units may move but not attack
+      - reducer defeat events are the only source for director exits
+      - reinforcement occurs on the tick after an exit
+      - player death precedes survive completion and defeat-all victory
+      - terminal advance is fully idempotent
