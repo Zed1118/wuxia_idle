@@ -29,3 +29,7 @@
 
 - Batch17 integration 完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与根目录 `libisar.dylib` 恢复；dylib SHA-256 为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
 - R19/R20 worktree 均从登记提交 `88e1413486889a0b98d027bd56f56b7ba51cbc5d` 创建并并行派发；两个来源 owned files 不重叠。
+
+## 已完成来源
+
+- R20：计划 `a1330858`、Qoder 设计证据 `40dfc994`、红测 `3790448d`、实现 `30002ef9`、本地验证 `d8f1f00b`、终审 `d243a84a`，来源 READY `245cf2fd`。Qoder CLI 1.1.28 使用精确 selector `Qwen3.8-Max`、reasoning high、Read/Grep/Glob-only；设计 `DESIGN PASS`，最终 `FINAL PASS` P0/P1/P2=0，并诚实记录无法内省底层模型。R20+R02+R15 去重 targeted 44/44、scoped analyze 2 items / 0 issue、format/diff/path/status clean；主控独立复跑 44/44 与 analyze 2 items / 0 issue。六个集成提交 `9036f6ca` / `7504e49f` / `a1a11e6b` / `090aa89d` / `6ef11663` / `14383743` 的 stable patch-id 与来源逐项一致。production 四活动入口、shared occupancy、host/persistence/data/tuning 继续 Gate。

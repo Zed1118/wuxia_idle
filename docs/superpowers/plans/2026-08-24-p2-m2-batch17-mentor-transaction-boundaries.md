@@ -30,6 +30,7 @@
 - [x] Batch16 READY 已冻结，full 5035/5035、独立终审 P0/P1/P2=0，main/origin main 未修改。
 - [x] Batch17 独立 integration worktree 已从 Batch16 READY 创建。
 - [x] integration 已完成 pub get、build_runner 126 outputs、63 个 `.g.dart` 与正确 dylib SHA 恢复；R19/R20 独立来源已并行派发。
+- [x] R20 完成 Qoder 两轮只读审查、44/44、scoped analyze 0 与 Codex 终审，六个非空提交已按 stable patch-id 集成。
 - [ ] 完成 R19/R20 并行来源。
 - [ ] 集成 R19 后完成 R21 来源。
 - [ ] 联合/full 验证、独立终审与 Batch17 READY。

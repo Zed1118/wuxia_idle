@@ -2271,8 +2271,21 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r20-mentor-insight-reverse-activity-guard-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r20-mentor-insight-reverse-activity-guard
-    status: in_progress
+    status: ready_reviewed
     base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    implementation_commit: 30002ef9
+    tip_commit: 245cf2fdea61114b3ef2c6520e82009634d99f96
+    integration_commits:
+      - 9036f6ca
+      - 7504e49f
+      - a1a11e6b
+      - 090aa89d
+      - 6ef11663
+      - 14383743
+    verification:
+      targeted_tests: 44
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
       - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
