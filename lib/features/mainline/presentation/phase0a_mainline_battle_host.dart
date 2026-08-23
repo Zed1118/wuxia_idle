@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
-
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
@@ -12,6 +10,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
@@ -146,19 +145,15 @@ class _Phase0aMainlineBattleHostState
   /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
   ///
   /// 走 [PlayerCombatantSnapshotAssembler.loadExactRoster] 复用生产装配全套
-  /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。祖师 id 缺失
-  /// (P1 种子档等)兜底取首个角色。
+  /// 口径(autoFill/祖师 buff/伤势/装备),零数值分叉。
   Future<CombatantSnapshot> _buildPlayerSnapshot() async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
-    var playerId = save?.founderCharacterId;
-    if (playerId == null) {
-      final fallback = await isar.characters.where().findFirst();
-      if (fallback == null) {
-        throw StateError('Phase0a 主线宿主: Isar 没有任何 Character');
-      }
-      playerId = fallback.id;
-    }
+    final playerId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (characterId) async =>
+          await isar.characters.get(characterId) != null,
+    );
     final team = await PlayerCombatantSnapshotAssembler(
       isar: isar,
     ).loadExactRoster([playerId]);
