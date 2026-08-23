@@ -24,6 +24,7 @@
 
 - R12b 来源 89/89 targeted、4969/4969 full、analyze 0、Qoder/Codex P0/P1/P2=0；READY `72e274aa`。
 - R12b 五个非空提交已重放到 Batch16，source→integration stable patch-id 逐项一致；共同代码恢复点 `a952274781a11283ff5d7675ad270034a94cfd69`。
+- Batch16 integration 已完成 lockfile pub get、build_runner 126 outputs、63 个 `.g.dart` 与 `libisar.dylib` SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d` 恢复。
 - R12c worktree 已创建并开始 Pi 设计审查/TDD；R17/R18 在本登记恢复点后创建独立 worktree。
 
 ## 待完成验证

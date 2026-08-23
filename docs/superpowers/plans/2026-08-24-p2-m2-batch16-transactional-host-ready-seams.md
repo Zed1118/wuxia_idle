@@ -34,5 +34,6 @@
 - [x] Batch15 READY 已冻结，main/origin main 未修改。
 - [x] R12b 五个非空提交已按 stable patch-id 重放到 Batch16。
 - [x] 登记 R12b/R12c/R17/R18 与 Batch16 的依赖、owned files 和 Gate。
+- [x] Batch16 integration 恢复 126 build outputs、63 个 `.g.dart` 与正确 dylib SHA。
 - [ ] 三来源完成外部工具证据、测试、独立复审与 READY。
 - [ ] 主控集成、联合/full 验证、终审与 Batch16 READY。
