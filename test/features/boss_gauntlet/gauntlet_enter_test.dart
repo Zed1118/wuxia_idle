@@ -101,8 +101,8 @@ void main() {
     expect(run!.saveDataId, 0);
     expect(run.currentStage, 1);
     expect(run.sessionPhase, GauntletPhase.inBattle);
-    // seed = saveId 派生（save.id=0）；每关混 currentStage 归 combat 层（后续切片）。
-    expect(run.seed, 0);
+    // 新会话 seed 按不可变 slotId 稳定派生；每关再混 currentStage。
+    expect(run.seed, 1);
 
     final member = run.members.single;
     expect(member.characterId, cid);
@@ -123,6 +123,30 @@ void main() {
     // 普通库存守恒：扣量 == 托管装入量
     expect(await qtyOf('item_liaoshangdan'), 1); // 3 - 2
     expect(await qtyOf('item_xingnang_buji'), 0); // 1 - 1
+  });
+
+  test('新会话 seed 同 slot 稳定、不同 slot 不同', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await putInventory('item_duanhuntie', ItemType.ticket, 3);
+    final svc = GauntletService(IsarSetup.instance);
+
+    Future<int> enterForSlot(int slotId) async {
+      await IsarSetup.instance.writeTxn(() async {
+        final save = (await IsarSetup.instance.saveDatas.get(0))!;
+        save.slotId = slotId;
+        await IsarSetup.instance.saveDatas.put(save);
+        await IsarSetup.instance.bossGauntletRuns.clear();
+      });
+      final runId = await svc.enter(characterIds: [cid], supplyCap: 3);
+      return (await IsarSetup.instance.bossGauntletRuns.get(runId))!.seed;
+    }
+
+    final slot1First = await enterForSlot(1);
+    final slot1Again = await enterForSlot(1);
+    final slot2 = await enterForSlot(2);
+
+    expect(slot1Again, slot1First);
+    expect(slot2, isNot(slot1First));
   });
 
   test('队伍为空 → 抛错', () async {

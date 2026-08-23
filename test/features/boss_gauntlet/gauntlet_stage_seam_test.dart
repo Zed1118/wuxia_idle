@@ -101,6 +101,29 @@ void main() {
     expect(plan.isBoss, config.stages[0].role == 'boss');
   });
 
+  test('旧会话 seed=0 恢复后不重算，三关 stage seed 仍为 1/2/3', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final service = GauntletService(IsarSetup.instance);
+
+    for (var stage = 1; stage <= 3; stage++) {
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.bossGauntletRuns.clear();
+      });
+      await putRun(
+        phase: GauntletPhase.inBattle,
+        currentStage: stage,
+        members: [snap(1)],
+      );
+
+      final plan = await service.preparePhase0aStage(config: config);
+      expect(plan.seed, stage, reason: 'legacy seed=0 / stage=$stage');
+      final persisted =
+          (await IsarSetup.instance.bossGauntletRuns.where().findAll()).single;
+      expect(persisted.seed, 0, reason: '恢复/准备战斗不得重写旧 seed');
+    }
+  });
+
   test('preparePhase0aStage 拒非 inBattle（整备页）→ 抛错', () async {
     await seedSave();
     await putRun(

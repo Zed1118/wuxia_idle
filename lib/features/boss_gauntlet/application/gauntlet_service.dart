@@ -242,8 +242,9 @@ class GauntletService {
 
       final run = BossGauntletRun()
         ..saveDataId = save.id
-        // seed = saveId 派生（无 run serial·异于远征）；每关组合层再混 currentStage。
-        ..seed = save.id
+        // 新会话按槽位身份稳定派生（无 run serial·异于远征）；旧会话持久化
+        // seed 永不重算，每关组合层再混 currentStage。
+        ..seed = save.slotId
         ..currentStage = 1
         ..cycleIndex = cycleIndex
         ..sessionPhase = GauntletPhase.inBattle

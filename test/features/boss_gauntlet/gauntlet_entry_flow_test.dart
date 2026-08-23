@@ -124,7 +124,7 @@ void main() {
     baseHp: baseHp,
     baseAttack: baseAttack,
     baseSpeed: 1,
-    skillIds: const [],
+    skillIds: const ['skill_gangmeng_jichu_basic'],
     iconPath: '',
   );
 

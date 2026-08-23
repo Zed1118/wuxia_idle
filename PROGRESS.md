@@ -3,6 +3,7 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-23 断魂庄 slotId 稳定 seed**：用户拍板 BACKLOG #21 选 A。仅新建 `BossGauntletRun` 改用不可变 `SaveData.slotId` 作为稳定 seed；不引入 run serial，不新增字段，不迁移或重算旧 run。红测先证明旧实现同槽/跨槽均为 0，转绿后同槽稳定、异槽不同；旧 `seed=0` 会话经三关 `preparePhase0aStage` 仍分别得到 1/2/3 且持久化 seed 不变。补齐 Phase 0A synthetic 敌 fixture 的真实 basic，保持 production fail-closed。断魂庄全族 **163/163** 覆盖续传、失败/认输、恢复、奖励、门票与补给事务；analyze 0、diff check 通过。无 schema bump，BACKLOG #21 销账。
 > **2026-08-23 Phase 0A 普攻真气单一来源**：用户拍板 BACKLOG #20 选 A。删除 `phase0a_arena.moves.basic_qi_delta` 及 `NumbersConfig.basicQiDelta` 镜像；production mapper 现让玩家与所有敌人普攻 intent 只消费各自真实 `SkillDef.qiDelta`，敌方缺 basic 时 fail-closed，不再把普通敌人强制归零。来源红测先得到实际 0 后转绿；联合 targeted **38/38**，生产预检仍 **149/149 eligible、447 runs、0 timeout**，最大单击由旧口径 2044 变为 **3535**、仍远低于实战百万软线；analyze 0、diff check 通过。未改 `skills.yaml` 数值，BACKLOG #20 销账。
 > **2026-08-23 CI 可复现性收口**：主 CI 两个 job 与 Windows release workflow 的依赖安装统一改为 `flutter pub get --enforce-lockfile`，避免 checkout 后静默解析出锁文件外依赖；主 CI analyze 从仅 `lib/test` 扩为根应用 `lib/test/tool`。首轮远端默认全仓 analyze 进一步证明独立、已归档的 nested `tools/phase0minus_probe` 在 fresh checkout 未安装自身依赖时不能归入根应用分析，故显式边界不包含该子包；macOS debug job 同轮通过。新增源码契约先红后绿；workflow + macOS release 契约 **5/5**、两份 YAML 解析通过、根应用 analyze 0 issue、format/diff check 通过。零运行代码、依赖版本、玩法或数值改动。
 > **2026-08-23 最终 CI 同口径覆盖验证**：当前整合态 `flutter test --coverage --no-pub` **4230/4230 PASS**；coverage ratchet **83.66%（32921/39351）≥81.25%**，`coverage/` 保持 gitignored，工作区 clean。

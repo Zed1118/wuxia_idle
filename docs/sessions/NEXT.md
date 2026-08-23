@@ -27,6 +27,7 @@
 
 ## 最新验证
 
+- 断魂庄槽位稳定 seed：新建会话由错误的单例 `SaveData.id=0` 改为不可变 `slotId`，同槽重开稳定、跨槽不同；旧 run（含 seed=0）在恢复/三关准备链保持原值，stage seed 仍为 1/2/3。断魂庄全族 **163/163** 覆盖续传、失败/认输、恢复、奖励选择、门票与补给事务；analyze 0、diff check 通过。无 schema bump，BACKLOG #21 销账。
 - 普攻真气单一来源：用户拍板选 A 后，删除 production `phase0a_arena.moves.basic_qi_delta` 镜像；玩家与所有敌人的普攻 intent 统一读取各自快照真实 `SkillDef.qiDelta`，敌人缺真实 basic 时 fail-closed。红测先命中实际 0 后转绿；联合 targeted **38/38**、生产预检 **149/149 eligible、447 runs、0 timeout、maxDamage 3535**、analyze 0、diff check 通过。BACKLOG #20 销账；未改 `skills.yaml` 任何数值。
 - CI 可复现性：主 CI/Windows release 均强制 `--enforce-lockfile`，主 CI analyze 覆盖根应用 `lib/test/tool`；独立归档子包 `tools/phase0minus_probe` 不借用根应用依赖分析。新增契约先红后绿，workflow + macOS release 契约 **5/5**、YAML 解析通过、根应用 analyze 0 issue。
 - CI 同口径：`flutter test --coverage --no-pub` **4230/4230 PASS**；line coverage **83.66%（32921/39351）≥81.25%**，coverage ratchet 通过。
