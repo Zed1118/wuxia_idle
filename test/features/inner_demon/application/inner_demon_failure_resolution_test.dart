@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -74,13 +75,25 @@ void main() {
   test('心魔战败保留内息紊乱与主修惩罚，但不增加轻伤或重伤', () {
     final character = makeCharacter();
     final technique = makeTechnique();
+    final equipment = Equipment.create(
+      defId: 'weapon_test',
+      tier: EquipmentTier.xunChang,
+      slot: EquipmentSlot.weapon,
+      obtainedAt: DateTime(2026, 8, 23),
+      obtainedFrom: 'test',
+      ownerCharacterId: character.id,
+      enhanceLevel: 3,
+      battleCount: 4,
+    );
     final beforeForce = character.internalForce;
     final beforeLayer = technique.cultivationLayer;
 
     CombatResolutionService.resolveSnapshot(
       settlement: defeatSnapshot(),
       participatingCharacters: [character],
-      equipmentsByCharacter: const {},
+      equipmentsByCharacter: {
+        character.id: [equipment],
+      },
       techniquesByCharacter: {
         character.id: [technique],
       },
@@ -98,6 +111,10 @@ void main() {
     expect(character.internalForce, beforeForce);
     expect(technique.cultivationLayer, beforeLayer);
     expect(technique.cultivationProgress, 180);
+    expect(equipment.defId, 'weapon_test');
+    expect(equipment.ownerCharacterId, character.id);
+    expect(equipment.enhanceLevel, 3);
+    expect(equipment.battleCount, 5, reason: '装备仅保留通用战斗次数递增');
     expect(character.innerBreathDisorderHoursRemaining, greaterThan(0));
     expect(character.lightInjuryStacks, 0);
     expect(character.injuryHoursRemaining, 0);
