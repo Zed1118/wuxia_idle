@@ -165,6 +165,15 @@ void main() {
       }
 
       final csv = _csv(rows);
+      final csvLines = csv.trimRight().split('\n');
+      final csvColumns = csvLines.first.split(',').length;
+      for (final line in csvLines.skip(1)) {
+        expect(
+          line.split(','),
+          hasLength(csvColumns),
+          reason: 'CSV 每行必须与 header 等列，避免字段错位',
+        );
+      }
       final md = _markdown(
         rows,
         starterProfiles,
