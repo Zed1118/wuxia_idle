@@ -41,15 +41,15 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
   ongoing、RNG 首值未被消费。
 - [x] R13 source 精确覆盖 roster actor ID，每 actor 显式空 projection；
   missing/extra coverage 继续 fail closed。
-- [x] 源码守卫禁止 `advance` / `eventsFor`、objective identity 字符串推断、
-  production vertical slice / balance / performance 误宣称。
-- [ ] 运行新测试及 Ch1 catalog / route selector / R11 / R13 / Batch14 composition
+- [x] 源码守卫禁止 `advance` / `eventsFor` 与 objective identity 字符串推断；
+  文件头与计划明确不宣称 production vertical slice / balance / performance。
+- [x] 运行新测试及 Ch1 catalog / route selector / R11 / R13 / Batch14 composition
   去重 targeted，并完成 scoped analyze、format、diff/path/status 守卫；不跑 full。
-- [ ] Qoder CLI 1.1.x 精确 `Qwen3.8-Max` / reasoning `high` 完成编码前
+- [x] Qoder CLI 1.1.x 精确 `Qwen3.8-Max` / reasoning `high` 完成编码前
   设计审查和最终 diff 只读审查，如实记录结论。
-- [ ] 红线：0 数值/公式/production data/玩家文案，0 三系/在线离线/
+- [x] 红线：0 数值/公式/production data/玩家文案，0 三系/在线离线/
   反主流/reward/save/UI/host/tuning 触点。
-- [ ] 所有非空提交使用中文动宾，tip 追加精确 READY 空提交。
+- [x] 所有非空提交使用中文动宾，tip 追加精确 READY 空提交。
 
 ## 任务切片
 
@@ -70,22 +70,34 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
   消费和误宣称边界。Qoder 另建议字面量 actor↔objective 投影表，
   该建议与本任务“逐 actor 显式空 projection”冲突，经 Codex triage 后
   拒绝：V01 不生成任何 objective payload，因而也无 objective identity 推断。
-- 最终 diff 审查：待执行。
+- 最终 diff 审查：实际使用同一 `qoderclicn` 1.1.28 /
+  `Qwen3.8-Max` / reasoning `high` / Read+Grep+Glob only /
+  `--no-session-persistence` 配置，显式禁 Edit/Write/Bash。完整读取两个
+  owned files 并对照 fixture/catalog/route/R11/R13/Batch14 合同后结论
+  **PASS**，P0=0、P1=0。三条信息级 P2：误宣称边界并非全部机器守卫
+  （已修正 checklist 文字）；五关单 test 循环的失败定位粒度较粗；
+  exact key set 断言为无害的契约文档化重复。后两项按本最小切片保留，
+  不影响构造矩阵正确性。
 - 不记录或输出 token/key。
 
 ## 当前恢复点
 
-- 状态：计划恢复点已提交；五关候选运行时构造矩阵已按 TDD
-  完成并转绿，待提交测试切片。
-- 最后完成：计划 commit `663f6e1a`；新测试逐关经 loader/typed route/
-  R11 plan/Batch14 assembler 构造，R13 使用 exact roster coverage 与逐 actor
-  显式空 projection；零 tick 且 caller RNG 未消费。
-- 下一步：提交测试切片，运行指定的去重 targeted 回归与 scoped
-  analyze。
+- 状态：五关候选运行时构造矩阵、指定验证、Qoder 两轮只读审查
+  与 owned-files 守卫全部完成；本证据提交后立即追加指定 READY。
+- 最后完成：计划 commit `663f6e1a`、测试 commit `934d0cfd`；五关逐关
+  经 loader/typed route/R11 plan/Batch14 assembler 构造，R13 使用 exact roster
+  coverage 与逐 actor 显式空 projection；零 tick 且 caller RNG 未消费。
+  Qoder 最终审查 PASS，P0/P1=0。
+- 下一步：提交本恢复点证据，追加指定 READY 空提交，交还主控
+  独立复审。
 - 已跑验证：只读确认初始 `HEAD=7bc31c5f5463aac26e127912576350487ac0a8d3`
   且工作树干净；`qoderclicn --version` = 1.1.28，model catalog 含精确
   `Qwen3.8-Max`；设计审查真实返回附条件 PASS。TDD 红灯为 0 pass /
-  1 fail（矩阵尚未实现）；补齐后新测试 3/3 PASS。
+  1 fail（矩阵尚未实现）；补齐后新测试 3/3 PASS。去重逐文件
+  targeted：新测试 3、Ch1 catalog 9、route selector 10、R11 7、R13 15、
+  Batch14 composition 3，合计 47/47 PASS；scoped `flutter analyze --no-pub`
+  新测试 0 issue；`dart format --output=none --set-exit-if-changed` 0 changed；
+  `git diff --check 7bc31c5f..HEAD`、精确两 owned files 与 clean status 通过。
 - 阻塞项：无。
 - 残留 Gate：objective 事件生成与可执行性、production host/data 接线、
   candidate 数值冻结、平衡、性能、真人试玩与双平台 Profile 全部继续 Gate。
