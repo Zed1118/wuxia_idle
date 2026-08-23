@@ -15,7 +15,7 @@ final class Phase0aWaveTransitionPolicy {
     required this.qiRecoveryPct,
     required this.resetAttackCooldown,
     required this.resetSkillCooldowns,
-    this.intermissionSeconds = 0.0,
+    required this.intermissionSeconds,
   }) {
     if (qiRecoveryPct < 0 || qiRecoveryPct > 1) {
       throw ArgumentError.value(qiRecoveryPct, 'qiRecoveryPct');

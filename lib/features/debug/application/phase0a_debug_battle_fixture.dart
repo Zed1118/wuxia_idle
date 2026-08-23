@@ -442,6 +442,7 @@ final class _DebugBattleConfig {
       'power_multiplier': _integer(clear, 'power_multiplier'),
       'qi_delta': _integer(defaults, 'clear_qi_delta'),
       'cooldown_turns': _integer(defaults, 'skill_cooldown_turns'),
+      'cooldown_seconds': _number(clear, 'cooldown_seconds'),
       'phase0a_behavior': behavior,
       'target_type': 'aoe',
       'source': 'special',
@@ -465,6 +466,7 @@ final class _DebugBattleConfig {
       'power_multiplier': 0,
       'qi_delta': -_integer(_map(player, 'gather'), 'qi_cost'),
       'cooldown_turns': _integer(_map(player, 'gather'), 'cooldown_seconds'),
+      'cooldown_seconds': _number(_map(player, 'gather'), 'cooldown_seconds'),
       'phase0a_behavior': gather,
       'target_type': 'aoe',
       'source': 'special',
@@ -493,6 +495,9 @@ final class _DebugBattleConfig {
       powerMultiplier: _integer(raw, 'power_multiplier'),
       qiDelta: _integer(raw, 'qi_delta'),
       cooldownTurns: _integer(raw, 'cooldown_turns'),
+      cooldownSeconds: behavior is Map
+          ? _number(raw, 'cooldown_seconds')
+          : _optionalNumber(raw, 'cooldown_seconds'),
       requiresManualTrigger: false,
       visualEffect: '',
       source: raw['source'] == null

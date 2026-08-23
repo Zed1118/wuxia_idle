@@ -71,16 +71,23 @@ final class TimedStatusSpec {
 }
 
 final class TimedStatusInstance {
-  TimedStatusInstance._(this.spec)
-    : remainingTicks = spec.durationTicks,
-      elapsedTicks = 0,
-      stacks = 1;
+  TimedStatusInstance._(TimedStatusSpec spec)
+    : this._values(spec, spec.durationTicks, 0, 1);
 
   TimedStatusInstance._snapshot(TimedStatusInstance source)
-    : spec = source.spec,
-      remainingTicks = source.remainingTicks,
-      elapsedTicks = source.elapsedTicks,
-      stacks = source.stacks;
+    : this._values(
+        source.spec,
+        source.remainingTicks,
+        source.elapsedTicks,
+        source.stacks,
+      );
+
+  TimedStatusInstance._values(
+    this.spec,
+    this.remainingTicks,
+    this.elapsedTicks,
+    this.stacks,
+  );
 
   TimedStatusSpec spec;
   int remainingTicks;

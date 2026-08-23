@@ -537,6 +537,7 @@ void main() {
           qiRecoveryPct: 0.25,
           resetAttackCooldown: true,
           resetSkillCooldowns: true,
+          intermissionSeconds: 0,
         ),
       );
 

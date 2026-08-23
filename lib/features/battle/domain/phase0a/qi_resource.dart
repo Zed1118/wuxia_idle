@@ -14,9 +14,7 @@ final class QiGainResult {
   });
 
   const QiGainResult.alreadyApplied()
-    : applied = 0,
-      overflow = 0,
-      actionId = null;
+    : this(applied: 0, overflow: 0, actionId: null);
 
   final int applied;
   final int overflow;

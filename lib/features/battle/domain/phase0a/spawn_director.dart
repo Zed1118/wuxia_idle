@@ -255,7 +255,9 @@ final class SpawnDirector {
           'duplicate enemyId',
         );
       }
-      units.add(_SpawnUnit(entry));
+      units.add(
+        _SpawnUnit(entry, remainingWarningTicks: 0, remainingGraceTicks: 0),
+      );
     }
     return units;
   }
@@ -440,8 +442,8 @@ final class _SpawnUnit {
   _SpawnUnit(
     this.entry, {
     this.stage = SpawnUnitStage.pending,
-    this.remainingWarningTicks = 0,
-    this.remainingGraceTicks = 0,
+    required this.remainingWarningTicks,
+    required this.remainingGraceTicks,
     this.enteredTick,
     this.removedTick,
   });
