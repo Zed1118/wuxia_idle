@@ -7,7 +7,7 @@
 ## 已核实事实
 
 - `data/stages.yaml` 的 `stageType: mainline` 共 105 条，覆盖 21 章。
-- registry 中 P2-G1/P2-G2 已完成项以 `ready_reviewed` 为 READY 事实；P2-G2 Batch7 为 `in_progress`，O01/S01 为 `dispatched`。
+- registry 可用于本次审计时核对 READY 基础设施，但其任务状态是瞬时调度信息，不复制进长寿文档。
 - 方案明确要求 `PROPOSED`/`TUNING` 不得在 G0 前写成已批准合同。
 
 ## 未决索引

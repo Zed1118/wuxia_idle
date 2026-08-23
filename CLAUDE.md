@@ -5,7 +5,7 @@
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
 > **版本:v1.49**
-> **2026-08-23 二阶段事实同步（P2-M0-F01）**：当前事实以 `data/stages.yaml` 核验的 21 章/105 主线关为准；registry 中 Batch7 为 `in_progress`，O01/S01 为 `dispatched`。不得把方案中的 `PROPOSED` 或 `TUNING` 写成已批准合同；主线重打/连续 Run/扫荡/随行听剑/心魔失败与 AI 映射继续等待 G0 决策。
+> **2026-08-23 二阶段事实同步（P2-M0-F01）**：当前事实以 `data/stages.yaml` 核验的 21 章/105 主线关为准。二阶段方案的 `PROPOSED`/`TUNING` 事项仅作为待决索引；不得在 G0 前写成已批准合同。
 > v1.49 变更摘要(2026-08-23 Phase 0A 战斗爽感批):主线普通关统一扩为 2/3/4 人三波小怪，Boss 关为 2/3 人铺垫波后原 Boss 单独收尾；波间保留 HP/真气并恢复 25% 气海。键盘移动改为固定模拟拍持续采样，不依赖系统按键重复；普攻范围由 YAML 360 调至 420；战斗反馈统一单帧源并补克制水墨飞溅、残笔、墨洗与击杀散墨。在线/headless 仍共用 reducer，Boss 蓄力、破招、踉跄、脆弱窗口和数值红线不变。
 > v1.48 变更摘要(2026-08-23 路线 C 双平台 Gate 收口 · 0 改玩法数值):旧 3v3 原子删除已在 commit `597a243b2506610b5cbb74e2919be79bbf99e283` 快进合入 `main`；同 commit 的 Mac 与 Windows 本地物理机矩阵均为 1280×720/1440×900 各 3 轮、合计 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0。六人真人 Gate 已由用户取消；Windows 结果仅证明当前实体基线兼容，不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
 > **版本:v1.47**
