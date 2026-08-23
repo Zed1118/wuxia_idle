@@ -8,6 +8,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bo
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -278,6 +279,12 @@ void main() {
       expect(result.ticks, greaterThan(0));
       expect(result.finalState.player.isAlive, isTrue);
       expect(result.finalState.enemies, isEmpty);
+      expect(result.eventRecords, hasLength(result.events.length));
+      expect(result.eventRecords.last.feedKind, CombatFeedKind.action);
+      expect(
+        () => result.eventRecords.add(result.eventRecords.last),
+        throwsUnsupportedError,
+      );
     });
 
     test('bot 驾驶两波连续 victory', () {
@@ -376,6 +383,7 @@ void main() {
       expect(second.outcome, first.outcome);
       expect(second.ticks, first.ticks);
       expect(second.finalState, first.finalState);
+      expect(second.eventRecords, first.eventRecords);
     });
 
     test('async 分块版与同步版终局、拍数和终态一致', () async {
@@ -405,6 +413,7 @@ void main() {
       expect(async.ticks, sync.ticks);
       expect(async.finalState, sync.finalState);
       expect(async.events.length, sync.events.length);
+      expect(async.eventRecords, sync.eventRecords);
     });
   });
 

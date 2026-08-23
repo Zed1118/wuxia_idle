@@ -1,4 +1,5 @@
 import '../../domain/phase0a/combat_event_order.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 
 /// Read-only bridge from the production Phase 0A event stream to the C10
@@ -276,7 +277,7 @@ final class Phase0aEventOrderAdapter {
   }
 
   static String _component(String name, Object? value) {
-    final item = '$name=${value ?? 'null'}';
+    final item = '$name=${_scalar(value)}';
     return '${item.length}:$item';
   }
 
@@ -288,7 +289,14 @@ final class Phase0aEventOrderAdapter {
 
   static String _canonicalValue(String value) => '${value.length}:$value';
 
-  static String _vector(Object? value) => value == null ? 'null' : '$value';
+  static String _scalar(Object? value) {
+    if (value == null) return 'null';
+    if (value is double && value == 0) return '0.0';
+    return '$value';
+  }
+
+  static String _vector(ArenaVector? value) =>
+      value == null ? 'null' : 'x=${_scalar(value.x)},y=${_scalar(value.y)}';
 
   static String _outcomesComponent(List<Phase0aSkillOutcome> outcomes) {
     final encoded = outcomes.map(_outcome).join();

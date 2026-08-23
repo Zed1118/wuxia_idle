@@ -118,6 +118,13 @@ void main() {
       hit(null),
     ]).single.eventId;
     expect(positioned, isNot(unpositioned));
+    final positiveZero = Phase0aEventOrderAdapter.project([
+      hit(const ArenaVector(0.0, 2)),
+    ]).single.eventId;
+    final negativeZero = Phase0aEventOrderAdapter.project([
+      hit(const ArenaVector(-0.0, 2)),
+    ]).single.eventId;
+    expect(positiveZero, negativeZero, reason: '相等 payload 必须产生同一 ID');
 
     Phase0aBossPhaseChanged phase(List<String> skills) =>
         Phase0aBossPhaseChanged(
