@@ -1,7 +1,7 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: 2026-08-23
+updated_at: "2026-08-23"
 
 resource_locks:
   full_flutter_test: 1

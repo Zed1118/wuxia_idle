@@ -2,7 +2,7 @@ schema_version: 1
 phase: phase2_phase0a_overhaul
 source_plan: /Users/a10506/Desktop/二阶段优化方案.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: 2026-08-23
+updated_at: "2026-08-23"
 
 policy:
   frozen_may_implement: true
@@ -91,4 +91,3 @@ decisions:
     status: frozen
     summary: Qoder 与 DeepSeek 作为受控补丁生产者，不直写 main
     batch_action: active
-
