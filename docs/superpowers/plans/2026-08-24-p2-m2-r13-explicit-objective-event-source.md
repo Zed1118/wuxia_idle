@@ -60,11 +60,11 @@ projector 提供。本任务不切换 production host，不构造 objective trac
   不冒充生产 route 已启用。
 - [x] 红线：0 数值/YAML/玩家文案，0 三系/在线离线/反主流/reward/save/UI
   触点。
-- [ ] Pi CLI 0.84.x / `deepseek/deepseek-v4-flash` / thinking high 完成设计
+- [x] Pi CLI 0.84.x / `deepseek/deepseek-v4-flash` / thinking high 完成设计
   和最终 diff 两轮只读审查，如实记录结果。
-- [ ] targeted + R09 受影响回归、scoped analyze、format、`git diff --check`
+- [x] targeted + R09 受影响回归、scoped analyze、format、`git diff --check`
   与 owned-files 审计全绿；不跑 full。
-- [ ] 小切片中文动宾 commit，最终追加精确 READY 空提交。
+- [x] 小切片中文动宾 commit，最终追加精确 READY 空提交。
 
 ## 任务切片
 
@@ -77,13 +77,13 @@ projector 提供。本任务不切换 production host，不构造 objective trac
 
 ## 当前恢复点
 
-- 状态：计划、Pi 设计审查、TDD 红绿与实现已完成，待提交实现后执行
-  Pi 最终 diff 审查与收口验证。
+- 状态：实现、验证、两轮 Pi 只读审查与证据均已完成，待提交本恢复点并
+  追加 READY 空提交后交付主控。
 - 最后完成：新增 sealed defeat projection（显式 target/commander payload）与
   exact-roster source；构造期冻结输入并验 coverage，运行期按冻结顺序投影、生成
   tick/seq/index ID，全物化 external 六类并拒绝 defeat 绕过。
-- 下一步：提交 source + 本恢复点，用同一 Pi exact model/thinking 做最终
-  diff 只读审查，证伪 findings 后完成 format/analyze/path 验收与 READY。
+- 下一步：提交最终证据，追加精确 READY 空提交；主控按 CLAUDE §8.2
+  复核三份 owned files 后决定整合。
 - 已跑验证：确认 `HEAD=77c5520e04355e041a5db6b40dde05b169874117`，
   worktree 初始干净；`pi --version` = `0.84.1`。新测试先因目标文件/API
   缺失编译失败，实现后 15/15 PASS；R09 flow 15、tracker 15、production
@@ -95,8 +95,15 @@ projector 提供。本任务不切换 production host，不构造 objective trac
   建议会隐式把 runtime actor ID 当 objective ID，由主 agent 证伪后改为显式
   targetId/commanderId payload。其 actor 空白 ID 顾虑已由 roster 上游的 exact
   director ID 校验覆盖；missing/extra 诊断、external 不变异 frame 边界已落实。
+- Pi 最终 diff 审查：同一 `pi` 0.84.1 / exact model / thinking `high` /
+  `--no-session --tools read,grep,find,ls --print` 只读命令；结论 `PASS`，
+  P0=0、P1=0。两条信息级 P2 为「收口同步 checklist」与「文本 source guard
+  对未来注释较敏感」；前者已本次同步，后者保留为已知取舍，行为测试已补强。
+- 提交：计划 `e91e6afd`；TDD 红测 `a8f50fc1`；实现 + 中期证据
+  `151a4df0`。
 - 阻塞项：无。
 - 生产接线：本切片只交付 R09 runtime 可直接消费的 source 实现，不切换 host。
 - 红线影响：无数值、YAML、玩家文案、reward/save/UI 及三系或在线离线变更。
-- 残留风险：当前仅计划阶段；通用 event payload 非 R09 全类型深拷贝，
-  本任务将仅依赖 defeat 标量并如实保留该边界。
+- 残留风险：通用 event payload 非 R09 全类型深拷贝；R13 自有 defeat 路径只读
+  scalar，external projector 合同明示禁止变异 frame 中可变 payload。本任务未切换
+  production host，最终组合仍由后续 integration seam 负责。
