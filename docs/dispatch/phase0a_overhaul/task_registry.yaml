@@ -19,6 +19,7 @@ tasks:
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/audit/phase2_m0_scope_and_gap_review_2026-08-23.md
       - docs/superpowers/plans/2026-08-23-phase2-m0-four-hour-batch.md
     wake_condition: immediate
     exit_criteria:
@@ -31,7 +32,8 @@ tasks:
     owner: pi_deepseek_flash
     branch: codex/phase2-m0-pi-evidence-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-pi
-    status: in_progress
+    status: ready_external_review
+    tip_commit: e71cbefe
     owned_files:
       - docs/audit/phase2_m0_implementation_gap_evidence_2026-08-23.md
       - docs/superpowers/plans/2026-08-23-p2-m0-pi-evidence.md
@@ -67,7 +69,8 @@ tasks:
     owner: codex_agent_geometry
     branch: codex/phase2-m1-geometry-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-geometry
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 1778bc4ce78d12a7632445ec4360bffd3d333e4c
     owned_files:
       - lib/features/battle/domain/phase0a/combat_geometry.dart
       - test/features/battle/domain/phase0a/combat_geometry_test.dart
@@ -86,11 +89,32 @@ tasks:
     owner: codex_agent_posture
     branch: codex/phase2-m1-posture-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-posture
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: e623f8f23c6e8aded00f4f955a75b07c98b4866b
     owned_files:
       - lib/features/battle/domain/phase0a/posture.dart
       - test/features/battle/domain/phase0a/posture_test.dart
       - docs/superpowers/plans/2026-08-23-p2-m1-c05-posture.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
+
+  - id: P2-M1-C04-DEFENSE
+    milestone: M1
+    owner: codex_agent_defense
+    branch: codex/phase2-m1-defense-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-defense
+    status: ready_independent_review
+    tip_commit: 165601f3
+    owned_files:
+      - lib/features/battle/domain/phase0a/defense_resolution.dart
+      - test/features/battle/domain/phase0a/defense_resolution_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c04-defense.md
     forbidden_files:
       - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
       - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
@@ -121,6 +145,45 @@ tasks:
       - lib/features/battle/domain/phase0a/status_effects.dart
       - test/features/battle/domain/phase0a/status_effects_test.dart
       - docs/superpowers/plans/2026-08-23-p2-m1-c06-status.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
+
+  - id: P2-M1-C03-ACTION-TIMELINE
+    milestone: M1
+    owner: codex_agent_action_timeline
+    branch: codex/phase2-m1-action-timeline-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-action-timeline
+    status: in_progress
+    owned_files:
+      - lib/features/battle/domain/phase0a/action_timeline.dart
+      - test/features/battle/domain/phase0a/action_timeline_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c03-action-timeline.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
+
+  - id: P2-M1-C07-QI-RESOURCE
+    milestone: M1
+    owner: codex_agent_qi_resource
+    branch: codex/phase2-m1-qi-resource-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-qi-resource
+    status: ready_root_review
+    tip_commit: 33f6a3e6
+    owned_files:
+      - lib/features/battle/domain/phase0a/qi_resource.dart
+      - test/features/battle/domain/phase0a/qi_resource_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c07-qi-resource.md
     forbidden_files:
       - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
       - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
