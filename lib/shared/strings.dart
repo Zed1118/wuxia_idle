@@ -1622,6 +1622,15 @@ class UiStrings {
   static String mainlineRouteStageNode(int stageIndex) => '$stageIndex';
 
   static String stageListEnemyCount(int count) => '$count 名敌人';
+  static String stageListEnemyWaves(int waveCount, int enemyCount) =>
+      '$waveCount 波 · 共 $enemyCount 名敌人';
+  static String prebattleMainlineWaveSummary(
+    int waveCount,
+    int enemyCount, {
+    required bool bossFinal,
+  }) => bossFinal
+      ? '$waveCount 波 · 共 $enemyCount 名敌人 · 主敌收尾'
+      : '$waveCount 波 · 共 $enemyCount 名敌人';
 
   /// 章节标题路由：按 chapterIndex 返回对应中文标题。
   static String chapterTitle(int chapterIndex) {

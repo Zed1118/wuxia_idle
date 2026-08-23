@@ -237,8 +237,11 @@ class _SkillSealState extends State<_SkillSeal> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(
-                      Phase0aPresentationTokens.skillSealPadding,
+                    padding: EdgeInsets.all(
+                      widget.size ==
+                              Phase0aPresentationTokens.numericSkillSealSize
+                          ? Phase0aPresentationTokens.numericSkillSealPadding
+                          : Phase0aPresentationTokens.skillSealPadding,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

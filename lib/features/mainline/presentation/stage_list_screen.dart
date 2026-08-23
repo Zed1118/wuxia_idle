@@ -1102,6 +1102,14 @@ class _StageRow extends StatelessWidget {
 
   String _subtitleFor(StageDef def, StageStatus status) {
     if (status == StageStatus.locked) return UiStrings.stageListPrevHint;
+    final waves = GameRepository.instance.numbers.mainlineWave;
+    if (waves.isEnabled) {
+      final profile = waves.profileFor(isBossStage: def.isBossStage);
+      return UiStrings.stageListEnemyWaves(
+        profile.waveCount,
+        profile.totalEnemyCount,
+      );
+    }
     return UiStrings.stageListEnemyCount(def.enemyTeam.length);
   }
 }

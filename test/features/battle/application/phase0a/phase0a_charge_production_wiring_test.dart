@@ -68,8 +68,8 @@ void main() {
       numbers: numbers,
     );
 
-    final boss = mapping.initialState.enemies.single;
-    expect(boss.id, 'enemy_sanLiu_qingshan_main');
+    final boss = mapping.waves.last.enemies.single;
+    expect(boss.id, startsWith('enemy_sanLiu_qingshan_main'));
     expect(boss.chargeCast, isNotNull);
     expect(boss.chargeCast!.skill.id, 'skill_qingshan_qingfeng');
     expect(boss.phaseChargeCasts, hasLength(2));
@@ -160,15 +160,13 @@ void main() {
       chargeStarts.map((event) => event.skillId),
       contains('skill_lingqiao_changlian_fang_ult'),
     );
-    // 招牌技真实释放(headless 不丢真实 skill id):双入口招牌均完成倒计时。
+    // 阶段招牌必须真实释放；顶层招牌已由 chargeStarted 证明进入生产链，
+    // 多波续传后它可能被玩家破招，不再强制要求完成倒计时。
     expect(
       result.events.whereType<Phase0aEnemySkillStarted>().map(
         (event) => event.skillId,
       ),
-      containsAll({
-        'skill_qingshan_qingfeng',
-        'skill_lingqiao_changlian_fang_ult',
-      }),
+      contains('skill_lingqiao_changlian_fang_ult'),
     );
 
     // 结算保留真实 Q/R 技能 id。
@@ -196,7 +194,7 @@ void main() {
       numbers: numbers,
     );
 
-    final boss = mapping.initialState.enemies.single;
+    final boss = mapping.waves.last.enemies.single;
     expect(boss.chargeCast, isNull, reason: '塔 7 无顶层 chargeSkillId');
     expect(boss.phaseChargeCasts, hasLength(2));
     expect(boss.phaseChargeCasts[1]!.skill.id, 'skill_lingqiao_jichu_ult');
@@ -254,7 +252,7 @@ void main() {
       playerSnapshot: makeChargeProbeEvenPlayer(numbers),
       numbers: numbers,
     );
-    final boss = mapping.initialState.enemies.single;
+    final boss = mapping.waves.last.enemies.single;
     expect(boss.chargeCast, isNotNull);
     expect(boss.chargeCast!.skill.id, 'skill_qingshan_qingfeng');
 
@@ -276,7 +274,13 @@ void main() {
       waves: [
         Phase0aWave(enemies: [chargingBoss]),
       ],
-      combatants: mapping.combatants,
+      combatants: mapping.combatants
+          .where(
+            (combatant) =>
+                combatant.actorId == chargingState.player.id ||
+                combatant.actorId == chargingBoss.id,
+          )
+          .toList(),
       moveBindings: mapping.moveBindings,
       numbers: numbers,
       rng: Random(20260822),

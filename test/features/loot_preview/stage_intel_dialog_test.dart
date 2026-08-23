@@ -111,10 +111,11 @@ void main() {
     await pumpIntel(tester, stage());
 
     expect(find.text(UiStrings.prebattleIntelEnemySection), findsOneWidget);
+    expect(find.text('3 波 · 共 9 名敌人'), findsOneWidget);
     expect(find.textContaining('山道悍匪'), findsOneWidget);
     expect(find.text(UiStrings.prebattleIntelResponseSection), findsOneWidget);
     expect(find.textContaining('可备克制路数'), findsOneWidget);
-    expect(find.text(UiStrings.prebattleRiskNone), findsOneWidget);
+    expect(find.text(UiStrings.prebattleRiskOutnumbered), findsOneWidget);
     expect(find.text(UiStrings.prebattleIntelLootSection), findsOneWidget);
     expect(find.text(UiStrings.lootBucketChangKeDe), findsOneWidget);
     expect(find.text(UiStrings.prebattleIntelCycleTraitSection), findsNothing);

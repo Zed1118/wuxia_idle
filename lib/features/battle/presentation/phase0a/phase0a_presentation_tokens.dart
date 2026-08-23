@@ -88,6 +88,7 @@ abstract final class Phase0aPresentationTokens {
   /// 数字技能印略小于 Q/R 战术印，六枚在 1152px 验收视口内保持单行。
   static const double numericSkillSealSize = 78;
   static const double numericSkillSealSpacing = 8;
+  static const double numericSkillSealPadding = 4;
 
   static const double actorWidth = 112;
   static const double actorHeight = 158;

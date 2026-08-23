@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.31
+> **版本**:v1.32
+> **v1.32 变更**(2026-08-23 Phase 0A 战斗爽感批):主线普通关采用 2/3/4 人三波小怪，Boss 关采用 2/3 人铺垫波 + 原 Boss 单独收尾；波次参数由 `numbers.yaml mainline_wave` 统一配置，在线/headless 同核。键盘持续移动、普攻 420 范围与水墨击杀反馈同步升级，Boss 蓄力/破招/踉跄/脆弱窗口及既有数值红线保持。
 > **v1.31 变更**(2026-08-23 路线 C 双平台 Gate 收口 · 0 改玩法数值):旧 3v3 原子删除已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 合入 `main`；同 commit 的 Mac 与 Windows 本地物理机生产兼容性矩阵均 6/6 PASS，独立 preflight PASS，全量 4218/4218、analyze 0。六人真人 Gate 已取消；Windows 结果不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`。
-> **v1.30 变更**(2026-08-23 路线 C Windows Gate 标准调整 · 0 改玩法数值):Route C 外部硬锁由目标最低档性能 Gate 改为 Windows 本地物理机生产兼容性 Gate；当前 Ryzen 7 5800X + RTX 4070 SUPER + 16GB + 143Hz 实体机可签本 Gate，但只能证明该物理基线兼容，不能外推为产品最低配置。实体机/本地 Console/非 RDP/非 VM/100% 缩放/真实主机事实与同 commit、同 AOT、双视口 6/6 原始证据仍为硬条件。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
@@ -290,6 +290,8 @@
 ### 5.1 形态
 
 **Phase 0A 单角色横版水墨 ARPG**。玩家即时移动与普攻，以 Q/R、数字技能处理聚怪、破招、爆发和首领机制；Boss 蓄力、护法拦截、踉跄与脆弱窗口均由同一 reducer 驱动。自动战斗、扫荡、远征和断魂庄 headless 推演使用同核 bot adapter，保持“在线 = 离线”的规则一致性。
+
+主线以群怪推进为默认节奏：普通关依次生成 2 / 3 / 4 人三波小怪；Boss 关先生成 2 / 3 人铺垫波，再由原主敌单独收尾。小怪继承关卡敌人的武学身份但按 `numbers.yaml mainline_wave` 缩放生命、攻击、输出与移速；波间保留玩家 HP / 真气并恢复 25% 气海，奖励仍只在整关结算一次。塔、远征、轻功、群战、心魔与断魂庄维持各自既有编排，不被主线扩波误伤。
 
 > **路线 C 状态（2026-08-23）**：五个生产消费面已统一使用 Phase 0A；旧 3v3 源码、路由、会启动旧路由的工具与专属测试已在 `597a243b2506610b5cbb74e2919be79bbf99e283` 原子删除并快进合入 `main`。同 commit 的 Mac 与 Windows 本地物理机矩阵均 6/6 PASS，独立 preflight PASS；六人主观 Gate 已取消。隔离的 Phase 0/0B 历史观察包不属于产品旧核且不能签 Gate；Windows 结果只证明当前实体基线兼容，不定义产品最低配置。证据索引见 `docs/audit/route_c_gate_closeout_2026-08-23.md`，历史范围与决策链见 `docs/audit/legacy_3v3_removal_scope_2026-08-18.md`。
 

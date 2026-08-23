@@ -56,7 +56,7 @@ void main() async {
     final malformed = Phase0aArenaState(
       tick: state.tick,
       nextSeq: state.nextSeq,
-      player: state.enemies.single,
+      player: state.enemies.first,
       enemies: state.enemies,
       skillSlots: state.skillSlots,
       winCondition: state.winCondition,

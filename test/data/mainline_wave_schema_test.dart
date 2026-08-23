@@ -32,6 +32,15 @@ Map<String, dynamic> validYaml() => {
 };
 
 void main() {
+  test('波次 profile 暴露 UI 与运行时共用的总波数和总敌人数', () {
+    final def = MainlineWaveDef.fromYaml(validYaml());
+
+    expect(def.profileFor(isBossStage: false).waveCount, 2);
+    expect(def.profileFor(isBossStage: false).totalEnemyCount, 5);
+    expect(def.profileFor(isBossStage: true).waveCount, 2);
+    expect(def.profileFor(isBossStage: true).totalEnemyCount, 3);
+  });
+
   test('普通 profile 必须显式为零终波主敌人', () {
     final yaml = validYaml();
     (yaml['ordinary'] as Map)['boss_final_enemy_count'] = 1;

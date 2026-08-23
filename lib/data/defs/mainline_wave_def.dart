@@ -34,6 +34,9 @@ final class MainlineWaveDef {
 
   bool get isEnabled => ordinary.enabled && boss.enabled;
 
+  MainlineWaveProfile profileFor({required bool isBossStage}) =>
+      isBossStage ? boss : ordinary;
+
   void validate() {
     if (!ordinary.enabled && !boss.enabled) return;
     if (!ordinary.enabled || !boss.enabled) {
@@ -85,6 +88,13 @@ final class MainlineWaveProfile {
   }
 
   bool get enabled => waveEnemyCounts.isNotEmpty;
+
+  int get waveCount =>
+      waveEnemyCounts.length + (bossFinalEnemyCount > 0 ? 1 : 0);
+
+  int get totalEnemyCount =>
+      waveEnemyCounts.fold(0, (total, count) => total + count) +
+      bossFinalEnemyCount;
 
   void validate({required String label, required bool requireBossFinalCount}) {
     if (!enabled) {

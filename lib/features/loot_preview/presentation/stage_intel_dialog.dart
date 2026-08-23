@@ -74,6 +74,11 @@ class StageIntelContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mainlineWaves = GameRepository.instance.numbers.mainlineWave;
+    final waveProfile =
+        stage.stageType == StageType.mainline && mainlineWaves.isEnabled
+        ? mainlineWaves.profileFor(isBossStage: stage.isBossStage)
+        : null;
     final responseLines = _teamPreparationLines(
       stage.enemyTeam,
       isBossStage: stage.isBossStage,
@@ -102,7 +107,16 @@ class StageIntelContent extends StatelessWidget {
           ),
         _IntelSection(
           title: UiStrings.prebattleIntelEnemySection,
-          child: _EnemyIntelList(enemies: stage.enemyTeam),
+          child: _EnemyIntelList(
+            enemies: stage.enemyTeam,
+            waveSummary: waveProfile == null
+                ? null
+                : UiStrings.prebattleMainlineWaveSummary(
+                    waveProfile.waveCount,
+                    waveProfile.totalEnemyCount,
+                    bossFinal: stage.isBossStage,
+                  ),
+          ),
         ),
         if (cycleTraits.isNotEmpty)
           _IntelSection(
@@ -121,7 +135,10 @@ class StageIntelContent extends StatelessWidget {
           ),
         _IntelSection(
           title: UiStrings.prebattleIntelRiskSection,
-          child: _RiskIntel(stage: stage),
+          child: _RiskIntel(
+            stage: stage,
+            enemyCount: waveProfile?.totalEnemyCount,
+          ),
         ),
         _IntelSection(
           title: UiStrings.prebattleIntelLootSection,
@@ -193,9 +210,10 @@ class _IntelLines extends StatelessWidget {
 }
 
 class _EnemyIntelList extends StatelessWidget {
-  const _EnemyIntelList({required this.enemies});
+  const _EnemyIntelList({required this.enemies, this.waveSummary});
 
   final List<EnemyDef> enemies;
+  final String? waveSummary;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +222,10 @@ class _EnemyIntelList extends StatelessWidget {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [for (final enemy in enemies) _IntelLine(_enemyLine(enemy))],
+      children: [
+        if (waveSummary != null) _IntelLine(waveSummary!),
+        for (final enemy in enemies) _IntelLine(_enemyLine(enemy)),
+      ],
     );
   }
 
@@ -223,9 +244,10 @@ class _EnemyIntelList extends StatelessWidget {
 }
 
 class _RiskIntel extends StatelessWidget {
-  const _RiskIntel({required this.stage});
+  const _RiskIntel({required this.stage, this.enemyCount});
 
   final StageDef stage;
+  final int? enemyCount;
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +255,8 @@ class _RiskIntel extends StatelessWidget {
       if (stage.isBossStage) UiStrings.prebattleRiskBoss,
       if (stage.enemyTeam.any((e) => e.chargeSkillId != null))
         UiStrings.prebattleRiskCharge,
-      if (stage.enemyTeam.length >= 3) UiStrings.prebattleRiskOutnumbered,
+      if ((enemyCount ?? stage.enemyTeam.length) >= 3)
+        UiStrings.prebattleRiskOutnumbered,
     ];
     if (lines.isEmpty) lines.add(UiStrings.prebattleRiskNone);
     return _IntelLines(lines: lines);
