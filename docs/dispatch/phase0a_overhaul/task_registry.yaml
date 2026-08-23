@@ -1511,7 +1511,7 @@ tasks:
     base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
     prerequisites:
       - P2-G2-D02-ATTACK-TOKEN-DIRECTOR
-      - P2-G2-E04-ENEMY-INTENT-OBSERVER
+      - P2-G2-D04-TOKEN-OBSERVE-SEAM
       - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_enemy_intent_batch_gate.dart
