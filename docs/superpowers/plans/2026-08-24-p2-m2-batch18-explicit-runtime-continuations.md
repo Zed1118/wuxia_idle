@@ -30,4 +30,4 @@
 - [x] integration 已完成 `flutter pub get`、build_runner 126 outputs（63 个 `.g.dart`）与 Batch17 `libisar.dylib` 恢复（SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`）；工作树保持 clean。
 - [x] R22/R23/R24 各自在 source worktree 完成 TDD、精确模型审查、targeted/analyze/format/path/diff/status 与来源 READY；主控复核 17/17 stable patch-id、10/10 owned blobs 一致。
 - [x] 集成态去重联合 targeted 184/184、changed-Dart scoped analyze 7 items / 0 issue、format 7 files / 0 changed、full 5102/5102 与 13-file path guard 通过。
-- [ ] 独立集成终审、registry/docs 闭环复核与 Batch18 READY。
+- [x] 独立集成终审重算 registry 95/0/0、17/17 stable patch-id、10/10 owned blobs，并复跑 analyze 7 items / 0 issue、format 7 files / 0 changed；P0/P1/P2=0。registry/docs 已闭环，下一提交仅追加 Batch18 READY。

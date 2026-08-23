@@ -2491,12 +2491,39 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch18-explicit-runtime-continuations-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch18-explicit-runtime-continuations
-    status: in_progress
+    status: ready_reviewed
     base_commit: 87ee892189dd1c4c1d131e4a06df649f34328769
+    validated_commit: 4f926739b5314daf25c8e06179e17106243025ba
+    ready_marker: "[READY][CODEX][P2-M2-BATCH18] 冻结显式运行时延续边界"
     source_tasks:
       - P2-M2-R22-ENCOUNTER-DEFEAT-OBJECTIVE-PROJECTION-MAPPER
       - P2-M2-R23-MAINLINE-NEXT-STAGE-RUNTIME-ADMISSION
       - P2-M2-R24-ATTACK-TOKEN-LEASE-BATCH-RECEIPT
+    integration_commits:
+      - 4300d7f5
+      - 654b3b70
+      - e8a1bd3f
+      - 4a09e14c
+      - d80b8fc8
+      - 9de58481
+      - 660eea62
+      - 5aeeb3d6
+      - 16123fab
+      - b1704ec2
+      - 752a819e
+      - a4ba9833
+      - 0c6b05fa
+      - b0d7ea4b
+      - 293bd586
+      - ef8e1ef0
+      - 245af125
+    verification:
+      joint_targeted_tests: 184
+      full_tests: 5102
+      changed_dart_items: 7
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch18-explicit-runtime-continuations.md

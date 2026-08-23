@@ -32,12 +32,12 @@
 - 影响集去重联合 targeted 184/184 PASS；changed-Dart scoped analyze 7 items / 0 issue；format 7 files / 0 changed。
 - `flutter test --no-pub --reporter compact` 从 clean integration 起点单次完成 5102/5102 PASS；未并行启动第二个 full 进程。
 - 相对 Batch17 精确 13-file path guard、`git diff --check` 与 clean status 通过；main 与 origin/main 仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
-- registry 结构与独立集成终审将在本验证提交后复核，清零后再追加 READY marker。
+- registry 为 95 tasks / 0 duplicate IDs / 0 dangling refs；独立集成终审固定验证提交 `4f926739b5314daf25c8e06179e17106243025ba`，重算 17/17 stable patch-id、10/10 owned blobs，复跑 scoped analyze 7 items / 0 issue 与 format 7 files / 0 changed，结论 P0/P1/P2=0。
 
-## 最终结论（待独立终审）
+## 最终结论
 
 - Batch18 只冻结 host-neutral 的显式 defeat objective 投影、成功结算后的 next-stage runtime admission 与 lease batch receipt；不宣称 production host、candidate promotion、checkpoint/anchor projector、timeline 推断、durable store/schema/CAS/outbox、tuning/Profile/G2/真人验收已完成。
-- 独立终审与 registry/docs 闭环复核通过后才追加空 READY marker。
+- 独立终审与 registry/docs 闭环复核均已通过；本提交后只追加空 READY marker `[READY][CODEX][P2-M2-BATCH18] 冻结显式运行时延续边界`。
 
 ## 集成环境恢复点
 
