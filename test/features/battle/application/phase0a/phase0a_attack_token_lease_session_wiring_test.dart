@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_token_lease_batch_gate.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_token_lease_batch_receipt.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
@@ -47,7 +48,7 @@ final class _DamageResolver implements Phase0aDamageResolver {
 final class _Observer implements Phase0aEnemyIntentObserver {
   _Observer({this.throwOnObserve = false});
 
-  final bool throwOnObserve;
+  bool throwOnObserve;
   final observations = <Phase0aEnemyIntentObservation>[];
 
   @override
@@ -62,6 +63,24 @@ final class _PassBatchGate implements Phase0aEnemyIntentBatchGate {
   List<Phase0aIntent> gateEnemyIntents({
     required List<Phase0aIntent> enemyIntents,
   }) => enemyIntents;
+}
+
+final class _CommitFailOnSecondGate
+    implements Phase0aAttackTokenLeaseBatchGate {
+  int _calls = 0;
+
+  @override
+  Phase0aPreparedAttackTokenLeaseBatch prepare({
+    required AttackTokenLeaseRuntime runtime,
+    required List<Phase0aIntent> enemyIntents,
+  }) {
+    _calls++;
+    final predecessor = _calls == 1 ? runtime : AttackTokenLeaseRuntime.empty();
+    return _acquireGate().prepare(
+      runtime: predecessor,
+      enemyIntents: enemyIntents,
+    );
+  }
 }
 
 final class _ThrowOnceObjectiveSource
@@ -196,6 +215,28 @@ Iterable<AttackTokenLeaseMutation> _throwingMutations() sync* {
 }
 
 void main() {
+  group('lease batch receipt value', () {
+    test('freezes caller mutations while retaining exact snapshots', () {
+      final runtime = AttackTokenLeaseRuntime.empty();
+      final before = runtime.snapshot;
+      final mutation = AcquireAttackTokenLease(_lease('lease_e1', 'e1'));
+      final mutations = <AttackTokenLeaseMutation>[mutation];
+      final after = runtime.commit(runtime.prepare(mutations)).snapshot;
+
+      final receipt = Phase0aAttackTokenLeaseBatchReceipt(
+        before: before,
+        mutations: mutations,
+        after: after,
+      );
+      mutations.clear();
+
+      expect(receipt.before, same(before));
+      expect(receipt.mutations.single, same(mutation));
+      expect(receipt.after, same(after));
+      expect(() => receipt.mutations.clear(), throwsUnsupportedError);
+    });
+  });
+
   group('lease batch value and prepared successor', () {
     test('plan freezes caller lists and materializes lazy failures', () {
       const intent = Phase0aMoveIntent(
@@ -280,16 +321,25 @@ void main() {
 
     test('explicit acquire and release publish with arena and diagnostic', () {
       final observer = _Observer();
+      final runtime = AttackTokenLeaseRuntime.empty();
+      final initialSnapshot = runtime.snapshot;
       final session = _session(
         observer: observer,
         leaseGate: _acquireGate(releaseWhenActive: true),
-        leaseRuntime: AttackTokenLeaseRuntime.empty(),
+        leaseRuntime: runtime,
       );
 
       session.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
       final acquired = session.attackTokenLeaseSnapshot!;
+      final acquireReceipt = session.lastAttackTokenLeaseBatchReceipt!;
       expect(session.state.tick, 1);
       expect(acquired.revision, 1);
+      expect(acquireReceipt.before, same(initialSnapshot));
+      expect(acquireReceipt.after, same(acquired));
+      expect(acquireReceipt.mutations, hasLength(1));
+      final acquire = acquireReceipt.mutations.single;
+      expect(acquire, isA<AcquireAttackTokenLease>());
+      expect((acquire as AcquireAttackTokenLease).lease.request.actorId, 'e1');
       final request = acquired.activeLeases.values.single.request;
       expect(request.actorId, 'e1');
       expect(request.kind, AttackTokenKind.melee);
@@ -298,9 +348,15 @@ void main() {
       expect(session.lastEnemyIntentObservation, isNotNull);
 
       session.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
+      final released = session.attackTokenLeaseSnapshot!;
+      final releaseReceipt = session.lastAttackTokenLeaseBatchReceipt!;
       expect(session.state.tick, 2);
-      expect(session.attackTokenLeaseSnapshot!.revision, 2);
-      expect(session.attackTokenLeaseSnapshot!.activeLeases, isEmpty);
+      expect(released.revision, 2);
+      expect(released.activeLeases, isEmpty);
+      expect(releaseReceipt, isNot(same(acquireReceipt)));
+      expect(releaseReceipt.before, same(acquired));
+      expect(releaseReceipt.after, same(released));
+      expect(releaseReceipt.mutations.single, isA<ReleaseAttackTokenLease>());
       expect(observer.observations, hasLength(2));
     });
 
@@ -324,6 +380,17 @@ void main() {
 
       expect(session.attackTokenLeaseSnapshot, same(beforeSnapshot));
       expect(session.attackTokenLeaseSnapshot!.revision, 0);
+      final firstReceipt = session.lastAttackTokenLeaseBatchReceipt!;
+      expect(firstReceipt.before, same(beforeSnapshot));
+      expect(firstReceipt.after, same(beforeSnapshot));
+      expect(firstReceipt.mutations, isEmpty);
+
+      session.advance(deltaSeconds: 0.1, command: const Phase0aPlayerCommand());
+      final secondReceipt = session.lastAttackTokenLeaseBatchReceipt!;
+      expect(secondReceipt, isNot(same(firstReceipt)));
+      expect(secondReceipt.before, same(beforeSnapshot));
+      expect(secondReceipt.after, same(beforeSnapshot));
+      expect(session.attackTokenLeaseSnapshot, same(beforeSnapshot));
     });
 
     test('fork preserves immutable runtime while isolating publication', () {
@@ -334,6 +401,7 @@ void main() {
 
       expect(candidate.attackTokenLeaseBatchGate, same(gate));
       expect(candidate.attackTokenLeaseSnapshot, same(runtime.snapshot));
+      expect(candidate.lastAttackTokenLeaseBatchReceipt, isNull);
       candidate.advance(
         deltaSeconds: 0.1,
         command: const Phase0aPlayerCommand(),
@@ -341,8 +409,28 @@ void main() {
 
       expect(original.state.tick, 0);
       expect(original.attackTokenLeaseSnapshot!.revision, 0);
+      expect(original.lastAttackTokenLeaseBatchReceipt, isNull);
       expect(candidate.state.tick, 1);
       expect(candidate.attackTokenLeaseSnapshot!.revision, 1);
+      final candidateReceipt = candidate.lastAttackTokenLeaseBatchReceipt!;
+      final secondFork = candidate.forkWithState(_state());
+      expect(
+        secondFork.lastAttackTokenLeaseBatchReceipt,
+        same(candidateReceipt),
+      );
+
+      secondFork.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(),
+      );
+      expect(
+        secondFork.lastAttackTokenLeaseBatchReceipt,
+        isNot(same(candidateReceipt)),
+      );
+      expect(
+        candidate.lastAttackTokenLeaseBatchReceipt,
+        same(candidateReceipt),
+      );
     });
 
     test('planner receives immutable input and failure publishes nothing', () {
@@ -374,6 +462,7 @@ void main() {
       expect(session.state, same(initial));
       expect(session.attackTokenLeaseSnapshot, same(runtime.snapshot));
       expect(session.lastEnemyIntentObservation, isNull);
+      expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
       expect(observer.observations, isEmpty);
       expect(resolver.calls, 0);
     });
@@ -404,6 +493,7 @@ void main() {
       );
       expect(session.state, same(initial));
       expect(session.attackTokenLeaseSnapshot, same(runtime.snapshot));
+      expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
     });
 
     test(
@@ -452,6 +542,7 @@ void main() {
           expect(session.state, same(initial));
           expect(session.attackTokenLeaseSnapshot, same(runtime.snapshot));
           expect(session.lastEnemyIntentObservation, isNull);
+          expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
           expect(observer.observations, isEmpty);
           expect(resolver.calls, 0);
         }
@@ -481,6 +572,7 @@ void main() {
       expect(session.state, same(initial));
       expect(session.attackTokenLeaseSnapshot, same(runtime.snapshot));
       expect(session.lastEnemyIntentObservation, isNull);
+      expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
       expect(observer.observations, hasLength(1));
       expect(resolver.calls, 0);
     });
@@ -508,9 +600,163 @@ void main() {
       expect(session.state, same(initial));
       expect(session.attackTokenLeaseSnapshot, same(runtime.snapshot));
       expect(session.lastEnemyIntentObservation, isNull);
+      expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
       expect(observer.observations, hasLength(1));
       expect(resolver.calls, 1);
     });
+
+    test(
+      'every late failure preserves an exact previously published receipt',
+      () {
+        void verifySecondFailure({
+          required Phase0aCombatSession session,
+          void Function()? armFailure,
+          double secondDeltaSeconds = 0.1,
+        }) {
+          session.advance(
+            deltaSeconds: 0.1,
+            command: const Phase0aPlayerCommand(),
+          );
+          final oldState = session.state;
+          final oldSnapshot = session.attackTokenLeaseSnapshot!;
+          final oldObservation = session.lastEnemyIntentObservation;
+          final oldReceipt = session.lastAttackTokenLeaseBatchReceipt!;
+          armFailure?.call();
+
+          expect(
+            () => session.advance(
+              deltaSeconds: secondDeltaSeconds,
+              command: const Phase0aPlayerCommand(),
+            ),
+            throwsA(anything),
+          );
+          expect(session.state, same(oldState));
+          expect(session.attackTokenLeaseSnapshot, same(oldSnapshot));
+          expect(session.lastEnemyIntentObservation, same(oldObservation));
+          expect(session.lastAttackTokenLeaseBatchReceipt, same(oldReceipt));
+        }
+
+        var plannerCalls = 0;
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _gate(({
+              required AttackTokenLeaseSnapshot leaseSnapshot,
+              required List<Phase0aIntent> enemyIntents,
+            }) {
+              plannerCalls++;
+              if (plannerCalls > 1) throw StateError('planner failed');
+              return Phase0aAttackTokenLeaseBatchPlan(
+                enemyIntents: enemyIntents,
+                mutations: [AcquireAttackTokenLease(_lease('lease_e1', 'e1'))],
+              );
+            }),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+        );
+
+        var lazyCalls = 0;
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _gate(({
+              required AttackTokenLeaseSnapshot leaseSnapshot,
+              required List<Phase0aIntent> enemyIntents,
+            }) {
+              lazyCalls++;
+              return Phase0aAttackTokenLeaseBatchPlan(
+                enemyIntents: enemyIntents,
+                mutations: lazyCalls == 1
+                    ? [AcquireAttackTokenLease(_lease('lease_e1', 'e1'))]
+                    : _throwingMutations(),
+              );
+            }),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+        );
+
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _gate(
+              ({
+                required AttackTokenLeaseSnapshot leaseSnapshot,
+                required List<Phase0aIntent> enemyIntents,
+              }) => Phase0aAttackTokenLeaseBatchPlan(
+                enemyIntents: enemyIntents,
+                mutations: leaseSnapshot.activeLeases.isEmpty
+                    ? [AcquireAttackTokenLease(_lease('lease_e1', 'e1'))]
+                    : [
+                        ReleaseAttackTokenLease(
+                          AttackTokenLeaseId('unknown_lease'),
+                        ),
+                      ],
+              ),
+            ),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+        );
+
+        var outputCalls = 0;
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _gate(({
+              required AttackTokenLeaseSnapshot leaseSnapshot,
+              required List<Phase0aIntent> enemyIntents,
+            }) {
+              outputCalls++;
+              return Phase0aAttackTokenLeaseBatchPlan(
+                enemyIntents: outputCalls == 1
+                    ? enemyIntents
+                    : [
+                        ...enemyIntents,
+                        const Phase0aMoveIntent(
+                          actorId: 'injected',
+                          direction: ArenaVector(-1, 0),
+                        ),
+                      ],
+                mutations: leaseSnapshot.activeLeases.isEmpty
+                    ? [AcquireAttackTokenLease(_lease('lease_e1', 'e1'))]
+                    : [
+                        ReleaseAttackTokenLease(
+                          leaseSnapshot.activeLeases.keys.single,
+                        ),
+                      ],
+              );
+            }),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+        );
+
+        final throwingObserver = _Observer();
+        verifySecondFailure(
+          session: _session(
+            observer: throwingObserver,
+            leaseGate: _acquireGate(releaseWhenActive: true),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+          armFailure: () => throwingObserver.throwOnObserve = true,
+        );
+
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _acquireGate(releaseWhenActive: true),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+          secondDeltaSeconds: -1,
+        );
+
+        verifySecondFailure(
+          session: _session(
+            observer: _Observer(),
+            leaseGate: _CommitFailOnSecondGate(),
+            leaseRuntime: AttackTokenLeaseRuntime.empty(),
+          ),
+        );
+      },
+    );
 
     test('null legacy path remains lease-free', () {
       final session = _session();
@@ -519,6 +765,7 @@ void main() {
 
       expect(session.attackTokenLeaseBatchGate, isNull);
       expect(session.attackTokenLeaseSnapshot, isNull);
+      expect(session.lastAttackTokenLeaseBatchReceipt, isNull);
       expect(session.state.tick, 1);
     });
   });
@@ -610,6 +857,10 @@ void main() {
   });
 
   test('source guard keeps lifecycle inference and production wiring out', () {
+    final receiptSource = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_attack_token_lease_batch_receipt.dart',
+    ).readAsStringSync();
     final gateSource = File(
       'lib/features/battle/application/phase0a/'
       'phase0a_attack_token_lease_batch_gate.dart',
@@ -621,12 +872,80 @@ void main() {
       sessionSource.indexOf('attackTokenLeaseBatchGate'),
     );
 
-    for (final source in [gateSource, addedSessionSlice]) {
+    expect(
+      RegExp(
+        r"^import '../../domain/phase0a/attack_token_lease_runtime.dart';$",
+        multiLine: true,
+      ).allMatches(receiptSource),
+      hasLength(1),
+    );
+    expect(
+      RegExp(r'^import ', multiLine: true).allMatches(receiptSource),
+      hasLength(1),
+    );
+    expect(
+      sessionSource,
+      contains("import 'phase0a_attack_token_lease_batch_receipt.dart';"),
+    );
+    expect(
+      RegExp(
+        r'final class Phase0aAttackTokenLeaseBatchReceipt',
+      ).allMatches(receiptSource),
+      hasLength(1),
+    );
+
+    final commitIndex = sessionSource.indexOf('preparedLeaseBatch?.commit(');
+    final receiptConstructionIndex = sessionSource.indexOf(
+      'Phase0aAttackTokenLeaseBatchReceipt(',
+    );
+    final statePublicationIndex = sessionSource.indexOf(
+      '_state = result.state;',
+    );
+    final runtimePublicationIndex = sessionSource.indexOf(
+      '_attackTokenLeaseRuntime = nextLeaseRuntime;',
+    );
+    final diagnosticPublicationIndex = sessionSource.indexOf(
+      '_lastEnemyIntentObservation = nextObservation;',
+    );
+    final receiptPublicationIndex = sessionSource.indexOf(
+      '_lastAttackTokenLeaseBatchReceipt = nextLeaseReceipt;',
+    );
+    for (final index in [
+      commitIndex,
+      receiptConstructionIndex,
+      statePublicationIndex,
+      runtimePublicationIndex,
+      diagnosticPublicationIndex,
+      receiptPublicationIndex,
+    ]) {
+      expect(index, greaterThanOrEqualTo(0));
+    }
+    expect(commitIndex, lessThan(receiptConstructionIndex));
+    expect(receiptConstructionIndex, lessThan(statePublicationIndex));
+    expect(statePublicationIndex, lessThan(runtimePublicationIndex));
+    expect(runtimePublicationIndex, lessThan(diagnosticPublicationIndex));
+    expect(diagnosticPublicationIndex, lessThan(receiptPublicationIndex));
+    expect(
+      sessionSource,
+      contains(
+        'lastAttackTokenLeaseBatchReceipt: '
+        '_lastAttackTokenLeaseBatchReceipt',
+      ),
+    );
+
+    for (final source in [receiptSource, gateSource, addedSessionSlice]) {
       for (final forbidden in const [
         'ActionTimeline',
         'rootBundle',
         'GameRepository',
         'tuning',
+        'capacity',
+        'budget',
+        'default',
+        'durable',
+        'outbox',
+        'persist',
+        'repository',
       ]) {
         expect(source, isNot(contains(forbidden)), reason: forbidden);
       }
