@@ -143,5 +143,26 @@ void main() {
       expect(result.overflow, 2);
       expect(ledger.current, 5);
     });
+
+    test('lowering a window cap never turns gain into resource loss', () {
+      final ledger = QiResourceLedger(capacity: 10, current: 2);
+      ledger.gainKill(
+        actionId: 'kill_1',
+        windowId: 'window',
+        amount: 4,
+        windowCap: 5,
+      );
+
+      final result = ledger.gainKill(
+        actionId: 'kill_2',
+        windowId: 'window',
+        amount: 3,
+        windowCap: 2,
+      );
+
+      expect(result.applied, 0);
+      expect(result.overflow, 3);
+      expect(ledger.current, 6);
+    });
   });
 }

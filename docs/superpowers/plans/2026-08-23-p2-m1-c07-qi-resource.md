@@ -42,8 +42,8 @@
 
 ## 当前恢复点
 
-- 状态：候选实现完成，format/analyze 通过；定向 Flutter 测试因 worktree 依赖环境启动失败，待审查和 READY 提交。
-- 最后完成：`dart format` 与 `dart analyze lib/features/battle/domain/phase0a/qi_resource.dart` 通过；Flutter test 启动阶段异常 `Bad state: No element`，无断言结果。
-- 下一步：检查 diff/白名单并提交；主审在具备 `.dart_tool` 的环境复跑 targeted test。
-- 阻塞：本 worktree 缺少 `.dart_tool`，白名单禁止复制/生成依赖文件；生产接线与最终公共模型留给 G1。
+- 状态：候选实现与主审边界修正完成，format/analyze 通过，定向测试 10/10 通过。
+- 最后完成：主审修复调用方调低 window cap 时负额度可能反向扣减真气的问题，并补回归测试。
+- 下一步：进入临时整合分支验证；生产接线与最终公共模型留给 G1。
+- 阻塞：无候选实现阻塞；生产接线等待 G1 公共 API 冻结。
 - 风险：reservation 历史记录保留在内存中；未来接 reducer 时需由公共 session 决定生命周期与序列化语义。

@@ -149,7 +149,10 @@ final class QiResourceLedger {
       throw StateError('actionId already used by reservation: $actionId');
     }
     _gainActionIds.add(actionId);
-    final windowRemaining = windowCap - (_windowGains[windowId] ?? 0);
+    final rawWindowRemaining = windowCap - (_windowGains[windowId] ?? 0);
+    // Callers inject the cap. A later, lower cap must close the window rather
+    // than turn the remaining budget negative and accidentally drain qi.
+    final windowRemaining = rawWindowRemaining < 0 ? 0 : rawWindowRemaining;
     final allowed = amount < windowRemaining ? amount : windowRemaining;
     final result = _applyGain(actionId, allowed);
     _windowGains[windowId] = (_windowGains[windowId] ?? 0) + result.applied;
