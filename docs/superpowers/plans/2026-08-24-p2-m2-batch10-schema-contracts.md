@@ -12,6 +12,8 @@
 
 当前状态：C01、R01 与 R02 均已通过主控复跑和独立复审并进入集成。R01 的 transition 绕过 eligibility 问题已由 Qoder 修复；连续 run 现要求外部 battle-eligibility 事实，失败走 typed refusal 且不创建新状态或 snapshot。
 
+G7 退役平衡诊断引用包已通过主控与独立复审并作为辅助证据并入；集成态 23 文件 265/265、变更 Dart analyze 0、额外两项 balance guard analyze 0，当前只等待最终集成态独立复审与 READY。
+
 ## 硬边界
 
 - 不写 `data/combat/**` 生产 YAML，不切主线 host，不改 save、UI、奖励或发布配置。

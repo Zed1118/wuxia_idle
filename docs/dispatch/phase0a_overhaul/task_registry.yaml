@@ -1211,6 +1211,14 @@ tasks:
       - P2-M2-R02-MENTOR-INSIGHT-CONTRACT
     auxiliary_tasks:
       - P2-G7-BALANCE-REFERENCE-CLOSEOUT
+    verification:
+      joint_targeted_tests: 265
+      changed_dart_analyze_issues: 0
+      extra_balance_guard_analyze_issues: 0
+      yaml_parse: passed
+      shell_syntax: passed
+      active_retired_simulator_references: 0
+      git_diff_check: passed
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch10-schema-contracts.md
