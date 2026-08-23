@@ -14,9 +14,9 @@ void main() {
 
   group('前向扇形', () {
     test('包含距离与角度闭边界并按距离和 id 排序、遵守上限', () {
-      final scope = ForwardFanScope(
+      const scope = ForwardFanScope(
         origin: origin,
-        direction: const ArenaVector(1, 0),
+        direction: ArenaVector(1, 0),
         maxDistance: 10,
         halfAngleRadians: 0.7853981633974483,
         maxTargets: 2,
@@ -30,7 +30,7 @@ void main() {
 
     test('零向量和非法参数不产生命中', () {
       expect(
-        ForwardFanScope(
+        const ForwardFanScope(
           origin: origin,
           direction: ArenaVector.zero,
           maxDistance: 10,
@@ -40,9 +40,9 @@ void main() {
         isEmpty,
       );
       expect(
-        ForwardFanScope(
+        const ForwardFanScope(
           origin: origin,
-          direction: const ArenaVector(1, 0),
+          direction: ArenaVector(1, 0),
           maxDistance: -1,
           halfAngleRadians: 1,
           maxTargets: 3,
@@ -60,7 +60,7 @@ void main() {
       maxTargets: 5,
     );
     const point = TargetPointCircleScope(
-      center: const ArenaVector(5, 5),
+      center: ArenaVector(5, 5),
       innerRadius: 0,
       outerRadius: 0.5,
       maxTargets: 5,
@@ -75,8 +75,8 @@ void main() {
 
   test('直线胶囊包含端点和半径边界，零长度无效', () {
     const line = LineCapsuleScope(
-      start: const ArenaVector(0, 0),
-      end: const ArenaVector(10, 0),
+      start: ArenaVector(0, 0),
+      end: ArenaVector(10, 0),
       radius: 5,
       maxTargets: 5,
     );
@@ -86,7 +86,7 @@ void main() {
       'far',
     ]);
     expect(
-      LineCapsuleScope(
+      const LineCapsuleScope(
         start: origin,
         end: origin,
         radius: 5,
@@ -99,7 +99,7 @@ void main() {
   test('位移轨迹按到起点的路径距离排序并包含终点', () {
     const scope = DisplacementTrailScope(
       start: origin,
-      end: const ArenaVector(10, 0),
+      end: ArenaVector(10, 0),
       radius: 5,
       maxTargets: 2,
     );
@@ -129,15 +129,15 @@ void main() {
   });
 
   test('非有限锚点和路径端点不产生命中', () {
-    final invalidCircle = SelfCircleScope(
-      center: const ArenaVector(double.nan, 0),
+    const invalidCircle = SelfCircleScope(
+      center: ArenaVector(double.nan, 0),
       innerRadius: 0,
       outerRadius: 10,
       maxTargets: 2,
     );
-    final invalidLine = LineCapsuleScope(
+    const invalidLine = LineCapsuleScope(
       start: origin,
-      end: const ArenaVector(double.infinity, 0),
+      end: ArenaVector(double.infinity, 0),
       radius: 1,
       maxTargets: 2,
     );
@@ -152,7 +152,7 @@ void main() {
       refreshPolicy: StateRefreshPolicy.replace,
       stackingPolicy: StateStackingPolicy.unique,
       cancelWindowSeconds: 0.5,
-      effects: const [SelfStateEffect.guardWindow],
+      effects: [SelfStateEffect.guardWindow],
     );
 
     expect(scope.hitTargets(targets), isEmpty);

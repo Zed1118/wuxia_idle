@@ -169,8 +169,9 @@ final class LineCapsuleScope extends CombatGeometryScope {
         !_validRange(radius) ||
         radius < 0 ||
         lengthSquared == 0 ||
-        maxTargets <= 0)
+        maxTargets <= 0) {
       return const [];
+    }
     return _ordered(targets, (target) {
       if (!_finiteTarget(target)) return null;
       final offset = target.position - start;
