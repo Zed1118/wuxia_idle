@@ -7,7 +7,7 @@ resource_locks:
   full_flutter_test: 1
   build_runner: 1
   visual_window: 1
-  public_schema_owner: P2-G2-BATCH4-INTEGRATION
+  public_schema_owner: P2-G2-BATCH5-INTEGRATION
 
 tasks:
   - id: P2-M0-COORD
@@ -777,3 +777,46 @@ tasks:
       - reinforcement occurs on the tick after an exit
       - player death precedes survive completion and defeat-all victory
       - terminal advance is fully idempotent
+
+  - id: P2-G2-BATCH5-INTEGRATION
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-g2-batch5-production-assembler-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-batch5-integration
+    status: in_progress
+    base_commit: 21e17ecc
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-23-p2-g2-batch5-production-assembler.md
+      - docs/audit/phase2_g2_batch5_production_assembler_2026-08-23.md
+    exit_criteria:
+      - production assembler exposes an explicit encounter entry with one session and one resolver RNG stream
+      - actor roster adapter and move bindings fail closed before combat
+      - optional observe-only enemy intent observer survives runtime per-tick session forks
+      - legacy assemble behavior and return type remain unchanged
+      - no stage data tuning UI reward save or production host routing changes
+
+  - id: P2-G2-D07-PRODUCTION-ENCOUNTER-ASSEMBLER
+    milestone: G2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-g2-d07-production-assembler-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d07-production-assembler
+    status: waiting_dispatch
+    protected_behavior:
+      - assembleEncounter accepts explicit initial state director roster combatants adapters numbers and rng
+      - exactly one damage resolver and one combat session are created
+      - encounter actor coverage is player plus every roster enemy
+      - existing assemble remains source and behavior compatible
+
+  - id: P2-G2-D08-RUNTIME-OBSERVER-CONTINUITY
+    milestone: G2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-g2-d08-runtime-observer-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d08-runtime-observer
+    status: waiting_dependency
+    wake_condition: D07 reviewed and integrated
+    protected_behavior:
+      - runtime per-tick forks preserve the exact observer instance
+      - observer sees only post-grace-gate enemy intents
+      - observation cannot change state events outcome or RNG sequence
+      - test changes only unless a proven P0/P1 requires upstream correction
