@@ -1214,7 +1214,7 @@ tasks:
     auxiliary_tasks:
       - P2-G7-BALANCE-REFERENCE-CLOSEOUT
     verification:
-      joint_targeted_tests: 265
+      joint_targeted_tests: 268
       changed_dart_analyze_issues: 0
       extra_balance_guard_analyze_issues: 0
       yaml_parse: passed
@@ -1241,8 +1241,9 @@ tasks:
     implementation_commit: fb420893d5e17f270cb198109013a0bd7f89d1d2
     tip_commit: 925f290817589f74e15509256a5f7b442ddf39e5
     integration_commit: b195571b
+    correction_commit: d409779c
     verification:
-      targeted_tests: 137
+      targeted_tests: 140
       scoped_analyze_issues: 0
       independent_review_p0_p1_p2: 0
     owned_files:
@@ -1265,8 +1266,16 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-c01-objective-reference-fix-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-c01-objective-reference-fix
-    status: running
+    status: ready_candidate
     base_commit: 3ba090c6a076a67a06f9b11601b2d6341bcf3add
+    implementation_commit: e4762e71ef922f39fd88ca649ef64a28e72eba38
+    integration_commit: d409779c
+    verification:
+      c01_targeted_tests: 140
+      r03_objective_regression_tests: 29
+      integrated_joint_targeted_tests: 268
+      scoped_analyze_issues: 0
+      git_diff_check: passed
     trigger: Batch10 independent review P1
     owned_files:
       - lib/data/defs/combat_catalog_reference_index.dart
