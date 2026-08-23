@@ -40,16 +40,16 @@
 - [x] Batch7 基线中九个实现与九个测试全部存在。
 - [x] 每个合同均记录对象相等性或后续漂移来源与保留理由。
 - [x] 不引入产品语义、生产接线、数据、存档、UI、host 或数值改动。
-- [ ] targeted tests 为 `77/77`。
-- [ ] 18 文件 scoped analyze 为 0 issue。
+- [x] 旧核心 `77/77` 与当前 C16 加固 `4/4` 均通过；当前完整 targeted 为 `81/81`。
+- [x] 18 文件 scoped analyze 为 0 issue。
 - [ ] `git diff --check` 与范围 diff check 通过。
 - [ ] 独立子 agent 终审无阻断项。
 - [ ] 工作区全部提交，tip 以 `[READY][CODEX][P2-M1-REVALIDATION]` 空提交收口。
 
 ## 当前恢复点
 
-- 状态：静态重验与继承/漂移审计完成，等待 Flutter 串行资源锁后执行动态验收。
-- 最后完成：九个 READY tip 和旧集成均通过祖先检查；六组对象完全相同，C04 为后续 C16 加固，C06/C07 为等价构造器修复，均不应反向重放。当前测试声明为旧核心 77 项加 C16 4 项，共 81 项。
-- 下一步：锁放行后先按协调要求检查进程，再运行完整 81 项 targeted 与 18 文件 scoped analyze；更新审计后交独立子 agent 终审。
-- 已跑验证：祖先关系、目标文件存在性、对象哈希、实现 import/禁区扫描、测试声明计数和漂移 commit 来源检查均完成。
-- 阻塞项：仅 Flutter/native-assets 串行资源锁；Batch7 分支在派发后继续前移，因此本任务固定使用派发快照 `1a7ddbf9`，不追逐并发 WIP。
+- 状态：静态与动态重验完成，准备最终 diff 检查和独立子 agent 终审。
+- 最后完成：当前九文件完整 targeted `81/81`，18 文件 scoped analyze `No issues found`；九项均无需 cherry-pick。
+- 下一步：更新审计，执行最终 diff/scope check，提交冻结态并交独立子 agent 终审。
+- 已跑验证：祖先关系、目标文件存在性、对象哈希、import/禁区扫描、测试声明计数、漂移来源、完整 targeted 和 scoped analyze 均完成。
+- 阻塞项：无。首轮测试因 fresh worktree 缺 `.dart_tool/package_config.json` 在 0 测试时触发 Flutter native-assets 工具崩溃；执行 `flutter pub get --offline` 仅生成忽略元数据后复跑通过，未改 lockfile/依赖。

@@ -39,10 +39,11 @@
 
 ## 验证
 
-- 九个 targeted 测试文件：待 Flutter 串行资源锁放行后运行。
-- 18 文件 scoped analyze：待 Flutter 串行资源锁放行后运行。
-- `git diff --check`：待最终文档完成后运行。
-- 范围 diff check：待最终文档完成后运行。
+- 九个 targeted 测试文件：当前完整 `81/81`，全部通过。旧 M1 核心为其中 `77/77`，C16 防御加固新增 `4/4`。
+- 18 文件 scoped analyze：`Analyzing 18 items... No issues found`。
+- fresh worktree 首轮测试在 0 项执行时因缺 `.dart_tool/package_config.json` 触发 Flutter native-assets `Bad state: No element`；`flutter pub get --offline` 仅恢复被忽略的本地元数据，`pubspec.lock`/`pubspec.yaml` 未变，随后同一 targeted 命令通过。
+- `git diff --check`：PASS。
+- 范围 diff check：PASS；相对冻结基线仅新增本计划与本审计，九个实现/测试均未改。
 - 独立子 agent 终审：待动态验证完成后运行。
 
 ## 遗留风险
@@ -50,4 +51,3 @@
 - 本次证明的是委派快照 `1a7ddbf9`，不覆盖 Batch7 分支在派发后新增的并发提交。
 - 九个合同中的部分已被后续 G1/G2 adapter 消费；本次没有修改这些消费方，也不宣称黑风岭产品纵切已完成。
 - `PROPOSED` / `TUNING` 决策仍保持未冻结；本审计没有从现有 API 反推产品语义。
-
