@@ -263,7 +263,13 @@ class CombatResolutionService {
     // 5. 双层伤势（第八阶段 2026-06-25）：连战轻伤每场累积 + 硬仗重伤
     // （战败全员 / 惨胜低血存活者）。仅修改传入 Character 字段，持久化归 caller。
     // 与上方心魔 / Boss 散功分支并存：伤势是通用层，不依赖 stageType。
-    if (numbersConfig != null && participatingCharacters.isNotEmpty) {
+    // 心魔失败只保留内息紊乱/修炼度惩罚，不产生物理轻伤或重伤；普通 Boss
+    // 与其他战斗继续沿用统一伤势结算。
+    final isInnerDemonFailure =
+        !resolvedVictory && stageDef?.stageType == StageType.innerDemon;
+    if (numbersConfig != null &&
+        participatingCharacters.isNotEmpty &&
+        !isInnerDemonFailure) {
       InjuryService.applySettlementInjuries(
         participatingCharacters: participatingCharacters,
         participants: {
