@@ -14,8 +14,8 @@
 
 ## 当前恢复点
 
-- 状态：已完成实现，待运行验证并提交 READY 封签。
-- 最后完成：新增 resolver、五组边界测试与本计划。
-- 下一步：运行 targeted test、scoped analyze、diff check；检查 diff 后提交中文动宾 commit 与 `[READY]` 空提交。
-- 已跑验证：尚未运行本切片验证。
+- 状态：已完成并冻结，等待主控评审/合并。
+- 最后完成：新增显式 state resolver、五组边界测试与本计划；已提交 `316f7b20`，READY 封签为 `c99f5b19`。
+- 下一步：主控复审 diff 后合并；本分支不再修改。
+- 已跑验证：`flutter analyze` scoped 0 issues；`dart analyze` 0 issues；`git diff --check` 通过。targeted `flutter test --no-pub test/features/battle/application/phase0a/phase0a_encounter_migration_resolver_test.dart` 因本机 Flutter 工具异常退出 `Bad state: No element` 未启动测试。
 - 阻塞项：无。
