@@ -71,15 +71,15 @@ get lastAttackTokenLeaseBatchReceipt =>
 
 ## CLAUDE §8.2 验收 checklist
 
-- [ ] 有效红灯后完成新 R25、dynamic objective、lease session、production
+- [x] 有效红灯后完成新 R25、dynamic objective、lease session、production
   lease wiring 与 compatibility 逐文件 targeted；不跑 full。
-- [ ] 两个 changed Dart items scoped analyze 0 issue；format/diff/path/status clean。
-- [ ] 生产接线证据如实：getter 位于真实 `Phase0aEncounterFlow`，但本任务
+- [x] 两个 changed Dart items scoped analyze 0 issue；format/diff/path/status clean。
+- [x] 生产接线证据如实：getter 位于真实 `Phase0aEncounterFlow`，但本任务
   不修改 assembler/host，不冒充 production host 已接入。
-- [ ] 红线影响为 0：零 YAML/数值/玩家文案/三系/在线离线/反主流/save/UI。
-- [ ] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high，
+- [x] 红线影响为 0：零 YAML/数值/玩家文案/三系/在线离线/反主流/save/UI。
+- [x] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high，
   Read/Grep/Find/Ls-only 完成设计与最终 diff 审查，triage 后 P0/P1/P2=0。
-- [ ] 小提交按 plan → red → implementation → fix/evidence；最后追加精确
+- [x] 小提交按 plan → red → implementation → fix/evidence；本证据提交后追加精确
   `[READY][PI][P2-M2-R25] 冻结遭遇流运行时观测` 空提交。
 
 ## Pi 实现前只读审查
@@ -109,9 +109,43 @@ get lastAttackTokenLeaseBatchReceipt =>
 4. 实现两个最小 getter，运行 targeted/analyze/format/diff/path/status。
 5. Pi 最终只读 diff 审查、Codex triage、回填证据并追加 READY。
 
-- 状态：环境与设计审查完成，计划冻结，待进入红测。
-- 最后完成：Pi DESIGN PASS；两项 P1 与六项 P2 已转为测试/实现约束。
-- 下一步：提交计划，新增 R25 测试并获取缺失 API 编译红灯。
-- 已跑验证：`flutter pub get`；build_runner 126 ignored outputs；Batch18
-  `libisar.dylib` SHA-256 与 `cmp` 一致；未跑测试。
-- 阻塞：无；host/durable/timeline/tuning 与外部副作用回滚继续 Gate。
+- 状态：实现、targeted、changed analyze、独立最终审查与 finding
+  triage 已完成；待提交本证据后追加 READY 空提交。
+- 非空提交：`3098b000` plan；`6ab21afa` red；`974c6b2a`
+  implementation；`46c0bde6` 测试守卫收紧；`e79a50b1` Pi P2
+  nullable owner getter 守卫加固。
+- 有效红灯：测试自身编译问题收敛后，新 R25 文件仅因
+  `Phase0aEncounterFlow` 缺失两个冻结 getter 编译失败；随后最小实现转绿。
+- targeted 合计 58/58：新 R25 12/12，dynamic objective 15/15，lease
+  session wiring 17/17，production lease wiring 10/10，compatibility 4/4；
+  未跑 full。Pi P2 守卫修正后又复跑新 R25 12/12。
+- 静态验证：两个 changed Dart items `flutter analyze --no-pub` 0 issue；
+  `dart format` 2 items 0 changed；`git diff --check`、exact three-owned-path
+  检查与 status clean。
+- 环境：`flutter pub get` 成功；build_runner 报告 126 ignored outputs；
+  Batch18 `libisar.dylib` 复制后 SHA-256 均为
+  `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`，
+  `cmp -s` 一致；ignored/generated 文件未进入 Git。
+
+## Pi 最终只读审查与 triage
+
+- 实际配置与设计审查相同：Pi CLI 0.84.1，exact
+  `deepseek/deepseek-v4-flash`，thinking high，Read/Grep/Find/Ls-only，
+  `--no-session --no-skills`；约 5 分钟有界窗口内正常退出。
+- 原始结论：`FINAL PASS`，P0=0、P1=0、P2=2，无 fake green、
+  无 caller initial runtime identity 误锚、无越界修改，Gate PASS。
+- P2-1 已关闭：原字面守卫不覆盖 nullable owner getter；改为同时
+  匹配 nullable/non-nullable 的精确 getter regex，复跑 R25 12/12 与
+  analyze 0。
+- P2-2 为预期流程态：终审时 checklist/READY 尚未回填；本节已回填
+  真实证据，本证据提交后立即追加精确 READY 空提交。
+- Codex triage 后有效 P0/P1/P2=0；不需要进一步代码扩张。
+
+## 最终 Gate
+
+- event-order adapter 失败在合法 seq/tick 构造下结构不可达；本任务不伪造
+  重复/倒序事件，以真实可达失败矩阵与 source order guard 冻结。
+- flow-owned state/progress/receipt 不发布失败候选；caller-owned RNG、
+  resolver/observer/source 调用与其他外部副作用不回滚。
+- 不暴露 owner/mutation capability，不接 host/durable/persistence，不推断
+  ActionTimeline/capacity/budget/default；Gate PASS，无需用户决策。
