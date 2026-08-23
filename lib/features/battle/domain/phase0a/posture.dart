@@ -59,6 +59,22 @@ final class PostureConfig {
   final int vulnerabilityTicks;
   final PostureRecoveryPolicy recoveryPolicy;
   final double postVulnerabilityAccumulated;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PostureConfig &&
+      other.capacity == capacity &&
+      other.vulnerabilityTicks == vulnerabilityTicks &&
+      other.recoveryPolicy == recoveryPolicy &&
+      other.postVulnerabilityAccumulated == postVulnerabilityAccumulated;
+
+  @override
+  int get hashCode => Object.hash(
+    capacity,
+    vulnerabilityTicks,
+    recoveryPolicy,
+    postVulnerabilityAccumulated,
+  );
 }
 
 final class PostureEvent {

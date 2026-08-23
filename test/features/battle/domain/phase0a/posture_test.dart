@@ -173,14 +173,15 @@ void main() {
   );
 
   test('same state and input produce equal deterministic transitions', () {
-    final config = PostureConfig(
+    PostureConfig config() => PostureConfig(
       capacity: 17,
       vulnerabilityTicks: 4,
       recoveryPolicy: PostureRecoveryPolicy.reset,
       postVulnerabilityAccumulated: 0,
     );
-    final state = PostureState.initial(config);
+    final first = PostureState.initial(config());
+    final second = PostureState.initial(config());
 
-    expect(state.apply(6), state.apply(6));
+    expect(first.apply(6), second.apply(6));
   });
 }
