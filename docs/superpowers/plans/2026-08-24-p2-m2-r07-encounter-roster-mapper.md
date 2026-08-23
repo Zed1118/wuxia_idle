@@ -49,11 +49,11 @@
 
 ## 当前恢复点
 
-- 状态：实现、验证、Qoder 最终复核与证据记录完成；准备追加 READY 空提交冻结分支。
+- 状态：实现、验证、Qoder 最终复核、证据记录与 READY 已完成冻结。
 - 最后完成：实现 commit `99f90d990bbdbd3119f3256b1883ee40b64465a9` 新增纯 mapper；entry set 漂移在 factory 首调前 fail closed，通过后按 content 顺序传递 director 权威 runtime enemy ID，并委托 roster 完成 actor 校验。红测先因目标文件/API 缺失编译失败，实现后转绿。Qoder 最终复核 PASS，P0/P1/P2=0。
-- 下一步：提交本恢复点证据，追加 `[READY][QODER][P2-M2-R07]` 空提交，交主控独立复审和 Batch12 集成。
+- 下一步：source READY `79819c6b` 已交主控完成来源独立复审并进入 Batch12 集成终审。
 - 已跑验证：新 mapper 8/8、R04 mapper 8/8、content definition 20/20、roster 9/9、SpawnDirector 33/33，共 78/78 通过；scoped analyze 2 files 0 issue；Dart format 与 `git diff --check` 通过。Qoder 1.1.28 / `Qwen3.8-Max` / high 设计审查与最终审查均 PASS。
 - 阻塞项：无。
 - 生产接线：依授权不接 production host；后续 host 必须显式提供 actor factory。
 - 红线影响：预期无生产数值、玩家文案、奖励、伤势、save、UI、三系、在线离线或反主流触点。
-- 残留风险：本切片不验证 production actor 装配与候选数值；Batch12 集成后仍需独立复审和批末全量验证。
+- 残留风险：本切片不验证 production actor 装配与候选数值；Batch12 已完成来源独立复审和批末 full 4877，产品接线仍受后续 promotion Gate。
