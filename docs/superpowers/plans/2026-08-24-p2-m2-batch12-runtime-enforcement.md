@@ -29,4 +29,4 @@
 - [x] 冻结任务所有权、依赖、生产隔离和 promotion Gate。
 - [x] R05 / R06 / R07 实现、来源验证、工具审查、独立复审与 READY。
 - [x] 主控逐项审 diff；联合 targeted 167/167、9 项 scoped analyze 0 issue、批末全量 4877/4877 与仓库审计通过。
-- [ ] 集成独立终审、证据收口与 Batch12 READY。
+- [x] 集成独立终审 P0/P1/P2=0，文档 P2 已修复，证据收口完成并冻结 Batch12 READY。

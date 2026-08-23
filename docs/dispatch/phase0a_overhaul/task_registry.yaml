@@ -1597,8 +1597,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch12-runtime-enforcement-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch12-runtime-enforcement-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    validated_commit: 1dbf9a55b8cc773d04b5fbe91d0c22ab2986cf5b
+    ready_marker: "[READY][CODEX][P2-M2-BATCH12] 运行时执行接缝收口"
     source_tasks:
       - P2-M2-R05-ATTACK-TOKEN-BATCH-GATE
       - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
@@ -1617,7 +1619,7 @@ tasks:
       changed_dart_items: 9
       scoped_analyze_issues: 0
       source_independent_review_p0_p1_p2: 0
-      integration_independent_review_p0_p1_p2: pending
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch12-runtime-enforcement.md

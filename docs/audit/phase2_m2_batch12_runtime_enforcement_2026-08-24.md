@@ -39,7 +39,9 @@
 - 预分析发现 R05 prerequisite 使用不存在的旧任务名；已在 `0f7f306c` 修正为真实 `P2-G2-D04-TOKEN-OBSERVE-SEAM`，全 registry 无其他悬空 prerequisite。
 - `main` 与 `origin/main` 均保持 `e292d3a0`，未被修改。
 
-## 待终审与残留 Gate
+## 终审与残留 Gate
 
-- 当前实现、来源工具审查、三项来源独立复审、联合 targeted、analyze、full test 与仓库审计均已通过；待集成态独立终审后冻结 READY。
+- 集成态独立终审先发现 R07 计划恢复点仍停在追加 READY 前的文档 P2；`1dbf9a55` 已同步真实 READY、full test 与 promotion Gate 口径，复核后 P0/P1/P2=0。
+- 独立终审复跑 12 文件 targeted 167/167、9 项 scoped analyze 0、format 0 changed；核对 70 个任务 ID 唯一且 prerequisite 0 悬空、49 项决策中 20 个 TUNE 继续保持 tuning、三 source patch-id 与集成提交一致。
+- 实现、来源工具审查、三项来源独立复审、集成独立终审、联合 targeted、analyze、full test 与仓库审计全部通过；本记录提交后追加空 `[READY][CODEX][P2-M2-BATCH12]`。
 - production candidate budgets、Ch1 production catalog/actor assembly、host route、Mac/Windows Profile 与真人试玩仍受 promotion/G2 Gate 锁定；Batch12 不宣称这些产品验收完成。

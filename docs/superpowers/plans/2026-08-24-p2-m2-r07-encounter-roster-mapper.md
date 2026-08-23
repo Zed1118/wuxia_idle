@@ -51,7 +51,7 @@
 
 - 状态：实现、验证、Qoder 最终复核、证据记录与 READY 已完成冻结。
 - 最后完成：实现 commit `99f90d990bbdbd3119f3256b1883ee40b64465a9` 新增纯 mapper；entry set 漂移在 factory 首调前 fail closed，通过后按 content 顺序传递 director 权威 runtime enemy ID，并委托 roster 完成 actor 校验。红测先因目标文件/API 缺失编译失败，实现后转绿。Qoder 最终复核 PASS，P0/P1/P2=0。
-- 下一步：source READY `79819c6b` 已交主控完成来源独立复审并进入 Batch12 集成终审。
+- 下一步：source READY `79819c6b` 已通过来源独立复审并完成 Batch12 集成终审。
 - 已跑验证：新 mapper 8/8、R04 mapper 8/8、content definition 20/20、roster 9/9、SpawnDirector 33/33，共 78/78 通过；scoped analyze 2 files 0 issue；Dart format 与 `git diff --check` 通过。Qoder 1.1.28 / `Qwen3.8-Max` / high 设计审查与最终审查均 PASS。
 - 阻塞项：无。
 - 生产接线：依授权不接 production host；后续 host 必须显式提供 actor factory。
