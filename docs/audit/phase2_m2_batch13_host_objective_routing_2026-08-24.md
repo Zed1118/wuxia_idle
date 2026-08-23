@@ -34,6 +34,9 @@
 - task/decision registry 已验证 74 个任务 ID 唯一、prerequisite 0 悬空；49 项决策中 20 个 `TUNE-*` 全部继续保持 `tuning`。相对基线无 `data/`、mainline host/stage entry、GDD/CLAUDE/PROGRESS 或 candidate fixture 变更。
 - `main` 与 `origin/main` 均保持 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 
-### 批末待完成
+### 终审与残留 Gate
 
-- full Flutter test 与集成态证据已完成；本记录提交后启动独立集成终审，P0/P1/P2 清零后再冻结 Batch13 READY。
+- 独立集成终审复跑 19 文件 targeted 183/183，并复核 10 项 scoped analyze 0、format 0 changed、full 4913/4913 证据、8 组 source→integration stable patch-id、74 个任务 ID、49 个决策 ID、20 个 `TUNE-*` 状态与 main refs。
+- 首轮终审只发现 4 条英文提交信息违反 CLAUDE.md §8.2/§11 的 P2；隔离分支保留 `codex/phase2-m2-batch13-pre-message-fix-b1f3fde8` 备份后，已把 4 条消息重写为中文动宾，并在 `58526d0e` 同步 registry/audit 的新集成哈希。修后 `lib/`、`test/` 及全部非文档文件相对备份零差异，终审 PASS，P0/P1/P2=0。
+- 实现、来源工具审查、三项来源独立复审、集成独立终审、联合 targeted、analyze、format、full test 与仓库审计全部通过；本记录提交后追加空 `[READY][CODEX][P2-M2-BATCH13] 收口装配目标路由接缝`。
+- production candidate/tuning 晋升、真实 host/stage route 切换、Mac/Windows Profile 与真人 G2 试玩继续保持 Gate；Batch13 不宣称这些产品验收完成。

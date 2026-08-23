@@ -30,4 +30,5 @@
 - [x] R08 / R09 / R10 实现、来源验证、独立复审与修后 READY。
 - [x] 主控成对 objective 透传、183/183 联合 targeted、10 项 scoped analyze 与仓库审计。
 - [x] 批末 full Flutter test 4913/4913 通过，exit 0。
-- [ ] 独立集成终审、证据收口与 Batch13 READY。
+- [x] 独立集成终审初见英文提交信息 P2；安全重写并同步哈希后复核 P0/P1/P2=0。
+- [x] 证据收口完成，追加 Batch13 READY 冻结恢复点。

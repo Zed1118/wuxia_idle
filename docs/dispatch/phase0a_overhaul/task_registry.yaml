@@ -1732,8 +1732,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch13-host-objective-routing-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch13-host-objective-routing-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 81d47f16880b2b9d7a860379cf308cca3f6110e2
+    validated_commit: 58526d0eb4249b0ea6b5f0a938263428a88367b4
+    ready_marker: "[READY][CODEX][P2-M2-BATCH13] 收口装配目标路由接缝"
     source_tasks:
       - P2-M2-R08-PRODUCTION-ENCOUNTER-TOKEN-GATE
       - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
@@ -1754,6 +1756,7 @@ tasks:
       changed_dart_items: 10
       scoped_analyze_issues: 0
       source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
       - test/features/battle/application/phase0a/phase0a_production_encounter_objective_integration_test.dart
