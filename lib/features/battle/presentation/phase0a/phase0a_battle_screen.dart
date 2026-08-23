@@ -61,6 +61,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _actionPulseRemaining = <String, double>{};
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
+  bool _primaryAttackKeyHeld = false;
+  final Set<LogicalKeyboardKey> _heldMovementKeys = <LogicalKeyboardKey>{};
   ArenaVector? _pointerAimDirection;
 
   /// Esc 暂停态(0C):暂停期间帧回调零推进(不记性能样本),
@@ -90,6 +92,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _actionPulseRemaining.clear();
     _paused = false;
     _primaryAttackHeld = false;
+    _primaryAttackKeyHeld = false;
+    _heldMovementKeys.clear();
     _pointerAimDirection = null;
   }
 
@@ -142,7 +146,43 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _pointerAimDirection = null;
   }
 
+  void _clearHeldInput() {
+    _primaryAttackKeyHeld = false;
+    _heldMovementKeys.clear();
+    _stopPointerAttack();
+  }
+
+  bool _isMovementKey(LogicalKeyboardKey key) =>
+      key == LogicalKeyboardKey.keyA ||
+      key == LogicalKeyboardKey.keyD ||
+      key == LogicalKeyboardKey.keyW ||
+      key == LogicalKeyboardKey.keyS;
+
+  Phase0aPlayerCommand _heldCommand() => Phase0aPlayerCommand(
+    left: _heldMovementKeys.contains(LogicalKeyboardKey.keyA),
+    right: _heldMovementKeys.contains(LogicalKeyboardKey.keyD),
+    up: _heldMovementKeys.contains(LogicalKeyboardKey.keyW),
+    down: _heldMovementKeys.contains(LogicalKeyboardKey.keyS),
+    attack: _primaryAttackKeyHeld || _primaryAttackHeld,
+    attackAimDirection: _pointerAimDirection,
+  );
+
+  void _enqueueHeldInput() {
+    if (!_acceptsBattleInput) return;
+    final command = _heldCommand();
+    if (command.left ||
+        command.right ||
+        command.up ||
+        command.down ||
+        command.attack) {
+      widget.controller.enqueue(command);
+    }
+  }
+
   void _refresh() {
+    if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      _clearHeldInput();
+    }
     if (widget.controller.lastEvents.isNotEmpty) {
       final playerId = widget.controller.state.player.id;
       for (final event in widget.controller.lastEvents) {
@@ -334,7 +374,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     var steps = 0;
     while (_accumulatorSeconds >= widget.controller.fixedDeltaSeconds &&
         steps < Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
-      if (_primaryAttackHeld) _enqueuePointerAttack();
+      // Held input is sampled once per fixed simulation tick. It does not
+      // depend on OS key-repeat cadence and therefore stays deterministic.
+      _enqueueHeldInput();
       widget.controller.step();
       _accumulatorSeconds -= widget.controller.fixedDeltaSeconds;
       steps++;
@@ -370,10 +412,21 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) {
+    final key = event.logicalKey;
+    if (event is KeyUpEvent) {
+      if (_isMovementKey(key)) {
+        _heldMovementKeys.remove(key);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyJ) {
+        _primaryAttackKeyHeld = false;
+        return KeyEventResult.handled;
+      }
       return KeyEventResult.ignored;
     }
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      _clearHeldInput();
       // 终局态唯一有效键:Enter = 再战(9B)。
       if (event.logicalKey == LogicalKeyboardKey.enter &&
           widget.retryFlowBuilder != null &&
@@ -383,23 +436,27 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       }
       return KeyEventResult.ignored;
     }
-    final key = event.logicalKey;
     // Esc 暂停/继续(0C,spec §3.1):仅进行中可暂停;暂停中除 Esc 外不受理。
     if (key == LogicalKeyboardKey.escape) {
       setState(() {
         _paused = !_paused;
-        if (_paused) _stopPointerAttack();
+        if (_paused) _clearHeldInput();
         if (!_paused) _lastElapsed = null; // 恢复首帧重建 delta 基准,不吞暂停时长
       });
       return KeyEventResult.handled;
     }
     if (_paused) return KeyEventResult.ignored;
+    if (_isMovementKey(key)) {
+      _heldMovementKeys.add(key);
+      widget.controller.enqueue(_heldCommand());
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.keyJ) {
+      _primaryAttackKeyHeld = true;
+      widget.controller.enqueue(_heldCommand());
+      return KeyEventResult.handled;
+    }
     final command = switch (key) {
-      LogicalKeyboardKey.keyA => const Phase0aPlayerCommand(left: true),
-      LogicalKeyboardKey.keyD => const Phase0aPlayerCommand(right: true),
-      LogicalKeyboardKey.keyW => const Phase0aPlayerCommand(up: true),
-      LogicalKeyboardKey.keyS => const Phase0aPlayerCommand(down: true),
-      LogicalKeyboardKey.keyJ => const Phase0aPlayerCommand(attack: true),
       LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
@@ -427,6 +484,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     return Focus(
       focusNode: _focusNode,
       autofocus: true,
+      onFocusChange: (focused) {
+        if (!focused) _clearHeldInput();
+      },
       onKeyEvent: _handleKey,
       child: Scaffold(
         backgroundColor: WuxiaUi.ink,

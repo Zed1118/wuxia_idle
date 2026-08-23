@@ -240,6 +240,23 @@ void main() {
   });
 
   group('键盘 WASD:手动步进改变屏幕脚点', () {
+    testWidgets('按住 D 跨多个 fixed tick 持续移动,抬起后停止', (tester) async {
+      await pumpScreen(tester);
+
+      final startX = controller.state.player.position.x;
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      await tester.pump(const Duration(milliseconds: 220));
+      final afterFirstTick = controller.state.player.position.x;
+      await tester.pump(const Duration(milliseconds: 220));
+      final afterSecondTick = controller.state.player.position.x;
+      expect(afterFirstTick, greaterThan(startX));
+      expect(afterSecondTick, greaterThan(afterFirstTick));
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+      await tester.pump(const Duration(milliseconds: 220));
+      expect(controller.state.player.position.x, afterSecondTick);
+    });
+
     testWidgets('D/A/S/W 各一步,玩家立绘屏幕脚点按对应方向移动', (tester) async {
       await pumpScreen(tester);
 
