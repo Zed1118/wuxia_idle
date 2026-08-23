@@ -1,0 +1,26 @@
+{
+  "knownStageIds": [
+    "stage_zeta_legacy",
+    "stage_alpha_migrated",
+    "stage_beta_migrated"
+  ],
+  "legacyAllowlist": [
+    "stage_zeta_legacy"
+  ],
+  "assignments": [
+    {
+      "stageId": "stage_beta_migrated",
+      "state": "migrated",
+      "encounterId": "encounter_beta"
+    },
+    {
+      "stageId": "stage_zeta_legacy",
+      "state": "legacy"
+    },
+    {
+      "stageId": "stage_alpha_migrated",
+      "state": "migrated",
+      "encounterId": "encounter_alpha"
+    }
+  ]
+}

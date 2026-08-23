@@ -1,0 +1,38 @@
+{
+  "knownStageIds": [
+    "stage_missing",
+    "stage_migrated_allowlisted",
+    "stage_beta_legacy",
+    "stage_alpha_migrated",
+    "stage_legacy_unallowlisted"
+  ],
+  "legacyAllowlist": [
+    "stage_unknown_allowlisted",
+    "stage_migrated_allowlisted"
+  ],
+  "assignments": [
+    {
+      "stageId": "stage_unknown_assignment",
+      "state": "migrated",
+      "encounterId": "encounter_unknown"
+    },
+    {
+      "stageId": "stage_legacy_unallowlisted",
+      "state": "legacy"
+    },
+    {
+      "stageId": "stage_migrated_allowlisted",
+      "state": "migrated",
+      "encounterId": "encounter_migrated"
+    },
+    {
+      "stageId": "stage_alpha_migrated",
+      "state": "migrated",
+      "encounterId": "encounter_alpha"
+    },
+    {
+      "stageId": "stage_beta_legacy",
+      "state": "legacy"
+    }
+  ]
+}
