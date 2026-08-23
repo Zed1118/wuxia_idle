@@ -53,7 +53,7 @@ void main() {
       double baseMitigationFraction = 0,
       double counterDamage = 0,
       double counterUpperBound = 0,
-      double? counterPerSecondUpperBound,
+      double? remainingCounterBudget,
       CounterEffectAllowlist counterEffectAllowlist =
           const CounterEffectAllowlist(),
     }) => DefenseInput(
@@ -69,7 +69,7 @@ void main() {
       baseMitigationFraction: baseMitigationFraction,
       counterDamage: counterDamage,
       counterUpperBound: counterUpperBound,
-      counterPerSecondUpperBound: counterPerSecondUpperBound,
+      remainingCounterBudget: remainingCounterBudget,
       counterEffectAllowlist: counterEffectAllowlist,
     );
 
@@ -177,13 +177,13 @@ void main() {
       expect(result.nonRecursive, isTrue);
     });
 
-    test('applies the stricter per-second counter cap', () {
+    test('applies the stricter caller-computed remaining counter budget', () {
       final result = resolveDefense(
         input(
           parrySucceeded: true,
           counterDamage: 80,
           counterUpperBound: 50,
-          counterPerSecondUpperBound: 12,
+          remainingCounterBudget: 12,
         ),
       );
 
@@ -210,11 +210,9 @@ void main() {
           counterDamage: 10,
           counterUpperBound: 20,
           counterEffectAllowlist: const CounterEffectAllowlist(
-            effects: {
-              CounterEffect.critical,
-              CounterEffect.lifesteal,
-              CounterEffect.onHitReflect,
-            },
+            allowsCritical: true,
+            allowsLifesteal: true,
+            allowsOnHitReflect: true,
           ),
         ),
       );

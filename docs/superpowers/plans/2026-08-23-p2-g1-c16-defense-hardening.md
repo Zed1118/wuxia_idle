@@ -7,8 +7,8 @@
 ## 本切片
 
 - `defense_resolution.dart` 新增 typed `CounterEffectAllowlist`，默认空；只有显式枚举的能力例外才能打开暴击、吸血或受击后反伤标记。
-- 反击同时受单次 `counterUpperBound` 与可选每秒 `counterPerSecondUpperBound` 的较小者约束；重定向始终无反击伤害且单独标记 `projectileRedirect`。
-- 测试覆盖分支独立性、优先级、每秒上限、默认关闭与 typed allowlist 例外、nonRecursive 安全合同。
+- 反击同时受单次 `counterUpperBound` 与调用方已计算的本秒剩余 `remainingCounterBudget` 的较小者约束；解析器不负责跨命中计数。重定向始终无反击伤害且单独标记 `projectileRedirect`。
+- 测试覆盖分支独立性、优先级、剩余预算、默认关闭与 typed allowlist 例外、nonRecursive 安全合同。
 
 ## 生产接线边界
 

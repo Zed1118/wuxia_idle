@@ -16,20 +16,21 @@ enum DefenseBranch {
 enum CounterEffect { critical, lifesteal, onHitReflect }
 
 final class CounterEffectAllowlist {
-  const CounterEffectAllowlist({this.effects = const <CounterEffect>{}});
+  const CounterEffectAllowlist({
+    this.allowsCritical = false,
+    this.allowsLifesteal = false,
+    this.allowsOnHitReflect = false,
+  });
 
-  final Set<CounterEffect> effects;
+  final bool allowsCritical;
+  final bool allowsLifesteal;
+  final bool allowsOnHitReflect;
 
-  bool contains(CounterEffect effect) => effects.contains(effect);
-
-  @override
-  bool operator ==(Object other) =>
-      other is CounterEffectAllowlist &&
-      other.effects.length == effects.length &&
-      other.effects.containsAll(effects);
-
-  @override
-  int get hashCode => Object.hashAll(effects);
+  bool contains(CounterEffect effect) => switch (effect) {
+    CounterEffect.critical => allowsCritical,
+    CounterEffect.lifesteal => allowsLifesteal,
+    CounterEffect.onHitReflect => allowsOnHitReflect,
+  };
 }
 
 final class AttackDefenseFlags {
@@ -93,7 +94,7 @@ final class DefenseInput {
     required this.baseMitigationFraction,
     required this.counterDamage,
     required this.counterUpperBound,
-    this.counterPerSecondUpperBound,
+    this.remainingCounterBudget,
     this.counterEffectAllowlist = const CounterEffectAllowlist(),
   }) {
     _requireFiniteNonNegative(incomingHpDamage, 'incomingHpDamage');
@@ -103,10 +104,10 @@ final class DefenseInput {
     _requireUnitFraction(baseMitigationFraction, 'baseMitigationFraction');
     _requireFiniteNonNegative(counterDamage, 'counterDamage');
     _requireFiniteNonNegative(counterUpperBound, 'counterUpperBound');
-    if (counterPerSecondUpperBound != null) {
+    if (remainingCounterBudget != null) {
       _requireFiniteNonNegative(
-        counterPerSecondUpperBound!,
-        'counterPerSecondUpperBound',
+        remainingCounterBudget!,
+        'remainingCounterBudget',
       );
     }
   }
@@ -123,7 +124,10 @@ final class DefenseInput {
   final double baseMitigationFraction;
   final double counterDamage;
   final double counterUpperBound;
-  final double? counterPerSecondUpperBound;
+
+  /// Caller-computed counter budget remaining in the current second.
+  /// This resolver does not track time or aggregate across hits.
+  final double? remainingCounterBudget;
   final CounterEffectAllowlist counterEffectAllowlist;
 
   @override
@@ -141,7 +145,7 @@ final class DefenseInput {
       other.baseMitigationFraction == baseMitigationFraction &&
       other.counterDamage == counterDamage &&
       other.counterUpperBound == counterUpperBound &&
-      other.counterPerSecondUpperBound == counterPerSecondUpperBound &&
+      other.remainingCounterBudget == remainingCounterBudget &&
       other.counterEffectAllowlist == counterEffectAllowlist;
 
   @override
@@ -158,7 +162,7 @@ final class DefenseInput {
     baseMitigationFraction,
     counterDamage,
     counterUpperBound,
-    counterPerSecondUpperBound,
+    remainingCounterBudget,
     counterEffectAllowlist,
   ]);
 }
@@ -314,8 +318,10 @@ DefenseResult _zeroResult(DefenseBranch branch) => DefenseResult(
 
 double _boundedCounter(DefenseInput input) {
   var upperBound = input.counterUpperBound;
-  final perSecond = input.counterPerSecondUpperBound;
-  if (perSecond != null && perSecond < upperBound) upperBound = perSecond;
+  final remainingBudget = input.remainingCounterBudget;
+  if (remainingBudget != null && remainingBudget < upperBound) {
+    upperBound = remainingBudget;
+  }
   return _safeScale(
     input.counterDamage < upperBound ? input.counterDamage : upperBound,
     1,
