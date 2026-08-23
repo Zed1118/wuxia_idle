@@ -365,4 +365,34 @@ final class Phase0aProductionFlowAssembler {
       }
     }
   }
+
+  /// Explicit transactional-lease bridge for one typed migrated encounter.
+  ///
+  /// All lease lifecycle and policy remain caller-owned. This bridge only
+  /// forwards the frozen mapping and exact caller dependencies, and creates a
+  /// fresh objective tracker for this invocation. It selects no route, reads
+  /// no production data, and installs no host default.
+  static Phase0aEncounterFlow
+  assembleMigratedEncounterPlanWithAttackTokenLease({
+    required Phase0aMigratedEncounterPlan plan,
+    required NumbersConfig numbers,
+    required Random rng,
+    required Phase0aAttackTokenLeaseBatchGate attackTokenLeaseBatchGate,
+    required AttackTokenLeaseRuntime attackTokenLeaseRuntime,
+    required Phase0aEncounterObjectiveEventSource objectiveEventSource,
+    Phase0aEnemyIntentObserver? enemyIntentObserver,
+  }) {
+    return assembleEncounterFromMapping(
+      mapping: plan.mapping,
+      numbers: numbers,
+      rng: rng,
+      enemyIntentObserver: enemyIntentObserver,
+      attackTokenLeaseBatchGate: attackTokenLeaseBatchGate,
+      attackTokenLeaseRuntime: attackTokenLeaseRuntime,
+      objectiveTracker: Phase0aObjectiveRuntimeTracker(
+        controller: plan.runtimeContracts.objectiveController,
+      ),
+      objectiveEventSource: objectiveEventSource,
+    );
+  }
 }

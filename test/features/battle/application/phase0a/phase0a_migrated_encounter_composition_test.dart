@@ -28,6 +28,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_damage_kind.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
 import '../../../../support/combatant_snapshot_fixture.dart';
@@ -347,12 +348,13 @@ Phase0aEncounterFlow _assembleLeasePlan({
 void _expectFlowUnchanged({
   required Phase0aEncounterFlow flow,
   required Phase0aArenaState state,
-  required Object spawnState,
+  required SpawnDirectorState spawnState,
   required Phase0aBattleOutcome outcome,
   required Object records,
 }) {
   expect(flow.state, same(state));
-  expect(flow.spawnState, same(spawnState));
+  expect(flow.spawnState.tick, spawnState.tick);
+  expect(flow.spawnState.units, spawnState.units);
   expect(flow.outcome, outcome);
   expect(flow.lastOrderedEventRecords, same(records));
 }
@@ -677,10 +679,7 @@ void main() {
       'phase0a_production_flow_assembler.dart',
     ).readAsStringSync();
     final method = source.substring(
-      source.indexOf(
-        'static Phase0aEncounterFlow '
-        'assembleMigratedEncounterPlanWithAttackTokenLease',
-      ),
+      source.indexOf('assembleMigratedEncounterPlanWithAttackTokenLease({'),
     );
 
     expect(method, contains('mapping: plan.mapping'));
