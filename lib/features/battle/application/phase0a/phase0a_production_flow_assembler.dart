@@ -13,6 +13,7 @@ import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_encounter_flow.dart';
 import 'phase0a_encounter_mapping.dart';
+import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_observer.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -114,6 +115,7 @@ final class Phase0aProductionFlowAssembler {
     required Phase0aPlayerInputAdapter playerAdapter,
     required Phase0aEnemyAiAdapter enemyAiAdapter,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
+    Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
   }) {
     // —— 结构校验(零 RNG 消费,先于一切伤害组件构造)——
     _checkEncounterActorCoverage(
@@ -141,6 +143,7 @@ final class Phase0aProductionFlowAssembler {
       damageResolver: damageResolver,
       enemySkillDamageResolver: damageResolver,
       enemyIntentObserver: enemyIntentObserver,
+      enemyIntentBatchGate: enemyIntentBatchGate,
     );
     // runtime 构造继续校验 director/roster identity、tick、active arena 与
     // side/alive;校验失败在首拍前 fail closed,不推进 RNG。
@@ -157,17 +160,19 @@ final class Phase0aProductionFlowAssembler {
   ///
   /// The caller still passes [numbers] and the single [rng] explicitly (the
   /// mapping holds neither, keeping tuning and RNG ownership continuous); an
-  /// optional observe-only [Phase0aEnemyIntentObserver] is likewise explicit
-  /// here rather than frozen into the mapping. The mapping constructor has
-  /// already validated director/roster identity, player id consistency and
-  /// duplicate combatant actor ids; full actor coverage, player adapter id
-  /// and move-binding validation stay fail-closed in [assembleEncounter], so
-  /// this bridge behaves identically to a direct call.
+  /// optional observe-only [Phase0aEnemyIntentObserver] and optional caller-
+  /// supplied [Phase0aEnemyIntentBatchGate] are likewise explicit here rather
+  /// than frozen into the mapping. The mapping constructor has already
+  /// validated director/roster identity, player id consistency and duplicate
+  /// combatant actor ids; full actor coverage, player adapter id and move-
+  /// binding validation stay fail-closed in [assembleEncounter], so this
+  /// bridge behaves identically to a direct call.
   static Phase0aEncounterFlow assembleEncounterFromMapping({
     required Phase0aEncounterMapping mapping,
     required NumbersConfig numbers,
     required Random rng,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
+    Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
   }) {
     return assembleEncounter(
       initialState: mapping.initialState,
@@ -180,6 +185,7 @@ final class Phase0aProductionFlowAssembler {
       playerAdapter: mapping.playerAdapter,
       enemyAiAdapter: mapping.enemyAiAdapter,
       enemyIntentObserver: enemyIntentObserver,
+      enemyIntentBatchGate: enemyIntentBatchGate,
     );
   }
 
