@@ -813,8 +813,7 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-g2-d08-runtime-observer-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-d08-runtime-observer
-    status: waiting_dependency
-    wake_condition: D07 reviewed and integrated
+    status: in_progress
     protected_behavior:
       - runtime per-tick forks preserve the exact observer instance
       - observer sees only post-grace-gate enemy intents

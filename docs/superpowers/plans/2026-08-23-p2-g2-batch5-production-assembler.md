@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：D07 已派给 Pi + DeepSeek `deepseek-v4-flash`；D08 等待 D07 公开入口冻结。
-- 最后完成：Batch4 READY `21e17ecc`。
-- 下一步：Pi 实现 D07，Codex 并行审计 assembler 受影响面；集成后唤醒 Qoder D08。
+- 状态：D07 已交付 READY 并集成；D08 已派给 Qoder CLI + `Qwen3.8-Max`。
+- 最后完成：D07 外部 READY `cf91c73f`，集成提交 `68cd0c4d`；主控定向集 57/57 通过。
+- 下一步：回收 D08，对 D07/D08 做独立复审和生产回归。
 - 阻塞项：无；content loader 和黑风岭 tuning 未进入本批。
