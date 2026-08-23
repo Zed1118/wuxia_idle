@@ -296,6 +296,7 @@ enum _ExpectedEventKind { target, commander }
 
 typedef _ExpectedEvent = ({_ExpectedEventKind kind, String payload});
 
+// BEGIN INDEPENDENT EXPECTED EVENTS.
 const _expectedEventsByStageId = <String, List<_ExpectedEvent>>{
   'stage_01_01': [
     (kind: _ExpectedEventKind.target, payload: 'candidate_ch1_s01_blade_01'),
@@ -387,6 +388,7 @@ const _expectedEventsByStageId = <String, List<_ExpectedEvent>>{
     ),
   ],
 };
+// END INDEPENDENT EXPECTED EVENTS.
 
 const _expectedClauseCompletion = <String, List<bool>>{
   'stage_01_01': [true, false],
@@ -864,16 +866,54 @@ void main() {
     final source = File(
       'test/data/phase2/ch1_candidate_defeat_objective_execution_matrix_test.dart',
     ).readAsStringSync();
-    final declarationStart = source.indexOf(
-      '// BEGIN EXPLICIT DEFEAT DECLARATIONS.',
-    );
-    final declarationEnd = source.indexOf(
-      '// END EXPLICIT DEFEAT DECLARATIONS.',
-    );
+    const declarationBeginMarker =
+        '// BEGIN EXPLICIT DEFEAT '
+        'DECLARATIONS.';
+    const declarationEndMarker =
+        '// END EXPLICIT DEFEAT '
+        'DECLARATIONS.';
+    const expectedBeginMarker =
+        '// BEGIN INDEPENDENT EXPECTED '
+        'EVENTS.';
+    const expectedEndMarker =
+        '// END INDEPENDENT EXPECTED '
+        'EVENTS.';
+    final declarationStart = source.indexOf(declarationBeginMarker);
+    final declarationEnd = source.indexOf(declarationEndMarker);
     final declarationSource = source.substring(
       declarationStart,
       declarationEnd,
     );
+    final expectedStart = source.indexOf(expectedBeginMarker);
+    final expectedEnd = source.indexOf(expectedEndMarker);
+    final expectedSource = source.substring(expectedStart, expectedEnd);
+
+    expect(source.split(declarationBeginMarker).length - 1, 1);
+    expect(
+      RegExp(r'\bMapEntry\(').allMatches(declarationSource),
+      hasLength(95),
+    );
+    expect(
+      RegExp('Phase0aTargetDefeatProjection\\(').allMatches(declarationSource),
+      hasLength(67),
+    );
+    expect(
+      RegExp(
+        'Phase0aCommanderDefeatProjection\\(',
+      ).allMatches(declarationSource),
+      hasLength(3),
+    );
+    expect(source.split(expectedBeginMarker).length - 1, 1);
+    expect(
+      RegExp('_ExpectedEventKind\\.target').allMatches(expectedSource),
+      hasLength(67),
+    );
+    expect(
+      RegExp('_ExpectedEventKind\\.commander').allMatches(expectedSource),
+      hasLength(3),
+    );
+    expect(expectedSource, isNot(contains('_declarationsByStageId')));
+    expect(expectedSource, isNot(contains('Phase0aDefeatObjectiveProjection')));
 
     for (final forbidden in [
       'for (',

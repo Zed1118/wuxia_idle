@@ -19,30 +19,30 @@ promotion 或全目标 executable 声明。
 
 ## 验收标准
 
-- [ ] 95 个 encounter entry 都有 caller 逐条硬编码 declaration：67
+- [x] 95 个 encounter entry 都有 caller 逐条硬编码 declaration：67
   个 Target、3 个 Commander、25 个 empty；不从 entry / actor / role /
   position / objective 字符串或类型生成 projection。
-- [ ] R11 每个 runtime actor ID 与 content entry ID 明显不同；R22 仅经
+- [x] R11 每个 runtime actor ID 与 content entry ID 明显不同；R22 仅经
   exact `bindingByEntryId` 交付 R13。
-- [ ] 按 roster/content 顺序提交 95 个 defeat facts，R13 产生类型、
+- [x] 按 roster/content 顺序提交 95 个 defeat facts，R13 产生类型、
   payload、顺序精确的 70 个 events，R06 保持 clause 顺序与
   all / any 聚合语义。
-- [ ] 冻结关卡结果：01_01 `[true,false] / false`；01_02
+- [x] 冻结关卡结果：01_01 `[true,false] / false`；01_02
   `[false,true] / true`；01_03 `[true] / true`；01_04
   `[true,true] / true`；01_05 `[true] / true`。checkpoint / anchor 无事件。
-- [ ] R22 在真实 Ch1 fixture/plan 上对 missing / foreign / wrong-kind /
+- [x] R22 在真实 Ch1 fixture/plan 上对 missing / foreign / wrong-kind /
   duplicate declaration fail closed。
-- [ ] source guard 禁止 projection 推断、手写 checkpoint/anchor event、
+- [x] source guard 禁止 projection 推断、手写 checkpoint/anchor event、
   `flow.advance`、fixture/production/tuning/candidate promotion 写入或 IO default。
-- [ ] 生产接线证据如实限定为已有 R11/R22/R13/R06 组合合同；
+- [x] 生产接线证据如实限定为已有 R11/R22/R13/R06 组合合同；
   本任务只新增 candidate-only test，不宣称 host 或 production route。
-- [ ] 运行新矩阵、candidate catalog/V01、R11/R22/R13/R06、
+- [x] 运行新矩阵、candidate catalog/V01、R11/R22/R13/R06、
   primitive mapper/controller 影响集；1-item analyze；format/diff/path/status。
-- [ ] 数值红线、三系锁死、在线=离线、反主流不做项与文案/
+- [x] 数值红线、三系锁死、在线=离线、反主流不做项与文案/
   数值硬编码均不受影响；未改 production / data / schema / tuning。
-- [ ] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high，
+- [x] Pi CLI 0.84.1 exact `deepseek/deepseek-v4-flash` thinking high，
   Read/Grep/Find/Ls-only 完成最终只读审查，P0/P1/P2 清零。
-- [ ] 残留 Gate 明示保留 checkpoint/anchor projector、production host、
+- [x] 残留 Gate 明示保留 checkpoint/anchor projector、production host、
   candidate promotion、flow tick/runtime simulation、tuning/Profile/G2/真人验收。
 
 ## 任务切片
@@ -59,12 +59,16 @@ promotion 或全目标 executable 声明。
 
 ## 当前恢复点
 
-- 状态：进行中。
-- 最后完成：红测已以 `25b4e420` 提交；95 条硬编码
-  declaration、70 条独立期望事件、五关 R11→R22→R13→R06 进度
-  矩阵及真实 fixture fail-closed/source guard 已实现。
-- 下一步：提交实现，运行全部指定影响集与 scoped analyze。
+- 状态：实现与本地验证完成，待 post-triage Pi 复核与 READY。
+- 最后完成：计划 `0b35f02f`、红测 `25b4e420`、实现
+  `e7e60561`。首轮 Pi 为 `FINAL PASS`、P0/P1=0；唯一可操作 P2
+  是验收清单未勾选，本恢复点已关闭；其余两条为非阻断测试方法
+  信息，已通过 declaration/expected 独立区块唯一性与 95/67/3/70
+  精确计数 guard 加固。
+- 下一步：用同一 Pi 精确配置做 post-triage 复核，提交证据并
+  追加空 READY marker。
 - 已跑验证：`flutter pub get`；`dart run build_runner build`（126 outputs）；
-  `git status --short` clean；新矩阵红测 0 pass / 1 fail（预期）；
-  实现后新矩阵 8/8 PASS。
+  红测 0/1（预期）；新矩阵 8/8 PASS；9 个影响集逐文件
+  89/89 PASS；`flutter analyze --no-pub <new-test>` 0 issue；format 1 file /
+  0 changed。加固 guard 后新矩阵再次 8/8、analyze 0。
 - 阻塞项：无。
