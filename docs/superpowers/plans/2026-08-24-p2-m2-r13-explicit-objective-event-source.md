@@ -45,20 +45,20 @@ projector 提供。本任务不切换 production host，不构造 objective trac
 
 ## 验收 checklist（CLAUDE §8.2）
 
-- [ ] TDD 红测由目标文件/API 缺失触发，实现后转绿。
-- [ ] 覆盖 exact / missing / extra actor coverage 与显式空 projection。
-- [ ] 覆盖 target + commander、多 defeat 顺序、稳定唯一 ID、unknown actor 与
+- [x] TDD 红测由目标文件/API 缺失触发，实现后转绿。
+- [x] 覆盖 exact / missing / extra actor coverage 与显式空 projection。
+- [x] 覆盖 target + commander、多 defeat 顺序、稳定唯一 ID、unknown actor 与
   non-defeat no-op。
-- [ ] 证明误导性 actor/entry/role/defeatKind 不改变显式投影，无隐式语义。
-- [ ] external 六类允许，Target/Commander 拒绝；projector/yield 顺序稳定。
-- [ ] lazy projector 完整物化；中途 throw 时不暴露 partial result。
-- [ ] caller map/list 在构造后突变不污染 source。
-- [ ] 经 R09 真实 runtime flow 证明 source throw 不提交 session/director/outcome/
+- [x] 证明误导性 actor/entry/role/defeatKind 不改变显式投影，无隐式语义。
+- [x] external 六类允许，Target/Commander 拒绝；projector/yield 顺序稳定。
+- [x] lazy projector 完整物化；中途 throw 时不暴露 partial result。
+- [x] caller map/list 在构造后突变不污染 source。
+- [x] 经 R09 真实 runtime flow 证明 source throw 不提交 session/director/outcome/
   records/objective progress。
-- [ ] source guard 证明无 entryId/role/archetype/candidate/host/IO/default 推断。
-- [ ] 生产接线证据：实现现有 R09 interface 的真实 runtime source，但不切 host，
+- [x] source guard 证明无 entryId/role/archetype/candidate/host/IO/default 推断。
+- [x] 生产接线证据：实现现有 R09 interface 的真实 runtime source，但不切 host，
   不冒充生产 route 已启用。
-- [ ] 红线：0 数值/YAML/玩家文案，0 三系/在线离线/反主流/reward/save/UI
+- [x] 红线：0 数值/YAML/玩家文案，0 三系/在线离线/反主流/reward/save/UI
   触点。
 - [ ] Pi CLI 0.84.x / `deepseek/deepseek-v4-flash` / thinking high 完成设计
   和最终 diff 两轮只读审查，如实记录结果。
@@ -77,13 +77,24 @@ projector 提供。本任务不切换 production host，不构造 objective trac
 
 ## 当前恢复点
 
-- 状态：计划已建，待提交初始恢复点并执行 Pi 设计审查。
-- 最后完成：核对 Batch13 READY 基线、owned-files 边界、R09 frame/source、
-  objective events 与 exact roster 合同；尚未修改生产或测试代码。
-- 下一步：提交本计划，用 Pi CLI 0.84.x exact
-  `deepseek/deepseek-v4-flash` / thinking high 做只读设计审查。
+- 状态：计划、Pi 设计审查、TDD 红绿与实现已完成，待提交实现后执行
+  Pi 最终 diff 审查与收口验证。
+- 最后完成：新增 sealed defeat projection（显式 target/commander payload）与
+  exact-roster source；构造期冻结输入并验 coverage，运行期按冻结顺序投影、生成
+  tick/seq/index ID，全物化 external 六类并拒绝 defeat 绕过。
+- 下一步：提交 source + 本恢复点，用同一 Pi exact model/thinking 做最终
+  diff 只读审查，证伪 findings 后完成 format/analyze/path 验收与 READY。
 - 已跑验证：确认 `HEAD=77c5520e04355e041a5db6b40dde05b169874117`，
-  worktree 初始干净；`pi --version` = `0.84.1`。
+  worktree 初始干净；`pi --version` = `0.84.1`。新测试先因目标文件/API
+  缺失编译失败，实现后 15/15 PASS；R09 flow 15、tracker 15、production
+  objective integration 2、roster 9、objective primitive 9，连同新测试共
+  65/65 PASS；scoped `flutter analyze --no-pub` 4 items 0 issue；format 通过。
+- Pi 设计审查：`pi` 0.84.1，model `deepseek/deepseek-v4-flash`，thinking
+  `high`，`--no-session --tools read,grep,find,ls --print` 只读命令；结论「有条件
+  PASS，无 P0」。其 P1 要求冻结类型/constructor 已采纳；marker-only projection
+  建议会隐式把 runtime actor ID 当 objective ID，由主 agent 证伪后改为显式
+  targetId/commanderId payload。其 actor 空白 ID 顾虑已由 roster 上游的 exact
+  director ID 校验覆盖；missing/extra 诊断、external 不变异 frame 边界已落实。
 - 阻塞项：无。
 - 生产接线：本切片只交付 R09 runtime 可直接消费的 source 实现，不切换 host。
 - 红线影响：无数值、YAML、玩家文案、reward/save/UI 及三系或在线离线变更。
