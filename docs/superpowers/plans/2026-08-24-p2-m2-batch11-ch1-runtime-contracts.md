@@ -22,3 +22,10 @@
 - 主控逐个审查来源 diff，独立审查 P0/P1/P2=0。
 - 联合 targeted、scoped analyze、YAML/Markdown/diff/path 检查通过。
 - 记录集成 commit 与残留风险，追加空 `[READY][CODEX][P2-M2-BATCH11]`。
+
+## 完成状态
+
+- [x] R03 / R04 / D01 均通过主控 diff 审查与独立 P0/P1/P2=0 复审。
+- [x] 集成态联合 targeted 147/147，批末全量 4845/4845，7 项 scoped analyze 0 issue。
+- [x] YAML / Markdown / diff / production path / main isolation 检查通过，集成态独立终审 P0/P1/P2=0。
+- [x] 候选调优值继续被 production promotion Gate 锁定，Batch11 READY 不冒充 G2 产品验收。

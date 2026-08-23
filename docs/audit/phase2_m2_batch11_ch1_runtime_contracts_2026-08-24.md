@@ -16,11 +16,14 @@
 
 - R03 集成 `215ba044`，R04 集成 `dcf116b3`，D01 集成 `c0e2cadb`。三条来源均通过主控实际 diff 审查和独立 P0/P1/P2=0 复审。
 - Ch1 candidate + catalog schema/loader + objective/runtime mapper + spawn/token controller 联合 targeted：10 个测试文件，147/147 通过。
+- Fresh worktree 按 `CLAUDE.md` 预热生成 126 个 gitignored outputs 并配置本地 `libisar.dylib` 后，批末全量：4845/4845 通过，exit 0；生成件与动态库均未进入 Git diff。
 - 7 个变更 Dart 项 scoped analyze：0 issue。
 - task/decision registry 与 3 份 candidate fixture YAML parse 通过；变更 Markdown 本地链接、`git diff --check`、lib 范围与 production path isolation 全部通过。
 - 首次联合命令因新 worktree 缺少 `.dart_tool` 且使用 `--no-pub` 触发 Flutter 3.41.5 native-assets `Bad state: No element` 工具崩溃；`flutter pub get` 生成本地元数据后，原命令 147/147 通过，不是产品测试失败。
 - `main` 与 `origin/main` 仍为 `e292d3a0`，未被修改。
+- Batch11 集成态独立终审：P0/P1/P2=0；独立复跑 147/147、scoped analyze 0，并确认 candidate isolation、explicit enemy-id resolver、R03 owner-bound `all/any`、registry/audit 与 main 隔离均成立。
 
-## 待完成
+## 收口与残留 Gate
 
-- 执行 Batch11 集成态独立终审；P0/P1/P2=0 后更新最终登记并追加空 `[READY][CODEX][P2-M2-BATCH11]`。
+- Batch11 已满足实现、主审、来源独审、集成独审、targeted、全量、analyze 与范围隔离验收；本记录提交后追加空 `[READY][CODEX][P2-M2-BATCH11]`。
+- 未解除的产品 Gate 不属于 Batch11 缺陷：Ch1 候选值尚未经 production host/actor roster、Mac/Windows Profile 与真人试玩，不得因 READY 自动晋升 production。

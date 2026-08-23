@@ -1433,8 +1433,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch11-ch1-runtime-integration-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch11-ch1-runtime-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 611f0a89455e70e5478c828c8084b180cbcfc748
+    validated_commit: 152634c12eb3521af73ae1dfeebb6742c9a46361
+    ready_marker: "[READY][CODEX][P2-M2-BATCH11] Ch1 候选目录与 runtime 合同收口"
     source_tasks:
       - P2-M2-R03-OBJECTIVE-CONTROLLER
       - P2-M2-R04-RUNTIME-CONTRACT-MAPPER
@@ -1445,9 +1447,11 @@ tasks:
       - c0e2cadbece8469b577d0c902246feeb8dc2947f
     verification:
       joint_targeted_tests: 147
+      full_tests: 4845
       changed_dart_items: 7
       scoped_analyze_issues: 0
       source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch11-ch1-runtime-contracts.md
