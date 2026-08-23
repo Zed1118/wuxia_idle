@@ -16,11 +16,7 @@ final class AttackDefenseFlags {
     required this.reflectable,
     required this.dodgeable,
     required this.interruptible,
-  }) {
-    if (!blockable && parryable) {
-      throw ArgumentError.value(parryable, 'parryable', 'requires blockable');
-    }
-  }
+  });
 
   factory AttackDefenseFlags.checked({
     required bool blockable,
@@ -29,9 +25,6 @@ final class AttackDefenseFlags {
     required bool dodgeable,
     required bool interruptible,
   }) {
-    if (!blockable && parryable) {
-      throw ArgumentError.value(parryable, 'parryable', 'requires blockable');
-    }
     return AttackDefenseFlags(
       blockable: blockable,
       parryable: parryable,
@@ -213,14 +206,14 @@ DefenseResult resolveDefense(DefenseInput input) {
   var hpDamage = input.incomingHpDamage;
   var postureDamage = input.incomingPostureDamage;
   if (input.blockSucceeded && flags.blockable) {
-    hpDamage *= input.blockDamageMultiplier;
-    postureDamage *= input.blockDamageMultiplier;
+    hpDamage = _safeScale(hpDamage, input.blockDamageMultiplier);
+    postureDamage = _safeScale(postureDamage, input.blockDamageMultiplier);
   }
   final afterShield = hpDamage - input.shieldAbsorption;
   hpDamage = afterShield > 0 ? afterShield : 0;
   final mitigationMultiplier = 1 - input.baseMitigationFraction;
-  hpDamage *= mitigationMultiplier;
-  postureDamage *= mitigationMultiplier;
+  hpDamage = _safeScale(hpDamage, mitigationMultiplier);
+  postureDamage = _safeScale(postureDamage, mitigationMultiplier);
   final counter = usesBlockOrShield
       ? _boundedCounter(input.counterDamage, input.counterUpperBound)
       : 0.0;
@@ -267,7 +260,13 @@ DefenseResult _zeroResult(DefenseBranch branch) => DefenseResult(
 );
 
 double _boundedCounter(double damage, double upperBound) =>
-    damage < upperBound ? damage : upperBound;
+    _safeScale(damage < upperBound ? damage : upperBound, 1);
+
+double _safeScale(double value, double multiplier) {
+  final scaled = value * multiplier;
+  if (!scaled.isFinite) return double.maxFinite;
+  return scaled < 0 ? 0 : scaled;
+}
 
 void _requireFiniteNonNegative(double value, String name) {
   if (!value.isFinite || value < 0) {

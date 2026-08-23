@@ -16,17 +16,18 @@ void main() {
       expect(flags.isUnblockable, isTrue);
     });
 
-    test('rejects a parryable attack that is not blockable', () {
-      expect(
-        () => AttackDefenseFlags(
-          blockable: false,
-          parryable: true,
-          reflectable: false,
-          dodgeable: true,
-          interruptible: true,
-        ),
-        throwsArgumentError,
+    test('keeps parry independent from block', () {
+      final flags = AttackDefenseFlags(
+        blockable: false,
+        parryable: true,
+        reflectable: false,
+        dodgeable: true,
+        interruptible: true,
       );
+
+      expect(flags.blockable, isFalse);
+      expect(flags.parryable, isTrue);
+      expect(flags.isUnblockable, isFalse);
     });
   });
 
@@ -173,6 +174,22 @@ void main() {
       expect(() => input(incomingHpDamage: -1), throwsArgumentError);
       expect(() => input(baseMitigationFraction: 1.1), throwsArgumentError);
       expect(() => input(blockDamageMultiplier: -0.1), throwsArgumentError);
+    });
+
+    test('clamps finite damage at double boundary after scaling', () {
+      final result = resolveDefense(
+        input(
+          blockSucceeded: true,
+          incomingHpDamage: double.maxFinite,
+          incomingPostureDamage: double.maxFinite,
+          blockDamageMultiplier: 2,
+        ),
+      );
+
+      expect(result.incomingHpDamage, double.maxFinite);
+      expect(result.incomingPostureDamage, double.maxFinite);
+      expect(result.incomingHpDamage.isFinite, isTrue);
+      expect(result.incomingPostureDamage.isFinite, isTrue);
     });
 
     test('same typed input produces a deterministic result', () {
