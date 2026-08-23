@@ -110,4 +110,3 @@ mapCombatEncounterDefeatObjectiveEventSource(
 - 下一步：运行指定 Pi 只读实现前审查，然后写 R22 红测。
 - 已跑验证：只读规约/registry/Batch18 核对；未跑测试。
 - 阻塞：无。
-

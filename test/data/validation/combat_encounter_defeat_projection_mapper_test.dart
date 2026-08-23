@@ -260,6 +260,27 @@ void main() {
           throwsArgumentError,
         );
       }
+      expect(
+        () => mapCombatEncounterDefeatObjectiveEventSource(
+          _definition(
+            primitives: [
+              CombatDefeatTargetsRef(const ['objective_same']),
+            ],
+          ),
+          fixture.roster,
+          defeatProjectionEntries: const [
+            MapEntry('entry_alpha', [
+              Phase0aCommanderDefeatProjection('objective_same'),
+            ]),
+            MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+              'entry_beta',
+              [],
+            ),
+          ],
+        ),
+        throwsArgumentError,
+        reason: 'the same payload text cannot cross the typed kind boundary',
+      );
     },
   );
 

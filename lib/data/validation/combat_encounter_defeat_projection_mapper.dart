@@ -127,13 +127,16 @@ typedef _DefeatProjectionIdentity = ({_DefeatProjectionKind kind, String id});
 
 _DefeatProjectionIdentity _identityOf(
   Phase0aDefeatObjectiveProjection projection,
-) {
-  if (projection is Phase0aTargetDefeatProjection) {
-    return (kind: _DefeatProjectionKind.target, id: projection.targetId);
-  }
-  final commander = projection as Phase0aCommanderDefeatProjection;
-  return (kind: _DefeatProjectionKind.commander, id: commander.commanderId);
-}
+) => switch (projection) {
+  final Phase0aTargetDefeatProjection target => (
+    kind: _DefeatProjectionKind.target,
+    id: target.targetId,
+  ),
+  final Phase0aCommanderDefeatProjection commander => (
+    kind: _DefeatProjectionKind.commander,
+    id: commander.commanderId,
+  ),
+};
 
 List<String> _sortedIdentityLabels(
   Iterable<_DefeatProjectionIdentity> identities,
