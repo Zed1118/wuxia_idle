@@ -487,8 +487,14 @@ tasks:
     owner: codex_root
     branch: codex/phase2-g2-production-integration-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-production-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 56450ba3
+    ready_marker: "[READY][CODEX][P2-G2-BATCH1] 完成首批生产接线"
+    verification:
+      - final targeted 161/161
+      - mainline live/headless event record parity 17/17
+      - flutter analyze --no-pub 0 issues
+      - DeepSeek and Qoder cross-review 0 P0/P1
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
@@ -505,7 +511,9 @@ tasks:
     owner: codex_terra_medium
     branch: codex/phase2-g2-c02-forward-fan-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-c02-forward-fan
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 5324038c
+    integration_commit: 19360f19
     decision_ids:
       - COMBAT-SCOPE-01
     protected_behavior:
@@ -525,12 +533,20 @@ tasks:
     owner: codex_luna_medium
     branch: codex/phase2-g2-c10-event-projection-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g2-c10-event-projection
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 06041951
+    correction_commit: 16efd72f
+    integration_commit: 24f94ec5
     protected_behavior:
       - projection is read-only and never recomputes combat outcomes
       - original reducer and VFX event sequence remains unchanged
       - event identity and tie-breaks are deterministic
     owned_globs:
       - lib/features/battle/application/phase0a/phase0a_event_order_adapter.dart
+      - lib/features/battle/application/phase0a/phase0a_wave_battle_flow.dart
+      - lib/features/battle/application/phase0a/phase0a_headless_runner.dart
+      - lib/features/battle/presentation/phase0a/phase0a_battle_controller.dart
       - test/features/battle/application/phase0a/phase0a_event_order_adapter_test.dart
-      - docs/superpowers/plans/2026-08-23-p2-g2-c10-event-order-wiring.md
+      - test/features/battle/application/phase0a/phase0a_wave_flow_test.dart
+      - test/features/battle/application/phase0a/phase0a_headless_kernel_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-g2-c10-event-projection.md

@@ -15,8 +15,8 @@ decisions:
   - id: COMBAT-SCOPE-01
     status: frozen
     summary: 首批六类作用域，环形由内外半径参数表达
-    batch_action: implement_candidate
-    owner_task: P2-M1-C02-GEOMETRY
+    batch_action: forward_fan_single_target_production_integrated
+    owner_task: P2-G2-C02-FORWARD-FAN
 
   - id: COMBAT-WAVE-CD-01
     status: implementation_gap

@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
@@ -570,9 +571,11 @@ void main() {
         playerAdapter: liveMapping.playerAdapter,
       );
       var liveTicks = 0;
+      final liveEventRecords = <CombatEventRecord>[];
       while (liveController.outcome == Phase0aBattleOutcome.ongoing &&
           liveTicks < numbers.phase0aArena.maxSimulationTicks) {
         liveController.step(liveBot.commandFor(liveController.state));
+        liveEventRecords.addAll(liveController.lastEventRecords);
         liveTicks += 1;
       }
       final liveSettlement = Phase0aSettlementAdapter.fromMapping(
@@ -605,6 +608,7 @@ void main() {
         reason: stage.id,
       );
       expect(liveController.events, headless.events, reason: stage.id);
+      expect(liveEventRecords, headless.eventRecords, reason: stage.id);
     }
   });
 
