@@ -37,4 +37,4 @@
 - [x] 主控完成 15 个来源提交 stable patch-id 与 9 个 owned blob 核验；12-file path guard、`git diff --check`、clean status 与 main refs 均通过。
 - [x] 集成态去重联合 targeted 125/125、changed-Dart scoped analyze 6 items / 0 issue、format 6 files / 0 changed、registry 91 tasks / 0 duplicate / 0 dangling、full 5079/5079 PASS。
 - [x] 独立集成代码终审 P0/P1/P2=0，确认 R19/R20/R21 组合边界与全部 Gate 保持。
-- [ ] 冻结最终 registry/audit、完成 docs-only 终审并追加 Batch17 READY。
+- [x] 最终 registry/audit/plan 已冻结到验证提交 `87b8adca`，docs-only 终审与 READY marker 一致性复核通过后追加 Batch17 READY。

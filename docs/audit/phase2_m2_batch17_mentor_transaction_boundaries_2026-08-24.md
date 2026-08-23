@@ -29,7 +29,12 @@
 - registry 91 tasks / 0 duplicate IDs / 0 dangling prerequisite IDs；相对 Batch16 精确 12-file path guard、`git diff --check` 与 clean status 通过。
 - main 与 origin/main 终验仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 - Codex 独立集成代码终审重算 15/15 patch-id、9/9 blobs、复跑 scoped analyze 6 items / 0 issue 与 format 6 files / 0 changed，结论 P0/P1/P2=0；确认新 API 无 production caller，未触及 host/data/candidate/objective/timeline/schema/persistence。
-- 最终 registry/audit/plan 与 READY marker 的 docs-only 闭环仍待本验证提交后复核，因此此处不提前宣称 READY。
+- 验证提交冻结为 `87b8adca177a8223bb77e6d018a934dbbacaa6a1`；registry/audit/plan 随后的 docs-only 闭环由同一独立审查者复核，READY marker 精确为 `[READY][CODEX][P2-M2-BATCH17] 冻结听剑事务边界`。
+
+## 最终结论
+
+- Batch17 只冻结 host-neutral 的听剑 provenance/release、反向活动 guard 与持久领取观察决策；不宣称 production host、shared occupancy、durable store/CAS/outbox、成长发放、settlement identity、candidate/objective/tuning/Profile/G2/真人验收已完成。
+- 最终独立审查 P0/P1/P2=0 后追加空 READY marker；后续批次继续从 READY tip 建独立 worktree，main/origin main 保持不动。
 
 ## 环境恢复点
 

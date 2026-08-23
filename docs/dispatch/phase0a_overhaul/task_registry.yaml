@@ -2345,8 +2345,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch17-mentor-transaction-boundaries-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch17-mentor-transaction-boundaries
-    status: in_progress
+    status: ready_reviewed
     base_commit: abefcee74a5b4749662a534a0793f995c2a2f891
+    validated_commit: 87b8adca177a8223bb77e6d018a934dbbacaa6a1
+    ready_marker: "[READY][CODEX][P2-M2-BATCH17] 冻结听剑事务边界"
     source_tasks:
       - P2-M2-R19-MAINLINE-STAGE-RUNTIME-RELEASE
       - P2-M2-R20-MENTOR-INSIGHT-REVERSE-ACTIVITY-GUARD
@@ -2367,6 +2369,13 @@ tasks:
       - 6d0de95e
       - 6118a75e
       - 4e511c5a
+    verification:
+      joint_targeted_tests: 125
+      full_tests: 5079
+      changed_dart_items: 6
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch17-mentor-transaction-boundaries.md
