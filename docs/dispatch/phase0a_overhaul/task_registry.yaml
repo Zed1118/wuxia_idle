@@ -1837,8 +1837,20 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r13-explicit-objective-event-source-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r13-explicit-objective-event-source
-    status: in_progress
+    status: ready_reviewed
     base_commit: 77c5520e04355e041a5db6b40dde05b169874117
+    implementation_commit: 151a4df0
+    tip_commit: 1efe8247f61682bc6236fd3da1a621616b00f297
+    integration_commits:
+      - de4e8b83
+      - 67423a31
+      - 27751a6f
+      - a9c7160c
+      - 138f6598
+    verification:
+      targeted_tests: 64
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-BATCH13-HOST-OBJECTIVE-ROUTING-INTEGRATION
     owned_files:
@@ -1862,6 +1874,25 @@ tasks:
       - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
       - P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME
       - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
+    integration_commits:
+      - 9545fc41
+      - cf5465ed
+      - 16295176
+      - d080b9cb
+      - 45ca144d
+      - a06a0875
+      - 149bf7a2
+      - de4e8b83
+      - 67423a31
+      - 27751a6f
+      - a9c7160c
+      - 138f6598
+      - ea86d8a8
+    verification:
+      joint_targeted_tests: 158
+      changed_dart_items: 8
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
       - test/features/battle/application/phase0a/phase0a_migrated_encounter_composition_test.dart

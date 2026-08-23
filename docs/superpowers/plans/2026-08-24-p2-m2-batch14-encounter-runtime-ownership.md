@@ -31,5 +31,6 @@
 - [x] 完成 R11/R12a/R13 只读 API 预检并收窄高风险语义。
 - [x] 创建三实现 worktree 与一集成 worktree。
 - [x] 登记任务；四 worktree 完成 pub get、build_runner 126 outputs、63 个 `.g.dart` 与 dylib SHA 对齐。
-- [ ] 并行派发并完成 R11 / R12a / R13 来源实现与 READY。
-- [ ] 主控集成、联合/full 验证、独立终审与 Batch14 READY。
+- [x] 并行派发并完成 R11 / R12a / R13 来源实现、主控复核与 READY。
+- [x] 主控组合显式 migrated plan 入口；3/3 新测试、158/158 去重联合回归、8 项 scoped analyze、format/diff 闸门通过。
+- [ ] full suite、稳定 patch-id、仓库快速闸门、独立终审与 Batch14 READY。

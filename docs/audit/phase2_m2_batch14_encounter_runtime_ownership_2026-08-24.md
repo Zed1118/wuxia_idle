@@ -27,7 +27,10 @@
 
 - R11：计划 `9ecfff2f`、实现 `0e5fd536`、证据 `bc417989`，初始 READY 后发现恢复点措辞仍停在待 READY 的文档 P2；`ef098994` 修正并冻结新 READY `4d2c016a`。Qoder CLI 1.1.28 实际使用 `Qwen3.8-Max`、reasoning high 完成设计与最终 diff 审查，最终 PASS；83/83、scoped analyze 0，独立复审 P0/P1/P2=0。集成提交 `9545fc41` / `cf5465ed` / `16295176` / `d080b9cb`。
 - R12a：计划 `d64a2065`、实现 `1f856e7b`、证据 `29079798`、READY `2e53aaf4`；16/16、scoped analyze 0、format/diff clean，独立复审 P0/P1/P2=0。集成提交 `45ca144d` / `a06a0875` / `149bf7a2`。合同明确为 immutable predecessor → prepared successor → 新 runtime；同一 predecessor 的 sibling successor 是 caller 显式 branch/fork，不虚称全局 CAS 或已接 production lifecycle。
+- R13：计划 `e91e6afd`、红测 `a8f50fc1`、实现 `151a4df0`、证据 `6efc0f7f`，主控校正恢复点的测试算术后以新 READY `1efe8247` 冻结。Pi CLI 0.84.1 实际使用 `deepseek/deepseek-v4-flash`、thinking high 完成设计与最终 diff 只读审查；最终 PASS，P0/P1=0。主控按真实文件逐项复跑为 64/64（新 source 15、R09 flow 15、tracker 15、production objective integration 2、roster 8、objective primitive 9），scoped analyze 0，独立复审 P0/P1/P2=0。集成提交 `de4e8b83` / `67423a31` / `27751a6f` / `a9c7160c` / `138f6598`。
 
-### 待完成来源与集成
+### 集成进行中
 
-待 R13 READY 后补充 Pi 证据、来源 commit、联合/full test 与独立审查结论。
+- 主控在 assembler 新增显式 `assembleMigratedEncounterPlan`，只消费 R11 plan 的 exact mapping、token budgets 与 objective controller；request mapper、objective source、numbers 与单一 RNG 仍由 caller 显式提供。R12a lease runtime 与 ActionTimeline 均未接入 session。
+- 新 synthetic composition 测试 3/3 通过；R11/R12a/R13 去重联合回归 158/158 通过；变更 Dart 8 项 scoped analyze 0，format 与 `git diff --check` 通过。
+- 待完成：source→integration stable patch-id、full suite、registry/YAML/Markdown/path/main refs 快速闸门、独立集成终审与 READY。
