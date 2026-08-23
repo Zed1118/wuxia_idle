@@ -71,17 +71,165 @@ final class Phase0aStageContentMapper {
     required NumbersConfig numbers,
     String playerId = 'player',
     int? cycleIndex,
-  }) => _mapContent(
-    contentId: stage.id,
-    enemyTeam: stage.enemyTeam,
-    isTower: false,
-    playerSnapshot: playerSnapshot,
-    numbers: numbers,
-    playerId: playerId,
-    cycleIndex: cycleIndex ?? 1,
-    advanceRealmPerCycle: false,
-    winCondition: _mapWinCondition(stage.winCondition),
-  );
+  }) => stage.stageType == StageType.mainline && numbers.mainlineWave.isEnabled
+      ? mapMainline(
+          stage: stage,
+          playerSnapshot: playerSnapshot,
+          numbers: numbers,
+          playerId: playerId,
+          cycleIndex: cycleIndex,
+        )
+      : _mapContent(
+          contentId: stage.id,
+          enemyTeam: stage.enemyTeam,
+          isTower: false,
+          playerSnapshot: playerSnapshot,
+          numbers: numbers,
+          playerId: playerId,
+          cycleIndex: cycleIndex ?? 1,
+          advanceRealmPerCycle: false,
+          winCondition: _mapWinCondition(stage.winCondition),
+        );
+
+  /// 主线生产波次：普通关只生成小怪波；Boss 关把原始 Boss 快照完整放到
+  /// 独立终波，前置波只使用显式比例派生的无机制小怪。
+  static Phase0aStageMapping mapMainline({
+    required StageDef stage,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    String playerId = 'player',
+    int? cycleIndex,
+  }) {
+    if (stage.stageType != StageType.mainline) {
+      throw ArgumentError.value(stage.id, 'stage', 'must be mainline');
+    }
+    if (stage.enemyTeam.length != 1) {
+      throw ArgumentError.value(
+        stage.enemyTeam,
+        'stage.enemyTeam',
+        '主线群怪 profile 要求恰有 1 个原始敌人',
+      );
+    }
+    final cycle = cycleIndex ?? 1;
+    final profile = stage.isBossStage
+        ? numbers.mainlineWave.boss
+        : numbers.mainlineWave.ordinary;
+    final source = EnemyCombatantSnapshotAssembler.assembleAll(
+      stage.enemyTeam,
+      cycleIndex: cycle,
+      isTower: false,
+      advanceRealmPerCycle: false,
+      stageNpcId: stage.npcId,
+    ).single;
+    final waves = <List<CombatantSnapshot>>[];
+    final moveSpeedOverrides = <double?>[];
+    var characterId = -20000;
+    for (final count in profile.waveEnemyCounts) {
+      waves.add([
+        for (var slot = 0; slot < count; slot++)
+          _asMainlineMob(
+            source: source,
+            characterId: characterId--,
+            hpMultiplier: profile.hpMultiplier,
+            attackMultiplier: profile.attackMultiplier,
+            outputMultiplier: profile.outputMultiplier,
+            speedMultiplier: profile.speedMultiplier,
+          ),
+      ]);
+      moveSpeedOverrides.addAll([
+        for (var slot = 0; slot < count; slot++)
+          (source.speed * profile.speedMultiplier).toDouble(),
+      ]);
+    }
+    if (stage.isBossStage) {
+      if (!source.isBoss) {
+        throw StateError('主线 Boss ${stage.id} 原始敌人必须标记 isBoss=true');
+      }
+      if (profile.bossFinalEnemyCount != 1) {
+        throw StateError('主线 Boss ${stage.id} 缺少唯一终波主敌人配置');
+      }
+      // 终波直接持有原快照，包含 charge/phase/vulnerability/guardian。
+      waves.add([source]);
+      moveSpeedOverrides.add(null);
+    }
+    final intermission = numbers.mainlineWave.intermission;
+    return _mapContent(
+      contentId: stage.id,
+      enemyTeam: stage.enemyTeam,
+      isTower: false,
+      playerSnapshot: playerSnapshot,
+      numbers: numbers,
+      playerId: playerId,
+      cycleIndex: cycle,
+      advanceRealmPerCycle: false,
+      winCondition: _mapWinCondition(stage.winCondition),
+      enemySnapshotWavesOverride: waves,
+      enemyMoveSpeedOverrides: moveSpeedOverrides,
+      waveTransitionPolicy: Phase0aWaveTransitionPolicy(
+        healPlayerToFull: !intermission.preserveHp,
+        qiRecoveryPct: intermission.aliveIfRecoveryPct,
+        resetAttackCooldown: intermission.resetActionPoint,
+        resetSkillCooldowns: !intermission.preserveCooldowns,
+      ),
+    );
+  }
+
+  static CombatantSnapshot _asMainlineMob({
+    required CombatantSnapshot source,
+    required int characterId,
+    required double hpMultiplier,
+    required double attackMultiplier,
+    required double outputMultiplier,
+    required double speedMultiplier,
+  }) {
+    final mobHp = (source.maxHp * hpMultiplier).round().clamp(1, source.maxHp);
+    final mobOutput = source.outputMultiplier * outputMultiplier;
+    return CombatantSnapshot(
+      characterId: characterId,
+      name: source.name,
+      realmTier: source.realmTier,
+      realmLayer: source.realmLayer,
+      school: source.school,
+      maxHp: mobHp,
+      currentHp: mobHp,
+      internalForce: source.internalForce,
+      maxQi: source.maxQi,
+      currentQi: source.currentQi,
+      qiGainMultiplier: source.qiGainMultiplier,
+      qiCostReductionPct: source.qiCostReductionPct,
+      autoUltimate: source.autoUltimate,
+      speed: (source.speed * speedMultiplier).round().clamp(1, source.speed),
+      criticalRate: source.criticalRate,
+      evasionRate: source.evasionRate,
+      defenseRate: source.defenseRate,
+      totalEquipmentAttack: (source.totalEquipmentAttack * attackMultiplier)
+          .round()
+          .clamp(0, source.totalEquipmentAttack),
+      mainCultivationLayer: source.mainCultivationLayer,
+      skillLoadout: source.skillLoadout,
+      availableSkills: source.availableSkills,
+      openingSkillCooldowns: const {},
+      skillUses: const {},
+      activeBuffs: const [],
+      swordSongResonanceActive: false,
+      iconPath: source.iconPath,
+      attackPowerMultiplier: source.attackPowerMultiplier,
+      outputMultiplier: mobOutput,
+      isBoss: false,
+      chargeSkillId: null,
+      bossPhases: null,
+      bossPhaseUnlockSkills: null,
+      schoolDamageTakenMult: source.schoolDamageTakenMult,
+      lineageRole: null,
+      forgingPiercePct: 0,
+      forgingLifestealPct: 0,
+      enemyDefId: source.enemyDefId,
+      guardianWardMult: null,
+      guardianDefIds: const [],
+      vulnerabilityMult: null,
+      guardInterceptsInterrupt: false,
+    );
+  }
 
   /// 心魔关以单主角开战快照生成同源镜像，不消费 YAML 的空 enemyTeam。
   /// 强化、红线、机制化蓄力与脆弱窗口均复用 numbers.innerDemon 口径。
@@ -356,6 +504,7 @@ final class Phase0aStageContentMapper {
     List<CombatantSnapshot>? enemySnapshotsOverride,
     List<String>? enemyActorIdsOverride,
     List<List<CombatantSnapshot>>? enemySnapshotWavesOverride,
+    List<double?>? enemyMoveSpeedOverrides,
     Phase0aWaveTransitionPolicy? waveTransitionPolicy,
   }) {
     if (cycleIndex < 1) {
@@ -399,6 +548,14 @@ final class Phase0aStageContentMapper {
     final enemySnapshots = enemySnapshotWaves
         .expand((wave) => wave)
         .toList(growable: false);
+    if (enemyMoveSpeedOverrides != null &&
+        enemyMoveSpeedOverrides.length != enemySnapshots.length) {
+      throw ArgumentError.value(
+        enemyMoveSpeedOverrides,
+        'enemyMoveSpeedOverrides',
+        'must match enemySnapshots length',
+      );
+    }
     if (enemyActorIdsOverride != null &&
         enemyActorIdsOverride.length != enemySnapshots.length) {
       throw ArgumentError.value(
@@ -475,6 +632,7 @@ final class Phase0aStageContentMapper {
           guardianWardMult: snapshot.guardianWardMult,
           guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
           vulnerabilityMult: snapshot.vulnerabilityMult,
+          moveSpeedOverride: enemyMoveSpeedOverrides?[flatIndex],
         );
         actorWave.add(actor);
         waveEnemies.add(actor);
@@ -594,6 +752,7 @@ final class Phase0aStageContentMapper {
     required double? guardianWardMult,
     required bool guardInterceptsInterrupt,
     required double? vulnerabilityMult,
+    required double? moveSpeedOverride,
   }) {
     final phases = snapshot.bossPhases;
     final initialUnlocks = phases == null || phases.isEmpty
@@ -614,7 +773,8 @@ final class Phase0aStageContentMapper {
       facing: const ArenaVector(-1, 0),
       maxHealth: snapshot.maxHp,
       currentHealth: snapshot.currentHp,
-      moveSpeed: arena.enemyMoveSpeed,
+      // 非主线继续使用 arena 速度；仅主线 mapper 显式传入小怪 override。
+      moveSpeed: moveSpeedOverride ?? arena.enemyMoveSpeed,
       qiCurrent: usesSkillRuntime ? snapshot.currentQi : arena.enemyQi,
       qiMax: usesSkillRuntime ? snapshot.maxQi : arena.enemyQi,
       attackCooldownRemaining: arena.enemyInitialAttackCooldown,
