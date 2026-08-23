@@ -2536,3 +2536,90 @@ tasks:
       - R22 R23 and R24 pass source tool review root diff review and independent review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - audit registry plan and READY marker match the frozen integration tip
+
+  - id: P2-M2-R25-ENCOUNTER-FLOW-RUNTIME-OBSERVATION
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r25-encounter-flow-runtime-observation-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r25-encounter-flow-runtime-observation
+    status: in_progress
+    base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    prerequisites:
+      - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
+      - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
+      - P2-M2-R24-ATTACK-TOKEN-LEASE-BATCH-RECEIPT
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_encounter_flow.dart
+      - test/features/battle/application/phase0a/phase0a_encounter_flow_runtime_observation_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r25-encounter-flow-runtime-observation.md
+    protected_behavior:
+      - expose only nullable read only objective progress and the exact last committed lease batch receipt from runtime flow
+      - keep compatibility and unconfigured runtimes null and preserve old observation identity across every failed candidate advance
+      - do not expose tracker session lease owner mutation commit host persistence timeline data candidate or tuning capabilities
+
+  - id: P2-M2-R26-MIGRATED-ENCOUNTER-EXPLICIT-LEASE-ASSEMBLER
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r26-migrated-encounter-explicit-lease-assembler-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r26-migrated-encounter-explicit-lease-assembler
+    status: in_progress
+    base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    prerequisites:
+      - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
+      - P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
+      - P2-M2-R24-ATTACK-TOKEN-LEASE-BATCH-RECEIPT
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
+      - test/features/battle/application/phase0a/phase0a_migrated_encounter_composition_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r26-migrated-encounter-explicit-lease-assembler.md
+    protected_behavior:
+      - add one explicit transactional lease assembler bridge that delegates the exact migrated mapping and creates a fresh objective tracker per flow
+      - require caller supplied lease gate runtime objective source numbers and rng while preserving the existing stateless migrated assembler unchanged
+      - do not construct defaults infer lifecycle verify gate policy against plan budgets or connect host data candidate tuning or persistence
+
+  - id: P2-M2-V02A-CH1-CANDIDATE-DEFEAT-OBJECTIVE-EXECUTION-MATRIX
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-v02a-ch1-candidate-defeat-objective-execution-matrix-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-v02a-ch1-candidate-defeat-objective-execution-matrix
+    status: in_progress
+    base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    prerequisites:
+      - P2-M2-D01-CH1-CANDIDATE-CATALOG
+      - P2-M2-V01-CH1-CANDIDATE-RUNTIME-CONSTRUCTION-MATRIX
+      - P2-M2-R03-OBJECTIVE-CONTROLLER
+      - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
+      - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
+      - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
+      - P2-M2-R22-ENCOUNTER-DEFEAT-OBJECTIVE-PROJECTION-MAPPER
+    owned_files:
+      - test/data/phase2/ch1_candidate_defeat_objective_execution_matrix_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-v02a-ch1-candidate-defeat-objective-execution-matrix.md
+    protected_behavior:
+      - execute explicit per entry target commander or empty defeat declarations through R11 R22 R13 and R06 for all five Ch1 candidate stages
+      - prove stage one remains incomplete only because checkpoint lacks a projector while stages two through five complete their frozen defeat branches
+      - do not infer declarations from ids roles positions or objectives inject checkpoint anchor facts call flow advance or promote candidate data
+
+  - id: P2-M2-BATCH19-OBSERVABLE-TRANSACTIONAL-CEILING
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch19-observable-transactional-ceiling-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch19-observable-transactional-ceiling
+    status: in_progress
+    base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    source_tasks:
+      - P2-M2-R25-ENCOUNTER-FLOW-RUNTIME-OBSERVATION
+      - P2-M2-R26-MIGRATED-ENCOUNTER-EXPLICIT-LEASE-ASSEMBLER
+      - P2-M2-V02A-CH1-CANDIDATE-DEFEAT-OBJECTIVE-EXECUTION-MATRIX
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch19-observable-transactional-ceiling.md
+      - docs/audit/phase2_m2_batch19_observable_transactional_ceiling_2026-08-24.md
+    protected_behavior:
+      - integrate only read only runtime observation explicit caller owned lease composition and candidate defeat execution evidence with stable source patch identity
+      - keep production host candidate promotion checkpoint anchor projectors timeline inference durable state tuning profile G2 and human playtest gates unresolved
+      - main and origin main remain untouched
+    exit_criteria:
+      - R25 R26 and V02A pass source tool review root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
