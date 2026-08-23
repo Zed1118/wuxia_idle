@@ -29,15 +29,15 @@
 ## 切片
 
 - [x] S1：确认 worktree、重建计划、定位 active VFX 中间帧重绘根因。
-- [ ] S2：移除反馈层重复 ticker，集中 progress 刷新并补生命周期/上限契约。
-- [ ] S3：增强命中/击杀/清场 painter 的分层水墨表现，补 controller/presentation tests。
-- [ ] S4：targeted tests、analyze、双常规视口 smoke，审查 diff。
+- [x] S2：移除反馈层重复 ticker，集中 progress 刷新并补生命周期/上限契约。
+- [x] S3：增强命中/击杀/清场 painter 的分层水墨表现，补 controller/presentation tests。
+- [x] S4：targeted tests、analyze、双常规视口 smoke，审查 diff。
 - [ ] S5：提交 `[READY]` 并确认 clean。
 
 ## 当前恢复点
 
-- 状态：已在指定 worktree，尚未编辑。
-- 最后完成：确认 `codex/ink-vfx` clean；计划文件已创建。
-- 下一步：先修改刷新模型，再做 painter 层次与测试。
-- 已跑验证：仅分支/工作区检查。
+- 状态：实现与验证完成，待第二块 commit 与 READY 冻结。
+- 最后完成：父级唯一帧 notifier、固定上限水墨层、critical 透传、帧参数行为测试已落地。
+- 下一步：提交第二块 `[READY]` 之前的真实实现 commit，随后做 READY 标记 commit 与最终 clean 检查。
+- 已跑验证：三文件 analyze 0 issue；VFX/source/controller targeted 54 tests 全绿；整屏 battle screen 24 tests 全绿，覆盖 1280×720 与 1440×900。
 - 阻塞项：无。移动卡顿、普攻范围和主线小怪数量属于另行 gameplay/content 任务，不在本切片实现。

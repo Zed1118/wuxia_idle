@@ -288,6 +288,26 @@ void main() {
       expect(slashes.single.anchor, const ArenaVector(20, 0));
     });
 
+    test('普攻 critical 语义透传到墨痕,表现层不重算', () {
+      final controller = Phase0aVfxController()
+        ..syncActors(
+          _state(enemies: [_actor('near', Phase0aSide.enemy, 20, 0)]),
+        );
+      final entries = controller.consume([
+        _hit(
+          seq: 1,
+          actor: 'player',
+          target: 'near',
+          damage: 17,
+          isCritical: true,
+        ),
+      ]);
+      final slash = entries.firstWhere(
+        (entry) => entry.kind == Phase0aVfxKind.meleeSlash,
+      );
+      expect(slash.isCritical, isTrue);
+    });
+
     test('敌方命中不产生玩家专属掌风或双弧墨痕', () {
       final controller = Phase0aVfxController()
         ..syncActors(

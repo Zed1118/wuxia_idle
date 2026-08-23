@@ -172,5 +172,25 @@ void main() {
         contains('if (_heldFeedback.isNotEmpty) _feedbackFrame.value++'),
       );
     });
+
+    test('水墨 painter 透传中间帧并使用固定墨滴上限', () {
+      final source = File(
+        'lib/features/battle/presentation/phase0a/phase0a_battle_screen.dart',
+      ).readAsStringSync();
+      expect(source, contains('progress: held.progress'));
+      expect(source, contains('Phase0aPresentationTokens.vfxInkSplatCount'));
+      expect(
+        source,
+        contains('Phase0aPresentationTokens.vfxResidualStrokeCount'),
+      );
+    });
+
+    test('水墨帧参数在起始/中间/末段可观察变化', () {
+      final source = File(
+        'lib/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart',
+      ).readAsStringSync();
+      expect(source, contains('static double vfxReveal(double progress)'));
+      expect(source, contains('static double vfxFade(double progress)'));
+    });
   });
 }

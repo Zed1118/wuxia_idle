@@ -132,6 +132,14 @@ abstract final class Phase0aPresentationTokens {
   static const double gatherVfxSeconds = 0.36;
   static const double clearVfxSeconds = 0.30;
   static const double defeatVfxSeconds = 0.45;
+
+  /// 普攻/击杀/清场 painter 的固定墨滴绘制上限。
+  static const int vfxInkSplatCount = 6;
+  static const int vfxResidualStrokeCount = 2;
+  static const double vfxInkSplatRadius = 3.5;
+  static const double vfxInkSplatTravelFraction = 0.22;
+  static const double vfxInkWashMaxOpacity = 0.18;
+  static const double vfxResidualStrokeOpacity = 0.34;
   static const double vfxBannerTop = 62;
   static const double vfxBannerWidth = 240;
   static const double vfxBannerHeight = 54;
@@ -182,4 +190,9 @@ abstract final class Phase0aPresentationTokens {
   /// 须大于截图管线 READY 检测轮询 + focus/resize 的固有开销(实测约 5-8s),
   /// 否则截图落在保持窗口外只能拍到过期帧。
   static const double visualRouteFeedbackHoldSeconds = 20;
+
+  /// Painter 的帧参数集中计算，便于行为测试直接观察 0/中间/末段差异。
+  static double vfxReveal(double progress) => progress.clamp(0.0, 1.0);
+
+  static double vfxFade(double progress) => (1.0 - progress).clamp(0.0, 1.0);
 }

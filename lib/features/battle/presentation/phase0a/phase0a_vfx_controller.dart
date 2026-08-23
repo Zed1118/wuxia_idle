@@ -352,6 +352,7 @@ final class Phase0aVfxController {
           kind: Phase0aVfxKind.meleeSlash,
           actorId: event.actor,
           targetId: event.target,
+          isCritical: event.isCritical,
           anchor: targetPosition,
         ),
       );
@@ -362,6 +363,7 @@ final class Phase0aVfxController {
         kind: Phase0aVfxKind.palmTrail,
         actorId: event.actor,
         targetId: event.target,
+        isCritical: event.isCritical,
         source: actorPosition,
         vfxTarget: targetPosition,
       ),

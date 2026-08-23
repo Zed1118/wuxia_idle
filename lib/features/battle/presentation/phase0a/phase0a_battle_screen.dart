@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -1609,6 +1610,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
             painter: _InkEffectPainter(
               _InkEffect.palm,
               progress: held.progress,
+              isCritical: entry.isCritical,
             ),
           ),
         ),
@@ -1685,7 +1687,12 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
             child: CustomPaint(
               key: vfxKey,
               size: Size.square(size),
-              painter: _InkEffectPainter(effect, defeatKind: entry.defeatKind),
+              painter: _InkEffectPainter(
+                effect,
+                defeatKind: entry.defeatKind,
+                progress: held.progress,
+                isCritical: entry.isCritical,
+              ),
             ),
           ),
         ),
@@ -1805,11 +1812,17 @@ final class _SurviveConditionBanner extends StatelessWidget {
 enum _InkEffect { melee, palm, gather, clear, defeat }
 
 class _InkEffectPainter extends CustomPainter {
-  const _InkEffectPainter(this.effect, {this.defeatKind, this.progress = 1});
+  const _InkEffectPainter(
+    this.effect, {
+    this.defeatKind,
+    this.progress = 1,
+    this.isCritical = false,
+  });
 
   final _InkEffect effect;
   final Phase0aDefeatKind? defeatKind;
   final double progress;
+  final bool isCritical;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1823,6 +1836,16 @@ class _InkEffectPainter extends CustomPainter {
       ..color = WuxiaUi.jiang.withValues(alpha: 0.30)
       ..style = PaintingStyle.stroke
       ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
+    final reveal = Phase0aPresentationTokens.vfxReveal(progress);
+    final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final washFill = Paint()
+      ..color = WuxiaUi.qing.withValues(
+        alpha: Phase0aPresentationTokens.vfxInkWashMaxOpacity * fade,
+      );
+    final splat = Paint()
+      ..color = (isCritical ? WuxiaUi.gold : WuxiaUi.ink).withValues(
+        alpha: 0.72 * fade,
+      );
     switch (effect) {
       case _InkEffect.melee:
         final rising = Path()
@@ -1850,13 +1873,53 @@ class _InkEffectPainter extends CustomPainter {
             ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * 1.35,
         );
         canvas.drawPath(falling, ink);
+        for (
+          var i = 0;
+          i < Phase0aPresentationTokens.vfxResidualStrokeCount;
+          i++
+        ) {
+          final offset = (i + 1) * size.width * 0.035 * (1 - reveal);
+          canvas.save();
+          canvas.translate(offset, -offset);
+          canvas.drawPath(
+            rising,
+            Paint()
+              ..color = WuxiaUi.ink.withValues(
+                alpha:
+                    Phase0aPresentationTokens.vfxResidualStrokeOpacity * fade,
+              )
+              ..style = PaintingStyle.stroke
+              ..strokeCap = StrokeCap.round
+              ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth,
+          );
+          canvas.restore();
+        }
+        canvas.drawCircle(center, size.width * 0.20, washFill);
+        for (var i = 0; i < Phase0aPresentationTokens.vfxInkSplatCount; i++) {
+          final angle =
+              i * math.pi * 2 / Phase0aPresentationTokens.vfxInkSplatCount;
+          final radius =
+              size.width *
+              (0.22 +
+                  Phase0aPresentationTokens.vfxInkSplatTravelFraction * reveal);
+          canvas.drawCircle(
+            Offset(
+              center.dx + math.cos(angle) * radius,
+              center.dy + math.sin(angle) * radius,
+            ),
+            Phase0aPresentationTokens.vfxInkSplatRadius * (1 + (i % 2) * 0.35),
+            splat,
+          );
+        }
         canvas.drawCircle(
           Offset(size.width * 0.72, size.height * 0.28),
           Phase0aPresentationTokens.gatherPullTargetDotRadius,
           Paint()..color = WuxiaUi.jiang.withValues(alpha: 0.58),
         );
       case _InkEffect.palm:
-        final reveal = Curves.easeOut.transform(progress.clamp(0.0, 1.0));
+        final reveal = Curves.easeOut.transform(
+          Phase0aPresentationTokens.vfxReveal(progress),
+        );
         final body = Path()
           ..moveTo(size.width * 0.07, size.height * 0.57)
           ..cubicTo(
@@ -1903,13 +1966,19 @@ class _InkEffectPainter extends CustomPainter {
               center: center,
               radius: size.width * (0.16 + i * 0.09),
             ),
-            i * 0.8,
+            i * 0.8 + reveal * 0.7,
             4.7,
             false,
             i.isEven ? ink : wash,
           );
         }
+        canvas.drawCircle(
+          center,
+          size.width * (0.12 + reveal * 0.08),
+          washFill,
+        );
       case _InkEffect.clear:
+        final clearReveal = Curves.easeOut.transform(reveal);
         for (var i = 0; i < Phase0aPresentationTokens.vfxSpokeCount; i++) {
           final angle =
               i * math.pi * 2 / Phase0aPresentationTokens.vfxSpokeCount;
@@ -1918,12 +1987,43 @@ class _InkEffectPainter extends CustomPainter {
             center.dy + math.sin(angle) * size.height * 0.10,
           );
           final end = Offset(
-            center.dx + math.cos(angle) * size.width * 0.44,
-            center.dy + math.sin(angle) * size.height * 0.44,
+            center.dx +
+                math.cos(angle) * size.width * (0.12 + clearReveal * 0.34),
+            center.dy +
+                math.sin(angle) * size.height * (0.12 + clearReveal * 0.34),
           );
           canvas.drawLine(start, end, i.isEven ? ink : wash);
         }
-        canvas.drawCircle(center, size.width * 0.24, ink);
+        canvas.drawCircle(
+          center,
+          size.width * (0.12 + clearReveal * 0.24),
+          washFill,
+        );
+        canvas.drawCircle(
+          center,
+          size.width * (0.08 + clearReveal * 0.16),
+          Paint()..color = WuxiaUi.ink.withValues(alpha: 0.72 * fade),
+        );
+        for (var i = 0; i < Phase0aPresentationTokens.vfxInkSplatCount; i++) {
+          final angle =
+              (i + 0.5) *
+              math.pi *
+              2 /
+              Phase0aPresentationTokens.vfxInkSplatCount;
+          final radius =
+              size.width *
+              (0.18 +
+                  clearReveal *
+                      Phase0aPresentationTokens.vfxInkSplatTravelFraction);
+          canvas.drawCircle(
+            Offset(
+              center.dx + math.cos(angle) * radius,
+              center.dy + math.sin(angle) * radius,
+            ),
+            Phase0aPresentationTokens.vfxInkSplatRadius,
+            splat,
+          );
+        }
       case _InkEffect.defeat:
         final elite = defeatKind == Phase0aDefeatKind.elite;
         final count = elite
@@ -1932,7 +2032,7 @@ class _InkEffectPainter extends CustomPainter {
         if (elite) {
           canvas.drawCircle(
             center,
-            size.width * 0.22,
+            size.width * (0.14 + reveal * 0.14),
             Paint()
               ..color = WuxiaUi.jiang.withValues(alpha: 0.42)
               ..style = PaintingStyle.stroke
@@ -1948,19 +2048,23 @@ class _InkEffectPainter extends CustomPainter {
         }
         for (var i = 0; i < count; i++) {
           final angle = i * math.pi * 2 / count;
+          final travel = (0.22 + reveal * 0.22) * (elite ? 1.0 : 0.82);
           final point = Offset(
-            center.dx + math.cos(angle) * size.width * (elite ? 0.37 : 0.31),
-            center.dy + math.sin(angle) * size.height * (elite ? 0.29 : 0.22),
+            center.dx + math.cos(angle) * size.width * travel,
+            center.dy + math.sin(angle) * size.height * travel * 0.78,
           );
           canvas.drawCircle(
             point,
-            i.isEven ? 5 : 3,
-            Paint()
-              ..color = elite && i % 3 == 0
-                  ? WuxiaUi.jiang.withValues(alpha: 0.64)
-                  : WuxiaUi.ink.withValues(alpha: 0.72),
+            Phase0aPresentationTokens.vfxInkSplatRadius *
+                (i.isEven ? 1.4 : 0.8),
+            splat,
           );
         }
+        canvas.drawCircle(
+          center,
+          size.width * (0.16 + reveal * 0.16),
+          washFill,
+        );
     }
   }
 
@@ -1968,7 +2072,8 @@ class _InkEffectPainter extends CustomPainter {
   bool shouldRepaint(covariant _InkEffectPainter oldDelegate) =>
       oldDelegate.effect != effect ||
       oldDelegate.defeatKind != defeatKind ||
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress ||
+      oldDelegate.isCritical != isCritical;
 }
 
 class _GatherPullPainter extends CustomPainter {
