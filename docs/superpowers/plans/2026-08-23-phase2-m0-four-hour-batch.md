@@ -19,6 +19,7 @@
 4. Codex geometry：新文件实现六几何纯领域候选与边界测试，不接生产。
 5. Codex posture：新文件实现单一“累计姿态伤害”候选与状态机测试，不接生产。
 6. Codex gap audit：只读独立复核未决项是否会阻断后续路径。
+7. Codex status：在 gap audit 完成后复用执行槽，新文件实现状态固定拍与叠加/刷新候选，不接生产。
 
 ## 验收 checklist
 
@@ -32,7 +33,7 @@
 ## 当前恢复点
 
 - 状态：进行中。
-- 最后完成：冻结主仓基线，建立 5 个二阶段隔离 worktree，建立决策/任务注册表，已启动 Pi、Qoder 与 3 个 Codex 并行任务。
+- 最后完成：冻结主仓基线，建立 6 个二阶段隔离 worktree，建立决策/任务注册表，已启动 Pi、Qoder 与 3 个 Codex 并行任务；只读 gap audit 完成后已续派状态固定拍候选。
 - 下一步：主调度盘点现有 Phase 0A 契约与热点，等待各分支 READY 后独立审核。
 - 已跑验证：主 worktree clean；`main == origin/main == e292d3a`；Pi/Qoder 连通与派单已在前置复检通过。
-- 阻塞：五类 `PROPOSED` 决策等用户回来后拍板；不阻塞本批 M0/M1 候选切片。
+- 阻塞：五类产品 `PROPOSED` 决策与 6 类已否方向重开冲突等用户回来后拍板；不阻塞本批 M0/M1 候选切片。

@@ -91,3 +91,45 @@ decisions:
     status: frozen
     summary: Qoder 与 DeepSeek 作为受控补丁生产者，不直写 main
     batch_action: active
+
+  - id: REOPEN-LOADOUT-PLAN-01
+    status: proposed_reopen
+    summary: 方案要求每角色保存亲战与差遣两套装配，与已否的 Build 方案保存重叠
+    source_registry_entry: Build 方案保存
+    batch_action: blocked_pending_user
+    safe_default: contract_not_enabled
+
+  - id: REOPEN-CHRONICLE-01
+    status: proposed_reopen
+    summary: 章节卷轴和江湖纪事与已否的章节回顾入口、江湖见闻录收藏百科重叠
+    source_registry_entry: 章节回顾入口 / 江湖见闻录收藏百科
+    batch_action: blocked_pending_user
+    safe_default: do_not_build_new_navigation
+
+  - id: REOPEN-TELEGRAPH-ICON-01
+    status: proposed_reopen
+    summary: 威胁图标与 Boss 预警信息可能与已否的 Boss 技能预兆图标重叠
+    source_registry_entry: Boss 技能预兆图标
+    batch_action: blocked_pending_user
+    safe_default: retain_existing_non_icon_telegraphs
+
+  - id: REOPEN-RETURN-SUMMARY-01
+    status: proposed_reopen
+    summary: 统一归来报告与已否的闭关归来事件小结部分重叠
+    source_registry_entry: 闭关归来事件小结
+    batch_action: blocked_pending_user
+    safe_default: preserve_current_offline_summary
+
+  - id: REOPEN-LIGHTFOOT-REWARD-01
+    status: proposed_reopen
+    summary: 轻功模式专属奖励定位与已否的轻功关卡收益差异化重叠
+    source_registry_entry: 轻功关卡收益差异化
+    batch_action: blocked_pending_user
+    safe_default: keep_existing_rewards
+
+  - id: REOPEN-FAILURE-DIAGNOSIS-01
+    status: proposed_reopen
+    summary: 失败原因、返程原因与伤势展示可能与已否的失败原因诊断重叠
+    source_registry_entry: 失败原因诊断
+    batch_action: blocked_pending_user
+    safe_default: keep_domain_failure_reason_without_new_advice_ui

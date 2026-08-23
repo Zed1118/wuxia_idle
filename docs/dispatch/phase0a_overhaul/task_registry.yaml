@@ -105,8 +105,27 @@ tasks:
     owner: codex_agent_readonly
     branch: none
     worktree: /Users/a10506/Desktop/Projects/挂机武侠
-    status: in_progress
+    status: completed
     owned_files: []
     forbidden_files:
       - '**/*'
     wake_condition: immediate_readonly
+
+  - id: P2-M1-C06-STATUS
+    milestone: M1
+    owner: codex_agent_status
+    branch: codex/phase2-m1-status-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-status
+    status: in_progress
+    owned_files:
+      - lib/features/battle/domain/phase0a/status_effects.dart
+      - test/features/battle/domain/phase0a/status_effects_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c06-status.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
