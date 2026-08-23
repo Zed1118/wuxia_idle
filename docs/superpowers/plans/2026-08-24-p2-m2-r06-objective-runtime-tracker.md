@@ -27,7 +27,7 @@
 - [x] targeted test、scoped analyze、format、`git diff --check` 及严格路径审计通过。
 - [x] 生产接线证据：本任务按冻结边界明确不接 host；仅交付后续 runtime host 可消费的 application 合同。
 - [x] 红线：0 生产数值、0 Dart 玩家文案、0 三系/在线离线/反主流触点。
-- [ ] 实现与证据提交后，追加 `[READY][CODEX][P2-M2-R06]` 空提交并保持树干净。
+- [x] 实现与证据提交后，追加 `[READY][CODEX][P2-M2-R06]` 空提交并保持树干净。
 
 ## 任务切片
 
@@ -39,9 +39,9 @@
 
 ## 当前恢复点
 
-- 状态：实现与动态验证完成，待提交并冻结 READY。
-- 最后完成：新增纯 application tracker，为输入与 mapper 输出建立不可变快照，所有 controller 推进先在局部 progress 完成再一次提交；终局严格短路。显式恢复 progress 以无副作用 owner probe 验证，跨 controller 构造即 fail closed。
-- 下一步：提交实现/证据，追加 READY 空提交，交主控独立复审。
+- 状态：实现、验证、证据与 READY 冻结完成，待主控独立复审。
+- 最后完成：新增纯 application tracker，为输入与 mapper 输出建立不可变快照，所有 controller 推进先在局部 progress 完成再一次提交；终局严格短路。显式恢复 progress 以无副作用 owner probe 验证，跨 controller 构造即 fail closed。实现提交：`b4ebdb8481bfb6633ccaf24f354db181070fe1f1`。
+- 下一步：主控核对真实 diff、动态证据与 P0/P1/P2 后决定整合。
 - 已跑验证：红测因 tracker 文件/API 缺失按预期编译失败；tracker targeted 11/11；`objective_controller_test.dart` 8/8；`encounter_objective_test.dart` 9/9，共 28/28；scoped `flutter analyze --no-pub` 2 items / 0 issue；format、`git diff --check` 与路径审计通过。
 - 阻塞项：无。
 - 残留风险：production host 与 objective-driven 胜负还未接线；本切片不宣称生产闭环。当前 sealed/final controller 在合法 owner progress 上无可注入抛错实现，因此 controller 异常的原子性由“先局部 advance、后赋值”结构保证，动态覆盖以跨 owner fail closed 和 mapper/lazy 异常回滚为代表。
