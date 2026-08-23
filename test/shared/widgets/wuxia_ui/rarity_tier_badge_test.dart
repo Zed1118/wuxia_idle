@@ -7,10 +7,8 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ui/rarity_tier_badge.dart';
 
 void main() {
   Widget host(Widget child) => MaterialApp(
-        home: Scaffold(
-          body: Center(child: child),
-        ),
-      );
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('六档保留档名、出生点数与非按钮 semantics', (tester) async {
     await tester.pumpWidget(

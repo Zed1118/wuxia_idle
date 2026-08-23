@@ -8,7 +8,10 @@ void main() {
       'lib/features/recruitment/presentation/recruitment_dialog.dart',
     ).readAsStringSync();
     expect(source, contains('RarityTierBadge('));
-    expect(source, contains('rarityForTotalPoints(\n              profile.total'));
+    expect(
+      source,
+      contains('rarityForTotalPoints(\n              profile.total'),
+    );
     expect(source, contains('birthTotal: profile.total'));
   });
 }
