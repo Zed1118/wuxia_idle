@@ -612,6 +612,7 @@ void main() {
           required Phase0aCombatSession session,
           void Function()? armFailure,
           double secondDeltaSeconds = 0.1,
+          Matcher errorMatcher = const TypeMatcher<StateError>(),
         }) {
           session.advance(
             deltaSeconds: 0.1,
@@ -628,7 +629,7 @@ void main() {
               deltaSeconds: secondDeltaSeconds,
               command: const Phase0aPlayerCommand(),
             ),
-            throwsA(anything),
+            throwsA(errorMatcher),
           );
           expect(session.state, same(oldState));
           expect(session.attackTokenLeaseSnapshot, same(oldSnapshot));
@@ -746,6 +747,7 @@ void main() {
             leaseRuntime: AttackTokenLeaseRuntime.empty(),
           ),
           secondDeltaSeconds: -1,
+          errorMatcher: isA<ArgumentError>(),
         );
 
         verifySecondFailure(
@@ -946,6 +948,13 @@ void main() {
         'outbox',
         'persist',
         'repository',
+        'package:isar',
+        'SaveData',
+        '@collection',
+        'schema',
+        'CAS',
+        ' UI',
+        'host',
       ]) {
         expect(source, isNot(contains(forbidden)), reason: forbidden);
       }
