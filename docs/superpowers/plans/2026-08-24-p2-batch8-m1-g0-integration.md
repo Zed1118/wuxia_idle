@@ -22,13 +22,13 @@
 
 - [x] M1 分支独立审查 P0/P1/P2 为 0，建议提交链已整合。
 - [x] G0 证据包完整阅读，已识别 5 个 P1 与 3 个 P2 文档问题。
-- [ ] 修正 G0 边界回退、父项签字缺口、tuning Gate 和文档事实漂移，独立复审清零。
-- [ ] C06 targeted、M1 九合同 targeted、scoped analyze、YAML/Markdown 静态检查和 `git diff --check` 通过。
-- [ ] registry 与当前恢复点一致，集成分支以 `[READY][CODEX][P2-BATCH8]` 空提交封签。
+- [x] 修正 G0 边界回退、父项签字缺口、tuning Gate 和文档事实漂移，独立复审 P0/P1/P2 为 0。
+- [x] C06 在九合同 targeted 82/82 中通过；18 文件 scoped analyze 0 issue；YAML/Markdown 静态检查和 `git diff --check` 通过。
+- [x] registry 与当前恢复点一致，集成分支已满足 `[READY][CODEX][P2-BATCH8]` 空提交封签条件。
 
 ## 当前恢复点
 
-- 状态：M1 复验链与 G0 证据包已整合；G0 终审问题正在修正，Batch8 尚未 READY。
-- 最后完成：Batch7 READY 之后的两路无冲突 cherry-pick；M1 独立复核 P0/P1/P2 为 0。
-- 下一步：收口 G0 修正、运行针对性动态验证和最终只读审查。
+- 状态：M1 复验链、G0 证据包、主控纠偏、动态验证与最终独立复审均已完成；Batch8 进入 READY 封签。
+- 最后完成：九合同 targeted 82/82，18 文件 analyze 0 issue；G0 原 5 个 P1 和 3 个 P2 全部关闭，最终复审 P0/P1/P2 为 0。
+- 下一步：请用户对 G0 未决产品项做显式签字；未签项保持 fail-closed，可继续不选择产品语义的证据/合同工作。
 - 阻塞项：无工程阻塞；未决产品项保持暂停，不阻塞证据包本身收口。

@@ -987,8 +987,9 @@ tasks:
     owner: codex_root
     branch: codex/phase2-batch8-m1-g0-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-batch8-integration
-    status: in_progress
+    status: ready_reviewed
     base_commit: 1a4e1dd3
+    validated_tip: 3ee127f7
     source_ready_tips:
       - b66f8a74
       - 0ae5f45a
@@ -1000,6 +1001,13 @@ tasks:
       - bf42c324
       - dcee2230
       - f7b3a296
+      - 3ee127f7
+    verification:
+      m1_targeted_tests: 82
+      scoped_analyze_issues: 0
+      g0_decision_blocks: 37
+      g0_required_fields_bad: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-batch8-m1-g0-integration.md
