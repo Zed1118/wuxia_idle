@@ -1253,8 +1253,15 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r01-mainline-run-participation-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r01-mainline-run
-    status: running
+    status: ready_reviewed
     base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    implementation_commit: eefab0aa
+    tip_commit: b9d07314
+    integration_commit: f5e6abe0
+    verification:
+      targeted_tests: 36
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/mainline/domain/mainline_participation_policy.dart
       - lib/features/mainline/domain/mainline_run.dart
@@ -1302,12 +1309,18 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-r03-objective-controller-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r03-objective-controller
-    status: running
+    status: ready_reviewed
     base_commit: b195571b
+    implementation_commit: 4c2c44e2d7590822482ca9fd7880a3ef5637cc72
+    tip_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
+    verification:
+      targeted_tests: 29
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
-      - lib/features/battle/domain/phase0a/encounter_objective_controller.dart
+      - lib/features/battle/domain/phase0a/objective_controller.dart
       - lib/data/validation/combat_objective_primitive_mapper.dart
-      - test/features/battle/domain/phase0a/encounter_objective_controller_test.dart
+      - test/features/battle/domain/phase0a/objective_controller_test.dart
       - test/data/validation/combat_objective_primitive_mapper_test.dart
       - docs/superpowers/plans/2026-08-24-p2-m2-r03-objective-controller.md
     protected_behavior:

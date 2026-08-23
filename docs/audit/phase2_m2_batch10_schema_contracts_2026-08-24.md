@@ -17,7 +17,7 @@
 | ID | 执行端 | 当前状态 | 受保护边界 |
 |---|---|---|---|
 | `P2-M2-C01-CATALOG-SCHEMA-GATEWAY` | Codex high | ready_reviewed | 内容中立、fail closed、无生产默认 |
-| `P2-M2-R01-MAINLINE-RUN-PARTICIPATION` | Qoder / Qwen3.8-Max high | running | 纯合同、无 host/save/UI/双 preset |
+| `P2-M2-R01-MAINLINE-RUN-PARTICIPATION` | Qoder / Qwen3.8-Max high | ready_reviewed | 纯合同、无 host/save/UI/双 preset |
 | `P2-M2-R02-MENTOR-INSIGHT-CONTRACT` | Pi / DeepSeek V4 Flash high | ready_reviewed | 无 rate/cap/生产发放/持久化 |
 
 ## 后续唤醒条件
@@ -32,5 +32,6 @@
 - C01：实现 `fb420893`、READY `925f2908`、集成 `b195571b`；主控复跑 137/137，scoped analyze 0，独立复审 P0/P1/P2=0。
 - R02：实现链 `e6800ace` → `56ff3169` → `ef18fcb0`、READY `150e518a`、集成链 `c40921cd` → `c87bb751` → `dc9f7c69`；主控复跑 60/60，scoped analyze 0，独立复审 P0/P1/P2=0。
 - R02 首版自造 claim codec/ledger 与第二版 canonical alias 均在集成前被拒绝并修复；最终复用 shared `RewardClaimKey`，不声称进程内 guard 具备 durable exactly-once。
-- C01 READY 已唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`；该后续运行时切片以 `b195571b` 为基线，不属于 Batch10 READY 的替代验收。
-- Batch10 仍待 R01 修订、联合测试、最终独立复审和 READY tip。
+- R01：实现 `eefab0aa`、READY `b9d07314`、集成 `f5e6abe0`；主控复跑 36/36，scoped analyze 0，独立复审 P0/P1/P2=0。实时 replay 只允许合格闲置人类/机器人，headless replay、扫荡与首通继续使用当前领队；连续 run 锁定参与者与不透明 loadout snapshot，并要求外部 battle-eligibility 事实后才能推进下一关。
+- C01 READY 已唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`；R03 实现 `4c2c44e2`、READY `02ab6df5`，主控复跑 29/29、scoped analyze 0、独立复审 P0/P1/P2=0。该后续运行时切片以 `b195571b` 为基线，将在 Batch10 READY 后进入下一集成批，不属于 Batch10 READY 的替代验收。
+- Batch10 仍待 G7 辅助证据包收口、联合测试、最终独立复审和 READY tip。

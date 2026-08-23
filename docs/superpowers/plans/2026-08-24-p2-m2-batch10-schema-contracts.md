@@ -10,7 +10,7 @@
 2. R01 / Qoder Qwen3.8-Max：MainlineRun 与 replay/headless/sweep 参与者纯合同。
 3. R02 / Pi DeepSeek V4 Flash：随行听剑单关占用、四类互斥、释放和首通 claim 纯合同。
 
-当前状态：C01 与 R02 已通过主控复跑和独立复审并进入集成；R01 因 transition 可绕过 eligibility 被退回 Qoder 修订，未通过前不进入集成。
+当前状态：C01、R01 与 R02 均已通过主控复跑和独立复审并进入集成。R01 的 transition 绕过 eligibility 问题已由 Qoder 修复；连续 run 现要求外部 battle-eligibility 事实，失败走 typed refusal 且不创建新状态或 snapshot。
 
 ## 硬边界
 
