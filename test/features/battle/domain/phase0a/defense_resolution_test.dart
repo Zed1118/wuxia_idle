@@ -53,6 +53,9 @@ void main() {
       double baseMitigationFraction = 0,
       double counterDamage = 0,
       double counterUpperBound = 0,
+      double? counterPerSecondUpperBound,
+      CounterEffectAllowlist counterEffectAllowlist =
+          const CounterEffectAllowlist(),
     }) => DefenseInput(
       flags: flags ?? openFlags,
       incomingHpDamage: incomingHpDamage,
@@ -66,6 +69,8 @@ void main() {
       baseMitigationFraction: baseMitigationFraction,
       counterDamage: counterDamage,
       counterUpperBound: counterUpperBound,
+      counterPerSecondUpperBound: counterPerSecondUpperBound,
+      counterEffectAllowlist: counterEffectAllowlist,
     );
 
     test('uses dodge before every later defense branch', () {
@@ -109,6 +114,8 @@ void main() {
       expect(redirect.branch, DefenseBranch.redirect);
       expect(redirect.counterDamage, 0);
       expect(redirect.wasRedirected, isTrue);
+      expect(redirect.projectileRedirect, isTrue);
+      expect(redirect.nonRecursive, isTrue);
     });
 
     test('applies shield, block, then base mitigation to HP and posture', () {
@@ -167,6 +174,54 @@ void main() {
       );
 
       expect(result.counterDamage, 12);
+      expect(result.nonRecursive, isTrue);
+    });
+
+    test('applies the stricter per-second counter cap', () {
+      final result = resolveDefense(
+        input(
+          parrySucceeded: true,
+          counterDamage: 80,
+          counterUpperBound: 50,
+          counterPerSecondUpperBound: 12,
+        ),
+      );
+
+      expect(result.counterDamage, 12);
+    });
+
+    test(
+      'keeps standardized counters closed to typed exceptions by default',
+      () {
+        final result = resolveDefense(
+          input(parrySucceeded: true, counterDamage: 10, counterUpperBound: 20),
+        );
+
+        expect(result.canCrit, isFalse);
+        expect(result.canLifesteal, isFalse);
+        expect(result.canTriggerOnHitReflect, isFalse);
+      },
+    );
+
+    test('requires typed allowlist for counter effect exceptions', () {
+      final result = resolveDefense(
+        input(
+          blockSucceeded: true,
+          counterDamage: 10,
+          counterUpperBound: 20,
+          counterEffectAllowlist: const CounterEffectAllowlist(
+            effects: {
+              CounterEffect.critical,
+              CounterEffect.lifesteal,
+              CounterEffect.onHitReflect,
+            },
+          ),
+        ),
+      );
+
+      expect(result.canCrit, isTrue);
+      expect(result.canLifesteal, isTrue);
+      expect(result.canTriggerOnHitReflect, isTrue);
       expect(result.nonRecursive, isTrue);
     });
 

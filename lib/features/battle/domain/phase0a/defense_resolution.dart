@@ -9,6 +9,29 @@ enum DefenseBranch {
   hit,
 }
 
+/// Optional exceptions for standardized counter damage.
+///
+/// The empty set is intentional: counters never inherit critical, lifesteal,
+/// or on-hit reflect behavior unless a typed ability explicitly opts in.
+enum CounterEffect { critical, lifesteal, onHitReflect }
+
+final class CounterEffectAllowlist {
+  const CounterEffectAllowlist({this.effects = const <CounterEffect>{}});
+
+  final Set<CounterEffect> effects;
+
+  bool contains(CounterEffect effect) => effects.contains(effect);
+
+  @override
+  bool operator ==(Object other) =>
+      other is CounterEffectAllowlist &&
+      other.effects.length == effects.length &&
+      other.effects.containsAll(effects);
+
+  @override
+  int get hashCode => Object.hashAll(effects);
+}
+
 final class AttackDefenseFlags {
   AttackDefenseFlags({
     required this.blockable,
@@ -70,6 +93,8 @@ final class DefenseInput {
     required this.baseMitigationFraction,
     required this.counterDamage,
     required this.counterUpperBound,
+    this.counterPerSecondUpperBound,
+    this.counterEffectAllowlist = const CounterEffectAllowlist(),
   }) {
     _requireFiniteNonNegative(incomingHpDamage, 'incomingHpDamage');
     _requireFiniteNonNegative(incomingPostureDamage, 'incomingPostureDamage');
@@ -78,6 +103,12 @@ final class DefenseInput {
     _requireUnitFraction(baseMitigationFraction, 'baseMitigationFraction');
     _requireFiniteNonNegative(counterDamage, 'counterDamage');
     _requireFiniteNonNegative(counterUpperBound, 'counterUpperBound');
+    if (counterPerSecondUpperBound != null) {
+      _requireFiniteNonNegative(
+        counterPerSecondUpperBound!,
+        'counterPerSecondUpperBound',
+      );
+    }
   }
 
   final AttackDefenseFlags flags;
@@ -92,6 +123,8 @@ final class DefenseInput {
   final double baseMitigationFraction;
   final double counterDamage;
   final double counterUpperBound;
+  final double? counterPerSecondUpperBound;
+  final CounterEffectAllowlist counterEffectAllowlist;
 
   @override
   bool operator ==(Object other) =>
@@ -107,7 +140,9 @@ final class DefenseInput {
       other.blockDamageMultiplier == blockDamageMultiplier &&
       other.baseMitigationFraction == baseMitigationFraction &&
       other.counterDamage == counterDamage &&
-      other.counterUpperBound == counterUpperBound;
+      other.counterUpperBound == counterUpperBound &&
+      other.counterPerSecondUpperBound == counterPerSecondUpperBound &&
+      other.counterEffectAllowlist == counterEffectAllowlist;
 
   @override
   int get hashCode => Object.hashAll([
@@ -123,6 +158,8 @@ final class DefenseInput {
     baseMitigationFraction,
     counterDamage,
     counterUpperBound,
+    counterPerSecondUpperBound,
+    counterEffectAllowlist,
   ]);
 }
 
@@ -137,6 +174,7 @@ final class DefenseResult {
     required this.canCrit,
     required this.canLifesteal,
     required this.canTriggerOnHitReflect,
+    required this.projectileRedirect,
   });
 
   final DefenseBranch branch;
@@ -149,6 +187,10 @@ final class DefenseResult {
   final bool canLifesteal;
   final bool canTriggerOnHitReflect;
 
+  /// True only for the projectile ownership/target redirect branch.
+  /// It is deliberately separate from [counterDamage].
+  final bool projectileRedirect;
+
   @override
   bool operator ==(Object other) =>
       other is DefenseResult &&
@@ -160,7 +202,8 @@ final class DefenseResult {
       other.nonRecursive == nonRecursive &&
       other.canCrit == canCrit &&
       other.canLifesteal == canLifesteal &&
-      other.canTriggerOnHitReflect == canTriggerOnHitReflect;
+      other.canTriggerOnHitReflect == canTriggerOnHitReflect &&
+      other.projectileRedirect == projectileRedirect;
 
   @override
   int get hashCode => Object.hash(
@@ -173,6 +216,7 @@ final class DefenseResult {
     canCrit,
     canLifesteal,
     canTriggerOnHitReflect,
+    projectileRedirect,
   );
 }
 
@@ -195,6 +239,7 @@ DefenseResult resolveDefense(DefenseInput input) {
       canCrit: false,
       canLifesteal: false,
       canTriggerOnHitReflect: false,
+      projectileRedirect: true,
     );
   }
 
@@ -214,9 +259,7 @@ DefenseResult resolveDefense(DefenseInput input) {
   final mitigationMultiplier = 1 - input.baseMitigationFraction;
   hpDamage = _safeScale(hpDamage, mitigationMultiplier);
   postureDamage = _safeScale(postureDamage, mitigationMultiplier);
-  final counter = usesBlockOrShield
-      ? _boundedCounter(input.counterDamage, input.counterUpperBound)
-      : 0.0;
+  final counter = usesBlockOrShield ? _boundedCounter(input) : 0.0;
   return DefenseResult(
     branch: branch,
     incomingHpDamage: hpDamage,
@@ -224,9 +267,16 @@ DefenseResult resolveDefense(DefenseInput input) {
     counterDamage: counter,
     wasRedirected: false,
     nonRecursive: true,
-    canCrit: false,
-    canLifesteal: false,
-    canTriggerOnHitReflect: false,
+    canCrit:
+        usesBlockOrShield &&
+        input.counterEffectAllowlist.contains(CounterEffect.critical),
+    canLifesteal:
+        usesBlockOrShield &&
+        input.counterEffectAllowlist.contains(CounterEffect.lifesteal),
+    canTriggerOnHitReflect:
+        usesBlockOrShield &&
+        input.counterEffectAllowlist.contains(CounterEffect.onHitReflect),
+    projectileRedirect: false,
   );
 }
 
@@ -235,15 +285,17 @@ DefenseResult _counterResult(DefenseInput input, DefenseBranch branch) {
     branch: branch,
     incomingHpDamage: 0,
     incomingPostureDamage: 0,
-    counterDamage: _boundedCounter(
-      input.counterDamage,
-      input.counterUpperBound,
-    ),
+    counterDamage: _boundedCounter(input),
     wasRedirected: false,
     nonRecursive: true,
-    canCrit: false,
-    canLifesteal: false,
-    canTriggerOnHitReflect: false,
+    canCrit: input.counterEffectAllowlist.contains(CounterEffect.critical),
+    canLifesteal: input.counterEffectAllowlist.contains(
+      CounterEffect.lifesteal,
+    ),
+    canTriggerOnHitReflect: input.counterEffectAllowlist.contains(
+      CounterEffect.onHitReflect,
+    ),
+    projectileRedirect: false,
   );
 }
 
@@ -257,10 +309,18 @@ DefenseResult _zeroResult(DefenseBranch branch) => DefenseResult(
   canCrit: false,
   canLifesteal: false,
   canTriggerOnHitReflect: false,
+  projectileRedirect: false,
 );
 
-double _boundedCounter(double damage, double upperBound) =>
-    _safeScale(damage < upperBound ? damage : upperBound, 1);
+double _boundedCounter(DefenseInput input) {
+  var upperBound = input.counterUpperBound;
+  final perSecond = input.counterPerSecondUpperBound;
+  if (perSecond != null && perSecond < upperBound) upperBound = perSecond;
+  return _safeScale(
+    input.counterDamage < upperBound ? input.counterDamage : upperBound,
+    1,
+  );
+}
 
 double _safeScale(double value, double multiplier) {
   final scaled = value * multiplier;
