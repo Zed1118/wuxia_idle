@@ -8,7 +8,7 @@
 - milestone：M0（设计冻结与测量基线）· 只读证据包
 - priority：高（G0 清账前置事实底座）
 - owner：PI（本执行端）
-- tool / model：pi（当前环境）
+- tool / model：Pi + DeepSeek `deepseek-v4-flash`
 - goal：严格证据化审计五项决策（COMBAT-WAVE-CD-01 / EXP-CONCURRENCY-01 / MAINLINE-PARTICIPANT-01 / INNER-DEMON-FAILURE-CORE-01 / INNER-DEMON-LEGACY-01）的真实生产文件、符号、配置、测试与当前行为；产出实现差距证据包
 - playerVisibleOutcome：无（不改变任何玩法）
 - nonGoals：不修改 lib/data/test/GDD.md/CLAUDE.md/PROGRESS.md；不运行全量测试；不把 PROPOSED 当已决定；不 push / 不合并 main / 不升级依赖 / 不删除文件
@@ -16,7 +16,7 @@
 ## 基线与环境
 
 - baseCommit：`e292d3a0`（收口主线群怪爽感与实机布局 = origin/main tip）
-- branch：`codex/phase2-m0-pi-evidence-20260823`（0 commits ahead of origin/main）
+- branch：`codex/phase2-m0-pi-evidence-20260823`（基于审计启动时的 origin/main tip）
 - worktree：当前 cwd（`挂机武侠-phase2-pi`），工作树干净
 - 上游文档：`/Users/a10506/Desktop/二阶段优化方案.md`（v2.0 · 2026-08-23 冻结前修订稿 · G0 未签字）
 - 必读：AGENTS.md / CLAUDE.md / docs/spec/rejected_task_registry.md / 二阶段优化方案.md —— 均已完成并引用
@@ -48,8 +48,8 @@
 
 - 状态：**已完成**
 - 最后完成：两份交付文件已写入；证据链全部经 read/grep 实测（含行号）
-- 验证：`git diff --check`（待跑）、文件白名单（待验）、工作树干净（待验）
-- 下一步：commit（中文动宾）→ 追加空 commit 打 `[READY][PI][P2-M0]` tip → 终验
+- 验证：`git diff --check`、文件白名单、工作树 clean 与 READY tip 均已核验
+- 下一步：由 Codex 集成主审合入候选整合分支，不直接改 `main`
 - 已跑验证：全部只读（grep/read/git log/status），未运行任何测试
 - 阻塞项：无
 

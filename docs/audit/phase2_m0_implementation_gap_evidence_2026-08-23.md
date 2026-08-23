@@ -2,7 +2,8 @@
 
 > 日期：2026-08-23
 > 任务：P2-M0-PI-EVIDENCE（只读证据审计，零生产代码改动）
-> 分支：`codex/phase2-m0-pi-evidence-20260823`；基线 `e292d3a0`（= origin/main tip，分支 0 commits ahead）
+> 分支：`codex/phase2-m0-pi-evidence-20260823`；基线 `e292d3a0`（= 审计启动时的 origin/main tip）
+> 执行端：Pi + DeepSeek `deepseek-v4-flash`
 > 上位文档：`/Users/a10506/Desktop/二阶段优化方案.md`（v2.0，2026-08-23 冻结前最终修订稿；产品方向已有条件通过，G0 未签字）
 > 性质：全部数字为 grep/read 实测口径，引用带 `file:line`；**PROPOSED 项一律不视为已决定**，本包只记录现状事实与差距，不写实现。
 
@@ -64,7 +65,7 @@
 
 ### 1.5 建议 owner 与 targeted 命令
 
-- Owner：主审（Claude）+ 方案 C15/M1（「换波冷却保留、间歇自然推进与新关重置合同」）
+- Owner：Codex 集成主审 + 方案 C15/M1（「换波冷却保留、间歇自然推进与新关重置合同」）
 - 验收前置：先加 mapper 级断言（`phase0a_stage_content_mapper_test`）+ 跨波剩余冷却保留测，再改 `numbers.yaml` 两处
 - Targeted：`flutter test test/features/battle/application/phase0a/phase0a_wave_flow_test.dart test/features/battle/application/phase0a/phase0a_stage_content_mapper_test.dart test/data/mainline_wave_schema_test.dart test/data/game_repository_test.dart --no-pub`
 - 改动触及 `numbers.yaml` 主配置 → 批末需 `flutter test test/data --no-pub`
@@ -146,7 +147,7 @@
 
 ### 3.5 建议 owner 与 targeted 命令
 
-- Owner：主审（Claude）+ 方案 M1 参与者合同 / MAINLINE-PARTICIPANT-01 G0 处置
+- Owner：Codex 集成主审 + 方案 M1 参与者合同 / MAINLINE-PARTICIPANT-01 G0 处置
 - 验收前置：先加证红测试（null/悬空/缺失 → 抛错）再删回退；传位前后指针断言沿用 ascend_service_test 体例
 - Targeted：`flutter test test/features/mainline/presentation/phase0a_mainline_wiring_test.dart test/features/sweep/application/phase0a_sweep_headless_runner_test.dart test/features/tower/ test/features/ascension/application/ascend_service_test.dart --no-pub`
 
@@ -188,7 +189,7 @@
 
 ### 4.5 建议 owner 与 targeted 命令
 
-- Owner：主审（Claude）+ 方案 M-DEMON / M1-C17
+- Owner：Codex 集成主审 + 方案 M-DEMON / M1-C17
 - 验收前置：先加证红测试（心魔战败 → 无 injuryHoursRemaining / 无 lightInjuryStacks 新增；对照普通 Boss 战败 → 有伤势），再改 `combat_resolution_service.dart` 伤势分支（或引入 stageType 豁免）
 - Targeted：`flutter test test/features/inner_demon/ test/features/mainline/inner_demon_defeat_summary_test.dart test/features/combat_shared/ --no-pub`
 - 涉及结算切面 → 批末全量 `flutter test --no-pub`
@@ -233,7 +234,7 @@
 
 ### 5.5 建议 owner 与 targeted 命令
 
-- Owner：主审（Claude）+ 方案 M1-C17（「心魔失败实现/配置/注释差异清理」）
+- Owner：Codex 集成主审 + 方案 M1-C17（「心魔失败实现/配置/注释差异清理」）
 - Targeted：`flutter test test/features/inner_demon/ test/data/truth_source_guard_test.dart --no-pub`
 - 涉及 `numbers.yaml` + typed def → 批末 `flutter test test/data --no-pub` + `flutter analyze`
 
