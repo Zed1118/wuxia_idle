@@ -75,10 +75,10 @@ AttackTokenLeaseRuntime? attackTokenLeaseRuntime,
 
 ## 当前恢复点
 
-- 状态：计划恢复点待提交，代码与测试尚未修改。
-- 最后完成：核验 clean worktree/branch/HEAD；`flutter pub get --enforce-lockfile` 成功；build_runner 写出 126 outputs，`lib/` 下 63 个 `.g.dart`；本地与主 checkout `libisar.dylib` SHA-256 均为 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`；Pi 设计审查 PASS。
-- 下一步：提交本计划，然后编写新 production assembler 红测。
-- 已跑验证：仅环境恢复和 Pi 只读设计审查；按单 feature 任务节奏不跑 full。
+- 状态：计划与 TDD 红测已提交，生产实现尚未修改。
+- 最后完成：计划提交 `a306bd67`；新测试提交 `a6d1296d`，覆盖 direct/mapping identity、成对/互斥、RNG、no-op 回放、planner/runtime/observer/reducer/objective 原子性及 source guard。fresh worktree 环境仍为 build_runner 126 outputs、63 个 `.g.dart`、dylib SHA-256 `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
+- 下一步：最小修改 production assembler 的两个入口并复跑新测试。
+- 已跑验证：`flutter test --no-pub test/features/battle/application/phase0a/phase0a_production_attack_token_lease_wiring_test.dart` 按预期红，唯一根因为两个 assembler 方法均缺 `attackTokenLeaseBatchGate` / `attackTokenLeaseRuntime` 命名参数；Pi 编码前只读审查 PASS。按单 feature 任务节奏不跑 full。
 - 阻塞项：无。action completion/cancel/interrupt/timeline 和 production host 依然是未冻结 Gate，不影响本 host-neutral seam。
 
 ## READY
