@@ -36,7 +36,7 @@
 
 - CLI：`qoderclicn` 1.1.28；可用模型确切标识 `Qwen3.8-Max`。
 - 设计审查：实际使用 `Qwen3.8-Max` + `--reasoning-effort high` + 只读工具，结论 PASS。建议先构建 director entryId → snapshot，再做双向集合比较；通过后按 content 顺序取权威 enemyId 调 factory，最后委托 roster 校验。重点补测 drift 时 factory 零调用、factory 异常透传、输入不推进。
-- 最终 diff 审查：实际使用同一 `Qwen3.8-Max` + `--reasoning-effort high` + 只读工具，结论 PASS，P0=0、P1=0。审查给出 4 条非阻塞 P2 备注：一条测试命名已收窄；其余为冗余 source guard、权威 runtime enemy ID 允许不同值、仓库既有相对 cwd audit 惯例，均不构成代码缺陷或合同缺口。
+- 最终 diff 审查：实际使用同一 `Qwen3.8-Max` + `--reasoning-effort high` + 只读工具。首轮结论 PASS，给出 4 条非阻塞备注；测试命名已收窄，其余按既有合同/仓库惯例证伪为非缺陷。最终复核逐项核对冻结合同，结论 PASS，剩余 P0=0、P1=0、P2=0。
 - 全程不得记录或输出 token/key。
 
 ## 任务切片
@@ -49,9 +49,9 @@
 
 ## 当前恢复点
 
-- 状态：实现、验证与 Qoder 最终审查完成，准备提交并冻结分支。
-- 最后完成：新增纯 mapper；entry set 漂移在 factory 首调前 fail closed，通过后按 content 顺序传递 director 权威 runtime enemy ID，并委托 roster 完成 actor 校验。红测先因目标文件/API 缺失编译失败，实现后转绿。
-- 下一步：提交实现/证据，追加 `[READY][QODER][P2-M2-R07]` 空提交，交主控独立复审和 Batch12 集成。
+- 状态：实现、验证、Qoder 最终复核与证据记录完成；准备追加 READY 空提交冻结分支。
+- 最后完成：实现 commit `99f90d990bbdbd3119f3256b1883ee40b64465a9` 新增纯 mapper；entry set 漂移在 factory 首调前 fail closed，通过后按 content 顺序传递 director 权威 runtime enemy ID，并委托 roster 完成 actor 校验。红测先因目标文件/API 缺失编译失败，实现后转绿。Qoder 最终复核 PASS，P0/P1/P2=0。
+- 下一步：提交本恢复点证据，追加 `[READY][QODER][P2-M2-R07]` 空提交，交主控独立复审和 Batch12 集成。
 - 已跑验证：新 mapper 8/8、R04 mapper 8/8、content definition 20/20、roster 9/9、SpawnDirector 33/33，共 78/78 通过；scoped analyze 2 files 0 issue；Dart format 与 `git diff --check` 通过。Qoder 1.1.28 / `Qwen3.8-Max` / high 设计审查与最终审查均 PASS。
 - 阻塞项：无。
 - 生产接线：依授权不接 production host；后续 host 必须显式提供 actor factory。
