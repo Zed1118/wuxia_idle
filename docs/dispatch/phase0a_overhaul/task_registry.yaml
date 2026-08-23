@@ -1501,3 +1501,89 @@ tasks:
       - no gameplay formula yaml assertion or production behavior changes
       - retired 3v3 evidence is historical and cannot certify current Phase0A extreme builds
       - current diagnostic coverage is described without overstating max build cycle or long run evidence
+
+  - id: P2-M2-R05-ATTACK-TOKEN-BATCH-GATE
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r05-attack-token-batch-gate-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r05-attack-token-batch-gate
+    status: in_progress
+    base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    prerequisites:
+      - P2-G2-D02-ATTACK-TOKEN-DIRECTOR
+      - P2-G2-E04-ENEMY-INTENT-OBSERVER
+      - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_enemy_intent_batch_gate.dart
+      - lib/features/battle/application/phase0a/attack_token_enforcing_batch_gate.dart
+      - lib/features/battle/application/phase0a/phase0a_combat_session.dart
+      - test/features/battle/application/phase0a/phase0a_attack_token_enforcing_batch_gate_test.dart
+      - test/features/battle/application/phase0a/phase0a_session_encounter_seams_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r05-attack-token-batch-gate.md
+    protected_behavior:
+      - null batch gate preserves the existing session path byte for byte at the semantic level
+      - the gate may only retain a stable subsequence and cannot inject substitute or reorder intents
+      - token budgets and intent request mapping remain explicit caller inputs with no production defaults
+      - no production host yaml ui save reward injury or tuning promotion
+
+  - id: P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
+    milestone: M2
+    owner: codex_sol_high
+    branch: codex/phase2-m2-r06-objective-runtime-tracker-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r06-objective-runtime-tracker
+    status: in_progress
+    base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    prerequisites:
+      - P2-M2-R03-OBJECTIVE-CONTROLLER
+      - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart
+      - test/features/battle/application/phase0a/phase0a_objective_runtime_tracker_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r06-objective-runtime-tracker.md
+    protected_behavior:
+      - the tracker owns exactly one objective controller progress lineage and updates atomically
+      - combat defeat conversion uses explicit caller classification with no commander or target inference
+      - no battle terminal host reward save ui yaml or tuning behavior changes
+
+  - id: P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r07-encounter-roster-mapper-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r07-encounter-roster-mapper
+    status: in_progress
+    base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    prerequisites:
+      - P2-M2-R04-RUNTIME-CONTRACT-MAPPER
+      - P2-M2-BATCH11-CH1-RUNTIME-INTEGRATION
+    owned_files:
+      - lib/data/validation/combat_encounter_roster_mapper.dart
+      - test/data/validation/combat_encounter_roster_mapper_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r07-encounter-roster-mapper.md
+    protected_behavior:
+      - content entry ids must exactly match the supplied spawn director before actor construction
+      - actor construction and runtime enemy ids remain explicit caller ownership with no fallback
+      - no actor stat defaults production host yaml ui save reward injury or tuning promotion
+
+  - id: P2-M2-BATCH12-RUNTIME-ENFORCEMENT-INTEGRATION
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch12-runtime-enforcement-integration-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch12-runtime-enforcement-integration
+    status: in_progress
+    base_commit: 57f04b397d1412128535ba8f74a7e61ecdfb4577
+    source_tasks:
+      - P2-M2-R05-ATTACK-TOKEN-BATCH-GATE
+      - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
+      - P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch12-runtime-enforcement.md
+      - docs/audit/phase2_m2_batch12_runtime_enforcement_2026-08-24.md
+    protected_behavior:
+      - integrate enforcement and mapping seams without switching the production encounter host
+      - candidate tuning remains test-only and cannot be promoted by Batch12 verification
+      - main and origin main remain untouched
+    exit_criteria:
+      - R05 R06 and R07 pass root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
