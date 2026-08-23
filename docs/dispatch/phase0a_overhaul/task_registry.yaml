@@ -2061,3 +2061,124 @@ tasks:
       - V01 R14 and R15 pass source tool review root diff review and independent review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - audit registry plan and READY marker match the frozen integration tip
+
+  - id: P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-r12b-attack-token-lease-session-wiring-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12b-attack-token-lease-session-wiring
+    status: ready_reviewed
+    base_commit: 7bc31c5f5463aac26e127912576350487ac0a8d3
+    implementation_commit: f5b42011
+    tip_commit: 72e274aa8156cf5adbe5e2f9b7c0290fe433f265
+    integration_commits:
+      - 2d7e21b6
+      - ed12bcca
+      - 04a4d637
+      - ff1d89f6
+      - a9522747
+    verification:
+      targeted_tests: 89
+      full_tests: 4969
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
+    prerequisites:
+      - P2-M2-R12A-ATTACK-TOKEN-LEASE-RUNTIME
+      - P2-M2-BATCH14-ENCOUNTER-RUNTIME-OWNERSHIP-INTEGRATION
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_attack_token_lease_batch_gate.dart
+      - lib/features/battle/application/phase0a/phase0a_combat_session.dart
+      - test/features/battle/application/phase0a/phase0a_attack_token_lease_session_wiring_test.dart
+      - test/features/battle/application/phase0a/phase0a_enemy_intent_observer_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r12b-attack-token-lease-session-wiring.md
+    protected_behavior:
+      - keep immutable lease runtime inside each candidate session and publish arena lease and diagnostics only after all throwable work succeeds
+      - accept only caller supplied explicit lease mutations and never infer action lifecycle from timeline hit defeat cooldown disappearance or role facts
+      - keep null and stateless batch gate behavior unchanged and keep production assembler host data candidate and tuning unwired
+
+  - id: P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r12c-attack-token-lease-assembler-seam-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r12c-attack-token-lease-assembler-seam
+    status: in_progress
+    base_commit: 72e274aa8156cf5adbe5e2f9b7c0290fe433f265
+    prerequisites:
+      - P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_production_flow_assembler.dart
+      - test/features/battle/application/phase0a/phase0a_production_attack_token_lease_wiring_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r12c-attack-token-lease-assembler-seam.md
+    protected_behavior:
+      - pass an explicit nullable lease gate and runtime pair only through assembleEncounter and assembleEncounterFromMapping
+      - delegate pair and batch gate exclusivity validation to the session and never construct a default gate runtime action id or lifecycle policy
+      - do not change assemble assembleMigratedEncounterPlan production host data candidate tuning or ActionTimeline behavior
+
+  - id: P2-M2-R17-MIGRATED-ENCOUNTER-SETTLEMENT-ADAPTER
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r17-migrated-encounter-settlement-adapter-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r17-migrated-encounter-settlement-adapter
+    status: in_progress
+    base_commit: a952274781a11283ff5d7675ad270034a94cfd69
+    prerequisites:
+      - P2-M2-BATCH15-STRUCTURAL-RUNTIME-INTEGRATION
+      - P2-M2-R07-ENCOUNTER-ROSTER-MAPPER
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_settlement_adapter.dart
+      - test/features/battle/application/phase0a/phase0a_migrated_encounter_settlement_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r17-migrated-encounter-settlement-adapter.md
+    protected_behavior:
+      - adapt an explicit encounter mapping into the existing settlement core without copying damage skill critical or actor aggregation rules
+      - preserve exact legacy settlement parity and fail closed on ongoing outcome or invalid player mapping
+      - do not infer route objective reward injury host persistence data candidate or tuning behavior
+
+  - id: P2-M2-R18-MAINLINE-STAGE-RUNTIME-ADMISSION
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-r18-mainline-stage-runtime-admission-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r18-mainline-stage-runtime-admission
+    status: in_progress
+    base_commit: a952274781a11283ff5d7675ad270034a94cfd69
+    prerequisites:
+      - P2-M2-R14-MAINLINE-RUN-ADMISSION
+      - P2-M2-R15-MENTOR-INSIGHT-STAGE-OCCUPANCY-RUNTIME
+    owned_files:
+      - lib/features/mainline/application/mainline_stage_runtime_admission.dart
+      - test/features/mainline/application/mainline_stage_runtime_admission_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r18-mainline-stage-runtime-admission.md
+    protected_behavior:
+      - combine exact caller supplied first clear mainline admission and optional single stage mentor occupancy as one owner bound prepared successor
+      - keep empty mentor choice as a no revision result and reject mismatched stage foreign stale or double commit
+      - do not claim durable transaction semantics or infer leader eligibility mentee relation healing persistence claim rate cap host ui data candidate or tuning
+
+  - id: P2-M2-BATCH16-TRANSACTIONAL-HOST-READY-SEAMS
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch16-transactional-host-ready-seams-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch16-transactional-host-ready-seams
+    status: in_progress
+    base_commit: cf6a4ab61c06e3141658b37473cfa23b838342db
+    source_tasks:
+      - P2-M2-R12B-ATTACK-TOKEN-LEASE-SESSION-WIRING
+      - P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
+      - P2-M2-R17-MIGRATED-ENCOUNTER-SETTLEMENT-ADAPTER
+      - P2-M2-R18-MAINLINE-STAGE-RUNTIME-ADMISSION
+    integration_commits:
+      - 2d7e21b6
+      - ed12bcca
+      - 04a4d637
+      - ff1d89f6
+      - a9522747
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch16-transactional-host-ready-seams.md
+      - docs/audit/phase2_m2_batch16_transactional_host_ready_seams_2026-08-24.md
+    protected_behavior:
+      - integrate only host neutral transactional seams and preserve stable source patch identity
+      - keep production route candidate data objective payload timeline lifecycle tuning profile G2 and human playtest gates unresolved
+      - main and origin main remain untouched
+    exit_criteria:
+      - R12b R12c R17 and R18 pass source tool review root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
