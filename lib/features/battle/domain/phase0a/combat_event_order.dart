@@ -116,8 +116,8 @@ final class CombatPresentationFeedEntry {
 
   final String eventId;
   final int tick;
-  final String? aggregateKey;
-  final int? priority;
+  final String aggregateKey;
+  final int priority;
   final CombatFeedKind kind;
 
   @override
@@ -142,9 +142,10 @@ final class CombatPresentationFeed {
   factory CombatPresentationFeed.fromOrderedEvents(
     Iterable<CombatEventRecord> events,
   ) {
-    _validateOrdered(events);
+    final orderedEvents = List<CombatEventRecord>.unmodifiable(events);
+    _validateOrdered(orderedEvents);
     final entries = <CombatPresentationFeedEntry>[];
-    for (final event in events) {
+    for (final event in orderedEvents) {
       if (event.feedKind == CombatFeedKind.none) continue;
       entries.add(
         CombatPresentationFeedEntry(
@@ -175,8 +176,8 @@ void _validateOrdered(Iterable<CombatEventRecord> events) {
 }
 
 void _requireText(String? value, String name) {
-  if (value == null || value.trim().isEmpty) {
-    throw ArgumentError.value(value, name);
+  if (value == null || value.isEmpty || value != value.trim()) {
+    throw ArgumentError.value(value, name, 'must be a trimmed non-empty ID');
   }
 }
 

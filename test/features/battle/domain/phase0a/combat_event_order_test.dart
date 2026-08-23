@@ -98,6 +98,10 @@ void main() {
       throwsArgumentError,
     );
     expect(
+      () => event(' padded ', CombatEventStage.startup),
+      throwsArgumentError,
+    );
+    expect(
       () => event(
         'wrong-stage',
         CombatEventStage.status,
