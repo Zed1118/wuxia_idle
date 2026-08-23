@@ -101,6 +101,7 @@ void main() {
 
       expect(ledger.advance(1).damages, [
         const StatusDamage(
+          tick: 2,
           sourceId: 'a',
           type: TimedStatusType.poison,
           amount: 9,
@@ -155,7 +156,7 @@ void main() {
 
       expect(ledger.active.single.stacks, 2);
       expect(ledger.active.single.spec.stackLimit, 2);
-      expect(ledger.movementMultiplier, 0.7);
+      expect(ledger.movementMultiplier, closeTo(0.49, 0.000001));
     });
 
     test('active snapshots cannot mutate ledger internals', () {
@@ -201,29 +202,66 @@ void main() {
 
       expect(result.damages, [
         const StatusDamage(
+          tick: 1,
           sourceId: 'a',
           type: TimedStatusType.poison,
           amount: 2,
         ),
         const StatusDamage(
+          tick: 2,
           sourceId: 'a',
           type: TimedStatusType.poison,
           amount: 2,
         ),
         const StatusDamage(
-          sourceId: 'a',
-          type: TimedStatusType.poison,
-          amount: 2,
-        ),
-        const StatusDamage(
+          tick: 2,
           sourceId: 'b',
           type: TimedStatusType.poison,
           amount: 7,
+        ),
+        const StatusDamage(
+          tick: 3,
+          sourceId: 'a',
+          type: TimedStatusType.poison,
+          amount: 2,
         ),
       ]);
       expect(ledger.active, hasLength(1));
       expect(ledger.active.single.sourceId, 'b');
     });
+
+    test(
+      'batched and one-tick advances emit the same ordered damage events',
+      () {
+        TimedStatusLedger buildLedger() => TimedStatusLedger.empty
+          ..apply(
+            _poison(
+              durationTicks: 3,
+              tickIntervalTicks: 1,
+              sourceId: 'a',
+              damagePerTick: 2,
+            ),
+          )
+          ..apply(
+            _poison(
+              durationTicks: 3,
+              tickIntervalTicks: 2,
+              sourceId: 'b',
+              damagePerTick: 7,
+            ),
+          );
+
+        final batched = buildLedger().advance(3).damages;
+        final steppedLedger = buildLedger();
+        final stepped = <StatusDamage>[
+          ...steppedLedger.advance(1).damages,
+          ...steppedLedger.advance(1).damages,
+          ...steppedLedger.advance(1).damages,
+        ];
+
+        expect(stepped, batched);
+      },
+    );
 
     test('root blocks regular movement but permits attack and defense', () {
       final root = TimedStatusSpec(

@@ -93,11 +93,13 @@ final class TimedStatusInstance {
 
 final class StatusDamage {
   const StatusDamage({
+    required this.tick,
     required this.sourceId,
     required this.type,
     required this.amount,
   });
 
+  final int tick;
   final String sourceId;
   final TimedStatusType type;
   final int amount;
@@ -105,12 +107,13 @@ final class StatusDamage {
   @override
   bool operator ==(Object other) =>
       other is StatusDamage &&
+      other.tick == tick &&
       other.sourceId == sourceId &&
       other.type == type &&
       other.amount == amount;
 
   @override
-  int get hashCode => Object.hash(sourceId, type, amount);
+  int get hashCode => Object.hash(tick, sourceId, type, amount);
 }
 
 final class StatusAdvanceResult {
@@ -131,6 +134,7 @@ final class TimedStatusLedger {
   static TimedStatusLedger get empty => TimedStatusLedger._();
 
   final List<TimedStatusInstance> _statuses = [];
+  int _timelineTick = 0;
 
   /// Returns detached snapshots; mutating an item cannot mutate this ledger.
   List<TimedStatusInstance> get active =>
@@ -144,7 +148,13 @@ final class TimedStatusLedger {
 
   double get movementMultiplier => _statuses
       .where((status) => status.type == TimedStatusType.slow)
-      .fold(1.0, (value, status) => value * status.spec.movementMultiplier!);
+      .fold(1.0, (value, status) {
+        var stackedValue = value;
+        for (var stack = 0; stack < status.stacks; stack++) {
+          stackedValue *= status.spec.movementMultiplier!;
+        }
+        return stackedValue;
+      });
 
   void apply(TimedStatusSpec spec) {
     final existing = _statuses.cast<TimedStatusInstance?>().firstWhere(
@@ -175,6 +185,7 @@ final class TimedStatusLedger {
     }
     final damages = <StatusDamage>[];
     for (var tick = 0; tick < ticks; tick++) {
+      _timelineTick++;
       final expired = <TimedStatusInstance>[];
       for (final status in _sortedStatuses()) {
         status.elapsedTicks++;
@@ -184,6 +195,7 @@ final class TimedStatusLedger {
         if (damage != null && status.elapsedTicks % interval == 0) {
           damages.add(
             StatusDamage(
+              tick: _timelineTick,
               sourceId: status.sourceId,
               type: status.type,
               amount: damage * status.stacks,
@@ -207,6 +219,8 @@ final class TimedStatusLedger {
   }
 
   static int _compareDamage(StatusDamage a, StatusDamage b) {
+    final byTick = a.tick.compareTo(b.tick);
+    if (byTick != 0) return byTick;
     final byType = a.type.index.compareTo(b.type.index);
     return byType != 0 ? byType : a.sourceId.compareTo(b.sourceId);
   }
