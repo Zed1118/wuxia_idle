@@ -1,6 +1,5 @@
-import 'dart:math' as math;
-
 import 'arena_vector.dart';
+import 'combat_geometry.dart';
 
 /// 四向输入的移动方向归一化:对角输入归一到单位长度,
 /// 单轴输入保持原长,反向按键互相抵消。y 轴向下为正。
@@ -19,8 +18,10 @@ ArenaVector normalizeMovementInput({
 }
 
 /// 目标是否同时满足距离与朝向扇区。
-/// 零长度朝向按默认向右 (1, 0) 处理;与原点重合的目标视为恒在范围内;
-/// 扇区角按闭区间判定。
+///
+/// 单目标生产选择的几何后端是 C02 [ForwardFanScope]。零长度朝向仍
+/// 按 Phase 0A 既有语义映射为默认向右 (1, 0)；其余非法参数由 scope
+/// fail closed。与原点重合的目标与距离/角度边界均保持闭区间语义。
 bool isTargetInsideStrikeArc({
   required ArenaVector origin,
   required ArenaVector aimDirection,
@@ -28,15 +29,16 @@ bool isTargetInsideStrikeArc({
   required double range,
   required double halfArcRadians,
 }) {
-  final delta = target - origin;
-  if (delta.lengthSquared > range * range) return false;
-  if (delta.lengthSquared == 0) return true;
-  final aim = aimDirection.lengthSquared == 0
+  final direction = aimDirection.lengthSquared == 0
       ? const ArenaVector(1, 0)
-      : aimDirection.normalized();
-  final direction = delta.normalized();
-  final dot = aim.dot(direction).clamp(-1.0, 1.0);
-  return math.acos(dot) <= halfArcRadians;
+      : aimDirection;
+  return ForwardFanScope(
+    origin: origin,
+    direction: direction,
+    maxDistance: range,
+    halfAngleRadians: halfArcRadians,
+    maxTargets: 1,
+  ).hitTargets([CombatGeometryTarget('_strike_target', target)]).isNotEmpty;
 }
 
 /// 聚怪目标点:环外敌人沿来向投影到以玩家为中心的可读环上,

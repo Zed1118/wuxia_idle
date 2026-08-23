@@ -132,6 +132,19 @@ void main() {
       );
     });
 
+    test('非法负距离即使与自身重合也 fail closed', () {
+      expect(
+        isTargetInsideStrikeArc(
+          origin: origin,
+          aimDirection: aimRight,
+          target: origin,
+          range: -1,
+          halfArcRadians: 0.72,
+        ),
+        isFalse,
+      );
+    });
+
     test('零朝向默认向右', () {
       expect(
         isTargetInsideStrikeArc(

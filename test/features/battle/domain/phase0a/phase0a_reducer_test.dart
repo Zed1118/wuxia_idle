@@ -99,6 +99,8 @@ Phase0aActor makeEnemy({
   required ArenaVector position,
   int currentHealth = 60,
   double attackCooldownRemaining = 0,
+  List<String> guardianDefIds = const [],
+  double? guardianWardMult,
 }) {
   return Phase0aActor(
     id: id,
@@ -111,6 +113,8 @@ Phase0aActor makeEnemy({
     qiCurrent: 0,
     qiMax: 0,
     attackCooldownRemaining: attackCooldownRemaining,
+    guardianDefIds: guardianDefIds,
+    guardianWardMult: guardianWardMult,
     defeatKind: Phase0aDefeatKind.normal,
   );
 }
@@ -399,6 +403,31 @@ void main() {
       expect(result.events.whereType<Phase0aHitLanded>(), isEmpty);
       expect(result.state.enemies.single.currentHealth, 60);
       expect(result.state.player.attackCooldownRemaining, 1);
+    });
+
+    test('前向扇形接线保留 guardian 过滤并只结算一个最近合法目标', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(
+              id: 'boss',
+              position: const ArenaVector(30, 0),
+              guardianDefIds: const ['guard'],
+              guardianWardMult: 0.5,
+            ),
+            makeEnemy(id: 'guard', position: const ArenaVector(40, 0)),
+            makeEnemy(id: 'fallback', position: const ArenaVector(50, 0)),
+          ],
+        ),
+        intents: [playerAttack(range: 100)],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+
+      final hits = result.events.whereType<Phase0aHitLanded>().toList();
+      expect(hits, hasLength(1));
+      expect(hits.single.target, 'guard');
+      expect(result.state.enemies.first.currentHealth, 60);
     });
 
     test('普攻距离合同:旧 360 射程外不命中,生产 420 射程内命中', () {
