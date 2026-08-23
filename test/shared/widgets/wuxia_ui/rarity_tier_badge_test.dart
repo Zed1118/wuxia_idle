@@ -34,6 +34,13 @@ void main() {
     expect(semantics.flagsCollection, isNot(contains(SemanticsFlag.isButton)));
   });
 
+  test('六档拥有唯一的结构签名', () {
+    final signatures = RarityTier.values
+        .map(RarityTierBadge.visualSignature)
+        .toList();
+    expect(signatures.toSet(), hasLength(RarityTier.values.length));
+  });
+
   testWidgets('紧凑模式与长档名在窄卡不溢出', (tester) async {
     await tester.binding.setSurfaceSize(const Size(180, 120));
     addTearDown(() => tester.binding.setSurfaceSize(null));

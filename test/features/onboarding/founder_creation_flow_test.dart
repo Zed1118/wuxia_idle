@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/onboarding/domain/founder_creation_selection.dart';
 import 'package:wuxia_idle/features/onboarding/presentation/founder_creation_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ui/rarity_tier_badge.dart';
 import '../../support/test_data.dart';
 
 void main() {
@@ -13,6 +14,30 @@ void main() {
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+  });
+
+  testWidgets('fate 切换同步更新创建页资质档位与出生点数', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 1800));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: FounderCreationScreen())),
+    );
+    await tester.pumpAndSettle();
+
+    final visibleFates = GameRepository.instance.founderCreation.fatePool
+        .where((fate) => find.text(fate.label).evaluate().isNotEmpty)
+        .toList();
+    expect(visibleFates.length, greaterThanOrEqualTo(2));
+    expect(find.byType(RarityTierBadge), findsOneWidget);
+    final initialLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
+    expect(initialLabel, contains('资质'));
+    expect(initialLabel, contains('出生点数'));
+    await tester.tap(find.text(visibleFates[1].label));
+    await tester.pumpAndSettle();
+    final changedLabel = tester.getSemantics(find.byType(RarityTierBadge)).label;
+    expect(changedLabel, contains('资质'));
+    expect(changedLabel, contains('出生点数'));
+    expect(changedLabel, isNot(initialLabel));
   });
 
   testWidgets('submit → 开局行装弹窗 → 确认后进入主菜单', (tester) async {
