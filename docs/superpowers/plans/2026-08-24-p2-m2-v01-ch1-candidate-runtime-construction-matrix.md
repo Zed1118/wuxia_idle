@@ -33,15 +33,15 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
 
 ## 验收 checklist（CLAUDE §8.2）
 
-- [ ] TDD 先因目标测试的结构期望失败，再补齐五关矩阵并转绿。
-- [ ] 真实 loader 加载 5 assignments / 5 encounters，五关均选出 exact typed
+- [x] TDD 先因目标测试的结构期望失败，再补齐五关矩阵并转绿。
+- [x] 真实 loader 加载 5 assignments / 5 encounters，五关均选出 exact typed
   migrated route。
-- [ ] 每关 plan 保持 route/encounter identity 与 bundle/mapping/roster director identity。
-- [ ] 每关 assembler seam 构造成功，state tick/spawn tick 仍为 0、outcome 仍为
+- [x] 每关 plan 保持 route/encounter identity 与 bundle/mapping/roster director identity。
+- [x] 每关 assembler seam 构造成功，state tick/spawn tick 仍为 0、outcome 仍为
   ongoing、RNG 首值未被消费。
-- [ ] R13 source 精确覆盖 roster actor ID，每 actor 显式空 projection；
+- [x] R13 source 精确覆盖 roster actor ID，每 actor 显式空 projection；
   missing/extra coverage 继续 fail closed。
-- [ ] 源码守卫禁止 `advance` / `eventsFor`、objective identity 字符串推断、
+- [x] 源码守卫禁止 `advance` / `eventsFor`、objective identity 字符串推断、
   production vertical slice / balance / performance 误宣称。
 - [ ] 运行新测试及 Ch1 catalog / route selector / R11 / R13 / Batch14 composition
   去重 targeted，并完成 scoped analyze、format、diff/path/status 守卫；不跑 full。
@@ -75,14 +75,17 @@ Batch14 `assembleMigratedEncounterPlan` 显式 seam，证明候选数据能完�
 
 ## 当前恢复点
 
-- 状态：已完成合同阅读、Qoder 编码前只读设计审查与冻结设计，
-  待提交本计划恢复点。
-- 最后完成：确认五关 fixture 均为 migrated assignment；冻结 exact roster
-  coverage + 逐 actor 显式空 projection + 不运行 tick 的构造矩阵。
-- 下一步：提交计划，再新增测试并跑出 TDD 红灯。
+- 状态：计划恢复点已提交；五关候选运行时构造矩阵已按 TDD
+  完成并转绿，待提交测试切片。
+- 最后完成：计划 commit `663f6e1a`；新测试逐关经 loader/typed route/
+  R11 plan/Batch14 assembler 构造，R13 使用 exact roster coverage 与逐 actor
+  显式空 projection；零 tick 且 caller RNG 未消费。
+- 下一步：提交测试切片，运行指定的去重 targeted 回归与 scoped
+  analyze。
 - 已跑验证：只读确认初始 `HEAD=7bc31c5f5463aac26e127912576350487ac0a8d3`
   且工作树干净；`qoderclicn --version` = 1.1.28，model catalog 含精确
-  `Qwen3.8-Max`；设计审查真实返回附条件 PASS。尚未运行测试。
+  `Qwen3.8-Max`；设计审查真实返回附条件 PASS。TDD 红灯为 0 pass /
+  1 fail（矩阵尚未实现）；补齐后新测试 3/3 PASS。
 - 阻塞项：无。
 - 残留 Gate：objective 事件生成与可执行性、production host/data 接线、
   candidate 数值冻结、平衡、性能、真人试玩与双平台 Profile 全部继续 Gate。
