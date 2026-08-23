@@ -42,9 +42,11 @@ CombatEncounterDef _definition({
   objectives: CombatObjectiveCompositionRef(
     completionRule: CombatObjectiveCompletionRule.all,
     clauses: [
-      for (var index = 0;
-          index < (primitives ?? _defeatPrimitives).length;
-          index += 1)
+      for (
+        var index = 0;
+        index < (primitives ?? _defeatPrimitives).length;
+        index += 1
+      )
         CombatObjectiveClauseRef(
           id: 'clause_$index',
           primitive: (primitives ?? _defeatPrimitives)[index],
@@ -169,142 +171,152 @@ _validDeclarations() => const [
     Phase0aCommanderDefeatProjection('objective_same'),
     Phase0aTargetDefeatProjection('objective_same'),
   ]),
-  MapEntry('entry_beta', [
-    Phase0aTargetDefeatProjection('objective_target'),
-  ]),
+  MapEntry('entry_beta', [Phase0aTargetDefeatProjection('objective_target')]),
 ];
 
 void main() {
-  test('maps payloads by exact entry binding and preserves declaration order', () {
-    final fixture = _Fixture();
-    final source = mapCombatEncounterDefeatObjectiveEventSource(
-      _definition(),
-      fixture.roster,
-      defeatProjectionEntries: _validDeclarations(),
-    );
-
-    final events = source.eventsFor(fixture.frame('runtime_actor_zeta'));
-    expect(events, hasLength(2));
-    expect((events[0] as CommanderDefeated).commanderId, 'objective_same');
-    expect((events[1] as TargetDefeated).targetId, 'objective_same');
-  });
-
-  test('definition and roster require exact entry cover including replacement', () {
-    for (final entries in [
-      const {'entry_alpha': 'runtime_actor_zeta'},
-      const {
-        'entry_alpha': 'runtime_actor_zeta',
-        'entry_gamma': 'runtime_actor_eta',
-      },
-    ]) {
-      expect(
-        () => mapCombatEncounterDefeatObjectiveEventSource(
-          _definition(),
-          _Fixture(entries: entries).roster,
-          defeatProjectionEntries: _validDeclarations(),
-        ),
-        throwsArgumentError,
+  test(
+    'maps payloads by exact entry binding and preserves declaration order',
+    () {
+      final fixture = _Fixture();
+      final source = mapCombatEncounterDefeatObjectiveEventSource(
+        _definition(),
+        fixture.roster,
+        defeatProjectionEntries: _validDeclarations(),
       );
-    }
-  });
 
-  test('declarations require exact entry cover and reject duplicate entries', () {
-    final fixture = _Fixture();
-    final invalid = [
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [],
-        ),
-      ],
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_gamma',
-          [],
-        ),
-      ],
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_beta',
-          [],
-        ),
-      ],
-    ];
-    for (final declarations in invalid) {
-      expect(
-        () => mapCombatEncounterDefeatObjectiveEventSource(
-          _definition(),
-          fixture.roster,
-          defeatProjectionEntries: declarations,
-        ),
-        throwsArgumentError,
-      );
-    }
-  });
+      final events = source.eventsFor(fixture.frame('runtime_actor_zeta'));
+      expect(events, hasLength(2));
+      expect((events[0] as CommanderDefeated).commanderId, 'objective_same');
+      expect((events[1] as TargetDefeated).targetId, 'objective_same');
+    },
+  );
 
-  test('typed objective closure rejects missing foreign and wrong-kind payloads', () {
-    final fixture = _Fixture();
-    final invalid = [
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [Phase0aCommanderDefeatProjection('objective_same')],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_beta',
-          [Phase0aTargetDefeatProjection('objective_target')],
-        ),
-      ],
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [
-            Phase0aCommanderDefeatProjection('objective_same'),
-            Phase0aTargetDefeatProjection('objective_same'),
-          ],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_beta',
-          [Phase0aTargetDefeatProjection('foreign')],
-        ),
-      ],
-      const [
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_alpha',
-          [
-            Phase0aTargetDefeatProjection('objective_same'),
-            Phase0aTargetDefeatProjection('objective_target'),
-          ],
-        ),
-        MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-          'entry_beta',
-          [Phase0aTargetDefeatProjection('objective_same')],
-        ),
-      ],
-    ];
-    for (final declarations in invalid) {
-      expect(
-        () => mapCombatEncounterDefeatObjectiveEventSource(
-          _definition(),
-          fixture.roster,
-          defeatProjectionEntries: declarations,
-        ),
-        throwsArgumentError,
-      );
-    }
-  });
+  test(
+    'definition and roster require exact entry cover including replacement',
+    () {
+      for (final entries in [
+        const {'entry_alpha': 'runtime_actor_zeta'},
+        const {
+          'entry_alpha': 'runtime_actor_zeta',
+          'entry_gamma': 'runtime_actor_eta',
+        },
+      ]) {
+        expect(
+          () => mapCombatEncounterDefeatObjectiveEventSource(
+            _definition(),
+            _Fixture(entries: entries).roster,
+            defeatProjectionEntries: _validDeclarations(),
+          ),
+          throwsArgumentError,
+        );
+      }
+    },
+  );
+
+  test(
+    'declarations require exact entry cover and reject duplicate entries',
+    () {
+      final fixture = _Fixture();
+      final invalid = [
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [],
+          ),
+        ],
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_gamma',
+            [],
+          ),
+        ],
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_beta',
+            [],
+          ),
+        ],
+      ];
+      for (final declarations in invalid) {
+        expect(
+          () => mapCombatEncounterDefeatObjectiveEventSource(
+            _definition(),
+            fixture.roster,
+            defeatProjectionEntries: declarations,
+          ),
+          throwsArgumentError,
+        );
+      }
+    },
+  );
+
+  test(
+    'typed objective closure rejects missing foreign and wrong-kind payloads',
+    () {
+      final fixture = _Fixture();
+      final invalid = [
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [Phase0aCommanderDefeatProjection('objective_same')],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_beta',
+            [Phase0aTargetDefeatProjection('objective_target')],
+          ),
+        ],
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [
+              Phase0aCommanderDefeatProjection('objective_same'),
+              Phase0aTargetDefeatProjection('objective_same'),
+            ],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_beta',
+            [Phase0aTargetDefeatProjection('foreign')],
+          ),
+        ],
+        const [
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_alpha',
+            [
+              Phase0aTargetDefeatProjection('objective_same'),
+              Phase0aTargetDefeatProjection('objective_target'),
+            ],
+          ),
+          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+            'entry_beta',
+            [Phase0aTargetDefeatProjection('objective_same')],
+          ),
+        ],
+      ];
+      for (final declarations in invalid) {
+        expect(
+          () => mapCombatEncounterDefeatObjectiveEventSource(
+            _definition(),
+            fixture.roster,
+            defeatProjectionEntries: declarations,
+          ),
+          throwsArgumentError,
+        );
+      }
+    },
+  );
 
   test('duplicate typed payload fails within one entry or across entries', () {
     final fixture = _Fixture();
@@ -351,113 +363,126 @@ void main() {
     }
   });
 
-  test('repeated objective refs dedupe while target and commander stay distinct', () {
-    final fixture = _Fixture();
-    final definition = _definition(
-      primitives: [
-        CombatDefeatTargetsRef(const ['same']),
-        CombatDefeatTargetsRef(const ['same']),
-        CombatDefeatCommanderRef(commanderId: 'same'),
-      ],
-    );
-
-    expect(
-      () => mapCombatEncounterDefeatObjectiveEventSource(
-        definition,
-        fixture.roster,
-        defeatProjectionEntries: const [
-          MapEntry('entry_alpha', [
-            Phase0aTargetDefeatProjection('same'),
-            Phase0aCommanderDefeatProjection('same'),
-          ]),
-          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-            'entry_beta',
-            [],
-          ),
+  test(
+    'repeated objective refs dedupe while target and commander stay distinct',
+    () {
+      final fixture = _Fixture();
+      final definition = _definition(
+        primitives: [
+          CombatDefeatTargetsRef(const ['same']),
+          CombatSurviveDurationRef(requiredTicks: 10),
+          CombatDefeatTargetsRef(const ['same']),
+          CombatDefeatCommanderRef(commanderId: 'same'),
         ],
-      ),
-      returnsNormally,
-    );
-  });
+      );
 
-  test('non-defeat objectives are ignored and defeat-free requires empty lists', () {
-    final fixture = _Fixture();
-    final definition = _definition(
-      primitives: [CombatSurviveDurationRef(requiredTicks: 10)],
-    );
-    expect(
-      () => mapCombatEncounterDefeatObjectiveEventSource(
-        definition,
+      expect(
+        () => mapCombatEncounterDefeatObjectiveEventSource(
+          definition,
+          fixture.roster,
+          defeatProjectionEntries: const [
+            MapEntry('entry_alpha', [
+              Phase0aTargetDefeatProjection('same'),
+              Phase0aCommanderDefeatProjection('same'),
+            ]),
+            MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+              'entry_beta',
+              [],
+            ),
+          ],
+        ),
+        returnsNormally,
+      );
+    },
+  );
+
+  test(
+    'non-defeat objectives are ignored and defeat-free requires empty lists',
+    () {
+      final fixture = _Fixture();
+      final definition = _definition(
+        primitives: [CombatSurviveDurationRef(requiredTicks: 10)],
+      );
+      expect(
+        () => mapCombatEncounterDefeatObjectiveEventSource(
+          definition,
+          fixture.roster,
+          defeatProjectionEntries: const [
+            MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+              'entry_alpha',
+              [],
+            ),
+            MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+              'entry_beta',
+              [],
+            ),
+          ],
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => mapCombatEncounterDefeatObjectiveEventSource(
+          definition,
+          fixture.roster,
+          defeatProjectionEntries: const [
+            MapEntry('entry_alpha', [Phase0aTargetDefeatProjection('foreign')]),
+            MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
+              'entry_beta',
+              [],
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    },
+  );
+
+  test(
+    'caller iterables are materialized once and detached from later mutation',
+    () {
+      final fixture = _Fixture();
+      var outerReads = 0;
+      var innerReads = 0;
+      final mutable = <Phase0aDefeatObjectiveProjection>[
+        const Phase0aCommanderDefeatProjection('objective_same'),
+        const Phase0aTargetDefeatProjection('objective_same'),
+      ];
+      Iterable<Phase0aDefeatObjectiveProjection> inner() sync* {
+        innerReads++;
+        yield* mutable;
+      }
+
+      Iterable<MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>>
+      outer() sync* {
+        outerReads++;
+        yield MapEntry('entry_alpha', inner());
+        yield const MapEntry('entry_beta', [
+          Phase0aTargetDefeatProjection('objective_target'),
+        ]);
+      }
+
+      final source = mapCombatEncounterDefeatObjectiveEventSource(
+        _definition(),
         fixture.roster,
-        defeatProjectionEntries: const [
-          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-            'entry_alpha',
-            [],
-          ),
-          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-            'entry_beta',
-            [],
-          ),
-        ],
-      ),
-      returnsNormally,
-    );
-    expect(
-      () => mapCombatEncounterDefeatObjectiveEventSource(
-        definition,
-        fixture.roster,
-        defeatProjectionEntries: const [
-          MapEntry('entry_alpha', [Phase0aTargetDefeatProjection('foreign')]),
-          MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>(
-            'entry_beta',
-            [],
-          ),
-        ],
-      ),
-      throwsArgumentError,
-    );
-  });
+        defeatProjectionEntries: outer(),
+      );
+      mutable.clear();
 
-  test('caller iterables are materialized once and detached from later mutation', () {
-    final fixture = _Fixture();
-    var outerReads = 0;
-    var innerReads = 0;
-    final mutable = <Phase0aDefeatObjectiveProjection>[
-      const Phase0aCommanderDefeatProjection('objective_same'),
-      const Phase0aTargetDefeatProjection('objective_same'),
-    ];
-    Iterable<Phase0aDefeatObjectiveProjection> inner() sync* {
-      innerReads++;
-      yield* mutable;
-    }
-
-    Iterable<MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>>
-    outer() sync* {
-      outerReads++;
-      yield MapEntry('entry_alpha', inner());
-      yield const MapEntry('entry_beta', [
-        Phase0aTargetDefeatProjection('objective_target'),
-      ]);
-    }
-
-    final source = mapCombatEncounterDefeatObjectiveEventSource(
-      _definition(),
-      fixture.roster,
-      defeatProjectionEntries: outer(),
-    );
-    mutable.clear();
-
-    expect(outerReads, 1);
-    expect(innerReads, 1);
-    expect(source.eventsFor(fixture.frame('runtime_actor_zeta')), hasLength(2));
-  });
+      expect(outerReads, 1);
+      expect(innerReads, 1);
+      expect(
+        source.eventsFor(fixture.frame('runtime_actor_zeta')),
+        hasLength(2),
+      );
+    },
+  );
 
   test('source guard keeps mapper pure and binding explicit', () {
     final source = File(
       'lib/data/validation/combat_encounter_defeat_projection_mapper.dart',
     ).readAsStringSync();
     final imports = RegExp(
-      r"^import '[^']+';",
+      r"^import [\s\S]*?;",
       multiLine: true,
     ).allMatches(source).map((match) => match.group(0)).toList();
 
