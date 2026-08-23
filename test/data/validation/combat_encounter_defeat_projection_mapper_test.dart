@@ -111,14 +111,14 @@ final class _Fixture {
 
   Phase0aEncounterObjectiveFrame frame(String actorId) =>
       Phase0aEncounterObjectiveFrame(
-        beforeArena: Phase0aArenaState(
+        beforeArena: const Phase0aArenaState(
           tick: 0,
           nextSeq: 0,
           player: Phase0aActor(
             id: 'player',
             side: Phase0aSide.player,
             position: ArenaVector.zero,
-            facing: const ArenaVector(1, 0),
+            facing: ArenaVector(1, 0),
             maxHealth: 100,
             currentHealth: 100,
             moveSpeed: 1,
@@ -127,17 +127,17 @@ final class _Fixture {
             attackCooldownRemaining: 0,
             defeatKind: Phase0aDefeatKind.normal,
           ),
-          enemies: const [],
-          skillSlots: const [],
+          enemies: [],
+          skillSlots: [],
         ),
-        afterArena: Phase0aArenaState(
+        afterArena: const Phase0aArenaState(
           tick: 1,
           nextSeq: 0,
           player: Phase0aActor(
             id: 'player',
             side: Phase0aSide.player,
             position: ArenaVector.zero,
-            facing: const ArenaVector(1, 0),
+            facing: ArenaVector(1, 0),
             maxHealth: 100,
             currentHealth: 100,
             moveSpeed: 1,
@@ -146,8 +146,8 @@ final class _Fixture {
             attackCooldownRemaining: 0,
             defeatKind: Phase0aDefeatKind.normal,
           ),
-          enemies: const [],
-          skillSlots: const [],
+          enemies: [],
+          skillSlots: [],
         ),
         beforeSpawn: director.state,
         afterSpawn: director.state,
