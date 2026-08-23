@@ -7,17 +7,26 @@ import 'phase0a_player_input_adapter.dart';
 
 /// 可选的波间补给契约。null 表示普通内容完全续传 HP/真气/CD。
 final class Phase0aWaveTransitionPolicy {
-  const Phase0aWaveTransitionPolicy({
+  Phase0aWaveTransitionPolicy({
     required this.healPlayerToFull,
     required this.qiRecoveryPct,
     required this.resetAttackCooldown,
     required this.resetSkillCooldowns,
-  }) : assert(qiRecoveryPct >= 0 && qiRecoveryPct <= 1);
+    this.intermissionSeconds = 0.0,
+  }) {
+    if (qiRecoveryPct < 0 || qiRecoveryPct > 1) {
+      throw ArgumentError.value(qiRecoveryPct, 'qiRecoveryPct');
+    }
+    if (!intermissionSeconds.isFinite || intermissionSeconds < 0) {
+      throw ArgumentError.value(intermissionSeconds, 'intermissionSeconds');
+    }
+  }
 
   final bool healPlayerToFull;
   final double qiRecoveryPct;
   final bool resetAttackCooldown;
   final bool resetSkillCooldowns;
+  final double intermissionSeconds;
 }
 
 /// Phase 0A 波次与唯一终局编排:真实包装 [Phase0aCombatSession] 的薄 flow。
@@ -205,7 +214,23 @@ final class Phase0aWaveBattleFlow {
                 ),
               ),
           ]
-        : state.skillSlots;
+        : [
+            for (final slot in state.skillSlots)
+              slot.copyWith(
+                cooldownRemaining:
+                    (slot.cooldownRemaining - policy.intermissionSeconds)
+                        .clamp(0.0, double.infinity)
+                        .toDouble(),
+                availability: availabilityOf(
+                  cooldownRemaining:
+                      (slot.cooldownRemaining - policy.intermissionSeconds)
+                          .clamp(0.0, double.infinity)
+                          .toDouble(),
+                  qiCurrent: recoveredQi,
+                  qiCost: slot.qiCost,
+                ),
+              ),
+          ];
     return Phase0aArenaState(
       tick: state.tick,
       nextSeq: state.nextSeq,

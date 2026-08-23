@@ -527,8 +527,8 @@ void main() {
         );
         expect(
           mb.waveIntermission.preserveCooldowns,
-          isFalse,
-          reason: 'wave 间 cd 重置 → 给玩家下波大招机会',
+          isTrue,
+          reason: 'wave 间保留 cd → 只按配置间歇自然推进',
         );
 
         // stage_formations 5 关默认阵型(主题契合,Tier 风格梯度)

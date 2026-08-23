@@ -1865,7 +1865,8 @@ mainline_wave:
   wave_intermission:
     reset_action_point: true
     preserve_hp: true
-    preserve_cooldowns: false
+    preserve_cooldowns: true
+    intermission_seconds: 0.0
     alive_if_recovery_pct: 0.25
 
 # =============================================================================
@@ -1902,7 +1903,8 @@ mass_battle:
     reset_action_point: true         # wave 间 actionPoint 归 0(走 tick 不快进 · §5.5)
     preserve_hp: true                # wave 间 HP 保留(与 alive_hp_recovery_pct 取 max)
     preserve_internal_force: true    # 历史字段名；实际为 wave 间保留真气
-    preserve_cooldowns: false        # wave 间 cd 重置(给玩家下波大招机会)
+    preserve_cooldowns: true         # wave 间保留 cd；仅按配置秒数自然推进
+    intermission_seconds: 0.0        # 当前同拍换波；定时长由后续 G1/G2 合同注入
     revive_dead_pct: 1.00            # 死角色满血复活(P3.2.C 修法 ① · 守城短歇补员 · 平衡 wave 数量劣势)
     alive_hp_recovery_pct: 1.00      # 活角色 hp 回满 maxHp(P3.2.C 修法 ① · 短歇恢复;与 preserve_hp 取 max 不会反向降 hp)
     alive_if_recovery_pct: 0.25      # 历史字段名；波次间追加恢复 25% 气海，溢出丢弃

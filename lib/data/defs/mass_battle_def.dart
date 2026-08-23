@@ -157,8 +157,9 @@ class MassBattleWaveIntermission {
   /// wave 间内力保留(true = 限大招使用频率)。
   final bool preserveInternalForce;
 
-  /// wave 间 cd 保留(false = 重置 cd 给玩家下波大招机会)。
+  /// wave 间 cd 保留(true = 仅按配置间歇秒数自然推进)。
   final bool preserveCooldowns;
+  final double intermissionSeconds;
 
   /// 死角色 revive 比例(0.0 = 不 revive,0.30 = 复活至 maxHp × 30%)。
   /// 守城允许中场补给:wave 间死人能短暂回阵,但残血进下波(数量劣势设计意图保留)。
@@ -177,6 +178,7 @@ class MassBattleWaveIntermission {
     required this.preserveHp,
     required this.preserveInternalForce,
     required this.preserveCooldowns,
+    this.intermissionSeconds = 0.0,
     this.reviveDeadPct = 0.0,
     this.aliveHpRecoveryPct = 0.0,
     this.aliveIfRecoveryPct = 0.0,
@@ -187,20 +189,35 @@ class MassBattleWaveIntermission {
     : resetActionPoint = true,
       preserveHp = true,
       preserveInternalForce = true,
-      preserveCooldowns = false,
+      preserveCooldowns = true,
+      intermissionSeconds = 0.0,
       reviveDeadPct = 1.00,
       aliveHpRecoveryPct = 1.00,
       aliveIfRecoveryPct = 0.50;
 
-  factory MassBattleWaveIntermission.fromYaml(
-    Map<String, dynamic> y,
-  ) => MassBattleWaveIntermission(
-    resetActionPoint: (y['reset_action_point'] as bool?) ?? true,
-    preserveHp: (y['preserve_hp'] as bool?) ?? true,
-    preserveInternalForce: (y['preserve_internal_force'] as bool?) ?? true,
-    preserveCooldowns: (y['preserve_cooldowns'] as bool?) ?? false,
-    reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
-    aliveHpRecoveryPct: (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
-    aliveIfRecoveryPct: (y['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
-  );
+  factory MassBattleWaveIntermission.fromYaml(Map<String, dynamic> y) {
+    final result = MassBattleWaveIntermission(
+      resetActionPoint: (y['reset_action_point'] as bool?) ?? true,
+      preserveHp: (y['preserve_hp'] as bool?) ?? true,
+      preserveInternalForce: (y['preserve_internal_force'] as bool?) ?? true,
+      preserveCooldowns: (y['preserve_cooldowns'] as bool?) ?? true,
+      intermissionSeconds:
+          (y['intermission_seconds'] as num?)?.toDouble() ?? 0.0,
+      reviveDeadPct: (y['revive_dead_pct'] as num?)?.toDouble() ?? 0.0,
+      aliveHpRecoveryPct:
+          (y['alive_hp_recovery_pct'] as num?)?.toDouble() ?? 0.0,
+      aliveIfRecoveryPct:
+          (y['alive_if_recovery_pct'] as num?)?.toDouble() ?? 0.0,
+    );
+    result.validate();
+    return result;
+  }
+
+  void validate() {
+    if (!intermissionSeconds.isFinite || intermissionSeconds < 0) {
+      throw StateError(
+        'mass_battle.wave_intermission.intermission_seconds 必须为非负有限秒数',
+      );
+    }
+  }
 }

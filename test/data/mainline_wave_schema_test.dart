@@ -26,7 +26,8 @@ Map<String, dynamic> validYaml() => {
   'wave_intermission': {
     'reset_action_point': true,
     'preserve_hp': true,
-    'preserve_cooldowns': false,
+    'preserve_cooldowns': true,
+    'intermission_seconds': 0.5,
     'alive_if_recovery_pct': 0.25,
   },
 };
@@ -39,6 +40,8 @@ void main() {
     expect(def.profileFor(isBossStage: false).totalEnemyCount, 5);
     expect(def.profileFor(isBossStage: true).waveCount, 2);
     expect(def.profileFor(isBossStage: true).totalEnemyCount, 3);
+    expect(def.intermission.preserveCooldowns, isTrue);
+    expect(def.intermission.intermissionSeconds, 0.5);
   });
 
   test('普通 profile 必须显式为零终波主敌人', () {
