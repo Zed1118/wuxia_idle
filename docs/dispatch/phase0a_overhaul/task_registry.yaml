@@ -1,0 +1,113 @@
+schema_version: 1
+phase: phase2_phase0a_overhaul
+base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
+updated_at: 2026-08-23
+
+resource_locks:
+  full_flutter_test: 1
+  build_runner: 1
+  visual_window: 1
+  public_schema_owner: P2-M0-COORD
+
+tasks:
+  - id: P2-M0-COORD
+    milestone: M0
+    owner: codex_root
+    branch: codex/phase2-m0-coordination-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-coordination
+    status: in_progress
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-23-phase2-m0-four-hour-batch.md
+    wake_condition: immediate
+    exit_criteria:
+      - proposed decisions remain explicitly blocked
+      - every active task has branch worktree whitelist and recovery point
+      - no direct main changes
+
+  - id: P2-M0-PI-EVIDENCE
+    milestone: M0
+    owner: pi_deepseek_flash
+    branch: codex/phase2-m0-pi-evidence-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-pi
+    status: queued
+    owned_files:
+      - docs/audit/phase2_m0_implementation_gap_evidence_2026-08-23.md
+      - docs/superpowers/plans/2026-08-23-p2-m0-pi-evidence.md
+    forbidden_files:
+      - lib/**
+      - data/**
+      - test/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate
+
+  - id: P2-M0-QODER-BASELINE
+    milestone: M0
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m0-qoder-baseline-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-qoder
+    status: queued
+    owned_files:
+      - docs/audit/phase2_m0_performance_and_test_baseline_2026-08-23.md
+      - docs/superpowers/plans/2026-08-23-p2-m0-qoder-baseline.md
+    forbidden_files:
+      - lib/**
+      - data/**
+      - test/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate
+
+  - id: P2-M1-C02-GEOMETRY
+    milestone: M1
+    owner: codex_agent_geometry
+    branch: codex/phase2-m1-geometry-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-geometry
+    status: queued
+    owned_files:
+      - lib/features/battle/domain/phase0a/combat_geometry.dart
+      - test/features/battle/domain/phase0a/combat_geometry_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c02-geometry.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
+
+  - id: P2-M1-C05-POSTURE
+    milestone: M1
+    owner: codex_agent_posture
+    branch: codex/phase2-m1-posture-20260823
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-posture
+    status: queued
+    owned_files:
+      - lib/features/battle/domain/phase0a/posture.dart
+      - test/features/battle/domain/phase0a/posture_test.dart
+      - docs/superpowers/plans/2026-08-23-p2-m1-c05-posture.md
+    forbidden_files:
+      - lib/features/battle/domain/phase0a/phase0a_combat_model.dart
+      - lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
+      - data/**
+      - GDD.md
+      - CLAUDE.md
+      - PROGRESS.md
+    wake_condition: immediate_candidate_branch
+
+  - id: P2-M0-CODEX-GAP-AUDIT
+    milestone: M0
+    owner: codex_agent_readonly
+    branch: none
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠
+    status: queued
+    owned_files: []
+    forbidden_files:
+      - '**/*'
+    wake_condition: immediate_readonly
+
