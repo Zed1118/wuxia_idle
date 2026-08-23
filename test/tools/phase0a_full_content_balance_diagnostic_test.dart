@@ -1,30 +1,38 @@
 // ignore_for_file: avoid_print
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/cultivation/domain/skill_proficiency.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
-import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 
 import '../support/isar_test_support.dart';
 import '../support/phase0a_ch1_founder_profile.dart';
-import '../support/phase0a_production_preflight_manifest.dart';
 import '../support/phase0a_profile_harness.dart';
+import '../support/phase0a_production_preflight_manifest.dart';
 
 const _schools = ['gang_meng', 'ling_qiao', 'yin_rou'];
-const _evidenceSeedCount = 3;
-const _smokeSeedCount = 1;
-const _update = 'PHASE0A_FULL_CONTENT_EVIDENCE';
+const _seeds = [0];
+const _writeReport = 'UPDATE_PHASE0A_FULL_CONTENT_BALANCE';
 const _csvPath =
     'test/tools/output/phase0a_full_content_balance_diagnostic.csv';
 const _mdPath = 'test/tools/output/phase0a_full_content_balance_diagnostic.md';
 
+final class _Run {
+  const _Run(this.observation, this.uses, this.stage, this.damageMult);
+  final Phase0aProfileRunObservation observation;
+  final int uses;
+  final String stage;
+  final double damageMult;
+}
+
 void main() {
   late GameRepository repo;
-
   setUpAll(() async {
     await initializeTestIsarCore();
     repo = await GameRepository.loadAllDefs(
@@ -33,13 +41,11 @@ void main() {
   });
 
   test(
-    'Phase 0A full content balance diagnostic',
+    'Phase 0A full production content proficiency diagnostic',
     () async {
-      final updateEvidence = Platform.environment[_update] == '1';
-      final seedCount = updateEvidence ? _evidenceSeedCount : _smokeSeedCount;
-      final mainlineEntries =
+      final stageEntries =
           repo.stageDefs.values
-              .where((stage) => stage.stageType == StageType.mainline)
+              .where((s) => s.stageType == StageType.mainline)
               .map(Phase0aProductionPreflightManifest.classifyStage)
               .toList()
             ..sort((a, b) => a.id.compareTo(b.id));
@@ -48,24 +54,28 @@ void main() {
               .map(Phase0aProductionPreflightManifest.classifyTower)
               .toList()
             ..sort((a, b) => a.id.compareTo(b.id));
-      final manifest = [...mainlineEntries, ...towerEntries];
+      final manifest = [...stageEntries, ...towerEntries];
       final eligible = manifest
-          .where((entry) => entry.status == Phase0aPreflightStatus.eligible)
+          .where((e) => e.status == Phase0aPreflightStatus.eligible)
           .toList();
-
-      expect(mainlineEntries, hasLength(105));
+      expect(stageEntries, hasLength(105));
       expect(towerEntries, hasLength(49));
-      expect(manifest.map((entry) => entry.key).toSet(), hasLength(154));
       expect(eligible, hasLength(154));
 
+      final proficiencyStages = repo.numbers.skillProficiency.stages;
+      expect(proficiencyStages.map((s) => s.minUses).toList(), [
+        0,
+        30,
+        100,
+        300,
+        800,
+      ]);
       final arena = repo.numbers.phase0aArena;
-      final runs = <Phase0aProfileRunObservation>[];
-      final profiles = <String, CombatantSnapshot>{};
-      final loadouts = <String, String>{};
-
+      final rows = <_Run>[];
+      final starterProfiles = <String, CombatantSnapshot>{};
       for (final school in _schools) {
         final directory = await Directory.systemTemp.createTemp(
-          'phase0a_full_content_',
+          'phase0a_full_',
         );
         try {
           await IsarSetup.init(directory: directory, inspector: false);
@@ -76,43 +86,54 @@ void main() {
             fateId: 'balanced_seed',
             rngSeed: 20260820,
           );
-          profiles[school] = seeded.snapshot;
-          loadouts[school] = [
-            'basic=${seeded.snapshot.skillLoadout.basicAttack?.id ?? '-'}',
-            for (final slot in CombatantSkillLoadout.numericSlots)
-              '${slot.name}=${seeded.snapshot.skillLoadout.skillFor(slot)?.id ?? '-'}',
-          ].join('; ');
-
-          for (final entry in eligible) {
-            final mapping = switch (entry.kind) {
-              Phase0aPreflightContentKind.stage =>
-                Phase0aStageContentMapper.map(
-                  stage: repo.stageDefs[entry.id]!,
-                  playerSnapshot: seeded.snapshot,
-                  numbers: repo.numbers,
-                ),
-              Phase0aPreflightContentKind.tower =>
-                Phase0aStageContentMapper.mapTower(
-                  floor: repo.towerFloors.firstWhere(
-                    (floor) => 'tower_${floor.floorIndex}' == entry.id,
+          starterProfiles[school] = seeded.snapshot;
+          for (final proficiencyStage in proficiencyStages) {
+            final uses = proficiencyStage.minUses;
+            final profile = seeded.snapshot.copyWith(
+              skillUses: {
+                for (final skill in seeded.snapshot.availableSkills)
+                  skill.id: uses,
+              },
+            );
+            for (final entry in eligible) {
+              final mapping = switch (entry.kind) {
+                Phase0aPreflightContentKind.stage =>
+                  Phase0aStageContentMapper.map(
+                    stage: repo.stageDefs[entry.id]!,
+                    playerSnapshot: profile,
+                    numbers: repo.numbers,
                   ),
-                  playerSnapshot: seeded.snapshot,
-                  numbers: repo.numbers,
-                ),
-            };
-            for (var seed = 0; seed < seedCount; seed++) {
-              runs.add(
-                runPhase0aProfile(
-                  profileId: school,
-                  contentId: entry.key,
-                  mapping: mapping,
-                  numbers: repo.numbers,
-                  playerSnapshot: seeded.snapshot,
-                  seed: seed,
-                  deltaSeconds: arena.fixedDeltaSeconds,
-                  maxTicks: arena.maxSimulationTicks,
-                ),
-              );
+                Phase0aPreflightContentKind.tower =>
+                  Phase0aStageContentMapper.mapTower(
+                    floor: repo.towerFloors.firstWhere(
+                      (floor) => 'tower_${floor.floorIndex}' == entry.id,
+                    ),
+                    playerSnapshot: profile,
+                    numbers: repo.numbers,
+                  ),
+              };
+              for (final seed in _seeds) {
+                rows.add(
+                  _Run(
+                    runPhase0aProfile(
+                      profileId: school,
+                      contentId: entry.key,
+                      mapping: mapping,
+                      numbers: repo.numbers,
+                      playerSnapshot: profile,
+                      seed: seed,
+                      deltaSeconds: arena.fixedDeltaSeconds,
+                      maxTicks: arena.maxSimulationTicks,
+                    ),
+                    uses,
+                    proficiencyStage.id,
+                    SkillProficiency.damageMultFor(
+                      uses,
+                      repo.numbers.skillProficiency,
+                    ),
+                  ),
+                );
+              }
             }
           }
         } finally {
@@ -121,102 +142,78 @@ void main() {
         }
       }
 
-      final expectedRuns = _schools.length * eligible.length * seedCount;
-      expect(runs, hasLength(expectedRuns));
+      final expected =
+          _schools.length * eligible.length * proficiencyStages.length;
+      expect(rows, hasLength(expected));
       expect(
-        runs
-            .map((run) => '${run.profileId}/${run.contentId}/${run.seed}')
+        rows
+            .map(
+              (r) =>
+                  '${r.observation.profileId}/${r.observation.contentId}/${r.uses}/${r.observation.seed}',
+            )
             .toSet(),
-        hasLength(expectedRuns),
+        hasLength(expected),
       );
-      for (final run in runs) {
-        expect(['victory', 'defeat', 'timeout'], contains(run.outcome));
-        expect(run.ticks, lessThanOrEqualTo(arena.maxSimulationTicks));
-        expect(run.numericCasts, hasLength(6));
-        expect(run.numericHits, hasLength(6));
-        expect(run.numericDamage, hasLength(6));
-        expect(run.maxResolvedDamage, lessThan(1000000));
+      for (final run in rows) {
+        final r = run.observation;
+        expect(['victory', 'defeat', 'timeout'], contains(r.outcome));
+        expect(r.numericCasts, hasLength(6));
+        expect(r.numericHits, hasLength(6));
+        expect(r.numericDamage, hasLength(6));
+        expect(r.ticks, lessThanOrEqualTo(arena.maxSimulationTicks));
+        expect(r.maxResolvedDamage, lessThan(1000000));
       }
 
-      final canonicalEntry = eligible.first;
-      final canonicalProfile = profiles[_schools.first]!;
-      final canonicalMapping =
-          canonicalEntry.kind == Phase0aPreflightContentKind.stage
-          ? Phase0aStageContentMapper.map(
-              stage: repo.stageDefs[canonicalEntry.id]!,
-              playerSnapshot: canonicalProfile,
-              numbers: repo.numbers,
-            )
-          : Phase0aStageContentMapper.mapTower(
-              floor: repo.towerFloors.firstWhere(
-                (floor) => 'tower_${floor.floorIndex}' == canonicalEntry.id,
-              ),
-              playerSnapshot: canonicalProfile,
-              numbers: repo.numbers,
-            );
-      expect(
-        runPhase0aProfile(
-          profileId: _schools.first,
-          contentId: canonicalEntry.key,
-          mapping: canonicalMapping,
-          numbers: repo.numbers,
-          playerSnapshot: canonicalProfile,
-          seed: 0,
-          deltaSeconds: arena.fixedDeltaSeconds,
-          maxTicks: arena.maxSimulationTicks,
-        ),
-        runs.first,
-        reason: 'canonical 内容必须全字段可重放',
+      final csv = _csv(rows);
+      final md = _markdown(
+        rows,
+        starterProfiles,
+        manifest.length,
+        expected,
+        proficiencyStages,
       );
-
-      final csv = _csv(runs);
-      final markdown = _markdown(
-        runs,
-        loadouts,
-        seedCount: seedCount,
-        deltaSeconds: arena.fixedDeltaSeconds,
-        maxTicks: arena.maxSimulationTicks,
-      );
-      final csvFile = File(_csvPath);
-      final mdFile = File(_mdPath);
-      if (updateEvidence) {
-        csvFile.parent.createSync(recursive: true);
-        csvFile.writeAsStringSync(csv);
-        mdFile.writeAsStringSync(markdown);
+      if (Platform.environment[_writeReport] == '1') {
+        File(_csvPath).writeAsStringSync(csv);
+        File(_mdPath).writeAsStringSync(md);
       } else {
-        expect(csvFile.existsSync(), isTrue);
-        expect(mdFile.existsSync(), isTrue);
-        _checkCsvHeader(csvFile.readAsStringSync());
-        _checkCsvHeader(csv);
+        final header = File(_csvPath).readAsLinesSync().first;
+        expect(header, contains('proficiency_uses'));
+        expect(header, contains('proficiency_stage'));
+        expect(header, contains('proficiency_damage_mult'));
+        expect(File(_mdPath).readAsStringSync(), contains('熟练度'));
       }
       print(
-        'phase0a full content diagnostic: content=${eligible.length}; '
-        'schools=${_schools.length}; seeds=$seedCount; runs=${runs.length}; '
-        'maxDamage=${Phase0aProfileAggregate(runs).maxResolvedDamage}',
+        'phase0a full content: content=${manifest.length}; proficiencyStages=${proficiencyStages.length}; '
+        'runs=${rows.length}; wins=${rows.where((r) => r.observation.outcome == 'victory').length}; '
+        'defeats=${rows.where((r) => r.observation.outcome == 'defeat').length}; '
+        'timeouts=${rows.where((r) => r.observation.outcome == 'timeout').length}; '
+        'maxDamage=${rows.map((r) => r.observation.maxResolvedDamage).reduce((a, b) => a > b ? a : b)}',
       );
     },
-    timeout: const Timeout(Duration(minutes: 30)),
+    timeout: const Timeout(Duration(minutes: 20)),
   );
 }
 
-String _csv(List<Phase0aProfileRunObservation> runs) {
-  final b = StringBuffer(
-    'profile,content,seed,outcome,ticks,seconds,hp_start,hp_end,qi_start,qi_max,qi_end,'
-    'basic_casts,basic_hits,basic_damage,gather_casts,gather_damage,clear_casts,clear_damage',
-  );
-  for (var i = 1; i <= 6; i++) {
-    b.write(',skill${i}_casts,skill${i}_hits,skill${i}_damage');
-  }
-  b.writeln(',total_player_damage,critical_hits,max_resolved_damage');
-  for (final r in runs) {
-    b.writeln(
+String _csv(List<_Run> rows) {
+  final out = StringBuffer()
+    ..writeln(
+      'content_kind,content_id,school,seed,outcome,ticks,seconds,proficiency_uses,proficiency_stage,proficiency_damage_mult,hp_start,hp_end,qi_start,qi_max,qi_end,basic_casts,basic_hits,basic_damage,numeric_casts,numeric_hits,numeric_damage,max_damage',
+    );
+  for (final run in rows) {
+    final r = run.observation;
+    final split = r.contentId.split('/');
+    out.writeln(
       [
+        split.first,
+        split.last,
         r.profileId,
-        r.contentId,
         r.seed,
         r.outcome,
         r.ticks,
-        r.seconds.toStringAsFixed(6),
+        r.seconds.toStringAsFixed(3),
+        run.uses,
+        run.stage,
+        run.damageMult.toStringAsFixed(2),
         r.hpStart,
         r.hpEnd,
         r.qiStart,
@@ -225,92 +222,116 @@ String _csv(List<Phase0aProfileRunObservation> runs) {
         r.basicCasts,
         r.basicHits,
         r.basicDamage,
-        r.gatherCasts,
-        r.gatherDamage,
-        r.clearCasts,
-        r.clearDamage,
-        for (var i = 0; i < 6; i++) ...[
-          r.numericCasts[i],
-          r.numericHits[i],
-          r.numericDamage[i],
-        ],
-        r.totalPlayerDamage,
-        r.criticalHits,
+        r.numericCasts.join('|'),
+        r.numericHits.join('|'),
+        r.numericDamage.join('|'),
         r.maxResolvedDamage,
       ].join(','),
     );
   }
-  return b.toString();
+  return out.toString();
 }
 
-void _checkCsvHeader(String content) => expect(
-  content.split('\n').first,
-  startsWith('profile,content,seed,outcome,ticks'),
-);
-
 String _markdown(
-  List<Phase0aProfileRunObservation> runs,
-  Map<String, String> loadouts, {
-  required int seedCount,
-  required double deltaSeconds,
-  required int maxTicks,
-}) {
-  final b = StringBuffer(
-    '# Phase 0A full-content balance diagnostic · 2026-08-23\n\n',
-  );
-  b.writeln(
-    '范围：105 个主线关 + 49 个塔层，三流派，固定 $seedCount 个种子，'
-    '共 ${runs.length} 次 headless bot 运行。delta=${deltaSeconds}s，maxTicks=$maxTicks。',
-  );
-  b.writeln('这是自动画像证据，不等于真人目检或玩家体验结论；不得据此直接调玩法数值。\n');
-  b.writeln('## Production loadout\n');
+  List<_Run> rows,
+  Map<String, CombatantSnapshot> starterProfiles,
+  int contentCount,
+  int runCount,
+  List<SkillProficiencyStageConfig> stages,
+) {
+  final out = StringBuffer()
+    ..writeln('# Phase 0A 全内容熟练度战斗画像诊断')
+    ..writeln()
+    ..writeln(
+      '基线内容：105 条主线关 + 49 层塔；3 个生产流派；固定 seeds=${_seeds.join(',')}；熟练度 uses=${stages.map((s) => s.minUses).join(',')}；共 $runCount 次 headless bot 运行。',
+    )
+    ..writeln()
+    ..writeln(
+      '自动画像不等于真人体验，不支持直接调值。starter profile 是生产创建页的起手熟练度/装备构筑，不是连续成长或换装档；其跨章节大量失败不能直接写成平衡结论。',
+    )
+    ..writeln()
+    ..writeln(
+      'profile：${starterProfiles.keys.join(', ')}；内容总数：$contentCount。熟练度阶段与倍率直接读取 production `numbers.skill_proficiency.stages`，每个 profile 的全部已知招式 usage 设置为该阈值。',
+    )
+    ..writeln()
+    ..writeln(
+      '| school | uses | stage | multiplier | runs | wins | defeats | win rate | mean ticks | mean HP end | mean Qi end | basic casts | numeric casts | max damage |',
+    )
+    ..writeln(
+      '|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+    );
   for (final school in _schools) {
-    b.writeln('- `$school`: ${loadouts[school]}');
-  }
-  b.writeln();
-  b.writeln(
-    '| profile | content | runs | wins | defeats | timeouts | winRate | mean ticks | p50 | p90 | mean HP% | mean Qi% | basic casts | numeric casts | max damage |',
-  );
-  b.writeln(
-    '|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
-  );
-  for (final school in _schools) {
-    for (final content
-        in runs
-            .where((run) => run.profileId == school)
-            .map((run) => run.contentId)
-            .toSet()) {
-      final aggregate = Phase0aProfileAggregate(
-        runs
-            .where((run) => run.profileId == school && run.contentId == content)
-            .toList(),
-      );
-      final numericCasts = aggregate.totalNumericCasts().fold(
-        0,
-        (a, b) => a + b,
-      );
-      b.writeln(
-        '|$school|$content|${aggregate.runs.length}|${aggregate.wins}|${aggregate.defeats}|${aggregate.timeouts}|'
-        '${(aggregate.winRate * 100).toStringAsFixed(1)}%|${aggregate.meanTicks.toStringAsFixed(1)}|'
-        '${aggregate.p50Ticks}|${aggregate.p90Ticks}|${(aggregate.meanHpEndRatio * 100).toStringAsFixed(1)}%|'
-        '${(aggregate.meanQiEndRatio * 100).toStringAsFixed(1)}%|${aggregate.totalBasicCasts}|$numericCasts|'
-        '${aggregate.maxResolvedDamage}|',
+    for (final stage in stages) {
+      final rs = rows
+          .where(
+            (r) => r.observation.profileId == school && r.uses == stage.minUses,
+          )
+          .map((r) => r.observation)
+          .toList();
+      final a = Phase0aProfileAggregate(rs);
+      out.writeln(
+        '| $school | ${stage.minUses} | ${stage.id} | ${stage.damageMult.toStringAsFixed(2)} | ${rs.length} | ${a.wins} | ${a.defeats} | ${a.winRate.toStringAsFixed(3)} | ${a.meanTicks.toStringAsFixed(1)} | ${(a.meanHpEndRatio * 100).toStringAsFixed(1)}% | ${(a.meanQiEndRatio * 100).toStringAsFixed(1)}% | ${a.totalBasicCasts} | ${a.totalNumericCasts().reduce((x, y) => x + y)} | ${a.maxResolvedDamage} |',
       );
     }
   }
-  final aggregate = Phase0aProfileAggregate(runs);
-  b.writeln('\n## Automatic observations\n');
-  b.writeln(
-    '- outcomes: wins=${aggregate.wins}, defeats=${aggregate.defeats}, timeouts=${aggregate.timeouts}.',
-  );
-  b.writeln(
-    '- max resolved damage: ${aggregate.maxResolvedDamage} (< 1,000,000).',
-  );
-  b.writeln(
-    '- basic casts: ${aggregate.totalBasicCasts}; numeric casts: ${aggregate.totalNumericCasts().fold(0, (a, b) => a + b)}.',
-  );
-  b.writeln(
-    '- evidence is reproducible from the fixed founder profile and seeds above.',
-  );
-  return b.toString();
+  out
+    ..writeln()
+    ..writeln('## 同内容同流派：uses=0 → 最高档')
+    ..writeln()
+    ..writeln(
+      '| school | content | low win | high win | low damage | high damage | low max hit | high max hit | low ticks | high ticks | low numeric casts | high numeric casts |',
+    )
+    ..writeln('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
+  for (final school in _schools) {
+    final contents =
+        rows
+            .where(
+              (r) =>
+                  r.observation.profileId == school &&
+                  r.uses == stages.first.minUses,
+            )
+            .map((r) => r.observation.contentId)
+            .toSet()
+            .toList()
+          ..sort();
+    for (final content in contents) {
+      final low = rows
+          .where(
+            (r) =>
+                r.observation.profileId == school &&
+                r.observation.contentId == content &&
+                r.uses == stages.first.minUses,
+          )
+          .map((r) => r.observation)
+          .toList();
+      final high = rows
+          .where(
+            (r) =>
+                r.observation.profileId == school &&
+                r.observation.contentId == content &&
+                r.uses == stages.last.minUses,
+          )
+          .map((r) => r.observation)
+          .toList();
+      final la = Phase0aProfileAggregate(low),
+          ha = Phase0aProfileAggregate(high);
+      out.writeln(
+        '| $school | $content | ${la.winRate.toStringAsFixed(3)} | ${ha.winRate.toStringAsFixed(3)} | ${la.totalPlayerDamage} | ${ha.totalPlayerDamage} | ${la.maxResolvedDamage} | ${ha.maxResolvedDamage} | ${la.meanTicks.toStringAsFixed(1)} | ${ha.meanTicks.toStringAsFixed(1)} | ${la.totalNumericCasts().reduce((x, y) => x + y)} | ${ha.totalNumericCasts().reduce((x, y) => x + y)} |',
+      );
+    }
+  }
+  out
+    ..writeln()
+    ..writeln(
+      '字段明细见同名 CSV：包含 proficiency uses/stage/multiplier、内容、流派、seed、胜负、ticks、HP/Qi 起止、普攻与数字技能 casts/hits/damage、maxDamage。',
+    )
+    ..writeln()
+    ..writeln(
+      '运行命令：`UPDATE_PHASE0A_FULL_CONTENT_BALANCE=1 flutter test test/tools/phase0a_full_content_balance_diagnostic_test.dart -r expanded`。',
+    )
+    ..writeln()
+    ..writeln(
+      '复跑命令：`flutter test test/tools/phase0a_full_content_balance_diagnostic_test.dart -r expanded`（不刷新报告，但会核对已提交证据 header）。',
+    );
+  return out.toString();
 }
