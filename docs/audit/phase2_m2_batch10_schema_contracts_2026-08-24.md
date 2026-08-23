@@ -16,9 +16,9 @@
 
 | ID | 执行端 | 当前状态 | 受保护边界 |
 |---|---|---|---|
-| `P2-M2-C01-CATALOG-SCHEMA-GATEWAY` | Codex high | running | 内容中立、fail closed、无生产默认 |
+| `P2-M2-C01-CATALOG-SCHEMA-GATEWAY` | Codex high | ready_reviewed | 内容中立、fail closed、无生产默认 |
 | `P2-M2-R01-MAINLINE-RUN-PARTICIPATION` | Qoder / Qwen3.8-Max high | running | 纯合同、无 host/save/UI/双 preset |
-| `P2-M2-R02-MENTOR-INSIGHT-CONTRACT` | Pi / DeepSeek V4 Flash high | running | 无 rate/cap/生产发放/持久化 |
+| `P2-M2-R02-MENTOR-INSIGHT-CONTRACT` | Pi / DeepSeek V4 Flash high | ready_reviewed | 无 rate/cap/生产发放/持久化 |
 
 ## 后续唤醒条件
 
@@ -29,4 +29,8 @@
 
 ## 验证记录
 
-待来源 READY 后补写：提交链、主控 diff 复审、targeted、scoped analyze、联合测试、独立审查和最终 READY tip。
+- C01：实现 `fb420893`、READY `925f2908`、集成 `b195571b`；主控复跑 137/137，scoped analyze 0，独立复审 P0/P1/P2=0。
+- R02：实现链 `e6800ace` → `56ff3169` → `ef18fcb0`、READY `150e518a`、集成链 `c40921cd` → `c87bb751` → `dc9f7c69`；主控复跑 60/60，scoped analyze 0，独立复审 P0/P1/P2=0。
+- R02 首版自造 claim codec/ledger 与第二版 canonical alias 均在集成前被拒绝并修复；最终复用 shared `RewardClaimKey`，不声称进程内 guard 具备 durable exactly-once。
+- C01 READY 已唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`；该后续运行时切片以 `b195571b` 为基线，不属于 Batch10 READY 的替代验收。
+- Batch10 仍待 R01 修订、联合测试、最终独立复审和 READY tip。

@@ -10,6 +10,8 @@
 2. R01 / Qoder Qwen3.8-Max：MainlineRun 与 replay/headless/sweep 参与者纯合同。
 3. R02 / Pi DeepSeek V4 Flash：随行听剑单关占用、四类互斥、释放和首通 claim 纯合同。
 
+当前状态：C01 与 R02 已通过主控复跑和独立复审并进入集成；R01 因 transition 可绕过 eligibility 被退回 Qoder 修订，未通过前不进入集成。
+
 ## 硬边界
 
 - 不写 `data/combat/**` 生产 YAML，不切主线 host，不改 save、UI、奖励或发布配置。
@@ -25,3 +27,6 @@ R01 与 R02 文件独立，可在任意顺序整合；C01 修改公共 schema，
 ## 下一唤醒
 
 C01 READY 后才能启动 objective/token runtime 和 Ch1 候选数据包；R01/R02 READY 只解除合同层，不代表生产 host、成长发放或 UI 已完成。
+
+- C01 已于 `b195571b` 集成，并已从该稳定基线唤醒 `P2-M2-R03-OBJECTIVE-CONTROLLER`。
+- Ch1 候选数据包仍只允许 candidate/fixture，不得在 tuning 证据 Gate 前提升为 production YAML。

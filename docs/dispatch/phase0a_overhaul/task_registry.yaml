@@ -1224,8 +1224,15 @@ tasks:
     owner: codex_sol_high
     branch: codex/phase2-m2-c01-catalog-schema-gateway-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-c01-schema
-    status: running
+    status: ready_reviewed
     base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    implementation_commit: fb420893d5e17f270cb198109013a0bd7f89d1d2
+    tip_commit: 925f290817589f74e15509256a5f7b442ddf39e5
+    integration_commit: b195571b
+    verification:
+      targeted_tests: 137
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - lib/data/defs/combat_enemy_archetype_def.dart
       - lib/data/defs/combat_encounter_def.dart
@@ -1264,8 +1271,21 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r02-mentor-insight-contract-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r02-mentor
-    status: running
+    status: ready_reviewed
     base_commit: 44e42497b9e4968e6baa64ed10ad940034664220
+    implementation_commits:
+      - e6800ace
+      - 56ff3169
+      - ef18fcb0
+    tip_commit: 150e518a
+    integration_commits:
+      - c40921cd
+      - c87bb751
+      - dc9f7c69
+    verification:
+      targeted_tests: 60
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     owned_files:
       - lib/features/mainline/domain/mentor_insight_policy.dart
       - lib/features/mainline/application/mentor_insight_claim_policy.dart
@@ -1276,6 +1296,24 @@ tasks:
       - no proficiency rate cap production award persistence or ui
       - mentor never enters battle takes injury or shares drops
       - occupancy release and first-clear claim are deterministic and idempotent
+
+  - id: P2-M2-R03-OBJECTIVE-CONTROLLER
+    milestone: M2
+    owner: codex_sol_high
+    branch: codex/phase2-m2-r03-objective-controller-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r03-objective-controller
+    status: running
+    base_commit: b195571b
+    owned_files:
+      - lib/features/battle/domain/phase0a/encounter_objective_controller.dart
+      - lib/data/validation/combat_objective_primitive_mapper.dart
+      - test/features/battle/domain/phase0a/encounter_objective_controller_test.dart
+      - test/data/validation/combat_objective_primitive_mapper_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r03-objective-controller.md
+    protected_behavior:
+      - flat all and any only with no inferred failure phase residue or reward semantics
+      - domain controller cannot import data layer and all progress is owner bound
+      - no production host yaml save ui or tuning changes
 
   - id: P2-G7-BALANCE-REFERENCE-CLOSEOUT
     milestone: G7
