@@ -88,7 +88,16 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
 - 首次启动的最终审查尚未返回时，主控预审发现公开 R15 successor 的 P1；
   该轮已主动中止且不计作最终审查。P1 已以 private successor + read-only
   views + TDD/source guard 闭合。
-- 有效最终 diff 审查：待上述修复后的本地验证完成后重新调用并追加真实证据。
+- 有效最终 diff 审查：实际命令再次使用 `qoderclicn` 1.1.28、精确
+  `-m Qwen3.8-Max`、`--reasoning-effort high`、
+  `--permission-mode dont_ask`、Read/Grep/Glob-only、
+  `--no-session-persistence`，明确禁止 Bash/Edit/Write。Qoder 输出确认
+  reasoning `high`，实际使用 4 Read / 4 Grep / 1 Glob、零写入；其自述仅
+  披露为 QoderCN 并拒绝确认内部模型标识，因此这里不伪造额外自报信息，
+  精确模型证据以实际 CLI selector 与 `--list-models` 可用性为准。
+- 最终结论：`FINAL PASS`，P0=0、P1=0、P2=0；逐项确认 private successor
+  无泄漏、commit/publication 无 split-brain、stage 字面比较、empty no-op、
+  owner/stale/sibling、异常透传、越界依赖与文档边界均满足冻结要求。
 
 ## 任务切片
 
@@ -99,13 +108,15 @@ occupancy prepared successor 组合成一个可延迟提交的内存态准入值
 
 ## 当前恢复点
 
-- 状态：实现与绕过修复已完成，等待有效 Qoder 最终只读审查。
+- 状态：实现、绕过修复、本地验证与有效 Qoder 最终审查均已完成，进入
+  READY 交付。
 - 最后完成：提交至 `e862b308`；先记录缺失 API 红灯，再实现最小组合层；
   主控指出公开 R15 successor 可绕过组合提交后，再次以缺失 read-only API
   红灯驱动 private successor 修复。环境仍为 build_runner 126 outputs / 63
   `*.g.dart`，`libisar.dylib` SHA-256
   `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`。
-- 下一步：运行有效 Qoder 最终 diff 审查；若 P0/P1/P2=0，追加证据与 READY。
+- 交付约定：本计划证据提交后紧接精确空 READY；READY tip 交还主控并等待
+  独立复审。
 - 已跑验证：R18 16/16；六文件逐项 targeted 93/93
   （16+9+18+18+18+14）；scoped analyze 无问题；format 0 changed；
   baseline diff-check 与三 owned paths 检查通过。
