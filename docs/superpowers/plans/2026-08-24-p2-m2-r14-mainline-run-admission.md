@@ -59,13 +59,14 @@ loadout preset。
 
 ## 当前恢复点
 
-- 状态：实现、初始证据/READY 与独立复审 P2 修正均完成，等待新 READY 标记。
+- 状态：实现、初始证据/READY、独立复审 P2 修正与修正后复跑均完成；旧 READY 已由
+  后续修正取代，本记录后以同文本新 READY 重新冻结。
 - 最后完成：计划 `2f68253c`、实现/测试 `387b44cc`、初始证据 `c3dbae25` 与旧 READY
   `e5b7a0c3` 已完成。独立复审指出 canonical const 的跨调用 identity 断言不能证明本次
   异常实例传播，已以 `0262adaf` 删除该假证明，改为单次 admission 调用的准确 typed
   message 与零 admission 断言；生产 API 未改。唯一入口仍严格执行 policy → run →
-  admission，source guard 证明无 catch/wrap/fallback。
-- 下一步：提交本修正证据恢复点，复核 clean/path/diff 后追加同文本新 READY 空提交。
+  admission，source guard 证明无 catch/wrap/fallback。修正证据已提交为 `99bddf74`。
+- 下一步：追加同文本新 READY 空提交并交还主控；无其他代码或证据修改。
 - 已跑验证：修正后新测试 9/9、五文件去重 targeted 54/54 PASS（新准入 9、
   participation policy 18、
   mainline run 18、activity request 5、current leader 4）；scoped analyze 2 files
