@@ -95,24 +95,22 @@ void main() {
         'opaque_snapshot_exact',
       );
       expect(prepared.occupancyPredecessor, same(predecessor));
-      expect(prepared.occupancyPreparedSuccessor.base, same(base));
-      expect(prepared.occupancyPreparedSuccessor.mutations, hasLength(1));
-      final mutation = prepared.occupancyPreparedSuccessor.mutations.single;
+      expect(prepared.occupancyBase, same(base));
+      expect(prepared.occupancyMutations, hasLength(1));
+      final mutation = prepared.occupancyMutations.single;
       expect(mutation, isA<AcquireMentorInsightStageOccupancy>());
       expect(
         (mutation as AcquireMentorInsightStageOccupancy).choice,
         same(choice),
       );
       expect(mutation.blockingStatus, same(blockingStatus));
+      expect(() => prepared.occupancyMutations.clear(), throwsUnsupportedError);
       expect(predecessor.snapshot, same(base));
 
       final admission = prepared.commit(predecessor);
 
       expect(admission.runAdmission, same(prepared.runAdmission));
-      expect(
-        admission.occupancyRuntime.snapshot,
-        same(prepared.occupancyPreparedSuccessor.next),
-      );
+      expect(admission.occupancyRuntime.snapshot, same(prepared.occupancyNext));
       expect(admission.occupancyRuntime.snapshot.revision, 1);
       expect(
         admission.occupancyRuntime.snapshot.companion,
@@ -141,7 +139,7 @@ void main() {
         ),
       );
 
-      expect(prepared.occupancyPreparedSuccessor.next, same(base));
+      expect(prepared.occupancyNext, same(base));
       final admission = prepared.commit(predecessor);
       expect(admission.occupancyRuntime, isNot(same(predecessor)));
       expect(admission.occupancyRuntime.snapshot, same(base));
@@ -169,10 +167,7 @@ void main() {
 
       expect(first, isNot(same(second)));
       expect(first.runAdmission, isNot(same(second.runAdmission)));
-      expect(
-        first.occupancyPreparedSuccessor,
-        isNot(same(second.occupancyPreparedSuccessor)),
-      );
+      expect(first.occupancyNext, isNot(same(second.occupancyNext)));
       expect(first.runAdmission.request, same(request));
       expect(second.runAdmission.request, same(request));
       expect(first.occupancyPredecessor, same(predecessor));
@@ -467,6 +462,21 @@ void main() {
         multiLine: true,
       ).allMatches(source),
       hasLength(1),
+    );
+    expect(
+      RegExp(
+        r'MentorInsightStageOccupancyPreparedSuccessor\s+'
+        r'(?:get\s+)?(?!_)[A-Za-z]\w*',
+      ).allMatches(source),
+      isEmpty,
+      reason: 'the committable R15 successor must stay library-private',
+    );
+    expect(
+      source,
+      contains(
+        'final MentorInsightStageOccupancyPreparedSuccessor '
+        '_occupancyPreparedSuccessor;',
+      ),
     );
 
     expect(
