@@ -1,6 +1,6 @@
 /// Deterministic, versioned keys identifying a single claimable reward grant.
 ///
-/// Two claim-key shapes are supported:
+/// Three claim-key shapes are supported:
 /// - battle session grants: `battleSessionId + stageId + rewardGrantId`
 /// - run choice grants: `runId + rewardChoiceId`
 /// - mentor insight first-clear grants: `stageId + characterId`
@@ -159,6 +159,19 @@ final class RewardClaimKey {
         throw FormatException(
           'Reward claim key kind "$kindName" requires a positive integer '
           'characterId, got "${parts[1]}": "$canonical"',
+        );
+      }
+      // 规范形 fail closed：通过 factory 重建并要求 canonical 与输入完全一致，
+      // 拒绝非规范别名（前后空白 stage、leading zero / plus sign / 负号）。
+      // 否则 parse 保留别名会形成不同 canonical，绕过 durable 层去重。
+      final rebuilt = RewardClaimKey.mentorInsight(
+        stageId: parts[0],
+        characterId: characterId,
+      ).canonical;
+      if (rebuilt != canonical) {
+        throw FormatException(
+          'Non-canonical mentorInsight claim key (expected "$rebuilt"): '
+          '"$canonical"',
         );
       }
     }

@@ -42,3 +42,4 @@
 - 互斥反向（已随行门人不得进入四类活动）只在本合同声明，落地由宿主接线时消费 `canAccompany`。
 - 风险：四类活动中的「疗伤」非 `ActivityKind` 枚举成员，生产接线需自行判定角色疗伤状态填充 `MentorInsightBlockingStatus.inHealingRecovery`；本合同以纯输入快照隔离该差异。
 - 修订记录：主控审查退回后按 6 点整改 —— 删除自造 claim key / parser / ledger，扩展现有 shared `RewardClaimKey`，claim 合同改为纯决策面，release 与 growth 解耦，非空门人 id / companion characterId 要求 > 0，保持 rate/cap/amount/pct、save、UI、production wiring 全缺席。
+- 二轮修订（独立复审 P1/P2）：mentorInsight parse 分支 fail closed —— 通过 factory 重建并要求 canonical 与输入完全一致，拒绝非规范别名（前后空白 stage、leading zero / plus sign / 负号 / 0），防 parse 保留别名形成不同 canonical 绕过 durable 去重；文件头 Two → Three claim-key shapes；不改变其他 kind 行为。

@@ -303,5 +303,43 @@ void main() {
         throwsFormatException,
       );
     });
+
+    test('parse rejects non-canonical mentorInsight aliases fail-closed', () {
+      // 前后空白 stage：factory 会 trim，parse 不得保留别名。
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight| stage |42'),
+        throwsFormatException,
+      );
+      // leading zero：非规范正十进制表示。
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage|042'),
+        throwsFormatException,
+      );
+      // plus sign：非规范正十进制表示。
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage|+42'),
+        throwsFormatException,
+      );
+      // 负数 / 0：非正。
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage|-1'),
+        throwsFormatException,
+      );
+      expect(
+        () => RewardClaimKey.parse('v1|mentorInsight|stage|0'),
+        throwsFormatException,
+      );
+    });
+
+    test('legal factory canonical parses back with canonical unchanged', () {
+      final key = RewardClaimKey.mentorInsight(
+        stageId: 'stage_01_03',
+        characterId: 42,
+      );
+      final parsed = RewardClaimKey.parse(key.canonical);
+      expect(parsed, key);
+      expect(parsed.canonical, key.canonical);
+      expect(parsed.canonical, 'v1|mentorInsight|stage_01_03|42');
+    });
   });
 }
