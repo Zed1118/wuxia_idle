@@ -1358,6 +1358,7 @@ tasks:
     base_commit: b195571b
     implementation_commit: 4c2c44e2d7590822482ca9fd7880a3ef5637cc72
     tip_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
+    integration_commit: 215ba044bb7722fb426cc35c734d53956ea2ca22
     verification:
       targeted_tests: 29
       scoped_analyze_issues: 0
@@ -1382,6 +1383,7 @@ tasks:
     base_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
     implementation_commit: 4ca4d95e91d5e25fb2570e206720b2537aa95f9f
     tip_commit: 2d73692f3a3a490e462b5a8a22361818be5d7956
+    integration_commit: dcf116b345c8c081b6344e40e120f67e2843d08b
     verification:
       targeted_tests: 86
       scoped_analyze_issues: 0
@@ -1403,8 +1405,16 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-d01-ch1-candidate-data-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-d01-ch1-candidate-data
-    status: running
+    status: ready_reviewed
     base_commit: 02ab6df5f42ff21f8ae27c752c97d58969dda62c
+    implementation_commit: 78888418c8b24fd17f41c1be5ea922ad9b7840fc
+    tip_commit: a88d2bd4b3c8e1fcf0b29da4ae85439b98b8fda7
+    integration_commit: c0e2cadbece8469b577d0c902246feeb8dc2947f
+    verification:
+      targeted_tests: 9
+      combined_tests: 166
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-C01-CATALOG-SCHEMA-GATEWAY
       - P2-M2-R03-OBJECTIVE-CONTROLLER
@@ -1429,6 +1439,15 @@ tasks:
       - P2-M2-R03-OBJECTIVE-CONTROLLER
       - P2-M2-R04-RUNTIME-CONTRACT-MAPPER
       - P2-M2-D01-CH1-CANDIDATE-CATALOG
+    integration_commits:
+      - 215ba044bb7722fb426cc35c734d53956ea2ca22
+      - dcf116b345c8c081b6344e40e120f67e2843d08b
+      - c0e2cadbece8469b577d0c902246feeb8dc2947f
+    verification:
+      joint_targeted_tests: 147
+      changed_dart_items: 7
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch11-ch1-runtime-contracts.md
