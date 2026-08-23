@@ -61,7 +61,8 @@ final class ForwardFanScope extends CombatGeometryScope {
     Iterable<CombatGeometryTarget> targets,
   ) {
     final unit = _unit(direction);
-    if (unit == null ||
+    if (!_finiteVector(origin) ||
+        unit == null ||
         !_validRange(maxDistance) ||
         !_validRange(halfAngleRadians) ||
         halfAngleRadians < 0 ||
@@ -123,7 +124,8 @@ sealed class _CircleScope extends CombatGeometryScope {
   List<CombatGeometryTarget> hitTargets(
     Iterable<CombatGeometryTarget> targets,
   ) {
-    if (!_validRange(innerRadius) ||
+    if (!_finiteVector(center) ||
+        !_validRange(innerRadius) ||
         !_validRange(outerRadius) ||
         innerRadius < 0 ||
         outerRadius < innerRadius ||
@@ -162,7 +164,9 @@ final class LineCapsuleScope extends CombatGeometryScope {
   ) {
     final axis = end - start;
     final lengthSquared = axis.dot(axis);
-    if (!_validRange(radius) ||
+    if (!_finiteVector(start) ||
+        !_finiteVector(end) ||
+        !_validRange(radius) ||
         radius < 0 ||
         lengthSquared == 0 ||
         maxTargets <= 0)
@@ -250,23 +254,16 @@ List<CombatGeometryTarget> _ordered(
   double? Function(CombatGeometryTarget) distance,
   int maxTargets,
 ) {
-  final matches =
-      <({CombatGeometryTarget target, double order, double distance})>[];
+  final matches = <({CombatGeometryTarget target, double order})>[];
   for (final target in targets) {
     final order = distance(target);
     if (order != null) {
-      matches.add((
-        target: target,
-        order: order,
-        distance: (target.position - ArenaVector.zero).length,
-      ));
+      matches.add((target: target, order: order));
     }
   }
   matches.sort((a, b) {
     final byGeometry = a.order.compareTo(b.order);
     if (byGeometry != 0) return byGeometry;
-    final byDistance = a.distance.compareTo(b.distance);
-    if (byDistance != 0) return byDistance;
     return a.target.id.compareTo(b.target.id);
   });
   return matches

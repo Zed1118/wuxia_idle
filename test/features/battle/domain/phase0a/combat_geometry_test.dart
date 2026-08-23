@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../../../lib/features/battle/domain/phase0a/arena_vector.dart';
-import '../../../../../lib/features/battle/domain/phase0a/combat_geometry.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/combat_geometry.dart';
 
 void main() {
   const origin = ArenaVector.zero;
@@ -116,12 +116,34 @@ void main() {
       outerRadius: 11,
       maxTargets: 5,
     );
-    final reversed = [targets[1], targets[2], targets[0]];
-    expect(scope.hitTargets(reversed).map((target) => target.id), [
-      'near',
-      'edge',
-      'far',
-    ]);
+    const equalDistanceTargets = <CombatGeometryTarget>[
+      CombatGeometryTarget('b', ArenaVector(3, 4)),
+      CombatGeometryTarget('a', ArenaVector(4, 3)),
+    ];
+    expect(
+      scope
+          .hitTargets(equalDistanceTargets.reversed)
+          .map((target) => target.id),
+      ['a', 'b'],
+    );
+  });
+
+  test('非有限锚点和路径端点不产生命中', () {
+    final invalidCircle = SelfCircleScope(
+      center: const ArenaVector(double.nan, 0),
+      innerRadius: 0,
+      outerRadius: 10,
+      maxTargets: 2,
+    );
+    final invalidLine = LineCapsuleScope(
+      start: origin,
+      end: const ArenaVector(double.infinity, 0),
+      radius: 1,
+      maxTargets: 2,
+    );
+
+    expect(invalidCircle.hitTargets(targets), isEmpty);
+    expect(invalidLine.hitTargets(targets), isEmpty);
   });
 
   test('自身状态是 typed 作用域，不产生敌方命中集', () {
