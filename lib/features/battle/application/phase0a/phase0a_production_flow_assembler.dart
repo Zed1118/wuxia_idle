@@ -13,8 +13,10 @@ import 'phase0a_damage_calculator_adapter.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_encounter_flow.dart';
 import 'phase0a_encounter_mapping.dart';
+import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_enemy_intent_batch_gate.dart';
 import 'phase0a_enemy_intent_observer.dart';
+import 'phase0a_objective_runtime_tracker.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_wave_battle_flow.dart';
 
@@ -103,7 +105,9 @@ final class Phase0aProductionFlowAssembler {
   /// 敌人与拍连续消费(换敌由 flow 每拍 fork 保留同一 resolver 实例)。
   /// director/roster identity、tick、active arena 与 side/alive 的 fail-closed
   /// 校验继续由 [Phase0aEncounterFlow.runtime] 构造器负责,本方法不复制也不
-  /// 吞掉;一切结构错误均在首拍前失败、不推进 RNG。
+  /// 吞掉;显式 objective runtime 也只允许 tracker/event source 成对透传,
+  /// assembler 不创建 controller、objective event 或默认 mapper。一切结构错误
+  /// 均在首拍前失败、不推进 RNG。
   static Phase0aEncounterFlow assembleEncounter({
     required Phase0aArenaState initialState,
     required SpawnDirector director,
@@ -116,6 +120,8 @@ final class Phase0aProductionFlowAssembler {
     required Phase0aEnemyAiAdapter enemyAiAdapter,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
     Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
+    Phase0aObjectiveRuntimeTracker? objectiveTracker,
+    Phase0aEncounterObjectiveEventSource? objectiveEventSource,
   }) {
     // —— 结构校验(零 RNG 消费,先于一切伤害组件构造)——
     _checkEncounterActorCoverage(
@@ -151,6 +157,8 @@ final class Phase0aProductionFlowAssembler {
       session: session,
       director: director,
       roster: roster,
+      objectiveTracker: objectiveTracker,
+      objectiveEventSource: objectiveEventSource,
     );
   }
 
@@ -162,7 +170,9 @@ final class Phase0aProductionFlowAssembler {
   /// mapping holds neither, keeping tuning and RNG ownership continuous); an
   /// optional observe-only [Phase0aEnemyIntentObserver] and optional caller-
   /// supplied [Phase0aEnemyIntentBatchGate] are likewise explicit here rather
-  /// than frozen into the mapping. The mapping constructor has already
+  /// than frozen into the mapping. An objective tracker and event source may
+  /// only be supplied as the same explicit pair accepted by the runtime flow;
+  /// this bridge constructs neither. The mapping constructor has already
   /// validated director/roster identity, player id consistency and duplicate
   /// combatant actor ids; full actor coverage, player adapter id and move-
   /// binding validation stay fail-closed in [assembleEncounter], so this
@@ -173,6 +183,8 @@ final class Phase0aProductionFlowAssembler {
     required Random rng,
     Phase0aEnemyIntentObserver? enemyIntentObserver,
     Phase0aEnemyIntentBatchGate? enemyIntentBatchGate,
+    Phase0aObjectiveRuntimeTracker? objectiveTracker,
+    Phase0aEncounterObjectiveEventSource? objectiveEventSource,
   }) {
     return assembleEncounter(
       initialState: mapping.initialState,
@@ -186,6 +198,8 @@ final class Phase0aProductionFlowAssembler {
       enemyAiAdapter: mapping.enemyAiAdapter,
       enemyIntentObserver: enemyIntentObserver,
       enemyIntentBatchGate: enemyIntentBatchGate,
+      objectiveTracker: objectiveTracker,
+      objectiveEventSource: objectiveEventSource,
     );
   }
 
