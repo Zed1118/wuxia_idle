@@ -18,6 +18,7 @@ import '../core/domain/equipment.dart';
 import '../core/domain/game_event.dart';
 import '../core/domain/inventory_item.dart';
 import '../features/mainline/domain/mainline_progress.dart';
+import '../features/mainline/domain/mainline_settlement_journal.dart';
 import '../features/seclusion/domain/retreat_session.dart';
 import '../core/domain/save_data.dart';
 import '../core/domain/skill_unlock_entry.dart';
@@ -114,6 +115,7 @@ class IsarSetup {
     InventoryItemSchema,
     GameEventSchema,
     MainlineProgressSchema,
+    MainlineSettlementJournalSchema,
     TowerProgressSchema,
     RetreatSessionSchema,
     EncounterProgressSchema,
@@ -200,7 +202,9 @@ class IsarSetup {
   //   重算全部角色的 Character.rarity。2026-08-08「出生锁死」后加载期不再重算,
   //   而 08-08 之前的创建点写死 biaoZhun,那批角色会永久停在错档位(纯展示,
   //   RarityTier 在战斗/成长/掉落层零消费)。
-  static const _currentSaveVersion = '0.39.0';
+  // 0.40.0 主线持久结算:新增 MainlineSettlementJournal collection；旧档初始
+  // 无 active journal，属于可加性迁移，不伪造 run/session/settlement identity。
+  static const _currentSaveVersion = '0.40.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -503,6 +507,13 @@ class IsarSetup {
           );
           await isar.characters.put(current);
         }
+      }
+
+      // --- 段 10(0.40.0 主线持久结算 journal)---
+      // 新 collection 对旧档天然为空；不得从 clearedStageIds/cycle keys 反推
+      // active run 或 settlement receipt，否则会把历史通关伪造成待恢复事务。
+      if (_compareVersion(fromVersion, '0.40.0') < 0) {
+        // 无显式迁移动作(纯可加)。
       }
 
       save.saveVersion = _currentSaveVersion;

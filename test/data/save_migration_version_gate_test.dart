@@ -250,7 +250,7 @@ void main() {
       expect(migrated.startedAt, startedAt);
       expect(migrated.status, RetreatStatus.active);
       // 故意钉字面量:每次 saveVer bump 都逼人回来看一眼本套件的版本门是否还成立。
-      expect(IsarSetup.currentSaveVersion, '0.39.0');
+      expect(IsarSetup.currentSaveVersion, '0.40.0');
     });
   });
 }
