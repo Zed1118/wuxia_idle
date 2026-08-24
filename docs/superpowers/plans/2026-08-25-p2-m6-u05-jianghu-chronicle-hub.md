@@ -59,3 +59,17 @@
 
 若证明必须新增 schema、改变未冻结解锁/内容可见性、或目标文件被其他 owner 修改，
 记录精确 `BLOCKED`，不绕过合同。
+
+## 完成证据
+
+- 状态：`READY reviewed`。
+- registration：`749df844`；生产/复核候选：`1a5691f5`。
+- 真实红测：完成 codegen 后，新测试只因缺少江湖纪事三个 Screen、新文案与
+  `pendingForSave` 编译失败；不是环境错误或伪造断言。首次 Flutter native-assets 与
+  codegen 缺失失败不计红测证据。
+- 变更切片与导航：77/77 PASS；相邻档案/主线：205/205 PASS。
+- `flutter analyze --no-pub lib test tool` 与恢复独立子包 metadata 后的根 analyze：
+  均 0 issue。
+- 最终 `flutter test --no-pub`：5360/5360 PASS。
+- 独立语义复核：P0/P1/P2=0，建议 READY；白名单与 `git diff --check` 通过。
+- 详细证据：`docs/audit/phase2_m6_u05_jianghu_chronicle_hub_2026-08-25.md`。

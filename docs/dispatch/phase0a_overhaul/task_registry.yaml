@@ -3652,9 +3652,19 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-jianghu-chronicle-hub-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-jianghu-chronicle-hub
-    status: in_progress
+    status: ready_reviewed
     base_commit: 062ea6bb5160e1c528ffa3d347a4fdde4a7500da
+    code_candidate_commit: 1a5691f50e79452377a04867e830e959a959bc20
+    reviewed_candidate_commit: 1a5691f50e79452377a04867e830e959a959bc20
+    ready_marker: "[READY][CODEX][P2-M6-U05-JIANGHU-CHRONICLE-HUB] 收口江湖纪事一级 Hub"
     completion_scope: jianghu_chronicle_primary_hub_six_routes_and_mainline_pending_affair_resume_entry
+    verification:
+      changed_slice_and_navigation_tests: 77
+      adjacent_archive_mainline_tests: 205
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5360
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U05-SECT-HUB
       - P2-M2-M6-U04-PENDING-JIANGHU-AFFAIRS
