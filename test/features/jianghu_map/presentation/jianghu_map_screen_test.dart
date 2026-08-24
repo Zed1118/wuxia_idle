@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/defs/light_foot_def.dart';
+import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/mass_battle_location_detail_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -139,6 +141,31 @@ void main() {
     expect(progressed.status, UiStrings.jianghuMapMassBattleProgress(2, 5));
   });
 
+  test('守城地点遇到脱离根链的环时 fail closed', () {
+    const cyclicConfig = MassBattleDef(
+      formations: {},
+      waveIntermission: MassBattleWaveIntermission.defaults(),
+      stageFormations: {
+        'stage_mass_battle_01': Formation.yanXing,
+        'stage_mass_battle_02': Formation.baGua,
+        'stage_mass_battle_03': Formation.fengShi,
+      },
+      unlockTriggers: {
+        'stage_06_05': 'stage_mass_battle_01',
+        'stage_mass_battle_02': 'stage_mass_battle_03',
+        'stage_mass_battle_03': 'stage_mass_battle_02',
+      },
+    );
+
+    final state = jianghuMapMassBattleLocationState(
+      MainlineProgress()..clearedStageIds = const ['stage_06_05'],
+      configOverride: cyclicConfig,
+    );
+
+    expect(state.locked, isTrue);
+    expect(state.status, UiStrings.massBattleEmpty);
+  });
+
   test('断魂庄地点状态读取进行中庄局关次与阶段', () {
     expect(jianghuMapGauntletStatus(null), isNull);
 
@@ -222,6 +249,22 @@ void main() {
     await tester.tap(find.text(UiStrings.mainMenuMassBattle));
     await tester.pump();
 
+    expect(find.byType(MassBattleScreen), findsNothing);
+  });
+
+  testWidgets('守城地点解锁后先进入统一地点详情而非直接进关卡列表', (tester) async {
+    await tester.pumpWidget(app(clearedStageIds: const ['stage_06_05']));
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text(UiStrings.mainMenuMassBattle));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(
+      find.byKey(const ValueKey('mass-battle-location-detail-screen')),
+      findsOneWidget,
+    );
     expect(find.byType(MassBattleScreen), findsNothing);
   });
 
