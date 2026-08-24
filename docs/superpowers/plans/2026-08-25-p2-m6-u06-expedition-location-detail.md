@@ -39,8 +39,8 @@
 
 ## 当前恢复点
 
-- 状态：已立项，待取得真实红测。
-- 最后完成：从 clean READY `c6c9e7a9` 建立独立 worktree；方案、决策、已否任务与远征生产路由已只读核对。
-- 下一步：准备 fresh worktree，写 provider/详情屏/地图路由红测。
-- 已跑验证：尚未运行新任务验证。
+- 状态：真实红测已冻结，待生产实现。
+- 最后完成：fresh worktree 已执行 `flutter pub get` 与 `dart run build_runner build`；provider/详情屏/地图路由三目标在新合同缺失时均真实编译失败 `0/3`。
+- 下一步：实现只读 DTO/provider/详情屏与地图路由，守住基础境界、单门人差遣和 active 恢复语义。
+- 已跑验证：红测 `0/3`；失败原因为缺失新 domain/provider/screen/UiStrings/route，非环境缺件。
 - 阻塞项：无；任何渐进解锁或新参与方式需求必须保持不做。

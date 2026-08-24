@@ -5,7 +5,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
-import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/expedition_location_detail_screen.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -97,7 +97,7 @@ void main() {
     expect(find.text(UiStrings.expeditionActiveDepth(8)), findsOneWidget);
   });
 
-  testWidgets('百草岭地点进入既有远征总览页', (tester) async {
+  testWidgets('百草岭地点先进入统一地点详情', (tester) async {
     await tester.pumpWidget(app(unlocked: true));
     await tester.pump();
     await tester.pump();
@@ -110,6 +110,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(ExpeditionOverviewScreen), findsOneWidget);
+    expect(find.byType(ExpeditionLocationDetailScreen), findsOneWidget);
   });
 }
