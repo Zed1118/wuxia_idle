@@ -146,7 +146,7 @@ void main() {
     );
   });
 
-  testWidgets('九霄塔地点仍经生产入口进入 TowerFloorListScreen', (tester) async {
+  testWidgets('九霄塔地点先进入统一地点详情而非直接进入塔层列表', (tester) async {
     await tester.pumpWidget(app());
     await tester.pump();
 
@@ -154,7 +154,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(TowerFloorListScreen), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('tower-location-detail-screen')),
+      findsOneWidget,
+    );
+    expect(find.byType(TowerFloorListScreen), findsNothing);
   });
 
   testWidgets('轻功地点在原 Ch6 门槛前保持锁定且不导航', (tester) async {
