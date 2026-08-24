@@ -1,5 +1,7 @@
 # GDD.md 历史变更摘要归档
 
+> **v1.41 变更**(2026-08-25 二阶段可见重打参与者归属纵切):已通关主线的可见真人重打允许从 active roster 选择 eligible 空闲角色；选择经既有 policy 解析后，精确角色快照进入真实 Phase 0A 主线 Host。记录、成长、伤势与无主掉落事件归实际参与者；占用、悬空主修/装备和无效领队指针均拒绝且不回退掌门。首推、headless/扫荡、特殊模式与 founder tutorial 语义保持。本纵切不实现前台 bot、听剑或全模式一致性，不关闭 U01/U05、M2/M6 或二阶段；不改 schema、数值、概率、奖励、解锁或叙事。(2026-08-25 v1.43 批按体例迁入)
+
 > **v1.40 变更**(2026-08-25 二阶段第一章待处理江湖事持久队列纵切):第一章连续首通在 core settlement 同事务生成互动奇遇与 Boss 招降 typed refs，依托 `MainlineSettlementJournal` 现有 outbox 持久 FIFO 顺序、canonical 来源与稳定 seed。选择业务写入与 claim 同事务，展示中崩溃可重现，已完成项不重复；事项未排空时不关闭或交接 receipt。这只关闭 U04 在第一章连续首通的产品纵切，非主线全局队列、听剑、全模式一致性、U01/U05、M2/M6 与整个二阶段仍开放；不改 schema、数值、概率、奖励、解锁或文案。(2026-08-25 v1.42 批按体例迁入)
 
 > **v1.39 变更**(2026-08-24 二阶段第一章持久结算恢复切片):存档以加法迁移升至 `0.40.0`，新增专用主线 settlement journal/outbox，以 `runId + stageId + loadoutVersion + participantId` 绑定第一章连续首通的权威结算。`prepared` 阶段崩溃只能同人同关重试；核心成长、伤势、掉落、进度及确定性后置写入与 `coreApplied` receipt 同事务提交，已提交存档只恢复结算后 UI/推进，不重放发放。下一关边界原子交接旧 receipt 与新 `prepared`，继续锁定同 run/同参与者并递增快照版本。互动奇遇/招降的 U04 持久待处理队列、听剑生产接线、replay/manual/auto/headless/扫荡一致性、U05、M2/M6 仍开放，不得由本切片外推为 U01 全关闭或二阶段完成；未冻结听剑比例/cap 或任何 `TUNE-*`。(2026-08-25 v1.41 批按体例迁入)

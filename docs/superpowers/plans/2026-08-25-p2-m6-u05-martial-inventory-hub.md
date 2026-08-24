@@ -8,7 +8,7 @@
 - baseCommit：`e618f6b2b970609cf0a99189125b2ec2ffc0796f`
 - branch：`codex/phase2-m6-u05-martial-inventory-hub-20260825`
 - worktree：`/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-martial-inventory-hub`
-- status：`in_progress`
+- status：`ready_reviewed`
 
 ## 已确认生产缺口
 
@@ -55,3 +55,15 @@
 ## 停止边界
 
 若需要改教程步、技能/心法/库存业务规则、资源总览角落工具或其余两个一级 Hub，另立切片。
+
+## 收口证据
+
+- registration：`46da70a5c6ca1bd75b3bdf84816d47073220ce4c`
+- code candidate：`3d73dc617b15c3250eb1c63fe8c1aea13dbd417c`
+- reviewed candidate：`515f803b71a6bf0217ba943c6e78db265a22595c`
+- 新增纵切 11/11、主菜单联合 65/65、相邻生产域联合 181/181、最终全量
+  5336/5336 PASS；根应用 analyze 0 issue。
+- 首轮独立审查 P0/P1=0、P2=1；按意见补齐 step 2、step 5/8 与 active roster
+  loading fail-closed 回归后复审 P0/P1/P2=0，READY。
+- 最终 `[READY]` 只关闭“武学与行囊”一级 Hub，不关闭“宗门”“江湖纪事”、U05、
+  M6 或整个二阶段。
