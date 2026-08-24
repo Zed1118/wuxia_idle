@@ -8,7 +8,7 @@
 - baseCommit：`23ab38cd7da8ae33923cc0b068c5905078b05f0d`
 - branch：`codex/phase2-m6-current-matters-target-routing-20260825`
 - worktree：`/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-current-matters-target-routing`
-- status：`in_progress`
+- status：`ready_reviewed`
 
 ## 已确认生产缺口
 
@@ -62,3 +62,18 @@
 若需要改变活动占用、闭关 session schema、伤势/突破规则、摘要优先级/文案、主菜单
 信息架构或任何数值，停止并另立切片。
 
+## 完成证据
+
+- registration：`2de7a2e393bacbb224f62a98039c525301ef4cfe`
+- 初始红测：`8f21453eb979057878c5fb853813996d5dc506f9`，目标载荷合同不存在，0/1。
+- 首个代码候选：`8926d0c3da6e473991774ae508af5bb92392dc29`。
+- 复核红测：`d68af49b6d8ab9309da7106f3175b8fce083d83c`，正数悬空 ID 仍错误 push，10/11。
+- code/reviewed candidate：`08eac7961e669451f39668129f131188433374af`。
+- 聚焦 14/14；主菜单、角色面板与闭关相邻域 387/387；双视口 2/2。
+- 变更范围与根应用 `flutter analyze --no-pub lib test tool`：0 issue。
+- 最终全量 `flutter test --no-pub --reporter compact`：5430/5430 PASS。
+- 独立复核首轮 P0=0/P1=1/P2=2；修复后 P0=0/P1=0，唯一文档 EOF P2 已在
+  最终同步关闭，语义结论可 READY。
+- `git diff --check`、10 文件白名单与最终 clean 状态通过。
+
+最终 marker：`[READY][CODEX][P2-M6-CURRENT-MATTERS-TARGET-ROUTING] 修正当前要事角色路由`。

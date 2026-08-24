@@ -4195,9 +4195,21 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-current-matters-target-routing-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-current-matters-target-routing
-    status: in_progress
+    status: ready_reviewed
     base_commit: 23ab38cd7da8ae33923cc0b068c5905078b05f0d
+    code_candidate_commit: 8926d0c3da6e473991774ae508af5bb92392dc29
+    reviewed_candidate_commit: 08eac7961e669451f39668129f131188433374af
+    ready_marker: "[READY][CODEX][P2-M6-CURRENT-MATTERS-TARGET-ROUTING] 修正当前要事角色路由"
     completion_scope: route_current_matters_to_the_exact_production_character
+    verification:
+      red_tests: 2
+      focused_tests: 14
+      adjacent_main_menu_character_seclusion_tests: 387
+      double_viewport_tests: 2
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5430
+      independent_semantic_review_p0_p1: 0
     dependencies:
       - P2-M6-U06-TOWER-LOCATION-DETAIL
     owned_files:

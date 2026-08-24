@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.74**
+> **版本:v1.75**
+>
+> v1.75 变更摘要(2026-08-25 二阶段 M6 主菜单“当前要事”精确角色路由纵切):闭关、伤势与突破摘要现携带真实 active roster 角色；闭关同时携带角色境界。点击前重新核验 active roster、角色实体及闭关 session/境界，缺失、非正数、悬空、重复或 provider 异常均 fail closed，不再回退角色 1。摘要优先级、文案、最多五项、桃花岛/主线路由与业务规则不变。本纵切只关闭当前要事角色路由缺口，U05/U06/U07/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、数值、奖励、经济或解锁变更。
 >
 > v1.74 变更摘要(2026-08-25 二阶段 M6 U06 九霄塔统一地点详情首纵切):江湖地图九霄塔现先进入统一地点详情，只读生产塔进度与下一层配置，展示推荐境界、敌方姓名/流派、首通掉落与基础修为；实际参与者经 `CurrentLeaderResolver` 解析并与真实塔战 Host 一致。身份、进度或 provider 异常时 fail closed 且无进入 CTA；登顶明确无下一层但保留重打。详情 CTA 仍经 `guardBattleEntry` 进入 `TowerFloorListScreen`。本纵切不新增派遣、自动化、持久占用或 U14 决策，只关闭九霄塔地点详情首缺口；其余地点详情、U06/U14/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、数值、奖励、经济或解锁变更。
 >
