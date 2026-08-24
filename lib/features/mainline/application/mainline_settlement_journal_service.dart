@@ -39,19 +39,33 @@ class MainlineSettlementJournalService {
     await isar.writeTxn(() async {
       final active = await _activeForSaveInTxn(saveDataId);
       if (active != null) {
-        if (active.identity != identity ||
-            active.loadoutSnapshotId != loadoutSnapshotId.trim() ||
-            (loadoutSnapshotIds != null &&
-                !_stringListsEqual(
+        final normalizedSnapshots = loadoutSnapshotIds
+            ?.map((value) => value.trim())
+            .toList(growable: false);
+        final isSame =
+            active.identity == identity &&
+            active.loadoutSnapshotId == loadoutSnapshotId.trim() &&
+            (normalizedSnapshots == null ||
+                _stringListsEqual(
                   active.loadoutSnapshotIds,
-                  loadoutSnapshotIds.map((value) => value.trim()).toList(),
-                ))) {
+                  normalizedSnapshots,
+                ));
+        if (isSame) {
+          result = active;
+          return;
+        }
+        if (!_canAdvanceToNextStage(
+          active: active,
+          nextIdentity: identity,
+          nextSnapshotIds: normalizedSnapshots,
+          nextSnapshotId: loadoutSnapshotId.trim(),
+        )) {
           throw StateError(
             'Another mainline settlement journal is already active',
           );
         }
-        result = active;
-        return;
+        active.close(at: now);
+        await isar.mainlineSettlementJournals.put(active);
       }
 
       final existing = await _findByIdentityInTxn(identity);
@@ -78,6 +92,33 @@ class MainlineSettlementJournalService {
     if (left.length != right.length) return false;
     for (var index = 0; index < left.length; index++) {
       if (left[index] != right[index]) return false;
+    }
+    return true;
+  }
+
+  static bool _canAdvanceToNextStage({
+    required MainlineSettlementJournal active,
+    required MainlineSettlementIdentity nextIdentity,
+    required List<String>? nextSnapshotIds,
+    required String nextSnapshotId,
+  }) {
+    if (active.phase != MainlineSettlementPhase.coreApplied ||
+        active.postSettlementAction !=
+            MainlinePostSettlementAction.enterNextStage ||
+        !active.allEffectsCompleted ||
+        nextSnapshotIds == null ||
+        nextIdentity.runId != active.runId ||
+        nextIdentity.participantId != active.participantId ||
+        nextIdentity.loadoutVersion != active.loadoutVersion + 1 ||
+        nextIdentity.stageId == active.stageId ||
+        nextSnapshotIds.length != active.loadoutSnapshotIds.length + 1 ||
+        nextSnapshotIds.last != nextSnapshotId) {
+      return false;
+    }
+    for (var index = 0; index < active.loadoutSnapshotIds.length; index++) {
+      if (active.loadoutSnapshotIds[index] != nextSnapshotIds[index]) {
+        return false;
+      }
     }
     return true;
   }

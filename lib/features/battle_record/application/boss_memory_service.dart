@@ -44,33 +44,69 @@ class BossMemoryService {
     required List<String> rosterPortraits,
     required DateTime now,
   }) async {
-    await isar.writeTxn(() async {
-      final existing = await _find(saveDataId, bossKey);
-      if (existing != null) {
-        existing.defeatCount += 1;
-        await isar.bossMemorys.put(existing);
-        return;
-      }
-      final m = BossMemory()
-        ..saveDataId = saveDataId
-        ..bossKey = bossKey
-        ..source = source
-        ..groupIndex = groupIndex
-        ..bossName = bossName
-        ..firstClearedAt = now
-        ..isPreRecord = false
-        ..totalDamage = totalDamage
-        ..critCount = critCount
-        ..totalTicks = totalTicks
-        ..topContributorName = topContributorName
-        ..topContributorDamage = topContributorDamage
-        ..treasureName = treasureName
-        ..treasureTier = treasureTier
-        ..rosterNames = rosterNames
-        ..rosterPortraits = rosterPortraits
-        ..defeatCount = 1;
-      await isar.bossMemorys.put(m);
-    });
+    await isar.writeTxn(
+      () => recordBossVictoryInTxn(
+        saveDataId: saveDataId,
+        bossKey: bossKey,
+        source: source,
+        groupIndex: groupIndex,
+        bossName: bossName,
+        totalDamage: totalDamage,
+        critCount: critCount,
+        totalTicks: totalTicks,
+        topContributorName: topContributorName,
+        topContributorDamage: topContributorDamage,
+        treasureName: treasureName,
+        treasureTier: treasureTier,
+        rosterNames: rosterNames,
+        rosterPortraits: rosterPortraits,
+        now: now,
+      ),
+    );
+  }
+
+  Future<void> recordBossVictoryInTxn({
+    required int saveDataId,
+    required String bossKey,
+    required BossMemorySource source,
+    required int groupIndex,
+    required String bossName,
+    required int totalDamage,
+    required int critCount,
+    required int totalTicks,
+    String? topContributorName,
+    int? topContributorDamage,
+    String? treasureName,
+    EquipmentTier? treasureTier,
+    required List<String> rosterNames,
+    required List<String> rosterPortraits,
+    required DateTime now,
+  }) async {
+    final existing = await _find(saveDataId, bossKey);
+    if (existing != null) {
+      existing.defeatCount += 1;
+      await isar.bossMemorys.put(existing);
+      return;
+    }
+    final m = BossMemory()
+      ..saveDataId = saveDataId
+      ..bossKey = bossKey
+      ..source = source
+      ..groupIndex = groupIndex
+      ..bossName = bossName
+      ..firstClearedAt = now
+      ..isPreRecord = false
+      ..totalDamage = totalDamage
+      ..critCount = critCount
+      ..totalTicks = totalTicks
+      ..topContributorName = topContributorName
+      ..topContributorDamage = topContributorDamage
+      ..treasureName = treasureName
+      ..treasureTier = treasureTier
+      ..rosterNames = rosterNames
+      ..rosterPortraits = rosterPortraits
+      ..defeatCount = 1;
+    await isar.bossMemorys.put(m);
   }
 
   /// 查当前存档所有战绩纪念（Isar 主键顺序，不保证排序）。

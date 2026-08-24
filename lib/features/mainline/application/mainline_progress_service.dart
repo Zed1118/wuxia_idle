@@ -110,58 +110,75 @@ class MainlineProgressService {
     TutorialService? tutorialService,
     int cycle = 1,
   }) async {
-    await isar.writeTxn(() async {
-      final progress = await isar.mainlineProgress
-          .filter()
-          .saveDataIdEqualTo(IsarSetup.currentSlotId)
-          .findFirst();
-      if (progress == null) {
-        throw StateError(
-          'MainlineProgress 未初始化：getOrCreate 未在 recordVictory 前调用',
-        );
-      }
+    await isar.writeTxn(
+      () => recordVictoryInTxn(
+        saveDataId: IsarSetup.currentSlotId,
+        stageId: stageId,
+        now: now,
+        tutorialService: tutorialService,
+        cycle: cycle,
+      ),
+    );
+  }
 
-      // 周目 cycleKey append（幂等，per-stage 向后兼容:Boss 招降等仍读）
-      final cycleKey = '$stageId#$cycle';
-      final keys = List<String>.of(progress.clearedStageCycleKeys);
-      var mutated = false;
-      if (!keys.contains(cycleKey)) {
-        keys.add(cycleKey);
-        progress.clearedStageCycleKeys = keys;
+  /// 与调用方已有 Isar 事务共用的主线进度写入；不得在事务外单独调用。
+  Future<void> recordVictoryInTxn({
+    required int saveDataId,
+    required String stageId,
+    required DateTime now,
+    TutorialService? tutorialService,
+    int cycle = 1,
+  }) async {
+    final progress = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (progress == null) {
+      throw StateError(
+        'MainlineProgress 未初始化：getOrCreate 未在 recordVictory 前调用',
+      );
+    }
+
+    // 周目 cycleKey append（幂等，per-stage 向后兼容:Boss 招降等仍读）
+    final cycleKey = '$stageId#$cycle';
+    final keys = List<String>.of(progress.clearedStageCycleKeys);
+    var mutated = false;
+    if (!keys.contains(cycleKey)) {
+      keys.add(cycleKey);
+      progress.clearedStageCycleKeys = keys;
+      mutated = true;
+    }
+
+    // 章级周目 key:仅章末 Boss 关(isBoss)写入 → 通关整章 Boss 解锁下一周目
+    // (2026-06-14 周目按章)。GameRepository 未载(部分 test fixture)→ 跳过。
+    final def = GameRepository.isLoaded
+        ? GameRepository.instance.stageDefs[stageId]
+        : null;
+    if (def != null && def.isBossStage) {
+      final chKey = '${chapterKeyForStage(def)}#$cycle';
+      final cKeys = List<String>.of(progress.clearedChapterCycleKeys);
+      if (!cKeys.contains(chKey)) {
+        cKeys.add(chKey);
+        progress.clearedChapterCycleKeys = cKeys;
         mutated = true;
       }
+    }
 
-      // 章级周目 key:仅章末 Boss 关(isBoss)写入 → 通关整章 Boss 解锁下一周目
-      // (2026-06-14 周目按章)。GameRepository 未载(部分 test fixture)→ 跳过。
-      final def = GameRepository.isLoaded
-          ? GameRepository.instance.stageDefs[stageId]
-          : null;
-      if (def != null && def.isBossStage) {
-        final chKey = '${chapterKeyForStage(def)}#$cycle';
-        final cKeys = List<String>.of(progress.clearedChapterCycleKeys);
-        if (!cKeys.contains(chKey)) {
-          cKeys.add(chKey);
-          progress.clearedChapterCycleKeys = cKeys;
-          mutated = true;
-        }
-      }
-
-      // cycle==1 维护原 clearedStageIds 解锁链（向后兼容，语义不变）
-      if (cycle == 1) {
-        if (progress.clearedStageIds.contains(stageId)) {
-          // 幂等：cycle1 已通关，stageId 无新增；若 cycleKey 也已存在则无需 put
-          if (mutated) await isar.mainlineProgress.put(progress);
-          return;
-        }
-        progress.clearedStageIds = [...progress.clearedStageIds, stageId];
-        progress.clearedAt = [...progress.clearedAt, now];
-        await isar.mainlineProgress.put(progress);
-        await tutorialService?.advanceForStageCleared(stageId);
-      } else {
-        // cycle>1：只写 cycleKey，不改 clearedStageIds 解锁链
+    // cycle==1 维护原 clearedStageIds 解锁链（向后兼容，语义不变）
+    if (cycle == 1) {
+      if (progress.clearedStageIds.contains(stageId)) {
+        // 幂等：cycle1 已通关，stageId 无新增；若 cycleKey 也已存在则无需 put
         if (mutated) await isar.mainlineProgress.put(progress);
+        return;
       }
-    });
+      progress.clearedStageIds = [...progress.clearedStageIds, stageId];
+      progress.clearedAt = [...progress.clearedAt, now];
+      await isar.mainlineProgress.put(progress);
+      await tutorialService?.advanceForStageCleared(stageId);
+    } else {
+      // cycle>1：只写 cycleKey，不改 clearedStageIds 解锁链
+      if (mutated) await isar.mainlineProgress.put(progress);
+    }
   }
 
   /// 主线二 2.5 首通门控:该 (stageId, cycle) 是否尚未通关(首通)。

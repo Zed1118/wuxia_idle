@@ -29,6 +29,72 @@ typedef EquipmentDropLockHandler =
 
 enum StageVictoryAction { returnToMap, enterNextStage }
 
+Future<StageVictoryAction> showRecoveredStageSettlementDialog({
+  required BuildContext context,
+  required StageDef stage,
+  required bool allowEnterNextStage,
+}) async {
+  return await showDialog<StageVictoryAction>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: LightPaperPanel(
+              padding: const EdgeInsets.all(20),
+              paperOpacity: 0.22,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    '${stage.name} · ${UiStrings.mainlineSettlementRecoveredTitle}',
+                    style: const TextStyle(
+                      color: WuxiaUi.ink,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    UiStrings.mainlineSettlementRecoveredBody,
+                    style: TextStyle(color: WuxiaUi.muted, height: 1.5),
+                  ),
+                  const SizedBox(height: 18),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.end,
+                    children: [
+                      PlaqueButton(
+                        label: UiStrings.stageVictoryReturnToMap,
+                        onTap: () => Navigator.of(
+                          dialogContext,
+                        ).pop(StageVictoryAction.returnToMap),
+                      ),
+                      if (allowEnterNextStage)
+                        PlaqueButton(
+                          label: UiStrings.stageVictoryEnterNextStage,
+                          primary: true,
+                          autofocus: true,
+                          onTap: () => Navigator.of(
+                            dialogContext,
+                          ).pop(StageVictoryAction.enterNextStage),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ) ??
+      StageVictoryAction.returnToMap;
+}
+
 /// 主线 victory dialog(W15 #30 P3 后续 A 任务)。
 ///
 /// 体例对齐塔 `_showVictoryDialog`,但主线 victory 此前完全无 dialog,本批新建。

@@ -32,17 +32,19 @@ class SkillUnlockService {
   /// 返回 `true` 表示本次**新授**（之前未解锁）；`false` 表示已解锁，幂等不重复信号。
   /// 写库仍仅在首次执行；已解锁时写库也幂等（调用仍安全，只是不触发 markUnlocked）。
   Future<bool> grantManual(String skillId) async {
-    bool newlyGranted = false;
-    await _isar.writeTxn(() async {
-      final s = await _save();
-      // Isar @embedded list 取出为 fixed-length,转 growable 再 mutate(防 add 抛)。
-      s.skillUnlockProgress = List.of(s.skillUnlockProgress);
-      if (!s.skillUnlockProgress.isUnlocked(skillId)) {
-        s.skillUnlockProgress.markUnlocked(skillId);
-        newlyGranted = true;
-      }
-      await _isar.saveDatas.put(s);
-    });
+    late bool newlyGranted;
+    await _isar.writeTxn(
+      () async => newlyGranted = await grantManualInTxn(skillId),
+    );
+    return newlyGranted;
+  }
+
+  Future<bool> grantManualInTxn(String skillId) async {
+    final s = await _save();
+    s.skillUnlockProgress = List.of(s.skillUnlockProgress);
+    final newlyGranted = !s.skillUnlockProgress.isUnlocked(skillId);
+    if (newlyGranted) s.skillUnlockProgress.markUnlocked(skillId);
+    await _isar.saveDatas.put(s);
     return newlyGranted;
   }
 
@@ -56,26 +58,25 @@ class SkillUnlockService {
   ///
   /// 若调用前已解锁（短路），返回 [SkillDropResult.none]（无残页信号，防止下游误报"得残页"通知）。
   Future<SkillDropResult> addFragment(String skillId, [int n = 1]) async {
-    int countAfter = 0;
-    bool justUnlocked = false;
-    bool alreadyUnlocked = false;
-    await _isar.writeTxn(() async {
-      final s = await _save();
-      s.skillUnlockProgress = List.of(s.skillUnlockProgress);
-      if (!s.skillUnlockProgress.isUnlocked(skillId)) {
-        s.skillUnlockProgress.addFragment(skillId, n);
-        countAfter = s.skillUnlockProgress.fragmentCountOf(skillId);
-        if (countAfter >= fragmentThreshold) {
-          s.skillUnlockProgress.markUnlocked(skillId);
-          justUnlocked = true;
-        }
-      } else {
-        // 已解锁短路：不累加，不发出任何残页信号。
-        alreadyUnlocked = true;
-      }
+    late SkillDropResult result;
+    await _isar.writeTxn(
+      () async => result = await addFragmentInTxn(skillId, n),
+    );
+    return result;
+  }
+
+  Future<SkillDropResult> addFragmentInTxn(String skillId, [int n = 1]) async {
+    final s = await _save();
+    s.skillUnlockProgress = List.of(s.skillUnlockProgress);
+    if (s.skillUnlockProgress.isUnlocked(skillId)) {
       await _isar.saveDatas.put(s);
-    });
-    if (alreadyUnlocked) return SkillDropResult.none;
+      return SkillDropResult.none;
+    }
+    s.skillUnlockProgress.addFragment(skillId, n);
+    final countAfter = s.skillUnlockProgress.fragmentCountOf(skillId);
+    final justUnlocked = countAfter >= fragmentThreshold;
+    if (justUnlocked) s.skillUnlockProgress.markUnlocked(skillId);
+    await _isar.saveDatas.put(s);
     return SkillDropResult(
       fragmentSkillId: skillId,
       fragmentCount: countAfter,

@@ -163,6 +163,10 @@ void main() {
         'skill_drop',
         at: DateTime.utc(2026, 8, 24, 0, 2),
       );
+      journal.recordPostSettlementAction(
+        MainlinePostSettlementAction.returnToMap,
+        at: DateTime.utc(2026, 8, 24, 0, 2, 30),
+      );
       journal.close(at: DateTime.utc(2026, 8, 24, 0, 3));
       expect(journal.phase, MainlineSettlementPhase.closed);
       expect(journal.recoveryAction, MainlineSettlementRecoveryAction.none);

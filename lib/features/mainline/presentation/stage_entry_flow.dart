@@ -37,6 +37,7 @@ import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../encounter/application/encounter_service.dart';
 import '../../equipment/presentation/milestone_grant_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../lineage/presentation/disciple_join_hook.dart';
@@ -54,16 +55,20 @@ import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../application/mainline_run_coordinator.dart';
+import '../application/mainline_settlement_journal_service.dart';
 import '../application/phase0a_mainline_production_encounter_factory.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
 import '../domain/mainline_run.dart';
+import '../domain/mainline_settlement_journal.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../combat_shared/presentation/hero_camera_overlay.dart'
     show HeroCameraData;
 import '../../combat_shared/presentation/victory_ceremony.dart';
 import '../../battle_record/application/boss_memory_hook.dart';
+import '../../battle_record/application/boss_memory_service.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
+import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import 'phase0a_mainline_battle_host.dart';
@@ -73,6 +78,11 @@ typedef MainlineBattleExit = ({
   bool won,
   bool surrendered,
   CombatSettlementSnapshot? settlement,
+});
+
+typedef MainlineDurableSettlementContext = ({
+  MainlineSettlementJournalService service,
+  MainlineSettlementIdentity identity,
 });
 
 @visibleForTesting
@@ -130,6 +140,27 @@ Future<void> runStageFlow({
     executeStage: (launch) async {
       StageVictoryAction? action;
       final nextStage = _nextStageInSameChapter(launch.stage);
+      final settlementService = MainlineSettlementJournalService(
+        IsarSetup.instance,
+      );
+      final identity = MainlineSettlementIdentity(
+        runId: launch.run.runId,
+        stageId: launch.stage.id,
+        loadoutVersion: launch.run.currentLoadoutVersion,
+        participantId: launch.run.participantId,
+      );
+      final journal = await settlementService.prepare(
+        saveDataId: IsarSetup.currentSlotId,
+        identity: identity,
+        loadoutSnapshotId: launch.run.loadoutSnapshots.last.loadoutSnapshotId,
+        loadoutSnapshotIds: launch.run.loadoutSnapshots
+            .map((snapshot) => snapshot.loadoutSnapshotId)
+            .toList(growable: false),
+        now: DateTime.now(),
+      );
+      if (!context.mounted) {
+        return MainlineStageFlowDecision.stoppedBeforeVictory;
+      }
       await _runSingleStageFlow(
         context: context,
         ref: ref,
@@ -138,6 +169,8 @@ Future<void> runStageFlow({
         playerSnapshot: launch.playerSnapshot,
         allowEnterNextStage: nextStage != null,
         victoryActionSink: (value) => action = value,
+        durableSettlement: (service: settlementService, identity: identity),
+        durableJournal: journal,
         battleRunnerForTest: battleRunnerForTest,
         battleOutcomeForTest: battleOutcomeForTest,
         phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
@@ -161,10 +194,21 @@ Future<void> runStageFlow({
         _loadNextMainlineSnapshot(run: run, nextStage: nextStage),
   );
   final result = await coordinator.run(
-    initialStage: stage,
+    initialStage: bootstrap.stage,
     initialRun: bootstrap.run,
     initialPlayerSnapshot: bootstrap.playerSnapshot,
   );
+  if (result.reason ==
+      MainlineRunCompletionReason.participantNotBattleEligibleForNextStage) {
+    final service = MainlineSettlementJournalService(IsarSetup.instance);
+    final active = await service.activeForSave(IsarSetup.currentSlotId);
+    if (active != null &&
+        active.phase == MainlineSettlementPhase.coreApplied &&
+        active.postSettlementAction ==
+            MainlinePostSettlementAction.enterNextStage) {
+      await service.close(identity: active.identity, now: DateTime.now());
+    }
+  }
   if (result.reason ==
           MainlineRunCompletionReason
               .participantNotBattleEligibleForNextStage &&
@@ -178,12 +222,45 @@ Future<void> runStageFlow({
 }
 
 typedef _MainlineRunBootstrap = ({
+  StageDef stage,
   MainlineRun run,
   CombatantSnapshot playerSnapshot,
 });
 
 Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
   final isar = IsarSetup.instance;
+  final active = await MainlineSettlementJournalService(
+    isar,
+  ).activeForSave(IsarSetup.currentSlotId);
+  if (active != null) {
+    final resumedStage = GameRepository.instance.stageDefs[active.stageId];
+    if (resumedStage == null || resumedStage.stageType != StageType.mainline) {
+      throw StateError('Active mainline settlement stage is unavailable');
+    }
+    final playerSnapshot = await _loadMainlineParticipantSnapshot(
+      active.participantId,
+    );
+    if (playerSnapshot == null) {
+      if (active.phase == MainlineSettlementPhase.coreApplied &&
+          active.postSettlementAction ==
+              MainlinePostSettlementAction.enterNextStage) {
+        await MainlineSettlementJournalService(
+          isar,
+        ).close(identity: active.identity, now: DateTime.now());
+      }
+      return null;
+    }
+    return (
+      stage: resumedStage,
+      run: MainlineRun.restore(
+        runId: active.runId,
+        participantId: active.participantId,
+        stageId: active.stageId,
+        loadoutSnapshotIds: active.loadoutSnapshotIds,
+      ),
+      playerSnapshot: playerSnapshot,
+    );
+  }
   final save = await isar.saveDatas.get(0);
   final participantId = await CurrentLeaderResolver.resolve(
     save: save,
@@ -196,6 +273,7 @@ Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
       'mainline:${IsarSetup.currentSlotId}:${stage.id}:'
       '${DateTime.now().microsecondsSinceEpoch}';
   return (
+    stage: stage,
     run: MainlineRun.begin(
       runId: runId,
       participantId: participantId,
@@ -280,6 +358,8 @@ Future<void> _runSingleStageFlow({
   CombatantSnapshot? playerSnapshot,
   bool allowEnterNextStage = false,
   ValueChanged<StageVictoryAction>? victoryActionSink,
+  MainlineDurableSettlementContext? durableSettlement,
+  MainlineSettlementJournal? durableJournal,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -292,6 +372,41 @@ Future<void> _runSingleStageFlow({
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
   bossDefeatPenaltyForTest,
 }) async {
+  if ((durableSettlement == null) != (durableJournal == null)) {
+    throw StateError('Durable settlement context must be complete');
+  }
+  if (durableJournal?.phase == MainlineSettlementPhase.coreApplied) {
+    var action = switch (durableJournal!.postSettlementAction) {
+      MainlinePostSettlementAction.returnToMap =>
+        StageVictoryAction.returnToMap,
+      MainlinePostSettlementAction.enterNextStage =>
+        StageVictoryAction.enterNextStage,
+      MainlinePostSettlementAction.none => null,
+    };
+    if (action == null) {
+      if (!context.mounted) return;
+      action = await showRecoveredStageSettlementDialog(
+        context: context,
+        stage: stage,
+        allowEnterNextStage: allowEnterNextStage,
+      );
+      await durableSettlement!.service.recordPostSettlementAction(
+        identity: durableSettlement.identity,
+        action: action == StageVictoryAction.enterNextStage
+            ? MainlinePostSettlementAction.enterNextStage
+            : MainlinePostSettlementAction.returnToMap,
+        now: DateTime.now(),
+      );
+    }
+    if (action == StageVictoryAction.returnToMap || !allowEnterNextStage) {
+      await durableSettlement!.service.close(
+        identity: durableSettlement.identity,
+        now: DateTime.now(),
+      );
+    }
+    victoryActionSink?.call(action);
+    return;
+  }
   final automaticallyPresentsNarratives =
       shouldAutomaticallyPresentStageNarratives(stage);
 
@@ -412,11 +527,19 @@ Future<void> _runSingleStageFlow({
 
   // ── victory ──
   // Phase 4 W11 #32 销账：装备 battleCount / 心法 skillUsage / 主修升层 + 关卡 drop 落地
+  final clearedBeforeVictory = <String>{};
+  if (durableSettlement != null) {
+    final progress = await MainlineProgressService(
+      isar: IsarSetup.instance,
+    ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    clearedBeforeVictory.addAll(progress.clearedStageIds);
+  }
   final outcome = await applyVictoryResolution(
     ref: ref,
     stage: stage,
     cycle: targetCycle,
     settlementSnapshot: completedSettlement,
+    durableSettlement: durableSettlement,
   );
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
@@ -425,10 +548,13 @@ Future<void> _runSingleStageFlow({
   // W12 fix: provider 副作用 getOrCreate 与 recordVictory 存在 race（W6 重构遗留），
   // 主动 ensure 避免 MainlineProgress 未初始化时抛 StateError
   // 可玩性 P1a:技能书首通判定需"写 clearedStageIds 之前"的快照。
-  final clearedBeforeVictory = <String>{};
   // 第七阶段批二④:捕获技能掉落结果供战后仪式分层(test stub 路径留 .none)。
   SkillDropResult skillDrop = SkillDropResult.none;
-  if (victoryRecorderForTest != null) {
+  if (durableSettlement != null) {
+    skillDrop = outcome?.skillDrop ?? SkillDropResult.none;
+    ref.invalidate(mainlineProgressProvider);
+    ref.invalidate(currentTutorialStepProvider);
+  } else if (victoryRecorderForTest != null) {
     await victoryRecorderForTest(stage.id);
   } else {
     final svc = MainlineProgressService(isar: IsarSetup.instance);
@@ -521,6 +647,22 @@ Future<void> _runSingleStageFlow({
       },
       allowEnterNextStage: allowEnterNextStage,
     );
+    if (durableSettlement != null) {
+      await durableSettlement.service.recordPostSettlementAction(
+        identity: durableSettlement.identity,
+        action: victoryAction == StageVictoryAction.enterNextStage
+            ? MainlinePostSettlementAction.enterNextStage
+            : MainlinePostSettlementAction.returnToMap,
+        now: DateTime.now(),
+      );
+      if (victoryAction == StageVictoryAction.returnToMap ||
+          !allowEnterNextStage) {
+        await durableSettlement.service.close(
+          identity: durableSettlement.identity,
+          now: DateTime.now(),
+        );
+      }
+    }
     victoryActionSink?.call(victoryAction);
   }
 
@@ -554,6 +696,7 @@ Future<void> _runSingleStageFlow({
     defeatedSchools: stage.enemyTeam
         .map((e) => e.school)
         .toList(growable: false),
+    recordDefeatedSchools: durableSettlement == null,
   );
 
   // 第七阶段批三:命名弟子拜入 hook(过 join 触发关 → 拜师叙事 + 最小立绘题字)。
@@ -583,7 +726,9 @@ Future<void> _runSingleStageFlow({
   );
 
   // P1.2 Boss 击杀 → 声望 delta(boss 所属派系 -delta · 对立阵营 +rivalDelta)。
-  await _applyBossKillReputation(ref: ref, stage: stage);
+  if (durableSettlement == null) {
+    await _applyBossKillReputation(ref: ref, stage: stage);
+  }
 
   // 后置 hook（技能掉落、战绩册、里程碑装备、招降等）发生在主结算 helper 之后。
   // 返回关卡列表前再刷一次最终态，避免主菜单门控 / 仓库 / 资源数量读到旧缓存。
@@ -872,6 +1017,7 @@ Future<
     HeroCameraData? heroCamera,
     Set<EquipmentTier> extraDisplayTiers,
     List<Character> characters,
+    SkillDropResult skillDrop,
   })?
 >
 applyVictoryResolution({
@@ -879,6 +1025,7 @@ applyVictoryResolution({
   required StageDef stage,
   int cycle = 1,
   CombatSettlementSnapshot? settlementSnapshot,
+  MainlineDurableSettlementContext? durableSettlement,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return null;
@@ -932,6 +1079,17 @@ applyVictoryResolution({
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
 
+  if (durableSettlement != null) {
+    await MainlineProgressService(
+      isar: isar,
+    ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+    await EncounterService(
+      isar: isar,
+      attributeGainCap: numbers.adventureAttributeLifetimeCap,
+      attributeEffects: numbers.attributeEffects,
+    ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+  }
+
   final result = CombatResolutionService.resolveSnapshot(
     settlement: combatSettlement,
     participatingCharacters: characters,
@@ -980,9 +1138,28 @@ applyVictoryResolution({
 
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
   var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
+  var skillDrop = SkillDropResult.none;
+
+  final bossName = stage.enemyTeam.isNotEmpty
+      ? stage.enemyTeam.last.name
+      : stage.name;
+  final heroCamera = deriveHeroCameraDataFromDamageTotals(
+    damageByCharacterId: combatSettlement.damageByCharacterId,
+    characters: characters,
+    bossName: bossName,
+  );
 
   final now = DateTime.now();
-  await isar.writeTxn(() async {
+  final durableTutorialService = durableSettlement == null
+      ? null
+      : ref.read(tutorialServiceProvider);
+  final durableSkillDropRng = durableSettlement == null
+      ? null
+      : ref.read(mathRandomProvider);
+  final durableReputation = durableSettlement == null
+      ? null
+      : ref.read(reputationServiceProvider);
+  Future<void> persistResolutionInTxn() async {
     // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
@@ -1053,17 +1230,119 @@ applyVictoryResolution({
             )
           : null,
     );
-  });
 
-  // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
-  final bossName = stage.enemyTeam.isNotEmpty
-      ? stage.enemyTeam.last.name
-      : stage.name;
-  final heroCamera = deriveHeroCameraDataFromDamageTotals(
-    damageByCharacterId: combatSettlement.damageByCharacterId,
-    characters: characters,
-    bossName: bossName,
-  );
+    if (durableSettlement == null) return;
+
+    await MainlineProgressService(isar: isar).recordVictoryInTxn(
+      saveDataId: IsarSetup.currentSlotId,
+      stageId: stage.id,
+      now: now,
+      tutorialService: durableTutorialService,
+      cycle: cycle,
+    );
+    skillDrop = await runStageSkillDropHookAfterVictoryInTxn(
+      stage: stage,
+      svc: SkillUnlockService(
+        isar,
+        fragmentThreshold: numbers.skillUnlock.fragmentThreshold,
+      ),
+      clearedStageIds: clearedSet,
+      towerFragmentDropProb: numbers.skillUnlock.towerFragmentDropProb,
+      rng: durableSkillDropRng!,
+    );
+    await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
+      saveDataId: IsarSetup.currentSlotId,
+      defIds: [
+        for (final equipment in result.dropResult.equipments) equipment.defId,
+      ],
+      from: stage.name,
+      now: now,
+    );
+    await EncounterService(
+      isar: isar,
+      attributeGainCap: numbers.adventureAttributeLifetimeCap,
+      attributeEffects: numbers.attributeEffects,
+    ).recordKillInTxn(
+      saveDataId: IsarSetup.currentSlotId,
+      defeatedSchools: stage.enemyTeam
+          .map((enemy) => enemy.school)
+          .toList(growable: false),
+    );
+
+    if (stage.isBossStage) {
+      final rosterNames = <String>[];
+      final rosterPortraits = <String>[];
+      for (final characterId in save?.activeCharacterIds ?? const <int>[]) {
+        final character = await isar.characters.get(characterId);
+        if (character == null) continue;
+        rosterNames.add(character.name);
+        rosterPortraits.add(character.portraitPath ?? '');
+      }
+      String? treasureName;
+      EquipmentTier? treasureTier;
+      if (result.dropResult.equipments.isNotEmpty) {
+        final best = result.dropResult.equipments.reduce(
+          (left, right) => left.tier.index >= right.tier.index ? left : right,
+        );
+        treasureTier = best.tier;
+        treasureName =
+            GameRepository.instance.equipmentDefs[best.defId]?.name ??
+            best.defId;
+      }
+      await BossMemoryService(isar: isar).recordBossVictoryInTxn(
+        saveDataId: IsarSetup.currentSlotId,
+        bossKey: mainlineBossKey(stage.id),
+        source: BossMemorySource.mainline,
+        groupIndex: mainlineGroupIndex(stage.id),
+        bossName: bossName,
+        totalDamage: stats.totalDamage,
+        critCount: stats.critCount,
+        totalTicks: stats.totalTicks,
+        topContributorName: heroCamera?.heroName,
+        topContributorDamage: heroCamera?.topDamage,
+        treasureName: treasureName,
+        treasureTier: treasureTier,
+        rosterNames: rosterNames,
+        rosterPortraits: rosterPortraits,
+        now: now,
+      );
+    }
+
+    final reputation = durableReputation;
+    if (stage.isBossStage && stage.factionId != null && reputation != null) {
+      final triggers = numbers.jianghu.triggers;
+      await reputation.applyDeltaInTxn(
+        1,
+        stage.factionId!,
+        -triggers.stageBossKillDelta,
+        now: now,
+      );
+      for (final rival in GameRepository.instance.rivalFactionIds(
+        stage.factionId!,
+      )) {
+        await reputation.applyDeltaInTxn(
+          1,
+          rival,
+          triggers.stageBossKillRivalDelta,
+          now: now,
+        );
+      }
+    }
+  }
+
+  if (durableSettlement == null) {
+    await isar.writeTxn(persistResolutionInTxn);
+  } else {
+    final disposition = await durableSettlement.service.commitCore(
+      identity: durableSettlement.identity,
+      pendingEffectIds: const [],
+      now: now,
+      applyInTxn: persistResolutionInTxn,
+    );
+    if (disposition != MainlineCoreCommitDisposition.applied) {
+      throw StateError('Mainline settlement core was already applied');
+    }
+  }
 
   // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
@@ -1074,10 +1353,12 @@ applyVictoryResolution({
 
   // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(result.dropResult.equipments)
   // 已 commit),留册图鉴(best-effort)。
-  await runEquipmentCatalogHookAfterObtain(
-    defIds: [for (final e in result.dropResult.equipments) e.defId],
-    from: stage.name,
-  );
+  if (durableSettlement == null) {
+    await runEquipmentCatalogHookAfterObtain(
+      defIds: [for (final e in result.dropResult.equipments) e.defId],
+      from: stage.name,
+    );
+  }
 
   return (
     drops: result.dropResult,
@@ -1087,6 +1368,7 @@ applyVictoryResolution({
     heroCamera: heroCamera,
     extraDisplayTiers: extraDisplayTiers,
     characters: List<Character>.unmodifiable(characters),
+    skillDrop: skillDrop,
   );
 }
 

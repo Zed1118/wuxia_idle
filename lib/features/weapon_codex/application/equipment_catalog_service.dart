@@ -33,24 +33,38 @@ class EquipmentCatalogService {
     required DateTime now,
   }) async {
     if (defIds.isEmpty) return;
-    await isar.writeTxn(() async {
-      for (final defId in defIds) {
-        final existing = await entryFor(saveDataId, defId);
-        if (existing != null) {
-          existing.obtainedCount += 1;
-          await isar.equipmentCatalogEntrys.put(existing);
-          continue;
-        }
-        final e = EquipmentCatalogEntry()
-          ..saveDataId = saveDataId
-          ..defId = defId
-          ..firstObtainedAt = now
-          ..firstObtainedFrom = from
-          ..obtainedCount = 1
-          ..isPreRecord = false;
-        await isar.equipmentCatalogEntrys.put(e);
+    await isar.writeTxn(
+      () => recordAcquisitionsInTxn(
+        saveDataId: saveDataId,
+        defIds: defIds,
+        from: from,
+        now: now,
+      ),
+    );
+  }
+
+  Future<void> recordAcquisitionsInTxn({
+    required int saveDataId,
+    required List<String> defIds,
+    required String from,
+    required DateTime now,
+  }) async {
+    for (final defId in defIds) {
+      final existing = await entryFor(saveDataId, defId);
+      if (existing != null) {
+        existing.obtainedCount += 1;
+        await isar.equipmentCatalogEntrys.put(existing);
+        continue;
       }
-    });
+      final e = EquipmentCatalogEntry()
+        ..saveDataId = saveDataId
+        ..defId = defId
+        ..firstObtainedAt = now
+        ..firstObtainedFrom = from
+        ..obtainedCount = 1
+        ..isPreRecord = false;
+      await isar.equipmentCatalogEntrys.put(e);
+    }
   }
 
   /// 扫当前库存兜底回填：未入册的 owned defId → preRecord（来历不详）；

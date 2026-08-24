@@ -21,18 +21,23 @@ Future<SkillDropResult> _applySkillDrop({
   required SkillUnlockService svc,
   required double fragmentDropProb,
   required Random rng,
+  bool transactionOwned = false,
 }) async {
   // 真解分支：首通 + 本次新授 → capture granted。
   String? granted;
   if (manualId != null && isFirstClear) {
-    final wasNew = await svc.grantManual(manualId);
+    final wasNew = transactionOwned
+        ? await svc.grantManualInTxn(manualId)
+        : await svc.grantManual(manualId);
     granted = wasNew ? manualId : null;
   }
 
   // 残页分支：rng 命中 → capture 残页结果。
   SkillDropResult? fragResult;
   if (fragmentId != null && rng.nextDouble() < fragmentDropProb) {
-    fragResult = await svc.addFragment(fragmentId, 1);
+    fragResult = transactionOwned
+        ? await svc.addFragmentInTxn(fragmentId, 1)
+        : await svc.addFragment(fragmentId, 1);
   }
 
   // 合并两条分支结果。
@@ -47,6 +52,22 @@ Future<SkillDropResult> _applySkillDrop({
     fragmentJustUnlocked: fragResult?.fragmentJustUnlocked ?? false,
   );
 }
+
+Future<SkillDropResult> runStageSkillDropHookAfterVictoryInTxn({
+  required StageDef stage,
+  required SkillUnlockService svc,
+  required Set<String> clearedStageIds,
+  required double towerFragmentDropProb,
+  required Random rng,
+}) => _applySkillDrop(
+  manualId: stage.dropSkillManualId,
+  fragmentId: stage.dropSkillFragmentId,
+  isFirstClear: !clearedStageIds.contains(stage.id),
+  svc: svc,
+  fragmentDropProb: towerFragmentDropProb,
+  rng: rng,
+  transactionOwned: true,
+);
 
 /// 主线 Boss 胜利掉技能书(spec §二)。真解仅首通(stage 不在 [clearedStageIds]
 /// 快照)给;残页按概率。**[clearedStageIds] 必须是本场写入前的快照**。

@@ -24,25 +24,34 @@ class ReputationService {
   /// upsert 语义:同 (playerId, factionId) 已存在 → 累积;不存在 → 新建。
   /// composite unique index 保(playerId, factionId)唯一,并发安全靠 writeTxn。
   Future<void> applyDelta(int playerId, String factionId, int delta) async {
-    await isar.writeTxn(() async {
-      final existing = await isar.reputations
-          .filter()
-          .playerIdEqualTo(playerId)
-          .factionIdEqualTo(factionId)
-          .findFirst();
-      if (existing == null) {
-        final rep = Reputation()
-          ..playerId = playerId
-          ..factionId = factionId
-          ..value = delta.clamp(-100, 100)
-          ..updatedAt = DateTime.now();
-        await isar.reputations.put(rep);
-      } else {
-        existing.value = (existing.value + delta).clamp(-100, 100);
-        existing.updatedAt = DateTime.now();
-        await isar.reputations.put(existing);
-      }
-    });
+    await isar.writeTxn(
+      () => applyDeltaInTxn(playerId, factionId, delta, now: DateTime.now()),
+    );
+  }
+
+  Future<void> applyDeltaInTxn(
+    int playerId,
+    String factionId,
+    int delta, {
+    required DateTime now,
+  }) async {
+    final existing = await isar.reputations
+        .filter()
+        .playerIdEqualTo(playerId)
+        .factionIdEqualTo(factionId)
+        .findFirst();
+    if (existing == null) {
+      final rep = Reputation()
+        ..playerId = playerId
+        ..factionId = factionId
+        ..value = delta.clamp(-100, 100)
+        ..updatedAt = now;
+      await isar.reputations.put(rep);
+    } else {
+      existing.value = (existing.value + delta).clamp(-100, 100);
+      existing.updatedAt = now;
+      await isar.reputations.put(existing);
+    }
   }
 
   /// 查 tier(numbers.yaml.jianghu.reputation_tiers 7 阶映射 · 闭区间)。

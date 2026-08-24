@@ -286,6 +286,9 @@ class MainlineSettlementJournal {
     if (!allEffectsCompleted) {
       throw StateError('Cannot close with pending settlement effects');
     }
+    if (postSettlementAction == MainlinePostSettlementAction.none) {
+      throw StateError('Cannot close before post-settlement action');
+    }
     phase = MainlineSettlementPhase.closed;
     closedAt = at;
     updatedAt = at;

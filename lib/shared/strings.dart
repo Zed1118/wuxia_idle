@@ -1815,6 +1815,9 @@ class UiStrings {
   static const String stageVictoryReturnToMap = '返回江湖地图';
   static const String stageVictoryEnterNextStage = '进入下一关';
   static const String mainlineRunParticipantUnavailable = '掌门当前不可继续出战，已结束连续闯关。';
+  static const String mainlineSettlementRecoveredTitle = '前战已结';
+  static const String mainlineSettlementRecoveredBody =
+      '本关权威结算已保存；继续前行不会重复发放奖励、成长或伤势。';
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
   static const String stageVictoryReportTitle = '战后卷宗';

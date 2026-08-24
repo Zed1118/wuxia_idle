@@ -30,6 +30,7 @@ Future<void> runEncounterHookAfterVictory({
   required BuildContext context,
   required WidgetRef ref,
   required List<TechniqueSchool> defeatedSchools,
+  bool recordDefeatedSchools = true,
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return;
@@ -46,14 +47,16 @@ Future<void> runEncounterHookAfterVictory({
   );
   // W13 教训:race 防御,ensure getOrCreate
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-  try {
-    await svc.recordKill(
-      saveDataId: IsarSetup.currentSlotId,
-      defeatedSchools: defeatedSchools,
-    );
-  } catch (e, st) {
-    debugPrint('EncounterService.recordKill 失败:$e\n$st');
-    return;
+  if (recordDefeatedSchools) {
+    try {
+      await svc.recordKill(
+        saveDataId: IsarSetup.currentSlotId,
+        defeatedSchools: defeatedSchools,
+      );
+    } catch (e, st) {
+      debugPrint('EncounterService.recordKill 失败:$e\n$st');
+      return;
+    }
   }
 
   // 取主角(slot 0,SaveData.activeCharacterIds.first)的 fortune

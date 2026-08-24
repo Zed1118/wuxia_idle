@@ -146,23 +146,31 @@ class EncounterService {
     required List<TechniqueSchool> defeatedSchools,
   }) async {
     if (defeatedSchools.isEmpty) return;
-    await isar.writeTxn(() async {
-      final progress = await isar.encounterProgress
-          .filter()
-          .saveDataIdEqualTo(saveDataId)
-          .findFirst();
-      if (progress == null) {
-        throw StateError(
-          'EncounterProgress 未初始化:getOrCreate 未在 recordKill 前调用',
-        );
-      }
-      // W13 fixed-length list 教训
-      progress.schoolKillCounts = List.of(progress.schoolKillCounts);
-      for (final s in defeatedSchools) {
-        progress.schoolKillCounts.increment(s);
-      }
-      await isar.encounterProgress.put(progress);
-    });
+    await isar.writeTxn(
+      () => recordKillInTxn(
+        saveDataId: saveDataId,
+        defeatedSchools: defeatedSchools,
+      ),
+    );
+  }
+
+  Future<void> recordKillInTxn({
+    required int saveDataId,
+    required List<TechniqueSchool> defeatedSchools,
+  }) async {
+    if (defeatedSchools.isEmpty) return;
+    final progress = await isar.encounterProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (progress == null) {
+      throw StateError('EncounterProgress 未初始化:getOrCreate 未在 recordKill 前调用');
+    }
+    progress.schoolKillCounts = List.of(progress.schoolKillCounts);
+    for (final s in defeatedSchools) {
+      progress.schoolKillCounts.increment(s);
+    }
+    await isar.encounterProgress.put(progress);
   }
 
   /// 挂机时长累积(C-W14-2)。

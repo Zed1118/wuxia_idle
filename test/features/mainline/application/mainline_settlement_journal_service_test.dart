@@ -51,7 +51,10 @@ void main() {
       loadoutSnapshotIds: const ['run-1:loadout:1'],
       now: DateTime.utc(2026, 8, 24),
     );
-    expect(prepared.recoveryAction, MainlineSettlementRecoveryAction.restartSameStage);
+    expect(
+      prepared.recoveryAction,
+      MainlineSettlementRecoveryAction.restartSameStage,
+    );
 
     await IsarSetup.close();
     await IsarSetup.init(directory: tempDir, inspector: false);
@@ -226,10 +229,8 @@ void main() {
       applyInTxn: () async {},
     );
     expect(
-      () => service().close(
-        identity: key,
-        now: DateTime.utc(2026, 8, 24, 0, 2),
-      ),
+      () =>
+          service().close(identity: key, now: DateTime.utc(2026, 8, 24, 0, 2)),
       throwsStateError,
     );
     await service().applyEffect(
@@ -238,10 +239,12 @@ void main() {
       now: DateTime.utc(2026, 8, 24, 0, 3),
       applyInTxn: () async {},
     );
-    await service().close(
+    await service().recordPostSettlementAction(
       identity: key,
-      now: DateTime.utc(2026, 8, 24, 0, 4),
+      action: MainlinePostSettlementAction.returnToMap,
+      now: DateTime.utc(2026, 8, 24, 0, 3, 30),
     );
+    await service().close(identity: key, now: DateTime.utc(2026, 8, 24, 0, 4));
     expect(await service().activeForSave(1), isNull);
   });
 
@@ -289,6 +292,48 @@ void main() {
         now: DateTime.utc(2026, 8, 24, 0, 4),
       ),
       throwsStateError,
+    );
+  });
+
+  test('进入下一关时原子关闭旧 receipt 并继承同 run 同参与者', () async {
+    final first = identity();
+    await service().prepare(
+      saveDataId: 1,
+      identity: first,
+      loadoutSnapshotId: 'run-1:loadout:1',
+      loadoutSnapshotIds: const ['run-1:loadout:1'],
+      now: DateTime.utc(2026, 8, 24),
+    );
+    await service().commitCore(
+      identity: first,
+      pendingEffectIds: const [],
+      now: DateTime.utc(2026, 8, 24, 0, 1),
+      applyInTxn: () async {},
+    );
+    await service().recordPostSettlementAction(
+      identity: first,
+      action: MainlinePostSettlementAction.enterNextStage,
+      now: DateTime.utc(2026, 8, 24, 0, 2),
+    );
+
+    final second = identity(stageId: 'stage_01_02', version: 2);
+    final next = await service().prepare(
+      saveDataId: 1,
+      identity: second,
+      loadoutSnapshotId: 'run-1:loadout:2',
+      loadoutSnapshotIds: const ['run-1:loadout:1', 'run-1:loadout:2'],
+      now: DateTime.utc(2026, 8, 24, 0, 3),
+    );
+
+    expect(next.identity, second);
+    expect(next.phase, MainlineSettlementPhase.prepared);
+    expect((await service().activeForSave(1))!.identity, second);
+    final rows = await IsarSetup.instance.mainlineSettlementJournals
+        .where()
+        .findAll();
+    expect(
+      rows.singleWhere((row) => row.settlementId == first.canonical).phase,
+      MainlineSettlementPhase.closed,
     );
   });
 }
