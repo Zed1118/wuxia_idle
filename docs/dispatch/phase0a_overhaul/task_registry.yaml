@@ -2641,12 +2641,37 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch19-observable-transactional-ceiling-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch19-observable-transactional-ceiling
-    status: in_progress
+    status: ready_reviewed
     base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    validated_commit: 02397c8e53aaffa575ba82f09ad0e8df39f225e4
+    ready_marker: "[READY][CODEX][P2-M2-BATCH19] 冻结可观测事务执行上限"
     source_tasks:
       - P2-M2-R25-ENCOUNTER-FLOW-RUNTIME-OBSERVATION
       - P2-M2-R26-MIGRATED-ENCOUNTER-EXPLICIT-LEASE-ASSEMBLER
       - P2-M2-V02A-CH1-CANDIDATE-DEFEAT-OBJECTIVE-EXECUTION-MATRIX
+    integration_commits:
+      - a5e00d67
+      - 5bae8bb2
+      - d688bfc4
+      - cfa22618
+      - b1611ea7
+      - 9ed96c24
+      - e04a3706
+      - 0448813e
+      - ceb7587a
+      - 3c19fd28
+      - aac4580e
+      - 80d56bb6
+      - 4839ae7a
+      - db4fe573
+      - cd6b02c4
+    verification:
+      joint_targeted_tests: 197
+      full_tests: 5129
+      changed_dart_items: 5
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch19-observable-transactional-ceiling.md

@@ -34,10 +34,11 @@
 - registry 99 tasks / 0 duplicate IDs / 0 dangling refs；相对 Batch18 精确 11-file path guard、`git diff --check` 与 clean status 通过。
 - main 与 origin/main 仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 
-## 最终结论（待独立终审）
+## 最终结论
 
 - Batch19 只冻结 EncounterFlow 只读 progress/receipt、显式 caller-owned lease assembler 与 candidate defeat-objective execution ceiling；不宣称 production host、candidate promotion、checkpoint/anchor projector、timeline 推断、durable store/schema/CAS/outbox、tuning/Profile/G2/真人验收已完成。
-- registry 结构与独立集成终审将在本验证提交后复核，清零后再追加 READY marker。
+- 独立集成终审固定验证提交 `02397c8e53aaffa575ba82f09ad0e8df39f225e4`，重算 registry 99/0/0、15/15 stable patch-id、8/8 owned blobs，复跑 scoped analyze 5 items / 0 issue、format 5 files / 0 changed 与 V02A 8/8，结论 P0/P1/P2=0。
+- registry/docs 闭环复核通过后只追加空 READY marker `[READY][CODEX][P2-M2-BATCH19] 冻结可观测事务执行上限`。
 
 ## 集成环境恢复点
 
