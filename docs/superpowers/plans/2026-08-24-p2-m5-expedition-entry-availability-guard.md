@@ -35,7 +35,7 @@
   single-active 行为。
 - [x] 运行 focused dispatch、完整 `test/features/expedition`、scoped
   analyze、format 与 `git diff --check`。
-- [ ] 同一 Pi 模型对 `base..final` 实际 diff 进行只读终审，triage 后
+- [x] 同一 Pi 模型对 `base..final` 实际 diff 进行只读终审，triage 后
   P0/P1 清零。
 - [ ] 所有实质修改已提交，最后只追加一个 `[READY]` 提交，worktree
   clean。
@@ -79,6 +79,37 @@ pi --no-session --no-skills --model deepseek/deepseek-v4-flash --thinking high -
 - 测试夹具禁止同时命中 founder/occupied/no-main 旧 gate；不用
   injury/HP/downed 代替 `Character.isAlive`。
 
+## Pi 实际 diff 最终只读审查
+
+- 审查输入：`git diff --no-ext-diff --unified=80
+  8296db0c033b64faa1eb09b24f2f22269f281363...652ab07b -- <3 owned files>`
+  的实际 unified diff，由 Codex 物化后嵌入 prompt；Pi 同时读取当前
+  service/test 与必要领域上下文交叉核对。
+- 完整调用配置：`pi --no-session --no-skills --model
+  deepseek/deepseek-v4-flash --thinking high --tools read,grep,find,ls --print
+  "$review_prompt"`；`review_prompt` 由审查合同文本与上述实际 diff 拼接，
+  未包含密钥。
+- Pi CLI：`0.84.1`；model：exact `deepseek/deepseek-v4-flash`；thinking：
+  `high`；仅 `read,grep,find,ls`，无 `bash/edit/write`，零写入。
+- 运行结果：exit `0`。
+- 原始结论：`FINAL PASS`，P0=0，P1=0，P2=3。
+- 核验通过：
+  1. gate 位于 canonical `characters.get` 与 null 检查后，早于
+     founder/entry tier/occupancy/main technique/snapshot/serial/run put；
+  2. 四项新测走真 Isar + 真 `ExpeditionService.dispatch`，dead-only 夹具显式
+     排除 founder/occupied/no-main 旧 gate；
+  3. dead rollback 钉住 serial=41 不变与 run=0，alive control 钉住 seed/serial
+     精确 42；
+  4. `8296db0c...652ab07b` 仅三个 owned files，零 schema/UI/奖励/数值改动。
+- P2 triage：
+  1. 机器可读错误 token 不是 UI 玩家文案，遵守 Dart 不新增中文文案与
+     本任务 UI 不变边界；未来若有死亡写端并向 UI 暴露详情，另立本地化任务。
+  2. dead gate 早于 founder/occupancy/no-main 是主控独立终审明确要求，属权威死亡
+     拒绝超集，不调整。
+  3. run 进行中死亡、重伤等其他资格已明确超出 owned scope，不扩张。
+- Pi 本轮未自行执行测试，只读核对了测试真实性与本地验证声明；
+  14/14 和 108/108 均为 Codex 实际执行证据。
+
 ## 任务切片
 
 1. 读取项目规约、二阶段方案、现有 service/test，完成 Pi 只读设计审查。
@@ -90,12 +121,13 @@ pi --no-session --no-skills --model deepseek/deepseek-v4-flash --thinking high -
 
 ## 当前恢复点
 
-- 状态：实现、TDD 与本地验证完成，待 Pi 实际 diff 终审。
+- 状态：实现、TDD、本地验证与 Pi 实际 diff 终审均完成，P0/P1=0/0，
+  待提交终审证据并进行终态 diff 复核。
 - 最后完成：`dispatch` 在权威 `writeTxn` 内读取 canonical `Character`
   后，紧跟 null 检查拒绝 `isAlive == false`；新测由 11 pass / 3 fail 转为
   focused dispatch 14/14 PASS。
-- 下一步：提交验证证据，将 `8296db0c...HEAD` 实际三文件 diff 交给
-  同一 Pi 配置只读终审。
+- 下一步：提交本终审证据，对回填后的 `8296db0c...HEAD` 最终实际 diff
+  用同一 Pi 配置做终态复核；若仍 P0/P1=0，只追加唯一 READY 空提交。
 - 已跑验证：Pi 只读审查 exit 0；首轮 focused 在 native-assets 编译前
   崩溃，二轮因 fresh worktree 缺少 gitignored Isar `*.g.dart` 编译失败，
   两者均不计业务红灯；`flutter pub get --offline` 与
