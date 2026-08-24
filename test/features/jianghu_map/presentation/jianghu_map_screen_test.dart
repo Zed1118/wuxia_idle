@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
+import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mass_battle/presentation/mass_battle_screen.dart';
@@ -21,20 +25,25 @@ void main() {
     ..saveDataId = 0
     ..highestClearedFloor = highest;
 
-  Widget app({int highest = 6, List<String> clearedStageIds = const []}) =>
-      ProviderScope(
-        overrides: [
-          towerProgressProvider.overrideWith(
-            (ref) async => progressAt(highest),
-          ),
-          mainlineProgressProvider.overrideWith(
-            (ref) async =>
-                MainlineProgress()..clearedStageIds = clearedStageIds,
-          ),
-          activeRetreatSessionProvider.overrideWith((ref) async => null),
-        ],
-        child: const MaterialApp(home: JianghuMapScreen()),
-      );
+  Widget app({
+    int highest = 6,
+    List<String> clearedStageIds = const [],
+    bool gauntletUnlocked = false,
+    BossGauntletRun? activeGauntlet,
+  }) => ProviderScope(
+    overrides: [
+      towerProgressProvider.overrideWith((ref) async => progressAt(highest)),
+      mainlineProgressProvider.overrideWith(
+        (ref) async => MainlineProgress()..clearedStageIds = clearedStageIds,
+      ),
+      activeRetreatSessionProvider.overrideWith((ref) async => null),
+      mainMenuSaveSnapshotProvider.overrideWith(
+        (ref) async => SaveData()..jianghuJourneyUnlocked = gauntletUnlocked,
+      ),
+      activeGauntletProvider.overrideWith((ref) async => activeGauntlet),
+    ],
+    child: const MaterialApp(home: JianghuMapScreen()),
+  );
 
   test('九霄塔地点状态继续读取生产塔数据', () {
     expect(
@@ -101,6 +110,39 @@ void main() {
     expect(progressed.status, UiStrings.jianghuMapMassBattleProgress(2, 5));
   });
 
+  test('断魂庄地点状态读取进行中庄局关次与阶段', () {
+    expect(jianghuMapGauntletStatus(null), isNull);
+
+    final run = BossGauntletRun()
+      ..saveDataId = 0
+      ..seed = 7
+      ..currentStage = 2
+      ..sessionPhase = GauntletPhase.interlude;
+    expect(
+      jianghuMapGauntletStatus(run),
+      UiStrings.gauntletResumeHint(2, UiStrings.gauntletPhaseInterlude),
+    );
+  });
+
+  testWidgets('断魂庄地点显示进行中庄局状态', (tester) async {
+    final run = BossGauntletRun()
+      ..saveDataId = 0
+      ..seed = 7
+      ..currentStage = 3
+      ..sessionPhase = GauntletPhase.awaitingRewardChoice;
+    await tester.pumpWidget(app(gauntletUnlocked: true, activeGauntlet: run));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(UiStrings.gauntletName), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.gauntletResumeHint(3, UiStrings.gauntletPhaseAwaitingReward),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('九霄塔地点仍经生产入口进入 TowerFloorListScreen', (tester) async {
     await tester.pumpWidget(app());
     await tester.pump();
@@ -140,12 +182,13 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(app());
+      await tester.pumpWidget(app(gauntletUnlocked: true));
       await tester.pump();
 
       expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
       expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
       expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
+      expect(find.text(UiStrings.gauntletName), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

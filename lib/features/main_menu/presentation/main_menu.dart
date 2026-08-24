@@ -19,7 +19,6 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import '../../jianghu_map/presentation/jianghu_map_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
-import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../martial_inventory/presentation/martial_inventory_hub_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
@@ -240,7 +239,6 @@ class MainMenu extends ConsumerWidget {
       mainlineStatus: mainlineStatus,
       mainlineGoal: mainlineGoal,
       continueJianghuStage: continueJianghuStage,
-      jianghuJourneyUnlocked: jianghuJourneyUnlocked,
     );
     final growthItems = _growthItems(
       context,
@@ -373,7 +371,6 @@ class MainMenu extends ConsumerWidget {
     required String? mainlineStatus,
     required NewSaveGoalGuidance? mainlineGoal,
     required StageDef? continueJianghuStage,
-    required bool jianghuJourneyUnlocked,
   }) {
     return <Widget>[
       _ContinueJianghuEntry(
@@ -401,15 +398,6 @@ class MainMenu extends ConsumerWidget {
         ),
         onOpenMap: () => _push(context, const JianghuMapScreen()),
       ),
-      // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
-      if (jianghuJourneyUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.gauntletName,
-          hint: UiStrings.gauntletSubtitle,
-          icon: Icons.whatshot_outlined,
-          thumbnailPath: WuxiaUi.entryJianghu,
-          onTap: () => _push(context, const GauntletLoadoutScreen()),
-        ),
     ];
   }
 

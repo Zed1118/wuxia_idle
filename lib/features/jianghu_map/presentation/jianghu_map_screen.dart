@@ -6,8 +6,12 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../boss_gauntlet/application/gauntlet_providers.dart';
+import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
+import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../light_foot/application/light_foot_service.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
+import '../../main_menu/application/main_menu_status_summary_provider.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
@@ -103,6 +107,17 @@ String jianghuMapTowerStatus(TowerProgress progress) {
   );
 }
 
+String? jianghuMapGauntletStatus(BossGauntletRun? run) {
+  if (run == null) return null;
+  final phase = switch (run.sessionPhase) {
+    GauntletPhase.inBattle => UiStrings.gauntletPhaseInBattle,
+    GauntletPhase.interlude => UiStrings.gauntletPhaseInterlude,
+    GauntletPhase.awaitingRewardChoice => UiStrings.gauntletPhaseAwaitingReward,
+    GauntletPhase.settled => UiStrings.gauntletPhaseSettled,
+  };
+  return UiStrings.gauntletResumeHint(run.currentStage, phase);
+}
+
 class JianghuMapScreen extends ConsumerWidget {
   const JianghuMapScreen({super.key});
 
@@ -117,6 +132,15 @@ class JianghuMapScreen extends ConsumerWidget {
     final massBattleState = ref
         .watch(mainlineProgressProvider)
         .maybeWhen(data: jianghuMapMassBattleLocationState, orElse: () => null);
+    final gauntletUnlocked = ref
+        .watch(mainMenuSaveSnapshotProvider)
+        .maybeWhen(
+          data: (save) => save?.jianghuJourneyUnlocked ?? false,
+          orElse: () => false,
+        );
+    final gauntletStatus = ref
+        .watch(activeGauntletProvider)
+        .maybeWhen(data: jianghuMapGauntletStatus, orElse: () => null);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -202,6 +226,22 @@ class JianghuMapScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (gauntletUnlocked) ...[
+                  const SizedBox(height: 12),
+                  WuxiaInkButton(
+                    key: const ValueKey('jianghu-map-gauntlet-location'),
+                    label: UiStrings.gauntletName,
+                    hint: UiStrings.gauntletSubtitle,
+                    status: gauntletStatus,
+                    icon: Icons.whatshot_outlined,
+                    thumbnailPath: WuxiaUi.entryJianghu,
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const GauntletLoadoutScreen(),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
