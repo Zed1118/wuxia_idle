@@ -527,8 +527,8 @@ class DefeatLossEntry {
 ///   2. 心魔惩罚（[BattleResolutionResult.innerDemonPenaltyByCharacter]）→
 ///      保留领域结算证据，摘要仅显示角色名与内息紊乱，
 ///      不声称内力区间或修炼度回退，residueApplied=true。
-///   3. 双层伤势重伤（Task 9）：两类 entry 均可附 injuryApplied=true，
-///      由 [_DefeatLossBanner] 汇总显示受伤人数行。
+///   3. 双层伤势重伤（Task 9）：仅普通 Boss entry 投影本次伤势；
+///      心魔 entry 不把入场前既有伤势算成本次后果。
 @visibleForTesting
 List<DefeatLossEntry> buildDefeatLossEntries({
   required List<Character> characters,
