@@ -227,4 +227,75 @@ stage_assignments:
       ),
     );
   });
+
+  test(
+    'production stage_01_03 binds a migrated route and runtime contract',
+    () async {
+      final catalog = await loadProductionCombatCatalogIfPresent(
+        (path) => File(path).readAsString(),
+      );
+      expect(catalog, isNotNull);
+      expect(
+        catalog!.encounterForStage('stage_01_03')!.id,
+        'ch1_encounter_03_ambush',
+      );
+      expect(catalog.archetypeById('ch1_bandits')!.id, 'ch1_bandits');
+      final resolver = Phase0aEncounterMigrationResolver(
+        legacyContentIds: const [
+          'stage_01_01',
+          'stage_01_02',
+          'stage_01_04',
+          'stage_01_05',
+        ],
+      );
+      final route = selectCombatStageEncounterRoute(
+        manifest: catalog,
+        stageId: 'stage_01_03',
+        migrationResolver: resolver,
+        hasLegacyContent: false,
+      );
+      expect(route, isA<MigratedCombatStageEncounterRoute>());
+      final encounter = (route as MigratedCombatStageEncounterRoute).encounter;
+      final contract = mapCombatEncounterRuntimeContract(
+        encounter,
+        tickDuration: const Duration(milliseconds: 100),
+        resolveEnemyId: (entry) => 'runtime_${entry.entryId}',
+      );
+      expect(contract.spawnDirector.config.activeLimit, 12);
+      expect(contract.spawnDirector.state.units, hasLength(40));
+      expect(contract.attackTokenBudgets.melee, 1);
+      expect(contract.attackTokenBudgets.ranged, 1);
+      expect(contract.attackTokenBudgets.charge, 1);
+      expect(contract.attackTokenBudgets.support, 1);
+    },
+  );
+
+  test('production Ch1 stages other than stage_01_03 remain legacy', () async {
+    final catalog = (await loadProductionCombatCatalogIfPresent(
+      (path) => File(path).readAsString(),
+    ))!;
+    final resolver = Phase0aEncounterMigrationResolver(
+      legacyContentIds: const [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_04',
+        'stage_01_05',
+      ],
+    );
+    for (final stageId in const [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_04',
+      'stage_01_05',
+    ]) {
+      final route = selectCombatStageEncounterRoute(
+        manifest: catalog,
+        stageId: stageId,
+        migrationResolver: resolver,
+        hasLegacyContent: true,
+      );
+      expect(route, isA<LegacyCombatStageEncounterRoute>());
+      expect(catalog.encounterForStage(stageId), isNull);
+    }
+  });
 }
