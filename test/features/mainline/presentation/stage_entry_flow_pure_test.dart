@@ -17,12 +17,12 @@ import '../../../support/test_data.dart';
 /// stage_entry_flow 纯函数面补强（试点 A 单 切片 1）。
 ///
 /// 覆盖对象（stage_entry_flow.dart）：
-///   - `buildDefeatLossEntries`（L662-714）Boss 散功半区组合矩阵：
+///   - `buildDefeatLossEntries` Boss 散功半区组合矩阵：
 ///     didRollback 门控 old/newLayerLabel、injuryApplied 映射、
-///     `_resolveTechName`（L726-741）四条解析分支、散功+心魔同角色双 entry。
+///     `_resolveTechName` 四条解析分支、散功+心魔同角色双 entry。
 ///     （心魔半区已由 inner_demon_defeat_summary_test.dart 覆盖，此处不重复。）
-///   - `shouldSkipScrollDrop`（L1268-1269）三态直测。
-///   - `buildDefeatLossBanner`（L721-722）→ `_DefeatLossBanner`（L1073-1173）
+///   - `shouldSkipScrollDrop` 三态直测。
+///   - `buildDefeatLossBanner` → `_DefeatLossBanner`
 ///     未测分支：空 entries 早返、伤势汇总行（0 / N）、层数回退段 vs 修炼度段
 ///     vs 无心法段、混合 residue 标题门控。
 ///     （余毒段 / 双标题已由 defeat_loss_banner_residue_test.dart 覆盖。）
