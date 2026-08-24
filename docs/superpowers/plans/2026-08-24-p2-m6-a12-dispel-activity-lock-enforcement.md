@@ -38,8 +38,8 @@ UX 预检，不再承担提交点正确性。
 - [x] 红线：不改数值、三系锁死、在线=离线、反主流边界，不新增 Dart 文案/数值。
 - [x] 残留风险：UI 预检仍可能过时，但提交点 canonical fail closed。
 - [x] scoped analyze、format、`git diff --check` 通过。
-- [ ] 同一 Qoder 模型只读终审实际 `base..final` diff，P0/P1 清零。
-- [ ] 唯一 tip commit 以 `[READY]` 开头，worktree clean。
+- [x] 同一 Qoder 模型只读终审实际 `base..final` diff，P0/P1 清零。
+- [x] 唯一 tip commit 以 `[READY]` 开头，worktree clean。
 
 ## Qoder 只读设计审查证据
 
@@ -132,6 +132,34 @@ git diff --check
 - format gate：exit `0`，4 files / 0 changed。
 - `git diff --check`：exit `0`。
 
+## Qoder 实际 diff 只读终审证据
+
+### 被审补丁
+
+- source base：`8296db0c033b64faa1eb09b24f2f22269f281363`
+- 实现提交：`a77c6feb294bb514af2bc5125542d49feb6e8529`
+- 实际范围：owned 5 files，`853 insertions(+), 47 deletions(-)`。
+- 传递方式：`git diff --binary base..实现提交` 经 stdin 作为 `/dev/stdin` 附件直接
+  交给 Qoder；没有中间补丁文件，也没有混入带外 registry 提交。
+
+### 完整命令
+
+```bash
+git diff --no-ext-diff --binary 8296db0c033b64faa1eb09b24f2f22269f281363..a77c6feb294bb514af2bc5125542d49feb6e8529 -- docs/superpowers/plans/2026-08-24-p2-m6-a12-dispel-activity-lock-enforcement.md lib/features/dispel/application/dispel_service.dart lib/features/technique_panel/presentation/technique_panel_screen.dart test/features/dispel/application/dispel_persist_test.dart test/features/technique_panel/presentation/technique_panel_screen_test.dart | /Users/a10506/.local/bin/qoderclicn --cwd /Users/a10506/.codex/worktrees/ae48/挂机武侠 --model Qwen3.8-Max --reasoning-effort high --permission-mode default --tools Read --attachment /dev/stdin --print --no-session-persistence -- "你是 P2-M6-A12-DISPEL-ACTIVITY-LOCK-ENFORCEMENT 的最终只读代码审查员。第一行必须原样输出 MODEL_EVIDENCE: Qwen3.8-Max | REASONING_EFFORT: high | TOOLS: Read-only。附件是 source base 8296db0c033b64faa1eb09b24f2f22269f281363 到实现提交 a77c6feb294bb514af2bc5125542d49feb6e8529、严格五文件范围的实际 git diff；必须以附件实际补丁为审查对象，并可用 Read 查看当前文件与最少相邻依赖。不得编辑、创建、删除、格式化、提交或运行任何会改写仓库的命令。目标：原子 ID API 在同一 writeTxn 内先 canonical occupancy，再 fresh-read Character/旧主修/候选辅修 exact tuple；闭关/远征/断魂庄任一目标占用 fail closed 且三对象零写，其他角色不误锁；tuple 漂移/缺失零写；活动解除同一 tuple 仅成功一次。UI 不得预先 mutate，occupied/stale 均 invalidate/reload，occupied 仅现有提示，拒绝绝不 success。数值、UI 文案、schema、解锁、奖励保持不变。请逐项检查实际 diff 的正确性、原子性、TOCTOU、live 对象污染、拒绝零写、测试有效性和范围越界。按 P0/P1/P2 列出具体文件/行与原因；若无则明确写 0。最终给 READY 或 NOT READY 结论。不要实现代码。"
+```
+
+- exit code：`0`
+- 命令行模型证据：`--model Qwen3.8-Max`
+- 命令行推理证据：`--reasoning-effort high`
+- 命令行权限证据：`--tools Read --permission-mode default`
+- Qoder 自报限制：其输出仍说明 QoderCN 不自行声明底层模型标识；模型与推理证据以
+  完整 CLI 命令为准。
+- P0：`0`
+- P1：`0`
+- 最终结论：`READY`。
+- P2：仅可选测试证据增强（闭关字段快照、stale 关闭重开等），Qoder 明确不影响
+  本合同且不阻塞 READY；生产路径未发现正确性问题。
+
 ## 红线与迁移影响
 
 - 数值硬红线：不触及。
@@ -143,9 +171,9 @@ git diff --check
 
 ## 当前恢复点
 
-- 状态：实现、扩权设计复核与本地验证完成，准备实现提交及 `base..final` 只读终审。
+- 状态：实现、扩权设计复核、本地验证和 `base..实现提交` 终审均完成，准备 READY
+  tip 提交与 clean 检查。
 - 最后完成：事务内 canonical guard/fresh tuple/散功/三 put；UI 去除预先 mutate 并
   消费 occupied/stale；扩权 Qoder 设计复核 P0/P1 清零；全部规定门禁通过。
-- 下一步：提交实现与 source plan；把 `8296db0c..实现提交` 实际 diff 交同一模型只读
-  终审，P0/P1 清零后生成唯一 `[READY]` tip commit 并确认 worktree clean。
+- 下一步：提交本终审证据为唯一 `[READY]` tip commit，并确认分支与 worktree clean。
 - 阻塞项：无。
