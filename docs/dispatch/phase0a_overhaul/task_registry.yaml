@@ -4230,3 +4230,39 @@ tasks:
       - summary priority copy five item cap island and mainline routing remain unchanged
       - do not change schema save version tuning narrative rewards economy unlocks or main
       - do not claim U05 U06 U07 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U06-LIGHT-FOOT-LOCATION-DETAIL
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-light-foot-location-detail-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-light-foot-location-detail
+    status: in_progress
+    base_commit: af71e90b166470d663c338fe62d3d6f7375d2bbe
+    completion_scope: add_production_light_foot_location_detail_before_stage_list
+    dependencies:
+      - P2-M6-CURRENT-MATTERS-TARGET-ROUTING
+    owned_files:
+      - lib/features/jianghu_map/domain/light_foot_location_detail.dart
+      - lib/features/jianghu_map/application/light_foot_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/light_foot_location_detail_screen.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/jianghu_map/application/light_foot_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/light_foot_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-light-foot-location-detail.md
+      - docs/audit/phase2_m6_u06_light_foot_location_detail_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - detail reads production clearance chain next available stage config drop table and current leader
+      - map opens detail before light foot stage list and detail CTA preserves guardBattleEntry
+      - missing leader invalid light foot config no available stage and provider errors fail closed without an entry CTA
+      - completed routes keep replay access while clearly reporting route completion
+      - preserve current light foot unlock gates stage flow cycle selection and battle behavior
+      - no dispatch automation persistent occupancy participant selection or progressive unlock change is invented
+      - do not change schema save version tuning narrative rewards economy YAML or main
+      - do not claim U06 U14 M5 M6 or overall Phase 2 completion
