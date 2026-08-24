@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.71**
+> **版本:v1.72**
+>
+> v1.72 变更摘要(2026-08-25 二阶段 M6 U06 江湖地图声望第六地点纵切):“江湖恩怨”从主菜单平铺区迁为江湖地图第六个生产地点；锁定与开放继续复用 `kFirstChapterFinalStageId`，数据未决或异常时 fail closed，点击仍进入既有 `ReputationPanelScreen`。宗门 Hub 仍消费同一社交门槛，江湖商店保持主菜单条件入口。本纵切只关闭声望地点归位缺口；统一地点详情、U06/U14/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、声望算法、奖励、经济或解锁变更。
 >
 > v1.71 变更摘要(2026-08-25 二阶段 M6 U05 九霄塔排行榜归位纵切):本地排行榜从九霄塔标题栏重新获得生产入口，点击复用既有 `LeaderboardScreen`，继续只读 `towerProgressProvider` 的最高层、最佳耗时、挑战次数和派生胜率。主菜单不恢复平铺入口，江湖纪事仍为六类。本纵切只关闭排行榜归位缺口，不晋升 U05/U06/M6/二阶段；`LeaderboardSyncService` 仍为 Noop，零 cloud/account/network、schema/saveVersion、YAML、调优、奖励、经济或解锁变更。
 >

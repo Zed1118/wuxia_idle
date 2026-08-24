@@ -6,7 +6,10 @@
 - base: `0dc51a34544481a41b1a8212ffe182b9c0d06e96`
 - branch: `codex/phase2-m6-u06-jianghu-map-reputation-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-reputation-location`
-- status: `in_progress`
+- status: `ready_reviewed`
+- registration_commit: `b48b3b4533cedc4c7b89f71d84a69c74bf6e500f`
+- code_candidate_commit: `898a67e25bb4168a0a90e0b2662681532a2f651c`
+- reviewed_candidate_commit: `898a67e25bb4168a0a90e0b2662681532a2f651c`
 
 ## 目标与权威落点
 
@@ -48,3 +51,13 @@
 ## 停止条件
 
 若迁移必须改变社交解锁门槛、声望算法、数值/奖励、schema 或需要新的 hidden/heard/open 决策，立即标记精确 `BLOCKED`，不用本切片猜测新规则。
+
+## 完成证据
+
+- 真实红测：`0/4`，分别精确证明主菜单仍平铺声望，地图缺少声望地点、门槛和真路由。
+- 聚焦声望地点/地图/主菜单/原声望面板/纸面对比：`87/87 PASS`。
+- 主菜单 + 江湖地图 + 江湖声望 + 商店相邻域：`201/201 PASS`。
+- scoped analyze 与 root `flutter analyze`：`0 issue`；`git diff --check` 通过。
+- 独立只读复核：`94/94 PASS`，`P0=0 / P1=0 / P2=0`，建议 `READY`。
+- 最终 root full suite：`5402/5402 PASS`。
+- 该证据只支持声望地点归位，不晋升 U06、U14、M6 或二阶段整体状态。
