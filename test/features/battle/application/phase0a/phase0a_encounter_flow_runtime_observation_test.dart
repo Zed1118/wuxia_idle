@@ -896,6 +896,11 @@ void main() {
       battleFlowSource,
       isNot(contains('Phase0aEncounterRuntimeObservationSource')),
     );
+    expect(
+      RegExp(r'\bObjectiveController\??\s+\w+').hasMatch(observationSource),
+      isFalse,
+    );
+    expect(RegExp(r'\bset\s+\w+\s*\(').hasMatch(observationSource), isFalse);
 
     for (final forbidden in const [
       'Phase0aCombatSession',
