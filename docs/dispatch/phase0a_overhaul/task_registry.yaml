@@ -3563,3 +3563,34 @@ tasks:
       - unresolved or fully cleared progress keeps the chapter map fallback
       - do not change progression admission participant settlement reward unlock tuning schema narrative or main
       - do not claim the remaining three primary hubs U05 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U05-MARTIAL-INVENTORY-HUB
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u05-martial-inventory-hub-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-martial-inventory-hub
+    status: in_progress
+    base_commit: e618f6b2b970609cf0a99189125b2ec2ffc0796f
+    completion_scope: martial_inventory_primary_hub_and_four_existing_routes
+    dependencies:
+      - P2-M6-U05-CONTINUE-JIANGHU-DIRECT
+    owned_files:
+      - lib/features/main_menu/presentation/main_menu.dart
+      - lib/features/martial_inventory/presentation/martial_inventory_hub_screen.dart
+      - lib/shared/strings.dart
+      - test/features/main_menu/presentation/main_menu_martial_inventory_hub_test.dart
+      - test/features/main_menu/presentation/main_menu_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u05-martial-inventory-hub.md
+      - docs/audit/phase2_m6_u05_martial_inventory_hub_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - main menu exposes one martial and inventory hub instead of three flattened entries
+      - hub reuses existing skill technique equipment and item production screens
+      - skill and technique keep the existing tutorial gate while inventory remains available
+      - selected character follows the first active roster identity
+      - do not change learning dispel inventory write reward unlock tuning schema narrative or main
+      - do not claim sect archive hubs U05 M6 or overall Phase 2 completion
