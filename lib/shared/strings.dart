@@ -1614,6 +1614,22 @@ class UiStrings {
   static const String lightFootLocationEnter = '进入轻功试炼';
   static const String lightFootLocationEnterHint = '查看路线并挑战当前可用试炼';
   static const String lightFootLocationEnterReplayHint = '查看路线并重打已通试炼';
+  static const String massBattleLocationDetailTitle = '守城试炼 · 地点详情';
+  static const String massBattleLocationUnavailable = '守城情报暂不可核实，暂不能进入';
+  static const String massBattleLocationProgressLabel = '当前进度';
+  static const String massBattleLocationRecommendedRealmLabel = '推荐境界';
+  static const String massBattleLocationBattlePlanLabel = '守城态势';
+  static const String massBattleLocationEnemyEcologyLabel = '敌方生态';
+  static const String massBattleLocationCoreRewardLabel = '核心收获';
+  static const String massBattleLocationParticipantLabel = '当前参与者';
+  static const String massBattleLocationEntryModeLabel = '进入方式';
+  static const String massBattleLocationOccupancyLabel = '预计占用';
+  static const String massBattleLocationEntryModeDirect = '当前仅开放亲战，不可派遣';
+  static const String massBattleLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String massBattleLocationNoNextStage = '五关全通，无下一关情报';
+  static const String massBattleLocationEnter = '进入守城试炼';
+  static const String massBattleLocationEnterHint = '查看关卡并挑战当前可用守城战';
+  static const String massBattleLocationEnterReplayHint = '查看关卡并重打已通守城战';
 
   static String lightFootLocationProgress(
     int cleared,
@@ -1628,6 +1644,22 @@ class UiStrings {
       '$name（$school）';
 
   static String lightFootLocationCoreReward(int exp, List<String> names) =>
+      names.isEmpty ? '修为 $exp' : '修为 $exp · ${names.join(' · ')}';
+  static String massBattleLocationProgress(
+    int cleared,
+    int total,
+    String nextName,
+  ) => '已通 $cleared/$total 关 · 下一关：$nextName';
+  static String massBattleLocationCompleteProgress(int cleared, int total) =>
+      '已通 $cleared/$total 关 · 五关全通';
+  static String massBattleLocationBattlePlan(
+    int waves,
+    int enemies,
+    String formation,
+  ) => '$waves 波 · 共 $enemies 敌 · 推荐$formation';
+  static String massBattleLocationEnemy(String name, String school) =>
+      '$name（$school）';
+  static String massBattleLocationCoreReward(int exp, List<String> names) =>
       names.isEmpty ? '修为 $exp' : '修为 $exp · ${names.join(' · ')}';
   static String towerLocationProgress(int highest, int total, int next) =>
       '已通 $highest/$total 层 · 下一层 $next';

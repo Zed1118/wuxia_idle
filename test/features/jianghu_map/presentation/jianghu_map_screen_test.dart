@@ -9,7 +9,6 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
-import 'package:wuxia_idle/features/jianghu_map/presentation/mass_battle_location_detail_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';

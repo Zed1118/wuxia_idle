@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mass_battle/presentation/mass_battle_screen.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
+import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/test_data.dart';
@@ -100,7 +101,7 @@ void main() {
         UiStrings.massBattleLocationBattlePlan(
           value.waveCount!,
           value.enemyTotal!,
-          value.formation!,
+          EnumL10n.formation(value.formation!),
         ),
       ),
       findsOneWidget,

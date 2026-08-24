@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/light_foot_def.dart';
+import '../../../data/defs/mass_battle_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -20,13 +21,13 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/domain/onboarding_gate.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
-import '../../mass_battle/presentation/mass_battle_screen.dart';
-import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
 import '../application/light_foot_location_detail_provider.dart';
+import '../application/mass_battle_location_detail_provider.dart';
 import 'light_foot_location_detail_screen.dart';
+import 'mass_battle_location_detail_screen.dart';
 import 'tower_location_detail_screen.dart';
 
 String jianghuMapTowerStatus(TowerProgress progress) {
@@ -88,10 +89,16 @@ String jianghuMapTowerStatus(TowerProgress progress) {
 }
 
 ({bool locked, String status}) jianghuMapMassBattleLocationState(
-  MainlineProgress progress,
-) {
-  final config = GameRepository.instance.numbers.massBattle;
-  final stageIds = MassBattleService.orderedStageIds(config);
+  MainlineProgress progress, {
+  MassBattleDef? configOverride,
+}) {
+  final config = configOverride ?? GameRepository.instance.numbers.massBattle;
+  late final List<String> stageIds;
+  try {
+    stageIds = validatedMassBattleLocationStageIds(config);
+  } on StateError {
+    return (locked: true, status: UiStrings.massBattleEmpty);
+  }
   if (stageIds.isEmpty) {
     return (locked: true, status: UiStrings.massBattleEmpty);
   }
@@ -239,13 +246,9 @@ class JianghuMapScreen extends ConsumerWidget {
                   thumbnailPath: WuxiaUi.entryJianghu,
                   disabled: massBattleState == null || massBattleState.locked,
                   locked: massBattleState == null || massBattleState.locked,
-                  onTap: () => guardBattleEntry(
-                    context: context,
-                    ref: ref,
-                    onAllowed: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => const MassBattleScreen(),
-                      ),
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const MassBattleLocationDetailScreen(),
                     ),
                   ),
                 ),
