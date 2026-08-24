@@ -3697,3 +3697,32 @@ tasks:
       - malformed unavailable or absent journal state fails closed
       - do not change schema save version unlock tuning narrative content rewards or main
       - do not claim U03 U06 U05 M6 M7 or overall Phase 2 completion
+
+  - id: P2-M6-U05-MAIN-MENU-CORNER-TOOLS
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u05-main-menu-corner-tools-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-main-menu-corner-tools
+    status: in_progress
+    base_commit: 30d6b1a3e9405e8ea7915803fa6f93b0e8d817e6
+    completion_scope: main_menu_resource_settings_and_exit_corner_tool_zone
+    dependencies:
+      - P2-M6-U05-JIANGHU-CHRONICLE-HUB
+    owned_files:
+      - lib/features/main_menu/presentation/main_menu.dart
+      - test/features/main_menu/presentation/main_menu_corner_tools_test.dart
+      - test/features/main_menu/presentation/main_menu_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u05-main-menu-corner-tools.md
+      - docs/audit/phase2_m6_u05_main_menu_corner_tools_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - settings exit and resource overview live in the main menu corner tool zone
+      - resource overview and settings keep their existing production destinations
+      - no resource or settings card remains in primary gameplay sections
+      - current gameplay admission and conditional entry gates stay unchanged
+      - do not change schema save version tuning narrative rewards economy unlocks or main
+      - do not claim U06 U05 M6 or overall Phase 2 completion
