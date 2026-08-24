@@ -23,8 +23,8 @@ import '../../../../support/test_data.dart';
 /// assembler → 真实 Phase0aWaveBattleFlow)驱动整屏,禁止 fake flow。
 ///
 /// 契约:
-/// - 首屏(1280×720 / 1440×900)所有存活敌人名字/血条常驻,玩家 HUD 有血条
-///   与真气条;
+/// - 首屏(1280×720 / 1440×900)普通满血敌人只保留立绘/落地墨印,
+///   姓名/血条按受击或高威胁状态短显,玩家 HUD 有血条与真气条;
 /// - 手动 `controller.step()` 后角色屏幕脚点真实移动;
 /// - 普攻命中弹出与 `event.resolvedDamage` 完全相同的数字,血条来自 state
 ///   (= event.remainingHealth),不由 widget 自算;
@@ -158,42 +158,42 @@ void main() {
     return dx * dx + dy * dy;
   }
 
-  group('首屏常驻 HUD(双视口)', () {
+  group('首屏威胁去噪 HUD(双视口)', () {
     for (final viewport in viewports) {
-      testWidgets(
-        '所有存活敌人名字/血条常驻 + 玩家 HUD (${viewport.width}x${viewport.height})',
-        (tester) async {
-          await pumpScreen(tester, viewport: viewport);
+      testWidgets('普通满血敌人隐藏姓名/血条但保留立绘/落地墨印 + 玩家 HUD '
+          '(${viewport.width}x${viewport.height})', (tester) async {
+        await pumpScreen(tester, viewport: viewport);
 
-          final state = controller.state;
-          expect(state.enemies, isNotEmpty, reason: 'fixture 首波必须有敌人');
-          for (final enemy in state.enemies) {
-            expect(
-              find.byKey(standeeKey(enemy.id)),
-              findsOneWidget,
-              reason: '存活敌人 ${enemy.id} 立绘常驻',
-            );
-            expect(
-              find.text(fixture.roster.nameOf(enemy.id)),
-              findsOneWidget,
-              reason: '存活敌人 ${enemy.id} 名称常驻',
-            );
-            final hpBar = tester.widget<HpBar>(find.byKey(hpKey(enemy.id)));
-            expect(hpBar.current, enemy.currentHealth);
-            expect(hpBar.max, enemy.maxHealth);
-            expect(find.byKey(groundMarkKey(enemy.id)), findsOneWidget);
-          }
+        final state = controller.state;
+        expect(state.enemies, isNotEmpty, reason: 'fixture 首波必须有敌人');
+        for (final enemy in state.enemies) {
+          expect(
+            find.byKey(standeeKey(enemy.id)),
+            findsOneWidget,
+            reason: '存活敌人 ${enemy.id} 立绘常驻',
+          );
+          expect(
+            find.text(fixture.roster.nameOf(enemy.id)),
+            findsNothing,
+            reason: '普通满血敌人 ${enemy.id} 不应让常驻姓名遮挡同屏威胁',
+          );
+          expect(
+            find.byKey(hpKey(enemy.id)),
+            findsNothing,
+            reason: '普通满血敌人 ${enemy.id} 不常驻血条',
+          );
+          expect(find.byKey(groundMarkKey(enemy.id)), findsOneWidget);
+        }
 
-          expect(find.byKey(playerHudKey), findsOneWidget);
-          expect(find.byKey(groundMarkKey(state.player.id)), findsOneWidget);
-          final playerHp = tester.widget<HpBar>(find.byKey(hpKey('player')));
-          expect(playerHp.current, state.player.currentHealth);
-          expect(playerHp.max, state.player.maxHealth);
-          expect(find.byKey(playerQiKey), findsOneWidget);
-          expect(find.byKey(gatherSealKey), findsOneWidget);
-          expect(find.byKey(clearSealKey), findsOneWidget);
-        },
-      );
+        expect(find.byKey(playerHudKey), findsOneWidget);
+        expect(find.byKey(groundMarkKey(state.player.id)), findsOneWidget);
+        final playerHp = tester.widget<HpBar>(find.byKey(hpKey('player')));
+        expect(playerHp.current, state.player.currentHealth);
+        expect(playerHp.max, state.player.maxHealth);
+        expect(find.byKey(playerQiKey), findsOneWidget);
+        expect(find.byKey(gatherSealKey), findsOneWidget);
+        expect(find.byKey(clearSealKey), findsOneWidget);
+      });
     }
 
     testWidgets('第二波精英使用更宽金色落地墨印，与普通敌人分层', (tester) async {
@@ -540,6 +540,8 @@ void main() {
       expect(find.byKey(hitFlashKey(target)), findsOneWidget);
       expect(find.byKey(impactKey(target)), findsOneWidget);
       expect(find.byKey(hpEmphasisKey(target)), findsOneWidget);
+      expect(find.byKey(hpKey(target)), findsOneWidget);
+      expect(find.text(fixture.roster.nameOf(target)), findsOneWidget);
 
       await tester.pump(
         Duration(
@@ -562,6 +564,8 @@ void main() {
         ),
       );
       expect(find.byKey(hpEmphasisKey(target)), findsNothing);
+      expect(find.byKey(hpKey(target)), findsNothing);
+      expect(find.text(fixture.roster.nameOf(target)), findsNothing);
     });
 
     testWidgets('玩家受击时立绘闪白且 HUD 气血条强调', (tester) async {

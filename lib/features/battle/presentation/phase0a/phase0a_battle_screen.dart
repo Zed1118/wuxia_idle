@@ -918,6 +918,14 @@ class _ActorStandee extends StatelessWidget {
                   Duration.microsecondsPerSecond)
               .round(),
     );
+    final showThreatLabel =
+        enemy &&
+        (visual.isElite ||
+            isHealthEmphasized ||
+            actor.vulnerabilityMult != null ||
+            actor.chargingCast != null ||
+            actor.staggerTicksRemaining > 0 ||
+            guardianWardActive);
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -1015,7 +1023,7 @@ class _ActorStandee extends StatelessWidget {
             ],
           ),
         ),
-        if (enemy)
+        if (showThreatLabel)
           Positioned(
             left: 0,
             right: 0,
