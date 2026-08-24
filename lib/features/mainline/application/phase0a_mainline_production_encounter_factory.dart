@@ -17,15 +17,29 @@ Future<Phase0aEncounterHost?> createFreshPhase0aMainlineEncounter(
   Phase0aMainlineEncounterHostBuildRequest request,
 ) async {
   final repository = GameRepository.instance;
-  final catalog = repository.combatCatalog;
+  final authoritativeMode = await request.routeAuthority?.modeForStage(
+    stageId: request.stage.id,
+  );
+  final catalog = request.catalogOverride ?? repository.combatCatalog;
+  // A repository without the optional production catalog is the pre-migration
+  // runtime. Keep that runtime on its legacy path; once a catalog is present,
+  // only an explicit legacy assignment may return null.
   if (catalog == null) {
-    throw StateError('combat catalog is required for mainline routing');
+    if (authoritativeMode == Phase0aMainlineEncounterRouteMode.migrated) {
+      throw StateError(
+        'migrated mainline route has no combat catalog: ${request.stage.id}',
+      );
+    }
+    return null;
   }
   final assignment = catalog.assignmentForStage(request.stage.id);
   if (assignment == null) {
-    throw StateError(
-      'mainline stage assignment is missing: ${request.stage.id}',
-    );
+    if (authoritativeMode == Phase0aMainlineEncounterRouteMode.migrated) {
+      throw StateError(
+        'migrated mainline route has no catalog assignment: ${request.stage.id}',
+      );
+    }
+    return null;
   }
   final route = selectCombatStageEncounterRoute(
     manifest: catalog,
@@ -188,7 +202,8 @@ Phase0aEncounterHost _assemble({
       spawnGraceTicksRemaining: token.spawnGraceTicksRemaining,
       telegraphReady: token.telegraphReady,
     );
-  };
+  }
+
   return Phase0aEncounterHost.fromPlan(
     plan: plan,
     nextStageId: _nextStageId(repository, request.stage.id),

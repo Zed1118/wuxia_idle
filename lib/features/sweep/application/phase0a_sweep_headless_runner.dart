@@ -43,6 +43,7 @@ final class Phase0aSweepHeadlessRunner {
     required this.rng,
     required this.botPolicy,
     this.runtimeBindingSource,
+    this.routeAuthority,
   });
 
   final Isar isar;
@@ -50,6 +51,7 @@ final class Phase0aSweepHeadlessRunner {
   final Random rng;
   final Phase0aBotTacticPolicy botPolicy;
   final Phase0aMainlineEncounterRuntimeBindingSource? runtimeBindingSource;
+  final Phase0aMainlineEncounterRouteAuthority? routeAuthority;
 
   static const int _uiYieldEveryTicks = 32;
 
@@ -72,7 +74,8 @@ final class Phase0aSweepHeadlessRunner {
         rng: rng,
         runtimeBindingSource:
             runtimeBindingSource ??
-            const MissingPhase0aMainlineEncounterRuntimeBindingSource(),
+            const Phase0aMainlineEncounterRuntimeBindingSourceAdapter.unconfigured(),
+        routeAuthority: routeAuthority,
       ),
     );
     if (encounterHost != null) {

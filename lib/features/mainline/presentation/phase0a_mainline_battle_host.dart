@@ -103,6 +103,9 @@ class _Phase0aMainlineBattleHostState
         final runtimeBindingSource = ref.read(
           phase0aMainlineEncounterRuntimeBindingSourceProvider,
         );
+        final routeAuthority = ref.read(
+          phase0aMainlineEncounterRouteAuthorityProvider,
+        );
         final encounterHost = await factory(
           Phase0aMainlineEncounterHostBuildRequest(
             stage: widget.stage,
@@ -111,6 +114,7 @@ class _Phase0aMainlineBattleHostState
             cycleIndex: widget.cycleIndex,
             rng: rng,
             runtimeBindingSource: runtimeBindingSource,
+            routeAuthority: routeAuthority,
           ),
         );
         final mapping = encounterHost == null

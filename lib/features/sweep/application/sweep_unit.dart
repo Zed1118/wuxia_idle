@@ -75,6 +75,7 @@ class MainlineSweepUnit implements SweepUnit {
     runtimeBindingSource: ref.read(
       phase0aMainlineEncounterRuntimeBindingSourceProvider,
     ),
+    routeAuthority: ref.read(phase0aMainlineEncounterRouteAuthorityProvider),
   ).runMainline(stage: stage, cycleIndex: cycle);
 
   @override

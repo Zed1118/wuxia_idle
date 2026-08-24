@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../data/defs/combat_catalog_manifest_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
@@ -19,6 +20,8 @@ final class Phase0aMainlineEncounterHostBuildRequest {
     required this.cycleIndex,
     required this.rng,
     required this.runtimeBindingSource,
+    this.routeAuthority,
+    this.catalogOverride,
   });
 
   final StageDef stage;
@@ -27,6 +30,25 @@ final class Phase0aMainlineEncounterHostBuildRequest {
   final int cycleIndex;
   final Random rng;
   final Phase0aMainlineEncounterRuntimeBindingSource runtimeBindingSource;
+  final Phase0aMainlineEncounterRouteAuthority? routeAuthority;
+  final CombatCatalogManifestDef? catalogOverride;
+}
+
+enum Phase0aMainlineEncounterRouteMode { legacy, migrated }
+
+typedef Phase0aMainlineEncounterRouteModeLoader =
+    FutureOr<Phase0aMainlineEncounterRouteMode?> Function({
+      required String stageId,
+    });
+
+final class Phase0aMainlineEncounterRouteAuthority {
+  const Phase0aMainlineEncounterRouteAuthority({required this.loader});
+
+  final Phase0aMainlineEncounterRouteModeLoader loader;
+
+  Future<Phase0aMainlineEncounterRouteMode?> modeForStage({
+    required String stageId,
+  }) async => await loader(stageId: stageId);
 }
 
 /// Production binding seam for migrated mainline encounters.
@@ -46,6 +68,12 @@ abstract interface class Phase0aMainlineEncounterRuntimeBindingSource {
   });
 }
 
+typedef Phase0aMainlineEncounterRuntimeBindingLoader =
+    FutureOr<Phase0aMainlineEncounterRuntimeBindingBundle> Function({
+      required String stageId,
+      required String encounterId,
+    });
+
 final class Phase0aMainlineEncounterRuntimeBindingBundle {
   const Phase0aMainlineEncounterRuntimeBindingBundle({
     required this.stageId,
@@ -60,23 +88,59 @@ final class Phase0aMainlineEncounterRuntimeBindingBundle {
   final Map<String, Phase0aEncounterActorRuntimeBinding> actorBindingsByEntryId;
 }
 
-final class MissingPhase0aMainlineEncounterRuntimeBindingSource
+/// Adapter consumed by the live host and sweep. The Runtime Loader session
+/// overrides the loader provider with its GameRepository typed-bundle reader;
+/// application code does not parse YAML or duplicate the catalog.
+final class Phase0aMainlineEncounterRuntimeBindingSourceAdapter
     implements Phase0aMainlineEncounterRuntimeBindingSource {
-  const MissingPhase0aMainlineEncounterRuntimeBindingSource();
+  const Phase0aMainlineEncounterRuntimeBindingSourceAdapter({
+    required this.loader,
+  });
+
+  const Phase0aMainlineEncounterRuntimeBindingSourceAdapter.unconfigured()
+    : loader = _unconfiguredRuntimeBindingLoader;
+
+  final Phase0aMainlineEncounterRuntimeBindingLoader loader;
 
   @override
   Future<Phase0aMainlineEncounterRuntimeBindingBundle> load({
     required String stageId,
     required String encounterId,
-  }) => Future<Phase0aMainlineEncounterRuntimeBindingBundle>.error(
-    StateError('migrated encounter runtime bindings are not installed'),
-  );
+  }) async => await loader(stageId: stageId, encounterId: encounterId);
 }
+
+Future<Phase0aMainlineEncounterRuntimeBindingBundle>
+_unconfiguredRuntimeBindingLoader({
+  required String stageId,
+  required String encounterId,
+}) => Future<Phase0aMainlineEncounterRuntimeBindingBundle>.error(
+  StateError(
+    'migrated runtime bindings are not connected for $stageId/$encounterId',
+  ),
+);
+
+final phase0aMainlineEncounterRuntimeBindingLoaderProvider =
+    Provider<Phase0aMainlineEncounterRuntimeBindingLoader>(
+      (ref) => _unconfiguredRuntimeBindingLoader,
+    );
 
 final phase0aMainlineEncounterRuntimeBindingSourceProvider =
     Provider<Phase0aMainlineEncounterRuntimeBindingSource>(
-      (ref) => const MissingPhase0aMainlineEncounterRuntimeBindingSource(),
+      (ref) => Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+        loader: ref.read(phase0aMainlineEncounterRuntimeBindingLoaderProvider),
+      ),
     );
+
+final phase0aMainlineEncounterRouteAuthorityProvider =
+    Provider<Phase0aMainlineEncounterRouteAuthority>(
+      (ref) => const Phase0aMainlineEncounterRouteAuthority(
+        loader: _unknownRouteModeLoader,
+      ),
+    );
+
+Future<Phase0aMainlineEncounterRouteMode?> _unknownRouteModeLoader({
+  required String stageId,
+}) async => null;
 
 final phase0aMainlineEncounterHostFactoryProvider =
     Provider<Phase0aMainlineEncounterHostFactory>(

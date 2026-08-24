@@ -30,9 +30,18 @@ void main() {
       nextStageId: 'stage_01_04',
       flow: autoFlow,
     );
+    final expectedAutoCommand = _makeBot().commandFor(autoFlow.state);
     autoHost.advanceAuto(deltaSeconds: 1 / 30, bot: _makeBot());
     expect(autoFlow.commands, hasLength(1));
-    expect(autoFlow.commands.single.attack, isTrue);
+    final actualAutoCommand = autoFlow.commands.single;
+    expect(actualAutoCommand.left, expectedAutoCommand.left);
+    expect(actualAutoCommand.right, expectedAutoCommand.right);
+    expect(actualAutoCommand.up, expectedAutoCommand.up);
+    expect(actualAutoCommand.down, expectedAutoCommand.down);
+    expect(actualAutoCommand.attack, expectedAutoCommand.attack);
+    expect(actualAutoCommand.skillHotkey, expectedAutoCommand.skillHotkey);
+    expect(actualAutoCommand.gather, expectedAutoCommand.gather);
+    expect(actualAutoCommand.clear, expectedAutoCommand.clear);
   });
 
   test('headless host delegates to the existing headless runner', () {
