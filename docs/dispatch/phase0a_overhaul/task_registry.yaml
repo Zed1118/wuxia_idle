@@ -3066,10 +3066,10 @@ tasks:
   - id: P2-M5-EXPEDITION-ENTRY-AVAILABILITY-GUARD
     milestone: M5
     owner: codex_app_thread_expedition_guard
-    thread_id: pending_assignment
+    thread_id: 01a031c2-fb61-7930-99d9-4033b53cb064
     branch: codex/phase2-m5-expedition-entry-availability-guard-20260824
-    worktree: pending_assignment
-    status: dispatch_ready
+    worktree: /Users/a10506/.codex/worktrees/05b0/挂机武侠
+    status: in_progress
     base_commit: 8296db0c033b64faa1eb09b24f2f22269f281363
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
@@ -3103,10 +3103,10 @@ tasks:
   - id: P2-M6-A12-DISPEL-ACTIVITY-LOCK-ENFORCEMENT
     milestone: M6
     owner: codex_app_thread_dispel_lock
-    thread_id: pending_assignment
+    thread_id: 01a031c2-fb5f-7dc0-8145-08abc325d5d8
     branch: codex/phase2-m6-a12-dispel-activity-lock-enforcement-20260824
-    worktree: pending_assignment
-    status: dispatch_ready
+    worktree: /Users/a10506/.codex/worktrees/ae48/挂机武侠
+    status: in_progress
     base_commit: 8296db0c033b64faa1eb09b24f2f22269f281363
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     review_model: Qwen3.8-Max
