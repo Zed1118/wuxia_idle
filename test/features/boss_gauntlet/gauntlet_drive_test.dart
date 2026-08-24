@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
@@ -104,6 +106,9 @@ void main() {
     required GauntletPhase phase,
     required int currentStage,
     required List<ActivityMemberSnapshot> members,
+    List<String> escrowDefIds = const [],
+    List<int> escrowLoaded = const [],
+    List<int> escrowUsed = const [],
   }) async {
     late int id;
     await IsarSetup.instance.writeTxn(() async {
@@ -113,7 +118,10 @@ void main() {
           ..seed = 0
           ..currentStage = currentStage
           ..sessionPhase = phase
-          ..members = members,
+          ..members = members
+          ..escrowItemDefIds = List.of(escrowDefIds)
+          ..escrowLoadedQty = List.of(escrowLoaded)
+          ..escrowUsedQty = List.of(escrowUsed),
       );
     });
     return id;
@@ -250,6 +258,37 @@ void main() {
           baseHp: 1,
           baseAttack: 1,
           baseSpeed: 1,
+          skillIds: ['skill_gangmeng_jichu_basic'],
+          iconPath: '',
+        ),
+      ],
+    },
+  );
+
+  BossGauntletConfig losingReplayConfig() => const BossGauntletConfig(
+    stages: [
+      GauntletStageConfig(role: 'elite', enemyTeamId: 'unused'),
+      GauntletStageConfig(role: 'boss', enemyTeamId: 'strong'),
+    ],
+    supplyCap: 3,
+    firstClearRewardSkillId: 'skill_x',
+    rewardCandidateEquipmentIds: [
+      'weapon_haojiahuo_qing_feng_jian',
+      'armor_haojiahuo_jin_pao',
+      'accessory_haojiahuo_yu_pei_lao',
+    ],
+    eliteRewardExp: 100,
+    enemyTeams: {
+      'strong': [
+        EnemyDef(
+          id: 'strong_replay_e',
+          name: 'strong replay enemy',
+          realmTier: RealmTier.wuSheng,
+          realmLayer: RealmLayer.dengFeng,
+          school: TechniqueSchool.gangMeng,
+          baseHp: 60000,
+          baseAttack: 60000,
+          baseSpeed: 1000,
           skillIds: ['skill_gangmeng_jichu_basic'],
           iconPath: '',
         ),
@@ -476,6 +515,109 @@ void main() {
       );
     },
   );
+
+  test('orchestrator settles defeat once and rejects a second drive', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    await markCleared();
+    await IsarSetup.instance.writeTxn(() async {
+      final character = (await IsarSetup.instance.characters.get(1))!;
+      character.experience = 0;
+      character.lightInjuryStacks = 0;
+      character.injuryHoursRemaining = 0;
+      await IsarSetup.instance.characters.put(character);
+      await IsarSetup.instance.inventoryItems.put(
+        InventoryItem()
+          ..defId = 'item_liaoshangdan'
+          ..itemType = ItemType.miscMaterial
+          ..quantity = 0
+          ..firstObtainedAt = DateTime(2026, 8, 24)
+          ..lastObtainedAt = DateTime(2026, 8, 24),
+      );
+    });
+    await putRun(
+      phase: GauntletPhase.inBattle,
+      currentStage: 2,
+      members: [snap(1, maxHp: 1, currentHp: 1)],
+      escrowDefIds: ['item_liaoshangdan'],
+      escrowLoaded: [2],
+      escrowUsed: [1],
+    );
+    final config = losingReplayConfig();
+    final equipmentBefore = <String, int>{
+      for (final defId in config.rewardCandidateEquipmentIds)
+        defId: await IsarSetup.instance.equipments
+            .filter()
+            .defIdEqualTo(defId)
+            .count(),
+    };
+    final service = GauntletService(IsarSetup.instance);
+
+    final first = await service.driveHeadlessReplayToRewardChoice(
+      request: automationRequest(),
+      config: config,
+      numbers: GameRepository.instance.numbers,
+    );
+
+    expect(first.terminal, GauntletAutomationDriveTerminal.defeated);
+    expect(first.stagesCompleted, 0);
+    expect(first.defeatedAtStage, 2);
+    expect(first.defeatSummary?.elitesDefeated, 1);
+    expect(first.defeatSummary?.eliteExpPerMember, config.eliteRewardExp);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect(
+      (await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_liaoshangdan',
+      ))?.quantity,
+      1,
+      reason: 'Loaded-Used escrow is returned exactly once',
+    );
+    final characterAfterFirst = (await IsarSetup.instance.characters.get(1))!;
+    expect(characterAfterFirst.experience, config.eliteRewardExp);
+    if (first.defeatSummary!.members.single.downed) {
+      expect(characterAfterFirst.injuryHoursRemaining, greaterThan(0));
+    } else {
+      expect(characterAfterFirst.lightInjuryStacks, greaterThan(0));
+    }
+    for (final entry in equipmentBefore.entries) {
+      expect(
+        await IsarSetup.instance.equipments
+            .filter()
+            .defIdEqualTo(entry.key)
+            .count(),
+        entry.value,
+        reason: 'defeat must not grant ${entry.key}',
+      );
+    }
+    final injuryAfterFirst = (
+      characterAfterFirst.lightInjuryStacks,
+      characterAfterFirst.injuryHoursRemaining,
+    );
+
+    await expectLater(
+      service.driveHeadlessReplayToRewardChoice(
+        request: automationRequest(),
+        config: config,
+        numbers: GameRepository.instance.numbers,
+      ),
+      throwsStateError,
+    );
+
+    final characterAfterSecond = (await IsarSetup.instance.characters.get(1))!;
+    expect(characterAfterSecond.experience, config.eliteRewardExp);
+    expect((
+      characterAfterSecond.lightInjuryStacks,
+      characterAfterSecond.injuryHoursRemaining,
+    ), injuryAfterFirst);
+    expect(
+      (await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_liaoshangdan',
+      ))?.quantity,
+      1,
+    );
+    expect((await IsarSetup.instance.saveDatas.get(0))!.clearedGauntletIds, [
+      GauntletService.gauntletId,
+    ]);
+  });
 
   test('preparePhase0aStage 无存档 → 抛错', () async {
     // IsarSetup.init 自动建 SaveData id=0，须显式删除才是「无存档」。

@@ -105,6 +105,22 @@ class GauntletDefeatMember {
   final bool downed;
 }
 
+enum GauntletAutomationDriveTerminal { awaitingRewardChoice, defeated }
+
+final class GauntletAutomationDriveResult {
+  const GauntletAutomationDriveResult({
+    required this.terminal,
+    required this.stagesCompleted,
+    this.defeatedAtStage,
+    this.defeatSummary,
+  });
+
+  final GauntletAutomationDriveTerminal terminal;
+  final int stagesCompleted;
+  final int? defeatedAtStage;
+  final GauntletDefeatSummary? defeatSummary;
+}
+
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
 /// C2.1 入场扣帖 + 补给会话托管；C2.2 整备页用药 + 关闭返还（守恒）。均单 `writeTxn`。
@@ -405,6 +421,34 @@ class GauntletService {
     return result;
   }
 
+  void _requireAdmittedRunState({
+    required GauntletAutomationAdmission admission,
+    required SaveData save,
+    required BossGauntletRun run,
+    required GauntletPhase expectedPhase,
+  }) {
+    GauntletAutomationPolicy.requireAllowed(
+      request: admission.request,
+      clearedGauntletIds: save.clearedGauntletIds.toSet(),
+    );
+    final member = run.members.length == 1 ? run.members.single : null;
+    if (save.id != admission.saveDataId ||
+        run.id != admission.runId ||
+        run.saveDataId != admission.saveDataId ||
+        member == null ||
+        member.characterId != admission.memberCharacterId ||
+        run.currentStage != admission.currentStage ||
+        run.sessionPhase != admission.sessionPhase ||
+        run.sessionPhase != expectedPhase ||
+        member.currentHp != admission.memberCurrentHp ||
+        member.currentQi != admission.memberCurrentQi ||
+        member.maxHp != admission.memberMaxHp ||
+        member.maxQi != admission.memberMaxQi ||
+        member.isDowned != admission.memberIsDowned) {
+      throw StateError('Gauntlet automation admission does not match run');
+    }
+  }
+
   Future<void> _settleAdmittedPhase0aStageResult({
     required GauntletAutomationAdmission admission,
     required GauntletStageSettlement result,
@@ -415,20 +459,16 @@ class GauntletService {
       if (save == null || save.id != admission.saveDataId) {
         throw StateError('Gauntlet automation save changed during combat');
       }
-      GauntletAutomationPolicy.requireAllowed(
-        request: admission.request,
-        clearedGauntletIds: save.clearedGauntletIds.toSet(),
-      );
       final run = await _isar.bossGauntletRuns.get(admission.runId);
-      if (run == null ||
-          run.saveDataId != admission.saveDataId ||
-          run.members.length != 1 ||
-          run.members.single.characterId != admission.memberCharacterId ||
-          run.sessionPhase != admission.sessionPhase ||
-          run.sessionPhase != GauntletPhase.inBattle ||
-          run.currentStage != admission.currentStage) {
+      if (run == null) {
         throw StateError('Gauntlet automation run changed during combat');
       }
+      _requireAdmittedRunState(
+        admission: admission,
+        save: save,
+        run: run,
+        expectedPhase: GauntletPhase.inBattle,
+      );
       if (run.currentStage < 1 || run.currentStage > config.stages.length) {
         throw StateError('Gauntlet automation stage is out of range');
       }
@@ -476,10 +516,27 @@ class GauntletService {
             numbers: numbers,
           );
           if (!result.leftWin) {
+            final defeatAdmission = await admissionService.admit(
+              request: request,
+            );
+            if (defeatAdmission.saveDataId != initialAdmission.saveDataId ||
+                defeatAdmission.runId != initialAdmission.runId ||
+                defeatAdmission.memberCharacterId !=
+                    initialAdmission.memberCharacterId ||
+                defeatAdmission.currentStage != stage ||
+                defeatAdmission.sessionPhase != GauntletPhase.inBattle) {
+              throw StateError('Gauntlet defeat admission changed');
+            }
+            final summary = await settleDefeat(
+              config: config,
+              numbers: numbers,
+              automationAdmission: defeatAdmission,
+            );
             return GauntletAutomationDriveResult(
               terminal: GauntletAutomationDriveTerminal.defeated,
               stagesCompleted: stagesCompleted,
               defeatedAtStage: stage,
+              defeatSummary: summary,
             );
           }
           stagesCompleted += 1;
@@ -506,20 +563,16 @@ class GauntletService {
       if (save == null || save.id != admission.saveDataId) {
         throw StateError('Gauntlet automation save changed at interlude');
       }
-      GauntletAutomationPolicy.requireAllowed(
-        request: admission.request,
-        clearedGauntletIds: save.clearedGauntletIds.toSet(),
-      );
       final run = await _isar.bossGauntletRuns.get(admission.runId);
-      if (run == null ||
-          run.saveDataId != admission.saveDataId ||
-          run.members.length != 1 ||
-          run.members.single.characterId != admission.memberCharacterId ||
-          run.currentStage != admission.currentStage ||
-          run.sessionPhase != admission.sessionPhase ||
-          run.sessionPhase != GauntletPhase.interlude) {
+      if (run == null) {
         throw StateError('Gauntlet automation run changed at interlude');
       }
+      _requireAdmittedRunState(
+        admission: admission,
+        save: save,
+        run: run,
+        expectedPhase: GauntletPhase.interlude,
+      );
       run.sessionPhase = GauntletPhase.inBattle;
       await _isar.bossGauntletRuns.put(run);
     });
@@ -757,11 +810,20 @@ class GauntletService {
     required NumbersConfig numbers,
     DateTime? now,
     bool applyInjuries = true,
+    GauntletAutomationAdmission? automationAdmission,
   }) async {
     final save0 = await _isar.saveDatas.get(0);
     if (save0 == null) return GauntletDefeatSummary.empty; // 幂等：无存档
     final run0 = await _activeRun(save0.id);
     if (run0 == null) return GauntletDefeatSummary.empty; // 幂等：已结算·重入 no-op
+    if (automationAdmission != null) {
+      _requireAdmittedRunState(
+        admission: automationAdmission,
+        save: save0,
+        run: run0,
+        expectedPhase: GauntletPhase.inBattle,
+      );
+    }
     if (run0.sessionPhase == GauntletPhase.awaitingRewardChoice) {
       throw StateError(
         '断魂庄失败结算：Boss 已胜（应走 chooseReward·当前 awaitingRewardChoice）',
@@ -796,8 +858,26 @@ class GauntletService {
     final injuryPolicy = AttributeEffectPolicy(numbers.attributeEffects);
 
     await _isar.writeTxn(() async {
-      final run = await _activeRun(save0.id);
-      if (run == null) return; // 幂等
+      final BossGauntletRun? run;
+      if (automationAdmission == null) {
+        run = await _activeRun(save0.id);
+        if (run == null) return; // 幂等
+      } else {
+        final save = await _isar.saveDatas.get(0);
+        final exactRun = await _isar.bossGauntletRuns.get(
+          automationAdmission.runId,
+        );
+        if (save == null || exactRun == null) {
+          throw StateError('Gauntlet automation defeat state disappeared');
+        }
+        _requireAdmittedRunState(
+          admission: automationAdmission,
+          save: save,
+          run: exactRun,
+          expectedPhase: GauntletPhase.inBattle,
+        );
+        run = exactRun;
+      }
 
       // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
       // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId（P1-5.5）。
