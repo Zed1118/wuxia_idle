@@ -4286,9 +4286,23 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-mass-battle-location-detail-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-mass-battle-location-detail
-    status: in_progress
+    status: ready_reviewed
     base_commit: 68df70507c0f977fd819498e7e44c819f3d62f13
+    code_candidate_commit: 2e3e69b3b0698adafbdb79c1882fd37ddcf49c53
+    reviewed_candidate_commit: 2e3e69b3b0698adafbdb79c1882fd37ddcf49c53
+    ready_marker: "[READY][CODEX][P2-M6-U06-MASS-BATTLE-LOCATION-DETAIL] 接入守城统一地点详情"
     completion_scope: add_production_mass_battle_location_detail_before_stage_list
+    verification:
+      red_compile_targets: 4
+      focused_with_paper_tests: 37
+      adjacent_tests: 200
+      independent_tests: 42
+      double_viewport_tests: 2
+      invalid_graph_tests: 4
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5464
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-LIGHT-FOOT-LOCATION-DETAIL
     owned_files:
