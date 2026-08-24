@@ -216,6 +216,24 @@ void main() {
     expect(founder.id, isNot(disciple.id));
   });
 
+  test('所选角色装备引用悬空时拒绝，不静默卸装进入战斗', () async {
+    final (_, disciple) = await seedTwoCharacters();
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      disciple.equippedWeaponId = 999999;
+      await isar.characters.put(disciple);
+    });
+
+    expect(
+      () => resolveMainlineVisibleReplayParticipantSnapshot(
+        isar: isar,
+        stageId: 'stage_01_01',
+        requestedParticipantId: disciple.id,
+      ),
+      throwsA(isA<MainlineParticipationRefusedError>()),
+    );
+  });
+
   test('当前领队指针失效时拒绝可见重打，不绕过领队迁移门禁', () async {
     final (_, disciple) = await seedTwoCharacters();
     final isar = IsarSetup.instance;

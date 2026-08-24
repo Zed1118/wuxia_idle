@@ -501,6 +501,18 @@ Future<CombatantSnapshot?> _loadMainlineParticipantSnapshotFromIsar({
       character.mainTechniqueId == null) {
     return null;
   }
+  for (final equipmentId in [
+    character.equippedWeaponId,
+    character.equippedArmorId,
+    character.equippedAccessoryId,
+  ]) {
+    if (equipmentId != null && await isar.equipments.get(equipmentId) == null) {
+      throw StateError(
+        'Mainline participant $participantId has a dangling equipment '
+        'reference: $equipmentId',
+      );
+    }
+  }
   final occupancy = await CharacterOccupancyService(isar).snapshot();
   if (occupancy.isCharacterOccupied(participantId)) return null;
   final roster = await PlayerCombatantSnapshotAssembler(
