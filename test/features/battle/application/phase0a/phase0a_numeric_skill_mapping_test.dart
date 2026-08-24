@@ -129,4 +129,52 @@ void main() {
       );
     },
   );
+
+  test('full legacy mapping reuses the player-only assembly fields', () {
+    final numbers = repo.numbers;
+    final skills = repo.skillDefs;
+    final snapshot = player(numbers).copyWith(
+      skillLoadout: CombatantSkillLoadout(
+        basicAttack: skills['skill_gangmeng_jichu_basic'],
+        main1: skills['skill_gangmeng_jichu_skill'],
+      ),
+    );
+    final playerOnly = Phase0aStageContentMapper.mapPlayerOnly(
+      contentId: 'stage_01_01',
+      playerSnapshot: snapshot,
+      numbers: numbers,
+    );
+    final full = Phase0aStageContentMapper.map(
+      stage: repo.getStage('stage_01_01'),
+      playerSnapshot: snapshot,
+      numbers: numbers,
+    );
+
+    expect(full.initialState.player.id, playerOnly.initialPlayer.id);
+    expect(
+      full.initialState.player.position.x,
+      playerOnly.initialPlayer.position.x,
+    );
+    expect(
+      full.initialState.player.position.y,
+      playerOnly.initialPlayer.position.y,
+    );
+    expect(
+      full.initialState.skillSlots.map((slot) => slot.slot),
+      playerOnly.skillSlots.map((slot) => slot.slot),
+    );
+    expect(full.moveBindings.keys, playerOnly.moveBindings.keys);
+    for (final kind in playerOnly.moveBindings.keys) {
+      expect(full.moveBindings[kind], same(playerOnly.moveBindings[kind]));
+    }
+    expect(full.playerAdapter.playerId, playerOnly.playerAdapter.playerId);
+    expect(
+      full.playerAdapter.numericSkillBindings.equipped.map(
+        (binding) => binding.skill.id,
+      ),
+      playerOnly.playerAdapter.numericSkillBindings.equipped.map(
+        (binding) => binding.skill.id,
+      ),
+    );
+  });
 }

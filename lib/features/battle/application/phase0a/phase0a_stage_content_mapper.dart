@@ -56,8 +56,73 @@ final class Phase0aStageMapping {
   final Phase0aWaveTransitionPolicy? waveTransitionPolicy;
 }
 
+/// Player-only production inputs used before mainline migration routing.
+/// This intentionally does not construct legacy waves or enemy payloads.
+final class Phase0aPlayerRuntimeMapping {
+  const Phase0aPlayerRuntimeMapping({
+    required this.snapshot,
+    required this.initialPlayer,
+    required this.skillSlots,
+    required this.moveBindings,
+    required this.playerAdapter,
+  });
+
+  final Phase0aActor initialPlayer;
+  final CombatantSnapshot snapshot;
+  final List<Phase0aSkillSlot> skillSlots;
+  final Map<Phase0aDamageKind, SkillDef?> moveBindings;
+  final Phase0aPlayerInputAdapter playerAdapter;
+}
+
 final class Phase0aStageContentMapper {
   const Phase0aStageContentMapper._();
+
+  /// Builds only the player-side adapter/bindings shared by migrated and
+  /// legacy mainline routes. No enemy snapshot, wave or legacy payload is
+  /// constructed here.
+  static Phase0aPlayerRuntimeMapping mapPlayerOnly({
+    required String contentId,
+    required CombatantSnapshot playerSnapshot,
+    required NumbersConfig numbers,
+    String playerId = 'player',
+  }) {
+    final arena = numbers.phase0aArena;
+    if (arena.isEmpty) {
+      throw StateError('Phase0a player mapping $contentId lacks arena config');
+    }
+    final playerBasicSkill = playerSnapshot.skillLoadout.basicAttack;
+    if (playerBasicSkill == null) {
+      throw StateError('Phase0a player mapping lacks a real basic skill');
+    }
+    final numeric = _numericSkillBindings(playerSnapshot, arena);
+    final tactical = _tacticalSkillBindings(arena);
+    final player = Phase0aActor(
+      id: playerId,
+      side: Phase0aSide.player,
+      position: ArenaVector(arena.arenaMinX * 0.5, 0),
+      facing: const ArenaVector(1, 0),
+      maxHealth: playerSnapshot.maxHp,
+      currentHealth: playerSnapshot.currentHp,
+      moveSpeed: arena.playerMoveSpeed,
+      qiCurrent: playerSnapshot.currentQi,
+      qiMax: playerSnapshot.maxQi,
+      attackCooldownRemaining: 0,
+      defeatKind: Phase0aDefeatKind.normal,
+    );
+    return Phase0aPlayerRuntimeMapping(
+      snapshot: playerSnapshot,
+      initialPlayer: player,
+      skillSlots: _skillSlots(numeric, tactical, playerSnapshot.currentQi),
+      moveBindings: _moveBindings(playerBasicSkill, numeric, tactical),
+      playerAdapter: _playerAdapter(
+        arena: arena,
+        playerId: playerId,
+        numericSkillBindings: numeric,
+        tacticalSkillBindings: tactical,
+        attackQiDelta: playerBasicSkill.qiDelta,
+      ),
+    );
+  }
 
   /// 装配一关的 0A 战斗输入。[playerSnapshot] 由调用方构造(生产侧走
   /// [PlayerCombatantSnapshotAssembler] Isar 路径,纵切测试显式构造)。
@@ -512,20 +577,15 @@ final class Phase0aStageContentMapper {
     if (cycleIndex < 1) {
       throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be >= 1');
     }
+    final playerMapping = mapPlayerOnly(
+      contentId: contentId,
+      playerSnapshot: playerSnapshot,
+      numbers: numbers,
+      playerId: playerId,
+    );
     final arena = numbers.phase0aArena;
-    if (arena.isEmpty) {
-      throw StateError(
-        'Phase0a 纵切装配 $contentId: numbers.yaml 缺 phase0a_arena 段,'
-        '不得静默装配零参数竞技场',
-      );
-    }
-    final playerBasicSkill = playerSnapshot.skillLoadout.basicAttack;
-    if (playerBasicSkill == null) {
-      throw StateError(
-        'Phase0a 纵切装配 $contentId: 玩家快照缺真实 basicAttack，'
-        '禁止从 arena 数值生成 synthetic SkillDef',
-      );
-    }
+    final skillSlots = playerMapping.skillSlots;
+    final moveBindings = playerMapping.moveBindings;
     if (enemyTeam.isEmpty &&
         (enemySnapshotsOverride?.isEmpty ?? true) &&
         (enemySnapshotWavesOverride?.isEmpty ?? true)) {
@@ -584,9 +644,6 @@ final class Phase0aStageContentMapper {
               else
                 '${enemySnapshotWaves[waveIndex][slot].enemyDefId}_w${waveIndex}s$slot',
         ];
-    final numericSkillBindings = _numericSkillBindings(playerSnapshot, arena);
-    final tacticalSkillBindings = _tacticalSkillBindings(arena);
-
     // —— 蓄力/破招预解析(reducer 不回查仓库):顶层 chargeSkillId 招牌 cast +
     // 阶段 chargeCounter 招牌 cast + 踉跄窗口拍数,全部来自 snapshot 已解析
     // SkillDef 与 numbers.combat.bossCharge ——
@@ -610,7 +667,6 @@ final class Phase0aStageContentMapper {
     ];
 
     // —— 空间排布:确定性,玩家在左,敌人右侧按 slot 均匀散开 ——
-    final playerPosition = ArenaVector(arena.arenaMinX * 0.5, 0);
     final waveEnemies = <Phase0aActor>[];
     final actorWaves = <List<Phase0aActor>>[];
     var flatIndex = 0;
@@ -643,19 +699,7 @@ final class Phase0aStageContentMapper {
       actorWaves.add(List.unmodifiable(actorWave));
     }
 
-    final playerActor = Phase0aActor(
-      id: playerId,
-      side: Phase0aSide.player,
-      position: playerPosition,
-      facing: const ArenaVector(1, 0),
-      maxHealth: playerSnapshot.maxHp,
-      currentHealth: playerSnapshot.currentHp,
-      moveSpeed: arena.playerMoveSpeed,
-      qiCurrent: playerSnapshot.currentQi,
-      qiMax: playerSnapshot.maxQi,
-      attackCooldownRemaining: 0,
-      defeatKind: Phase0aDefeatKind.normal,
-    );
+    final playerActor = playerMapping.initialPlayer;
 
     final enemySkillBindingsByActor = <String, List<Phase0aEnemySkillBinding>>{
       for (var i = 0; i < enemySnapshots.length; i++)
@@ -687,27 +731,13 @@ final class Phase0aStageContentMapper {
         nextSeq: 1,
         player: playerActor,
         enemies: actorWaves.first,
-        skillSlots: _skillSlots(
-          numericSkillBindings,
-          tacticalSkillBindings,
-          playerSnapshot.currentQi,
-        ),
+        skillSlots: skillSlots,
         winCondition: winCondition,
       ),
       waves: [for (final actors in actorWaves) Phase0aWave(enemies: actors)],
       combatants: List.unmodifiable(combatants),
-      moveBindings: _moveBindings(
-        playerBasicSkill,
-        numericSkillBindings,
-        tacticalSkillBindings,
-      ),
-      playerAdapter: _playerAdapter(
-        arena: arena,
-        playerId: playerId,
-        numericSkillBindings: numericSkillBindings,
-        tacticalSkillBindings: tacticalSkillBindings,
-        attackQiDelta: playerBasicSkill.qiDelta,
-      ),
+      moveBindings: moveBindings,
+      playerAdapter: playerMapping.playerAdapter,
       enemyAiAdapter: Phase0aEnemyAiAdapter(
         attackRange: arena.enemyAttackRange,
         attackHalfArcRadians: arena.enemyAttackHalfArcRadians,

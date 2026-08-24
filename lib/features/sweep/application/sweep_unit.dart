@@ -12,6 +12,7 @@ import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
+import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import 'phase0a_sweep_headless_runner.dart';
 
 /// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个运行 Phase 0A
@@ -71,6 +72,9 @@ class MainlineSweepUnit implements SweepUnit {
     numbers: ref.read(numbersConfigProvider),
     rng: ref.read(mathRandomProvider),
     botPolicy: policy,
+    runtimeBindingSource: ref.read(
+      phase0aMainlineEncounterRuntimeBindingSourceProvider,
+    ),
   ).runMainline(stage: stage, cycleIndex: cycle);
 
   @override

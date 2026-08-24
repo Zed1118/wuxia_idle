@@ -19,6 +19,8 @@ import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart'
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
+import '../../mainline/application/phase0a_mainline_encounter_host.dart';
+import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 
 /// 扫荡消费面的 Phase 0A 同核 headless runner。
 ///
@@ -40,12 +42,14 @@ final class Phase0aSweepHeadlessRunner {
     required this.numbers,
     required this.rng,
     required this.botPolicy,
+    this.runtimeBindingSource,
   });
 
   final Isar isar;
   final NumbersConfig numbers;
   final Random rng;
   final Phase0aBotTacticPolicy botPolicy;
+  final Phase0aMainlineEncounterRuntimeBindingSource? runtimeBindingSource;
 
   static const int _uiYieldEveryTicks = 32;
 
@@ -54,6 +58,44 @@ final class Phase0aSweepHeadlessRunner {
     required int cycleIndex,
   }) async {
     final player = await _loadPlayerSnapshot();
+    final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
+      contentId: stage.id,
+      playerSnapshot: player,
+      numbers: numbers,
+    );
+    final encounterHost = await createFreshPhase0aMainlineEncounter(
+      Phase0aMainlineEncounterHostBuildRequest(
+        stage: stage,
+        playerMapping: playerMapping,
+        numbers: numbers,
+        cycleIndex: cycleIndex,
+        rng: rng,
+        runtimeBindingSource:
+            runtimeBindingSource ??
+            const MissingPhase0aMainlineEncounterRuntimeBindingSource(),
+      ),
+    );
+    if (encounterHost != null) {
+      final result = await encounterHost.runHeadlessAsync(
+        bot: Phase0aPlayerBotAdapter(
+          playerAdapter: encounterHost.mapping!.playerAdapter,
+          policy: botPolicy,
+        ),
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        maxTicks: numbers.phase0aArena.maxSimulationTicks,
+        yieldEveryTicks: _uiYieldEveryTicks,
+      );
+      if (result.timedOut) return const Phase0aSweepRunResult.timeout();
+      return Phase0aSweepRunResult.terminal(
+        encounterHost
+            .settle(
+              outcome: result.outcome,
+              finalState: result.finalState,
+              events: result.events,
+            )
+            .snapshot,
+      );
+    }
     final mapping = Phase0aStageContentMapper.map(
       stage: stage,
       playerSnapshot: player,

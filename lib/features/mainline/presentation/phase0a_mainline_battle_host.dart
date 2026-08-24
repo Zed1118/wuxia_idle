@@ -12,8 +12,11 @@ import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import '../../battle/application/phase0a/phase0a_encounter_host.dart';
+import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../application/phase0a_mainline_encounter_host.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
@@ -43,6 +46,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     this.playerSnapshotForTest,
     this.seedForTest,
     this.massBattleFormation,
+    this.encounterHostFactory,
   });
 
   final StageDef stage;
@@ -50,6 +54,9 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
   final int cycleIndex;
   final Formation? massBattleFormation;
+
+  @visibleForTesting
+  final Phase0aMainlineEncounterHostFactory? encounterHostFactory;
 
   @visibleForTesting
   final CombatantSnapshot? playerSnapshotForTest;
@@ -67,6 +74,9 @@ class _Phase0aMainlineBattleHostState
   String? _setupError;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
+  Phase0aEncounterHost? _encounterHost;
+  Phase0aVisualRoster? _visualRoster;
+  Phase0aPlayerInputAdapter? _playerAdapter;
   bool _exitNotified = false;
 
   @override
@@ -79,51 +89,89 @@ class _Phase0aMainlineBattleHostState
             widget.playerSnapshotForTest ?? await _buildPlayerSnapshot();
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
-        final mapping = switch (widget.stage.stageType) {
-          StageType.innerDemon => Phase0aStageContentMapper.mapInnerDemon(
-            stage: widget.stage,
-            playerSnapshot: playerSnapshot,
-            numbers: numbers,
-            cycleIndex: widget.cycleIndex,
-          ),
-          StageType.lightFoot => Phase0aStageContentMapper.mapLightFoot(
-            stage: widget.stage,
-            playerSnapshot: playerSnapshot,
-            numbers: numbers,
-            cycleIndex: widget.cycleIndex,
-          ),
-          StageType.massBattle => Phase0aStageContentMapper.mapMassBattle(
-            stage: widget.stage,
-            playerSnapshot: playerSnapshot,
-            numbers: numbers,
-            cycleIndex: widget.cycleIndex,
-            formation: widget.massBattleFormation,
-          ),
-          _ => Phase0aStageContentMapper.map(
-            stage: widget.stage,
-            playerSnapshot: playerSnapshot,
-            numbers: numbers,
-            cycleIndex: widget.cycleIndex,
-          ),
-        };
-        final roster = Phase0aVisualRoster.fromMapping(mapping);
-        for (final combatant in mapping.combatants) {
-          roster.visualFor(combatant.actorId);
-        }
+        final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
+          contentId: widget.stage.id,
+          playerSnapshot: playerSnapshot,
+          numbers: numbers,
+        );
         final rng = widget.seedForTest == null
             ? ref.read(mathRandomProvider)
             : newMathRandom(seed: widget.seedForTest);
-        final flow = Phase0aProductionFlowAssembler.assemble(
-          initialState: mapping.initialState,
-          waves: mapping.waves,
-          combatants: mapping.combatants,
-          moveBindings: mapping.moveBindings,
-          numbers: numbers,
-          rng: rng,
-          playerAdapter: mapping.playerAdapter,
-          enemyAiAdapter: mapping.enemyAiAdapter,
-          waveTransitionPolicy: mapping.waveTransitionPolicy,
+        final Phase0aMainlineEncounterHostFactory factory =
+            widget.encounterHostFactory ??
+            ref.read(phase0aMainlineEncounterHostFactoryProvider);
+        final runtimeBindingSource = ref.read(
+          phase0aMainlineEncounterRuntimeBindingSourceProvider,
         );
+        final encounterHost = await factory(
+          Phase0aMainlineEncounterHostBuildRequest(
+            stage: widget.stage,
+            playerMapping: playerMapping,
+            numbers: numbers,
+            cycleIndex: widget.cycleIndex,
+            rng: rng,
+            runtimeBindingSource: runtimeBindingSource,
+          ),
+        );
+        final mapping = encounterHost == null
+            ? switch (widget.stage.stageType) {
+                StageType.innerDemon => Phase0aStageContentMapper.mapInnerDemon(
+                  stage: widget.stage,
+                  playerSnapshot: playerSnapshot,
+                  numbers: numbers,
+                  cycleIndex: widget.cycleIndex,
+                ),
+                StageType.lightFoot => Phase0aStageContentMapper.mapLightFoot(
+                  stage: widget.stage,
+                  playerSnapshot: playerSnapshot,
+                  numbers: numbers,
+                  cycleIndex: widget.cycleIndex,
+                ),
+                StageType.massBattle => Phase0aStageContentMapper.mapMassBattle(
+                  stage: widget.stage,
+                  playerSnapshot: playerSnapshot,
+                  numbers: numbers,
+                  cycleIndex: widget.cycleIndex,
+                  formation: widget.massBattleFormation,
+                ),
+                _ => Phase0aStageContentMapper.map(
+                  stage: widget.stage,
+                  playerSnapshot: playerSnapshot,
+                  numbers: numbers,
+                  cycleIndex: widget.cycleIndex,
+                ),
+              }
+            : null;
+        final selectedMapping = encounterHost?.mapping;
+        if (encounterHost != null && selectedMapping == null) {
+          throw StateError('migrated encounter host must expose a mapping');
+        }
+        final roster = encounterHost == null
+            ? Phase0aVisualRoster.fromMapping(mapping!)
+            : Phase0aVisualRoster.fromCombatants(
+                playerId: selectedMapping!.initialState.player.id,
+                combatants: selectedMapping.combatants,
+                assetPathByActorId: encounterHost.visualAssetPathByActorId,
+              );
+        final selectedPlayerAdapter =
+            selectedMapping?.playerAdapter ?? mapping!.playerAdapter;
+        for (final combatant
+            in selectedMapping?.combatants ?? mapping!.combatants) {
+          roster.visualFor(combatant.actorId);
+        }
+        final flow =
+            encounterHost?.flow ??
+            Phase0aProductionFlowAssembler.assemble(
+              initialState: mapping!.initialState,
+              waves: mapping.waves,
+              combatants: mapping.combatants,
+              moveBindings: mapping.moveBindings,
+              numbers: numbers,
+              rng: rng,
+              playerAdapter: mapping.playerAdapter,
+              enemyAiAdapter: mapping.enemyAiAdapter,
+              waveTransitionPolicy: mapping.waveTransitionPolicy,
+            );
         if (!mounted) return;
         final controller = Phase0aBattleController(
           flow: flow,
@@ -133,6 +181,9 @@ class _Phase0aMainlineBattleHostState
         controller.addListener(_onControllerChanged);
         setState(() {
           _mapping = mapping;
+          _encounterHost = encounterHost;
+          _visualRoster = roster;
+          _playerAdapter = selectedPlayerAdapter;
           _controller = controller;
         });
       } catch (e) {
@@ -170,14 +221,23 @@ class _Phase0aMainlineBattleHostState
     final outcome = controller.outcome;
     if (outcome == Phase0aBattleOutcome.ongoing) return;
     final mapping = _mapping;
-    if (mapping == null) return;
+    final encounterHost = _encounterHost;
+    if (mapping == null && encounterHost == null) return;
     _exitNotified = true;
-    final settlement = Phase0aSettlementAdapter.fromMapping(
-      mapping: mapping,
-      outcome: outcome,
-      finalState: controller.state,
-      events: controller.events,
-    );
+    final settlement = encounterHost == null
+        ? Phase0aSettlementAdapter.fromMapping(
+            mapping: mapping!,
+            outcome: outcome,
+            finalState: controller.state,
+            events: controller.events,
+          )
+        : encounterHost
+              .settle(
+                outcome: outcome,
+                finalState: controller.state,
+                events: controller.events,
+              )
+              .snapshot;
     if (outcome == Phase0aBattleOutcome.victory) {
       widget.onVictory(settlement);
     } else {
@@ -211,9 +271,14 @@ class _Phase0aMainlineBattleHostState
     if (controller == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    final visualRoster = _visualRoster;
+    final playerAdapter = _playerAdapter;
+    if (visualRoster == null || playerAdapter == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Phase0aBattleScreen(
       controller: controller,
-      numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
+      numericSkillBindings: playerAdapter.numericSkillBindings,
     );
   }
 }

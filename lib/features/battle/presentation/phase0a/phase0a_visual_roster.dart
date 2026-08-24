@@ -72,6 +72,7 @@ final class Phase0aVisualRoster {
   factory Phase0aVisualRoster.fromCombatants({
     required String playerId,
     required List<Phase0aCombatantInput> combatants,
+    Map<String, String>? assetPathByActorId,
   }) {
     if (playerId.trim().isEmpty) {
       throw StateError('Phase0a roster requires a non-empty player id');
@@ -95,7 +96,7 @@ final class Phase0aVisualRoster {
       }
       final assetPath = isPlayer
           ? WuxiaUi.battleFounderFallback
-          : combatant.snapshot.iconPath;
+          : assetPathByActorId?[actorId] ?? combatant.snapshot.iconPath;
       if (assetPath == null || assetPath.trim().isEmpty) {
         throw StateError(
           'Phase0a roster requires a non-empty asset: '
