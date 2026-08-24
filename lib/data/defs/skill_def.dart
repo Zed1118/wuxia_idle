@@ -43,13 +43,17 @@ class SkillDef {
   final int qiDelta;
 
   /// Authoritative real-time cooldown for Phase 0A consumers, expressed in
-  /// seconds.  It stays nullable while C11A inventories the legacy
-  /// turn-based consumers; every Phase 0A behavior must provide it.
+  /// seconds. Production YAML materializes it for every skill; nullable is
+  /// retained only for direct legacy/test construction outside Phase 0A.
   final double? cooldownSeconds;
 
-  /// Legacy turn-based cooldown.  C11A must not add new Phase 0A reads of
-  /// this field; the remaining role-dependent adapters are recorded in the
-  /// C11 plan until their seconds mapping is explicitly decided.
+  /// Authoritative real-time cooldown when the same skill is bound as a
+  /// Phase 0A enemy phase/charge action. Kept separate because one [SkillDef]
+  /// can be reused by both sides while their pre-migration timings differed.
+  final double? phase0aEnemyCooldownSeconds;
+
+  /// Legacy turn-based cooldown for the old beat UI/proficiency consumers.
+  /// Phase 0A production code must not read this field.
   final int cooldownTurns;
   final bool requiresManualTrigger;
   final String? parentTechniqueDefId;
@@ -120,6 +124,7 @@ class SkillDef {
     int? qiDelta,
     @Deprecated('请使用 qiDelta') int? internalForceCost,
     this.cooldownSeconds,
+    this.phase0aEnemyCooldownSeconds,
     required this.cooldownTurns,
     required this.requiresManualTrigger,
     this.parentTechniqueDefId,
@@ -169,6 +174,16 @@ class SkillDef {
         'SkillDef ${y['id']}: cooldownSeconds must be finite and nonnegative',
       );
     }
+    final rawEnemyCooldownSeconds = y['phase0aEnemyCooldownSeconds'];
+    if (rawEnemyCooldownSeconds != null &&
+        (rawEnemyCooldownSeconds is! num ||
+            !rawEnemyCooldownSeconds.isFinite ||
+            rawEnemyCooldownSeconds < 0)) {
+      throw StateError(
+        'SkillDef ${y['id']}: phase0aEnemyCooldownSeconds must be finite '
+        'and nonnegative',
+      );
+    }
     final phase0aBehavior = y['phase0aBehavior'] == null
         ? null
         : Phase0aSkillBehavior.fromYaml(
@@ -189,6 +204,8 @@ class SkillDef {
           ? (y['qiDelta'] as num).toInt()
           : -((y['internalForceCost'] as num).toInt()),
       cooldownSeconds: (rawCooldownSeconds as num?)?.toDouble(),
+      phase0aEnemyCooldownSeconds: (rawEnemyCooldownSeconds as num?)
+          ?.toDouble(),
       cooldownTurns: (y['cooldownTurns'] as num).toInt(),
       requiresManualTrigger: y['requiresManualTrigger'] as bool,
       parentTechniqueDefId: y['parentTechniqueDefId'] as String?,

@@ -872,8 +872,8 @@ final class Phase0aStageContentMapper {
         : _chargeCast(skill: signature, arena: arena, chargeTicks: chargeTicks);
   }
 
-  /// 招牌技施放参数:空间值取竞技场敌攻口径(沿阶段技能绑定),CD 沿用
-  /// 「cooldownTurns × 敌行动拍秒」转换;伤害仍由 SkillDef 经唯一
+  /// 招牌技施放参数:空间值取竞技场敌攻口径(沿阶段技能绑定),CD 取
+  /// SkillDef 已物化的敌方实时秒值;伤害仍由 SkillDef 经唯一
   /// DamageCalculator 结算,本对象不复制数值。
   static Phase0aChargeCast _chargeCast({
     required SkillDef skill,
@@ -885,7 +885,7 @@ final class Phase0aStageContentMapper {
     attackRange: arena.enemyAttackRange,
     halfArcRadians: arena.enemyAttackHalfArcRadians,
     effectRadius: arena.enemyAttackRange,
-    cooldownSeconds: skill.cooldownTurns * arena.enemyAttackCooldownSeconds,
+    cooldownSeconds: _requiredEnemyCooldownSeconds(skill),
     actionCooldownSeconds: arena.enemyAttackCooldownSeconds,
   );
 
@@ -922,8 +922,7 @@ final class Phase0aStageContentMapper {
           attackRange: arena.enemyAttackRange,
           halfArcRadians: arena.enemyAttackHalfArcRadians,
           effectRadius: arena.enemyAttackRange,
-          cooldownSeconds:
-              byId[id]!.cooldownTurns * arena.enemyAttackCooldownSeconds,
+          cooldownSeconds: _requiredEnemyCooldownSeconds(byId[id]!),
           allowQiDrain:
               snapshot.chargeSkillId == id && byId[id]!.qiDrainPct > 0,
         ),
@@ -1023,8 +1022,7 @@ final class Phase0aStageContentMapper {
         attackRange: arena.playerAttackRange,
         halfArc: arena.playerAttackHalfArcRadians,
         effectRadius: arena.clearEffectRadius,
-        cooldownSeconds:
-            skill.cooldownTurns * arena.playerAttackCooldownSeconds,
+        cooldownSeconds: _requiredPlayerCooldownSeconds(skill),
       );
     }
 
@@ -1036,6 +1034,25 @@ final class Phase0aStageContentMapper {
       five: binding(5),
       six: binding(6),
     );
+  }
+
+  static double _requiredPlayerCooldownSeconds(SkillDef skill) {
+    final seconds = skill.cooldownSeconds;
+    if (seconds == null || !seconds.isFinite || seconds < 0) {
+      throw StateError('Phase0a 玩家技能 ${skill.id}: 缺有限非负 cooldownSeconds');
+    }
+    return seconds;
+  }
+
+  static double _requiredEnemyCooldownSeconds(SkillDef skill) {
+    final seconds = skill.phase0aEnemyCooldownSeconds;
+    if (seconds == null || !seconds.isFinite || seconds < 0) {
+      throw StateError(
+        'Phase0a 敌方技能 ${skill.id}: '
+        '缺有限非负 phase0aEnemyCooldownSeconds',
+      );
+    }
+    return seconds;
   }
 
   /// Production and mapper fixtures resolve both Q/R bindings from real

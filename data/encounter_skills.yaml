@@ -44,6 +44,8 @@ encounter_skills:
     powerMultiplier: 600
     qiDelta: -30
     cooldownTurns: 1
+    cooldownSeconds: 0.55
+    phase0aEnemyCooldownSeconds: 1
     requiresManualTrigger: false
     visualEffect: footwork_basic
     source: encounter
@@ -57,6 +59,8 @@ encounter_skills:
     powerMultiplier: 900
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: breathing_basic
     source: encounter
@@ -70,6 +74,8 @@ encounter_skills:
     powerMultiplier: 750
     qiDelta: -30
     cooldownTurns: 1
+    cooldownSeconds: 0.55
+    phase0aEnemyCooldownSeconds: 1
     requiresManualTrigger: false
     visualEffect: lightfoot_step
     source: encounter
@@ -84,6 +90,8 @@ encounter_skills:
     powerMultiplier: 1200
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: focus_strike
     source: encounter
@@ -97,6 +105,8 @@ encounter_skills:
     powerMultiplier: 1100
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: breathing_advanced
     source: encounter
@@ -114,6 +124,8 @@ encounter_skills:
     powerMultiplier: 1600
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: sword_sprout
     source: encounter
@@ -128,6 +140,8 @@ encounter_skills:
     powerMultiplier: 1400
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: fist_seeking
     source: encounter
@@ -141,6 +155,8 @@ encounter_skills:
     powerMultiplier: 1700
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: hidden_weapon
     source: encounter
@@ -154,6 +170,8 @@ encounter_skills:
     powerMultiplier: 1900
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: palm_cloud
     source: encounter
@@ -168,6 +186,8 @@ encounter_skills:
     powerMultiplier: 1500
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: dodge_flow
     source: encounter
@@ -186,6 +206,8 @@ encounter_skills:
     powerMultiplier: 2300
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: sword_rain_listen
     source: encounter
@@ -200,6 +222,8 @@ encounter_skills:
     powerMultiplier: 2100
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: drill_combo
     source: encounter
@@ -214,6 +238,8 @@ encounter_skills:
     powerMultiplier: 2400
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: wuxia_intent
     source: encounter
@@ -227,6 +253,8 @@ encounter_skills:
     powerMultiplier: 1900
     qiDelta: -30
     cooldownTurns: 2
+    cooldownSeconds: 1.1
+    phase0aEnemyCooldownSeconds: 2
     requiresManualTrigger: false
     visualEffect: fist_flame
     source: encounter
@@ -241,6 +269,8 @@ encounter_skills:
     powerMultiplier: 2200
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: sword_mystic
     source: encounter
@@ -256,6 +286,8 @@ encounter_skills:
     powerMultiplier: 2200
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: rain_listen_blade
     source: encounter
@@ -273,6 +305,8 @@ encounter_skills:
     powerMultiplier: 2800
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: ancient_sword
     source: encounter
@@ -286,6 +320,8 @@ encounter_skills:
     powerMultiplier: 2700
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: sword_breeze
     source: encounter
@@ -300,6 +336,8 @@ encounter_skills:
     powerMultiplier: 2900
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: fire_fury
     source: encounter
@@ -313,6 +351,8 @@ encounter_skills:
     powerMultiplier: 2600
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: finger_dark
     source: encounter
@@ -327,6 +367,8 @@ encounter_skills:
     powerMultiplier: 3000
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: lightfoot_immortal
     source: encounter
@@ -342,6 +384,8 @@ encounter_skills:
     powerMultiplier: 2700
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: lonely_isle_blade
     source: encounter
@@ -355,6 +399,8 @@ encounter_skills:
     powerMultiplier: 2600
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: self_blade_meditation
     source: encounter
@@ -372,6 +418,8 @@ encounter_skills:
     powerMultiplier: 3700
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: water_flow
     source: encounter
@@ -386,6 +434,8 @@ encounter_skills:
     powerMultiplier: 3500
     qiDelta: -30
     cooldownTurns: 3
+    cooldownSeconds: 1.65
+    phase0aEnemyCooldownSeconds: 3
     requiresManualTrigger: false
     visualEffect: night_strike
     source: encounter
@@ -400,6 +450,8 @@ encounter_skills:
     powerMultiplier: 4000
     qiDelta: -60
     cooldownTurns: 5
+    cooldownSeconds: 2.75
+    phase0aEnemyCooldownSeconds: 5
     requiresManualTrigger: true
     visualEffect: thunder_bolt
     source: encounter
@@ -413,6 +465,8 @@ encounter_skills:
     powerMultiplier: 3800
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: vajra_body
     source: encounter
@@ -427,6 +481,8 @@ encounter_skills:
     powerMultiplier: 3900
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: sword_mountains_rivers
     source: encounter
@@ -442,6 +498,8 @@ encounter_skills:
     powerMultiplier: 3600
     qiDelta: -30
     cooldownTurns: 5
+    cooldownSeconds: 2.75
+    phase0aEnemyCooldownSeconds: 5
     requiresManualTrigger: false
     visualEffect: snow_night_star
     source: encounter
@@ -455,6 +513,8 @@ encounter_skills:
     powerMultiplier: 3900
     qiDelta: -60
     cooldownTurns: 6
+    cooldownSeconds: 3.3
+    phase0aEnemyCooldownSeconds: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar_ultimate
     source: encounter
@@ -472,6 +532,8 @@ encounter_skills:
     powerMultiplier: 4500
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: ice_freeze_slash
     source: encounter
@@ -486,6 +548,8 @@ encounter_skills:
     powerMultiplier: 5200
     qiDelta: -60
     cooldownTurns: 5
+    cooldownSeconds: 2.75
+    phase0aEnemyCooldownSeconds: 5
     requiresManualTrigger: true
     visualEffect: ice_mystic
     source: encounter
@@ -500,6 +564,8 @@ encounter_skills:
     powerMultiplier: 5500
     qiDelta: -60
     cooldownTurns: 5
+    cooldownSeconds: 2.75
+    phase0aEnemyCooldownSeconds: 5
     requiresManualTrigger: true
     visualEffect: flame_heaven
     source: encounter
@@ -513,6 +579,8 @@ encounter_skills:
     powerMultiplier: 5000
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: palm_qiankun
     source: encounter
@@ -526,6 +594,8 @@ encounter_skills:
     powerMultiplier: 4800
     qiDelta: -30
     cooldownTurns: 4
+    cooldownSeconds: 2.2
+    phase0aEnemyCooldownSeconds: 4
     requiresManualTrigger: false
     visualEffect: heart_calm
     source: encounter
@@ -544,6 +614,8 @@ encounter_skills:
     powerMultiplier: 7500
     qiDelta: -60
     cooldownTurns: 6
+    cooldownSeconds: 3.3
+    phase0aEnemyCooldownSeconds: 6
     requiresManualTrigger: true
     visualEffect: dragon_roar
     source: encounter
@@ -558,6 +630,8 @@ encounter_skills:
     powerMultiplier: 8000
     qiDelta: -60
     cooldownTurns: 6
+    cooldownSeconds: 3.3
+    phase0aEnemyCooldownSeconds: 6
     requiresManualTrigger: true
     visualEffect: phoenix_rise
     source: encounter
@@ -571,6 +645,8 @@ encounter_skills:
     powerMultiplier: 7800
     qiDelta: -60
     cooldownTurns: 6
+    cooldownSeconds: 3.3
+    phase0aEnemyCooldownSeconds: 6
     requiresManualTrigger: true
     visualEffect: sword_seal_fame
     source: encounter
@@ -585,6 +661,8 @@ encounter_skills:
     powerMultiplier: 7000
     qiDelta: -30
     cooldownTurns: 5
+    cooldownSeconds: 2.75
+    phase0aEnemyCooldownSeconds: 5
     requiresManualTrigger: false
     visualEffect: nameless_strike
     source: encounter
@@ -599,6 +677,8 @@ encounter_skills:
     powerMultiplier: 6800
     qiDelta: -60
     cooldownTurns: 6
+    cooldownSeconds: 3.3
+    phase0aEnemyCooldownSeconds: 6
     requiresManualTrigger: true
     visualEffect: heaven_path
     source: encounter

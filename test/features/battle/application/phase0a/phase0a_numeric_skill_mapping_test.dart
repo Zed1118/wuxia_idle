@@ -100,10 +100,7 @@ void main() {
       expect(intent.slot, 'phase0a_skill_$hotkey');
       expect(intent.qiDelta, skill.qiDelta);
       expect(intent.targetType, skill.targetType);
-      expect(
-        intent.cooldownSeconds,
-        skill.cooldownTurns * arena.playerAttackCooldownSeconds,
-      );
+      expect(intent.cooldownSeconds, skill.cooldownSeconds);
     }
   });
 

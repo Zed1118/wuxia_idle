@@ -87,4 +87,28 @@ void main() {
     final skill = SkillDef.fromYaml({...base, 'cooldownSeconds': 2.5});
     expect(skill.cooldownSeconds, 2.5);
   });
+
+  test('phase0aEnemyCooldownSeconds 只接受有限非负数', () {
+    final base = <String, dynamic>{
+      'id': 'enemy_skill',
+      'name': 'n',
+      'description': 'd',
+      'type': 'powerSkill',
+      'powerMultiplier': 1000,
+      'qiDelta': -10,
+      'cooldownTurns': 3,
+      'requiresManualTrigger': false,
+      'visualEffect': 'x',
+    };
+
+    expect(
+      () => SkillDef.fromYaml({...base, 'phase0aEnemyCooldownSeconds': -1}),
+      throwsA(isA<StateError>()),
+    );
+    final skill = SkillDef.fromYaml({
+      ...base,
+      'phase0aEnemyCooldownSeconds': 3.0,
+    });
+    expect(skill.phase0aEnemyCooldownSeconds, 3);
+  });
 }

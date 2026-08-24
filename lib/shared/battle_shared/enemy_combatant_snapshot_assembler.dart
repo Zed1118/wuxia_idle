@@ -295,6 +295,8 @@ final class EnemyCombatantSnapshotAssembler {
       type: skill.type,
       powerMultiplier: tunedPower,
       qiDelta: skill.qiDelta,
+      cooldownSeconds: skill.cooldownSeconds,
+      phase0aEnemyCooldownSeconds: skill.phase0aEnemyCooldownSeconds,
       cooldownTurns: skill.cooldownTurns,
       requiresManualTrigger: skill.requiresManualTrigger,
       parentTechniqueDefId: skill.parentTechniqueDefId,

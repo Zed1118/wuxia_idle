@@ -72,11 +72,19 @@ void main() {
     expect(boss.id, startsWith('enemy_sanLiu_qingshan_main'));
     expect(boss.chargeCast, isNotNull);
     expect(boss.chargeCast!.skill.id, 'skill_qingshan_qingfeng');
+    expect(
+      boss.chargeCast!.cooldownSeconds,
+      boss.chargeCast!.skill.phase0aEnemyCooldownSeconds,
+    );
     expect(boss.phaseChargeCasts, hasLength(2));
     expect(boss.phaseChargeCasts[0], isNull);
     expect(
       boss.phaseChargeCasts[1]!.skill.id,
       'skill_lingqiao_changlian_fang_ult',
+    );
+    expect(
+      boss.phaseChargeCasts[1]!.cooldownSeconds,
+      boss.phaseChargeCasts[1]!.skill.phase0aEnemyCooldownSeconds,
     );
     expect(
       boss.chargeCast!.chargeTicks,
@@ -100,6 +108,13 @@ void main() {
       bindings.map((binding) => binding.skill.id),
       contains('skill_qingshan_qingfeng'),
     );
+    for (final binding in bindings) {
+      expect(
+        binding.cooldownSeconds,
+        binding.skill.phase0aEnemyCooldownSeconds,
+        reason: binding.skill.id,
+      );
+    }
 
     // 过渡 R 的 typed break 契约进入生产 input adapter(breakPower > 0)。
     expect(mapping.playerAdapter.clearSkillBinding!.breakPower, greaterThan(0));
