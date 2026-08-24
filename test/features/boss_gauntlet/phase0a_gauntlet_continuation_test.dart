@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_automation_admission.dart';
 import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controller.dart';
@@ -184,8 +187,27 @@ void main() {
       isar: IsarSetup.instance,
     ).loadExactRoster([1]);
     await putRun(stage: 1, members: [member()]);
+    await IsarSetup.instance.writeTxn(() async {
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      save.clearedGauntletIds = [GauntletService.gauntletId];
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+    final request = ActivityParticipationRequest(
+      contentId: GauntletService.gauntletId,
+      contentKind: ActivityContentKind.gauntlet,
+      characterId: 1,
+      loadoutPlanId: 'gauntlet-plan-1',
+      participation: ActivityParticipationMode.direct,
+      controller: ActivityController.playerBot,
+      clock: ActivityClock.headless,
+      entryKind: ActivityEntryKind.replay,
+    );
+    final admission = await GauntletAutomationAdmissionService(
+      IsarSetup.instance,
+    ).admit(request: request);
 
     final result = await service.fightCurrentStagePhase0a(
+      admission: admission,
       config: weakBossConfig(),
       numbers: GameRepository.instance.numbers,
     );
