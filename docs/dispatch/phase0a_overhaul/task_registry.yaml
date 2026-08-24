@@ -3744,9 +3744,20 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-inner-demon-entry-relocation-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-inner-demon-entry-relocation
-    status: in_progress
+    status: ready_reviewed
     base_commit: f6daaa534290e25e6eee0bc0bb686abb500f5823
+    code_candidate_commit: 7d6c2b3a2ceb1fbe6391eeb200b90bbd831ce05c
+    reviewed_candidate_commit: 7d6c2b3a2ceb1fbe6391eeb200b90bbd831ce05c
+    ready_marker: "[READY][CODEX][P2-M6-U05-INNER-DEMON-ENTRY-RELOCATION] 归位心魔突破入口"
     completion_scope: remove_duplicate_inner_demon_main_menu_entry_and_preserve_character_breakthrough_route
+    verification:
+      red_tests: 2
+      changed_and_joint_tests: 85
+      adjacent_main_menu_character_inner_demon_tests: 178
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5369
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U05-MAIN-MENU-CORNER-TOOLS
     owned_files:

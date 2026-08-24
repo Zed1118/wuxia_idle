@@ -6,6 +6,8 @@
 - base: `f6daaa534290e25e6eee0bc0bb686abb500f5823`
 - branch: `codex/phase2-m6-u05-inner-demon-entry-relocation-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-inner-demon-entry-relocation`
+- status: `ready_reviewed`
+- code candidate: `7d6c2b3a2ceb1fbe6391eeb200b90bbd831ce05c`
 
 ## 目标
 
@@ -44,3 +46,13 @@
 
 若删除主菜单入口必须改动心魔业务门控或角色突破入口无法独立承载，记录精确
 `BLOCKED`；不以另造临时入口冒充归位完成。
+
+## 完成证据
+
+- 真实红测：锁定态与原 Ch6 解锁态均 `0/2`，证明主菜单重复入口仍存在。
+- 转绿：新增迁移测试、主菜单和角色面板联合 `85/85`；相邻主菜单/角色/心魔 `178/178`。
+- 角色面板突破 CTA 真实 push 既有 `InnerDemonScreen`，未新增临时入口。
+- `flutter analyze --no-pub lib test tool` 与补齐独立子包元数据后的根分析均为 0。
+- 全量 `flutter test --no-pub` 为 `5369/5369 PASS`。
+- 独立只读复核 P0/P1/P2 均为 0，结论 READY。
+- 审计：`docs/audit/phase2_m6_u05_inner_demon_entry_relocation_2026-08-25.md`。

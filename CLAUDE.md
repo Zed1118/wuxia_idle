@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.64**
+> **版本:v1.65**
+>
+> v1.65 变更摘要(2026-08-25 二阶段 M6 U05 心魔入口归位纵切):按冻结方案 §11.2 删除主菜单重复“心魔境”入口；无论原 Ch6 门槛是否满足，心魔均不再占一级菜单。角色面板突破阻断区继续读取原 `innerDemonProgressProvider`/`resolveInnerDemonPanel`，并由原 CTA 进入 `InnerDemonScreen`。未改心魔解锁、战斗、失败或奖励语义。本纵切只关闭心魔入口归位缺口；U06 地图迁移、排行榜归位、U05/M6/二阶段仍开放；零 schema/saveVersion、数值、概率、奖励、经济或叙事变更。
 >
 > v1.64 变更摘要(2026-08-25 二阶段 M6 U05 主菜单角落工具区纵切):资源总览不再占养成玩法卡片，设置不再占独立玩法分区；资源、设置与既有退出统一进入主菜单右上角工具区，并继续复用 `ResourceOverviewScreen`、`SettingsPanel.show` 与 `AppExit.confirmAndQuit` 的生产语义。四个一级入口及其现有门控未改。本纵切只关闭冻结方案的角落工具区缺口；U06 地图迁移、排行榜归位、U05/M6/二阶段仍开放；零 schema/saveVersion、数值、概率、奖励、解锁阈值、经济与叙事变更。
 >
