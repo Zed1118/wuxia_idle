@@ -2960,6 +2960,7 @@ tasks:
       - lib/features/mainline/application/mainline_narrative_manifest.dart
       - lib/features/mainline/presentation/stage_entry_flow.dart
       - lib/features/mainline/presentation/stage_list_screen.dart
+      - lib/features/mainline/presentation/stage_victory_dialog.dart
       - lib/shared/strings.dart
       - test/data/mainline_narrative_manifest_test.dart
       - test/features/mainline/mainline_narrative_completeness_test.dart

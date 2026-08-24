@@ -16,10 +16,11 @@
 ## 外部模型与验收
 
 - 开工前和 actual diff 后分别调用 Pi `deepseek/deepseek-v4-flash` 高强度只读审查，记录命令、版本、精确 selector、退出码与 P0/P1/P2。
+- actual diff 终审证据必须绑定被审查的最终 code tree/commit；终审后如再改 code/test，必须重跑终审。
 - 反例覆盖 realtime+playerBot、firstClear+headless、未完整首通 replay、错误 content kind/id、绕过 service 入口和 awaitingRewardChoice 自动领奖。
 - 定向测试、scoped analyze、format、diff check 和 clean worktree 全过后提交唯一 READY 恢复点。
 
 ## 恢复点
 
-- 基线：`693ed157071e8242dc44ef81b9bae7d289809e58`。
+- 产品语义基线：`693ed157071e8242dc44ef81b9bae7d289809e58`；source patch diff 基线：`a6a373e137f72a69040199eb9431052f8095d1e1`。
 - 执行端不得改 registry、真相文档、save schema、数据或 UI；由主控复审与集成。

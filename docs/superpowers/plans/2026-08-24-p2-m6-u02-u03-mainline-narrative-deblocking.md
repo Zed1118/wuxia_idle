@@ -15,6 +15,7 @@
 ## 外部模型与验收
 
 - 开工前和 actual diff 后分别调用 Qoder CLI `Qwen3.8-Max` 高强度只读审查，记录命令、版本、精确模型、退出码与 P0/P1/P2。
+- actual diff 终审证据必须绑定被审查的最终 code tree/commit；终审后如再改 code/test，必须重跑终审。
 - 定向测试覆盖 105 关完整性、三类自动 reader 归零、Boss 事实性损失展示、可选阅读解锁、特殊模式不回归。
 - 允许同步改写现有 `mainline_narrative_completeness_test.dart` 与两个 `stage_list_screen*_test.dart` 中已被新冻结合同取代的“点关卡自动进 opening reader”断言；不得删除原有资产真实性、章节内容和 cycle 回归覆盖。
 - 章节 timeline 新入口需覆盖 1280×720 与 1440×900 无 overflow、语义标签和键盘可达性；不能只验字符串存在。
@@ -22,5 +23,5 @@
 
 ## 恢复点
 
-- 基线：`693ed157071e8242dc44ef81b9bae7d289809e58`。
+- 产品语义基线：`693ed157071e8242dc44ef81b9bae7d289809e58`；source patch diff 基线：`a6a373e137f72a69040199eb9431052f8095d1e1`。
 - 执行端不得改 registry、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`；由主控集成后统一收口。
