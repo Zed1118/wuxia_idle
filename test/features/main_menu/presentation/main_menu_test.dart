@@ -24,6 +24,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/shop/application/shop_providers.dart';
 import 'package:wuxia_idle/features/sect/application/sect_providers.dart';
+import 'package:wuxia_idle/features/sect/presentation/sect_hub_screen.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
@@ -36,8 +37,8 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
-///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 武学与行囊 / 闭关 / 档案等）
-///   - 20 个菜单入口 WuxiaInkButton（按钮全部可点）
+///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 宗门 / 武学与行囊 / 档案等）
+///   - 17 个默认菜单入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -53,6 +54,16 @@ void main() {
 
   Finder assetImage(String path) =>
       find.byWidgetPredicate((w) => w is Image && assetNameOf(w.image) == path);
+
+  Future<SectHubScreen> openSectHub(WidgetTester tester) async {
+    final entry = find.text(UiStrings.mainMenuSectHub);
+    await tester.ensureVisible(entry);
+    await tester.pumpAndSettle();
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.byType(SectHubScreen), findsOneWidget);
+    return tester.widget<SectHubScreen>(find.byType(SectHubScreen));
+  }
 
   testWidgets('标题渲染：mainMenuTitle 可见', (tester) async {
     await tester.pumpWidget(app());
@@ -93,7 +104,7 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('20 个菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('17 个默认菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -101,15 +112,12 @@ void main() {
     expect(find.text(UiStrings.mainMenuInnerDemon), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuTaohuaIsland), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuSect), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuSectHub), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
     expect(find.text(UiStrings.mainMenuZangjuange), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSectRecruit), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuCharacterPanel), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLineage), findsOneWidget);
     expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMartialInventory), findsOneWidget);
@@ -149,16 +157,17 @@ void main() {
     );
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
 
-    // 养成经营:角色/武学与行囊在前,闭关/桃花岛承接。
+    // 养成经营:宗门/武学与行囊在前,资源总览/江湖声望承接。
     expect(
-      (y(UiStrings.mainMenuCharacterPanel) -
-                  y(UiStrings.mainMenuMartialInventory))
+      (y(UiStrings.mainMenuSectHub) - y(UiStrings.mainMenuMartialInventory))
               .abs() <
           2.0,
       isTrue,
     );
     expect(
-      y(UiStrings.mainMenuSeclusion) < y(UiStrings.mainMenuTaohuaIsland),
+      (y(UiStrings.mainMenuResourceOverview) - y(UiStrings.mainMenuJianghu))
+              .abs() <
+          2.0,
       isTrue,
     );
 
@@ -174,19 +183,17 @@ void main() {
     );
   });
 
-  testWidgets('20 个菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('17 个默认菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(20));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(17));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline), findsOneWidget);
+    expect(find.byIcon(Icons.home_work_outlined), findsOneWidget);
     expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.filter_hdr_outlined), findsOneWidget);
     expect(find.byIcon(Icons.account_tree_outlined), findsOneWidget);
     expect(find.byIcon(Icons.library_books_outlined), findsOneWidget);
     // 百科 + 武学与行囊共 2 个 menu_book_outlined 图标
@@ -224,7 +231,7 @@ void main() {
     expect(contentSize.width, lessThanOrEqualTo(1088));
   });
 
-  testWidgets('入口状态 chip：主线 / 爬塔 / 武学与行囊库存 / 闭关', (tester) async {
+  testWidgets('入口状态 chip：主线 / 爬塔 / 武学与行囊库存', (tester) async {
     final now = DateTime(2026, 6, 7);
     final mainTechnique = Technique.create(
       defId: 'tech_gangmeng_jichu',
@@ -308,7 +315,6 @@ void main() {
       find.text(UiStrings.mainMenuInventoryStatus(2, '宝物')),
       findsOneWidget,
     );
-    expect(find.text(UiStrings.mainMenuSeclusionReadyStatus), findsOneWidget);
   });
 
   testWidgets('tap Phase 2 调试场景 → 进入 Phase2TestMenu（找到 scenarioP1 等 4 场景）', (
@@ -369,85 +375,6 @@ void main() {
     expect(observer.pushedRoutes.length, 2);
     // 验证最新 push 是 MaterialPageRoute(_push 包装)
     expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
-  });
-
-  // ── T56 销账 #26：闭关入口 FutureBuilder 化 ────────────────────────────
-
-  testWidgets('闭关按钮：activeCharacterIds 加载完成 → Opacity=1.0 enabled', (
-    tester,
-  ) async {
-    final now = DateTime(2026, 5, 13);
-    final founder = Character.create(
-      name: '祖师',
-      realmTier: RealmTier.yiLiu,
-      realmLayer: RealmLayer.qiMeng,
-      attributes: Attributes()
-        ..constitution = 5
-        ..enlightenment = 5
-        ..agility = 5
-        ..fortune = 5,
-      rarity: RarityTier.tianCai,
-      lineageRole: LineageRole.founder,
-      createdAt: now,
-    )..id = 1;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeCharacterIdsProvider.overrideWith((ref) async => [1]),
-          characterByIdProvider(1).overrideWith((ref) async => founder),
-          // P1 #42 Phase 2 §10 P1.x:闭关 enabled 需 step ≥ 5
-          currentTutorialStepProvider.overrideWith((ref) async => 5),
-        ],
-        child: const MaterialApp(home: MainMenu()),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
-    await tester.pump();
-
-    // 闭关按钮可见
-    expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
-
-    // 找到闭关 label 文本所在子树中的 Opacity widget
-    final opacity = tester.widget<Opacity>(
-      find
-          .ancestor(
-            of: find.text(UiStrings.mainMenuSeclusion),
-            matching: find.byType(Opacity),
-          )
-          .first,
-    );
-    expect(opacity.opacity, 1.0);
-  });
-
-  testWidgets('闭关按钮：activeCharacterIds 仍 loading → Opacity=0.4 disabled', (
-    tester,
-  ) async {
-    final never = Completer<List<int>>();
-    final neverCh = Completer<Character?>();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          activeCharacterIdsProvider.overrideWith((ref) => never.future),
-          characterByIdProvider(1).overrideWith((ref) => neverCh.future),
-        ],
-        child: const MaterialApp(home: MainMenu()),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text(UiStrings.mainMenuSeclusion), findsOneWidget);
-    final opacity = tester.widget<Opacity>(
-      find
-          .ancestor(
-            of: find.text(UiStrings.mainMenuSeclusion),
-            matching: find.byType(Opacity),
-          )
-          .first,
-    );
-    expect(opacity.opacity, 0.4);
   });
 
   // ── W16 GDD §12.4 节日活动 · 今日节日 chip ──────────────────────────
@@ -581,9 +508,9 @@ void main() {
     expect(find.text('今日：春节'), findsNothing);
   });
 
-  // ── P1 #42 Phase 2 §10 P1.x · tutorialStep 灰显门槛 ──────────────────────
+  // ── P1 #42 Phase 2 §10 P1.x · tutorialStep 门控透传 ──────────────────────
 
-  group('§10 P1.x · tutorialStep 灰显门槛', () {
+  group('§10 P1.x · tutorialStep 门控透传到宗门 Hub', () {
     Character founder(DateTime now) => Character.create(
       name: '祖师',
       realmTier: RealmTier.yiLiu,
@@ -610,76 +537,59 @@ void main() {
       );
     }
 
-    testWidgets('step=0 → 闭关显锁定文案(灰显)', (tester) async {
+    testWidgets('step=0 → Hub 收到闭关锁定', (tester) async {
       await tester.pumpWidget(appWithStep(0));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
-      expect(find.text(UiStrings.mainMenuSeclusionHint), findsNothing);
+      expect((await openSectHub(tester)).seclusionLocked, isTrue);
     });
 
-    testWidgets('step=2 → 闭关仍灰显(未到门槛)', (tester) async {
+    testWidgets('step=2 → Hub 仍收到闭关锁定', (tester) async {
       await tester.pumpWidget(appWithStep(2));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
+      expect((await openSectHub(tester)).seclusionLocked, isTrue);
     });
 
-    testWidgets('step=3 → 闭关仍灰', (tester) async {
+    testWidgets('step=3 → Hub 仍收到闭关锁定', (tester) async {
       await tester.pumpWidget(appWithStep(3));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsOneWidget);
+      expect((await openSectHub(tester)).seclusionLocked, isTrue);
     });
 
-    testWidgets('step=5 → 闭关解锁(普通 hint)', (tester) async {
+    testWidgets('step=5 → Hub 收到闭关解锁', (tester) async {
       await tester.pumpWidget(appWithStep(5));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuSeclusionHint), findsOneWidget);
-      expect(find.text(UiStrings.mainMenuSeclusionLockedHint), findsNothing);
+      expect((await openSectHub(tester)).seclusionLocked, isFalse);
     });
 
-    testWidgets('step=8(未来值)→ 全解锁(向上兼容)', (tester) async {
+    testWidgets('step=8(未来值)→ Hub 保持向上兼容解锁', (tester) async {
       await tester.pumpWidget(appWithStep(8));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuSeclusionHint), findsOneWidget);
+      expect((await openSectHub(tester)).seclusionLocked, isFalse);
     });
 
-    testWidgets('闭关 step=5 + character 仍 loading → 仍 disabled(loading 优先级保留)', (
+    testWidgets('step=5 + character loading → 门控仍解锁，Hub 自身负责身份 fail closed', (
       tester,
     ) async {
       final neverIds = Completer<List<int>>();
-      final neverCh = Completer<Character?>();
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             currentTutorialStepProvider.overrideWith((ref) async => 5),
             activeCharacterIdsProvider.overrideWith((ref) => neverIds.future),
-            characterByIdProvider(1).overrideWith((ref) => neverCh.future),
           ],
           child: const MaterialApp(home: MainMenu()),
         ),
       );
       await tester.pump();
+      expect((await openSectHub(tester)).seclusionLocked, isFalse);
 
-      // 闭关 step=5 已过门槛,但 character loading → 仍 Opacity 0.4 disabled
-      final opacity = tester.widget<Opacity>(
-        find
-            .ancestor(
-              of: find.text(UiStrings.mainMenuSeclusion),
-              matching: find.byType(Opacity),
-            )
-            .first,
-      );
-      expect(opacity.opacity, 0.4);
+      neverIds.complete(const []);
     });
   });
 
@@ -818,29 +728,27 @@ void main() {
       child: const MaterialApp(home: MainMenu()),
     );
 
-    testWidgets('全新存档(clearedStageIds 空)→ 心魔/门派 disabled 且无 PVP 入口', (
-      tester,
-    ) async {
+    testWidgets('全新存档 → 心魔/社交锁定且 Hub 收到门派事务锁定', (tester) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
-      // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显;PVP 已切除不再显示。
+      // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显；PVP 已切除。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
-      expect(opacityOf(tester, UiStrings.mainMenuSect), 0.4);
       expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 0.4);
       expect(find.text('论剑对决'), findsNothing);
+      expect((await openSectHub(tester)).sectLocked, isTrue);
     });
 
-    testWidgets('通关 Ch1 末关(stage_01_05)→ 社交系统解锁、后期仍锁', (tester) async {
+    testWidgets('通关 Ch1 末关 → 社交解锁且 Hub 收到门派事务解锁', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
-      // 社交(江湖/门派/排行榜/藏卷阁)Ch1 prereq 满足 → enabled。
-      expect(opacityOf(tester, UiStrings.mainMenuSect), 1.0);
+      // 社交(江湖/排行榜/藏卷阁)Ch1 prereq 满足 → enabled。
       expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 1.0);
       // 心魔仍需 Ch6 末关 → 仍 disabled。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
+      expect((await openSectHub(tester)).sectLocked, isFalse);
     });
 
     testWidgets('通关 Ch6 末关(stage_06_05)→ 后期系统解锁', (tester) async {
@@ -967,22 +875,14 @@ void main() {
     });
   });
 
-  // ── 桃花岛 P1 Task13 · 第二章通关门控（§5.7 灰显式）────────────────────────
+  // ── 桃花生产 · 第二章通关门控透传到宗门 Hub ──────────────────────────────
   //
   // unlock_chapter_index=1(0-based) → chapterIndex=2(1-based stages.yaml)通关解锁。
   // 用 mainlineProgressProvider override 注入 clearedStageIds 模拟两态：
-  //   ① 空进度 → taohuaLocked=true → Opacity=0.4 + LockedHint
-  //   ② 第二章所有关卡(stage_02_01~stage_02_05)通关 → taohuaLocked=false → Opacity=1.0 + Hint
+  //   ① 空进度 → taohuaLocked=true
+  //   ② 第二章所有关卡(stage_02_01~stage_02_05)通关 → taohuaLocked=false
 
-  group('§5.7 桃花岛入口门控', () {
-    double opacityOf(WidgetTester tester, String label) => tester
-        .widget<Opacity>(
-          find
-              .ancestor(of: find.text(label), matching: find.byType(Opacity))
-              .first,
-        )
-        .opacity;
-
+  group('§5.7 桃花生产门控透传', () {
     Widget appWithCleared(List<String> cleared) => ProviderScope(
       overrides: [
         mainlineProgressProvider.overrideWith(
@@ -992,35 +892,21 @@ void main() {
       child: const MaterialApp(home: MainMenu()),
     );
 
-    testWidgets('空进度 → 桃花岛 disabled(Opacity=0.4) + LockedHint', (tester) async {
+    testWidgets('空进度 → Hub 收到桃花生产锁定', (tester) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
-
-      expect(find.text(UiStrings.mainMenuTaohuaIsland), findsOneWidget);
-      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 0.4);
-      expect(
-        find.text(UiStrings.mainMenuTaohuaIslandLockedHint),
-        findsOneWidget,
-      );
-      expect(find.text(UiStrings.mainMenuTaohuaIslandHint), findsNothing);
+      expect((await openSectHub(tester)).taohuaLocked, isTrue);
     });
 
-    testWidgets('仅通关第一章末关 → 桃花岛仍灰显', (tester) async {
+    testWidgets('仅通关第一章末关 → Hub 仍收到桃花生产锁定', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
-
-      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 0.4);
-      expect(
-        find.text(UiStrings.mainMenuTaohuaIslandLockedHint),
-        findsOneWidget,
-      );
+      expect((await openSectHub(tester)).taohuaLocked, isTrue);
     });
 
-    testWidgets('通关第二章所有关(stage_02_01~05) → 桃花岛解锁(Opacity=1.0) + Hint', (
-      tester,
-    ) async {
+    testWidgets('通关第二章所有关(stage_02_01~05) → Hub 收到桃花生产解锁', (tester) async {
       await tester.pumpWidget(
         appWithCleared([
           'stage_02_01',
@@ -1032,51 +918,12 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-
-      expect(opacityOf(tester, UiStrings.mainMenuTaohuaIsland), 1.0);
-      expect(find.text(UiStrings.mainMenuTaohuaIslandHint), findsOneWidget);
-      expect(find.text(UiStrings.mainMenuTaohuaIslandLockedHint), findsNothing);
-    });
-
-    testWidgets('解锁态 → tap 桃花岛 → Navigator.push 触发', (tester) async {
-      final observer = _RecordingNavigatorObserver();
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            mainlineProgressProvider.overrideWith(
-              (ref) async => MainlineProgress()
-                ..clearedStageIds = [
-                  'stage_02_01',
-                  'stage_02_02',
-                  'stage_02_03',
-                  'stage_02_04',
-                  'stage_02_05',
-                ],
-            ),
-          ],
-          child: MaterialApp(
-            navigatorObservers: [observer],
-            home: const MainMenu(),
-          ),
-        ),
-      );
-      await tester.pump();
-      await tester.pump();
-      await tester.binding.setSurfaceSize(const Size(800, 3000));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pump();
-
-      expect(observer.pushedRoutes.length, 1);
-      await tester.tap(find.text(UiStrings.mainMenuTaohuaIsland));
-      await tester.pump(); // 单帧，不 settle（子屏依赖 Isar）
-
-      expect(observer.pushedRoutes.length, 2);
-      expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+      expect((await openSectHub(tester)).taohuaLocked, isFalse);
     });
   });
 
-  // ── 江湖远行入口门控（Phase B2.4 · §7.1 Lv100 解锁 · §5.7 隐藏式）──────────
-  group('§5.7 江湖远行入口门控', () {
+  // ── 江湖远行门控透传到宗门 Hub（Phase B2.4 · §7.1 Lv100）───────────────
+  group('§5.7 江湖远行门控透传', () {
     SaveData save({required bool unlocked}) {
       final now = DateTime(2026, 7, 16);
       return SaveData()
@@ -1088,7 +935,7 @@ void main() {
         ..jianghuJourneyUnlocked = unlocked;
     }
 
-    testWidgets('jianghuJourneyUnlocked=false → 无江湖远行入口（隐藏）', (tester) async {
+    testWidgets('jianghuJourneyUnlocked=false → Hub 收到远征隐藏门', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -1101,10 +948,10 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text(UiStrings.mainMenuExpedition), findsNothing);
+      expect((await openSectHub(tester)).expeditionUnlocked, isFalse);
     });
 
-    testWidgets('jianghuJourneyUnlocked=true → 有江湖远行入口', (tester) async {
+    testWidgets('jianghuJourneyUnlocked=true → Hub 收到远征开放门', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -1117,7 +964,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text(UiStrings.mainMenuExpedition), findsOneWidget);
+      expect((await openSectHub(tester)).expeditionUnlocked, isTrue);
     });
   });
 }

@@ -5,19 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart';
-import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
-import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
 import '../../battle_record/application/boss_memory_providers.dart';
 import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
-import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
 import '../../debug/presentation/redline_audit_screen.dart';
@@ -26,7 +23,6 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
-import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../martial_inventory/presentation/martial_inventory_hub_screen.dart';
@@ -37,13 +33,9 @@ import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/new_save_goal_guidance_view.dart';
-import '../../seclusion/application/seclusion_service_providers.dart';
-import '../../taohua_island/presentation/taohua_island_screen.dart';
-import '../../seclusion/domain/retreat_session.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
-import '../../seclusion/presentation/seclusion_map_list_screen.dart';
-import '../../sect/presentation/sect_screen.dart';
+import '../../sect/presentation/sect_hub_screen.dart';
 import '../../settings/presentation/settings_panel.dart';
 import '../../sweep/presentation/sweep_readiness_status.dart';
 import '../../../shared/app_exit.dart';
@@ -154,9 +146,6 @@ class MainMenu extends ConsumerWidget {
   });
 
   final ContinueJianghuRunner? continueJianghuRunnerForTest;
-
-  static const int _defaultCharacterId = 1;
-  static const RealmTier _defaultRealmTier = RealmTier.xueTu;
 
   void _push(BuildContext context, Widget child) {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => child));
@@ -277,6 +266,7 @@ class MainMenu extends ConsumerWidget {
       seclusionLocked: step < _seclusionUnlockStep,
       taohuaLocked: taohuaLocked,
       socialLocked: socialLocked,
+      jianghuJourneyUnlocked: jianghuJourneyUnlocked,
       shopUnlocked: shopUnlocked,
     );
     final archiveItems = _archiveItems(
@@ -484,14 +474,6 @@ class MainMenu extends ConsumerWidget {
           onAllowed: () => _push(context, const MassBattleScreen()),
         ),
       ),
-      if (jianghuJourneyUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuExpedition,
-          hint: UiStrings.mainMenuExpeditionHint,
-          icon: Icons.travel_explore_outlined,
-          thumbnailPath: WuxiaUi.entryJianghu,
-          onTap: () => _push(context, const ExpeditionOverviewScreen()),
-        ),
       // 断魂庄（江湖远行 Phase C·同 jianghuJourneyUnlocked gate·§5.7 未解锁隐藏）。
       if (jianghuJourneyUnlocked)
         WuxiaInkButton(
@@ -529,17 +511,23 @@ class MainMenu extends ConsumerWidget {
     required bool seclusionLocked,
     required bool taohuaLocked,
     required bool socialLocked,
+    required bool jianghuJourneyUnlocked,
     required bool shopUnlocked,
   }) {
     return <Widget>[
       WuxiaInkButton(
-        label: UiStrings.mainMenuCharacterPanel,
-        hint: UiStrings.mainMenuCharacterPanelHint,
-        icon: Icons.person_outline,
-        thumbnailPath: WuxiaUi.entryCharacter,
+        label: UiStrings.mainMenuSectHub,
+        hint: UiStrings.mainMenuSectHubHint,
+        icon: Icons.home_work_outlined,
+        thumbnailPath: WuxiaUi.entryJianghu,
         onTap: () => _push(
           context,
-          const CharacterPanelScreen(characterId: _defaultCharacterId),
+          SectHubScreen(
+            seclusionLocked: seclusionLocked,
+            taohuaLocked: taohuaLocked,
+            sectLocked: socialLocked,
+            expeditionUnlocked: jianghuJourneyUnlocked,
+          ),
         ),
       ),
       WuxiaInkButton(
@@ -556,34 +544,6 @@ class MainMenu extends ConsumerWidget {
         icon: Icons.account_balance_wallet_outlined,
         thumbnailPath: WuxiaUi.entryInventory,
         onTap: () => _push(context, const ResourceOverviewScreen()),
-      ),
-      _SeclusionMenuButton(
-        defaultCharacterId: _defaultCharacterId,
-        defaultRealmTier: _defaultRealmTier,
-        onPush: (screen) => _push(context, screen),
-        tutorialLocked: seclusionLocked,
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuTaohuaIsland,
-        hint: taohuaLocked
-            ? UiStrings.mainMenuTaohuaIslandLockedHint
-            : UiStrings.mainMenuTaohuaIslandHint,
-        icon: Icons.cottage_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: taohuaLocked,
-        locked: taohuaLocked,
-        onTap: () => _push(context, const TaohuaIslandScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSect,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuSectHint,
-        icon: Icons.home_work_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const SectScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuJianghu,
@@ -1053,104 +1013,6 @@ class _MenuSection extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// 闭关入口(销账 #26)。异步读首位角色 + 境界;加载中置灰;空/错误兜底 id=1。
-class _SeclusionMenuButton extends ConsumerWidget {
-  const _SeclusionMenuButton({
-    required this.defaultCharacterId,
-    required this.defaultRealmTier,
-    required this.onPush,
-    this.tutorialLocked = false,
-  });
-
-  final int defaultCharacterId;
-  final RealmTier defaultRealmTier;
-  final void Function(Widget screen) onPush;
-  final bool tutorialLocked;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final idsAsync = ref.watch(activeCharacterIdsProvider);
-
-    final firstId = idsAsync.maybeWhen(
-      data: (ids) => ids.isNotEmpty ? ids.first : defaultCharacterId,
-      orElse: () => defaultCharacterId,
-    );
-
-    final charAsync = ref.watch(characterByIdProvider(firstId));
-
-    final loading = idsAsync.isLoading || charAsync.isLoading;
-    final character = charAsync.maybeWhen(data: (c) => c, orElse: () => null);
-    final realmTier = character?.realmTier ?? defaultRealmTier;
-    final characterId = character?.id ?? defaultCharacterId;
-    final disabled = loading || tutorialLocked;
-    final baseStatus = tutorialLocked
-        ? UiStrings.mainMenuSeclusionLockedStatus
-        : UiStrings.mainMenuSeclusionReadyStatus;
-    final svc = ref.watch(seclusionServiceProvider);
-
-    if (svc != null && !tutorialLocked && !loading) {
-      return FutureBuilder<RetreatSession?>(
-        future: svc.getActiveSession(IsarSetup.currentSlotId),
-        builder: (context, snapshot) {
-          final session = snapshot.data;
-          final status = session == null
-              ? baseStatus
-              : _activeRetreatStatus(session);
-          return _button(
-            status: status,
-            disabled: disabled,
-            realmTier: realmTier,
-            characterId: characterId,
-          );
-        },
-      );
-    }
-
-    return _button(
-      status: baseStatus,
-      disabled: disabled,
-      realmTier: realmTier,
-      characterId: characterId,
-    );
-  }
-
-  Widget _button({
-    required String status,
-    required bool disabled,
-    required RealmTier realmTier,
-    required int characterId,
-  }) {
-    return WuxiaInkButton(
-      label: UiStrings.mainMenuSeclusion,
-      hint: tutorialLocked
-          ? UiStrings.mainMenuSeclusionLockedHint
-          : UiStrings.mainMenuSeclusionHint,
-      icon: Icons.landscape_outlined,
-      thumbnailPath: WuxiaUi.entrySeclusion,
-      status: status,
-      disabled: disabled,
-      locked: tutorialLocked,
-      onTap: disabled
-          ? null
-          : () => onPush(
-              SeclusionMapListScreen(
-                charRealmTier: realmTier,
-                characterId: characterId,
-              ),
-            ),
-    );
-  }
-
-  static String _activeRetreatStatus(RetreatSession session) {
-    final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
-    final elapsedHours =
-        DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
-    return elapsedHours >= GameRepository.instance.numbers.retreat.capHours
-        ? UiStrings.mainMenuSeclusionPassiveStatus(mapDef.mapName)
-        : UiStrings.mainMenuSeclusionActiveStatus(mapDef.mapName);
   }
 }
 
