@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
@@ -29,6 +30,7 @@ void main() {
         internalForce: 15000,
         maxQi: 15000,
         currentQi: 15000,
+        defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
         totalEquipmentAttack: 2000,
         includeProductionBasicAttack: true,
       ),
@@ -65,9 +67,7 @@ void main() {
 
   test('production stage_01_03 continuously clears all 40 enemies', () async {
     final host = await fresh(20260824);
-    final bot = Phase0aPlayerBotAdapter(
-      playerAdapter: host.mapping!.playerAdapter,
-    );
+    final bot = _steadyGuardBot(host);
     final delta = repository.numbers.phase0aArena.fixedDeltaSeconds;
     final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
     final events = <Phase0aEvent>[];
@@ -120,15 +120,9 @@ void main() {
     final headless = await fresh(20260824);
     final delta = repository.numbers.phase0aArena.fixedDeltaSeconds;
     final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
-    final manualBot = Phase0aPlayerBotAdapter(
-      playerAdapter: manual.mapping!.playerAdapter,
-    );
-    final autoBot = Phase0aPlayerBotAdapter(
-      playerAdapter: auto.mapping!.playerAdapter,
-    );
-    final headlessBot = Phase0aPlayerBotAdapter(
-      playerAdapter: headless.mapping!.playerAdapter,
-    );
+    final manualBot = _steadyGuardBot(manual);
+    final autoBot = _steadyGuardBot(auto);
+    final headlessBot = _steadyGuardBot(headless);
     final manualEvents = <Phase0aEvent>[];
     final autoEvents = <Phase0aEvent>[];
     var manualTicks = 0;
@@ -166,3 +160,9 @@ void main() {
     expect(headlessResult.finalState, manual.flow.state);
   });
 }
+
+Phase0aPlayerBotAdapter _steadyGuardBot(Phase0aEncounterHost host) =>
+    Phase0aPlayerBotAdapter(
+      playerAdapter: host.mapping!.playerAdapter,
+      policy: const Phase0aBotTacticPolicy.steadyGuard(),
+    );
