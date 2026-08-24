@@ -179,7 +179,13 @@ decisions:
     g0_choice: B
     visible_front_bot: false
     post_full_clear_headless_replay: true
-    batch_action: enforce_in_m5_m6_automation_matrix
+    batch_action: completed_via_p2_m6_batch1
+    current_production_drift: none
+    implementation_evidence:
+      task: P2-M5-GAUNTLET-AUTOMATION-ADMISSION
+      source_tip: e6b733b606d9bb7463d6a33d2e6c19082f1f713b
+      integration_task: P2-M6-BATCH1-DEBLOCKING-GAUNTLET-ADMISSION
+      audit: docs/audit/phase2_m6_batch1_deblocking_gauntlet_admission_2026-08-24.md
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
@@ -308,7 +314,13 @@ decisions:
       - preserve_all_narrative_assets
       - add_no_new_primary_navigation
     related_decision: REOPEN-CHRONICLE-01
-    batch_action: implement_via_p2_m6_u02_u03_mainline_narrative_deblocking
+    batch_action: completed_via_p2_m6_batch1
+    current_production_drift: none
+    implementation_evidence:
+      task: P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
+      source_tip: 802511dc987d1b2cffd96419be4b48c79e6cefc8
+      integration_task: P2-M6-BATCH1-DEBLOCKING-GAUNTLET-ADMISSION
+      audit: docs/audit/phase2_m6_batch1_deblocking_gauntlet_admission_2026-08-24.md
 
   - id: TUNE-FORWARD-FAN-01
     status: tuning

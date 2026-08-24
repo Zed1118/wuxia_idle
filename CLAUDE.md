@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.52**
+> **版本:v1.53**
+>
+> v1.53 变更摘要(2026-08-24 二阶段 M6 Batch1 · 主线叙事去阻塞与断魂庄自动准入):全部 105 个主线关的 opening/victory/defeat 自动阅读器已关闭，252 个既有叙事 ID 通过严格 manifest 搬入现有章节卷轴可选阅读；主线 Boss 战败仍先结算并显示事实性损失，特殊模式叙事不变。断魂庄前台可见 bot 与 headless 首通继续拒绝，仅允许 exact gauntlet 已完整首通后的确定性 headless 重刷，胜利硬停奖励选择、败局只结算一次。本批不代表 U01/U04/U05、完整五连关或 G2 已完成；零数值、schema/saveVersion、解锁和奖励改动。
 >
 > v1.52 变更摘要(2026-08-24 二阶段 M5 Batch1 · G0 心魔失败语义生产迁移):`INNER-DEMON-CULTIVATION-01` 已落实到生产：删除旧 10% 主修修炼度失败惩罚的配置、类型、调用参数与写回，任意退役 `failure_penalty` 配置均 fail-closed；心魔失败只保留有上限的内息紊乱，战败摘要不再声称内力/修炼度回退或把入场前既有伤势误报为本次后果。普通 Boss 战败结算与摘要不变，零存档 schema/saveVersion 迁移。
 >

@@ -3,6 +3,8 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-24 二阶段 M6 Batch1 主线叙事去阻塞与断魂庄自动准入 READY**：全部 105 个 `StageType.mainline` 关卡不再自动 push opening/victory/defeat 阅读器；252 个既有叙事 ID（105 opening + 105 victory + 42 defeat）经严格 manifest 唯一映射到现有章节卷轴，可选载体失败只局部降级且不阻断选关/开战。Boss 失败仍先原子结算并显示事实损失，特殊模式叙事保持。断魂庄只允许 exact gauntlet 已完整首通后的 direct/playerBot/headless/replay，拒绝前台 bot、headless 首通与错误 tuple；胜利停在奖励选择，败局只结算一次。源任务定向 103/103 与 48/48，集成联合 **151/151**、断魂庄目录 **181/181**、20 个变更 Dart format/analyze 0、根 `lib test tool` analyze 0、全量 **5195/5195 PASS**；独立联合审查 P0/P1/P2=0。证据见 `docs/audit/phase2_m6_batch1_deblocking_gauntlet_admission_2026-08-24.md`。零数值、schema/saveVersion、解锁、奖励变化；U01/U04/U05、完整五连关、G2、M3/M4 仍开放，main/origin main 未动。
+>
 > **2026-08-24 二阶段 M5 Batch1 心魔失败语义生产迁移 READY**：按已冻结 G0 `INNER-DEMON-CULTIVATION-01` 删除 `numbers.yaml` 旧 10% 主修修炼度惩罚、typed schema/参数/写回，并对任意退役 `failure_penalty`（含 null/空值）fail-closed；心魔失败仅保留 capped 内息紊乱，主修进度、境界、永久内力、装备和物理伤势均无惩罚性回退。战败摘要只显示角色与内息紊乱；独立审查发现并关闭“入场前既有伤势被误报为本次负伤”P1，普通 Boss 摘要保持。Pi `deepseek/deepseek-v4-flash` 与 Qoder `Qwen3.8-Max` 均以 high/只读完成源审查；联合定向 **127/127**、根应用 `lib/test/tool` analyze 0、变更 15 Dart analyze 0，完整测试与最终提交号见 `docs/audit/phase2_m5_batch1_inner_demon_cultivation_closeout_2026-08-24.md`。零 Isar schema/saveVersion 迁移；main/origin main 未动。
 >
 > **2026-08-24 二阶段 G0 推荐方案拍板落档**：用户明确回复“按推荐方案执行 G0”。主线 replay 选 C；连续 run 选锁人 A/换装 B/伤势中断 B；听剑占用 A 且与闭关/远征/断魂庄/疗伤互斥，成长对象选主修招式熟练度且比例/cap 仍调优；心魔失败取消 10% 主修扣减；七心魔 AI 先补四列矩阵；渐进解锁逐模式写 current→target 表；生态保留六锚+Ch1 并按章节/塔分批审；断魂庄不开放前台 bot。五项旧否继续不重开，失败原因仅放开事实展示；20 项调优只授权候选生成。决定已落 registry，**尚不等于生产实现完成**，后续按 M2/M5/M6 独立批次迁移、测试和验收。

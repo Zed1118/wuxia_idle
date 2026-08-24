@@ -2948,9 +2948,21 @@ tasks:
     thread_id: 01a0318a-cd28-75e2-876e-ce057dfd993a
     branch: codex/phase2-m6-u02-u03-mainline-narrative-deblocking-20260824
     worktree: /Users/a10506/.codex/worktrees/0e60/挂机武侠
-    status: in_progress
+    status: ready_reviewed
     base_commit: a6a373e137f72a69040199eb9431052f8095d1e1
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    implementation_commit: 2272def524beb439a36a61610a8ee966df17f490
+    tip_commit: 802511dc987d1b2cffd96419be4b48c79e6cefc8
+    integration_commits:
+      - e33ed988
+      - 6c296e8b
+      - 6c4e0d4e
+    verification:
+      targeted_tests: 103
+      scoped_analyze_items: 13
+      scoped_analyze_issues: 0
+      qoder_final_review_p0_p1: 0
+      integration_review_p0_p1_p2: 0
     decision_ids:
       - MAINLINE-NARRATIVE-DEBLOCKING-01
       - REOPEN-CHRONICLE-01
@@ -2999,9 +3011,22 @@ tasks:
     thread_id: 01a0318a-cd28-75e2-876e-ce2e57b3a023
     branch: codex/phase2-m5-gauntlet-automation-admission-20260824
     worktree: /Users/a10506/.codex/worktrees/d832/挂机武侠
-    status: in_progress
+    status: ready_reviewed
     base_commit: a6a373e137f72a69040199eb9431052f8095d1e1
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    implementation_commit: a537c0f3fd3c0533c9796b116153e35353e21efd
+    tip_commit: e6b733b606d9bb7463d6a33d2e6c19082f1f713b
+    integration_commits:
+      - 992af0ee
+      - ca81a9fa
+      - 8296db0c
+    verification:
+      targeted_tests: 48
+      feature_tests: 181
+      scoped_analyze_items: 7
+      scoped_analyze_issues: 0
+      pi_final_review_p0_p1: 0
+      integration_review_p0_p1_p2: 0
     decision_ids:
       - GAUNTLET-VISIBLE-BOT-01
     owned_files:
@@ -3039,13 +3064,32 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-batch1-deblocking-gauntlet-admission-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-batch1-deblocking-gauntlet-admission
-    status: in_progress
+    status: ready_reviewed
     base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    validated_commit: 1311399cda7a245d30a471b3af27603c761646b6
+    ready_marker: "[READY][CODEX][P2-M6-BATCH1] 冻结叙事去阻塞与断魂庄自动准入"
     source_tasks:
       - P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
       - P2-M5-GAUNTLET-AUTOMATION-ADMISSION
     integration_allowed_scope: union_of_source_task_owned_files_and_batch_owned_files
     integration_authored_scope: batch_owned_files_only
+    integration_commits:
+      - 992af0ee
+      - ca81a9fa
+      - 8296db0c
+      - e33ed988
+      - 6c296e8b
+      - 6c4e0d4e
+    verification:
+      joint_targeted_tests: 151
+      gauntlet_feature_tests: 181
+      full_tests: 5195
+      changed_dart_items: 20
+      changed_dart_analyze_issues: 0
+      root_application_analyze_issues: 0
+      source_blob_mode_matches: 23
+      source_external_review_p0_p1: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - CLAUDE.md
       - GDD.md
