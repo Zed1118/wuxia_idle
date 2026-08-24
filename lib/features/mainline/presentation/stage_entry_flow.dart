@@ -68,17 +68,21 @@ typedef MainlineBattleExit = ({
   CombatSettlementSnapshot? settlement,
 });
 
+@visibleForTesting
+bool shouldAutomaticallyPresentStageNarratives(StageDef stage) =>
+    stage.stageType != StageType.mainline;
+
 /// Phase 3 T37 关卡进入流程串联。
 ///
 /// 状态机（async 串联，无中间 widget）：
-///   1. opening：若 [StageDef.narrativeOpeningId] 非空，push NarrativeReaderScreen
-///      → wait its pop
+///   1. opening：特殊模式若 [StageDef.narrativeOpeningId] 非空，push
+///      NarrativeReaderScreen → wait its pop；主线 opening 搬到章节卷轴主动阅读。
 ///   2. battle：装配单主角 Phase0A 战斗 → wait onVictory / onDefeat
 ///      回调（Completer 转 Future）
-///   3a. victory：异步 recordVictory + invalidate progress provider；若
-///       narrativeVictoryId 非空 → push 第二段剧情
-///   3b. defeat：若 narrativeDefeatId 非空（章末 Boss 关）→ push 战败剧情；
-///       不记录进度 / 不掉装备，返回 stage list（Phase 3 Week 5 销账 #29）
+///   3a. victory：异步 recordVictory + invalidate progress provider；特殊模式
+///       若 narrativeVictoryId 非空 → push 第二段剧情，主线不自动 push。
+///   3b. defeat：Boss 惩罚照常结算；主线以事实弹层展示损失且不自动 push
+///       narrativeDefeatId，特殊模式保留旧 defeat reader。
 ///
 /// **不嵌套 widget**：每段结束后栈上仅剩 stage_list_screen，避免多层 pop。
 ///
@@ -102,8 +106,11 @@ Future<void> runStageFlow({
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
   bossDefeatPenaltyForTest,
 }) async {
+  final automaticallyPresentsNarratives =
+      shouldAutomaticallyPresentStageNarratives(stage);
+
   // ── opening ──
-  if (stage.narrativeOpeningId != null) {
+  if (automaticallyPresentsNarratives && stage.narrativeOpeningId != null) {
     final opening = await NarrativeLoader.load(stage.narrativeOpeningId!);
     if (!context.mounted) return;
     await Navigator.of(context).push<void>(
@@ -165,11 +172,17 @@ Future<void> runStageFlow({
               settlementSnapshot: battleExit.settlement,
             );
       if (summary.isNotEmpty) {
-        lossBanner = _DefeatLossBanner(entries: summary);
         // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
         // 后必须 invalidate provider 缓存,否则下次进角色面板/心法面板仍读旧值
         // (Codex v3 截图 15 暴露:banner 显 3800→1900,但面板仍 3800)
         invalidateAfterCombatSettlement(ref.invalidate);
+        if (!automaticallyPresentsNarratives) {
+          if (!context.mounted) return;
+          await _showMainlineDefeatLossDialog(context, summary);
+          if (!context.mounted) return;
+        } else {
+          lossBanner = _DefeatLossBanner(entries: summary);
+        }
       }
     } else {
       // M3:普通关战败立即重试(试错免费,无惩罚)。选「再战」→ 回循环头重打。
@@ -181,8 +194,11 @@ Future<void> runStageFlow({
       if (retry) continue;
     }
 
-    // 不重试(Boss 关 / 普通关放弃)→ 战败剧情 + 收降,返回。
-    if (stage.narrativeDefeatId != null && context.mounted) {
+    // 不重试(Boss 关 / 普通关放弃)→ 特殊模式战败剧情 + 收降,返回。
+    // 主线所有 defeat 旧卷只在章节 timeline 主动阅读。
+    if (automaticallyPresentsNarratives &&
+        stage.narrativeDefeatId != null &&
+        context.mounted) {
       final defeat = await NarrativeLoader.load(stage.narrativeDefeatId!);
       if (!context.mounted) return;
       await Navigator.of(context).push<void>(
@@ -324,7 +340,7 @@ Future<void> runStageFlow({
     Navigator.of(context).pop();
   }
 
-  if (stage.narrativeVictoryId != null) {
+  if (automaticallyPresentsNarratives && stage.narrativeVictoryId != null) {
     if (!context.mounted) return;
     final victory = await NarrativeLoader.load(stage.narrativeVictoryId!);
     if (!context.mounted) return;
@@ -481,6 +497,35 @@ Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
     ],
   );
   return retry ?? false;
+}
+
+/// Mainline Boss losses remain visible after automatic defeat narratives are
+/// removed. This dialog is deliberately factual: it reuses settlement entries,
+/// carries no story paragraphs, and offers no build or combat advice.
+Future<void> _showMainlineDefeatLossDialog(
+  BuildContext context,
+  List<DefeatLossEntry> entries,
+) async {
+  await PaperDialog.show<void>(
+    context,
+    title: UiStrings.defeatLossTitle,
+    showSeal: false,
+    barrierDismissible: false,
+    body: _DefeatLossBanner(
+      entries: entries,
+      paperSurface: true,
+      showTitle: false,
+    ),
+    actions: [
+      Builder(
+        builder: (dialogContext) => TextButton(
+          style: TextButton.styleFrom(foregroundColor: WuxiaUi.jiang),
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text(UiStrings.mainlineDefeatLossAcknowledge),
+        ),
+      ),
+    ],
+  );
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -954,12 +999,19 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
 
 /// 战败损失摘要 banner（Phase 4 W10）。
 ///
-/// 渲染于 [NarrativeReaderScreen] 顶部（在占位提示下方）。普通 Boss entry
-/// 显示内力与心法损失；心魔 entry 仅显示角色名与内息紊乱。
+/// 特殊模式渲染于 [NarrativeReaderScreen] 顶部；主线 Boss 事实弹层
+/// 复用同一损失列表。Boss entry 显示内力与心法损失；心魔 entry
+/// 仅显示角色名与内息紊乱。
 class _DefeatLossBanner extends StatelessWidget {
-  const _DefeatLossBanner({required this.entries});
+  const _DefeatLossBanner({
+    required this.entries,
+    this.paperSurface = false,
+    this.showTitle = true,
+  });
 
   final List<DefeatLossEntry> entries;
+  final bool paperSurface;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -969,9 +1021,13 @@ class _DefeatLossBanner extends StatelessWidget {
     final title = entries.every((e) => e.residueApplied)
         ? UiStrings.defeatLossTitleInnerDemon
         : UiStrings.defeatLossTitle;
+    final primaryColor = paperSurface ? WuxiaUi.ink : WuxiaColors.textPrimary;
+    final accentColor = paperSurface ? WuxiaUi.jiang : WuxiaColors.hpLow;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: paperSurface
+          ? EdgeInsets.zero
+          : const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: WuxiaColors.hpLow.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(4),
@@ -983,18 +1039,19 @@ class _DefeatLossBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Text(
-              title,
-              style: const TextStyle(
-                color: WuxiaColors.hpLow,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+          if (showTitle)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: accentColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          for (final e in entries) _entryLine(e),
+          for (final e in entries) _entryLine(e, primaryColor),
           // 伤势汇总行（Task 9）：有任一 entry 重伤时追加「N 名弟子负伤」提示。
           Builder(
             builder: (context) {
@@ -1004,8 +1061,8 @@ class _DefeatLossBanner extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   UiStrings.defeatInjuredDisciples(injuredCount),
-                  style: const TextStyle(
-                    color: WuxiaColors.hpLow,
+                  style: TextStyle(
+                    color: accentColor,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -1018,17 +1075,13 @@ class _DefeatLossBanner extends StatelessWidget {
     );
   }
 
-  Widget _entryLine(DefeatLossEntry e) {
+  Widget _entryLine(DefeatLossEntry e, Color primaryColor) {
     if (e.residueApplied) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Text(
           [e.characterName, UiStrings.innerDemonResidueNote].join('  ·  '),
-          style: const TextStyle(
-            color: WuxiaColors.textPrimary,
-            fontSize: 12.5,
-            height: 1.4,
-          ),
+          style: TextStyle(color: primaryColor, fontSize: 12.5, height: 1.4),
         ),
       );
     }
@@ -1054,11 +1107,7 @@ class _DefeatLossBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
         parts.join('  ·  '),
-        style: const TextStyle(
-          color: WuxiaColors.textPrimary,
-          fontSize: 12.5,
-          height: 1.4,
-        ),
+        style: TextStyle(color: primaryColor, fontSize: 12.5, height: 1.4),
       ),
     );
   }

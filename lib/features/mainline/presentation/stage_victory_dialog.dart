@@ -32,7 +32,8 @@ typedef EquipmentDropLockHandler =
 /// 体例对齐塔 `_showVictoryDialog`,但主线 victory 此前完全无 dialog,本批新建。
 /// content = drop 列表 + [AdvancementSummary](升层多角色 banner)
 /// + 共鸣度晋阶 sub-row(P1.1 候选 3-a)。
-/// dialog 关闭后由 caller 继续 push `NarrativeReaderScreen` 显胜利剧情。
+/// dialog 关闭后由 caller 继续执行对应模式的战后流程；主线胜利旧卷改由
+/// 章节 timeline 主动阅读，特殊模式仍保留既有 narrative flow。
 Future<void> showStageVictoryDialog({
   required BuildContext context,
   required StageDef stage,

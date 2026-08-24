@@ -5,6 +5,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import '../../../support/test_data.dart';
 
 /// W17 #F · runStageFlow widget integration 测试（@visibleForTesting DI 注入）。
@@ -27,13 +28,14 @@ void main() {
   // ── fixtures ─────────────────────────────────────────────────────────────
 
   StageDef normalStage({
+    StageType stageType = StageType.mainline,
     String? openingId,
     String? victoryId,
     String? defeatId,
   }) => StageDef(
     id: 'stage_test_normal',
     name: '测试普通关',
-    stageType: StageType.mainline,
+    stageType: stageType,
     requiredRealm: RealmTier.xueTu,
     enemyTeam: const [],
     isBossStage: false,
@@ -255,15 +257,17 @@ void main() {
     expect(find.text('done'), findsOneWidget);
   });
 
-  testWidgets('胜利 + narrativeVictoryId → 触发 victory narrative push '
-      '(NavigatorObserver 验,不 settle 子屏)', (tester) async {
+  testWidgets('主线 opening/victory IDs → 两类 reader 都不再自动 push', (tester) async {
     // W17 #31 NavigatorObserver mock 套路:不 settle 子屏避免 NarrativeReaderScreen
     // 内部异步死锁,只验 Navigator.push 本身被触发。
     final observer = _RecordingNavigatorObserver();
 
     await tester.pumpWidget(
       harness(
-        stage: normalStage(victoryId: 'stage_01_01_victory'),
+        stage: normalStage(
+          openingId: 'stage_01_01_opening',
+          victoryId: 'stage_01_01_victory',
+        ),
         battleRunner: () async => true,
         navigatorObservers: [observer],
       ),
@@ -282,11 +286,65 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(
-      observer.pushedRoutes.length,
-      greaterThan(baseline),
-      reason: 'victory narrative MaterialPageRoute 应已 push',
+    expect(observer.pushedRoutes.length, baseline);
+    expect(find.text('done'), findsOneWidget);
+  });
+
+  testWidgets('特殊模式 opening ID → 保留 opening reader 且关闭后才开战', (tester) async {
+    var battleStarted = false;
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(
+          stageType: StageType.massBattle,
+          openingId: 'stage_mass_battle_01_opening',
+        ),
+        battleRunner: () async {
+          battleStarted = true;
+          return true;
+        },
+      ),
     );
+    await tester.pump();
+
+    await tester.tap(find.text('start'));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(battleStarted, isFalse);
+    expect(find.text(UiStrings.narrativeSkip), findsOneWidget);
+
+    await tester.tap(find.text(UiStrings.narrativeSkip));
+    await tester.pumpAndSettle();
+
+    expect(battleStarted, isTrue);
+    expect(find.text('done'), findsOneWidget);
+  });
+
+  testWidgets('特殊模式胜利 + narrativeVictoryId → 保留 victory reader push', (
+    tester,
+  ) async {
+    final observer = _RecordingNavigatorObserver();
+
+    await tester.pumpWidget(
+      harness(
+        stage: normalStage(
+          stageType: StageType.lightFoot,
+          victoryId: 'stage_light_foot_01_victory',
+        ),
+        battleRunner: () async => true,
+        navigatorObservers: [observer],
+      ),
+    );
+    await tester.pump();
+    final baseline = observer.pushedRoutes.length;
+
+    await tester.tap(find.text('start'));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    expect(observer.pushedRoutes.length, greaterThan(baseline));
     expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
   });
 }
