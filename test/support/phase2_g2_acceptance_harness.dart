@@ -23,11 +23,12 @@ extension G2GateIdLabels on G2GateId {
     G2GateId.learnableBoss => 'g2-05-learnable-boss',
     G2GateId.victoryToNextStage => 'g2-06-victory-next-stage',
     G2GateId.rulesParity => 'g2-07-manual-auto-headless-parity',
-    G2GateId.dualViewportPerformanceAndInk => 'g2-08-dual-viewport-performance-ink',
+    G2GateId.dualViewportPerformanceAndInk =>
+      'g2-08-dual-viewport-performance-ink',
   };
 
   String get title => switch (this) {
-    G2GateId.continuousMovementAndAttack => '连续移动/普攻无掉帧',
+    G2GateId.continuousMovementAndAttack => '连续移动/普攻无漏拍',
     G2GateId.continuousClear35To45 => '35–45 总敌人连续清怪',
     G2GateId.activeThreat8To16 => '8–16 active 且威胁可读',
     G2GateId.defensiveOptions => '盾反/招架/闪避各自有用',
@@ -127,9 +128,8 @@ final class G2AcceptanceReport {
     return G2EvidenceStatus.pass;
   }
 
-  G2AcceptanceGateResult resultFor(G2GateId id) => results.firstWhere(
-    (result) => result.gate.id == id,
-  );
+  G2AcceptanceGateResult resultFor(G2GateId id) =>
+      results.firstWhere((result) => result.gate.id == id);
 
   String toMarkdown({String generatedAt = '<fill after evidence capture>'}) {
     final out = StringBuffer()
@@ -140,11 +140,11 @@ final class G2AcceptanceReport {
       ..writeln('- overall: `${overallStatus.label}`')
       ..writeln('- scope: production vertical slice only')
       ..writeln()
-      ..writeln(
-        '本表是可执行验收 harness 的证据记录，不把候选数值或未集成证据写成生产 PASS。',
-      )
+      ..writeln('本表是可执行验收 harness 的证据记录，不把候选数值或未集成证据写成生产 PASS。')
       ..writeln()
-      ..writeln('| gate | hard acceptance | status | required evidence | evidence |')
+      ..writeln(
+        '| gate | hard acceptance | status | required evidence | evidence |',
+      )
       ..writeln('|---|---|---|---|---|');
 
     for (final result in results) {
@@ -180,7 +180,7 @@ final class G2AcceptanceHarness {
         G2EvidenceKind.runtimeIntegration,
         G2EvidenceKind.performanceProfile,
       ],
-      acceptance: '连续移动与普攻场景无掉帧证据',
+      acceptance: '连续移动与普攻输入在固定 tick 中无丢失，并附性能原始证据',
     ),
     G2AcceptanceGate(
       id: G2GateId.continuousClear35To45,
@@ -217,6 +217,7 @@ final class G2AcceptanceHarness {
         G2EvidenceKind.visualCapture,
       ],
       acceptance: 'Boss 规律可学习，破绽可被玩家利用',
+      candidateNote: '证据锚点为既有生产 stage_01_05；stage_01_03 是非 Boss 伏击关，不承担本项。',
     ),
     G2AcceptanceGate(
       id: G2GateId.victoryToNextStage,
@@ -253,11 +254,7 @@ final class G2AcceptanceHarness {
       final evidence = evidenceByGate[gate.id] ?? const [];
       final status = _evaluateGate(gate, evidence);
       results.add(
-        G2AcceptanceGateResult(
-          gate: gate,
-          status: status,
-          evidence: evidence,
-        ),
+        G2AcceptanceGateResult(gate: gate, status: status, evidence: evidence),
       );
     }
     return G2AcceptanceReport(results: results);
@@ -270,7 +267,8 @@ final class G2AcceptanceHarness {
           kind: G2EvidenceKind.candidateContract,
           status: G2EvidenceStatus.tuningCandidate,
           source: 'test/fixtures/phase2/combat/ch1_candidate',
-          summary: 'candidate encounter shape only; production integration pending',
+          summary:
+              'candidate encounter shape only; production integration pending',
         ),
       ],
       G2GateId.activeThreat8To16: const [

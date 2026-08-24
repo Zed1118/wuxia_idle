@@ -24,6 +24,13 @@ void main() {
       expect(gate.requiredEvidence, isNotEmpty, reason: gate.id.id);
       expect(gate.acceptance, isNotEmpty, reason: gate.id.id);
     }
+    expect(G2GateId.continuousMovementAndAttack.title, '连续移动/普攻无漏拍');
+    expect(
+      G2AcceptanceHarness.stage0103Matrix
+          .firstWhere((gate) => gate.id == G2GateId.learnableBoss)
+          .candidateNote,
+      contains('stage_01_05'),
+    );
   });
 
   test('candidate stage shape is evidence input, never a production PASS', () {
@@ -31,22 +38,26 @@ void main() {
         ch1CandidateDefeatProjectionEntriesByStageId['stage_01_03']!;
     expect(candidateEntries, hasLength(40));
     expect(
-      candidateEntries.every((entry) => entry.key.startsWith('candidate_ch1_s03_')),
+      candidateEntries.every(
+        (entry) => entry.key.startsWith('candidate_ch1_s03_'),
+      ),
       isTrue,
     );
 
     final report = G2AcceptanceHarness.candidateStage0103();
     expect(report.overallStatus, G2EvidenceStatus.blocked);
     expect(
-      report.results.every(
-        (result) => result.status != G2EvidenceStatus.pass,
-      ),
+      report.results.every((result) => result.status != G2EvidenceStatus.pass),
       isTrue,
     );
-    expect(report.resultFor(G2GateId.continuousClear35To45).status,
-        G2EvidenceStatus.blocked);
-    expect(report.resultFor(G2GateId.activeThreat8To16).status,
-        G2EvidenceStatus.blocked);
+    expect(
+      report.resultFor(G2GateId.continuousClear35To45).status,
+      G2EvidenceStatus.blocked,
+    );
+    expect(
+      report.resultFor(G2GateId.activeThreat8To16).status,
+      G2EvidenceStatus.blocked,
+    );
   });
 
   test('all required evidence must pass before a gate can pass', () {
@@ -97,25 +108,28 @@ void main() {
     expect(markdown, isNot(contains('FROZEN')));
   });
 
-  test('production integration hooks are present without asserting stage PASS', () {
-    final headless = File(
-      'lib/features/battle/application/phase0a/phase0a_headless_runner.dart',
-    ).readAsStringSync();
-    final profile = File(
-      'lib/features/debug/application/battle_frame_profile.dart',
-    ).readAsStringSync();
-    final visualRoutes = File(
-      'lib/features/debug/application/visual_route.dart',
-    ).readAsStringSync();
+  test(
+    'production integration hooks are present without asserting stage PASS',
+    () {
+      final headless = File(
+        'lib/features/battle/application/phase0a/phase0a_headless_runner.dart',
+      ).readAsStringSync();
+      final profile = File(
+        'lib/features/debug/application/battle_frame_profile.dart',
+      ).readAsStringSync();
+      final visualRoutes = File(
+        'lib/features/debug/application/visual_route.dart',
+      ).readAsStringSync();
 
-    expect(headless, contains('runToEnd'));
-    expect(profile, contains('BattleFrameProfileAccumulator'));
-    expect(profile, contains('p99'));
-    expect(visualRoutes, contains('phase0aBattleProfile'));
-    expect(visualRoutes, contains('phase0aBattleBossMechanics'));
-    expect(
-      G2AcceptanceHarness.candidateStage0103().overallStatus,
-      isNot(G2EvidenceStatus.pass),
-    );
-  });
+      expect(headless, contains('runToEnd'));
+      expect(profile, contains('BattleFrameProfileAccumulator'));
+      expect(profile, contains('p99'));
+      expect(visualRoutes, contains('phase0aBattleProfile'));
+      expect(visualRoutes, contains('phase0aBattleBossMechanics'));
+      expect(
+        G2AcceptanceHarness.candidateStage0103().overallStatus,
+        isNot(G2EvidenceStatus.pass),
+      );
+    },
+  );
 }
