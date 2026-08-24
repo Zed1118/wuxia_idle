@@ -6,6 +6,8 @@ import '../../../../data/defs/skill_def.dart';
 const _initialBossPhaseIndex = 0;
 const _noChargeTicks = 0;
 const _noStaggerTicks = 0;
+const _noDefenseTicks = 0;
+const _noDefenseScalar = 0.0;
 
 /// Phase 0A 竞技场阵营:单角色玩家对多敌。
 enum Phase0aSide { player, enemy }
@@ -154,13 +156,13 @@ final class Phase0aActor {
     this.chargingDefenseFlags,
     this.chargeTicksRemaining = _noChargeTicks,
     this.staggerTicksRemaining = _noStaggerTicks,
-    this.shieldRemaining = 0,
-    this.shieldTicksRemaining = 0,
-    this.parryTicksRemaining = 0,
-    this.dodgeTicksRemaining = 0,
-    this.defenseCooldownRemaining = 0,
-    this.parryCounterDamage = 0,
-    this.parryCounterBudgetRemaining = 0,
+    this.shieldRemaining = _noDefenseScalar,
+    this.shieldTicksRemaining = _noDefenseTicks,
+    this.parryTicksRemaining = _noDefenseTicks,
+    this.dodgeTicksRemaining = _noDefenseTicks,
+    this.defenseCooldownRemaining = _noDefenseScalar,
+    this.parryCounterDamage = _noDefenseScalar,
+    this.parryCounterBudgetRemaining = _noDefenseScalar,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。

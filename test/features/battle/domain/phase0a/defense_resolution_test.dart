@@ -5,7 +5,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/defense_resolution.dar
 void main() {
   group('AttackDefenseFlags', () {
     test('derives unblockable only when block and parry are both absent', () {
-      final flags = AttackDefenseFlags(
+      const flags = AttackDefenseFlags(
         blockable: false,
         parryable: false,
         reflectable: false,
@@ -17,7 +17,7 @@ void main() {
     });
 
     test('keeps parry independent from block', () {
-      final flags = AttackDefenseFlags(
+      const flags = AttackDefenseFlags(
         blockable: false,
         parryable: true,
         reflectable: false,
@@ -32,7 +32,7 @@ void main() {
   });
 
   group('resolveDefense', () {
-    final openFlags = AttackDefenseFlags(
+    const openFlags = AttackDefenseFlags(
       blockable: true,
       parryable: true,
       reflectable: true,

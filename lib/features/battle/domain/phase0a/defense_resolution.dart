@@ -190,8 +190,8 @@ final class DefenseResult {
     required this.canLifesteal,
     required this.canTriggerOnHitReflect,
     required this.projectileRedirect,
-    this.shieldRemaining = 0,
-    this.shieldAbsorbed = 0,
+    required this.shieldRemaining,
+    required this.shieldAbsorbed,
   });
 
   final DefenseBranch branch;
@@ -263,6 +263,8 @@ DefenseResult resolveDefense(DefenseInput input) {
       canLifesteal: false,
       canTriggerOnHitReflect: false,
       projectileRedirect: true,
+      shieldRemaining: 0,
+      shieldAbsorbed: 0,
     );
   }
 
@@ -342,6 +344,8 @@ DefenseResult _counterResult(DefenseInput input, DefenseBranch branch) {
       CounterEffect.onHitReflect,
     ),
     projectileRedirect: false,
+    shieldRemaining: 0,
+    shieldAbsorbed: 0,
   );
 }
 
@@ -356,6 +360,8 @@ DefenseResult _zeroResult(DefenseBranch branch) => DefenseResult(
   canLifesteal: false,
   canTriggerOnHitReflect: false,
   projectileRedirect: false,
+  shieldRemaining: 0,
+  shieldAbsorbed: 0,
 );
 
 double _boundedCounter(DefenseInput input) {

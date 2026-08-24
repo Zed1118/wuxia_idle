@@ -1152,6 +1152,13 @@ techniques:
 
     test('prevStageId 引用不存在的 stage → 启动失败抛 StateError', () async {
       Future<String> brokenLoader(String path) async {
+        if (path == 'data/combat/manifest.yaml') {
+          throw const FileSystemException(
+            'fixture: 跳过 combat catalog',
+            'data/combat/manifest.yaml',
+            OSError('fixture missing', 2),
+          );
+        }
         if (path.endsWith('stages.yaml')) {
           return '''
 stages:
@@ -1184,6 +1191,13 @@ stages:
 
     test('prevStageId 跨章引用 → 启动失败抛 StateError', () async {
       Future<String> brokenLoader(String path) async {
+        if (path == 'data/combat/manifest.yaml') {
+          throw const FileSystemException(
+            'fixture: 跳过 combat catalog',
+            'data/combat/manifest.yaml',
+            OSError('fixture missing', 2),
+          );
+        }
         if (path.endsWith('stages.yaml')) {
           return '''
 stages:

@@ -31,6 +31,15 @@ Future<String> _fixtureLoader(String path) async {
   }
   if (path == 'data/skills.yaml') return 'skills: []\n';
   if (path == 'data/stages.yaml') return 'stages: []\n';
+  if (path == 'data/combat/manifest.yaml') {
+    // 本测试只验证百科分组；缺失根 manifest 会按生产合同关闭可选 combat
+    // catalog，避免把真实 stage_01_03 binding 混入空关卡 fixture。
+    throw const FileSystemException(
+      'fixture: 跳过 combat catalog',
+      'data/combat/manifest.yaml',
+      OSError('fixture missing', 2),
+    );
+  }
   if (path == 'data/towers.yaml') return 'floors: []\n';
   if (path == 'data/boss_gauntlets.yaml') {
     // 本 fixture skills 为空 → 不载断魂庄敌队（其 skillIds/相位招引用会对空

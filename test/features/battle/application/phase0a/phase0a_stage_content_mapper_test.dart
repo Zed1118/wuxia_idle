@@ -101,7 +101,7 @@ void main() {
           isA<StateError>().having(
             (error) => error.message,
             'message',
-            contains('缺真实 basicAttack'),
+            contains('lacks a real basic skill'),
           ),
         ),
       );
