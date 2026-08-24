@@ -4100,9 +4100,21 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u07-sect-itinerary-current-state-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u07-sect-itinerary-current-state
-    status: in_progress
+    status: ready_reviewed
     base_commit: b63adc8fa41bef63b9bcd51668ec3c2e524059f4
+    code_candidate_commit: 73adcd6508e7136f79460054832646c93e72788e
+    reviewed_candidate_commit: 73adcd6508e7136f79460054832646c93e72788e
+    ready_marker: "[READY][CODEX][P2-M6-U07-SECT-ITINERARY-CURRENT-STATE] 接入宗门行止当前态摘要"
     completion_scope: add_read_only_current_sect_itinerary_summary_to_sect_hub
+    verification:
+      red_tests: 1
+      focused_with_paper_tests: 25
+      adjacent_sect_activity_expedition_gauntlet_main_menu_tests: 533
+      independent_focused_tests: 29
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5408
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-REPUTATION-LOCATION
     owned_files:

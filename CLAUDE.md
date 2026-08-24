@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.72**
+> **版本:v1.73**
+>
+> v1.73 变更摘要(2026-08-25 二阶段 M6 U07 宗门行止当前态纵切):宗门 Hub 顶部新增只读“宗门行止”，真实掌门经 `CurrentLeaderResolver` 解析，门人闭关/百草岭/断魂庄占用经 `CharacterOccupancyService` 聚合，远征深度/战败与断魂庄关次/阶段只读既有 active provider。掌门指针缺失、悬空、重复占用或占用角色悬空均 fail closed，不猜测身份。原七条宗门路由/门控不变；不新增疗伤/听剑占用，不恢复已拒绝的统一完成报告。本纵切只关闭 U07 当前态摘要首缺口，U07/M6/二阶段仍开放；零业务写入、schema/saveVersion、YAML、调优、奖励、经济或解锁变更。
 >
 > v1.72 变更摘要(2026-08-25 二阶段 M6 U06 江湖地图声望第六地点纵切):“江湖恩怨”从主菜单平铺区迁为江湖地图第六个生产地点；锁定与开放继续复用 `kFirstChapterFinalStageId`，数据未决或异常时 fail closed，点击仍进入既有 `ReputationPanelScreen`。宗门 Hub 仍消费同一社交门槛，江湖商店保持主菜单条件入口。本纵切只关闭声望地点归位缺口；统一地点详情、U06/U14/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、声望算法、奖励、经济或解锁变更。
 >

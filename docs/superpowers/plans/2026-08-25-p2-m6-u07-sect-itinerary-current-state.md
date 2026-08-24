@@ -6,7 +6,10 @@
 - base: `b63adc8fa41bef63b9bcd51668ec3c2e524059f4`
 - branch: `codex/phase2-m6-u07-sect-itinerary-current-state-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u07-sect-itinerary-current-state`
-- status: `in_progress`
+- status: `ready_reviewed`
+- registration_commit: `6c80724cd1302bf878182fb6a6f74dbc478f2966`
+- code_candidate_commit: `73adcd6508e7136f79460054832646c93e72788e`
+- reviewed_candidate_commit: `73adcd6508e7136f79460054832646c93e72788e`
 
 ## 目标与权威落点
 
@@ -49,3 +52,13 @@
 ## 停止条件
 
 若展示必须新增占用源、改动活动生命周期、引入完成报告或需要 schema/调优/解锁决策，立即标记精确 `BLOCKED`，不在本切片猜测新业务语义。
+
+## 完成证据
+
+- 真实红测：`0/1`，精确失败于宗门 Hub 缺少 `sect-itinerary-panel`。
+- provider/panel/宗门 Hub/占用/纸面对比联合：`25/25 PASS`。
+- 宗门 + 占用 + 远征 + 断魂庄 + 主菜单完整相邻域：`533/533 PASS`。
+- scoped analyze 与 root `flutter analyze`：`0 issue`；`git diff --check` 通过。
+- 独立只读复核：`29/29 PASS`，`P0=0 / P1=0 / P2=0`，建议 `READY`。
+- 最终 root full suite：`5408/5408 PASS`。
+- 该证据只支持 U07 当前态摘要首纵切，不晋升 U07、M6 或二阶段整体状态。

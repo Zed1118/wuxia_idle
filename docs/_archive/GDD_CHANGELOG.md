@@ -1,5 +1,7 @@
 # GDD.md 历史变更摘要归档
 
+> **v1.53 变更**(2026-08-25 二阶段九霄塔排行榜归位纵切):本地排行榜归位到九霄塔标题栏，复用既有 `LeaderboardScreen` 并继续只读 `towerProgressProvider`。主菜单不恢复平铺入口，江湖纪事仍为六类。这只关闭排行榜归位缺口，不晋升 U05/U06/M6/二阶段；同步仍为 Noop，不改 cloud/account/network、schema、YAML、调优、奖励、经济或解锁。(2026-08-25 v1.55 批按体例迁入)
+
 > **v1.52 变更**(2026-08-25 二阶段江湖地图百草岭远征第五地点纵切):“百草岭”作为地图第五个生产地点；可见性只读既有 `jianghuJourneyUnlocked` 隐藏门，进行中状态只读 `activeExpeditionProvider`，去向仍为 `ExpeditionOverviewScreen`。宗门 Hub 的远征派遣/管理入口保留。这只关闭百草岭第五地点缺口；其他地点、统一地点详情、U06/U14/M5/M6/二阶段仍开放，不改 schema、YAML、调优、数值、参与者、占用、奖励、经济、解锁或离线推进。(2026-08-25 v1.54 批按体例迁入)
 
 > **v1.51 变更**(2026-08-25 二阶段江湖地图断魂庄第四地点纵切):“断魂庄”从主菜单平铺迁为地图第四个生产地点；可见性只读既有 `jianghuJourneyUnlocked` 隐藏门，进行中状态只读 `activeGauntletProvider`，去向仍为处理新建/恢复的 `GauntletLoadoutScreen`。这只关闭断魂庄第四地点缺口；其他地点、统一地点详情、U06/U14/M5/M6/二阶段仍开放，不改 schema、YAML、调优、数值、参与者、奖励、经济、解锁或叙事，不开放前台 bot 或代选奖励。(2026-08-25 v1.53 批按体例迁入)
