@@ -18,13 +18,13 @@ import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import '../../jianghu_map/presentation/jianghu_map_screen.dart';
-import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../martial_inventory/presentation/martial_inventory_hub_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/application/new_save_goal_guidance.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
+import '../../mainline/domain/onboarding_gate.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/new_save_goal_guidance_view.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
@@ -141,9 +141,6 @@ class MainMenu extends ConsumerWidget {
 
   static const int _seclusionUnlockStep = 5;
 
-  // H1 批1 §5.7:未解锁系统门控 — 镜像各屏 clearedStageIds prereq(单一真相源)。
-  static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
-
   static TutorialHintDef? _firstUnreadHint(
     int currentStep,
     List<int> hintsRead,
@@ -187,7 +184,7 @@ class MainMenu extends ConsumerWidget {
     );
     final activeHint = _firstUnreadHint(step, hintsRead);
 
-    final socialLocked = !cleared.contains(_socialUnlockStage);
+    final socialLocked = !cleared.contains(kFirstChapterFinalStageId);
 
     // 桃花岛入口门控：unlock_chapter_index(=1,0-based)对应第二章(chapterIndex=2)通关。
     // 门槛从 config 读，不硬编码。GameRepository 未加载时（轻量 test）视为锁定。
@@ -452,17 +449,6 @@ class MainMenu extends ConsumerWidget {
         thumbnailPath: WuxiaUi.entryTechnique,
         status: inventoryStatus,
         onTap: () => _push(context, const MartialInventoryHubScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuJianghu,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuJianghuHint,
-        icon: Icons.handshake_outlined,
-        thumbnailPath: WuxiaUi.entryJianghu,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const ReputationPanelScreen()),
       ),
       if (shopUnlocked)
         WuxiaInkButton(

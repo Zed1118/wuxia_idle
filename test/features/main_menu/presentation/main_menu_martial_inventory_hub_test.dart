@@ -33,10 +33,14 @@ void main() {
   );
 
   Future<void> tapVisibleLabel(WidgetTester tester, String label) async {
-    final finder = find.text(label);
-    await tester.ensureVisible(finder);
+    final button = hubButton(label);
+    await Scrollable.ensureVisible(
+      tester.element(button),
+      alignment: 0.5,
+      duration: Duration.zero,
+    );
     await tester.pumpAndSettle();
-    await tester.tap(finder);
+    await tester.tap(button);
     await tester.pumpAndSettle();
   }
 

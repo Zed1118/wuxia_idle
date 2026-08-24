@@ -39,7 +39,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（继续江湖 / 宗门 / 武学与行囊 / 档案等）
-///   - 8 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
+///   - 7 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -119,7 +119,7 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('8 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('7 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -127,7 +127,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuJianghuMapAction), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsNothing);
     expect(find.text(UiStrings.mainMenuMassBattle), findsNothing);
-    expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghu), findsNothing);
     expect(find.text(UiStrings.mainMenuSectHub), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghuChronicle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
@@ -162,7 +162,7 @@ void main() {
       isTrue,
     );
 
-    // 养成经营:宗门/武学与行囊在前，江湖声望承接。
+    // 养成经营:只保留宗门/武学与行囊两个一级入口。
     expect(
       (y(UiStrings.mainMenuSectHub) - y(UiStrings.mainMenuMartialInventory))
               .abs() <
@@ -176,9 +176,9 @@ void main() {
     );
   });
 
-  testWidgets('8 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('7 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(8));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(7));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -726,8 +726,8 @@ void main() {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
-      // 社交声望 Ch1 prereq 满足 → enabled；纪事入口始终可进。
-      expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
+      // 社交声望已迁地图；纪事入口始终可进。
+      expect(find.text(UiStrings.mainMenuJianghu), findsNothing);
       expect(opacityOf(tester, UiStrings.mainMenuJianghuChronicle), 1.0);
       expect(find.text(UiStrings.mainMenuInnerDemon), findsNothing);
       expect((await openSectHub(tester)).sectLocked, isFalse);

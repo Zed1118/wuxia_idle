@@ -12,11 +12,13 @@ import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../expedition/application/expedition_providers.dart';
 import '../../expedition/domain/expedition_run.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
+import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/application/light_foot_service.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../main_menu/application/main_menu_status_summary_provider.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../mainline/domain/onboarding_gate.dart';
 import '../../mass_battle/application/mass_battle_service.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
@@ -127,6 +129,9 @@ String? jianghuMapExpeditionStatus(ExpeditionRun? run) {
   return UiStrings.expeditionActiveDepth(run.currentNode);
 }
 
+bool jianghuMapReputationLocationLocked(MainlineProgress progress) =>
+    !progress.clearedStageIds.contains(kFirstChapterFinalStageId);
+
 class JianghuMapScreen extends ConsumerWidget {
   const JianghuMapScreen({super.key});
 
@@ -141,6 +146,12 @@ class JianghuMapScreen extends ConsumerWidget {
     final massBattleState = ref
         .watch(mainlineProgressProvider)
         .maybeWhen(data: jianghuMapMassBattleLocationState, orElse: () => null);
+    final reputationLocked = ref
+        .watch(mainlineProgressProvider)
+        .maybeWhen(
+          data: jianghuMapReputationLocationLocked,
+          orElse: () => null,
+        );
     final jianghuJourneyUnlocked = ref
         .watch(mainMenuSaveSnapshotProvider)
         .maybeWhen(
@@ -268,6 +279,25 @@ class JianghuMapScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                WuxiaInkButton(
+                  key: const ValueKey('jianghu-map-reputation-location'),
+                  label: UiStrings.mainMenuJianghu,
+                  hint: reputationLocked == false
+                      ? UiStrings.mainMenuJianghuHint
+                      : UiStrings.mainMenuSocialLockedHint,
+                  icon: Icons.handshake_outlined,
+                  thumbnailPath: WuxiaUi.entryJianghu,
+                  disabled: reputationLocked != false,
+                  locked: reputationLocked != false,
+                  onTap: reputationLocked == false
+                      ? () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) => const ReputationPanelScreen(),
+                          ),
+                        )
+                      : null,
+                ),
               ],
             ),
           ),

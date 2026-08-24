@@ -64,6 +64,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsNWidgets(2));
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
   });
 
   test('轻功地点锁定和进度从生产链派生', () {
@@ -192,6 +193,13 @@ void main() {
       expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
       expect(find.text(UiStrings.gauntletName), findsOneWidget);
       expect(find.text(UiStrings.expeditionBaicaoName), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('jianghu-map-reputation-location')),
+        240,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pump();
+      expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
