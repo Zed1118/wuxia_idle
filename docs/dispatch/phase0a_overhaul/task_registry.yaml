@@ -2961,8 +2961,11 @@ tasks:
       - lib/features/mainline/presentation/stage_list_screen.dart
       - lib/shared/strings.dart
       - test/data/mainline_narrative_manifest_test.dart
+      - test/features/mainline/mainline_narrative_completeness_test.dart
       - test/features/mainline/presentation/stage_entry_flow_test.dart
       - test/features/mainline/presentation/stage_entry_flow_branches_test.dart
+      - test/features/mainline/presentation/stage_list_screen_test.dart
+      - test/features/mainline/presentation/stage_list_screen_cycle_test.dart
       - test/features/mainline/presentation/mainline_narrative_deblocking_test.dart
       - test/features/mainline/presentation/mainline_chapter_scroll_test.dart
       - docs/superpowers/plans/2026-08-24-p2-m6-u02-u03-mainline-narrative-deblocking.md

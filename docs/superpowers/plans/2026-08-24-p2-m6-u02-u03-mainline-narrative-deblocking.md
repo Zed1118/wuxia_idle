@@ -16,6 +16,7 @@
 
 - 开工前和 actual diff 后分别调用 Qoder CLI `Qwen3.8-Max` 高强度只读审查，记录命令、版本、精确模型、退出码与 P0/P1/P2。
 - 定向测试覆盖 105 关完整性、三类自动 reader 归零、Boss 事实性损失展示、可选阅读解锁、特殊模式不回归。
+- 允许同步改写现有 `mainline_narrative_completeness_test.dart` 与两个 `stage_list_screen*_test.dart` 中已被新冻结合同取代的“点关卡自动进 opening reader”断言；不得删除原有资产真实性、章节内容和 cycle 回归覆盖。
 - `dart format --output=none --set-exit-if-changed`、changed/scoped `flutter analyze --no-pub`、`git diff --check` 和 clean worktree 全部通过后提交唯一 READY 恢复点。
 
 ## 恢复点
