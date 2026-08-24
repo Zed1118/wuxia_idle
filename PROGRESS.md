@@ -3,6 +3,8 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
+> **2026-08-25 二阶段 M2/M6 U04 第一章待处理江湖事持久队列纵切 READY**：复用 `0.40.0` `MainlineSettlementJournal` outbox，第一章连续首通的互动奇遇/Boss 招降现在与 core settlement 同事务生成 typed canonical refs，持久 FIFO 顺序与稳定 seed；展示中重启可重现，选择业务写入/来源标记/claim 同事务，失败整体回滚，已完成项幂等不重放。候选代码 `96196ac6`；最终全量 **5315/5315 PASS**、根应用 analyze 0 issue、独立复审 P0/P1=0。本纵切不外推到非主线全局队列，不关闭听剑/全模式一致性、U01/U05、M2/M6 或二阶段；零 schema/saveVersion、数值、概率、奖励、解锁和文案变更，main/origin main 未动。
+>
 > **2026-08-24 二阶段 M2/M6 U01 第一章持久结算恢复切片 READY**：在前批第一章连续首通 READY 基线 `d134f68d` 上，存档加法迁移至 `0.40.0`，专用 `MainlineSettlementJournal`/outbox 以 `runId + stageId + loadoutVersion + participantId` 锁定权威结算。`prepared` 崩溃只能同人同关重试；核心角色/装备/心法/掉落/伤势/进度及确定性战绩、图鉴、击杀计数、声望与 receipt 同事务落库，事务失败整体回滚；`coreApplied` 重启只恢复结算后 UI/推进，不重发成长、伤势、掉落或进度。进入下一关原子交接旧 receipt/新 `prepared`，保持同 run/同人且快照版本递增。候选代码 `9712bdc9`；journal/run/事务 **44/44**、生产恢复 **2/2**、受影响 service **57/57**、主线目录 **387/387**、root analyze 0 issue、全量 **5295/5295 PASS**。本批仍不关闭互动奇遇/招降的 U04 待处理队列、听剑生产接线、全模式一致性、U05、M2/M6 或整个二阶段；零调优值变更，main/origin main 未动。
 >
 > **2026-08-24 二阶段 M2/M6 U01 第一章连续首通切片 READY**：在 G2 后唯一整合基线 `1a7bc866` 上，第一周目当前可挑战主线关现由外层非递归 coordinator 串起真实 `stage_01_01→stage_01_05`；每关完整战斗、结算、进度及后置 hook 成功后，前四关显示“进入下一关/返回江湖地图”，第五关结束本章 run。整段锁定同一掌门，关间按同一角色重新装配不可变快照并把版本推进 1..5；主动返回、战败/退出、角色缺失/死亡/无主修/活动占用、错角色/错后继或装配异常均在发布下一关前 fail closed。主线目录 **367/367**、G2 关键保护链 **53/53**、双视口弹层与 Ch1 宿主回归通过；根 analyze 0 issue、全量 **5274/5274 PASS**，READY 证据见 `docs/audit/phase2_m2_m6_u01_ch1_continuous_run_2026-08-24.md`。本批不关闭持久崩溃恢复/重复结算键、听剑生产接线、全模式一致性、U04/U05、M2/M6 或整个二阶段；未改数值、奖励、解锁、schema、调优，main/origin main 未动。
