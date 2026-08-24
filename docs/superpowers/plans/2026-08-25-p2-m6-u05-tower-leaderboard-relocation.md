@@ -6,7 +6,10 @@
 - base: `79c5e96c6e99bcb519ac17e27ad51afb673b8601`
 - branch: `codex/phase2-m6-u05-tower-leaderboard-relocation-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-tower-leaderboard-relocation`
-- status: `in_progress`
+- status: `ready_reviewed`
+- registration_commit: `deff575be68ad51c5b3749170f716164f36efd01`
+- code_candidate_commit: `bd1c492397c452adbf616f2504fa8b704b540acd`
+- reviewed_candidate_commit: `bd1c492397c452adbf616f2504fa8b704b540acd`
 
 ## 目标与权威落点
 
@@ -37,7 +40,7 @@ GDD §8.2 明确“通关层数决定排行榜位置”，现有 `LeaderboardScr
 
 ## 红绿与门禁
 
-1. 红测证明主菜单/江湖纪事不再平铺排行榜，且九霄塔当前没有排行榜入口。
+1. 红测证明九霄塔当前没有排行榜入口；主菜单/江湖纪事不平铺排行榜由既有回归持续保护。
 2. 转绿后九霄塔顶栏提供键盘可达、有 tooltip 的排行榜动作，真实 push `LeaderboardScreen`。
 3. 排行榜空态与现有指标继续只读生产塔进度，主菜单与江湖纪事六类 Hub 不回退。
 4. 运行排行榜、塔、主菜单/江湖纪事相邻回归、纸面对比审计、两层 analyze 和全量。
@@ -46,3 +49,13 @@ GDD §8.2 明确“通关层数决定排行榜位置”，现有 `LeaderboardScr
 ## 停止条件
 
 若排行榜落点必须改变江湖纪事六类设计、塔进度存储、同步合同或需要 schema/网络/发布决策，立即记录精确 `BLOCKED`；不在本切片设计新榜单。
+
+## 完成证据
+
+- 真实红测：`0/2`，两项均因九霄塔缺失 `tower-leaderboard-action` 失败。
+- 聚焦组合（排行榜/塔列表/主菜单与江湖纪事/纸面对比）：`29/29`。
+- 九霄塔相邻域 + 江湖纪事：`113/113`。
+- scoped analyze 与 root `flutter analyze`：`0 issue`；`git diff --check` 通过。
+- 独立只读复核：`98/98`，`P0=0 / P1=0 / P2=0`，建议 `READY`。
+- 最终全量：`5398/5398 PASS`。
+- 该证据只支持排行榜归位纵切，不晋升 U05、U06、M6 或二阶段整体状态。

@@ -3874,9 +3874,21 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-tower-leaderboard-relocation-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-tower-leaderboard-relocation
-    status: in_progress
+    status: ready_reviewed
     base_commit: 79c5e96c6e99bcb519ac17e27ad51afb673b8601
+    code_candidate_commit: bd1c492397c452adbf616f2504fa8b704b540acd
+    reviewed_candidate_commit: bd1c492397c452adbf616f2504fa8b704b540acd
+    ready_marker: "[READY][CODEX][P2-M6-U05-TOWER-LEADERBOARD-RELOCATION] 归位九霄塔排行榜入口"
     completion_scope: restore_local_tower_leaderboard_production_access_from_tower_screen
+    verification:
+      red_tests: 2
+      focused_with_paper_tests: 29
+      adjacent_tower_chronicle_tests: 113
+      independent_navigation_tests: 98
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5398
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-EXPEDITION-LOCATION
     owned_files:

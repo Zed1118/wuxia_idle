@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.70**
+> **版本:v1.71**
+>
+> v1.71 变更摘要(2026-08-25 二阶段 M6 U05 九霄塔排行榜归位纵切):本地排行榜从九霄塔标题栏重新获得生产入口，点击复用既有 `LeaderboardScreen`，继续只读 `towerProgressProvider` 的最高层、最佳耗时、挑战次数和派生胜率。主菜单不恢复平铺入口，江湖纪事仍为六类。本纵切只关闭排行榜归位缺口，不晋升 U05/U06/M6/二阶段；`LeaderboardSyncService` 仍为 Noop，零 cloud/account/network、schema/saveVersion、YAML、调优、奖励、经济或解锁变更。
 >
 > v1.70 变更摘要(2026-08-25 二阶段 M6 U06 江湖地图百草岭远征第五地点纵切):“百草岭”作为江湖地图第五个生产地点；可见性只读既有 `jianghuJourneyUnlocked` 隐藏门，未决或异常时 fail closed，active 状态只读 `activeExpeditionProvider`，点击仍直达 `ExpeditionOverviewScreen`。宗门 Hub 的远征派遣/管理入口保留，与地图共享同一生产页。本纵切只关闭百草岭第五地点缺口；其他地点、统一地点详情、U06/U14/M5/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、数值、参与者、占用、奖励、经济、解锁或离线推进变更。
 >
