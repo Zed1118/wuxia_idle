@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/defense_resolution.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_enemy_roster.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -398,6 +399,36 @@ void main() {
     expect(encounter.totalDamage, 63);
     expect(encounter.criticalCount, 3);
     expect(encounter.damageByCharacterId, {1: 33, 2: 13});
+  });
+
+  test('parry counter damage is attributed to the defending player', () {
+    final settlement = Phase0aSettlementAdapter.fromEncounterMapping(
+      mapping: _encounterMapping(
+        combatants: _combatants(),
+        moveBindings: _moveBindings(),
+      ),
+      outcome: Phase0aBattleOutcome.victory,
+      finalState: _finalState(),
+      events: const [
+        Phase0aDefenseResolved(
+          seq: 1,
+          tick: 1,
+          attackId: 'enemy-basic',
+          attacker: 'enemy_active',
+          target: 'player',
+          branch: DefenseBranch.parry,
+          incomingDamage: 0,
+          counterDamage: 25,
+          shieldRemaining: 0,
+          nonRecursive: true,
+          targetPosition: ArenaVector.zero,
+        ),
+      ],
+    );
+
+    expect(settlement.hadActions, isTrue);
+    expect(settlement.totalDamage, 25);
+    expect(settlement.damageByCharacterId, {1: 25});
   });
 
   test('shared core requires exactly one mapped player actor', () {
