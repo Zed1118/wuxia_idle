@@ -469,6 +469,21 @@ class UiStrings {
       '4 个数据种子场景（强化曲线 / 共鸣触发 / 散功代价 / 全栈对比）';
   static const String mainMenuCharacterPanel = '角色面板';
   static const String mainMenuCharacterPanelHint = '查看角色属性 / 装备 / 心法';
+  static const String mainMenuMartialInventory = '武学与行囊';
+  static const String mainMenuMartialInventoryHint = '招式、主修、装备与物品';
+  static const String martialInventoryHubTitle = '武学与行囊';
+  static const String martialInventoryHubSectionTitle = '整备所学所藏';
+  static const String martialInventoryHubSubtitle = '招式与主修归于个人，装备与物品归于宗门行囊。';
+  static const String martialInventorySkills = '招式配置';
+  static const String martialInventorySkillsHint = '装配招式、查看熟练度与残页';
+  static const String martialInventoryTechniques = '主修心法';
+  static const String martialInventoryTechniquesHint = '查看主修、辅修与散功换修';
+  static const String martialInventoryEquipment = '装备';
+  static const String martialInventoryEquipmentHint = '查看、强化、开锋与穿戴装备';
+  static const String martialInventoryItems = '物品';
+  static const String martialInventoryItemsHint = '查看材料、丹药、秘籍与杂项';
+  static const String martialInventoryMartialLockedHint = '通过第三关后开放武学整备';
+  static const String martialInventoryNoActiveCharacterHint = '暂无可用的出战角色';
   static const String mainMenuInventory = '装备仓库';
   static const String mainMenuInventoryHint = '查看 / 强化 / 开锋装备';
   static String mainMenuInventoryStatus(int count, String topTier) =>

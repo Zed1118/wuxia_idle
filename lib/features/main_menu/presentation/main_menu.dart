@@ -7,9 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
-import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
-import '../../../core/domain/technique.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
@@ -18,7 +16,6 @@ import '../../battle_record/application/boss_memory_providers.dart';
 import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
 import '../../weapon_codex/presentation/weapon_codex_screen.dart';
-import '../../cangjingge/presentation/cangjingge_screen.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../character_panel/presentation/lineage_panel_screen.dart';
@@ -26,13 +23,13 @@ import '../../debug/presentation/phase2_test_menu.dart';
 import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
-import '../../inventory/presentation/inventory_screen.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
+import '../../martial_inventory/presentation/martial_inventory_hub_screen.dart';
 import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/application/new_save_goal_guidance.dart';
@@ -53,7 +50,6 @@ import '../../../shared/app_exit.dart';
 import '../../../shared/audio/audio_assets.dart';
 import '../../../shared/audio/bgm_scope.dart';
 import '../../../shared/strings.dart';
-import '../../technique_panel/presentation/technique_panel_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/asset_fallback.dart';
@@ -166,7 +162,6 @@ class MainMenu extends ConsumerWidget {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => child));
   }
 
-  static const int _techniquesUnlockStep = 3;
   static const int _seclusionUnlockStep = 5;
 
   // H1 批1 §5.7:未解锁系统门控 — 镜像各屏 clearedStageIds prereq(单一真相源)。
@@ -219,8 +214,6 @@ class MainMenu extends ConsumerWidget {
     );
     final activeHint = _firstUnreadHint(step, hintsRead);
 
-    final techLocked = step < _techniquesUnlockStep;
-    final skillLibLocked = step < _techniquesUnlockStep; // §5.7：修了心法才有技能可装
     final lateLocked = !cleared.contains(_lateGameUnlockStage);
     final socialLocked = !cleared.contains(_socialUnlockStage);
 
@@ -281,8 +274,6 @@ class MainMenu extends ConsumerWidget {
     final growthItems = _growthItems(
       context,
       inventoryStatus: inventoryStatus,
-      techLocked: techLocked,
-      skillLibLocked: skillLibLocked,
       seclusionLocked: step < _seclusionUnlockStep,
       taohuaLocked: taohuaLocked,
       socialLocked: socialLocked,
@@ -535,8 +526,6 @@ class MainMenu extends ConsumerWidget {
   List<Widget> _growthItems(
     BuildContext context, {
     required String? inventoryStatus,
-    required bool techLocked,
-    required bool skillLibLocked,
     required bool seclusionLocked,
     required bool taohuaLocked,
     required bool socialLocked,
@@ -554,12 +543,12 @@ class MainMenu extends ConsumerWidget {
         ),
       ),
       WuxiaInkButton(
-        label: UiStrings.mainMenuInventory,
-        hint: UiStrings.mainMenuInventoryHint,
-        icon: Icons.inventory_2_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
+        label: UiStrings.mainMenuMartialInventory,
+        hint: UiStrings.mainMenuMartialInventoryHint,
+        icon: Icons.menu_book_outlined,
+        thumbnailPath: WuxiaUi.entryTechnique,
         status: inventoryStatus,
-        onTap: () => _push(context, const InventoryScreen()),
+        onTap: () => _push(context, const MartialInventoryHubScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuResourceOverview,
@@ -567,27 +556,6 @@ class MainMenu extends ConsumerWidget {
         icon: Icons.account_balance_wallet_outlined,
         thumbnailPath: WuxiaUi.entryInventory,
         onTap: () => _push(context, const ResourceOverviewScreen()),
-      ),
-      _TechniqueMenuButton(
-        characterId: _defaultCharacterId,
-        tutorialLocked: techLocked,
-        onPush: (screen) => _push(context, screen),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSkillLibrary,
-        hint: skillLibLocked
-            ? UiStrings.mainMenuSkillLibraryLockedHint
-            : UiStrings.mainMenuSkillLibraryHint,
-        icon: Icons.menu_book_outlined,
-        thumbnailPath: WuxiaUi.entryTechnique,
-        disabled: skillLibLocked,
-        locked: skillLibLocked,
-        onTap: skillLibLocked
-            ? null
-            : () => _push(
-                context,
-                const CangJingGeScreen(characterId: _defaultCharacterId),
-              ),
       ),
       _SeclusionMenuButton(
         defaultCharacterId: _defaultCharacterId,
@@ -1085,59 +1053,6 @@ class _MenuSection extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _TechniqueMenuButton extends ConsumerWidget {
-  const _TechniqueMenuButton({
-    required this.characterId,
-    required this.tutorialLocked,
-    required this.onPush,
-  });
-
-  final int characterId;
-  final bool tutorialLocked;
-  final void Function(Widget screen) onPush;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final chAsync = ref.watch(characterByIdProvider(characterId));
-    final character = chAsync.maybeWhen(data: (c) => c, orElse: () => null);
-    final techs = ref.watch(characterAllTechniquesProvider(characterId));
-    final status = tutorialLocked
-        ? UiStrings.mainMenuTechniquesLockedStatus
-        : _techniqueStatus(character, techs.value);
-
-    return WuxiaInkButton(
-      label: UiStrings.mainMenuTechniques,
-      hint: tutorialLocked
-          ? UiStrings.mainMenuTechniquesLockedHint
-          : UiStrings.mainMenuTechniquesHint,
-      icon: Icons.auto_stories_outlined,
-      thumbnailPath: WuxiaUi.entryTechnique,
-      status: status,
-      disabled: tutorialLocked,
-      locked: tutorialLocked,
-      onTap: tutorialLocked
-          ? null
-          : () => onPush(TechniquePanelScreen(characterId: characterId)),
-    );
-  }
-
-  static String? _techniqueStatus(
-    Character? character,
-    List<Technique>? techniques,
-  ) {
-    if (character == null) return null;
-    if (character.insightPoints > 0) {
-      return UiStrings.mainMenuTechniquesInsightStatus(character.insightPoints);
-    }
-    if (character.mainTechniqueId == null) {
-      return UiStrings.mainMenuTechniquesNoMainStatus;
-    }
-    final count = techniques?.length;
-    if (count == null || count <= 0) return null;
-    return UiStrings.mainMenuTechniquesKnownStatus(count);
   }
 }
 
