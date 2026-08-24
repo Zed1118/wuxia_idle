@@ -30,4 +30,5 @@
 - [x] R27 source READY `78c5d6b82e4bc8bcbffce9c9d1b017a4ca06809a`：83/83、analyze 0、format 0、Codex 替代终审 P0/P1/P2=0；Pi 设计审查通过，但最终审查两次有界 5 分钟无输出，未伪造 Pi final PASS。
 - [x] V02B source READY `fc41e42bd2e039ba334789fc60dc13cf7bc724c0`：116/116、analyze 0、format 0；Qoder 设计阶段两次有界 5 分钟无输出，最终 actual-diff 审查由 exact Qwen3.8-Max high 返回 PASS，P0/P1/P2=0。
 - [x] 12/12 source→integration stable patch-id、9/9 owned blobs、精确 12 paths；联合 targeted 160/160、7 changed Dart analyze 0、format 0、full 5153/5153，registry 102/0/0，main/origin main 未修改。
-- [ ] 独立集成终审、docs-only closure 与 Batch20 READY。
+- [x] 独立集成 actual-diff 终审 PASS，P0/P1/P2=0；validation `c3eeea62ae809f1bedb5d2c882e402816f4684b1`。
+- [x] docs-only closure 记录完成；待复核后追加 `[READY][CODEX][P2-M2-BATCH20] 冻结观测能力与组合上限`。

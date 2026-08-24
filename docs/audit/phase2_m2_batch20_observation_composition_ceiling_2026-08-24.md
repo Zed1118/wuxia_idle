@@ -48,9 +48,22 @@
 - `git diff --check` 通过；registry 102 tasks / 0 duplicate ids / 0 dangling prerequisites。
 - 集成终审前 `main` 与 `origin/main` 均保持 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 
-## 待完成验证
+## 独立集成终审与冻结结论
 
-待独立集成终审、docs-only closure 复核与最终 READY；不再重复 full suite。
+- 独立只读 Agent 以 validation `c3eeea62ae809f1bedb5d2c882e402816f4684b1` 审查 actual diff，结论 PASS，P0/P1/P2=0；未重复 full suite。
+- reviewer 独立重算：12/12 stable patch-id、9/9 non-empty blob SHA、精确 12 paths、owned overlap 0、registry 102/0/0、`git diff --check` clean、worktree clean、main/origin main refs 未变。
+- R27 仅提供 fresh typed container 与 exact member identity；V02B 仅证明 candidate-only idle transactional composition；所有声明与 Gate 和 source 计划一致。
+- validation commit：`c3eeea62ae809f1bedb5d2c882e402816f4684b1`。
+- READY marker：`[READY][CODEX][P2-M2-BATCH20] 冻结观测能力与组合上限`。
+
+## 残留 Gate
+
+- production host/route、candidate promotion、checkpoint/anchor authoritative projectors。
+- 真实 action/lease lifecycle 与 budget policy、defeat-in-flow、完整 simulation/balance/performance。
+- settlement↔run/stage/admission/session authoritative identity。
+- durable store/schema/CAS/outbox、tuning/YAML/Profile/G2/真人验收。
+
+Batch20 在不跨越上述 Gate 的前提下达到可恢复 READY 条件；后续不存在经独立盘点确认的第三条 genuine gate-free M2 实现切片，故不自动创建 Batch21。
 
 ## 集成环境恢复点
 

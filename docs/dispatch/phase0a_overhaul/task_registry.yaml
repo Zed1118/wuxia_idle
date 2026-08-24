@@ -2767,11 +2767,33 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-batch20-observation-composition-ceiling-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch20-observation-composition-ceiling
-    status: in_progress
+    status: ready_reviewed
     base_commit: 43209cb3a4d77c45eda0fdc6aebe57a1465d7e58
+    validated_commit: c3eeea62ae809f1bedb5d2c882e402816f4684b1
+    ready_marker: "[READY][CODEX][P2-M2-BATCH20] 冻结观测能力与组合上限"
     source_tasks:
       - P2-M2-R27-ENCOUNTER-RUNTIME-OBSERVATION-SNAPSHOT
       - P2-M2-V02B-CH1-CANDIDATE-OBSERVABLE-TRANSACTIONAL-COMPOSITION-MATRIX
+    integration_commits:
+      - 0f7edc3a
+      - bfb0ea41
+      - 3392bac6
+      - 35217a1b
+      - dc485629
+      - 2919b6b3
+      - c5cb8fbf
+      - ab27791a
+      - ad7a254c
+      - 9555d5d3
+      - 716fd237
+      - a5f85e9e
+    verification:
+      joint_targeted_tests: 160
+      full_tests: 5153
+      changed_dart_items: 7
+      scoped_analyze_issues: 0
+      source_independent_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m2-batch20-observation-composition-ceiling.md
