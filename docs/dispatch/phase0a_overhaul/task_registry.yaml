@@ -2881,6 +2881,9 @@ tasks:
       - P2-M5-R01-INNER-DEMON-CULTIVATION-PENALTY-REMOVAL
       - P2-M5-R02-INNER-DEMON-DEFEAT-SUMMARY-ALIGNMENT
     owned_files:
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/superpowers/plans/2026-08-24-p2-m5-batch1-inner-demon-cultivation-closeout.md
@@ -2893,4 +2896,4 @@ tasks:
     exit_criteria:
       - R01 and R02 pass external model review root diff review and independent integration review
       - integrated targeted tests scoped analyze full tests and repository checks pass
-      - decision registry audit plan and READY marker match the frozen integration tip
+      - CLAUDE GDD PROGRESS decision registry audit plan and READY marker match the frozen integration tip
