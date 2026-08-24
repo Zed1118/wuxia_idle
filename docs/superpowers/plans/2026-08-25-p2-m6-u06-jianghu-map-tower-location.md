@@ -6,6 +6,8 @@
 - base: `ee51cf06baf96967b1db8882ced96f74be9ce833`
 - branch: `codex/phase2-m6-u06-jianghu-map-tower-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-tower-location`
+- status: `ready_reviewed`
+- code candidate: `f58d2c77dfc85420eaa09f9ca687182bdf718578`
 
 ## 目标
 
@@ -44,6 +46,14 @@
 3. 地图地点显示数据派生塔进度，点击经原 battle guard 进入 `TowerFloorListScreen`。
 4. 覆盖 1280×720、1440×900，运行主菜单、塔、地图相邻回归和两层 analyze。
 5. 独立语义复核与全量通过后同步审计/真相源并生成 clean READY。
+
+## READY 证据
+
+- 真实红测 `0/2`：旧主菜单仍平铺九霄塔，且没有“江湖地图”次级动作。
+- 新增地图/入口 `8/8`，变更与主菜单联合 `63/63`，相邻主菜单/地图/塔 `210/210`。
+- 首轮全量暴露纸面文字 token 缺陷（`5376/5377`）；修复后精确纸面对比审计 `4/4`，最终全量 `5377/5377`。
+- `flutter analyze --no-pub lib test tool` 与根应用 `flutter analyze --no-pub` 均 0 issue。
+- 独立复核 P0/P1/P2=`0/0/0`，精确白名单内收口；不宣告其他地点、U06、U14、M6 或二阶段完成。
 
 ## 停止条件
 

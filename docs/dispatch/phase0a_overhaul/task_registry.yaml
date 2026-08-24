@@ -3784,9 +3784,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-jianghu-map-tower-location-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-tower-location
-    status: in_progress
+    status: ready_reviewed
     base_commit: ee51cf06baf96967b1db8882ced96f74be9ce833
+    code_candidate_commit: f58d2c77dfc85420eaa09f9ca687182bdf718578
+    reviewed_candidate_commit: f58d2c77dfc85420eaa09f9ca687182bdf718578
+    ready_marker: "[READY][CODEX][P2-M6-U06-JIANGHU-MAP-TOWER-LOCATION] 接入江湖地图九霄塔地点"
     completion_scope: secondary_jianghu_map_entry_and_tower_first_production_location
+    verification:
+      red_tests: 2
+      focused_location_tests: 8
+      paper_contrast_audit_tests: 4
+      changed_and_joint_tests: 63
+      adjacent_main_menu_map_tower_tests: 210
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5377
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U05-INNER-DEMON-ENTRY-RELOCATION
     owned_files:
