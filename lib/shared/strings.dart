@@ -1519,7 +1519,7 @@ class UiStrings {
 
   // ── Phase 3 主线（T35）──
 
-  static const String mainMenuMainline = '主线';
+  static const String mainMenuMainline = '继续江湖';
   static const String mainMenuMainlineHint = '21 章 105 关，按章节顺序解锁';
   static String mainMenuMainlineGoalHint(
     String target,

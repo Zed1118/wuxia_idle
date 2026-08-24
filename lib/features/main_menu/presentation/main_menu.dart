@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/technique.dart';
+import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../baike/presentation/baike_screen.dart';
@@ -34,6 +37,7 @@ import '../../resource_overview/presentation/resource_overview_screen.dart';
 import '../../mainline/application/mainline_progress_service.dart';
 import '../../mainline/application/new_save_goal_guidance.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/presentation/new_save_goal_guidance_view.dart';
 import '../../seclusion/application/seclusion_service_providers.dart';
@@ -79,6 +83,38 @@ const double _mainMenuContentMaxWidth = 1088;
 const double _entryColumnGap = 16;
 const double _entryRowGap = 16;
 
+typedef ContinueJianghuRunner =
+    Future<void> Function(BuildContext context, WidgetRef ref, StageDef stage);
+
+List<int> _mainlineChapterIndexes() {
+  final indexes =
+      GameRepository.instance.stageDefs.values
+          .where((stage) => stage.stageType == StageType.mainline)
+          .map((stage) => stage.chapterIndex)
+          .whereType<int>()
+          .toSet()
+          .toList(growable: false)
+        ..sort();
+  return indexes;
+}
+
+/// 按生产主线链解析仍待首次推进的当前关；全通返回 null。
+@visibleForTesting
+StageDef? resolveContinueJianghuStage(MainlineProgress progress) {
+  for (final chapterIndex in _mainlineChapterIndexes()) {
+    for (final entry in MainlineProgressService.availableStages(
+      progress: progress,
+      chapterIndex: chapterIndex,
+    )) {
+      if (entry.def.stageType == StageType.mainline &&
+          entry.status == StageStatus.available) {
+        return entry.def;
+      }
+    }
+  }
+  return null;
+}
+
 /// 入口列表布局成 2 列(Phase A 出版美术 · 解菜单纵向过长)。
 /// 奇数末项左对齐 + 右侧空格;同行用 IntrinsicHeight+stretch 等高。
 List<Widget> _twoColumn(List<Widget> items) {
@@ -116,7 +152,12 @@ List<Widget> _oneColumn(List<Widget> items) {
 /// 全屏水墨背景 + 渐变 scrim + 题字标题 + 入口主/次分组(修行 / 演武 / 江湖 +
 /// debug)+ [WuxiaInkButton] 木牌入口 2 列 + §5.7 锁印。导航/门控逻辑不变。
 class MainMenu extends ConsumerWidget {
-  const MainMenu({super.key});
+  const MainMenu({
+    super.key,
+    @visibleForTesting this.continueJianghuRunnerForTest,
+  });
+
+  final ContinueJianghuRunner? continueJianghuRunnerForTest;
 
   static const int _defaultCharacterId = 1;
   static const RealmTier _defaultRealmTier = RealmTier.xueTu;
@@ -160,6 +201,9 @@ class MainMenu extends ConsumerWidget {
     );
     final mainlineStatus = _mainlineMenuStatus(mainlineProgress);
     final mainlineGoal = _mainlineGoalGuidance(mainlineProgress);
+    final continueJianghuStage = mainlineProgress == null
+        ? null
+        : resolveContinueJianghuStage(mainlineProgress);
 
     final towerStatus = ref
         .watch(towerProgressProvider)
@@ -229,6 +273,7 @@ class MainMenu extends ConsumerWidget {
       ref,
       mainlineStatus: mainlineStatus,
       mainlineGoal: mainlineGoal,
+      continueJianghuStage: continueJianghuStage,
       towerStatus: towerStatus,
       lateLocked: lateLocked,
       jianghuJourneyUnlocked: jianghuJourneyUnlocked,
@@ -367,6 +412,7 @@ class MainMenu extends ConsumerWidget {
     WidgetRef ref, {
     required String? mainlineStatus,
     required NewSaveGoalGuidance? mainlineGoal,
+    required StageDef? continueJianghuStage,
     required String? towerStatus,
     required bool lateLocked,
     required bool jianghuJourneyUnlocked,
@@ -383,7 +429,15 @@ class MainMenu extends ConsumerWidget {
         onTap: () => guardBattleEntry(
           context: context,
           ref: ref,
-          onAllowed: () => _push(context, const ChapterListScreen()),
+          onAllowed: () {
+            if (continueJianghuStage == null) {
+              _push(context, const ChapterListScreen());
+              return;
+            }
+            unawaited(
+              _launchContinueJianghu(context, ref, continueJianghuStage),
+            );
+          },
         ),
       ),
       WuxiaInkButton(
@@ -457,6 +511,25 @@ class MainMenu extends ConsumerWidget {
           onTap: () => _push(context, const GauntletLoadoutScreen()),
         ),
     ];
+  }
+
+  Future<void> _launchContinueJianghu(
+    BuildContext context,
+    WidgetRef ref,
+    StageDef stage,
+  ) async {
+    final testRunner = continueJianghuRunnerForTest;
+    if (testRunner != null) {
+      await testRunner(context, ref, stage);
+      return;
+    }
+    await runStageFlow(
+      context: context,
+      ref: ref,
+      stage: stage,
+      targetCycle: 1,
+      continueFirstClearRun: true,
+    );
   }
 
   List<Widget> _growthItems(
@@ -663,7 +736,7 @@ class MainMenu extends ConsumerWidget {
 
   static String? _mainlineMenuStatus(MainlineProgress? progress) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 15; chapterIndex++) {
+    for (final chapterIndex in _mainlineChapterIndexes()) {
       final stages = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,
@@ -681,7 +754,7 @@ class MainMenu extends ConsumerWidget {
     MainlineProgress? progress,
   ) {
     if (progress == null || !GameRepository.isLoaded) return null;
-    for (var chapterIndex = 1; chapterIndex <= 15; chapterIndex++) {
+    for (final chapterIndex in _mainlineChapterIndexes()) {
       final entries = MainlineProgressService.availableStages(
         progress: progress,
         chapterIndex: chapterIndex,
