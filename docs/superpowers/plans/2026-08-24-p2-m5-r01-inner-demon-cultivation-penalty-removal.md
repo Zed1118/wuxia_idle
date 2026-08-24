@@ -63,7 +63,7 @@
 - [x] targeted 覆盖死配置、配置加载、service、combat resolution、直接构造夹具及
   R02 兼容回归：11 个 test file、106/106 pass。
 - [x] scoped analyze 10 items 为零；format 10 files 零改动，diff check 通过。
-- [ ] exact owned paths、clean status 在 READY 前复核。
+- [x] `f1dc0c9e..HEAD` 恰好 12 个授权路径；READY 前 tracked status clean。
 - [x] Pi 以同一精确模型完成 actual diff 只读终审；R01 owned
   P0/P1/P2=0，已诚实记录 R02 外部 P2=1 与 Pi `FINAL FAIL`。
 
@@ -85,12 +85,11 @@
 
 ## 当前恢复点（CLAUDE §8.0）
 
-- 状态：TDD 红→绿、本地定向验证与 Pi actual diff 终审完成，待最终
-  exact-path/clean/READY Gate。
-- 最后完成：Pi 终审返回 R01 owned P0/P1/P2=0，batch 外部 R02 P2=1；
-  已完成 Codex 边界 triage 并保持 R02 零改动。
-- 下一步：复核 exact owned paths、format/diff check、source guard 和 clean status，
-  追加 READY marker。
+- 状态：代码、计划、本地验证、Pi 终审及最终 Gate 完成，待追加空
+  READY marker。
+- 最后完成：exact 12 owned paths、format 10 files 零改动、diff check、source
+  guard 及 tracked clean status 均通过；R02 零改动。
+- 下一步：追加 READY marker，不再更改源码。
 - 已跑验证：owned 38/38 + 影响回归 68/68；format 10 files 零改动；
   diff check 通过。
 - 阻塞项：R01 无阻塞。source 阶段不跑 full；batch 放行需依赖 R02 关闭文案
