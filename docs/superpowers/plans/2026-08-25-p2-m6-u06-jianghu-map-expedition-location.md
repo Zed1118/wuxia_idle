@@ -6,7 +6,8 @@
 - base: `0f7e576c1a9b5c77f0b4b68eaa00d4721d542a04`
 - branch: `codex/phase2-m6-u06-jianghu-map-expedition-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-expedition-location`
-- status: `in_progress`
+- status: `ready_reviewed`
+- code candidate: `77292fb3ee897bcd727cb8072adad2f0d878c144`
 
 ## 目标
 
@@ -47,3 +48,10 @@
 ## 停止条件
 
 若世界地点必须改变 `jianghuJourneyUnlocked`、宗门管理入口、远征会话/恢复或需要 schema/调优决策，立即记录精确 `BLOCKED`；不在地图复制第二套远征状态。
+
+## 完成证据
+
+- 生产改动前红测 `1/4`，三项目标行为精确失败：无百草岭地点、无 active 深度、无生产路由；未解锁隐藏案例保持绿色。
+- 地图与百草岭纵切 `16/16`，纸面对比 `4/4`，联合 `20/20`；地图、远征总览与宗门 Hub 联合 `38/38`，完整远征相邻域 `136/136`。
+- `flutter analyze --no-pub lib test tool` 与根 `flutter analyze --no-pub` 均为 0 issue；最终全量 `5396/5396 PASS`。
+- 独立语义复核 `P0=0 / P1=0 / P2=0`，额外导航联合 `79/79`，建议 READY；代码候选和评审候选均为 `77292fb3ee897bcd727cb8072adad2f0d878c144`。

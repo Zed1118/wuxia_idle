@@ -3874,9 +3874,24 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-jianghu-map-expedition-location-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-expedition-location
-    status: in_progress
+    status: ready_reviewed
     base_commit: 0f7e576c1a9b5c77f0b4b68eaa00d4721d542a04
+    code_candidate_commit: 77292fb3ee897bcd727cb8072adad2f0d878c144
+    reviewed_candidate_commit: 77292fb3ee897bcd727cb8072adad2f0d878c144
+    ready_marker: "[READY][CODEX][P2-M6-U06-JIANGHU-MAP-EXPEDITION-LOCATION] 接入百草岭远征地点"
     completion_scope: add_baicao_expedition_as_fifth_production_jianghu_map_location
+    verification:
+      red_tests: 3
+      focused_location_tests: 16
+      paper_contrast_audit_tests: 4
+      focused_with_paper_tests: 20
+      changed_navigation_tests: 38
+      adjacent_map_expedition_sect_tests: 136
+      independent_navigation_tests: 79
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5396
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-GAUNTLET-LOCATION
     owned_files:
