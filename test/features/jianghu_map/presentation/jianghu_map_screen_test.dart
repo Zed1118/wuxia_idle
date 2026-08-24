@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/light_foot_location_detail_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -169,6 +170,22 @@ void main() {
     await tester.tap(find.text(UiStrings.mainMenuLightFoot));
     await tester.pump();
 
+    expect(find.byType(LightFootScreen), findsNothing);
+  });
+
+  testWidgets('轻功地点解锁后先进入统一地点详情而非直接进关卡列表', (tester) async {
+    await tester.pumpWidget(app(clearedStageIds: const ['stage_06_05']));
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text(UiStrings.mainMenuLightFoot));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(
+      find.byKey(const ValueKey('light-foot-location-detail-screen')),
+      findsOneWidget,
+    );
     expect(find.byType(LightFootScreen), findsNothing);
   });
 
