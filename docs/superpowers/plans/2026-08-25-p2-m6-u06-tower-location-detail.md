@@ -6,7 +6,10 @@
 - base: `7adb0d9eca6506f0bae1b3c1ae1aa61c71858ac0`
 - branch: `codex/phase2-m6-u06-tower-location-detail-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-tower-location-detail`
-- status: `in_progress`
+- status: `ready_reviewed`
+- registration_commit: `8627114be07fac16536522dc9a52895d84f6f923`
+- code_candidate_commit: `087b64238f6a1ec97e83c8acb782abd0dddc305f`
+- reviewed_candidate_commit: `087b64238f6a1ec97e83c8acb782abd0dddc305f`
 
 ## 目标与权威落点
 
@@ -49,3 +52,13 @@
 ## 停止条件
 
 若实现必须新增长期占用、派遣写入、参与者选择、自动化、schema 或调优决策，立即记录精确 `BLOCKED` 并停止扩张，不在本切片猜测业务语义。
+
+## 完成证据
+
+- 真实红测：`0/1`，精确失败于缺少地点详情且入口仍直达塔层列表。
+- provider + 详情 + 地图聚焦：`22/22 PASS`；相邻域：`403/403 PASS`。
+- 1280×720、1440×900 详情双视口：`2/2 PASS`。
+- scoped/root analyze：`0 issue`；`git diff --check` 通过。
+- 独立只读复核：`42/42 PASS`，`P0=0 / P1=0 / P2=0`，建议 `READY`。
+- 最终 root full suite：`5419/5419 PASS`。
+- 该证据只支持九霄塔统一地点详情首纵切，不晋升 U06、U14、M6 或二阶段整体状态。

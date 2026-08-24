@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.73**
+> **版本:v1.74**
+>
+> v1.74 变更摘要(2026-08-25 二阶段 M6 U06 九霄塔统一地点详情首纵切):江湖地图九霄塔现先进入统一地点详情，只读生产塔进度与下一层配置，展示推荐境界、敌方姓名/流派、首通掉落与基础修为；实际参与者经 `CurrentLeaderResolver` 解析并与真实塔战 Host 一致。身份、进度或 provider 异常时 fail closed 且无进入 CTA；登顶明确无下一层但保留重打。详情 CTA 仍经 `guardBattleEntry` 进入 `TowerFloorListScreen`。本纵切不新增派遣、自动化、持久占用或 U14 决策，只关闭九霄塔地点详情首缺口；其余地点详情、U06/U14/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、数值、奖励、经济或解锁变更。
 >
 > v1.73 变更摘要(2026-08-25 二阶段 M6 U07 宗门行止当前态纵切):宗门 Hub 顶部新增只读“宗门行止”，真实掌门经 `CurrentLeaderResolver` 解析，门人闭关/百草岭/断魂庄占用经 `CharacterOccupancyService` 聚合，远征深度/战败与断魂庄关次/阶段只读既有 active provider。掌门指针缺失、悬空、重复占用或占用角色悬空均 fail closed，不猜测身份。原七条宗门路由/门控不变；不新增疗伤/听剑占用，不恢复已拒绝的统一完成报告。本纵切只关闭 U07 当前态摘要首缺口，U07/M6/二阶段仍开放；零业务写入、schema/saveVersion、YAML、调优、奖励、经济或解锁变更。
 >

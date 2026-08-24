@@ -4147,21 +4147,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-tower-location-detail-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-tower-location-detail
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7adb0d9eca6506f0bae1b3c1ae1aa61c71858ac0
-    code_candidate_commit: null
-    reviewed_candidate_commit: null
+    code_candidate_commit: 087b64238f6a1ec97e83c8acb782abd0dddc305f
+    reviewed_candidate_commit: 087b64238f6a1ec97e83c8acb782abd0dddc305f
     ready_marker: "[READY][CODEX][P2-M6-U06-TOWER-LOCATION-DETAIL] 接入九霄塔统一地点详情"
     completion_scope: add_first_unified_production_location_detail_for_tower
     verification:
-      red_tests: 0
-      focused_tests: 0
-      adjacent_tests: 0
-      independent_tests: 0
-      scoped_analyze_issues: null
-      root_analyze_issues: null
-      full_tests: 0
-      independent_semantic_review_p0_p1_p2: null
+      red_tests: 1
+      focused_tests: 22
+      adjacent_tests: 403
+      double_viewport_tests: 2
+      independent_tests: 42
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5419
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U07-SECT-ITINERARY-CURRENT-STATE
     owned_files:
