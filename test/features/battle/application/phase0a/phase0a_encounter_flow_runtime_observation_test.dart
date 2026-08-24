@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_to
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_combat_session.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_runtime_observation.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
@@ -348,6 +349,19 @@ void _expectOldObservationsPreserved({
   expect(harness.flow.lastAttackTokenLeaseBatchReceipt, same(receipt));
 }
 
+Phase0aEncounterRuntimeObservation _expectFreshObservation({
+  required Phase0aEncounterRuntimeObservationSource source,
+  required Phase0aEncounterRuntimeObservation previous,
+  required Object? objectiveProgress,
+  required Object? leaseReceipt,
+}) {
+  final observation = source.runtimeObservation;
+  expect(observation, isNot(same(previous)));
+  expect(observation.objectiveProgress, same(objectiveProgress));
+  expect(observation.lastAttackTokenLeaseBatchReceipt, same(leaseReceipt));
+  return observation;
+}
+
 void main() {
   test('compatibility and unconfigured runtime observations stay null', () {
     final compatibility = Phase0aEncounterFlow.compatibility(
@@ -615,6 +629,301 @@ void main() {
       'outbox',
     ]) {
       expect(source, isNot(contains(forbidden)), reason: forbidden);
+    }
+  });
+
+  test('value is const and retains exact nullable inputs', () {
+    const empty = Phase0aEncounterRuntimeObservation(
+      objectiveProgress: null,
+      lastAttackTokenLeaseBatchReceipt: null,
+    );
+    expect(empty.objectiveProgress, isNull);
+    expect(empty.lastAttackTokenLeaseBatchReceipt, isNull);
+
+    final harness = _runtimeHarness();
+    harness.flow.advance(deltaSeconds: 1, command: _idle);
+    final progress = harness.flow.objectiveProgress;
+    final receipt = harness.flow.lastAttackTokenLeaseBatchReceipt;
+    final populated = Phase0aEncounterRuntimeObservation(
+      objectiveProgress: progress,
+      lastAttackTokenLeaseBatchReceipt: receipt,
+    );
+    expect(populated.objectiveProgress, same(progress));
+    expect(populated.lastAttackTokenLeaseBatchReceipt, same(receipt));
+  });
+
+  test(
+    'compatibility and unconfigured snapshots are fresh non-null values',
+    () {
+      final compatibility = Phase0aEncounterFlow.compatibility(
+        legacy: _legacyFlow(),
+      );
+      final Phase0aEncounterRuntimeObservationSource compatibilitySource =
+          compatibility;
+      final compatibilityBefore = compatibilitySource.runtimeObservation;
+      final compatibilitySecond = _expectFreshObservation(
+        source: compatibilitySource,
+        previous: compatibilityBefore,
+        objectiveProgress: null,
+        leaseReceipt: null,
+      );
+      compatibility.advance(deltaSeconds: 1, command: _idle);
+      _expectFreshObservation(
+        source: compatibilitySource,
+        previous: compatibilitySecond,
+        objectiveProgress: null,
+        leaseReceipt: null,
+      );
+
+      final runtime = _runtimeHarness(
+        configureObjective: false,
+        configureLease: false,
+      ).flow;
+      final Phase0aEncounterRuntimeObservationSource runtimeSource = runtime;
+      final runtimeBefore = runtimeSource.runtimeObservation;
+      final runtimeSecond = _expectFreshObservation(
+        source: runtimeSource,
+        previous: runtimeBefore,
+        objectiveProgress: null,
+        leaseReceipt: null,
+      );
+      runtime.advance(deltaSeconds: 1, command: _idle);
+      _expectFreshObservation(
+        source: runtimeSource,
+        previous: runtimeSecond,
+        objectiveProgress: null,
+        leaseReceipt: null,
+      );
+    },
+  );
+
+  test('objective-only snapshot is point-in-time and exact after advance', () {
+    final harness = _runtimeHarness(configureLease: false);
+    final Phase0aEncounterRuntimeObservationSource source = harness.flow;
+    final beforeProgress = harness.flow.objectiveProgress;
+    final before = source.runtimeObservation;
+    final second = _expectFreshObservation(
+      source: source,
+      previous: before,
+      objectiveProgress: beforeProgress,
+      leaseReceipt: null,
+    );
+
+    harness.flow.advance(deltaSeconds: 1, command: _idle);
+    final afterProgress = harness.flow.objectiveProgress;
+    expect(afterProgress, isNot(same(beforeProgress)));
+    expect(before.objectiveProgress, same(beforeProgress));
+    expect(second.objectiveProgress, same(beforeProgress));
+    _expectFreshObservation(
+      source: source,
+      previous: second,
+      objectiveProgress: afterProgress,
+      leaseReceipt: null,
+    );
+  });
+
+  test('lease-only and both snapshots keep exact direct getter members', () {
+    final leaseOnly = _runtimeHarness(configureObjective: false);
+    final Phase0aEncounterRuntimeObservationSource leaseSource = leaseOnly.flow;
+    final leaseBefore = leaseSource.runtimeObservation;
+    final leaseSecond = _expectFreshObservation(
+      source: leaseSource,
+      previous: leaseBefore,
+      objectiveProgress: null,
+      leaseReceipt: null,
+    );
+    leaseOnly.flow.advance(deltaSeconds: 1, command: _idle);
+    final acquired = leaseOnly.flow.lastAttackTokenLeaseBatchReceipt;
+    final leaseAfter = _expectFreshObservation(
+      source: leaseSource,
+      previous: leaseSecond,
+      objectiveProgress: null,
+      leaseReceipt: acquired,
+    );
+    leaseOnly.flow.advance(deltaSeconds: 1, command: _idle);
+    final noOp = leaseOnly.flow.lastAttackTokenLeaseBatchReceipt;
+    expect(noOp, isNot(same(acquired)));
+    _expectFreshObservation(
+      source: leaseSource,
+      previous: leaseAfter,
+      objectiveProgress: null,
+      leaseReceipt: noOp,
+    );
+
+    final both = _runtimeHarness();
+    final Phase0aEncounterRuntimeObservationSource bothSource = both.flow;
+    final bothBefore = bothSource.runtimeObservation;
+    final bothSecond = _expectFreshObservation(
+      source: bothSource,
+      previous: bothBefore,
+      objectiveProgress: both.flow.objectiveProgress,
+      leaseReceipt: null,
+    );
+    both.flow.advance(deltaSeconds: 1, command: _idle);
+    _expectFreshObservation(
+      source: bothSource,
+      previous: bothSecond,
+      objectiveProgress: both.flow.objectiveProgress,
+      leaseReceipt: both.flow.lastAttackTokenLeaseBatchReceipt,
+    );
+  });
+
+  final failureScenarios = <({String name, _Harness Function() create})>[
+    (
+      name: 'planner',
+      create: () => _runtimeHarness(leaseFailure: _LeaseFailure.planner),
+    ),
+    (
+      name: 'lease validation',
+      create: () => _runtimeHarness(leaseFailure: _LeaseFailure.validation),
+    ),
+    (
+      name: 'batch output',
+      create: () => _runtimeHarness(leaseFailure: _LeaseFailure.output),
+    ),
+    (name: 'observer', create: () => _runtimeHarness(observerFailOnCall: 2)),
+    (name: 'reducer', create: () => _runtimeHarness(resolverFailOnCall: 2)),
+    (
+      name: 'objective source immediate',
+      create: () => _runtimeHarness(sourceFailure: _SourceFailure.immediate),
+    ),
+    (
+      name: 'objective source lazy',
+      create: () => _runtimeHarness(sourceFailure: _SourceFailure.lazy),
+    ),
+  ];
+  for (final scenario in failureScenarios) {
+    test('${scenario.name} keeps old members in a fresh snapshot', () {
+      final harness = scenario.create();
+      harness.flow.advance(deltaSeconds: 1, command: _idle);
+      final Phase0aEncounterRuntimeObservationSource source = harness.flow;
+      final before = source.runtimeObservation;
+
+      expect(
+        () => harness.flow.advance(deltaSeconds: 1, command: _idle),
+        throwsStateError,
+      );
+
+      _expectFreshObservation(
+        source: source,
+        previous: before,
+        objectiveProgress: before.objectiveProgress,
+        leaseReceipt: before.lastAttackTokenLeaseBatchReceipt,
+      );
+    });
+  }
+
+  test('terminal replay returns fresh snapshots with terminal members', () {
+    final harness = _runtimeHarness(terminalObjective: true);
+    final Phase0aEncounterRuntimeObservationSource source = harness.flow;
+    harness.flow.advance(deltaSeconds: 1, command: _idle);
+    final terminal = source.runtimeObservation;
+
+    expect(harness.flow.advance(deltaSeconds: 1, command: _idle), isEmpty);
+
+    final replay = _expectFreshObservation(
+      source: source,
+      previous: terminal,
+      objectiveProgress: terminal.objectiveProgress,
+      leaseReceipt: terminal.lastAttackTokenLeaseBatchReceipt,
+    );
+    expect(harness.flow.advance(deltaSeconds: 1, command: _idle), isEmpty);
+    _expectFreshObservation(
+      source: source,
+      previous: replay,
+      objectiveProgress: terminal.objectiveProgress,
+      leaseReceipt: terminal.lastAttackTokenLeaseBatchReceipt,
+    );
+  });
+
+  test('observation source stays narrow and outside battle flow', () {
+    final observationSource = File(
+      'lib/features/battle/application/phase0a/'
+      'phase0a_encounter_runtime_observation.dart',
+    ).readAsStringSync();
+    final flowSource = File(
+      'lib/features/battle/application/phase0a/phase0a_encounter_flow.dart',
+    ).readAsStringSync();
+    final battleFlowSource = File(
+      'lib/features/battle/application/phase0a/phase0a_battle_flow.dart',
+    ).readAsStringSync();
+
+    expect(
+      observationSource,
+      contains("import '../../domain/phase0a/objective_controller.dart';"),
+    );
+    expect(
+      observationSource,
+      contains("import 'phase0a_attack_token_lease_batch_receipt.dart';"),
+    );
+    expect(
+      RegExp(
+        r'final class Phase0aEncounterRuntimeObservation\s*\{\s*'
+        r'const Phase0aEncounterRuntimeObservation\(\{\s*'
+        r'required this\.objectiveProgress,\s*'
+        r'required this\.lastAttackTokenLeaseBatchReceipt,\s*\}\);',
+      ).hasMatch(observationSource),
+      isTrue,
+    );
+    expect(
+      RegExp(
+        r'final ObjectiveControllerProgress\? objectiveProgress;\s*'
+        r'final Phase0aAttackTokenLeaseBatchReceipt\?\s*'
+        r'lastAttackTokenLeaseBatchReceipt;',
+      ).hasMatch(observationSource),
+      isTrue,
+    );
+    expect(
+      RegExp(
+        r'abstract interface class '
+        r'Phase0aEncounterRuntimeObservationSource\s*\{\s*'
+        r'Phase0aEncounterRuntimeObservation get runtimeObservation;\s*\}',
+      ).hasMatch(observationSource),
+      isTrue,
+    );
+    expect(
+      RegExp(
+        r'Phase0aEncounterRuntimeObservation get runtimeObservation\s*=>\s*'
+        r'Phase0aEncounterRuntimeObservation\(\s*'
+        r'objectiveProgress: objectiveProgress,\s*'
+        r'lastAttackTokenLeaseBatchReceipt:\s*'
+        r'lastAttackTokenLeaseBatchReceipt,\s*\);',
+      ).hasMatch(flowSource),
+      isTrue,
+    );
+    expect(battleFlowSource, isNot(contains('runtimeObservation')));
+    expect(
+      battleFlowSource,
+      isNot(contains('Phase0aEncounterRuntimeObservationSource')),
+    );
+
+    for (final forbidden in const [
+      'Phase0aCombatSession',
+      'Phase0aObjectiveRuntimeTracker',
+      'AttackTokenLeaseRuntime',
+      'prepare',
+      'commit',
+      'callback',
+      'tick',
+      'revision',
+      'epoch',
+      'eventId',
+      'listener',
+      'stream',
+      'history',
+      'ledger',
+      'codec',
+      'durable',
+      'owner',
+      'copyWith',
+      'Random',
+      'GameRepository',
+      'SaveData',
+      'Isar',
+      'rootBundle',
+      'ActionTimeline',
+    ]) {
+      expect(observationSource, isNot(contains(forbidden)), reason: forbidden);
     }
   });
 }

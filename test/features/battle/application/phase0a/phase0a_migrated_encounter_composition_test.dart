@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_attack_to
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_runtime_observation.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_explicit_objective_event_source.dart';
@@ -702,4 +703,102 @@ void main() {
       expect(method, isNot(contains(forbidden)), reason: forbidden);
     }
   });
+
+  test('lease bridge concrete flow exposes the narrow typed source', () {
+    final plan = _buildPlan();
+    final flow = _assembleLeasePlan(
+      plan: plan,
+      rng: math.Random(251),
+      gate: _noOpLeaseGate(),
+      runtime: AttackTokenLeaseRuntime.empty(),
+      objectiveSource: _objectiveSource(plan),
+    );
+    final Phase0aEncounterRuntimeObservationSource source = flow;
+    final before = source.runtimeObservation;
+    final beforeSecond = source.runtimeObservation;
+    expect(beforeSecond, isNot(same(before)));
+    expect(before.objectiveProgress, same(flow.objectiveProgress));
+    expect(before.lastAttackTokenLeaseBatchReceipt, isNull);
+    expect(beforeSecond.objectiveProgress, same(before.objectiveProgress));
+
+    flow.advance(
+      deltaSeconds: 0.5,
+      command: const Phase0aPlayerCommand(
+        attack: true,
+        attackAimDirection: ArenaVector(1, 0),
+      ),
+    );
+
+    final after = source.runtimeObservation;
+    expect(after, isNot(same(beforeSecond)));
+    expect(after.objectiveProgress, same(flow.objectiveProgress));
+    expect(
+      after.lastAttackTokenLeaseBatchReceipt,
+      same(flow.lastAttackTokenLeaseBatchReceipt),
+    );
+    expect(after.lastAttackTokenLeaseBatchReceipt, isNotNull);
+    expect(before.objectiveProgress, isNot(same(after.objectiveProgress)));
+    expect(before.lastAttackTokenLeaseBatchReceipt, isNull);
+  });
+
+  for (final failure in ['planner', 'lease validation', 'objective source']) {
+    test('lease bridge $failure keeps old typed members in fresh value', () {
+      final plan = _buildPlan();
+      var first = true;
+      final gate = _RecordingLeaseGate(
+        _explicitLeaseGate(({
+          required AttackTokenLeaseSnapshot leaseSnapshot,
+          required List<Phase0aIntent> enemyIntents,
+        }) {
+          if (first && failure != 'objective source') {
+            first = false;
+            if (failure == 'planner') throw StateError('planner failed');
+            return Phase0aAttackTokenLeaseBatchPlan(
+              enemyIntents: enemyIntents,
+              mutations: [
+                ReleaseAttackTokenLease(AttackTokenLeaseId('unknown')),
+              ],
+            );
+          }
+          return Phase0aAttackTokenLeaseBatchPlan(
+            enemyIntents: enemyIntents,
+            mutations: const [],
+          );
+        }),
+      );
+      final objectiveSource = failure == 'objective source'
+          ? _ThrowOnceObjectiveSource(_objectiveSource(plan))
+          : _CountingObjectiveSource(_objectiveSource(plan));
+      final flow = _assembleLeasePlan(
+        plan: plan,
+        rng: math.Random(257),
+        gate: gate,
+        runtime: AttackTokenLeaseRuntime.empty(),
+        objectiveSource: objectiveSource,
+      );
+      final Phase0aEncounterRuntimeObservationSource source = flow;
+      final before = source.runtimeObservation;
+
+      expect(
+        () => flow.advance(
+          deltaSeconds: 0.5,
+          command: const Phase0aPlayerCommand(),
+        ),
+        throwsStateError,
+      );
+
+      final after = source.runtimeObservation;
+      expect(after, isNot(same(before)));
+      expect(after.objectiveProgress, same(before.objectiveProgress));
+      expect(
+        after.lastAttackTokenLeaseBatchReceipt,
+        same(before.lastAttackTokenLeaseBatchReceipt),
+      );
+      expect(after.objectiveProgress, same(flow.objectiveProgress));
+      expect(
+        after.lastAttackTokenLeaseBatchReceipt,
+        same(flow.lastAttackTokenLeaseBatchReceipt),
+      );
+    });
+  }
 }
