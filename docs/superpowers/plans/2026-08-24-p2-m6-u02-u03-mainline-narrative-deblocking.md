@@ -24,7 +24,9 @@
 3. `runStageFlow` 以唯一 `StageType.mainline` 判据关闭三类自动 reader；特殊模式不变。
 4. 主线 Boss defeat 固定顺序：惩罚结算 → provider invalidate → 事实弹层 → 原收降 hook；无损失 entry 不弹。
 5. `_ChapterStageTimeline` 用 manifest 决定可读项；opening 读当前可用状态，victory/defeat 只读 `clearedStageIds`，不受二周目视图重锁。
-6. TextButton 保留桌面原生 focus/keyboard 行为，并添加精确 Semantics label；1280×720 与 1440×900 widget smoke 无 overflow。
+6. manifest provider 仍严格 fail-fast，但其 loading/error 只局部隐藏可选旧卷，不阻断关卡列表、选关或开战。
+7. TextButton 保留桌面原生 focus/keyboard 行为；唯一 Semantics 节点同时带 label、button flag 与真实 tap action，语义点按/鼠标点按均只打开 reader，不冒泡到关卡行开战。
+8. 1280×720 最密 Boss 三链接行与 1440×900 widget smoke 无 overflow。
 
 ## Qoder CLI 只读设计审查
 
@@ -46,7 +48,21 @@
   - P1 parser：已补严格 schema/重复 ID/孤儿与目标漂移测试。
   - P2 基线：本恢复点明确区分 semantic base 与 patch base。
 
-## 已跑验证（implementation candidate）
+## a1d68a4b 中间树审查与回源
+
+- implementation commit：`a1d68a4bb39d0c096cffd9eea23f49ae28206308`（NOT READY）。
+- 第一次 actual-diff CLI 尝试：`--tools ''`，退出码 0，但只输出未执行的 `Read` tool call，未形成结论。
+- 第二次只开放 `Read`，退出码 0；模型披露 diff 附件被权限拒绝、改读 HEAD，因此不是绑定 actual diff 的有效终审，不作 READY 证据。其输出 P0=0/P1=0/P2=3，must-fix 仅命中 manifest EOF 空白行。
+- 独立 Codex actual-diff 审查另报 3 个 P1 + 1 个 P2，已全部回源：
+  - manifest loading/error 不再替换整个 `StageListScreen` body；链接局部降级，选关与开战保持。
+  - Semantics 节点具有真实 tap action 且排除重复子语义；语义与鼠标均以“仅新增一条 reader route”证明不触发 battle。
+  - 完整性测试非递归扫描 `data/narratives/`、`stages/`、`ascension/` 三个 `NarrativeLoader` 物理目录，校验 252 source 与 stage-pattern asset set 相等、stem/YAML id 自洽、每 ID 恰一个路径（0 orphan/0 shadow）。
+  - 1280×720 显式覆盖已解锁 Boss opening/victory/defeat 三链接最密行。
+  - manifest EOF 额外空白行已删除。
+
+- 测试隔离根因：初版在同一 widget 文件内连续多次打开真实 reader，前一用例留下导航/语义异步状态，使后续交互产生顺序依赖。最终语义+键盘合并为一次受控 reader 生命周期并显式 pop/settle；鼠标不冒泡复用另一授权文件的现有真实点击用例。没有污染 asset messenger、没有新增静态 cache，也没有降低并发度。
+
+## 已跑验证（post-review candidate）
 
 以下命令均逐文件独立运行并出现 `All tests passed`：
 
@@ -54,15 +70,15 @@
 - `flutter test --no-pub test/features/mainline/presentation/stage_entry_flow_test.dart`：9 pass。
 - `flutter test --no-pub test/features/mainline/presentation/stage_entry_flow_branches_test.dart`：5 pass。
 - `flutter test --no-pub test/features/mainline/presentation/mainline_narrative_deblocking_test.dart`：3 pass。
-- `flutter test --no-pub test/features/mainline/presentation/mainline_chapter_scroll_test.dart`：4 pass。
+- `flutter test --no-pub test/features/mainline/presentation/mainline_chapter_scroll_test.dart`：5 pass。
 - `flutter test --no-pub test/features/mainline/presentation/stage_list_screen_test.dart`：14 pass。
 - `flutter test --no-pub test/features/mainline/presentation/stage_list_screen_cycle_test.dart`：6 pass。
-- `flutter test --no-pub test/features/mainline/mainline_narrative_completeness_test.dart`：4 pass。
+- `flutter test --no-pub test/features/mainline/mainline_narrative_completeness_test.dart`：5 pass。
 - `flutter test --no-pub test/features/mainline/presentation/stage_entry_flow_pure_test.dart`：20 pass。
 - `flutter test --no-pub test/features/mainline/presentation/defeat_loss_banner_residue_test.dart`：3 pass。
 - `flutter test --no-pub test/features/mainline/inner_demon_defeat_summary_test.dart`：7 pass。
 - `flutter test --no-pub test/features/mainline/presentation/phase0a_mainline_wiring_test.dart`：17 pass。
-- targeted total：101 pass。
+- 上述 12 文件以默认并发的同一 `flutter test --no-pub ...` 命令连续运行两次，均为 103/103 pass；未使用 `--concurrency=1`。
 - manifest 独立核验：252 entries / 252 unique IDs / 252 migrate。
 - `flutter analyze --no-pub`（13 个 changed/scoped Dart items）：0 issue。
 
@@ -75,7 +91,7 @@
 
 ## 当前恢复点
 
-- 状态：implementation candidate 已完成，等待主 agent diff 审查、implementation commit 与 Qoder actual-diff 终审。
-- 最后完成：101 targeted pass、13-item scoped analyze 0 issue。
-- 下一步：format check → diff check → commit implementation → Qoder `Qwen3.8-Max/high` 只读终审该 commit → 写回终审分级 → READY commit。
+- 状态：`a1d68a4b` 后续必修已完成，等待 fix commit 与唯一有效的最终 actual-diff 终审。
+- 最后完成：默认并发 103 targeted pass 连续两次、13-item scoped analyze 0 issue、format 0 change、base-to-tree diff-check 通过。
+- 下一步：commit review fixes → Qoder `Qwen3.8-Max/high` 绑定最终 code tree 只读终审 → 写回终审分级 → READY commit。
 - 阻塞项：无。

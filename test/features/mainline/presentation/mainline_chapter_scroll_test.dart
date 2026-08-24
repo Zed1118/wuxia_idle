@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ import 'package:wuxia_idle/features/mainline/application/mainline_narrative_mani
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
+import 'package:wuxia_idle/features/narrative/presentation/narrative_reader_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/test_data.dart';
@@ -37,6 +40,8 @@ void main() {
     WidgetTester tester, {
     required Size size,
     required MainlineProgress value,
+    Future<MainlineNarrativeManifest> Function()? manifestLoader,
+    List<NavigatorObserver> navigatorObservers = const [],
   }) async {
     await tester.binding.setSurfaceSize(size);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -45,15 +50,34 @@ void main() {
         overrides: [
           mainlineProgressProvider.overrideWith((ref) async => value),
           mainlineNarrativeManifestProvider.overrideWith(
-            (ref) async => manifest,
+            (ref) => manifestLoader?.call() ?? Future.value(manifest),
           ),
         ],
-        child: const MaterialApp(home: StageListScreen(chapterIndex: 1)),
+        child: MaterialApp(
+          navigatorObservers: navigatorObservers,
+          home: const StageListScreen(chapterIndex: 1),
+        ),
       ),
     );
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
+  }
+
+  Future<void> pumpUntilOpeningReader(WidgetTester tester) async {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+      if (find.byType(NarrativeReaderScreen).evaluate().isNotEmpty) return;
+    }
+  }
+
+  Future<void> closeNarrativeReader(WidgetTester tester) async {
+    final readerContext = tester.element(find.byType(NarrativeReaderScreen));
+    Navigator.of(readerContext).pop();
+    await tester.pumpAndSettle();
   }
 
   testWidgets('fresh progress exposes only the available stage opening', (
@@ -71,8 +95,45 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('manifest loading or error never blocks stage selection', (
+    tester,
+  ) async {
+    final pendingManifest = Completer<MainlineNarrativeManifest>();
+    await pumpScreen(
+      tester,
+      size: const Size(1280, 720),
+      value: progress(const []),
+      manifestLoader: () => pendingManifest.future,
+    );
+
+    expect(find.text('山门之外'), findsOneWidget);
+    expect(find.text(UiStrings.mainlineNarrativeOpeningLabel), findsNothing);
+    var stageInkWell = find.ancestor(
+      of: find.text('山门之外'),
+      matching: find.byType(InkWell),
+    );
+    expect(tester.widget<InkWell>(stageInkWell.first).onTap, isNotNull);
+
+    await pumpScreen(
+      tester,
+      size: const Size(1280, 720),
+      value: progress(const []),
+      manifestLoader: () => Future.error(StateError('manifest unavailable')),
+    );
+
+    expect(find.text('山门之外'), findsOneWidget);
+    expect(find.text(UiStrings.mainlineNarrativeOpeningLabel), findsNothing);
+    stageInkWell = find.ancestor(
+      of: find.text('山门之外'),
+      matching: find.byType(InkWell),
+    );
+    expect(tester.widget<InkWell>(stageInkWell.first).onTap, isNotNull);
+    expect(tester.takeException(), isNull);
+    pendingManifest.complete(manifest);
+  });
+
   testWidgets(
-    'cleared evidence unlocks victory and conservative Boss defeat reading',
+    '1280x720 dense Boss row exposes all three links without overflow',
     (tester) async {
       await pumpScreen(
         tester,
@@ -93,6 +154,11 @@ void main() {
 
       expect(find.text(UiStrings.mainlineNarrativeVictoryLabel), findsWidgets);
       expect(
+        find.text(UiStrings.mainlineNarrativeOpeningLabel),
+        findsNWidgets(5),
+        reason: 'all available rows include opening, including the dense Boss',
+      );
+      expect(
         find.text(UiStrings.mainlineNarrativeDefeatLabel),
         findsOneWidget,
         reason:
@@ -102,56 +168,73 @@ void main() {
     },
   );
 
-  testWidgets('optional opening has semantics and activates from keyboard', (
-    tester,
-  ) async {
-    final semantics = tester.ensureSemantics();
-    await pumpScreen(
-      tester,
-      size: const Size(1440, 900),
-      value: progress(const []),
-    );
+  testWidgets(
+    'optional opening is Tab reachable and semantics tap opens only reader',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      final observer = _RecordingNavigatorObserver();
+      await pumpScreen(
+        tester,
+        size: const Size(1440, 900),
+        value: progress(const []),
+        navigatorObservers: [observer],
+      );
 
-    final semanticsLabel = UiStrings.mainlineNarrativeReadSemantics(
-      '山门之外',
-      UiStrings.mainlineNarrativeOpeningLabel,
-    );
-    final semanticsFinder = find.bySemanticsLabel(semanticsLabel);
-    expect(semanticsFinder, findsOneWidget);
-    final buttonFinder = find.widgetWithText(
-      TextButton,
-      UiStrings.mainlineNarrativeOpeningLabel,
-    );
-    final buttonElement = buttonFinder.evaluate().single;
-    var reachedByTab = false;
-    for (var i = 0; i < 30 && !reachedByTab; i++) {
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pump();
-      final focusedContext = FocusManager.instance.primaryFocus?.context;
-      if (focusedContext is! Element) continue;
-      focusedContext.visitAncestorElements((ancestor) {
-        if (identical(ancestor, buttonElement)) {
-          reachedByTab = true;
-          return false;
-        }
-        return true;
-      });
-    }
-    expect(
-      reachedByTab,
-      isTrue,
-      reason: 'optional reading must be Tab reachable',
-    );
+      final semanticsFinder = find.bySemanticsLabel(
+        UiStrings.mainlineNarrativeReadSemantics(
+          '山门之外',
+          UiStrings.mainlineNarrativeOpeningLabel,
+        ),
+      );
+      final node = tester.getSemantics(semanticsFinder);
+      expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+      final buttonFinder = find.widgetWithText(
+        TextButton,
+        UiStrings.mainlineNarrativeOpeningLabel,
+      );
+      final buttonElement = buttonFinder.evaluate().single;
+      var reachedByTab = false;
+      for (var i = 0; i < 30 && !reachedByTab; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        final focusedContext = FocusManager.instance.primaryFocus?.context;
+        if (focusedContext is! Element) continue;
+        focusedContext.visitAncestorElements((ancestor) {
+          if (identical(ancestor, buttonElement)) {
+            reachedByTab = true;
+            return false;
+          }
+          return true;
+        });
+      }
+      expect(
+        reachedByTab,
+        isTrue,
+        reason: 'optional reading must be Tab reachable',
+      );
+      final baseline = observer.pushedRoutes.length;
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    for (var i = 0; i < 10; i++) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
+      tester.semantics.tap(
+        find.semantics.byLabel(
+          UiStrings.mainlineNarrativeReadSemantics(
+            '山门之外',
+            UiStrings.mainlineNarrativeOpeningLabel,
+          ),
+        ),
+      );
+      await pumpUntilOpeningReader(tester);
 
-    expect(find.text('山门之外 · 启'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-    semantics.dispose();
-  });
+      expect(find.byType(NarrativeReaderScreen), findsOneWidget);
+      expect(
+        observer.pushedRoutes.length,
+        baseline + 1,
+        reason: 'semantic action must not bubble into the stage-row InkWell',
+      );
+      expect(tester.takeException(), isNull);
+      await closeNarrativeReader(tester);
+      semantics.dispose();
+    },
+  );
 
   testWidgets('1440x900 chapter timeline has no overflow', (tester) async {
     await pumpScreen(
@@ -169,4 +252,14 @@ void main() {
     expect(find.text(UiStrings.stageListTimelineTitle), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+class _RecordingNavigatorObserver extends NavigatorObserver {
+  final pushedRoutes = <Route<dynamic>>[];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushedRoutes.add(route);
+    super.didPush(route, previousRoute);
+  }
 }

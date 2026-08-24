@@ -257,4 +257,3 @@ entries:
   - {narrativeId: stage_21_05_opening, targetType: chapterStageTimeline, targetId: stage_21_05, unlockTrigger: stageAvailable, disposition: migrate}
   - {narrativeId: stage_21_05_victory, targetType: chapterStageTimeline, targetId: stage_21_05, unlockTrigger: stageCleared, disposition: migrate}
   - {narrativeId: stage_21_05_defeat, targetType: chapterStageTimeline, targetId: stage_21_05, unlockTrigger: stageCleared, disposition: migrate}
-
