@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/defs/light_foot_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -24,6 +25,7 @@ import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
+import '../application/light_foot_location_detail_provider.dart';
 import 'light_foot_location_detail_screen.dart';
 import 'tower_location_detail_screen.dart';
 
@@ -47,10 +49,16 @@ String jianghuMapTowerStatus(TowerProgress progress) {
 }
 
 ({bool locked, String status}) jianghuMapLightFootLocationState(
-  MainlineProgress progress,
-) {
-  final config = GameRepository.instance.numbers.lightFoot;
-  final stageIds = LightFootService.orderedStageIds(config);
+  MainlineProgress progress, {
+  LightFootDef? configOverride,
+}) {
+  final config = configOverride ?? GameRepository.instance.numbers.lightFoot;
+  late final List<String> stageIds;
+  try {
+    stageIds = validatedLightFootLocationStageIds(config);
+  } on StateError {
+    return (locked: true, status: UiStrings.lightFootEmpty);
+  }
   if (stageIds.isEmpty) {
     return (locked: true, status: UiStrings.lightFootEmpty);
   }

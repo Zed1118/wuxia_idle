@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/data/defs/light_foot_def.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
@@ -88,6 +90,30 @@ void main() {
     );
     expect(progressed.locked, isFalse);
     expect(progressed.status, UiStrings.jianghuMapLightFootProgress(2, 5));
+  });
+
+  test('轻功地点遇到脱离根链的环时 fail closed', () {
+    const cyclicConfig = LightFootDef(
+      terrainModifiers: {},
+      stageTerrain: {
+        'stage_light_foot_01': TerrainBiome.water,
+        'stage_light_foot_02': TerrainBiome.rooftop,
+        'stage_light_foot_03': TerrainBiome.bamboo,
+      },
+      unlockTriggers: {
+        'stage_06_05': 'stage_light_foot_01',
+        'stage_light_foot_02': 'stage_light_foot_03',
+        'stage_light_foot_03': 'stage_light_foot_02',
+      },
+    );
+
+    final state = jianghuMapLightFootLocationState(
+      MainlineProgress()..clearedStageIds = const ['stage_06_05'],
+      configOverride: cyclicConfig,
+    );
+
+    expect(state.locked, isTrue);
+    expect(state.status, UiStrings.lightFootEmpty);
   });
 
   test('守城地点锁定和进度从生产链派生', () {
