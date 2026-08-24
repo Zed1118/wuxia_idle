@@ -1598,6 +1598,37 @@ class UiStrings {
   static const String towerLocationEnter = '进入九霄塔';
   static const String towerLocationEnterHint = '查看塔层并选择可挑战层';
   static const String towerLocationEnterReplayHint = '查看塔层并重打已通层';
+  static const String lightFootLocationDetailTitle = '轻功试炼 · 地点详情';
+  static const String lightFootLocationUnavailable = '试炼情报暂不可核实，暂不能进入';
+  static const String lightFootLocationProgressLabel = '当前进度';
+  static const String lightFootLocationRecommendedRealmLabel = '推荐境界';
+  static const String lightFootLocationTerrainLabel = '路线地形';
+  static const String lightFootLocationEnemyEcologyLabel = '敌方生态';
+  static const String lightFootLocationCoreRewardLabel = '核心收获';
+  static const String lightFootLocationParticipantLabel = '当前参与者';
+  static const String lightFootLocationEntryModeLabel = '进入方式';
+  static const String lightFootLocationOccupancyLabel = '预计占用';
+  static const String lightFootLocationEntryModeDirect = '当前仅开放亲战，不可派遣';
+  static const String lightFootLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String lightFootLocationNoNextRoute = '五路全通，无下一路情报';
+  static const String lightFootLocationEnter = '进入轻功试炼';
+  static const String lightFootLocationEnterHint = '查看路线并挑战当前可用试炼';
+  static const String lightFootLocationEnterReplayHint = '查看路线并重打已通试炼';
+
+  static String lightFootLocationProgress(
+    int cleared,
+    int total,
+    String nextName,
+  ) => '已通 $cleared/$total 路 · 下一路：$nextName';
+
+  static String lightFootLocationCompleteProgress(int cleared, int total) =>
+      '已通 $cleared/$total 路 · 五路全通';
+
+  static String lightFootLocationEnemy(String name, String school) =>
+      '$name（$school）';
+
+  static String lightFootLocationCoreReward(int exp, List<String> names) =>
+      names.isEmpty ? '修为 $exp' : '修为 $exp · ${names.join(' · ')}';
   static String towerLocationProgress(int highest, int total, int next) =>
       '已通 $highest/$total 层 · 下一层 $next';
   static String towerLocationCompleteProgress(int highest, int total) =>

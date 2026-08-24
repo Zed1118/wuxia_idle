@@ -14,7 +14,6 @@ import '../../expedition/domain/expedition_run.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/application/light_foot_service.dart';
-import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../main_menu/application/main_menu_status_summary_provider.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
@@ -25,6 +24,7 @@ import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
+import 'light_foot_location_detail_screen.dart';
 import 'tower_location_detail_screen.dart';
 
 String jianghuMapTowerStatus(TowerProgress progress) {
@@ -215,13 +215,9 @@ class JianghuMapScreen extends ConsumerWidget {
                   thumbnailPath: WuxiaUi.entryLightFoot,
                   disabled: lightFootState == null || lightFootState.locked,
                   locked: lightFootState == null || lightFootState.locked,
-                  onTap: () => guardBattleEntry(
-                    context: context,
-                    ref: ref,
-                    onAllowed: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => const LightFootScreen(),
-                      ),
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const LightFootLocationDetailScreen(),
                     ),
                   ),
                 ),
