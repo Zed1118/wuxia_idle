@@ -101,7 +101,7 @@ runtime_bindings:
       - id: ch1_attack_set_rope_raider
         skill_ids: [skill_yinrou_jichu_basic]
       - id: ch1_attack_set_gong_leader
-        skill_ids: [skill_gangmeng_jichu_skill]
+        skill_ids: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]
     visual_variants:
       - id: ch1_visual_blade_a
         asset_path: assets/enemies/battle_bandit_blade.png

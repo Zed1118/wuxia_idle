@@ -207,7 +207,7 @@ void main() {
   });
 
   test(
-    'sorted 12-entry refill windows have unique in-bounds world positions',
+    'content-order 12-entry refill windows have unique in-bounds positions',
     () async {
       final manifest = await _loadProductionCatalog();
       final encounter = manifest.encounterForStage('stage_01_03')!;
@@ -231,19 +231,18 @@ void main() {
       }
       expect(coordinates.values.toSet(), hasLength(12));
 
-      final sortedEntries = [...encounter.spawnEntries]
-        ..sort((left, right) => left.entryId.compareTo(right.entryId));
+      final orderedEntries = encounter.spawnEntries;
       expect(
-        sortedEntries.take(12).map((entry) => entry.positionId).toSet(),
+        orderedEntries.take(12).map((entry) => entry.positionId).toSet(),
         hasLength(12),
       );
       expect(
-        sortedEntries.take(12).map((entry) => entry.entryId).toSet(),
+        orderedEntries.take(12).map((entry) => entry.entryId).toSet(),
         hasLength(12),
       );
 
-      for (var start = 0; start <= sortedEntries.length - 12; start++) {
-        final window = sortedEntries.sublist(start, start + 12);
+      for (var start = 0; start <= orderedEntries.length - 12; start++) {
+        final window = orderedEntries.sublist(start, start + 12);
         final windowCoordinates = window
             .map((entry) => coordinates[entry.positionId])
             .toSet();
@@ -251,7 +250,7 @@ void main() {
           windowCoordinates,
           hasLength(12),
           reason:
-              'sorted refill window start=$start contains stacked positions',
+              'content-order refill window start=$start contains stacked positions',
         );
       }
     },

@@ -21,6 +21,7 @@ import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
+import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 
 /// 扫荡消费面的 Phase 0A 同核 headless runner。
 ///
@@ -74,7 +75,9 @@ final class Phase0aSweepHeadlessRunner {
         rng: rng,
         runtimeBindingSource:
             runtimeBindingSource ??
-            const Phase0aMainlineEncounterRuntimeBindingSourceAdapter.unconfigured(),
+            const Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+              loader: loadPhase0aMainlineRuntimeBindingBundleFromRepository,
+            ),
         routeAuthority: routeAuthority,
       ),
     );

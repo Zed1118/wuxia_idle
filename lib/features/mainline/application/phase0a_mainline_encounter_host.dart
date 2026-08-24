@@ -8,6 +8,7 @@ import '../../../data/numbers_config.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'phase0a_mainline_production_encounter_factory.dart';
+import 'phase0a_mainline_repository_runtime_binding_adapter.dart';
 
 /// Request passed from the mainline presentation host to the production data
 /// session. The session decides whether a migrated assignment exists; there is
@@ -65,6 +66,7 @@ abstract interface class Phase0aMainlineEncounterRuntimeBindingSource {
   Future<Phase0aMainlineEncounterRuntimeBindingBundle> load({
     required String stageId,
     required String encounterId,
+    required int cycleIndex,
   });
 }
 
@@ -72,6 +74,7 @@ typedef Phase0aMainlineEncounterRuntimeBindingLoader =
     FutureOr<Phase0aMainlineEncounterRuntimeBindingBundle> Function({
       required String stageId,
       required String encounterId,
+      required int cycleIndex,
     });
 
 final class Phase0aMainlineEncounterRuntimeBindingBundle {
@@ -106,13 +109,19 @@ final class Phase0aMainlineEncounterRuntimeBindingSourceAdapter
   Future<Phase0aMainlineEncounterRuntimeBindingBundle> load({
     required String stageId,
     required String encounterId,
-  }) async => await loader(stageId: stageId, encounterId: encounterId);
+    required int cycleIndex,
+  }) async => await loader(
+    stageId: stageId,
+    encounterId: encounterId,
+    cycleIndex: cycleIndex,
+  );
 }
 
 Future<Phase0aMainlineEncounterRuntimeBindingBundle>
 _unconfiguredRuntimeBindingLoader({
   required String stageId,
   required String encounterId,
+  required int cycleIndex,
 }) => Future<Phase0aMainlineEncounterRuntimeBindingBundle>.error(
   StateError(
     'migrated runtime bindings are not connected for $stageId/$encounterId',
@@ -121,7 +130,7 @@ _unconfiguredRuntimeBindingLoader({
 
 final phase0aMainlineEncounterRuntimeBindingLoaderProvider =
     Provider<Phase0aMainlineEncounterRuntimeBindingLoader>(
-      (ref) => _unconfiguredRuntimeBindingLoader,
+      (ref) => loadPhase0aMainlineRuntimeBindingBundleFromRepository,
     );
 
 final phase0aMainlineEncounterRuntimeBindingSourceProvider =

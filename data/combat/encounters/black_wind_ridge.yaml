@@ -185,73 +185,73 @@ encounters:
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_front
-        position_id: ch1_position_s03_slot_07
+        position_id: ch1_position_s03_slot_05
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_02
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_08
+        position_id: ch1_position_s03_slot_06
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_03
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_front
-        position_id: ch1_position_s03_slot_09
+        position_id: ch1_position_s03_slot_07
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_04
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_10
+        position_id: ch1_position_s03_slot_08
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_05
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_front
-        position_id: ch1_position_s03_slot_11
+        position_id: ch1_position_s03_slot_09
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_06
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_12
+        position_id: ch1_position_s03_slot_10
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_07
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_front
-        position_id: ch1_position_s03_slot_01
+        position_id: ch1_position_s03_slot_11
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_08
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_02
+        position_id: ch1_position_s03_slot_12
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_09
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_front
-        position_id: ch1_position_s03_slot_03
+        position_id: ch1_position_s03_slot_01
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_rope_10
         archetype_id: ch1_bandits
         role_id: bandit_rope_raider
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_04
+        position_id: ch1_position_s03_slot_02
         behavior_id: ch1_behavior_rope_flank
       - entry_id: ch1_s03_leader_01
         archetype_id: ch1_bandits
         role_id: bandit_gong_leader
         entrance_id: ch1_entrance_s03_upper
-        position_id: ch1_position_s03_slot_05
+        position_id: ch1_position_s03_slot_03
         behavior_id: ch1_behavior_gong_command
       - entry_id: ch1_s03_leader_02
         archetype_id: ch1_bandits
         role_id: bandit_gong_leader
         entrance_id: ch1_entrance_s03_rear
-        position_id: ch1_position_s03_slot_06
+        position_id: ch1_position_s03_slot_04
         behavior_id: ch1_behavior_gong_command
     objectives:
       completion_rule: all

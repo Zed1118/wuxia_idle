@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/combat_encounter_catalog_loader.dart';
 import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
@@ -180,6 +181,84 @@ void main() {
         AttackTokenKind.charge,
         AttackTokenKind.support,
       });
+    },
+  );
+
+  test(
+    'default provider consumes the real repository runtime closure',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final source = container.read(
+        phase0aMainlineEncounterRuntimeBindingSourceProvider,
+      );
+      final bundle = await source.load(
+        stageId: 'stage_01_03',
+        encounterId: 'ch1_encounter_03_ambush',
+        cycleIndex: 1,
+      );
+
+      expect(bundle.tickDuration, const Duration(milliseconds: 100));
+      expect(bundle.actorBindingsByEntryId, hasLength(40));
+      final blade = bundle.actorBindingsByEntryId['ch1_s03_blade_01']!;
+      final crossbow = bundle.actorBindingsByEntryId['ch1_s03_crossbow_01']!;
+      final rope = bundle.actorBindingsByEntryId['ch1_s03_rope_01']!;
+      final leader = bundle.actorBindingsByEntryId['ch1_s03_leader_01']!;
+
+      expect(blade.combatant.maxHp, 2900);
+      expect(crossbow.combatant.maxHp, 2320);
+      expect(rope.combatant.maxHp, 3190);
+      expect(leader.combatant.maxHp, 3770);
+      expect(blade.combatant.speed, 110);
+      expect(crossbow.combatant.speed, 110);
+      expect(rope.combatant.speed, 121);
+      expect(leader.combatant.speed, 99);
+      expect(
+        leader.combatant.defenseRate,
+        closeTo(
+          (blade.combatant.defenseRate * 1.2).clamp(
+            0.0,
+            repository.numbers.cycleEvolution.defenseRateCap,
+          ),
+          0.000001,
+        ),
+      );
+      expect(
+        leader.combatant.skillLoadout.basicAttack!.id,
+        'skill_gangmeng_jichu_basic',
+      );
+      expect(
+        leader.enemySkillBindings.single.skill.id,
+        'skill_gangmeng_jichu_skill',
+      );
+      expect(blade.token.kind, AttackTokenKind.melee);
+      expect(crossbow.token.kind, AttackTokenKind.ranged);
+      expect(rope.token.kind, AttackTokenKind.charge);
+      expect(leader.token.kind, AttackTokenKind.support);
+      expect(leader.token.priority, 3);
+      expect(leader.visualAssetPath, startsWith('assets/enemies/'));
+      final ropeActor = rope.createActor('runtime-rope');
+      expect(ropeActor.id, 'runtime-rope');
+      expect(ropeActor.position, const ArenaVector(120, 120));
+      expect(ropeActor.moveSpeed, 121);
+
+      final host = await createFreshPhase0aMainlineEncounter(
+        Phase0aMainlineEncounterHostBuildRequest(
+          stage: repository.getStage('stage_01_03'),
+          playerMapping: playerMapping,
+          numbers: repository.numbers,
+          cycleIndex: 1,
+          rng: Random(17),
+          runtimeBindingSource: source,
+        ),
+      );
+      expect(host, isNotNull);
+      expect(host!.mapping!.combatants, hasLength(41));
+      host.advanceManual(
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(),
+      );
+      expect(host.flow.state.tick, 1);
     },
   );
 
@@ -372,5 +451,6 @@ final class _ProductionRuntimeSource
   Future<Phase0aMainlineEncounterRuntimeBindingBundle> load({
     required String stageId,
     required String encounterId,
+    required int cycleIndex,
   }) async => bundle;
 }
