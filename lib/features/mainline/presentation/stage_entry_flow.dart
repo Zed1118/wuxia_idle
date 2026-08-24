@@ -497,7 +497,8 @@ class DefeatLossEntry {
   final String? newLayerLabel;
   final int layersRolledBack;
 
-  /// 心魔惩罚余毒标记：true 表示角色遭受心魔失败余毒，UI 追加余毒提示段。
+  /// 心魔惩罚标记：true 表示角色遭受心魔失败后的内息紊乱，
+  /// UI 仅陈述角色名与该状态。
   /// Boss 散功 entry 默认 false。
   final bool residueApplied;
 
@@ -524,7 +525,8 @@ class DefeatLossEntry {
 ///   1. Boss 散功（[BattleResolutionResult.defeatPenaltyByCharacter]）→
 ///      显示内力回退 + 层数回退，residueApplied=false。
 ///   2. 心魔惩罚（[BattleResolutionResult.innerDemonPenaltyByCharacter]）→
-///      显示内力回退 + 修炼度回退提示，不掉层，residueApplied=true。
+///      保留领域结算证据，摘要仅显示角色名与内息紊乱，
+///      不声称内力区间或修炼度回退，residueApplied=true。
 ///   3. 双层伤势重伤（Task 9）：两类 entry 均可附 injuryApplied=true，
 ///      由 [_DefeatLossBanner] 汇总显示受伤人数行。
 @visibleForTesting
@@ -1016,6 +1018,20 @@ class _DefeatLossBanner extends StatelessWidget {
   }
 
   Widget _entryLine(DefeatLossEntry e) {
+    if (e.residueApplied) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Text(
+          [e.characterName, UiStrings.innerDemonResidueNote].join('  ·  '),
+          style: const TextStyle(
+            color: WuxiaColors.textPrimary,
+            fontSize: 12.5,
+            height: 1.4,
+          ),
+        ),
+      );
+    }
+
     final ifSegment = UiStrings.defeatInternalForceSegment(
       e.internalForceBefore,
       e.internalForceAfter,
@@ -1031,17 +1047,8 @@ class _DefeatLossBanner extends StatelessWidget {
     } else if (e.techniqueName != null) {
       techSegment = UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
     }
-    // 余毒标记段（心魔惩罚 residueApplied=true 时追加）
-    final String? residueSegment = e.residueApplied
-        ? UiStrings.innerDemonResidueNote
-        : null;
-
     // 拼接完整行文本
-    final parts = [
-      '${e.characterName}  $ifSegment',
-      ?techSegment,
-      ?residueSegment,
-    ];
+    final parts = ['${e.characterName}  $ifSegment', ?techSegment];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
