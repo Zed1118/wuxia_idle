@@ -81,8 +81,10 @@ import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
 import 'phase0a_mainline_battle_host.dart';
 import 'stage_victory_dialog.dart';
+import '../domain/mainline_participation_policy.dart';
 
 typedef MainlineBattleExit = ({
   bool won,
@@ -105,6 +107,7 @@ Future<void> runStageFlow({
   required StageDef stage,
   int targetCycle = 1,
   bool continueFirstClearRun = false,
+  int? visibleReplayParticipantId,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -120,11 +123,40 @@ Future<void> runStageFlow({
   if (!continueFirstClearRun ||
       targetCycle != 1 ||
       stage.stageType != StageType.mainline) {
+    CombatantSnapshot? visibleReplaySnapshot;
+    if (visibleReplayParticipantId != null) {
+      if (stage.stageType != StageType.mainline) {
+        throw ArgumentError.value(
+          visibleReplayParticipantId,
+          'visibleReplayParticipantId',
+          'is supported only for mainline replay',
+        );
+      }
+      try {
+        visibleReplaySnapshot =
+            await resolveMainlineVisibleReplayParticipantSnapshot(
+              isar: IsarSetup.instance,
+              stageId: stage.id,
+              requestedParticipantId: visibleReplayParticipantId,
+            );
+      } on MainlineParticipationRefusedError {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(UiStrings.mainlineReplayParticipantUnavailable),
+            ),
+          );
+        }
+        return;
+      }
+    }
+    if (!context.mounted) return;
     await _runSingleStageFlow(
       context: context,
       ref: ref,
       stage: stage,
       targetCycle: targetCycle,
+      playerSnapshot: visibleReplaySnapshot,
       battleRunnerForTest: battleRunnerForTest,
       battleOutcomeForTest: battleOutcomeForTest,
       phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
@@ -231,6 +263,151 @@ Future<void> runStageFlow({
   }
 }
 
+/// 当前 active roster 中可用于可见主线重打的候选。
+///
+/// 候选阶段只读取明确事实；选择后仍由
+/// [resolveMainlineVisibleReplayParticipantSnapshot] 做完整装配并再次 fail closed。
+Future<List<Character>> loadEligibleMainlineVisibleReplayParticipants({
+  required Isar isar,
+}) async {
+  final save = await isar.saveDatas.get(0);
+  if (save == null || save.activeCharacterIds.isEmpty) return const [];
+  final occupancy = await CharacterOccupancyService(isar).snapshot();
+  final candidates = <Character>[];
+  for (final characterId in save.activeCharacterIds) {
+    final character = await isar.characters.get(characterId);
+    if (character == null ||
+        !character.isAlive ||
+        character.mainTechniqueId == null ||
+        occupancy.isCharacterOccupied(character.id)) {
+      continue;
+    }
+    candidates.add(character);
+  }
+  return List<Character>.unmodifiable(candidates);
+}
+
+/// 使用已冻结的 G0 可见重打参与政策，装配玩家实际选择的角色。
+///
+/// 不在 active roster、死亡、无主修、被活动占用或装配失败时均拒绝；绝不回退掌门。
+Future<CombatantSnapshot> resolveMainlineVisibleReplayParticipantSnapshot({
+  required Isar isar,
+  required String stageId,
+  required int requestedParticipantId,
+}) async {
+  final save = await isar.saveDatas.get(0);
+  late final int currentLeaderId;
+  try {
+    currentLeaderId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (characterId) async =>
+          await isar.characters.get(characterId) != null,
+    );
+  } on StateError {
+    // 领队指针失效是旧档/损坏态，不能绕过已冻结的领队迁移门禁继续开战。
+    throw const MainlineParticipationRefusedError(
+      'Current leader pointer is invalid for visible replay',
+    );
+  }
+  final requestedIsActive =
+      save?.activeCharacterIds.contains(requestedParticipantId) ?? false;
+  CombatantSnapshot? snapshot;
+  if (requestedIsActive) {
+    try {
+      snapshot = await _loadMainlineParticipantSnapshotFromIsar(
+        isar: isar,
+        participantId: requestedParticipantId,
+      );
+    } on StateError {
+      // 旧档/损坏态可出现主修、装备或技能引用悬空；可见重打把该角色视为
+      // 不可用并由参与政策统一拒绝，不能泄漏装配异常或回退掌门。
+      snapshot = null;
+    }
+  }
+  final selection = MainlineParticipationPolicy.resolveParticipant(
+    request: ActivityParticipationRequest(
+      contentId: stageId,
+      contentKind: ActivityContentKind.mainline,
+      characterId: requestedParticipantId,
+      loadoutPlanId: 'mainline:$stageId:character:$requestedParticipantId',
+      participation: ActivityParticipationMode.direct,
+      controller: ActivityController.human,
+      clock: ActivityClock.realtime,
+      entryKind: ActivityEntryKind.replay,
+    ),
+    currentLeaderId: currentLeaderId,
+    requestedIdleEligible: snapshot != null,
+  );
+  if (snapshot == null || snapshot.characterId != selection.participantId) {
+    throw const MainlineParticipationRefusedError(
+      'Visible replay snapshot does not match the selected participant',
+    );
+  }
+  return snapshot;
+}
+
+Future<int?> showMainlineVisibleReplayParticipantPicker({
+  required BuildContext context,
+  required List<Character> candidates,
+}) {
+  return PaperDialog.show<int>(
+    context,
+    title: UiStrings.mainlineReplayParticipantTitle,
+    body: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(UiStrings.mainlineReplayParticipantBody),
+        const SizedBox(height: 12),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 320),
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: candidates.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 6),
+            itemBuilder: (_, index) {
+              final character = candidates[index];
+              return OutlinedButton(
+                key: Key('mainline_replay_participant_${character.id}'),
+                onPressed: () => Navigator.of(context).pop(character.id),
+                child: Text(character.name),
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text(UiStrings.commonCancel),
+      ),
+    ],
+  );
+}
+
+/// 从当前存档读取候选并展示可见重打参与者选择。
+Future<int?> selectMainlineVisibleReplayParticipant({
+  required BuildContext context,
+}) async {
+  final candidates = await loadEligibleMainlineVisibleReplayParticipants(
+    isar: IsarSetup.instance,
+  );
+  if (!context.mounted) return null;
+  if (candidates.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(UiStrings.mainlineReplayNoEligibleParticipant),
+      ),
+    );
+    return null;
+  }
+  return showMainlineVisibleReplayParticipantPicker(
+    context: context,
+    candidates: candidates,
+  );
+}
+
 typedef _MainlineRunBootstrap = ({
   StageDef stage,
   MainlineRun run,
@@ -309,8 +486,15 @@ Future<PreparedMainlineLoadoutSnapshot?> _loadNextMainlineSnapshot({
 
 Future<CombatantSnapshot?> _loadMainlineParticipantSnapshot(
   int participantId,
-) async {
-  final isar = IsarSetup.instance;
+) => _loadMainlineParticipantSnapshotFromIsar(
+  isar: IsarSetup.instance,
+  participantId: participantId,
+);
+
+Future<CombatantSnapshot?> _loadMainlineParticipantSnapshotFromIsar({
+  required Isar isar,
+  required int participantId,
+}) async {
   final character = await isar.characters.get(participantId);
   if (character == null ||
       !character.isAlive ||
@@ -1578,6 +1762,9 @@ applyVictoryResolution({
   final isFirstClearStage =
       !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ?? false);
   final founderId = save?.founderCharacterId;
+  final battleEventOwnerId = characters.length == 1
+      ? characters.single.id
+      : founderId;
 
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
   var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
@@ -1645,7 +1832,7 @@ applyVictoryResolution({
     for (final drop in result.dropResult.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);
       await events.recordEquipmentObtained(
-        characterId: founderId,
+        characterId: battleEventOwnerId,
         equipmentId: drop.id,
         equipmentDefId: drop.defId,
         equipmentName: def.name,

@@ -318,6 +318,53 @@ void main() {
     });
   });
 
+  testWidgets('可见重打的经验与无主掉落事件归实际参与门人，不回落掌门', (tester) async {
+    final (founderId, participantId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '掌门');
+      final participant = await insertCharacter(name: '重打门人');
+      await writeSaveData(
+        activeIds: [founder, participant],
+        founderId: founder,
+      );
+      await markCleared('stage_avr_normal');
+      return (founder, participant);
+    }))!;
+    final stage = normalStage(
+      baseExpReward: 17,
+      dropTable: const [
+        EquipmentDrop(
+          equipmentDefId: 'weapon_xunchang_tie_jian',
+          dropChance: 1,
+        ),
+      ],
+    );
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: finishedSettlement([participantId]),
+      ),
+    );
+    expect(outcome, isNotNull);
+
+    await tester.runAsync(() async {
+      final isar = IsarSetup.instance;
+      expect((await isar.characters.get(founderId))!.experience, 0);
+      expect((await isar.characters.get(participantId))!.experience, 17);
+      final events = await isar.gameEvents
+          .filter()
+          .eventTypeEqualTo(GameEventType.equipmentObtained)
+          .findAll();
+      expect(events, isNotEmpty);
+      expect(
+        events.map((event) => event.relatedCharacterId),
+        everyElement(participantId),
+      );
+    });
+  });
+
   testWidgets('真实 Ch1 映射 + headless 末态 → Isar 奖励/经验/伤势全链', (tester) async {
     final (founderId, reserveId) = (await tester.runAsync(() async {
       final founder = await insertCharacter(name: '祖师');

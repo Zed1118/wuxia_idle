@@ -234,19 +234,33 @@ class StageListScreen extends ConsumerWidget {
                               activeCharacters: activeCharacters,
                               goalGuidance: currentGoal,
                               replayRewardUnlocked: replayRewardUnlocked,
-                              onRunStage: (stage) {
+                              onRunStage: (stage) async {
                                 final targetCycle = cycleFor();
                                 final entry = entries.singleWhere(
                                   (candidate) => candidate.def.id == stage.id,
                                 );
-                                runStageFlow(
+                                final continueFirstClearRun =
+                                    targetCycle == 1 &&
+                                    statusFor(entry) == StageStatus.available;
+                                int? visibleReplayParticipantId;
+                                if (!continueFirstClearRun) {
+                                  visibleReplayParticipantId =
+                                      await selectMainlineVisibleReplayParticipant(
+                                        context: context,
+                                      );
+                                  if (visibleReplayParticipantId == null ||
+                                      !context.mounted) {
+                                    return;
+                                  }
+                                }
+                                await runStageFlow(
                                   context: context,
                                   ref: ref,
                                   stage: stage,
                                   targetCycle: targetCycle,
-                                  continueFirstClearRun:
-                                      targetCycle == 1 &&
-                                      statusFor(entry) == StageStatus.available,
+                                  continueFirstClearRun: continueFirstClearRun,
+                                  visibleReplayParticipantId:
+                                      visibleReplayParticipantId,
                                 );
                               },
                             ),

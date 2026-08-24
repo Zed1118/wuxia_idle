@@ -1815,6 +1815,11 @@ class UiStrings {
   static const String stageVictoryReturnToMap = '返回江湖地图';
   static const String stageVictoryEnterNextStage = '进入下一关';
   static const String mainlineRunParticipantUnavailable = '掌门当前不可继续出战，已结束连续闯关。';
+  static const String mainlineReplayParticipantTitle = '选择出战角色';
+  static const String mainlineReplayParticipantBody = '本次重打的战绩、成长与伤势均归实际出战角色。';
+  static const String mainlineReplayNoEligibleParticipant = '当前没有可参与重打的空闲角色。';
+  static const String mainlineReplayParticipantUnavailable =
+      '所选角色当前无法出战，请重新选择。';
   static const String mainlineSettlementRecoveredTitle = '前战已结';
   static const String mainlineSettlementRecoveredBody =
       '本关权威结算已保存；继续前行不会重复发放奖励、成长或伤势。';
