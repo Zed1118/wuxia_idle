@@ -4,6 +4,9 @@
 runtime_bindings:
   - stage_id: stage_01_03
     encounter_id: ch1_encounter_03_ambush
+    # Base identity is explicit; role/archetype resolution comes from the
+    # production catalog and is not guessed by the host.
+    base_enemy_id: enemy_xueTu_bandit_a
     entrances:
       - id: ch1_entrance_s03_front
         spawn_position: {x: -520, y: 80}
@@ -39,12 +42,40 @@ runtime_bindings:
     behaviors:
       - id: ch1_behavior_blade_press
         ai_profile_id: ai_bandit_press
+        token_policy: melee
+        priority: 1
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
       - id: ch1_behavior_crossbow_offset
         ai_profile_id: ai_crossbow_offset
+        token_policy: ranged
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
       - id: ch1_behavior_rope_flank
         ai_profile_id: ai_rope_flank
+        token_policy: charge
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
       - id: ch1_behavior_gong_command
         ai_profile_id: ai_gong_command
+        token_policy: support
+        priority: 3
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
     ai_profiles:
       - id: ai_bandit_press
         target_policy: nearest_player

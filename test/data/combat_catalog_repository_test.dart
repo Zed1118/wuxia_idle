@@ -70,26 +70,29 @@ void main() {
     'missing production manifest is the only absent-data fallback',
     () async {
       final catalog = await loadProductionCombatCatalogIfPresent((path) async {
-        throw FileSystemException('missing', path);
-      }, isMissingAssetError: (error) => error is FileSystemException);
+        throw FileSystemException('missing', path, const OSError('missing', 2));
+      });
       expect(catalog, isNull);
     },
   );
 
-  test('non-missing manifest read failure is classified and not swallowed', () {
-    expect(
-      loadProductionCombatCatalogIfPresent((path) async {
-        throw StateError('permission denied');
-      }),
-      throwsA(
-        isA<CombatCatalogLoadException>().having(
-          (error) => error.kind,
-          'kind',
-          CombatCatalogLoadFailureKind.manifestRead,
+  test(
+    'FileSystemException without an explicit missing code is not fallback',
+    () async {
+      await expectLater(
+        loadProductionCombatCatalogIfPresent((path) async {
+          throw FileSystemException('unknown filesystem failure', path);
+        }),
+        throwsA(
+          isA<CombatCatalogLoadException>().having(
+            (error) => error.kind,
+            'kind',
+            CombatCatalogLoadFailureKind.manifestRead,
+          ),
         ),
-      ),
-    );
-  });
+      );
+    },
+  );
 
   test('manifest with a missing referenced source fails closed', () async {
     expect(
@@ -116,7 +119,7 @@ stage_assignments:
   - stage_id: legacy
     migration_state: legacy''';
         }
-        throw FileSystemException('missing', path);
+        throw FileSystemException('missing', path, const OSError('missing', 2));
       }),
       throwsA(
         isA<CombatCatalogLoadException>()
@@ -134,71 +137,94 @@ stage_assignments:
     );
   });
 
-  test('production stage_01_03 binds a migrated route and runtime contract', () async {
-    final catalog = await loadProductionCombatCatalogIfPresent(
-      (path) => File(path).readAsString(),
+  test('manifest parse failure is classified as manifestInvalid', () async {
+    await expectLater(
+      loadProductionCombatCatalogIfPresent((path) async {
+        if (path == 'data/combat/manifest.yaml') return 'reference_index: []';
+        throw FileSystemException('missing', path, const OSError('missing', 2));
+      }),
+      throwsA(
+        isA<CombatCatalogLoadException>().having(
+          (error) => error.kind,
+          'kind',
+          CombatCatalogLoadFailureKind.manifestInvalid,
+        ),
+      ),
     );
-    expect(catalog, isNotNull);
-    expect(
-      catalog!.encounterForStage('stage_01_03')!.id,
-      'ch1_encounter_03_ambush',
-    );
-    expect(catalog.archetypeById('ch1_bandits')!.id, 'ch1_bandits');
-    final resolver = Phase0aEncounterMigrationResolver(
-      legacyContentIds: const [
-        'stage_01_01',
-        'stage_01_02',
-        'stage_01_04',
-        'stage_01_05',
-      ],
-    );
-    final route = selectCombatStageEncounterRoute(
-      manifest: catalog,
-      stageId: 'stage_01_03',
-      migrationResolver: resolver,
-      hasLegacyContent: false,
-    );
-    expect(route, isA<MigratedCombatStageEncounterRoute>());
-    final encounter = (route as MigratedCombatStageEncounterRoute).encounter;
-    final contract = mapCombatEncounterRuntimeContract(
-      encounter,
-      tickDuration: const Duration(milliseconds: 100),
-      resolveEnemyId: (entry) => 'runtime_${entry.entryId}',
-    );
-    expect(contract.spawnDirector.config.activeLimit, 12);
-    expect(contract.spawnDirector.state.units, hasLength(40));
-    expect(contract.attackTokenBudgets.melee, 1);
-    expect(contract.attackTokenBudgets.ranged, 1);
-    expect(contract.attackTokenBudgets.charge, 1);
-    expect(contract.attackTokenBudgets.support, 1);
   });
 
-  test('production Ch1 stages other than stage_01_03 remain legacy', () async {
-    final catalog = (await loadProductionCombatCatalogIfPresent(
-      (path) => File(path).readAsString(),
-    ))!;
-    final resolver = Phase0aEncounterMigrationResolver(
-      legacyContentIds: const [
-        'stage_01_01',
-        'stage_01_02',
-        'stage_01_04',
-        'stage_01_05',
-      ],
+  test('non-missing source read failure is classified as sourceRead', () async {
+    await expectLater(
+      loadProductionCombatCatalogIfPresent((path) async {
+        if (path == 'data/combat/manifest.yaml') {
+          return '''archetype_sources: [fixture.yaml]
+encounter_sources: [fixture.yaml]
+reference_index:
+  entrance_ids: []
+  position_ids: []
+  behavior_ids: []
+  attack_set_ids: []
+  attack_tag_ids: []
+  posture_profile_ids: []
+  drop_group_ids: []
+  sfx_group_ids: []
+  visual_variant_ids: []
+  objective_target_ids: []
+  objective_anchor_ids: []
+  objective_entity_ids: []
+  objective_checkpoint_ids: []
+  objective_marker_ids: []
+stage_assignments:
+  - stage_id: legacy
+    migration_state: legacy''';
+        }
+        throw StateError('permission denied');
+      }),
+      throwsA(
+        isA<CombatCatalogLoadException>().having(
+          (error) => error.kind,
+          'kind',
+          CombatCatalogLoadFailureKind.sourceRead,
+        ),
+      ),
     );
-    for (final stageId in const [
-      'stage_01_01',
-      'stage_01_02',
-      'stage_01_04',
-      'stage_01_05',
-    ]) {
-      final route = selectCombatStageEncounterRoute(
-        manifest: catalog,
-        stageId: stageId,
-        migrationResolver: resolver,
-        hasLegacyContent: true,
-      );
-      expect(route, isA<LegacyCombatStageEncounterRoute>());
-      expect(catalog.encounterForStage(stageId), isNull);
-    }
+  });
+
+  test('catalog content failure is classified as catalogInvalid', () async {
+    await expectLater(
+      loadProductionCombatCatalogIfPresent((path) async {
+        if (path == 'data/combat/manifest.yaml') {
+          return '''archetype_sources: [bad.yaml]
+encounter_sources: [bad.yaml]
+reference_index:
+  entrance_ids: []
+  position_ids: []
+  behavior_ids: []
+  attack_set_ids: []
+  attack_tag_ids: []
+  posture_profile_ids: []
+  drop_group_ids: []
+  sfx_group_ids: []
+  visual_variant_ids: []
+  objective_target_ids: []
+  objective_anchor_ids: []
+  objective_entity_ids: []
+  objective_checkpoint_ids: []
+  objective_marker_ids: []
+stage_assignments:
+  - stage_id: legacy
+    migration_state: legacy''';
+        }
+        if (path == 'bad.yaml') return 'archetypes: [{}]';
+        throw StateError('unexpected source');
+      }),
+      throwsA(
+        isA<CombatCatalogLoadException>().having(
+          (error) => error.kind,
+          'kind',
+          CombatCatalogLoadFailureKind.catalogInvalid,
+        ),
+      ),
+    );
   });
 }

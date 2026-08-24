@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
+import 'combat_encounter_catalog_loader.dart';
 import 'defs/combat_catalog_manifest_def.dart';
 import 'defs/combat_catalog_reference_index.dart';
-import 'combat_encounter_catalog_loader.dart';
 import 'yaml_loader.dart';
 
 enum CombatCatalogLoadFailureKind {
@@ -15,6 +15,9 @@ enum CombatCatalogLoadFailureKind {
   catalogInvalid,
 }
 
+/// Production catalog failures retain the source path and failure class so a
+/// caller can distinguish an absent optional catalog from damaged production
+/// data. Only a missing root manifest is non-fatal.
 final class CombatCatalogLoadException extends FormatException {
   CombatCatalogLoadException({
     required this.kind,
@@ -28,13 +31,14 @@ final class CombatCatalogLoadException extends FormatException {
   final Object? cause;
 }
 
-/// Loads the production combat catalog from an explicit manifest.
+/// Loads the production combat catalog from an explicit root manifest.
 ///
-/// The manifest is the only place that declares source paths and external
-/// reference namespaces. Once the manifest exists, every referenced source is
-/// mandatory and every parse/validation error is fatal. A missing manifest is
-/// treated as "catalog not installed yet" so legacy fixtures remain usable;
-/// this is deliberately the only non-fatal path.
+/// Production migration truth remains in
+/// `data/combat/manifest/stage_assignments.yaml`; the root manifest only
+/// references that source. The root manifest also references the runtime
+/// binding source, which is loaded here as a required source so a migrated
+/// catalog can never silently install without its runtime contract. The
+/// typed runtime validation is performed by the runtime binding loader.
 Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
   Future<String> Function(String path) load, {
   bool Function(Object error)? isMissingAssetError,
@@ -58,15 +62,30 @@ Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
   late final List<String> archetypePaths;
   late final List<String> encounterPaths;
   late final CombatCatalogReferenceIndex references;
-  late final String assignmentYaml;
+  late final String assignmentPath;
+  late final String? runtimeBindingPath;
   try {
     manifest = parseYamlMap(manifestRaw);
     archetypePaths = _requiredPaths(manifest, 'archetype_sources');
     encounterPaths = _requiredPaths(manifest, 'encounter_sources');
     references = _parseReferenceIndex(manifest['reference_index']);
-    assignmentYaml = _assignmentYaml(manifest['stage_assignments']);
+    assignmentPath = _requiredSourcePath(
+      manifest,
+      'stage_assignments_source',
+      legacyInlineField: 'stage_assignments',
+    );
+    final runtimeRaw = manifest['runtime_bindings_source'];
+    if (runtimeRaw == null && manifest['stage_assignments'] is List) {
+      // Older isolated catalog fixtures predate the runtime contract. The
+      // production root manifest below always supplies this source.
+      runtimeBindingPath = null;
+    } else {
+      runtimeBindingPath = _requiredSourcePath(
+        manifest,
+        'runtime_bindings_source',
+      );
+    }
   } catch (error) {
-    if (error is CombatCatalogLoadException) rethrow;
     throw CombatCatalogLoadException(
       kind: CombatCatalogLoadFailureKind.manifestInvalid,
       path: manifestPath,
@@ -75,35 +94,53 @@ Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
     );
   }
 
+  Future<String> requiredSource(String path) async {
+    try {
+      return await load(path);
+    } catch (error) {
+      final kind = isMissing(error)
+          ? CombatCatalogLoadFailureKind.sourceMissing
+          : CombatCatalogLoadFailureKind.sourceRead;
+      throw CombatCatalogLoadException(
+        kind: kind,
+        path: path,
+        cause: error,
+        message:
+            'production combat catalog source "$path" cannot be read: $error',
+      );
+    }
+  }
+
   Future<List<CombatCatalogYamlSource>> sources(List<String> paths) async {
     final result = <CombatCatalogYamlSource>[];
     for (final path in paths) {
-      try {
-        result.add((path, await load(path)));
-      } catch (error) {
-        final kind = isMissing(error)
-            ? CombatCatalogLoadFailureKind.sourceMissing
-            : CombatCatalogLoadFailureKind.sourceRead;
-        throw CombatCatalogLoadException(
-          kind: kind,
-          path: path,
-          cause: error,
-          message: 'production combat catalog source "$path" cannot be read: $error',
-        );
-      }
+      result.add((path, await requiredSource(path)));
     }
     return result;
   }
 
+  // Read both authoritative binding inputs at the catalog boundary. The
+  // runtime loader reads the binding again to parse and resolve it, but a
+  // missing root-referenced source is already classified here.
+  if (runtimeBindingPath != null) await requiredSource(runtimeBindingPath);
+  final assignmentRaw = assignmentPath.startsWith('inline:')
+      ? null
+      : await requiredSource(assignmentPath);
+
   try {
+    final inlineAssignment = manifest['stage_assignments'];
+    final assignmentSource = inlineAssignment == null
+        ? (assignmentPath, assignmentRaw!)
+        : (manifestPath, _assignmentYaml(inlineAssignment));
     return loadCombatCatalogManifest(
       archetypeSources: await sources(archetypePaths),
       encounterSources: await sources(encounterPaths),
-      manifestSource: (manifestPath, assignmentYaml),
+      manifestSource: assignmentSource,
       referenceIndex: references,
     );
+  } on CombatCatalogLoadException {
+    rethrow;
   } on FormatException catch (error) {
-    if (error is CombatCatalogLoadException) rethrow;
     throw CombatCatalogLoadException(
       kind: CombatCatalogLoadFailureKind.catalogInvalid,
       path: manifestPath,
@@ -120,10 +157,27 @@ Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
   }
 }
 
+String _requiredSourcePath(
+  Map<String, dynamic> manifest,
+  String field, {
+  String? legacyInlineField,
+}) {
+  final raw = manifest[field];
+  if (raw is String && raw.trim().isNotEmpty && !RegExp(r'\s').hasMatch(raw)) {
+    return raw;
+  }
+  if (legacyInlineField != null && manifest[legacyInlineField] is List) {
+    // Test-only compatibility for older isolated catalog fixtures. Production
+    // data uses the explicit source field and is checked by the runtime loader.
+    return 'inline:$legacyInlineField';
+  }
+  throw FormatException('manifest.$field must be a non-empty path');
+}
+
 String _assignmentYaml(Object? raw) {
   if (raw is! List || raw.isEmpty) {
     throw const FormatException(
-      'production combat catalog manifest.stage_assignments must be a non-empty list',
+      'production combat manifest.stage_assignments must be a non-empty list',
     );
   }
   final lines = <String>['stage_assignments:'];
@@ -132,39 +186,41 @@ String _assignmentYaml(Object? raw) {
         entry['stage_id'] is! String ||
         entry['migration_state'] is! String) {
       throw const FormatException(
-        'production combat catalog manifest.stage_assignments contains an invalid entry',
+        'production combat manifest.stage_assignments contains an invalid entry',
       );
     }
-    lines.add('  - stage_id: ${_yamlString(entry['stage_id'] as String)}');
+    lines.add("  - stage_id: '${_yamlQuote(entry['stage_id'] as String)}'");
     lines.add(
-      '    migration_state: ${_yamlString(entry['migration_state'] as String)}',
+      "    migration_state: '${_yamlQuote(entry['migration_state'] as String)}'",
     );
     final encounterId = entry['encounter_id'];
     if (encounterId != null) {
       if (encounterId is! String) {
         throw const FormatException(
-          'production combat catalog manifest.stage_assignments.encounter_id must be a string',
+          'production combat manifest.stage_assignments.encounter_id must be a string',
         );
       }
-      lines.add('    encounter_id: ${_yamlString(encounterId)}');
+      lines.add("    encounter_id: '${_yamlQuote(encounterId)}'");
     }
   }
   return lines.join('\n');
 }
 
-String _yamlString(String value) => "'${value.replaceAll("'", "''")}'";
+String _yamlQuote(String value) => value.replaceAll("'", "''");
 
 List<String> _requiredPaths(Map<String, dynamic> manifest, String field) {
   final raw = manifest[field];
   if (raw is! List || raw.isEmpty || raw.any((value) => value is! String)) {
     throw FormatException(
-      'production combat catalog manifest.$field must be a non-empty list of paths',
+      'production combat manifest.$field must be a non-empty list of paths',
     );
   }
   final paths = raw.cast<String>();
-  if (paths.any((path) => path.trim().isEmpty)) {
+  if (paths.any(
+    (path) => path.trim().isEmpty || RegExp(r'\s').hasMatch(path),
+  )) {
     throw FormatException(
-      'production combat catalog manifest.$field contains an empty path',
+      'production combat manifest.$field contains an invalid path',
     );
   }
   return List<String>.unmodifiable(paths);
@@ -173,7 +229,7 @@ List<String> _requiredPaths(Map<String, dynamic> manifest, String field) {
 CombatCatalogReferenceIndex _parseReferenceIndex(Object? raw) {
   if (raw is! Map) {
     throw const FormatException(
-      'production combat catalog manifest.reference_index must be a map',
+      'production combat manifest.reference_index must be a map',
     );
   }
   final map = Map<String, dynamic>.from(raw);
@@ -181,7 +237,7 @@ CombatCatalogReferenceIndex _parseReferenceIndex(Object? raw) {
     final value = map[field];
     if (value is! List || value.any((id) => id is! String)) {
       throw FormatException(
-        'production combat catalog manifest.reference_index.$field must be a list of ids',
+        'production combat manifest.reference_index.$field must be a list of ids',
       );
     }
     return value.cast<String>();
@@ -208,7 +264,7 @@ CombatCatalogReferenceIndex _parseReferenceIndex(Object? raw) {
 bool _isMissingAssetError(Object error) {
   if (error is FileSystemException) {
     final code = error.osError?.errorCode;
-    return code == null || code == 2 || code == 3;
+    return code == 2 || code == 3;
   }
   return error is FlutterError &&
       error.toString().contains('Unable to load asset');

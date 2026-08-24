@@ -29,6 +29,8 @@ import 'combat_catalog_repository.dart';
 import 'defs/combat_catalog_manifest_def.dart';
 import 'defs/combat_encounter_def.dart';
 import 'defs/combat_enemy_archetype_def.dart';
+import 'defs/combat_runtime_binding_def.dart';
+import 'combat_runtime_binding_loader.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
@@ -162,6 +164,7 @@ class GameRepository {
   final ExpeditionConfig? expeditionConfig;
   final BossGauntletConfig? bossGauntletConfig;
   final CombatCatalogManifestDef? combatCatalog;
+  final CombatRuntimeBindingCatalog? combatRuntimeBindings;
 
   GameRepository._({
     required this.numbers,
@@ -189,6 +192,7 @@ class GameRepository {
     this.expeditionConfig,
     this.bossGauntletConfig,
     this.combatCatalog,
+    this.combatRuntimeBindings,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -197,8 +201,14 @@ class GameRepository {
   /// 加载器。任何 yaml 缺失 / 语法错 / 红线越界都直接抛异常（fail fast）。
   static Future<GameRepository> loadAllDefs({
     Future<String> Function(String path)? loader,
+    Future<bool> Function(String path)? assetExists,
   }) async {
     final load = loader ?? rootBundle.loadString;
+    // A custom String loader cannot prove binary asset presence. Production
+    // keeps the strict rootBundle resolver; injected tests must pass an
+    // explicit assetExists callback when they need real asset verification.
+    final resolvedAssetExists =
+        assetExists ?? (loader == null ? null : (String path) async => true);
 
     final numbersRaw = parseYamlMap(await load('data/numbers.yaml'));
     final equipmentRaw = parseYamlMap(await load('data/equipment.yaml'));
@@ -461,6 +471,21 @@ class GameRepository {
       fallback: null,
     );
     final combatCatalog = await loadProductionCombatCatalogIfPresent(load);
+    final combatRuntimeBindings = combatCatalog == null
+        ? null
+        : await loadProductionCombatRuntimeBindings(
+            load: load,
+            manifest: combatCatalog,
+            stageDefs: stageDefs,
+            skillDefs: skillDefs,
+            arenaBounds: CombatRuntimeArenaBounds(
+              minX: numbers.phase0aArena.arenaMinX,
+              maxX: numbers.phase0aArena.arenaMaxX,
+              minY: numbers.phase0aArena.arenaMinY,
+              maxY: numbers.phase0aArena.arenaMaxY,
+            ),
+            assetExists: resolvedAssetExists,
+          );
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -488,6 +513,7 @@ class GameRepository {
       expeditionConfig: expeditionConfig,
       bossGauntletConfig: bossGauntletConfig,
       combatCatalog: combatCatalog,
+      combatRuntimeBindings: combatRuntimeBindings,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -1309,6 +1335,11 @@ class GameRepository {
   /// 按显式 catalog id 查询 enemy archetype；未知 id 返回 null。
   CombatEnemyArchetypeDef? combatArchetypeById(String archetypeId) =>
       combatCatalog?.archetypeById(archetypeId);
+
+  /// Typed runtime binding for a migrated stage. Legacy stages return null;
+  /// no runtime binding is inferred from legacy stage data.
+  CombatRuntimeStageBinding? combatRuntimeBindingForStage(String stageId) =>
+      combatRuntimeBindings?.bindingForStage(stageId);
 
   /// 全部 encounter 列表,按 id 字典序(便于测试稳定 + UI 列表)。
   List<EncounterDef> get allEncounters {

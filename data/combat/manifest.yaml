@@ -1,63 +1,21 @@
-# Loader entry for the production Ch1 Black Wind Ridge catalog.
-# Only stage_01_03 is migrated; all other Ch1 stages remain legacy.
+# Production catalog manifest for the Ch1 Black Wind Ridge slice.
+# Migration truth is kept only in the referenced authoritative source.
 archetype_sources:
   - data/combat/archetypes/bandits.yaml
 encounter_sources:
   - data/combat/encounters/black_wind_ridge.yaml
+stage_assignments_source: data/combat/manifest/stage_assignments.yaml
+runtime_bindings_source: data/combat/runtime_bindings.yaml
 reference_index:
-  entrance_ids:
-    - ch1_entrance_s03_front
-    - ch1_entrance_s03_rear
-    - ch1_entrance_s03_upper
-  position_ids:
-    - ch1_position_s03_slot_01
-    - ch1_position_s03_slot_02
-    - ch1_position_s03_slot_03
-    - ch1_position_s03_slot_04
-    - ch1_position_s03_slot_05
-    - ch1_position_s03_slot_06
-    - ch1_position_s03_slot_07
-    - ch1_position_s03_slot_08
-    - ch1_position_s03_slot_09
-    - ch1_position_s03_slot_10
-    - ch1_position_s03_slot_11
-    - ch1_position_s03_slot_12
-  behavior_ids:
-    - ch1_behavior_blade_press
-    - ch1_behavior_crossbow_offset
-    - ch1_behavior_rope_flank
-    - ch1_behavior_gong_command
-  attack_set_ids:
-    - ch1_attack_set_blade
-    - ch1_attack_set_crossbow
-    - ch1_attack_set_rope_raider
-    - ch1_attack_set_gong_leader
-  attack_tag_ids:
-    - ch1_attack_tag_melee
-    - ch1_attack_tag_projectile
-    - ch1_attack_tag_charge
-    - ch1_attack_tag_support
-  posture_profile_ids:
-    - ch1_posture_blade
-    - ch1_posture_crossbow
-    - ch1_posture_rope_raider
-    - ch1_posture_gong_leader
-  drop_group_ids:
-    - ch1_drop_group_bandit_encounter
-  sfx_group_ids:
-    - ch1_sfx_blade
-    - ch1_sfx_crossbow
-    - ch1_sfx_rope_raider
-    - ch1_sfx_gong_leader
-  visual_variant_ids:
-    - ch1_visual_blade_a
-    - ch1_visual_blade_b
-    - ch1_visual_crossbow_a
-    - ch1_visual_crossbow_b
-    - ch1_visual_rope_raider_a
-    - ch1_visual_rope_raider_b
-    - ch1_visual_gong_leader_a
-    - ch1_visual_gong_leader_b
+  entrance_ids: [ch1_entrance_s03_front, ch1_entrance_s03_rear, ch1_entrance_s03_upper]
+  position_ids: [ch1_position_s03_slot_01, ch1_position_s03_slot_02, ch1_position_s03_slot_03, ch1_position_s03_slot_04, ch1_position_s03_slot_05, ch1_position_s03_slot_06, ch1_position_s03_slot_07, ch1_position_s03_slot_08, ch1_position_s03_slot_09, ch1_position_s03_slot_10, ch1_position_s03_slot_11, ch1_position_s03_slot_12]
+  behavior_ids: [ch1_behavior_blade_press, ch1_behavior_crossbow_offset, ch1_behavior_rope_flank, ch1_behavior_gong_command]
+  attack_set_ids: [ch1_attack_set_blade, ch1_attack_set_crossbow, ch1_attack_set_rope_raider, ch1_attack_set_gong_leader]
+  attack_tag_ids: [ch1_attack_tag_melee, ch1_attack_tag_projectile, ch1_attack_tag_charge, ch1_attack_tag_support]
+  posture_profile_ids: [ch1_posture_blade, ch1_posture_crossbow, ch1_posture_rope_raider, ch1_posture_gong_leader]
+  drop_group_ids: [ch1_drop_group_bandit_encounter]
+  sfx_group_ids: [ch1_sfx_blade, ch1_sfx_crossbow, ch1_sfx_rope_raider, ch1_sfx_gong_leader]
+  visual_variant_ids: [ch1_visual_blade_a, ch1_visual_blade_b, ch1_visual_crossbow_a, ch1_visual_crossbow_b, ch1_visual_rope_raider_a, ch1_visual_rope_raider_b, ch1_visual_gong_leader_a, ch1_visual_gong_leader_b]
   objective_target_ids:
     - ch1_s03_blade_01
     - ch1_s03_blade_02
@@ -103,15 +61,3 @@ reference_index:
   objective_entity_ids: []
   objective_checkpoint_ids: []
   objective_marker_ids: []
-stage_assignments:
-  - stage_id: stage_01_01
-    migration_state: legacy
-  - stage_id: stage_01_02
-    migration_state: legacy
-  - stage_id: stage_01_03
-    migration_state: migrated
-    encounter_id: ch1_encounter_03_ambush
-  - stage_id: stage_01_04
-    migration_state: legacy
-  - stage_id: stage_01_05
-    migration_state: legacy
