@@ -200,12 +200,22 @@ decisions:
     batch_action: c11a_qr_seconds_integrated_remaining_mapper_conversion_blocked
     owner_task: P2-G1-C11-COOLDOWN-SECONDS
     safe_default: preserve_current_timing_when_mapping_is_not_proven
+    current_production_gap:
+      player_numeric: cooldownTurns_times_player_attack_cooldown_seconds
+      enemy_phase: cooldownTurns_times_enemy_attack_cooldown_seconds
+      enemy_charge: cooldownTurns_times_enemy_attack_cooldown_seconds
+    recommended_freeze:
+      player_numeric: materialize_current_turns_times_0_55_as_skill_seconds
+      enemy_phase: materialize_current_turns_times_1_0_as_explicit_enemy_binding_seconds
+      enemy_charge: materialize_current_turns_times_1_0_as_explicit_enemy_binding_seconds
+    freeze_status: awaiting_explicit_user_approval
 
   - id: PLAYER-BOT-TACTICS-01
     status: frozen
     summary: 玩家 bot 提供寻隙、强攻、稳守三种确定性战术并与手动共用 reducer
     batch_action: c12a_visible_window_policy_integrated_command_surface_gap_retained
     owner_task: P2-G1-C12-BOT-TACTICS
+    current_production_gap: no_real_selector_or_consumer_all_adapter_construction_uses_compatibility_policy
 
   - id: FAILURE-POLICY-CORE-01
     status: frozen_with_tuning_edges
