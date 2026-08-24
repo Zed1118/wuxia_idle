@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/character_providers.dart';
+import '../../../core/domain/character.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../mainline/presentation/chapter_list_screen.dart';
+import '../../seclusion/domain/retreat_session.dart';
+import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../application/main_menu_status_summary_provider.dart';
@@ -62,7 +66,9 @@ class MainMenuStatusSummaryPanel extends ConsumerWidget {
                                 : constraints.maxWidth,
                             child: _SummaryTile(
                               item: item,
-                              onTap: () => _open(context, item),
+                              onTap: () async {
+                                await _open(context, ref, item);
+                              },
                             ),
                           ),
                       ],
@@ -78,31 +84,69 @@ class MainMenuStatusSummaryPanel extends ConsumerWidget {
     );
   }
 
-  void _open(BuildContext context, MainMenuStatusSummaryItem item) {
+  Future<void> _open(
+    BuildContext context,
+    WidgetRef ref,
+    MainMenuStatusSummaryItem item,
+  ) async {
     final Widget screen;
     switch (item.route) {
       case MainMenuStatusRoute.retreat:
-        final characterId = item.targetCharacterId;
+        final character = await _resolveActiveCharacter(
+          ref,
+          item.targetCharacterId,
+        );
         final realmTier = item.targetRealmTier;
-        if (characterId == null || characterId <= 0 || realmTier == null) {
+        if (character == null ||
+            realmTier == null ||
+            realmTier != character.realmTier) {
+          return;
+        }
+        final session = await _activeRetreat(ref);
+        if (session == null ||
+            character.currentRetreatSessionId != session.id) {
           return;
         }
         screen = SeclusionMapListScreen(
           charRealmTier: realmTier,
-          characterId: characterId,
+          characterId: character.id,
         );
       case MainMenuStatusRoute.island:
         screen = const TaohuaIslandScreen();
       case MainMenuStatusRoute.character:
-        final characterId = item.targetCharacterId;
-        if (characterId == null || characterId <= 0) {
-          return;
-        }
-        screen = CharacterPanelScreen(characterId: characterId);
+        final character = await _resolveActiveCharacter(
+          ref,
+          item.targetCharacterId,
+        );
+        if (character == null) return;
+        screen = CharacterPanelScreen(characterId: character.id);
       case MainMenuStatusRoute.mainline:
         screen = const ChapterListScreen();
     }
+    if (!context.mounted) return;
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+  }
+
+  Future<Character?> _resolveActiveCharacter(
+    WidgetRef ref,
+    int? characterId,
+  ) async {
+    if (characterId == null || characterId <= 0) return null;
+    try {
+      final activeIds = await ref.read(activeCharacterIdsProvider.future);
+      if (!activeIds.contains(characterId)) return null;
+      return await ref.read(characterByIdProvider(characterId).future);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<RetreatSession?> _activeRetreat(WidgetRef ref) async {
+    try {
+      return await ref.read(activeRetreatSessionProvider.future);
+    } catch (_) {
+      return null;
+    }
   }
 }
 

@@ -255,6 +255,7 @@ void main() {
   });
 
   testWidgets('character status opens its exact character', (tester) async {
+    final target = character(id: 42, name: '目标角色');
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -269,6 +270,8 @@ void main() {
               ),
             ],
           ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [42]),
+          characterByIdProvider(42).overrideWith((ref) async => target),
         ],
         child: const MaterialApp(
           home: Scaffold(body: MainMenuStatusSummaryPanel()),
@@ -286,9 +289,42 @@ void main() {
     expect(screen.characterId, 42);
   });
 
+  testWidgets('production provider routes an injury to its exact character', (
+    tester,
+  ) async {
+    final injured = character(id: 64, name: '真实伤者', lightInjuryStacks: 1);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeRetreatSessionProvider.overrideWith((ref) async => null),
+          mainMenuSaveSnapshotProvider.overrideWith(
+            (ref) async => islandSave(0),
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [64]),
+          characterByIdProvider(64).overrideWith((ref) async => injured),
+          mainlineProgressProvider.overrideWith((ref) async => progress([])),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pumpAndSettle();
+
+    final screen = tester.widget<CharacterPanelScreen>(
+      find.byType(CharacterPanelScreen),
+    );
+    expect(screen.characterId, 64);
+  });
+
   testWidgets('retreat status opens its exact character and realm', (
     tester,
   ) async {
+    final target = character(id: 73, name: '闭关目标', realmTier: RealmTier.erLiu)
+      ..currentRetreatSessionId = 77;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -303,6 +339,11 @@ void main() {
                 targetRealmTier: RealmTier.erLiu,
               ),
             ],
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [73]),
+          characterByIdProvider(73).overrideWith((ref) async => target),
+          activeRetreatSessionProvider.overrideWith(
+            (ref) async => retreat(id: 77),
           ),
         ],
         child: const MaterialApp(
@@ -376,6 +417,72 @@ void main() {
           activeCharacterIdsProvider.overrideWith((ref) async => [42]),
           characterByIdProvider(42).overrideWith((ref) async => active),
           characterByIdProvider(999).overrideWith((ref) async => null),
+        ],
+        child: MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pumpAndSettle();
+
+    expect(observer.pushedRoutes, hasLength(1));
+  });
+
+  testWidgets('non-positive character target fails closed', (tester) async {
+    final observer = _RecordingNavigatorObserver();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.injury,
+                route: MainMenuStatusRoute.character,
+                title: UiStrings.mainMenuStatusInjuryTitle,
+                detail: '损坏摘要',
+                targetCharacterId: 0,
+              ),
+            ],
+          ),
+        ],
+        child: MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pump();
+
+    expect(observer.pushedRoutes, hasLength(1));
+  });
+
+  testWidgets('character target lookup error fails closed', (tester) async {
+    final observer = _RecordingNavigatorObserver();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.injury,
+                route: MainMenuStatusRoute.character,
+                title: UiStrings.mainMenuStatusInjuryTitle,
+                detail: '失效摘要',
+                targetCharacterId: 42,
+              ),
+            ],
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [42]),
+          characterByIdProvider(
+            42,
+          ).overrideWith((ref) async => throw StateError('lookup failed')),
         ],
         child: MaterialApp(
           navigatorObservers: [observer],
