@@ -119,15 +119,20 @@ Phase0aEncounterRuntimeObservation get runtimeObservation =>
   implementation → fix/evidence。
 - [x] 6 文件 targeted 全绿，4 changed Dart analyze 0，format/diff/path/status
   clean，未跑 full。
-- [ ] Pi 同配置完成最终只读审查，triage 后 P0/P1/P2=0。
-- [ ] 红线影响 0，Gate 诚实；最后追加精确 READY 空提交。
+- [x] Pi 同配置的设计只读审查 `DESIGN PASS`；Pi final 两轮均
+  5 分钟 0 输出/exit 1，不声称 Pi final PASS。独立 Codex substitute
+  final review 于 actual tip `16ba235c` 完成，P0/P1/P2=0。
+- [x] 红线影响 0，Gate 诚实；本证据提交后追加精确
+  `[READY][CODEX][P2-M2-R27] 冻结遭遇运行时观测快照` 空提交。
 
 ## 恢复点
 
-- 状态：计划、红测、实现、守卫加固、6 文件 targeted 与 scoped
-  analyze 已完成；待 Pi 最终只读审查、triage、最终证据与 READY。
+- 状态：计划、红测、实现、守卫加固、6 文件 targeted、scoped
+  analyze 与独立 Codex substitute final review 已完成；待提交本证据
+  并追加 READY。
 - 提交：`8fc8a28e` plan；`33748337` red；`3bc33cb1`
-  implementation；`19938f32` source guard 加固。
+  implementation；`19938f32` source guard 加固；`72127e01` 验证证据；
+  `16ba235c` Pi final 连接证据。
 - 有效红灯：两个 owned tests 仅因新
   `phase0a_encounter_runtime_observation.dart` 不存在，value/source/getter 类型
   无法解析而编译失败；最小生产实现后转绿。
@@ -143,8 +148,12 @@ Phase0aEncounterRuntimeObservation get runtimeObservation =>
   5 分钟仍 0 输出，有界 `Ctrl-C` 终止；随后使用同配置精简 prompt
   重试，再次 5 分钟 0 输出并有界终止。两轮均 exit 1，未得到
   `FINAL PASS/FAIL`，未启动第三轮。
-- 当前唯一阻塞：Pi final 外部返回证据尚缺，因此 checklist 与 READY
-  保持未完成，不伪称 P0/P1/P2 清零。代码/测试/本地 Gate 无其他阻塞。
+- 独立 Codex substitute final review：于 actual tip `16ba235c` 只读审查
+  actual diff，复跑两个 owned tests 39/39，核对既有 6 文件 83/83、
+  analyze 4 items / 0 issue、format 4 / 0 changed、exact 5 paths 与
+  clean status；结论 P0/P1/P2=0，无 fake-green/越界 finding，Gate PASS。
+- 外审归属诚实：上述清零结论来自独立 Codex substitute review，
+  不冒充 Pi final PASS；Pi 仅有实现前 `DESIGN PASS`。
 - 环境：`flutter pub get` 成功；build_runner 写 126 ignored outputs；
   `libisar.dylib` SHA-256 =
   `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`，
