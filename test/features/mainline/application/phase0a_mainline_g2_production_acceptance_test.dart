@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 
 import '../../../support/combatant_snapshot_fixture.dart';
 import '../../../support/test_data.dart';
@@ -104,6 +105,13 @@ void main() {
     expect(maxActive, 12);
     expect(moveAndAttackCommands, greaterThan(0));
     expect(moveAndAttackResolved, greaterThan(0));
+    final settlement = host.settle(
+      outcome: host.flow.outcome,
+      finalState: host.flow.state,
+      events: events,
+    );
+    expect(settlement.snapshot.result, BattleResult.leftWin);
+    expect(settlement.nextStageId, 'stage_01_04');
   });
 
   test('manual auto and headless use the same production rules', () async {
