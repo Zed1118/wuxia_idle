@@ -1702,7 +1702,7 @@ class UiStrings {
     int eliteExp,
   ) =>
       '首次全通：$skill、${equipment.join('、')}三选一、修为 $exp、领悟 $insight；'
-      '击败每名精英记修为 $eliteExp';
+      '中途离庄时，每击败一名精英保留修为 $eliteExp';
   static String gauntletLocationTicketAndSupply(int tickets, int supplyCap) =>
       '断魂帖 $tickets 张 · 最多携带 $supplyCap 份补给';
   static String gauntletLocationParticipantCandidates(
