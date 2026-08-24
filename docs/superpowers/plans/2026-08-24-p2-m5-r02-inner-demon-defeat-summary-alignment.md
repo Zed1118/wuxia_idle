@@ -8,6 +8,13 @@
 - 心魔摘要应沿既有 `residueApplied` 语义隐藏内力与心法回退段，不扩 `DefeatLossEntry` 公共构造合同；普通 Boss 摘要及其修炼度字符串不得改变。
 - 不增加新弹窗、新玩法或新字符串体系。
 
+## Qoder 实现前只读设计复核
+
+- CLI：`qoderclicn 1.1.28`；精确 selector：`-m Qwen3.8-Max --reasoning-effort high`。
+- 权限：`--permission-mode dont_ask --tools Read Grep Glob --no-session-persistence -p`，无 Bash/Edit/Write。
+- 首轮完整 prompt 5 分 10 秒持续零输出后有界中止，exit 1，不冒充有效结论；同配置精简重试 exit 0，结论 `DESIGN PASS (conditional)`。
+- conditional 项已落实：`residueApplied` 顶部早返回、非心魔旧路径保持、Boss 内力相等与零回退层边界锁定、结果证据字段保留、普通 Boss 修炼度字符串保留。
+
 ## 验证清单
 
 - [x] 外部设计复核有命令、版本、精确模型和结论证据。
@@ -55,7 +62,7 @@
   终审 4 个文档性 P2 已关闭，两轮后续复核均 P0/P1/P2=0/0/0。
 - 最后完成：心魔 `residueApplied` 行仅呈现角色名与内息紊乱；
   普通 Boss 内力、层数/修炼度、伤势路径不变。
-- 下一步：跑 format/diff/path/status，提交证据并追加 READY 标记。
+- 下一步：Batch 联合定向、全量、独立审查与文档收口。
 - 已跑验证：有效红测 1 项失败；5 个定向测试文件 40/40 绿；
   `flutter analyze` 指定 5 个 owned Dart 文件，0 issue。
 - 阻塞项：无功能阻塞。当前基线无 `defeat_inner_demon_residue`
@@ -77,4 +84,4 @@
   `defeat_inner_demon_residue`，无可达 fixture 执行 1280×720/1440×900
   截图 smoke；本次以 widget surface 完成 1280×720 与 1440×900
   无异常/无溢出自动回归，但未真机截图目检仍是诚实残留风险。
-  R01 仍由集成层合并，本 source task 不改其文件；按登记未跑 full。
+  R01 已由集成层以独立稳定提交合入；source 按登记未跑 full。
