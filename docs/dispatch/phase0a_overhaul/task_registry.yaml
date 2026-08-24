@@ -4189,3 +4189,32 @@ tasks:
       - no dispatch automation persistent occupancy or participant policy is invented
       - do not change schema save version tuning narrative rewards economy unlocks or main
       - do not claim U06 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M6-CURRENT-MATTERS-TARGET-ROUTING
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-current-matters-target-routing-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-current-matters-target-routing
+    status: in_progress
+    base_commit: 23ab38cd7da8ae33923cc0b068c5905078b05f0d
+    completion_scope: route_current_matters_to_the_exact_production_character
+    dependencies:
+      - P2-M6-U06-TOWER-LOCATION-DETAIL
+    owned_files:
+      - lib/features/main_menu/application/main_menu_status_summary_provider.dart
+      - lib/features/main_menu/presentation/main_menu_status_summary.dart
+      - test/features/main_menu/main_menu_status_summary_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-current-matters-target-routing.md
+      - docs/audit/phase2_m6_current_matters_target_routing_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - retreat injury and breakthrough summaries route to their exact active roster character
+      - retreat forwards that character current realm tier without a guessed fallback
+      - missing dangling or non unique character targets fail closed without character id 1 fallback
+      - summary priority copy five item cap island and mainline routing remain unchanged
+      - do not change schema save version tuning narrative rewards economy unlocks or main
+      - do not claim U05 U06 U07 M6 or overall Phase 2 completion
