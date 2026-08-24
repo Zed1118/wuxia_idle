@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import 'phase0a_bot_tactic.dart';
 import 'phase0a_player_input_adapter.dart';
+import '../../domain/phase0a/phase0a_combat_intent.dart';
 
 /// Phase 0A 玩家 bot(headless 内核批,路线 C 子项①落地):每拍从状态
 /// 生成与真人同型的语义指令,经同一 [Phase0aPlayerInputAdapter] → reducer
@@ -43,6 +44,8 @@ final class Phase0aPlayerBotAdapter {
       gatherReady: gatherReady,
       clearReady: clearReady,
       numericSkill: numericSkill,
+      target: target,
+      player: player,
     );
     return Phase0aPlayerCommand(
       left: (outOfRange || facingOffTarget) && toTarget.x < 0,
@@ -53,6 +56,10 @@ final class Phase0aPlayerBotAdapter {
       gather: tactical.gather,
       clear: tactical.clear,
       skillHotkey: tactical.skillHotkey,
+      defenseAction: tactical.defenseAction,
+      defenseDirection: toTarget.lengthSquared > 0
+          ? toTarget.normalized()
+          : player.facing,
     );
   }
 
@@ -61,8 +68,32 @@ final class Phase0aPlayerBotAdapter {
     required bool gatherReady,
     required bool clearReady,
     required int? numericSkill,
+    required Phase0aActor target,
+    required Phase0aActor player,
   }) {
     if (policy.requiresBurstWindow && !burstWindow) {
+      // steadyGuard's defensive action is itself the safe response outside a
+      // burst window. Do not let the policy gate make shield/parry unreachable;
+      // other tactical actions remain held until the configured window.
+      if (!policy.allows(Phase0aBotAction.defense)) {
+        return const _TacticalCommands();
+      }
+      final tuning = playerAdapter.defenseTuning;
+      if (tuning != null &&
+          player.defenseCooldownRemaining <= 0 &&
+          player.shieldRemaining <= 0 &&
+          tuning.shieldAbsorption > 0) {
+        return const _TacticalCommands(
+          defenseAction: Phase0aDefenseAction.shield,
+        );
+      }
+      if (tuning != null &&
+          player.defenseCooldownRemaining <= 0 &&
+          tuning.parryWindowTicks > 0) {
+        return const _TacticalCommands(
+          defenseAction: Phase0aDefenseAction.parry,
+        );
+      }
       return const _TacticalCommands();
     }
     if (policy.parallelTacticalActions) {
@@ -76,6 +107,30 @@ final class Phase0aPlayerBotAdapter {
     }
     for (final action in policy.actionPriority) {
       switch (action) {
+        case Phase0aBotAction.defense:
+          final tuning = playerAdapter.defenseTuning;
+          if (tuning != null &&
+              player.defenseCooldownRemaining <= 0 &&
+              target.chargingCast != null) {
+            return const _TacticalCommands(
+              defenseAction: Phase0aDefenseAction.dodge,
+            );
+          }
+          if (tuning != null &&
+              player.defenseCooldownRemaining <= 0 &&
+              player.shieldRemaining <= 0 &&
+              tuning.shieldAbsorption > 0) {
+            return const _TacticalCommands(
+              defenseAction: Phase0aDefenseAction.shield,
+            );
+          }
+          if (tuning != null &&
+              player.defenseCooldownRemaining <= 0 &&
+              tuning.parryWindowTicks > 0) {
+            return const _TacticalCommands(
+              defenseAction: Phase0aDefenseAction.parry,
+            );
+          }
         case Phase0aBotAction.gather:
           if (policy.allows(action) && gatherReady) {
             return const _TacticalCommands(gather: true);
@@ -154,9 +209,11 @@ final class _TacticalCommands {
     this.gather = false,
     this.clear = false,
     this.skillHotkey,
+    this.defenseAction,
   });
 
   final bool gather;
   final bool clear;
   final int? skillHotkey;
+  final Phase0aDefenseAction? defenseAction;
 }

@@ -5,6 +5,7 @@ import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'arena_vector.dart';
+import 'defense_resolution.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
@@ -98,6 +99,25 @@ Phase0aStepResult reducePhase0aTick({
       state.player.attackCooldownRemaining,
       deltaSeconds,
     ),
+    defenseCooldownRemaining: _cooldownAfter(
+      state.player.defenseCooldownRemaining,
+      deltaSeconds,
+    ),
+    shieldTicksRemaining: state.player.shieldTicksRemaining > 0
+        ? state.player.shieldTicksRemaining - 1
+        : 0,
+    shieldRemaining: state.player.shieldTicksRemaining > 1
+        ? state.player.shieldRemaining
+        : 0,
+    parryTicksRemaining: state.player.parryTicksRemaining > 0
+        ? state.player.parryTicksRemaining - 1
+        : 0,
+    parryCounterBudgetRemaining: state.player.parryTicksRemaining > 1
+        ? state.player.parryCounterBudgetRemaining
+        : 0,
+    dodgeTicksRemaining: state.player.dodgeTicksRemaining > 0
+        ? state.player.dodgeTicksRemaining - 1
+        : 0,
   );
 
   final enemiesById = <String, Phase0aActor>{
@@ -189,12 +209,222 @@ Phase0aStepResult reducePhase0aTick({
     }
   }
 
+  /// 唯一入站攻击消费点。它先走主动闪避/化解/护盾，再落账 HP，最后
+  /// 直接写入标准化反击；反击不再调用本函数，故不会递归。
+  void settleInbound({
+    required Phase0aActor attacker,
+    required Phase0aActor target,
+    required Phase0aResolvedHit resolved,
+    required AttackDefenseFlags? defenseFlags,
+    required String attackId,
+    required Phase0aMoveKind moveKind,
+    required bool isUltimate,
+  }) {
+    if (!resolved.isHit) return;
+    DefenseResult? defense;
+    if (target.side == Phase0aSide.player && defenseFlags != null) {
+      final currentPlayer = player;
+      defense = resolveDefense(
+        DefenseInput(
+          flags: defenseFlags,
+          incomingHpDamage: _checkedDamage(resolved).toDouble(),
+          incomingPostureDamage: 0,
+          dodgeSucceeded: currentPlayer.dodgeTicksRemaining > 0,
+          parrySucceeded: currentPlayer.parryTicksRemaining > 0,
+          redirectSucceeded: false,
+          blockSucceeded: false,
+          shieldAbsorption: currentPlayer.shieldRemaining,
+          blockDamageMultiplier: 1,
+          baseMitigationFraction: 0,
+          counterDamage: currentPlayer.parryCounterDamage,
+          counterUpperBound: currentPlayer.parryCounterBudgetRemaining,
+        ),
+      );
+      final nextShield = defense.branch == DefenseBranch.blockOrShield
+          ? defense.shieldRemaining
+          : currentPlayer.shieldRemaining;
+      final nextBudget = defense.branch == DefenseBranch.parry
+          ? (currentPlayer.parryCounterBudgetRemaining - defense.counterDamage)
+                .clamp(0.0, double.infinity)
+                .toDouble()
+          : currentPlayer.parryCounterBudgetRemaining;
+      player = currentPlayer.copyWith(
+        shieldRemaining: nextShield,
+        shieldTicksRemaining: nextShield > 0
+            ? currentPlayer.shieldTicksRemaining
+            : 0,
+        parryCounterBudgetRemaining: nextBudget,
+      );
+      final counter = _checkedCounter(defense.counterDamage);
+      if (counter > 0 && attacker.side == Phase0aSide.enemy) {
+        final counterRemaining = math.max(0, attacker.currentHealth - counter);
+        final counterUpdated = attacker.copyWith(
+          currentHealth: counterRemaining,
+        );
+        if (counterUpdated.isAlive) {
+          enemiesById[attacker.id] = counterUpdated;
+        } else {
+          enemiesById.remove(attacker.id);
+          events.add(
+            Phase0aEnemyDefeated(
+              seq: seq++,
+              tick: tick,
+              target: attacker.id,
+              defeatKind: attacker.defeatKind,
+              targetPosition: attacker.position,
+            ),
+          );
+        }
+      }
+      events.add(
+        Phase0aDefenseResolved(
+          seq: seq++,
+          tick: tick,
+          attackId: attackId,
+          attacker: attacker.id,
+          target: target.id,
+          branch: defense.branch,
+          incomingDamage: defense.incomingHpDamage.round(),
+          counterDamage: counter,
+          shieldRemaining: nextShield.round(),
+          nonRecursive: defense.nonRecursive,
+          targetPosition: target.position,
+        ),
+      );
+    }
+    // An active dodge is a resolved attack outcome, so emit HitLanded with
+    // zero final damage for the canonical attack timeline. A passive miss
+    // returned above without this event and remains semantically distinct.
+    final damage = defense == null
+        ? _checkedDamage(resolved)
+        : defense.incomingHpDamage.round();
+    final remaining = math.max(0, target.currentHealth - damage);
+    events.add(
+      Phase0aHitLanded(
+        seq: seq++,
+        tick: tick,
+        actor: attacker.id,
+        target: target.id,
+        moveKind: moveKind,
+        isCritical: defense == null && resolved.isCritical,
+        isUltimate: isUltimate,
+        resolvedDamage: damage,
+        remainingHealth: remaining,
+        actorPosition: attacker.position,
+        targetPosition: target.position,
+      ),
+    );
+    final updated = target.copyWith(currentHealth: remaining);
+    if (target.side == Phase0aSide.enemy) {
+      if (!updated.isAlive) {
+        enemiesById.remove(target.id);
+        events.add(
+          Phase0aEnemyDefeated(
+            seq: seq++,
+            tick: tick,
+            target: target.id,
+            defeatKind: target.defeatKind,
+            targetPosition: updated.position,
+          ),
+        );
+      } else {
+        final advanced = _advanceBossPhases(
+          actor: updated,
+          tick: tick,
+          seq: seq,
+          events: events,
+        );
+        enemiesById[target.id] = advanced.actor;
+        seq = advanced.nextSeq;
+      }
+    } else {
+      player = player.copyWith(currentHealth: remaining);
+    }
+  }
+
   final ordered = _stableOrderByActor(intents);
   final attackIntentsByActor = <String, Phase0aAttackIntent>{};
   for (final intent in ordered) {
     if (intent is Phase0aAttackIntent) {
       attackIntentsByActor.putIfAbsent(intent.actorId, () => intent);
     }
+  }
+  var defenseConsumed = false;
+  for (final intent in ordered) {
+    if (intent is! Phase0aDefenseIntent ||
+        intent.actorId != player.id ||
+        defenseConsumed ||
+        player.defenseCooldownRemaining > 0 ||
+        !_validDefenseIntent(intent)) {
+      continue;
+    }
+    final direction = intent.direction.lengthSquared > 0
+        ? intent.direction.normalized()
+        : player.facing;
+    final from = player.position;
+    switch (intent.action) {
+      case Phase0aDefenseAction.shield:
+        if (intent.shieldAbsorption <= 0 || intent.shieldDurationTicks <= 0) {
+          continue;
+        }
+        player = player.copyWith(
+          shieldRemaining: intent.shieldAbsorption,
+          shieldTicksRemaining: intent.shieldDurationTicks,
+          parryTicksRemaining: 0,
+          dodgeTicksRemaining: 0,
+          parryCounterDamage: 0,
+          parryCounterBudgetRemaining: 0,
+          defenseCooldownRemaining: intent.cooldownSeconds,
+        );
+      case Phase0aDefenseAction.parry:
+        if (intent.parryWindowTicks <= 0 ||
+            intent.counterDamage <= 0 ||
+            intent.counterUpperBound <= 0) {
+          continue;
+        }
+        player = player.copyWith(
+          shieldRemaining: 0,
+          shieldTicksRemaining: 0,
+          parryTicksRemaining: intent.parryWindowTicks,
+          dodgeTicksRemaining: 0,
+          parryCounterDamage: intent.counterDamage,
+          parryCounterBudgetRemaining: intent.counterUpperBound,
+          defenseCooldownRemaining: intent.cooldownSeconds,
+        );
+      case Phase0aDefenseAction.dodge:
+        if (intent.dodgeIframeTicks <= 0 || intent.dodgeDistance <= 0) {
+          continue;
+        }
+        player = player.copyWith(
+          position: from + direction * intent.dodgeDistance,
+          facing: direction,
+          shieldRemaining: 0,
+          shieldTicksRemaining: 0,
+          parryTicksRemaining: 0,
+          dodgeTicksRemaining: intent.dodgeIframeTicks,
+          parryCounterDamage: 0,
+          parryCounterBudgetRemaining: 0,
+          defenseCooldownRemaining: intent.cooldownSeconds,
+        );
+    }
+    defenseConsumed = true;
+    final windowTicks = switch (intent.action) {
+      Phase0aDefenseAction.shield => intent.shieldDurationTicks,
+      Phase0aDefenseAction.parry => intent.parryWindowTicks,
+      Phase0aDefenseAction.dodge => intent.dodgeIframeTicks,
+    };
+    events.add(
+      Phase0aDefenseStarted(
+        seq: seq++,
+        tick: tick,
+        actor: player.id,
+        action: intent.action,
+        fromPosition: from,
+        toPosition: player.position,
+        windowTicks: windowTicks,
+        shieldAbsorption: player.shieldRemaining,
+      ),
+    );
   }
   final consumedIntentActorIds = <String>{};
   for (final intent in ordered) {
@@ -203,6 +433,15 @@ Phase0aStepResult reducePhase0aTick({
     final isPlayer = actorId == player.id;
     final actor = isPlayer ? player : enemiesById[actorId];
     if (actor == null || !actor.isAlive) continue;
+    // A committed active defense owns the player's action budget for this
+    // tick. Movement remains allowed so dodge direction is deterministic;
+    // attacks and skills in the same command are rejected fail-closed.
+    if (isPlayer &&
+        defenseConsumed &&
+        intent is! Phase0aDefenseIntent &&
+        intent is! Phase0aMoveIntent) {
+      continue;
+    }
     // 蓄力/踉跄压制(reducer 权威:AI 停发之外的第二道闸,禁绕状态行动)。
     if (suppressedActorIds.contains(actorId)) continue;
     // 同一 intent 的多目标结算共享行动前敌方快照：目标顺序不得让先阵亡的
@@ -212,6 +451,8 @@ Phase0aStepResult reducePhase0aTick({
     );
 
     switch (intent) {
+      case Phase0aDefenseIntent():
+        continue;
       case Phase0aMoveIntent(:final direction):
         final step = direction.lengthSquared > 0
             ? direction.normalized()
@@ -262,8 +503,31 @@ Phase0aStepResult reducePhase0aTick({
           final partnerDamage = partnerHit.isHit
               ? _checkedDamage(partnerHit)
               : 0;
-          final totalDamage = mainDamage + partnerDamage;
-          final remaining = math.max(0, player.currentHealth - totalDamage);
+          final rawTotalDamage = mainDamage + partnerDamage;
+          final defenseFlags =
+              mainIntent.defenseFlags ?? partnerIntent.defenseFlags;
+          var totalDamage = rawTotalDamage;
+          if (defenseFlags != null && rawTotalDamage > 0) {
+            final healthBeforeDefense = player.currentHealth;
+            settleInbound(
+              attacker: actor,
+              target: player,
+              resolved: Phase0aResolvedHit(
+                isHit: true,
+                isCritical: mainHit.isCritical || partnerHit.isCritical,
+                damage: rawTotalDamage,
+              ),
+              defenseFlags: defenseFlags,
+              attackId: '${actor.id}:$tick:${player.id}:guardian_coop',
+              moveKind: Phase0aMoveKind.light,
+              isUltimate: false,
+            );
+            totalDamage = healthBeforeDefense - player.currentHealth;
+          } else {
+            player = player.copyWith(
+              currentHealth: math.max(0, player.currentHealth - rawTotalDamage),
+            );
+          }
           events.add(
             Phase0aGuardianCoopStrike(
               seq: seq++,
@@ -281,27 +545,30 @@ Phase0aStepResult reducePhase0aTick({
               targetPosition: player.position,
             ),
           );
-          player = player.copyWith(currentHealth: remaining);
-          enemiesById[actor.id] = actor.copyWith(
-            attackCooldownRemaining: mainIntent.cooldownSeconds,
-            facing: mainIntent.aimDirection.lengthSquared > 0
-                ? mainIntent.aimDirection.normalized()
-                : actor.facing,
-            qiCurrent: (actor.qiCurrent + mainIntent.qiDelta).clamp(
-              0,
-              actor.qiMax,
-            ),
-          );
-          enemiesById[coop.partner.id] = coop.partner.copyWith(
-            attackCooldownRemaining: partnerIntent.cooldownSeconds,
-            facing: partnerIntent.aimDirection.lengthSquared > 0
-                ? partnerIntent.aimDirection.normalized()
-                : coop.partner.facing,
-            qiCurrent: (coop.partner.qiCurrent + partnerIntent.qiDelta).clamp(
-              0,
-              coop.partner.qiMax,
-            ),
-          );
+          final currentMain = enemiesById[actor.id];
+          if (currentMain != null) {
+            enemiesById[actor.id] = currentMain.copyWith(
+              attackCooldownRemaining: mainIntent.cooldownSeconds,
+              facing: mainIntent.aimDirection.lengthSquared > 0
+                  ? mainIntent.aimDirection.normalized()
+                  : currentMain.facing,
+              qiCurrent: (currentMain.qiCurrent + mainIntent.qiDelta).clamp(
+                0,
+                currentMain.qiMax,
+              ),
+            );
+          }
+          final currentPartner = enemiesById[coop.partner.id];
+          if (currentPartner != null) {
+            enemiesById[coop.partner.id] = currentPartner.copyWith(
+              attackCooldownRemaining: partnerIntent.cooldownSeconds,
+              facing: partnerIntent.aimDirection.lengthSquared > 0
+                  ? partnerIntent.aimDirection.normalized()
+                  : currentPartner.facing,
+              qiCurrent: (currentPartner.qiCurrent + partnerIntent.qiDelta)
+                  .clamp(0, currentPartner.qiMax),
+            );
+          }
           enemiesById[coop.boss.id] = coop.boss.copyWith(
             guardianCoopUsedInCharge: true,
           );
@@ -335,56 +602,22 @@ Phase0aStepResult reducePhase0aTick({
             defenderCharging: target.chargingCast != null,
             defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
-          if (resolved.isHit) {
-            final damage = _checkedDamage(resolved);
-            final remaining = math.max(0, target.currentHealth - damage);
-            events.add(
-              Phase0aHitLanded(
-                seq: seq++,
-                tick: tick,
-                actor: actorId,
-                target: target.id,
-                moveKind: intent.moveKind,
-                isCritical: resolved.isCritical,
-                isUltimate: false,
-                resolvedDamage: damage,
-                remainingHealth: remaining,
-                actorPosition: actor.position,
-                targetPosition: target.position,
-              ),
-            );
-            final updated = target.copyWith(currentHealth: remaining);
-            if (target.side == Phase0aSide.enemy) {
-              if (!updated.isAlive) {
-                enemiesById.remove(target.id);
-                events.add(
-                  Phase0aEnemyDefeated(
-                    seq: seq++,
-                    tick: tick,
-                    target: target.id,
-                    defeatKind: target.defeatKind,
-                    targetPosition: updated.position,
-                  ),
-                );
-              } else {
-                final advanced = _advanceBossPhases(
-                  actor: updated,
-                  tick: tick,
-                  seq: seq,
-                  events: events,
-                );
-                enemiesById[target.id] = advanced.actor;
-                seq = advanced.nextSeq;
-              }
-            } else {
-              player = updated;
-            }
-          }
+          settleInbound(
+            attacker: actor,
+            target: target,
+            resolved: resolved,
+            defenseFlags: intent.defenseFlags,
+            attackId: '$actorId:$tick:${target.id}',
+            moveKind: intent.moveKind,
+            isUltimate: false,
+          );
         }
         final aimDirection = intent.aimDirection.lengthSquared > 0
             ? intent.aimDirection.normalized()
             : actor.facing;
-        final recharged = actor.copyWith(
+        final currentAttacker = isPlayer ? player : enemiesById[actorId];
+        if (currentAttacker == null) continue;
+        final recharged = currentAttacker.copyWith(
           attackCooldownRemaining: intent.cooldownSeconds,
           facing: aimDirection,
           qiCurrent: (actor.qiCurrent + intent.qiDelta).clamp(0, actor.qiMax),
@@ -420,6 +653,7 @@ Phase0aStepResult reducePhase0aTick({
           }
           enemiesById[actorId] = actor.copyWith(
             chargingCast: topChargeCast,
+            chargingDefenseFlags: intent.defenseFlags,
             chargeTicksRemaining: topChargeCast.chargeTicks,
             guardianCoopUsedInCharge: false,
           );
@@ -489,40 +723,33 @@ Phase0aStepResult reducePhase0aTick({
           );
           if (!resolved.isHit) continue;
           hitAny = true;
-          final damage = _checkedDamage(resolved);
-          final remaining = math.max(0, target.currentHealth - damage);
-          events.add(
-            Phase0aHitLanded(
-              seq: seq++,
-              tick: tick,
-              actor: actorId,
-              target: target.id,
-              moveKind: Phase0aMoveKind.heavy,
-              isCritical: resolved.isCritical,
-              isUltimate: intent.skill.type == SkillType.ultimate,
-              resolvedDamage: damage,
-              remainingHealth: remaining,
-              actorPosition: actor.position,
-              targetPosition: target.position,
-            ),
+          settleInbound(
+            attacker: actor,
+            target: target,
+            resolved: resolved,
+            defenseFlags: intent.defenseFlags,
+            attackId: '$actorId:$tick:${target.id}:${intent.skill.id}',
+            moveKind: Phase0aMoveKind.heavy,
+            isUltimate: intent.skill.type == SkillType.ultimate,
           );
-          if (target.side == Phase0aSide.player) {
-            player = target.copyWith(currentHealth: remaining);
-          }
         }
-        final cooldowns = Map<String, double>.from(actor.enemySkillCooldowns);
+        final currentAttacker = enemiesById[actorId];
+        if (currentAttacker == null) continue;
+        final cooldowns = Map<String, double>.from(
+          currentAttacker.enemySkillCooldowns,
+        );
         if (intent.cooldownSeconds > 0) {
           cooldowns[intent.skill.id] = intent.cooldownSeconds;
         } else {
           cooldowns.remove(intent.skill.id);
         }
-        enemiesById[actorId] = actor.copyWith(
+        enemiesById[actorId] = currentAttacker.copyWith(
           facing: intent.aimDirection.lengthSquared > 0
               ? intent.aimDirection.normalized()
-              : actor.facing,
-          qiCurrent: (actor.qiCurrent + intent.skill.qiDelta).clamp(
+              : currentAttacker.facing,
+          qiCurrent: (currentAttacker.qiCurrent + intent.skill.qiDelta).clamp(
             0,
-            actor.qiMax,
+            currentAttacker.qiMax,
           ),
           enemySkillCooldowns: Map.unmodifiable(cooldowns),
           attackCooldownRemaining: hitAny ? intent.actionCooldownSeconds : 0,
@@ -1050,6 +1277,7 @@ Phase0aStepResult reducePhase0aTick({
       ),
     );
     var hitAny = false;
+    final defenseFlags = actor.chargingDefenseFlags ?? cast.defenseFlags;
     for (final target in targets) {
       final resolved = enemySkillDamageResolver.resolveEnemySkill(
         attackerId: enemy.id,
@@ -1058,26 +1286,15 @@ Phase0aStepResult reducePhase0aTick({
       );
       if (!resolved.isHit) continue;
       hitAny = true;
-      final damage = _checkedDamage(resolved);
-      final remaining = math.max(0, target.currentHealth - damage);
-      events.add(
-        Phase0aHitLanded(
-          seq: seq++,
-          tick: tick,
-          actor: enemy.id,
-          target: target.id,
-          moveKind: Phase0aMoveKind.heavy,
-          isCritical: resolved.isCritical,
-          isUltimate: cast.skill.type == SkillType.ultimate,
-          resolvedDamage: damage,
-          remainingHealth: remaining,
-          actorPosition: actor.position,
-          targetPosition: target.position,
-        ),
+      settleInbound(
+        attacker: actor,
+        target: target,
+        resolved: resolved,
+        defenseFlags: defenseFlags,
+        attackId: '${enemy.id}:$tick:${target.id}:${cast.skill.id}',
+        moveKind: Phase0aMoveKind.heavy,
+        isUltimate: cast.skill.type == SkillType.ultimate,
       );
-      if (target.side == Phase0aSide.player) {
-        player = target.copyWith(currentHealth: remaining);
-      }
     }
     // 断魂庄锁脉针：蓄力完整结束且未被破招即夺取玩家最大真气的一定比例。
     // 与 legacy forcedSkill 路一致，不以本次伤害是否命中为额外门槛。
@@ -1088,13 +1305,17 @@ Phase0aStepResult reducePhase0aTick({
         ).applyTo(currentQi: player.qiCurrent, maxQi: player.qiMax),
       );
     }
-    final cooldowns = Map<String, double>.from(actor.enemySkillCooldowns);
+    final currentAttacker = enemiesById[enemy.id];
+    if (currentAttacker == null) continue;
+    final cooldowns = Map<String, double>.from(
+      currentAttacker.enemySkillCooldowns,
+    );
     if (cast.cooldownSeconds > 0) {
       cooldowns[cast.skill.id] = cast.cooldownSeconds;
     } else {
       cooldowns.remove(cast.skill.id);
     }
-    enemiesById[enemy.id] = actor.copyWith(
+    enemiesById[enemy.id] = currentAttacker.copyWith(
       clearChargingCast: true,
       facing: aimDirection,
       qiCurrent: (actor.qiCurrent + cast.skill.qiDelta).clamp(0, actor.qiMax),
@@ -1291,6 +1512,7 @@ Map<String, double> _cooldownsAfter(
       if (phaseCast != null) {
         current = current.copyWith(
           chargingCast: phaseCast,
+          chargingDefenseFlags: phaseCast.defenseFlags,
           chargeTicksRemaining: phaseCast.chargeTicks,
           guardianCoopUsedInCharge: false,
         );
@@ -1595,4 +1817,28 @@ bool _withinEffectRadius({
   required double effectRadius,
 }) {
   return (position - origin).lengthSquared <= effectRadius * effectRadius;
+}
+
+bool _validDefenseIntent(Phase0aDefenseIntent intent) {
+  final numbers = <double>[
+    intent.shieldAbsorption,
+    intent.counterDamage,
+    intent.counterUpperBound,
+    intent.dodgeDistance,
+    intent.cooldownSeconds,
+  ];
+  return numbers.every((value) => value.isFinite && value >= 0) &&
+      intent.direction.x.isFinite &&
+      intent.direction.y.isFinite &&
+      intent.shieldDurationTicks >= 0 &&
+      intent.parryWindowTicks >= 0 &&
+      intent.dodgeIframeTicks >= 0 &&
+      intent.counterDamage <= intent.counterUpperBound;
+}
+
+int _checkedCounter(double value) {
+  if (!value.isFinite || value < 0 || value > 0x7fffffff) {
+    throw StateError('Phase0A counter damage out of range: $value');
+  }
+  return value.round();
 }

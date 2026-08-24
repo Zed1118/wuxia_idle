@@ -547,6 +547,29 @@ phase0a_arena:
     # 仅供隔离 legacy fixture 生成 synthetic clear SkillDef。
     clear_power_multiplier: 1500
     clear_qi_delta: 0
+  # G2 defense vertical slice tuning. Values are intentionally explicit and
+  # remain tuning, not frozen product ergonomics.
+  defense:
+    shield_absorption: 1800
+    shield_duration_ticks: 8
+    parry_window_ticks: 2
+    counter_damage: 900
+    counter_upper_bound: 1200
+    dodge_iframe_ticks: 2
+    dodge_distance: 110
+    defense_cooldown_seconds: 1.2
+    basic_attack_flags:
+      blockable: true
+      parryable: true
+      reflectable: false
+      dodgeable: true
+      interruptible: true
+    skill_attack_flags:
+      blockable: true
+      parryable: true
+      reflectable: false
+      dodgeable: true
+      interruptible: true
 
 # =============================================================================
 # 3. 装备系统

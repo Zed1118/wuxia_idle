@@ -9,6 +9,9 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bo
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/defense_resolution.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_defense_tuning.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 
 const _burstSkill = SkillDef(
@@ -35,26 +38,54 @@ Phase0aNumericSkillBinding _burstBinding() => Phase0aNumericSkillBinding(
   cooldownSeconds: 1,
 );
 
-Phase0aPlayerInputAdapter _adapter({bool withBurst = false}) =>
-    Phase0aPlayerInputAdapter(
-      playerId: 'player',
-      attackRange: 120,
-      attackHalfArcRadians: math.pi / 4,
-      attackCooldownSeconds: 1,
-      attackQiDelta: 0,
-      gatherSlot: 'gather',
-      gatherRingRadius: 90,
-      gatherEffectRadius: 500,
-      gatherQiCost: 20,
-      gatherCooldownSeconds: 3,
-      clearSlot: 'clear',
-      clearEffectRadius: 500,
-      clearQiCost: 30,
-      clearCooldownSeconds: 4,
-      numericSkillBindings: withBurst
-          ? Phase0aNumericSkillBindings(one: _burstBinding())
-          : const Phase0aNumericSkillBindings.empty(),
-    );
+Phase0aPlayerInputAdapter _adapter({
+  bool withBurst = false,
+  Phase0aDefenseTuning? defenseTuning,
+}) => Phase0aPlayerInputAdapter(
+  playerId: 'player',
+  attackRange: 120,
+  attackHalfArcRadians: math.pi / 4,
+  attackCooldownSeconds: 1,
+  attackQiDelta: 0,
+  gatherSlot: 'gather',
+  gatherRingRadius: 90,
+  gatherEffectRadius: 500,
+  gatherQiCost: 20,
+  gatherCooldownSeconds: 3,
+  clearSlot: 'clear',
+  clearEffectRadius: 500,
+  clearQiCost: 30,
+  clearCooldownSeconds: 4,
+  numericSkillBindings: withBurst
+      ? Phase0aNumericSkillBindings(one: _burstBinding())
+      : const Phase0aNumericSkillBindings.empty(),
+  defenseTuning: defenseTuning,
+);
+
+const _defenseTuning = Phase0aDefenseTuning(
+  shieldAbsorption: 100,
+  shieldDurationTicks: 4,
+  parryWindowTicks: 2,
+  counterDamage: 25,
+  counterUpperBound: 25,
+  dodgeIframeTicks: 2,
+  dodgeDistance: 100,
+  defenseCooldownSeconds: 1,
+  basicAttackFlags: AttackDefenseFlags(
+    blockable: true,
+    parryable: true,
+    reflectable: false,
+    dodgeable: true,
+    interruptible: true,
+  ),
+  skillAttackFlags: AttackDefenseFlags(
+    blockable: true,
+    parryable: true,
+    reflectable: false,
+    dodgeable: true,
+    interruptible: true,
+  ),
+);
 
 Phase0aActor _actor({
   required Phase0aSide side,
@@ -181,6 +212,16 @@ void main() {
     },
   );
 
+  final burstCast = Phase0aChargeCast(
+    skill: _burstSkill,
+    chargeTicks: 2,
+    attackRange: 120,
+    halfArcRadians: math.pi / 4,
+    effectRadius: 120,
+    cooldownSeconds: 1,
+    actionCooldownSeconds: 1,
+  );
+
   test('seek gap holds resources outside a visible stagger window', () {
     final bot = Phase0aPlayerBotAdapter(
       playerAdapter: _adapter(withBurst: true),
@@ -217,6 +258,32 @@ void main() {
     expect(closed.clear, isFalse);
     expect(open.clear, isTrue);
     expect(open.gather, isFalse);
+  });
+
+  test('steady guard emits shield outside burst and dodge inside burst', () {
+    final bot = Phase0aPlayerBotAdapter(
+      playerAdapter: _adapter(defenseTuning: _defenseTuning),
+      policy: const Phase0aBotTacticPolicy.steadyGuard(),
+    );
+
+    final safe = bot.commandFor(_state());
+    final burst = bot.commandFor(
+      Phase0aArenaState(
+        tick: 4,
+        nextSeq: 8,
+        player: _state().player,
+        enemies: [
+          _actor(
+            side: Phase0aSide.enemy,
+            id: 'enemy',
+          ).copyWith(chargingCast: burstCast),
+        ],
+        skillSlots: _state().skillSlots,
+      ),
+    );
+
+    expect(safe.defenseAction, Phase0aDefenseAction.shield);
+    expect(burst.defenseAction, Phase0aDefenseAction.dodge);
   });
 
   test(

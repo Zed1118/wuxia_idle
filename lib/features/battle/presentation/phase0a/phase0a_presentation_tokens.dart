@@ -40,6 +40,7 @@ abstract final class Phase0aPresentationTokens {
   static const double actorActionScale = 1.035;
   static const double actorHitSlideFraction = 0.018;
   static const double actorActionSlideFraction = 0.024;
+  static const double defenseFeedbackSeconds = 0.72;
 
   /// 血条强调墨边宽度。
   static const double hpEmphasisBorderWidth = 2;

@@ -1,4 +1,5 @@
 import 'arena_vector.dart';
+import 'defense_resolution.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 
@@ -34,6 +35,7 @@ final class Phase0aChargeCast {
     required this.effectRadius,
     required this.cooldownSeconds,
     required this.actionCooldownSeconds,
+    this.defenseFlags,
   }) {
     if (skill.id.isEmpty) {
       throw ArgumentError.value(skill.id, 'skill.id', 'charge cast 需真实技能 id');
@@ -76,6 +78,10 @@ final class Phase0aChargeCast {
   /// 释放命中后的行动锁(秒,对齐敌方技能 intent 分支口径)。
   final double actionCooldownSeconds;
 
+  /// Explicit attack flags carried with the pre-resolved charge cast.
+  /// Null is retained by fixtures that do not opt into the defense slice.
+  final AttackDefenseFlags? defenseFlags;
+
   @override
   bool operator ==(Object other) =>
       other is Phase0aChargeCast &&
@@ -85,7 +91,8 @@ final class Phase0aChargeCast {
       other.halfArcRadians == halfArcRadians &&
       other.effectRadius == effectRadius &&
       other.cooldownSeconds == cooldownSeconds &&
-      other.actionCooldownSeconds == actionCooldownSeconds;
+      other.actionCooldownSeconds == actionCooldownSeconds &&
+      other.defenseFlags == defenseFlags;
 
   @override
   int get hashCode => Object.hash(
@@ -93,7 +100,12 @@ final class Phase0aChargeCast {
     chargeTicks,
     attackRange,
     halfArcRadians,
-    Object.hash(effectRadius, cooldownSeconds, actionCooldownSeconds),
+    Object.hash(
+      effectRadius,
+      cooldownSeconds,
+      actionCooldownSeconds,
+      defenseFlags,
+    ),
   );
 }
 
@@ -139,8 +151,16 @@ final class Phase0aActor {
     this.guardianCoopUsedInCharge = false,
     this.vulnerabilityMult,
     this.chargingCast,
+    this.chargingDefenseFlags,
     this.chargeTicksRemaining = _noChargeTicks,
     this.staggerTicksRemaining = _noStaggerTicks,
+    this.shieldRemaining = 0,
+    this.shieldTicksRemaining = 0,
+    this.parryTicksRemaining = 0,
+    this.dodgeTicksRemaining = 0,
+    this.defenseCooldownRemaining = 0,
+    this.parryCounterDamage = 0,
+    this.parryCounterBudgetRemaining = 0,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -209,11 +229,22 @@ final class Phase0aActor {
   /// 运行态:正在蓄力的施放(null = 未蓄力)。不可变可回放。
   final Phase0aChargeCast? chargingCast;
 
+  /// Attack flags captured when the current charge starts. This keeps
+  /// migrated hosts and phase-entered charges on the same reducer path.
+  final AttackDefenseFlags? chargingDefenseFlags;
+
   /// 运行态:蓄力倒计时剩余拍数(>0 = 蓄力中,reducer 每拍递减,归零释放)。
   final int chargeTicksRemaining;
 
   /// 运行态:踉跄剩余拍数(>0 = 跳过行动且承伤减防,reducer 每拍递减)。
   final int staggerTicksRemaining;
+  final double shieldRemaining;
+  final int shieldTicksRemaining;
+  final int parryTicksRemaining;
+  final int dodgeTicksRemaining;
+  final double defenseCooldownRemaining;
+  final double parryCounterDamage;
+  final double parryCounterBudgetRemaining;
 
   bool get isAlive => currentHealth > 0;
 
@@ -228,9 +259,17 @@ final class Phase0aActor {
     Map<String, double>? enemySkillCooldowns,
     bool? guardianCoopUsedInCharge,
     Phase0aChargeCast? chargingCast,
+    AttackDefenseFlags? chargingDefenseFlags,
     bool clearChargingCast = false,
     int? chargeTicksRemaining,
     int? staggerTicksRemaining,
+    double? shieldRemaining,
+    int? shieldTicksRemaining,
+    int? parryTicksRemaining,
+    int? dodgeTicksRemaining,
+    double? defenseCooldownRemaining,
+    double? parryCounterDamage,
+    double? parryCounterBudgetRemaining,
   }) {
     return Phase0aActor(
       id: id,
@@ -263,9 +302,21 @@ final class Phase0aActor {
       chargingCast: clearChargingCast
           ? null
           : (chargingCast ?? this.chargingCast),
+      chargingDefenseFlags: clearChargingCast
+          ? null
+          : (chargingDefenseFlags ?? this.chargingDefenseFlags),
       chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
       staggerTicksRemaining:
           staggerTicksRemaining ?? this.staggerTicksRemaining,
+      shieldRemaining: shieldRemaining ?? this.shieldRemaining,
+      shieldTicksRemaining: shieldTicksRemaining ?? this.shieldTicksRemaining,
+      parryTicksRemaining: parryTicksRemaining ?? this.parryTicksRemaining,
+      dodgeTicksRemaining: dodgeTicksRemaining ?? this.dodgeTicksRemaining,
+      defenseCooldownRemaining:
+          defenseCooldownRemaining ?? this.defenseCooldownRemaining,
+      parryCounterDamage: parryCounterDamage ?? this.parryCounterDamage,
+      parryCounterBudgetRemaining:
+          parryCounterBudgetRemaining ?? this.parryCounterBudgetRemaining,
     );
   }
 
@@ -297,8 +348,16 @@ final class Phase0aActor {
       other.guardianCoopUsedInCharge == guardianCoopUsedInCharge &&
       other.vulnerabilityMult == vulnerabilityMult &&
       other.chargingCast == chargingCast &&
+      other.chargingDefenseFlags == chargingDefenseFlags &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
-      other.staggerTicksRemaining == staggerTicksRemaining;
+      other.staggerTicksRemaining == staggerTicksRemaining &&
+      other.shieldRemaining == shieldRemaining &&
+      other.shieldTicksRemaining == shieldTicksRemaining &&
+      other.parryTicksRemaining == parryTicksRemaining &&
+      other.dodgeTicksRemaining == dodgeTicksRemaining &&
+      other.defenseCooldownRemaining == defenseCooldownRemaining &&
+      other.parryCounterDamage == parryCounterDamage &&
+      other.parryCounterBudgetRemaining == parryCounterBudgetRemaining;
 
   @override
   int get hashCode => Object.hash(
@@ -328,8 +387,16 @@ final class Phase0aActor {
       guardianCoopUsedInCharge,
       vulnerabilityMult,
       chargingCast,
+      chargingDefenseFlags,
       chargeTicksRemaining,
       staggerTicksRemaining,
+      shieldRemaining,
+      shieldTicksRemaining,
+      parryTicksRemaining,
+      dodgeTicksRemaining,
+      defenseCooldownRemaining,
+      parryCounterDamage,
+      parryCounterBudgetRemaining,
     ),
   );
 }

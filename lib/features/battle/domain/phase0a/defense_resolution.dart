@@ -45,7 +45,7 @@ final class CounterEffectAllowlist {
 }
 
 final class AttackDefenseFlags {
-  AttackDefenseFlags({
+  const AttackDefenseFlags({
     required this.blockable,
     required this.parryable,
     required this.reflectable,
@@ -190,6 +190,8 @@ final class DefenseResult {
     required this.canLifesteal,
     required this.canTriggerOnHitReflect,
     required this.projectileRedirect,
+    this.shieldRemaining = 0,
+    this.shieldAbsorbed = 0,
   });
 
   final DefenseBranch branch;
@@ -205,6 +207,8 @@ final class DefenseResult {
   /// True only for the projectile ownership/target redirect branch.
   /// It is deliberately separate from [counterDamage].
   final bool projectileRedirect;
+  final double shieldRemaining;
+  final double shieldAbsorbed;
 
   @override
   bool operator ==(Object other) =>
@@ -218,7 +222,9 @@ final class DefenseResult {
       other.canCrit == canCrit &&
       other.canLifesteal == canLifesteal &&
       other.canTriggerOnHitReflect == canTriggerOnHitReflect &&
-      other.projectileRedirect == projectileRedirect;
+      other.projectileRedirect == projectileRedirect &&
+      other.shieldRemaining == shieldRemaining &&
+      other.shieldAbsorbed == shieldAbsorbed;
 
   @override
   int get hashCode => Object.hash(
@@ -232,6 +238,8 @@ final class DefenseResult {
     canLifesteal,
     canTriggerOnHitReflect,
     projectileRedirect,
+    shieldRemaining,
+    shieldAbsorbed,
   );
 }
 
@@ -292,6 +300,29 @@ DefenseResult resolveDefense(DefenseInput input) {
         usesBlockOrShield &&
         input.counterEffectAllowlist.contains(CounterEffect.onHitReflect),
     projectileRedirect: false,
+    shieldRemaining:
+        input.shieldAbsorption -
+        (input.shieldAbsorption <
+                (input.incomingHpDamage *
+                    (input.blockSucceeded && flags.blockable
+                        ? input.blockDamageMultiplier
+                        : 1))
+            ? input.shieldAbsorption
+            : (input.incomingHpDamage *
+                  (input.blockSucceeded && flags.blockable
+                      ? input.blockDamageMultiplier
+                      : 1))),
+    shieldAbsorbed:
+        input.shieldAbsorption <
+            (input.incomingHpDamage *
+                (input.blockSucceeded && flags.blockable
+                    ? input.blockDamageMultiplier
+                    : 1))
+        ? input.shieldAbsorption
+        : (input.incomingHpDamage *
+              (input.blockSucceeded && flags.blockable
+                  ? input.blockDamageMultiplier
+                  : 1)),
   );
 }
 

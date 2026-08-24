@@ -14,6 +14,8 @@ import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/defense_resolution.dart';
+import '../../domain/phase0a/phase0a_defense_tuning.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
@@ -21,6 +23,7 @@ import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_skill_binding.dart';
 import 'phase0a_numeric_skill_binding.dart';
+import 'phase0a_defense_tuning_mapper.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_tactical_skill_binding.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -655,6 +658,7 @@ final class Phase0aStageContentMapper {
           snapshot: snapshot,
           arena: arena,
           chargeTicks: chargeTicks,
+          defenseFlags: defenseTuning?.skillAttackFlags,
         ),
     ];
     final phaseChargeCastsByEnemy = <List<Phase0aChargeCast?>>[
@@ -663,6 +667,7 @@ final class Phase0aStageContentMapper {
           snapshot: snapshot,
           arena: arena,
           chargeTicks: chargeTicks,
+          defenseFlags: defenseTuning?.skillAttackFlags,
         ),
     ];
 
@@ -744,6 +749,7 @@ final class Phase0aStageContentMapper {
         attackCooldownSeconds: arena.enemyAttackCooldownSeconds,
         skillBindingsByActor: Map.unmodifiable(enemySkillBindingsByActor),
         basicQiDeltaByActor: Map.unmodifiable(enemyBasicQiDeltaByActor),
+        defenseTuning: defenseTuning,
       ),
       waveTransitionPolicy: waveTransitionPolicy,
     );
@@ -836,6 +842,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot snapshot,
     required Phase0aArenaConfig arena,
     required int chargeTicks,
+    AttackDefenseFlags? defenseFlags,
   }) {
     final chargeSkillId = snapshot.chargeSkillId;
     if (chargeSkillId == null) return null;
@@ -856,6 +863,7 @@ final class Phase0aStageContentMapper {
       skill: chargeSkill,
       arena: arena,
       chargeTicks: chargeTicks,
+      defenseFlags: defenseFlags,
     );
   }
 
@@ -866,6 +874,7 @@ final class Phase0aStageContentMapper {
     required CombatantSnapshot snapshot,
     required Phase0aArenaConfig arena,
     required int chargeTicks,
+    AttackDefenseFlags? defenseFlags,
   }) {
     final phases = snapshot.bossPhases;
     if (phases == null) return const [];
@@ -879,6 +888,7 @@ final class Phase0aStageContentMapper {
                 : const <SkillDef>[],
             arena,
             chargeTicks,
+            defenseFlags,
           )
         else
           null,
@@ -889,6 +899,7 @@ final class Phase0aStageContentMapper {
     List<SkillDef> skills,
     Phase0aArenaConfig arena,
     int chargeTicks,
+    AttackDefenseFlags? defenseFlags,
   ) {
     SkillDef? signature;
     for (final skill in skills) {
@@ -899,7 +910,12 @@ final class Phase0aStageContentMapper {
     }
     return signature == null
         ? null
-        : _chargeCast(skill: signature, arena: arena, chargeTicks: chargeTicks);
+        : _chargeCast(
+            skill: signature,
+            arena: arena,
+            chargeTicks: chargeTicks,
+            defenseFlags: defenseFlags,
+          );
   }
 
   /// 招牌技施放参数:空间值取竞技场敌攻口径(沿阶段技能绑定),CD 取
@@ -909,6 +925,7 @@ final class Phase0aStageContentMapper {
     required SkillDef skill,
     required Phase0aArenaConfig arena,
     required int chargeTicks,
+    AttackDefenseFlags? defenseFlags,
   }) => Phase0aChargeCast(
     skill: skill,
     chargeTicks: chargeTicks,
@@ -917,6 +934,7 @@ final class Phase0aStageContentMapper {
     effectRadius: arena.enemyAttackRange,
     cooldownSeconds: _requiredEnemyCooldownSeconds(skill),
     actionCooldownSeconds: arena.enemyAttackCooldownSeconds,
+    defenseFlags: defenseFlags,
   );
 
   static List<Phase0aEnemySkillBinding> _enemyPhaseSkillBindings({
@@ -1128,6 +1146,7 @@ final class Phase0aStageContentMapper {
     required Phase0aNumericSkillBindings numericSkillBindings,
     required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
+    Phase0aDefenseTuning? defenseTuning,
   }) {
     final gather = tacticalSkillBindings.gather;
     final clear = tacticalSkillBindings.clear;
@@ -1149,6 +1168,7 @@ final class Phase0aStageContentMapper {
       gatherSkillBinding: gather,
       clearSkillBinding: clear,
       numericSkillBindings: numericSkillBindings,
+      defenseTuning: defenseTuning,
     );
   }
 }

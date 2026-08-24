@@ -179,6 +179,9 @@ final class Phase0aSettlementAdapter {
           );
         case Phase0aGuardIntercepted():
           hadActions = true;
+        case Phase0aDefenseStarted():
+        case Phase0aDefenseResolved():
+          hadActions = true;
         case Phase0aGatherStarted(:final actor, :final tick, :final skillId):
           hadActions = true;
           if (skillId.isNotEmpty) {

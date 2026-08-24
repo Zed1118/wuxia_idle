@@ -3,6 +3,7 @@ import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
+import 'defense_resolution.dart';
 
 const _noBreakPower = 0;
 
@@ -16,6 +17,38 @@ sealed class Phase0aIntent {
 
   /// 出手者语义 id;reducer 按 id 稳定排序处理。
   final String actorId;
+}
+
+enum Phase0aDefenseAction { shield, parry, dodge }
+
+/// Typed player defense action. All runtime values are injected by the input
+/// adapter from the explicit defense TUNING section; the reducer only checks
+/// validity and consumes the action.
+final class Phase0aDefenseIntent extends Phase0aIntent {
+  const Phase0aDefenseIntent({
+    required super.actorId,
+    required this.action,
+    required this.direction,
+    required this.shieldAbsorption,
+    required this.shieldDurationTicks,
+    required this.parryWindowTicks,
+    required this.counterDamage,
+    required this.counterUpperBound,
+    required this.dodgeIframeTicks,
+    required this.dodgeDistance,
+    required this.cooldownSeconds,
+  });
+
+  final Phase0aDefenseAction action;
+  final ArenaVector direction;
+  final double shieldAbsorption;
+  final int shieldDurationTicks;
+  final int parryWindowTicks;
+  final double counterDamage;
+  final double counterUpperBound;
+  final int dodgeIframeTicks;
+  final double dodgeDistance;
+  final double cooldownSeconds;
 }
 
 /// 移动请求:[direction] 为零向量时不改变位置与朝向。
@@ -36,6 +69,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.moveKind,
     required this.aimDirection,
     required this.qiDelta,
+    this.defenseFlags,
   });
 
   final double range;
@@ -47,6 +81,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   /// Pre-resolved qi delta for this basic attack. Zero preserves existing
   /// fixtures; production mapping supplies the bound basic skill value.
   final int qiDelta;
+  final AttackDefenseFlags? defenseFlags;
 }
 
 /// Enemy phase-unlocked skill request. Binding and policy are resolved in the
@@ -62,6 +97,7 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.cooldownSeconds,
     required this.actionCooldownSeconds,
+    this.defenseFlags,
   });
 
   final SkillDef skill;
@@ -71,6 +107,7 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
   final double effectRadius;
   final double cooldownSeconds;
   final double actionCooldownSeconds;
+  final AttackDefenseFlags? defenseFlags;
 }
 
 /// Q 聚怪请求:作用半径内目标逐目标结算 outcomes;
@@ -149,6 +186,7 @@ final class Phase0aSkillIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiDelta,
     required this.cooldownSeconds,
+    this.defenseFlags,
     this.breakPower = _noBreakPower,
   });
 
@@ -162,6 +200,7 @@ final class Phase0aSkillIntent extends Phase0aIntent {
   final double effectRadius;
   final int qiDelta;
   final double cooldownSeconds;
+  final AttackDefenseFlags? defenseFlags;
 
   /// typed break 契约载荷(数字技能 binding 的 `break.points`):语义同
   /// [Phase0aClearIntent.breakPower]。

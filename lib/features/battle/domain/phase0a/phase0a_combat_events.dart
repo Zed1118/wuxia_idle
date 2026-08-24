@@ -1,4 +1,6 @@
 import 'arena_vector.dart';
+import 'defense_resolution.dart';
+import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
 
 /// Phase 0A 语义事件基类(对齐冻结反馈契约公共 payload)。
@@ -834,4 +836,107 @@ final class Phase0aBattleDefeat extends Phase0aEvent {
 
   @override
   int get hashCode => Object.hash(seq, tick);
+}
+
+/// 玩家主动防御状态进入运行态；方向和位移均来自领域 state transition。
+final class Phase0aDefenseStarted extends Phase0aEvent {
+  const Phase0aDefenseStarted({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.action,
+    required this.fromPosition,
+    required this.toPosition,
+    required this.windowTicks,
+    required this.shieldAbsorption,
+  });
+
+  final String actor;
+  final Phase0aDefenseAction action;
+  final ArenaVector fromPosition;
+  final ArenaVector toPosition;
+  final int windowTicks;
+  final double shieldAbsorption;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aDefenseStarted &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.action == action &&
+      other.fromPosition == fromPosition &&
+      other.toPosition == toPosition &&
+      other.windowTicks == windowTicks &&
+      other.shieldAbsorption == shieldAbsorption;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    action,
+    fromPosition,
+    toPosition,
+    windowTicks,
+    shieldAbsorption,
+  );
+}
+
+/// 一次入站攻击的唯一防御结算结果。counterDamage 是标准化反击值，
+/// nonRecursive 明示该反击不会再次进入 defense resolver。
+final class Phase0aDefenseResolved extends Phase0aEvent {
+  const Phase0aDefenseResolved({
+    required super.seq,
+    required super.tick,
+    required this.attackId,
+    required this.attacker,
+    required this.target,
+    required this.branch,
+    required this.incomingDamage,
+    required this.counterDamage,
+    required this.shieldRemaining,
+    required this.nonRecursive,
+    required this.targetPosition,
+  });
+
+  final String attackId;
+  final String attacker;
+  final String target;
+  final DefenseBranch branch;
+  final int incomingDamage;
+  final int counterDamage;
+  final int shieldRemaining;
+  final bool nonRecursive;
+  final ArenaVector targetPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aDefenseResolved &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.attackId == attackId &&
+      other.attacker == attacker &&
+      other.target == target &&
+      other.branch == branch &&
+      other.incomingDamage == incomingDamage &&
+      other.counterDamage == counterDamage &&
+      other.shieldRemaining == shieldRemaining &&
+      other.nonRecursive == nonRecursive &&
+      other.targetPosition == targetPosition;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    attackId,
+    attacker,
+    target,
+    branch,
+    incomingDamage,
+    counterDamage,
+    shieldRemaining,
+    nonRecursive,
+    targetPosition,
+  );
 }

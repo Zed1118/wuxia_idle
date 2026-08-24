@@ -15,6 +15,7 @@ import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
@@ -286,6 +287,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.bossChargeInterrupted ||
     Phase0aVfxKind.guardIntercepted ||
     Phase0aVfxKind.guardianCoop ||
+    Phase0aVfxKind.defenseStarted ||
+    Phase0aVfxKind.defenseResolved ||
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
@@ -300,7 +303,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       kind == Phase0aVfxKind.bossChargeWarning ||
       kind == Phase0aVfxKind.bossChargeInterrupted ||
       kind == Phase0aVfxKind.guardIntercepted ||
-      kind == Phase0aVfxKind.guardianCoop;
+      kind == Phase0aVfxKind.guardianCoop ||
+      kind == Phase0aVfxKind.defenseStarted ||
+      kind == Phase0aVfxKind.defenseResolved;
 
   double _feedbackLifetime(Phase0aVfxKind kind) {
     // 视觉验收路由会显式延长 hold，必须继续尊重该公开契约。
@@ -325,6 +330,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
       Phase0aVfxKind.guardianCoop =>
         Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
+      Phase0aVfxKind.defenseStarted || Phase0aVfxKind.defenseResolved =>
+        Phase0aPresentationTokens.defenseFeedbackSeconds,
       Phase0aVfxKind.waveBanner || Phase0aVfxKind.outcomeSeal =>
         Phase0aPresentationTokens.feedbackHoldSeconds,
     };
@@ -463,6 +470,17 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.handled;
     }
     final command = switch (key) {
+      // G2 defense keymap TUNING: E/F/Z are currently unused by battle input;
+      // they are intentionally not presented as final ergonomics.
+      LogicalKeyboardKey.keyE => const Phase0aPlayerCommand(
+        defenseAction: Phase0aDefenseAction.shield,
+      ),
+      LogicalKeyboardKey.keyF => const Phase0aPlayerCommand(
+        defenseAction: Phase0aDefenseAction.parry,
+      ),
+      LogicalKeyboardKey.keyZ => const Phase0aPlayerCommand(
+        defenseAction: Phase0aDefenseAction.dodge,
+      ),
       LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
@@ -1303,6 +1321,59 @@ class _PlayerHud extends StatelessWidget {
                 labelPrefix: '${UiStrings.phase0aPlayerQi} ',
                 tightLabel: true,
               ),
+              const SizedBox(height: Phase0aPresentationTokens.hudGap),
+              Semantics(
+                container: true,
+                label: UiStrings.phase0aDefenseSemantics,
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 2,
+                  children: [
+                    Text(
+                      UiStrings.phase0aDefenseShieldKey,
+                      style: TextStyle(
+                        color: player.shieldRemaining > 0
+                            ? WuxiaUi.qing
+                            : WuxiaUi.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      UiStrings.phase0aDefenseParryKey,
+                      style: TextStyle(
+                        color: player.parryTicksRemaining > 0
+                            ? WuxiaUi.gold
+                            : WuxiaUi.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      UiStrings.phase0aDefenseDodgeKey,
+                      style: TextStyle(
+                        color: player.dodgeTicksRemaining > 0
+                            ? WuxiaUi.qing
+                            : WuxiaUi.ink,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (player.shieldRemaining > 0)
+                      Text(
+                        '${UiStrings.phase0aDefenseAbsorbPrefix} '
+                        '${player.shieldRemaining.round()}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    if (player.defenseCooldownRemaining > 0)
+                      Text(
+                        '${UiStrings.phase0aDefenseCooldownPrefix} '
+                        '${player.defenseCooldownRemaining.toStringAsFixed(1)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -1416,6 +1487,24 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
               key: ValueKey('phase0a_guardian_coop_${held.id}'),
               label: UiStrings.coopStrikeCaption,
               accent: WuxiaUi.jiang,
+            ),
+          );
+        case Phase0aVfxKind.defenseStarted:
+          children.add(
+            _guardianMechanicVfx(
+              held,
+              key: ValueKey('phase0a_defense_start_${held.id}'),
+              label: UiStrings.phase0aDefenseStarted,
+              accent: WuxiaUi.qingOnDark,
+            ),
+          );
+        case Phase0aVfxKind.defenseResolved:
+          children.add(
+            _guardianMechanicVfx(
+              held,
+              key: ValueKey('phase0a_defense_resolved_${held.id}'),
+              label: UiStrings.phase0aDefenseResolved,
+              accent: WuxiaUi.gold,
             ),
           );
         case Phase0aVfxKind.outcomeSeal:

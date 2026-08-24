@@ -1780,6 +1780,7 @@ class Phase0aArenaConfig {
   final String clearSkillId;
   final int clearPowerMultiplier;
   final int clearQiDelta;
+  final Phase0aDefenseConfig defense;
 
   const Phase0aArenaConfig({
     required this.fixedDeltaSeconds,
@@ -1813,6 +1814,7 @@ class Phase0aArenaConfig {
     required this.clearSkillId,
     required this.clearPowerMultiplier,
     required this.clearQiDelta,
+    this.defense = Phase0aDefenseConfig.empty,
   });
 
   /// 缺段兜底:全零/空串,isEmpty=true(沿 FestivalConfig.empty 体例)。
@@ -1848,6 +1850,7 @@ class Phase0aArenaConfig {
     clearSkillId: '',
     clearPowerMultiplier: 0,
     clearQiDelta: 0,
+    defense: Phase0aDefenseConfig.empty,
   );
 
   bool get isEmpty => basicSkillId.isEmpty;
@@ -1862,6 +1865,9 @@ class Phase0aArenaConfig {
     final player = (y['player'] as Map).cast<String, dynamic>();
     final enemy = (y['enemy'] as Map).cast<String, dynamic>();
     final moves = (y['moves'] as Map).cast<String, dynamic>();
+    final defense = Phase0aDefenseConfig.fromYaml(
+      (y['defense'] as Map?)?.cast<String, dynamic>() ?? const {},
+    );
     final fixedDeltaSeconds = (simulation['fixed_delta_seconds'] as num)
         .toDouble();
     final maxBattleSeconds = (simulation['max_battle_seconds'] as num)
@@ -1930,8 +1936,121 @@ class Phase0aArenaConfig {
       clearSkillId: tacticalSkillId('clear_skill_id'),
       clearPowerMultiplier: (moves['clear_power_multiplier'] as num).toInt(),
       clearQiDelta: (moves['clear_qi_delta'] as num).toInt(),
+      defense: defense,
     );
   }
+}
+
+/// Phase 0A 防御纵切 TUNING(`numbers.yaml.phase0a_arena.defense`).
+/// 缺段只供旧 fixture 兼容；production numbers.yaml 必须显式提供本段。
+class Phase0aDefenseConfig {
+  const Phase0aDefenseConfig({
+    required this.shieldAbsorption,
+    required this.shieldDurationTicks,
+    required this.parryWindowTicks,
+    required this.counterDamage,
+    required this.counterUpperBound,
+    required this.dodgeIframeTicks,
+    required this.dodgeDistance,
+    required this.defenseCooldownSeconds,
+    required this.basicAttackFlags,
+    required this.skillAttackFlags,
+  });
+
+  static const empty = Phase0aDefenseConfig(
+    shieldAbsorption: 0,
+    shieldDurationTicks: 0,
+    parryWindowTicks: 0,
+    counterDamage: 0,
+    counterUpperBound: 0,
+    dodgeIframeTicks: 0,
+    dodgeDistance: 0,
+    defenseCooldownSeconds: 0,
+    basicAttackFlags: Phase0aDefenseFlagsConfig.empty,
+    skillAttackFlags: Phase0aDefenseFlagsConfig.empty,
+  );
+
+  final double shieldAbsorption;
+  final int shieldDurationTicks;
+  final int parryWindowTicks;
+  final double counterDamage;
+  final double counterUpperBound;
+  final int dodgeIframeTicks;
+  final double dodgeDistance;
+  final double defenseCooldownSeconds;
+  final Phase0aDefenseFlagsConfig basicAttackFlags;
+  final Phase0aDefenseFlagsConfig skillAttackFlags;
+
+  factory Phase0aDefenseConfig.fromYaml(Map<String, dynamic> y) {
+    if (y.isEmpty) return empty;
+    final config = Phase0aDefenseConfig(
+      shieldAbsorption: (y['shield_absorption'] as num).toDouble(),
+      shieldDurationTicks: (y['shield_duration_ticks'] as num).toInt(),
+      parryWindowTicks: (y['parry_window_ticks'] as num).toInt(),
+      counterDamage: (y['counter_damage'] as num).toDouble(),
+      counterUpperBound: (y['counter_upper_bound'] as num).toDouble(),
+      dodgeIframeTicks: (y['dodge_iframe_ticks'] as num).toInt(),
+      dodgeDistance: (y['dodge_distance'] as num).toDouble(),
+      defenseCooldownSeconds: (y['defense_cooldown_seconds'] as num).toDouble(),
+      basicAttackFlags: Phase0aDefenseFlagsConfig.fromYaml(
+        (y['basic_attack_flags'] as Map).cast<String, dynamic>(),
+      ),
+      skillAttackFlags: Phase0aDefenseFlagsConfig.fromYaml(
+        (y['skill_attack_flags'] as Map).cast<String, dynamic>(),
+      ),
+    );
+    for (final entry in {
+      'shield_absorption': config.shieldAbsorption,
+      'counter_damage': config.counterDamage,
+      'counter_upper_bound': config.counterUpperBound,
+      'dodge_distance': config.dodgeDistance,
+      'defense_cooldown_seconds': config.defenseCooldownSeconds,
+    }.entries) {
+      if (!entry.value.isFinite || entry.value < 0) {
+        throw StateError('phase0a_arena.defense ${entry.key} 越界');
+      }
+    }
+    if (config.shieldDurationTicks < 0 ||
+        config.parryWindowTicks < 0 ||
+        config.dodgeIframeTicks < 0 ||
+        config.counterDamage > config.counterUpperBound) {
+      throw StateError('phase0a_arena.defense ticks/counter 配置越界');
+    }
+    return config;
+  }
+}
+
+class Phase0aDefenseFlagsConfig {
+  const Phase0aDefenseFlagsConfig({
+    required this.blockable,
+    required this.parryable,
+    required this.reflectable,
+    required this.dodgeable,
+    required this.interruptible,
+  });
+
+  static const empty = Phase0aDefenseFlagsConfig(
+    blockable: false,
+    parryable: false,
+    reflectable: false,
+    dodgeable: false,
+    interruptible: false,
+  );
+
+  final bool blockable;
+  final bool parryable;
+  final bool reflectable;
+  final bool dodgeable;
+  final bool interruptible;
+
+  factory Phase0aDefenseFlagsConfig.fromYaml(Map<String, dynamic> y) =>
+      Phase0aDefenseFlagsConfig(
+        blockable: y['blockable'] as bool,
+        parryable: y['parryable'] as bool,
+        reflectable: y['reflectable'] as bool,
+        dodgeable: y['dodgeable'] as bool,
+        interruptible: y['interruptible'] as bool,
+      );
 }
 
 /// 基础伤害公式系数（GDD §5.3，平衡后 `equipment_attack_factor=1.0` /

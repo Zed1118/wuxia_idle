@@ -2,6 +2,7 @@ import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_damage_kind.dart';
+import '../../domain/phase0a/phase0a_defense_tuning.dart';
 import '../../domain/phase0a/realtime_combat_rules.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_tactical_skill_binding.dart';
@@ -21,6 +22,8 @@ final class Phase0aPlayerCommand {
     this.skillAimDirection,
     this.gather = false,
     this.clear = false,
+    this.defenseAction,
+    this.defenseDirection,
   });
 
   final bool left;
@@ -43,6 +46,9 @@ final class Phase0aPlayerCommand {
 
   /// R 清场请求。
   final bool clear;
+
+  final Phase0aDefenseAction? defenseAction;
+  final ArenaVector? defenseDirection;
 }
 
 /// 玩家输入适配器:按键/动作请求 → 统一 intent。
@@ -69,6 +75,7 @@ final class Phase0aPlayerInputAdapter {
     this.gatherSkillBinding,
     this.clearSkillBinding,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
+    this.defenseTuning,
   });
 
   final String playerId;
@@ -92,6 +99,7 @@ final class Phase0aPlayerInputAdapter {
   final Phase0aTacticalSkillBinding? gatherSkillBinding;
   final Phase0aTacticalSkillBinding? clearSkillBinding;
   final Phase0aNumericSkillBindings numericSkillBindings;
+  final Phase0aDefenseTuning? defenseTuning;
 
   List<Phase0aIntent> intentsFor({
     required Phase0aArenaState state,
@@ -107,6 +115,26 @@ final class Phase0aPlayerInputAdapter {
     if (direction.lengthSquared > 0) {
       intents.add(Phase0aMoveIntent(actorId: playerId, direction: direction));
     }
+    final defense = command.defenseAction;
+    final defenseTuning = this.defenseTuning;
+    if (defense != null && defenseTuning != null && defenseTuning.isEnabled) {
+      final direction = command.defenseDirection ?? state.player.facing;
+      intents.add(
+        Phase0aDefenseIntent(
+          actorId: playerId,
+          action: defense,
+          direction: direction,
+          shieldAbsorption: defenseTuning.shieldAbsorption,
+          shieldDurationTicks: defenseTuning.shieldDurationTicks,
+          parryWindowTicks: defenseTuning.parryWindowTicks,
+          counterDamage: defenseTuning.counterDamage,
+          counterUpperBound: defenseTuning.counterUpperBound,
+          dodgeIframeTicks: defenseTuning.dodgeIframeTicks,
+          dodgeDistance: defenseTuning.dodgeDistance,
+          cooldownSeconds: defenseTuning.defenseCooldownSeconds,
+        ),
+      );
+    }
     if (command.attack) {
       intents.add(
         Phase0aAttackIntent(
@@ -117,6 +145,7 @@ final class Phase0aPlayerInputAdapter {
           moveKind: Phase0aMoveKind.light,
           aimDirection: command.attackAimDirection ?? state.player.facing,
           qiDelta: attackQiDelta,
+          defenseFlags: defenseTuning?.basicAttackFlags,
         ),
       );
     }
@@ -166,6 +195,7 @@ final class Phase0aPlayerInputAdapter {
             qiDelta: binding.qiDelta,
             cooldownSeconds: binding.cooldownSeconds,
             breakPower: binding.breakPower,
+            defenseFlags: defenseTuning?.skillAttackFlags,
           ),
         );
       }

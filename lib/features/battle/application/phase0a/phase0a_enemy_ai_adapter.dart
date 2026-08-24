@@ -3,6 +3,7 @@ import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import 'phase0a_enemy_skill_binding.dart';
+import '../../domain/phase0a/phase0a_defense_tuning.dart';
 
 /// 敌方 AI 适配器:从同一只读 state 产生与玩家同型的 intent,
 /// 供同一 reducer 结算(在线=离线:手动与无头共用同一模拟核)。
@@ -16,6 +17,7 @@ final class Phase0aEnemyAiAdapter {
     required this.attackCooldownSeconds,
     this.skillBindingsByActor = const {},
     this.basicQiDeltaByActor = const {},
+    this.defenseTuning,
   });
 
   final double attackRange;
@@ -23,6 +25,7 @@ final class Phase0aEnemyAiAdapter {
   final double attackCooldownSeconds;
   final Map<String, List<Phase0aEnemySkillBinding>> skillBindingsByActor;
   final Map<String, int> basicQiDeltaByActor;
+  final Phase0aDefenseTuning? defenseTuning;
 
   List<Phase0aIntent> intentsFor({required Phase0aArenaState state}) {
     final player = state.player;
@@ -60,6 +63,7 @@ final class Phase0aEnemyAiAdapter {
             effectRadius: skill.effectRadius,
             cooldownSeconds: skill.cooldownSeconds,
             actionCooldownSeconds: attackCooldownSeconds,
+            defenseFlags: defenseTuning?.skillAttackFlags,
           ),
         );
         continue;
@@ -75,6 +79,7 @@ final class Phase0aEnemyAiAdapter {
               ? delta.normalized()
               : ArenaVector.zero,
           qiDelta: basicQiDeltaByActor[enemy.id] ?? 0,
+          defenseFlags: defenseTuning?.basicAttackFlags,
         ),
       );
     }

@@ -5,7 +5,7 @@
 /// 请求”行为；其余画像只是在同一 command 面上选择不同的优先级。
 enum Phase0aBotTactic { seekGap, assault, steadyGuard }
 
-enum Phase0aBotAction { gather, clear, numericSkill }
+enum Phase0aBotAction { gather, clear, numericSkill, defense }
 
 /// 玩家 Bot 的 typed policy。数值门槛仍由 [Phase0aPlayerInputAdapter] 和
 /// reducer 负责；policy 只决定哪些已 ready 的 command 可以被发出。
@@ -76,10 +76,12 @@ final class Phase0aBotTacticPolicy {
   const Phase0aBotTacticPolicy.steadyGuard()
     : tactic = Phase0aBotTactic.steadyGuard,
       actionPriority = const [
+        Phase0aBotAction.defense,
         Phase0aBotAction.clear,
         Phase0aBotAction.numericSkill,
       ],
       enabledActions = const {
+        Phase0aBotAction.defense,
         Phase0aBotAction.clear,
         Phase0aBotAction.numericSkill,
       },

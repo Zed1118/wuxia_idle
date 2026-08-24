@@ -30,6 +30,9 @@ String? phase0aSfxAssetForEvent(
   if (event is Phase0aClearStarted) {
     return sfxAssetPath(SfxId.battleUlt);
   }
+  if (event is Phase0aDefenseStarted || event is Phase0aDefenseResolved) {
+    return sfxAssetPath(SfxId.battleChargeStart);
+  }
   // 终局 jingle:对齐旧战斗「勝/敗 结算 overlay 出现时」语义(9B 拍板落地)。
   if (event is Phase0aBattleVictory) {
     return sfxAssetPath(SfxId.victory);

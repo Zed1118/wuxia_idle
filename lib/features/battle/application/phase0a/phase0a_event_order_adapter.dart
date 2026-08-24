@@ -87,6 +87,14 @@ final class Phase0aEventOrderAdapter {
       'guard_intercepted',
       CombatEventStage.defense,
     ),
+    Phase0aDefenseStarted() => const _EventDescriptor(
+      'defense_started',
+      CombatEventStage.defense,
+    ),
+    Phase0aDefenseResolved() => const _EventDescriptor(
+      'defense_resolved',
+      CombatEventStage.defense,
+    ),
     Phase0aBossChargeInterrupted() => const _EventDescriptor(
       'boss_charge_interrupted',
       CombatEventStage.defense,
@@ -218,6 +226,27 @@ final class Phase0aEventOrderAdapter {
           _component('damage', event.resolvedDamage),
           _component('bossPosition', _vector(event.bossPosition)),
           _component('guardianPosition', _vector(event.guardianPosition)),
+        ]);
+      case Phase0aDefenseStarted():
+        values.addAll([
+          _component('actor', event.actor),
+          _component('action', event.action.name),
+          _component('from', _vector(event.fromPosition)),
+          _component('to', _vector(event.toPosition)),
+          _component('window', event.windowTicks),
+          _component('shield', event.shieldAbsorption),
+        ]);
+      case Phase0aDefenseResolved():
+        values.addAll([
+          _component('attackId', event.attackId),
+          _component('attacker', event.attacker),
+          _component('target', event.target),
+          _component('branch', event.branch.name),
+          _component('incoming', event.incomingDamage),
+          _component('counter', event.counterDamage),
+          _component('shield', event.shieldRemaining),
+          _component('nonRecursive', event.nonRecursive),
+          _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aBossChargeInterrupted():
         values.addAll([

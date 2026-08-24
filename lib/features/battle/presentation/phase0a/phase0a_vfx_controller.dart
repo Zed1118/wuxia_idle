@@ -41,6 +41,10 @@ enum Phase0aVfxKind {
   /// 两名护法在 Boss 蓄力掩护相位内完成合击。
   guardianCoop,
 
+  /// 玩家主动防御起手与入站结算反馈。
+  defenseStarted,
+  defenseResolved,
+
   /// 终局封签(胜/败全场唯一)。
   outcomeSeal,
 }
@@ -300,6 +304,27 @@ final class Phase0aVfxController {
               anchor: event.targetPosition,
               source: event.mainGuardianPosition,
               vfxTarget: event.partnerPosition,
+            ),
+          );
+        case Phase0aDefenseStarted():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.defenseStarted,
+              actorId: event.actor,
+              anchor: event.toPosition,
+              source: event.fromPosition,
+              statusTicks: event.windowTicks,
+              damage: event.shieldAbsorption.round(),
+            ),
+          );
+        case Phase0aDefenseResolved():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.defenseResolved,
+              actorId: event.attacker,
+              targetId: event.target,
+              anchor: event.targetPosition,
+              damage: event.counterDamage,
             ),
           );
         case Phase0aBattleVictory():
