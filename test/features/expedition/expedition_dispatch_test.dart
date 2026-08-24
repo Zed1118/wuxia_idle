@@ -40,6 +40,7 @@ void main() {
 
   Future<int> putDisciple({
     bool isFounder = false,
+    bool isAlive = true,
     int? weaponId,
     int? mainTech,
     List<int> assist = const [],
@@ -56,6 +57,7 @@ void main() {
         ..lineageRole = isFounder ? LineageRole.founder : LineageRole.disciple
         ..createdAt = DateTime(2026, 7, 16)
         ..isFounder = isFounder
+        ..isAlive = isAlive
         ..equippedWeaponId = weaponId
         ..mainTechniqueId = mainTech
         ..assistTechniqueIds = assist
@@ -92,6 +94,83 @@ void main() {
       expect(run.seed, 1); // seed = 新 serial（B2.2 用作 generateNode runSerial）
     },
   );
+
+  test('dead-only：已故但有主心法且空闲 → 拒绝且零副作用', () async {
+    final cid = await putDisciple(isAlive: false, mainTech: 5);
+    final canonical = await IsarSetup.instance.characters.get(cid);
+    expect(canonical, isNotNull);
+    expect(canonical!.isAlive, isFalse);
+    expect(canonical.isFounder, isFalse);
+    expect(canonical.mainTechniqueId, 5);
+    expect(canonical.currentRetreatSessionId, isNull);
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    expect(save!.expeditionRunSerial, 0);
+  });
+
+  test('canonical reload：先落 alive 再独立事务改 dead，仅传 ID 仍拒绝', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await IsarSetup.instance.writeTxn(() async {
+      final canonical = await IsarSetup.instance.characters.get(cid);
+      canonical!.isAlive = false;
+      await IsarSetup.instance.characters.put(canonical);
+    });
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    expect(save!.expeditionRunSerial, 0);
+  });
+
+  test('dead rollback：预置 serial=41，失败后仍为 41', () async {
+    final cid = await putDisciple(isAlive: false, mainTech: 5);
+    await IsarSetup.instance.writeTxn(() async {
+      final save = await IsarSetup.instance.saveDatas.get(0);
+      save!.expeditionRunSerial = 41;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+
+    final svc = ExpeditionService(IsarSetup.instance);
+    await expectLater(
+      svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
+      throwsStateError,
+    );
+
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    expect(save!.expeditionRunSerial, 41);
+  });
+
+  test('alive control：空闲存活角色成功且 serial 精确 +1', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await IsarSetup.instance.writeTxn(() async {
+      final save = await IsarSetup.instance.saveDatas.get(0);
+      save!.expeditionRunSerial = 41;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+
+    final runId = await ExpeditionService(
+      IsarSetup.instance,
+    ).dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao);
+
+    final run = await IsarSetup.instance.expeditionRuns.get(runId);
+    expect(run, isNotNull);
+    expect(run!.seed, 42);
+    final save = await IsarSetup.instance.saveDatas.get(0);
+    expect(save!.expeditionRunSerial, 42);
+  });
 
   test('祖师入队 → 抛错', () async {
     final founder = await putDisciple(isFounder: true, mainTech: 5);

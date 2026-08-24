@@ -90,12 +90,18 @@ pi --no-session --no-skills --model deepseek/deepseek-v4-flash --thinking high -
 
 ## 当前恢复点
 
-- 状态：Pi 与主控独立 Codex 实现前只读设计审查完成，source plan
-  已建立，待写 TDD 红测。
-- 最后完成：基线/分支/worktree/owned path 已核对；Pi `DESIGN PASS`，
-  P0/P1=0/0。
-- 下一步：提交 source plan，然后修改 dispatch test 并获取有效红灯。
-- 已跑验证：Pi CLI/version/model/read-only 审查 exit 0。
+- 状态：Pi 与主控独立 Codex 设计审查完成，四项死亡入口矩阵已写，
+  已获得有效 TDD 红灯。
+- 最后完成：新测中 dead-only / canonical reload / serial=41 三条均因
+  `dispatch` 错误成功建 run 而红；alive control 与既有 10 条均绿，合计
+  11 pass / 3 fail，证明红灯未借旧 gate 伪造。
+- 下一步：提交红测，仅在 `dispatch` 事务内 canonical null 检查后增加
+  `isAlive` 权威闸。
+- 已跑验证：Pi 只读审查 exit 0；首轮 focused 在 native-assets 编译前
+  崩溃，二轮因 fresh worktree 缺少 gitignored Isar `*.g.dart` 编译失败，
+  两者均不计业务红灯；`flutter pub get --offline` 与
+  `dart run build_runner build` 恢复本地派生态且零 tracked diff 后，focused
+  获得上述有效 11/3 红灯。
 - 阻塞：无。
 
 ## READY
