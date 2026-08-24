@@ -84,7 +84,7 @@ events 留在原测试，继续独立约束 payload、类型与顺序。
 - [x] 残留风险如实保留：defeat-in-flow、checkpoint/anchor projector、真实 lease
   lifecycle/budget、完整 simulation、balance/performance、host/promotion、durable、
   Profile/G2/真人试玩均继续 Gate。
-- [ ] Qoder CLI 1.1.28 exact `Qwen3.8-Max`、reasoning high、Read/Grep/Glob-only
+- [x] Qoder CLI 1.1.28 exact `Qwen3.8-Max`、reasoning high、Read/Grep/Glob-only
   完成最终 actual-diff 只读审查并经 Codex triage 清零 P0/P1/P2。
 
 ## 外部设计审查证据
@@ -99,8 +99,9 @@ events 留在原测试，继续独立约束 payload、类型与顺序。
   spawn events、不会产生 `Phase0aEnemyDefeated`，因此 R22 source 返回零 events、
   progress 保持 initial identity，session 发布 before/after 同 revision-0 snapshot
   的 no-op receipt。
-- 最终 diff 阶段重新尝试相同 exact Qoder 配置；若仍受服务阻塞，必须如实记录
-  连接证据并由 Codex/主控独立代码审查决定 Gate，不能伪造 Qoder PASS。
+- 最终 diff 阶段以同一 exact 配置精简重试，约 152 秒返回；逐项核对声明计数、
+  五关链路、唯一 advance、fresh/null、no-op receipt、planner throw 零发布、spawn
+  fresh-snapshot getter 与全部越权 guard，结论 `P0=0 P1=0 P2=0 PASS`。
 
 ## 任务切片与当前恢复点
 
@@ -110,12 +111,12 @@ events 留在原测试，继续独立约束 payload、类型与顺序。
 4. 机械迁声明、实现最小组合矩阵，运行 targeted/analyze/guards。
 5. Qoder 最终只读审查、Codex triage、回填证据并追加 READY。
 
-- 状态：TDD、targeted、analyze 与本地 guards 已完成；待 Qoder 最终只读审查、
-  Codex triage 与 READY。
+- 状态：TDD、targeted、analyze、本地 guards 与 Qoder 最终只读审查均完成；
+  P0/P1/P2=0，待最终 Git guards 与 READY。
 - 最后完成：计划 `a6a6f8b0`；有效红测 `48a9baee`，唯一失败是缺少新 helper
   URI/符号；实现 `d441f6d7`。V02A declarations 与基线经去掉 formatter 统一缩进
   后的内容 diff 为 0，计数仍为 95 / 67 / 3。
-- 下一步：提交本验证恢复点，用 exact Qoder 配置审查 actual diff。
+- 下一步：提交最终审查证据，复跑 format/diff/path/status 后追加 READY。
 - 已跑验证：V02B 7/7、V02A 8/8、V01 7/7、candidate catalog 9/9、
   R11 7/7、R22 9/9、R13 15/15、R26 10/10、R25 12/12、R24 17/17、
   R06 15/15，合计 116/116；三个 changed Dart items scoped analyze 0 issue；
@@ -124,5 +125,4 @@ events 留在原测试，继续独立约束 payload、类型与顺序。
   `SpawnDirector.state` 每读 fresh materialize，且 R25/R26 既有测试均比较
   tick/units。本实现改为完整 scalar counts + units 等值；其余 exact identity 断言
   不变。
-- 阻塞项：Qoder 设计端两次限时零输出，已按有限等待策略处理；不阻塞已获独立
-  设计放行的 TDD，最终审查阶段复测。
+- 阻塞项：无。Qoder 设计端两次限时零输出已如实保留；最终审查已成功返回。
