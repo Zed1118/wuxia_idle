@@ -45,6 +45,7 @@
 - 本计划文件
 - `CLAUDE.md`
 - `GDD.md`
+- `docs/_archive/GDD_CHANGELOG.md`
 - `PROGRESS.md`
 - `docs/dispatch/phase0a_overhaul/task_registry.yaml`
 - `docs/audit/phase2_m2_m6_u01_ch1_continuous_run_2026-08-24.md`
@@ -83,3 +84,10 @@
 7. 既有 stage flow、victory dialog、runtime admission、MainlineRun、G2 94 项保护网通过。
 8. changed/scoped analyze、format、YAML、diff check、精确白名单、独立语义复核 P0/P1=0。
 9. 最终 clean `[READY]`；本批不重复大范围 M7/M8 Profile，也不擅自 merge/push。
+
+## 收口边界复核
+
+- 本切片只关闭第一章首次推进的连续 UI/运行时组合，不把持久 run 写入存档。
+- `recordVictory` 既有幂等与 settlement participant 归属继续受原测试保护；跨崩溃重复结算键、恢复重放仍须后续持久事务批。
+- 随行听剑比例/cap 与生产选择/发放未接入；replay/manual/auto/headless/扫荡全模式一致性仍开放。
+- 因此 READY 只属于 `P2-M2-M6-U01-CH1-CONTINUOUS-RUN`，不等于 U01、M2、M6 或二阶段关闭。

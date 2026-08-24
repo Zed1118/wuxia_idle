@@ -219,12 +219,12 @@ void main() {
   test('resolver 返回当前关或非直接后继时拒绝，避免无限推进', () async {
     for (final invalidNext in [
       _stage(1),
-      StageDef(
+      const StageDef(
         id: 'stage_01_02',
         name: '错误后继',
         stageType: StageType.mainline,
         requiredRealm: RealmTier.xueTu,
-        enemyTeam: const [],
+        enemyTeam: [],
         isBossStage: false,
         baseExpReward: 0,
         difficultyMultiplier: 1,

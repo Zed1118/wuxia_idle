@@ -3310,3 +3310,50 @@ tasks:
       - do not change tuning unlock reward schema narrative or gameplay numbers
       - do not claim M2 M5 M6 or overall Phase 2 completion
       - do not modify or push main
+
+  - id: P2-M2-M6-U01-CH1-CONTINUOUS-RUN
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-m6-u01-ch1-continuous-run-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-ch1-continuous-run
+    status: ready_reviewed
+    base_commit: 1a7bc866ffd11b6032a918363daa4c8d656d81f3
+    code_candidate_commit: 99dbb1abb80731a74b77b113909b75e8fb03eb32
+    ready_marker: "[READY][CODEX][P2-M2-M6-U01-CH1] 收口第一章连续首通生产链"
+    completion_scope: chapter_1_first_clear_continuous_runtime_slice_only
+    dependencies:
+      - P2-G2-STAGE-01-03-PRODUCTION-ACCEPTANCE
+      - P2-M5-M6-POST-G2-INTEGRATION
+      - P2-M2-R01-MAINLINE-RUN-PARTICIPATION
+    verification:
+      coordinator_and_ch1_tests: 10
+      mainline_feature_tests: 367
+      g2_cited_regression_tests: 53
+      root_analyze_issues: 0
+      full_tests: 5274
+      independent_semantic_review_p0_p1: 0
+    owned_files:
+      - lib/features/mainline/application/mainline_run_coordinator.dart
+      - lib/features/mainline/application/phase0a_mainline_production_encounter_factory.dart
+      - lib/features/mainline/presentation/phase0a_mainline_battle_host.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/mainline/presentation/stage_list_screen.dart
+      - lib/features/mainline/presentation/stage_victory_dialog.dart
+      - lib/shared/strings.dart
+      - test/features/mainline/application/mainline_run_coordinator_test.dart
+      - test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart
+      - test/features/mainline/presentation/stage_victory_dialog_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-m6-u01-ch1-continuous-run.md
+      - docs/audit/phase2_m2_m6_u01_ch1_continuous_run_2026-08-24.md
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - enable continuous run only for the current cycle one available mainline stage
+      - keep one participant for the whole run and rebuild only that participant snapshot between stages
+      - publish the next stage only after the previous stage settlement and post victory hooks complete
+      - fail closed before the next stage when the participant or exact successor is invalid
+      - keep replay special modes tuning rewards unlock schema and main untouched
+      - do not claim persistent crash recovery U01 M2 M6 or overall Phase 2 completion
