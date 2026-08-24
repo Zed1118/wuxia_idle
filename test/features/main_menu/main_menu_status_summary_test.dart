@@ -354,6 +354,43 @@ void main() {
     expect(observer.pushedRoutes, hasLength(1));
   });
 
+  testWidgets('positive dangling character target fails closed', (
+    tester,
+  ) async {
+    final observer = _RecordingNavigatorObserver();
+    final active = character(id: 42, name: '现役角色');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.injury,
+                route: MainMenuStatusRoute.character,
+                title: UiStrings.mainMenuStatusInjuryTitle,
+                detail: '旧摘要',
+                targetCharacterId: 999,
+              ),
+            ],
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [42]),
+          characterByIdProvider(42).overrideWith((ref) async => active),
+          characterByIdProvider(999).overrideWith((ref) async => null),
+        ],
+        child: MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pumpAndSettle();
+
+    expect(observer.pushedRoutes, hasLength(1));
+  });
+
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
     testWidgets(
       'panel has no overflow at ${size.width.toInt()}x${size.height.toInt()}',
