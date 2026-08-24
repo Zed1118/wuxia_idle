@@ -434,10 +434,11 @@ void main() {
         '小成',
         2,
       );
+      final forceSegment = UiStrings.defeatInternalForceSegment(3000, 1500);
       expect(
-        find.textContaining(expectedSegment),
+        find.text('测试甲  $forceSegment  ·  $expectedSegment'),
         findsOneWidget,
-        reason: '回退层数>0 走层数段而非修炼度段',
+        reason: '回退层数>0 的 Boss 整行文案保持',
       );
       expect(
         find.textContaining(UiStrings.defeatTechniqueProgressSegment('伏魔禅功')),
@@ -459,10 +460,28 @@ void main() {
       );
       await tester.pumpWidget(wrap(const [entry]));
 
+      final forceSegment = UiStrings.defeatInternalForceSegment(3000, 1500);
+      final progressSegment = UiStrings.defeatTechniqueProgressSegment('伏魔禅功');
       expect(
-        find.textContaining(UiStrings.defeatTechniqueProgressSegment('伏魔禅功')),
+        find.text('测试甲  $forceSegment  ·  $progressSegment'),
         findsOneWidget,
+        reason: '零回退层的普通 Boss 仍显示修炼度回退段',
       );
+    });
+
+    testWidgets('Boss 内力相等边界仍显示旧内力段', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      const entry = DefeatLossEntry(
+        characterName: '测试甲',
+        internalForceBefore: 2000,
+        internalForceAfter: 2000,
+      );
+      await tester.pumpWidget(wrap(const [entry]));
+
+      final forceSegment = UiStrings.defeatInternalForceSegment(2000, 2000);
+      expect(find.text('测试甲  $forceSegment'), findsOneWidget);
     });
 
     testWidgets('techniqueName 为 null → 仅内力段,无任何心法段', (tester) async {
@@ -477,7 +496,7 @@ void main() {
       await tester.pumpWidget(wrap(const [entry]));
 
       expect(
-        find.textContaining(UiStrings.defeatInternalForceSegment(3000, 1500)),
+        find.text('测试甲  ${UiStrings.defeatInternalForceSegment(3000, 1500)}'),
         findsOneWidget,
       );
       // 行文本不含心法分隔段(内力段后无「 · 」拼接)
