@@ -16,6 +16,11 @@ final class GauntletAutomationAdmission {
     required this.memberCharacterId,
     required this.currentStage,
     required this.sessionPhase,
+    required this.memberCurrentHp,
+    required this.memberCurrentQi,
+    required this.memberMaxHp,
+    required this.memberMaxQi,
+    required this.memberIsDowned,
   });
 
   final ActivityParticipationRequest request;
@@ -24,20 +29,11 @@ final class GauntletAutomationAdmission {
   final int memberCharacterId;
   final int currentStage;
   final GauntletPhase sessionPhase;
-}
-
-enum GauntletAutomationDriveTerminal { awaitingRewardChoice, defeated }
-
-final class GauntletAutomationDriveResult {
-  const GauntletAutomationDriveResult({
-    required this.terminal,
-    required this.stagesCompleted,
-    this.defeatedAtStage,
-  });
-
-  final GauntletAutomationDriveTerminal terminal;
-  final int stagesCompleted;
-  final int? defeatedAtStage;
+  final int memberCurrentHp;
+  final int memberCurrentQi;
+  final int memberMaxHp;
+  final int memberMaxQi;
+  final bool memberIsDowned;
 }
 
 /// Application admission against the current persisted save and active run.
@@ -88,6 +84,11 @@ final class GauntletAutomationAdmissionService {
       memberCharacterId: memberCharacterId,
       currentStage: activeRun.currentStage,
       sessionPhase: activeRun.sessionPhase,
+      memberCurrentHp: activeRun.members.single.currentHp,
+      memberCurrentQi: activeRun.members.single.currentQi,
+      memberMaxHp: activeRun.members.single.maxHp,
+      memberMaxQi: activeRun.members.single.maxQi,
+      memberIsDowned: activeRun.members.single.isDowned,
     );
   }
 
@@ -100,7 +101,12 @@ final class GauntletAutomationAdmissionService {
         current.runId != admission.runId ||
         current.memberCharacterId != admission.memberCharacterId ||
         current.currentStage != admission.currentStage ||
-        current.sessionPhase != admission.sessionPhase) {
+        current.sessionPhase != admission.sessionPhase ||
+        current.memberCurrentHp != admission.memberCurrentHp ||
+        current.memberCurrentQi != admission.memberCurrentQi ||
+        current.memberMaxHp != admission.memberMaxHp ||
+        current.memberMaxQi != admission.memberMaxQi ||
+        current.memberIsDowned != admission.memberIsDowned) {
       throw StateError('Gauntlet automation admission is stale');
     }
     return current;
