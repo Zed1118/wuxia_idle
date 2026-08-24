@@ -3869,6 +3869,37 @@ tasks:
       - do not change schema save version tuning narrative rewards economy unlocks or main
       - do not claim U06 U14 M5 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U05-TOWER-LEADERBOARD-RELOCATION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u05-tower-leaderboard-relocation-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-tower-leaderboard-relocation
+    status: in_progress
+    base_commit: 79c5e96c6e99bcb519ac17e27ad51afb673b8601
+    completion_scope: restore_local_tower_leaderboard_production_access_from_tower_screen
+    dependencies:
+      - P2-M6-U06-JIANGHU-MAP-EXPEDITION-LOCATION
+    owned_files:
+      - lib/features/tower/presentation/tower_floor_list_screen.dart
+      - test/features/tower/presentation/tower_leaderboard_relocation_test.dart
+      - test/features/tower/presentation/tower_floor_list_screen_test.dart
+      - test/features/tower/presentation/leaderboard_screen_test.dart
+      - test/features/main_menu/presentation/main_menu_jianghu_chronicle_hub_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u05-tower-leaderboard-relocation.md
+      - docs/audit/phase2_m6_u05_tower_leaderboard_relocation_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - local leaderboard is reachable from TowerFloorListScreen
+      - leaderboard continues to read only towerProgressProvider and existing local metrics
+      - main menu stays flat-entry free and jianghu chronicle keeps its six archive categories
+      - leaderboard sync remains Noop and no cloud account or network work is introduced
+      - do not change schema save version tuning narrative rewards economy unlocks or main
+      - do not claim U05 U06 M6 or overall Phase 2 completion
+
   - id: P2-M6-U06-JIANGHU-MAP-EXPEDITION-LOCATION
     milestone: M6
     owner: codex_root
