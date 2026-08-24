@@ -3829,9 +3829,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-jianghu-map-light-foot-location-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-light-foot-location
-    status: in_progress
+    status: ready_reviewed
     base_commit: 269e1baaad6b89544c90c66b8f86815ecb8c54ca
+    code_candidate_commit: 79466fca7c7497ce190856223070aa8f791b99c6
+    reviewed_candidate_commit: 79466fca7c7497ce190856223070aa8f791b99c6
+    ready_marker: "[READY][CODEX][P2-M6-U06-JIANGHU-MAP-LIGHT-FOOT-LOCATION] 迁移轻功试炼到江湖地图"
     completion_scope: move_light_foot_from_flat_main_menu_to_second_production_jianghu_map_location
+    verification:
+      red_tests: 3
+      focused_location_tests: 10
+      paper_contrast_audit_tests: 4
+      focused_with_paper_tests: 14
+      adjacent_main_menu_map_light_foot_tests: 116
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5382
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-TOWER-LOCATION
     owned_files:

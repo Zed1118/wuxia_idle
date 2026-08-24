@@ -6,7 +6,9 @@
 - base: `269e1baaad6b89544c90c66b8f86815ecb8c54ca`
 - branch: `codex/phase2-m6-u06-jianghu-map-light-foot-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-light-foot-location`
-- status: `in_progress`
+- status: `ready_reviewed`
+- code candidate: `79466fca7c7497ce190856223070aa8f791b99c6`
+- evidence: real red `0/3`; focused location `10/10`; paper contrast `4/4`; adjacent `116/116`; full `5382/5382`; independent review `P0/P1/P2=0`
 
 ## 目标
 
