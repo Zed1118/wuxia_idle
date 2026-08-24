@@ -5,6 +5,7 @@ import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/mass_battle/presentation/mass_battle_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
@@ -50,7 +51,8 @@ void main() {
     expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTowerBossStatus(6, 7)), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsNWidgets(2));
+    expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
   });
 
   test('轻功地点锁定和进度从生产链派生', () {
@@ -76,6 +78,29 @@ void main() {
     expect(progressed.status, UiStrings.jianghuMapLightFootProgress(2, 5));
   });
 
+  test('守城地点锁定和进度从生产链派生', () {
+    final locked = jianghuMapMassBattleLocationState(MainlineProgress());
+    expect(locked.locked, isTrue);
+    expect(locked.status, UiStrings.mainMenuLateGameLockedHint);
+
+    final inconsistent = jianghuMapMassBattleLocationState(
+      MainlineProgress()..clearedStageIds = const ['stage_mass_battle_01'],
+    );
+    expect(inconsistent.locked, isTrue);
+    expect(inconsistent.status, UiStrings.mainMenuLateGameLockedHint);
+
+    final progressed = jianghuMapMassBattleLocationState(
+      MainlineProgress()
+        ..clearedStageIds = const [
+          'stage_06_05',
+          'stage_mass_battle_01',
+          'stage_mass_battle_02',
+        ],
+    );
+    expect(progressed.locked, isFalse);
+    expect(progressed.status, UiStrings.jianghuMapMassBattleProgress(2, 5));
+  });
+
   testWidgets('九霄塔地点仍经生产入口进入 TowerFloorListScreen', (tester) async {
     await tester.pumpWidget(app());
     await tester.pump();
@@ -98,6 +123,17 @@ void main() {
     expect(find.byType(LightFootScreen), findsNothing);
   });
 
+  testWidgets('守城地点在原 Ch6 门槛前保持锁定且不导航', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text(UiStrings.mainMenuMassBattle));
+    await tester.pump();
+
+    expect(find.byType(MassBattleScreen), findsNothing);
+  });
+
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
     testWidgets('江湖地图 ${size.width.toInt()}x${size.height.toInt()} 无布局异常', (
       tester,
@@ -109,6 +145,7 @@ void main() {
 
       expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
       expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

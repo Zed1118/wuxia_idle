@@ -2063,6 +2063,8 @@ class UiStrings {
   // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
   static const String mainMenuMassBattle = '守城试炼';
   static const String mainMenuMassBattleHint = '5 关守城 · 以少胜多';
+  static String jianghuMapMassBattleProgress(int cleared, int total) =>
+      '已守 $cleared / $total';
 
   // ─── 江湖远行（百草岭远征 · Phase B2.4 入口，§7.1 Lv100 解锁）─────────────
   static const String mainMenuExpedition = '江湖远行';

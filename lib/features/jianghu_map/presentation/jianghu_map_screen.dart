@@ -10,6 +10,8 @@ import '../../light_foot/application/light_foot_service.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../mass_battle/application/mass_battle_service.dart';
+import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
@@ -68,6 +70,39 @@ String jianghuMapTowerStatus(TowerProgress progress) {
   );
 }
 
+({bool locked, String status}) jianghuMapMassBattleLocationState(
+  MainlineProgress progress,
+) {
+  final config = GameRepository.instance.numbers.massBattle;
+  final stageIds = MassBattleService.orderedStageIds(config);
+  if (stageIds.isEmpty) {
+    return (locked: true, status: UiStrings.massBattleEmpty);
+  }
+  final cleared = progress.clearedStageIds.toSet();
+  final firstStagePrerequisites = config.unlockTriggers.entries
+      .where((entry) => entry.value == stageIds.first)
+      .map((entry) => entry.key)
+      .toList(growable: false);
+  if (firstStagePrerequisites.length != 1) {
+    return (locked: true, status: UiStrings.massBattleEmpty);
+  }
+  final firstStatus = MassBattleService.statusOf(
+    stageId: stageIds.first,
+    config: config,
+    clearedStageIds: cleared,
+  );
+  final locked =
+      !cleared.contains(firstStagePrerequisites.single) ||
+      firstStatus == MassBattleStageStatus.locked;
+  final clearedCount = stageIds.where(cleared.contains).length;
+  return (
+    locked: locked,
+    status: locked
+        ? UiStrings.mainMenuLateGameLockedHint
+        : UiStrings.jianghuMapMassBattleProgress(clearedCount, stageIds.length),
+  );
+}
+
 class JianghuMapScreen extends ConsumerWidget {
   const JianghuMapScreen({super.key});
 
@@ -79,6 +114,9 @@ class JianghuMapScreen extends ConsumerWidget {
     final lightFootState = ref
         .watch(mainlineProgressProvider)
         .maybeWhen(data: jianghuMapLightFootLocationState, orElse: () => null);
+    final massBattleState = ref
+        .watch(mainlineProgressProvider)
+        .maybeWhen(data: jianghuMapMassBattleLocationState, orElse: () => null);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -140,6 +178,26 @@ class JianghuMapScreen extends ConsumerWidget {
                     onAllowed: () => Navigator.of(context).push<void>(
                       MaterialPageRoute(
                         builder: (_) => const LightFootScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                WuxiaInkButton(
+                  key: const ValueKey('jianghu-map-mass-battle-location'),
+                  label: UiStrings.mainMenuMassBattle,
+                  hint: UiStrings.mainMenuMassBattleHint,
+                  status: massBattleState?.status,
+                  icon: Icons.groups_2_outlined,
+                  thumbnailPath: WuxiaUi.entryJianghu,
+                  disabled: massBattleState == null || massBattleState.locked,
+                  locked: massBattleState == null || massBattleState.locked,
+                  onTap: () => guardBattleEntry(
+                    context: context,
+                    ref: ref,
+                    onAllowed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const MassBattleScreen(),
                       ),
                     ),
                   ),

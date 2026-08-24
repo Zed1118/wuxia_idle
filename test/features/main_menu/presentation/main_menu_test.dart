@@ -39,7 +39,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（继续江湖 / 宗门 / 武学与行囊 / 档案等）
-///   - 9 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
+///   - 8 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -119,14 +119,14 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('9 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('8 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTower), findsNothing);
     expect(find.text(UiStrings.mainMenuJianghuMapAction), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsNothing);
-    expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuMassBattle), findsNothing);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSectHub), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghuChronicle), findsOneWidget);
@@ -156,9 +156,9 @@ void main() {
       isTrue,
     );
 
-    // 江湖行程:继续江湖在前，塔/轻功均已迁地图。
+    // 江湖行程:继续江湖在前，塔/轻功/群战均已迁地图。
     expect(
-      y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuMassBattle),
+      y(UiStrings.mainMenuGroupJourney) < y(UiStrings.mainMenuMainline),
       isTrue,
     );
 
@@ -176,9 +176,9 @@ void main() {
     );
   });
 
-  testWidgets('9 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('8 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(9));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(8));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -733,13 +733,13 @@ void main() {
       expect((await openSectHub(tester)).sectLocked, isFalse);
     });
 
-    testWidgets('通关 Ch6 末关 → 心魔/轻功不在主菜单且群战解锁', (tester) async {
+    testWidgets('通关 Ch6 末关 → 心魔/轻功/群战均不在主菜单', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_06_05']));
       await tester.pump();
       await tester.pump();
       expect(find.text(UiStrings.mainMenuInnerDemon), findsNothing);
       expect(find.text(UiStrings.mainMenuLightFoot), findsNothing);
-      expect(opacityOf(tester, UiStrings.mainMenuMassBattle), 1.0);
+      expect(find.text(UiStrings.mainMenuMassBattle), findsNothing);
     });
   });
 

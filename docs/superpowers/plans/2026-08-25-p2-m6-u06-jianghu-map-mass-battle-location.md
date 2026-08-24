@@ -26,6 +26,7 @@
 - `lib/features/jianghu_map/presentation/jianghu_map_screen.dart`
 - `lib/shared/strings.dart`
 - `test/features/main_menu/presentation/main_menu_jianghu_map_mass_battle_location_test.dart`
+- `test/features/main_menu/presentation/main_menu_jianghu_map_light_foot_location_test.dart`
 - `test/features/main_menu/presentation/main_menu_test.dart`
 - `test/features/jianghu_map/presentation/jianghu_map_screen_test.dart`
 - `docs/superpowers/plans/2026-08-25-p2-m6-u06-jianghu-map-mass-battle-location.md`
