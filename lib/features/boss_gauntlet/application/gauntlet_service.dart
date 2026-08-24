@@ -18,6 +18,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
@@ -28,6 +29,8 @@ import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
+import '../domain/gauntlet_automation_policy.dart';
+import 'gauntlet_automation_admission.dart';
 import 'gauntlet_controller.dart';
 import 'phase0a_gauntlet_stage_runner.dart';
 
@@ -121,7 +124,7 @@ class GauntletService {
 
   /// 断魂庄副本标识（`SaveData.clearedGauntletIds` 键·首通判定/防重·§9.2）。
   /// 单副本，无 yaml id；未来多副本时移入配置。
-  static const String gauntletId = 'duanhunzhuang';
+  static const String gauntletId = GauntletAutomationPolicy.gauntletId;
 
   /// 入场：单 `writeTxn` 建断魂庄 active 会话，返回落库的 run id。
   ///
@@ -376,10 +379,16 @@ class GauntletService {
   }
 
   Future<Phase0aGauntletStageResult> fightCurrentStagePhase0a({
+    required GauntletAutomationAdmission admission,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
   }) async {
+    await GauntletAutomationAdmissionService(_isar).revalidate(admission);
     final plan = await preparePhase0aStage(config: config);
+    if (admission.sessionPhase != GauntletPhase.inBattle ||
+        plan.stage != admission.currentStage) {
+      throw StateError('Gauntlet automation stage admission changed');
+    }
     final result = await Phase0aGauntletStageRunner.run(
       contentId: 'gauntlet_${plan.stage}',
       playerSnapshot: plan.playerSnapshot,
@@ -388,8 +397,132 @@ class GauntletService {
       seed: plan.seed,
       cycleIndex: plan.cycleIndex,
     );
-    await settlePhase0aStageResult(result: result.settlement, config: config);
+    await _settleAdmittedPhase0aStageResult(
+      admission: admission,
+      result: result.settlement,
+      config: config,
+    );
     return result;
+  }
+
+  Future<void> _settleAdmittedPhase0aStageResult({
+    required GauntletAutomationAdmission admission,
+    required GauntletStageSettlement result,
+    required BossGauntletConfig config,
+  }) async {
+    await _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null || save.id != admission.saveDataId) {
+        throw StateError('Gauntlet automation save changed during combat');
+      }
+      GauntletAutomationPolicy.requireAllowed(
+        request: admission.request,
+        clearedGauntletIds: save.clearedGauntletIds.toSet(),
+      );
+      final run = await _isar.bossGauntletRuns.get(admission.runId);
+      if (run == null ||
+          run.saveDataId != admission.saveDataId ||
+          run.members.length != 1 ||
+          run.members.single.characterId != admission.memberCharacterId ||
+          run.sessionPhase != admission.sessionPhase ||
+          run.sessionPhase != GauntletPhase.inBattle ||
+          run.currentStage != admission.currentStage) {
+        throw StateError('Gauntlet automation run changed during combat');
+      }
+      if (run.currentStage < 1 || run.currentStage > config.stages.length) {
+        throw StateError('Gauntlet automation stage is out of range');
+      }
+      final isBoss = config.stages[run.currentStage - 1].role == 'boss';
+      GauntletController.advancePhase0a(
+        run: run,
+        checkpoint: result.checkpoint,
+        leftWin: result.leftWin,
+        isBossStage: isBoss,
+      );
+      GauntletController.stageBossReward(
+        run: run,
+        config: config,
+        alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
+      );
+      await _isar.bossGauntletRuns.put(run);
+    });
+  }
+
+  /// Drives the current admitted replay until defeat or the unclaimed reward
+  /// choice boundary. It never selects, settles, or rerolls a reward.
+  Future<GauntletAutomationDriveResult> driveHeadlessReplayToRewardChoice({
+    required ActivityParticipationRequest request,
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+  }) async {
+    final admissionService = GauntletAutomationAdmissionService(_isar);
+    final initialAdmission = await admissionService.admit(request: request);
+    var stagesCompleted = 0;
+
+    while (true) {
+      final admission = await admissionService.admit(request: request);
+      if (admission.saveDataId != initialAdmission.saveDataId ||
+          admission.runId != initialAdmission.runId ||
+          admission.memberCharacterId != initialAdmission.memberCharacterId) {
+        throw StateError('Gauntlet automation active run changed');
+      }
+
+      switch (admission.sessionPhase) {
+        case GauntletPhase.inBattle:
+          final stage = admission.currentStage;
+          final result = await fightCurrentStagePhase0a(
+            admission: admission,
+            config: config,
+            numbers: numbers,
+          );
+          if (!result.leftWin) {
+            return GauntletAutomationDriveResult(
+              terminal: GauntletAutomationDriveTerminal.defeated,
+              stagesCompleted: stagesCompleted,
+              defeatedAtStage: stage,
+            );
+          }
+          stagesCompleted += 1;
+          continue;
+        case GauntletPhase.interlude:
+          await _continueAdmittedToNextStage(admission);
+          continue;
+        case GauntletPhase.awaitingRewardChoice:
+          return GauntletAutomationDriveResult(
+            terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
+            stagesCompleted: stagesCompleted,
+          );
+        case GauntletPhase.settled:
+          throw StateError('Gauntlet automation cannot drive a settled run');
+      }
+    }
+  }
+
+  Future<void> _continueAdmittedToNextStage(
+    GauntletAutomationAdmission admission,
+  ) async {
+    await _isar.writeTxn(() async {
+      final save = await _isar.saveDatas.get(0);
+      if (save == null || save.id != admission.saveDataId) {
+        throw StateError('Gauntlet automation save changed at interlude');
+      }
+      GauntletAutomationPolicy.requireAllowed(
+        request: admission.request,
+        clearedGauntletIds: save.clearedGauntletIds.toSet(),
+      );
+      final run = await _isar.bossGauntletRuns.get(admission.runId);
+      if (run == null ||
+          run.saveDataId != admission.saveDataId ||
+          run.members.length != 1 ||
+          run.members.single.characterId != admission.memberCharacterId ||
+          run.currentStage != admission.currentStage ||
+          run.sessionPhase != admission.sessionPhase ||
+          run.sessionPhase != GauntletPhase.interlude) {
+        throw StateError('Gauntlet automation run changed at interlude');
+      }
+      run.sessionPhase = GauntletPhase.inBattle;
+      await _isar.bossGauntletRuns.put(run);
+    });
   }
 
   Future<Phase0aGauntletStagePlan> preparePhase0aStage({
