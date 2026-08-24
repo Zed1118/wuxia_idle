@@ -4,8 +4,9 @@ import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/inner_demon_def.dart';
 
-/// 心魔关战败惩罚结果（永久内力保持不变，主修进度/内息紊乱已结算，结果供 UI
-/// 展示 / 测试汇总）。与 DispelService.DefeatPenaltyResult
+/// 心魔关战败惩罚结果（永久内力与主修进度保持不变，仅结算内息紊乱，结果供 UI
+/// 展示 / 测试汇总）。主修 before/after 是不写回的恒等证据。与
+/// DispelService.DefeatPenaltyResult
 /// 区别：心魔惩罚 layer 不回退（spec「不跌破当前层起点」自动满足）。
 class InnerDemonPenaltyResult {
   final int internalForceBefore;
@@ -62,12 +63,10 @@ class InnerDemonService {
   static int _absoluteIndex(RealmTier tier, RealmLayer layer) =>
       tier.index * RealmLayer.values.length + layer.index;
 
-  /// 心魔关战败惩罚（M6）。对单个**有主修**的参战角色调用一次。
+  /// 心魔关战败惩罚。对单个**有主修**的参战角色调用一次。
   ///
   /// in-place 改：
-  ///   - 永久内力不变；内息紊乱走独立配置并受上限约束
-  ///   - mainTech.cultivationProgress = floor(old × mainCultivationMultiplier)
-  ///     （cultivationLayer / cultivationProgressToNext 不动 → 不跌破当前层起点）
+  ///   - 永久内力与主修修炼度不变
   ///   - ch.innerBreathDisorderHoursRemaining 按配置累加并受上限约束
   ///   - 辅修不动（不触碰辅修字段）
   ///
@@ -75,7 +74,6 @@ class InnerDemonService {
   static InnerDemonPenaltyResult applyFailurePenalty({
     required Character ch,
     required Technique mainTech,
-    required InnerDemonFailurePenalty penalty,
     required double residueHours,
     double? disorderMaxHours,
   }) {
@@ -88,21 +86,11 @@ class InnerDemonService {
       maxHours: disorderMaxHours ?? residueHours,
     );
 
-    // §5.4 惩罚单向下调：主修系数必 ≤ 1.0（内力侧已有地板兜底，progress 侧无
-    // 上限守卫，此 assert 防 numbers.yaml 误配 >1.0 反涨修炼度）。
-    assert(
-      penalty.mainCultivationMultiplier <= 1.0,
-      'mainCultivationMultiplier 必 ≤ 1.0（惩罚不得反涨修炼度）',
-    );
-    mainTech.cultivationProgress =
-        (mainTech.cultivationProgress * penalty.mainCultivationMultiplier)
-            .floor();
-
     return InnerDemonPenaltyResult(
       internalForceBefore: ifBefore,
       internalForceAfter: ch.internalForce,
       progressBefore: progressBefore,
-      progressAfter: mainTech.cultivationProgress,
+      progressAfter: progressBefore,
       residueHoursApplied: residueHours,
     );
   }

@@ -235,7 +235,7 @@ class CombatResolutionService {
       }
     }
 
-    // M6:心魔关战败 → 对每个有主修参战角色应用心魔失败惩罚 + 余毒。
+    // 心魔关战败 → 对每个有主修参战角色只应用受上限约束的内息紊乱。
     // 与 Boss 散功互斥:心魔关 isBossStage=true,故由上方 Boss 分支显式排除
     // stageType==innerDemon 来保证互斥(本分支独占)。stageDef=null(tower) 不进。
     final innerDemonPenalty = <int, InnerDemonPenaltyResult>{};
@@ -243,7 +243,6 @@ class CombatResolutionService {
         stageDef != null &&
         stageDef.stageType == StageType.innerDemon &&
         numbersConfig != null) {
-      final idDef = numbersConfig.innerDemon;
       for (final ch in participatingCharacters) {
         final mainTechId = ch.mainTechniqueId;
         if (mainTechId == null) continue;
@@ -253,7 +252,6 @@ class CombatResolutionService {
         innerDemonPenalty[ch.id] = InnerDemonService.applyFailurePenalty(
           ch: ch,
           mainTech: mainTech,
-          penalty: idDef.failurePenalty,
           residueHours: numbersConfig.innerBreathDisorder.innerDemonHours,
           disorderMaxHours: numbersConfig.innerBreathDisorder.maxHours,
         );
@@ -263,7 +261,7 @@ class CombatResolutionService {
     // 5. 双层伤势（第八阶段 2026-06-25）：连战轻伤每场累积 + 硬仗重伤
     // （战败全员 / 惨胜低血存活者）。仅修改传入 Character 字段，持久化归 caller。
     // 与上方心魔 / Boss 散功分支并存：伤势是通用层，不依赖 stageType。
-    // 心魔失败只保留内息紊乱/修炼度惩罚，不产生物理轻伤或重伤；普通 Boss
+    // 心魔失败只保留受上限约束的内息紊乱，不产生物理轻伤或重伤；普通 Boss
     // 与其他战斗继续沿用统一伤势结算。
     final isInnerDemonFailure =
         !resolvedVictory && stageDef?.stageType == StageType.innerDemon;
