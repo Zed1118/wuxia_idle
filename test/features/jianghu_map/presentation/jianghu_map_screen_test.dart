@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
+import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
@@ -28,7 +29,7 @@ void main() {
   Widget app({
     int highest = 6,
     List<String> clearedStageIds = const [],
-    bool gauntletUnlocked = false,
+    bool journeyUnlocked = false,
     BossGauntletRun? activeGauntlet,
   }) => ProviderScope(
     overrides: [
@@ -38,9 +39,10 @@ void main() {
       ),
       activeRetreatSessionProvider.overrideWith((ref) async => null),
       mainMenuSaveSnapshotProvider.overrideWith(
-        (ref) async => SaveData()..jianghuJourneyUnlocked = gauntletUnlocked,
+        (ref) async => SaveData()..jianghuJourneyUnlocked = journeyUnlocked,
       ),
       activeGauntletProvider.overrideWith((ref) async => activeGauntlet),
+      activeExpeditionProvider.overrideWith((ref) async => null),
     ],
     child: const MaterialApp(home: JianghuMapScreen()),
   );
@@ -130,7 +132,7 @@ void main() {
       ..seed = 7
       ..currentStage = 3
       ..sessionPhase = GauntletPhase.awaitingRewardChoice;
-    await tester.pumpWidget(app(gauntletUnlocked: true, activeGauntlet: run));
+    await tester.pumpWidget(app(journeyUnlocked: true, activeGauntlet: run));
     await tester.pump();
     await tester.pump();
 
@@ -182,13 +184,14 @@ void main() {
     ) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(app(gauntletUnlocked: true));
+      await tester.pumpWidget(app(journeyUnlocked: true));
       await tester.pump();
 
       expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
       expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
       expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
       expect(find.text(UiStrings.gauntletName), findsOneWidget);
+      expect(find.text(UiStrings.expeditionBaicaoName), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

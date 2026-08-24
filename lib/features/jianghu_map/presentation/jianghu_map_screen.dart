@@ -9,6 +9,9 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
+import '../../expedition/application/expedition_providers.dart';
+import '../../expedition/domain/expedition_run.dart';
+import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../light_foot/application/light_foot_service.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../main_menu/application/main_menu_status_summary_provider.dart';
@@ -118,6 +121,12 @@ String? jianghuMapGauntletStatus(BossGauntletRun? run) {
   return UiStrings.gauntletResumeHint(run.currentStage, phase);
 }
 
+String? jianghuMapExpeditionStatus(ExpeditionRun? run) {
+  if (run == null) return null;
+  if (run.defeated) return UiStrings.expeditionDefeatedBanner;
+  return UiStrings.expeditionActiveDepth(run.currentNode);
+}
+
 class JianghuMapScreen extends ConsumerWidget {
   const JianghuMapScreen({super.key});
 
@@ -132,7 +141,7 @@ class JianghuMapScreen extends ConsumerWidget {
     final massBattleState = ref
         .watch(mainlineProgressProvider)
         .maybeWhen(data: jianghuMapMassBattleLocationState, orElse: () => null);
-    final gauntletUnlocked = ref
+    final jianghuJourneyUnlocked = ref
         .watch(mainMenuSaveSnapshotProvider)
         .maybeWhen(
           data: (save) => save?.jianghuJourneyUnlocked ?? false,
@@ -141,6 +150,9 @@ class JianghuMapScreen extends ConsumerWidget {
     final gauntletStatus = ref
         .watch(activeGauntletProvider)
         .maybeWhen(data: jianghuMapGauntletStatus, orElse: () => null);
+    final expeditionStatus = ref
+        .watch(activeExpeditionProvider)
+        .maybeWhen(data: jianghuMapExpeditionStatus, orElse: () => null);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -226,7 +238,7 @@ class JianghuMapScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                if (gauntletUnlocked) ...[
+                if (jianghuJourneyUnlocked) ...[
                   const SizedBox(height: 12),
                   WuxiaInkButton(
                     key: const ValueKey('jianghu-map-gauntlet-location'),
@@ -238,6 +250,20 @@ class JianghuMapScreen extends ConsumerWidget {
                     onTap: () => Navigator.of(context).push<void>(
                       MaterialPageRoute(
                         builder: (_) => const GauntletLoadoutScreen(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  WuxiaInkButton(
+                    key: const ValueKey('jianghu-map-expedition-location'),
+                    label: UiStrings.expeditionBaicaoName,
+                    hint: UiStrings.expeditionBaicaoSubtitle,
+                    status: expeditionStatus,
+                    icon: Icons.travel_explore_outlined,
+                    thumbnailPath: WuxiaUi.entryJianghu,
+                    onTap: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const ExpeditionOverviewScreen(),
                       ),
                     ),
                   ),
