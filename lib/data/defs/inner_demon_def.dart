@@ -6,7 +6,6 @@ import 'boss_vulnerability_def.dart';
 /// 7 关心魔(stage_inner_demon_01..07)拦截配置的境界层突破：
 ///   - mirror_buff_per_stage：各关镜像玩家 character 强化比例
 ///   - mirror_caps：§5.4 数值红线 cap（防玩家 build 超时镜像也超）
-///   - failure_penalty：主修修炼度惩罚（内息紊乱走独立配置）
 ///   - unlock_triggers：触发关 victory → 下一关 unlock 链
 ///   - required_realm_layer：玩家当前境界达到该 layer 才能进入
 ///
@@ -18,9 +17,6 @@ class InnerDemonDef {
 
   /// §5.4 数值红线 cap。
   final InnerDemonMirrorCaps mirrorCaps;
-
-  /// 失败惩罚（主修修炼度系数）。
-  final InnerDemonFailurePenalty failurePenalty;
 
   /// 触发关 victory → 下一关 unlock 链。
   final Map<String, String> unlockTriggers;
@@ -53,7 +49,6 @@ class InnerDemonDef {
   const InnerDemonDef({
     required this.mirrorBuffPerStage,
     required this.mirrorCaps,
-    required this.failurePenalty,
     required this.unlockTriggers,
     required this.requiredRealmLayer,
     this.mirrorVulnerabilityPerStage = const {},
@@ -74,7 +69,6 @@ class InnerDemonDef {
       internalForceMax: 15000,
       attackPowerMax: 6000,
     ),
-    failurePenalty: InnerDemonFailurePenalty(mainCultivationMultiplier: 0.90),
     unlockTriggers: {},
     requiredRealmLayer: {},
     mirrorVulnerabilityPerStage: {},
@@ -86,6 +80,11 @@ class InnerDemonDef {
 
   factory InnerDemonDef.fromYaml(Map<String, dynamic>? y) {
     if (y == null) return InnerDemonDef.empty();
+    if (y.containsKey('failure_penalty')) {
+      throw const FormatException(
+        'inner_demon.failure_penalty is retired; remove the entire section',
+      );
+    }
 
     final mirror = <String, double>{};
     final mirrorYaml = y['mirror_buff_per_stage'] as Map?;
@@ -162,9 +161,6 @@ class InnerDemonDef {
       mirrorCaps: InnerDemonMirrorCaps.fromYaml(
         y['mirror_caps'] as Map<String, dynamic>? ?? const {},
       ),
-      failurePenalty: InnerDemonFailurePenalty.fromYaml(
-        y['failure_penalty'] as Map<String, dynamic>? ?? const {},
-      ),
       unlockTriggers: unlocks,
       requiredRealmLayer: required,
       mirrorVulnerabilityPerStage: vuln,
@@ -208,37 +204,4 @@ class InnerDemonMirrorCaps {
         internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
         attackPowerMax: (y['attack_power_max'] as num?)?.toInt() ?? 6000,
       );
-}
-
-/// 心魔失败惩罚：主修修炼度系数；内息紊乱由独立配置提供。
-class InnerDemonFailurePenalty {
-  /// 主修心法修炼度扣减比例（new = old × 此值；0.90 = 扣 10%）。
-  final double mainCultivationMultiplier;
-
-  const InnerDemonFailurePenalty({required this.mainCultivationMultiplier});
-
-  factory InnerDemonFailurePenalty.fromYaml(Map<String, dynamic> y) {
-    const legacyKeys = {
-      'internal_force_multiplier',
-      'internal_force_floor_pct',
-      'sub_cultivation_multiplier',
-      'debuff_id',
-      'debuff_clear_via_retreat_hours',
-    };
-    for (final key in legacyKeys) {
-      if (y.containsKey(key)) {
-        throw FormatException(
-          'inner_demon.failure_penalty contains retired key: $key',
-        );
-      }
-    }
-    final multiplier =
-        (y['main_cultivation_multiplier'] as num?)?.toDouble() ?? 0.90;
-    if (!multiplier.isFinite || multiplier <= 0 || multiplier > 1) {
-      throw const FormatException(
-        'inner_demon.failure_penalty.main_cultivation_multiplier must be in (0,1]',
-      );
-    }
-    return InnerDemonFailurePenalty(mainCultivationMultiplier: multiplier);
-  }
 }

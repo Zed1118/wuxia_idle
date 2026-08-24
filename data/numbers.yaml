@@ -1716,7 +1716,7 @@ animation:
 # 12. 心魔系统（1.0 P2.2 §12.1，当前版 7 关拦截学徒—三流突破）
 # =============================================================================
 # spec doc: docs/handoff/p2_x_inner_demon_spec_2026-05-22.md
-# 模型：镜像玩家 character snapshot 强化 / 失败 = 内息紊乱 + 主修修炼度惩罚
+# 模型：镜像玩家 character snapshot 强化 / 失败 = 受上限约束的内息紊乱
 # 当前发布版：7 关分布在学徒—三流，镜像强度按低阶数值粒度重校。
 
 inner_demon:
@@ -1742,9 +1742,6 @@ inner_demon:
     # 镜像 ×(1+buff) clamp 2000 让镜像永远 < 玩家,导致 R5.1 全 rightWins=0。
     # 改 6000 = 3 件 × §5.4 单件 2000,确保高层镜像 buff 真生效。
     attack_power_max: 6000
-
-  failure_penalty:                   # 内息紊乱 + 主修修炼度惩罚
-    main_cultivation_multiplier: 0.90
 
   unlock_triggers:                   # 触发关 victory → 下一关 unlock 链
     stage_01_03: stage_inner_demon_01
