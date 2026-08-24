@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.63**
+> **版本:v1.64**
+>
+> v1.64 变更摘要(2026-08-25 二阶段 M6 U05 主菜单角落工具区纵切):资源总览不再占养成玩法卡片，设置不再占独立玩法分区；资源、设置与既有退出统一进入主菜单右上角工具区，并继续复用 `ResourceOverviewScreen`、`SettingsPanel.show` 与 `AppExit.confirmAndQuit` 的生产语义。四个一级入口及其现有门控未改。本纵切只关闭冻结方案的角落工具区缺口；U06 地图迁移、排行榜归位、U05/M6/二阶段仍开放；零 schema/saveVersion、数值、概率、奖励、解锁阈值、经济与叙事变更。
 >
 > v1.63 变更摘要(2026-08-25 二阶段 M6 U05 “江湖纪事”一级 Hub 纵切):主菜单原先平铺的档案入口收拢为一个“江湖纪事”，内部提供章节卷轴、人物、地点、敌手、装备典故与待处理江湖事六路；四路复用既有生产 Screen，地点只读主线 cleared/available 关卡且不泄露锁定名称，待处理事项只读现有 `MainlineSettlementJournal` typed FIFO 并由既有 `runStageFlow` 恢复。敌手/装备典故保留原隐藏门控，异常 journal 与缺失 stage fail closed。本纵切关闭 U05 四个一级入口中的第四项；四项均有独立 READY，但资源总览角落工具化、排行榜归位、U05/M6/二阶段仍开放；零 schema/saveVersion、数值、概率、奖励、解锁阈值、经济与叙事变更。
 >

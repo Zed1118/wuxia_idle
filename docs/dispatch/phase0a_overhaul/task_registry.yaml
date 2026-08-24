@@ -3703,9 +3703,21 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-main-menu-corner-tools-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-main-menu-corner-tools
-    status: in_progress
+    status: ready_reviewed
     base_commit: 30d6b1a3e9405e8ea7915803fa6f93b0e8d817e6
+    code_candidate_commit: ed3087b72aca28068cca1155ddec47ba825b0700
+    reviewed_candidate_commit: ed3087b72aca28068cca1155ddec47ba825b0700
+    ready_marker: "[READY][CODEX][P2-M6-U05-MAIN-MENU-CORNER-TOOLS] 收口主菜单角落工具区"
     completion_scope: main_menu_resource_settings_and_exit_corner_tool_zone
+    verification:
+      red_tests: 6
+      changed_slice_tests: 6
+      main_menu_joint_tests: 57
+      adjacent_resource_settings_tests: 128
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5366
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U05-JIANGHU-CHRONICLE-HUB
     owned_files:
