@@ -2684,3 +2684,77 @@ tasks:
       - R25 R26 and V02A pass source tool review root diff review and independent review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - audit registry plan and READY marker match the frozen integration tip
+
+  - id: P2-M2-R27-ENCOUNTER-RUNTIME-OBSERVATION-SNAPSHOT
+    milestone: M2
+    owner: pi_deepseek_v4_flash
+    branch: codex/phase2-m2-r27-encounter-runtime-observation-snapshot-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r27-encounter-runtime-observation-snapshot
+    status: in_progress
+    base_commit: 43209cb3a4d77c45eda0fdc6aebe57a1465d7e58
+    prerequisites:
+      - P2-M2-R03-OBJECTIVE-CONTROLLER
+      - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
+      - P2-M2-R24-ATTACK-TOKEN-LEASE-BATCH-RECEIPT
+      - P2-M2-R25-ENCOUNTER-FLOW-RUNTIME-OBSERVATION
+      - P2-M2-R26-MIGRATED-ENCOUNTER-EXPLICIT-LEASE-ASSEMBLER
+    owned_files:
+      - lib/features/battle/application/phase0a/phase0a_encounter_runtime_observation.dart
+      - lib/features/battle/application/phase0a/phase0a_encounter_flow.dart
+      - test/features/battle/application/phase0a/phase0a_encounter_flow_runtime_observation_test.dart
+      - test/features/battle/application/phase0a/phase0a_migrated_encounter_composition_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-r27-encounter-runtime-observation-snapshot.md
+    protected_behavior:
+      - expose one fresh typed read only observation container whose nullable members retain the exact current R25 progress and receipt identities
+      - make encounter flow implement a narrow observation source without changing battle flow or assembler advance state outcome and ownership semantics
+      - do not add epoch tick revision stream history serialization durable identity host data candidate tuning or mutation capabilities
+
+  - id: P2-M2-V02B-CH1-CANDIDATE-OBSERVABLE-TRANSACTIONAL-COMPOSITION-MATRIX
+    milestone: M2
+    owner: qoder_qwen3_8_max
+    branch: codex/phase2-m2-v02b-ch1-candidate-observable-transactional-composition-matrix-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-v02b-ch1-candidate-observable-transactional-composition-matrix
+    status: in_progress
+    base_commit: 43209cb3a4d77c45eda0fdc6aebe57a1465d7e58
+    prerequisites:
+      - P2-M2-D01-CH1-CANDIDATE-CATALOG
+      - P2-M2-V01-CH1-CANDIDATE-RUNTIME-CONSTRUCTION-MATRIX
+      - P2-M2-V02A-CH1-CANDIDATE-DEFEAT-OBJECTIVE-EXECUTION-MATRIX
+      - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
+      - P2-M2-R13-EXPLICIT-OBJECTIVE-EVENT-SOURCE
+      - P2-M2-R22-ENCOUNTER-DEFEAT-OBJECTIVE-PROJECTION-MAPPER
+      - P2-M2-R24-ATTACK-TOKEN-LEASE-BATCH-RECEIPT
+      - P2-M2-R25-ENCOUNTER-FLOW-RUNTIME-OBSERVATION
+      - P2-M2-R26-MIGRATED-ENCOUNTER-EXPLICIT-LEASE-ASSEMBLER
+    owned_files:
+      - test/support/ch1_candidate_defeat_projection_declarations.dart
+      - test/data/phase2/ch1_candidate_defeat_objective_execution_matrix_test.dart
+      - test/data/phase2/ch1_candidate_observable_transactional_composition_matrix_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-v02b-ch1-candidate-observable-transactional-composition-matrix.md
+    protected_behavior:
+      - compose each candidate plan through exact explicit defeat source transactional assembler and read only observations for one caller declared idle no mutation tick
+      - preserve the V02A 95 entry 67 target 3 commander 25 empty declarations in one explicit test support truth without inference
+      - do not claim combat defeat execution checkpoint anchor lifecycle budget policy full simulation host candidate promotion durable or tuning behavior
+
+  - id: P2-M2-BATCH20-OBSERVATION-COMPOSITION-CEILING
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-batch20-observation-composition-ceiling-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-batch20-observation-composition-ceiling
+    status: in_progress
+    base_commit: 43209cb3a4d77c45eda0fdc6aebe57a1465d7e58
+    source_tasks:
+      - P2-M2-R27-ENCOUNTER-RUNTIME-OBSERVATION-SNAPSHOT
+      - P2-M2-V02B-CH1-CANDIDATE-OBSERVABLE-TRANSACTIONAL-COMPOSITION-MATRIX
+    owned_files:
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m2-batch20-observation-composition-ceiling.md
+      - docs/audit/phase2_m2_batch20_observation_composition_ceiling_2026-08-24.md
+    protected_behavior:
+      - integrate only narrow typed observation capability and candidate only idle transactional composition evidence with stable source patch identity
+      - keep production host candidate promotion checkpoint anchor projectors real lease lifecycle settlement identity durable state tuning profile G2 and human playtest gates unresolved
+      - main and origin main remain untouched
+    exit_criteria:
+      - R27 and V02B pass source tool review root diff review and independent review
+      - integrated targeted tests scoped analyze full tests and repository checks pass
+      - audit registry plan and READY marker match the frozen integration tip
