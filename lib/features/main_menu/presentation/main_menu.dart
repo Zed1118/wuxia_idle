@@ -269,7 +269,6 @@ class MainMenu extends ConsumerWidget {
       battleRecordUnlocked: battleRecordUnlocked,
       weaponCodexUnlocked: weaponCodexUnlocked,
     );
-    final settingsItems = _settingsItems(context);
     final debugItems = _debugItems(context);
 
     return MainMenuStartupGate(
@@ -364,7 +363,6 @@ class MainMenu extends ConsumerWidget {
                             journeyItems: journeyItems,
                             growthItems: growthItems,
                             archiveItems: archiveItems,
-                            settingsItems: settingsItems,
                             debugItems: debugItems,
                           ),
                         ],
@@ -533,13 +531,6 @@ class MainMenu extends ConsumerWidget {
         onTap: () => _push(context, const MartialInventoryHubScreen()),
       ),
       WuxiaInkButton(
-        label: UiStrings.mainMenuResourceOverview,
-        hint: UiStrings.mainMenuResourceOverviewHint,
-        icon: Icons.account_balance_wallet_outlined,
-        thumbnailPath: WuxiaUi.entryInventory,
-        onTap: () => _push(context, const ResourceOverviewScreen()),
-      ),
-      WuxiaInkButton(
         label: UiStrings.mainMenuJianghu,
         hint: socialLocked
             ? UiStrings.mainMenuSocialLockedHint
@@ -578,17 +569,6 @@ class MainMenu extends ConsumerWidget {
             equipmentLoreUnlocked: weaponCodexUnlocked,
           ),
         ),
-      ),
-    ];
-  }
-
-  List<Widget> _settingsItems(BuildContext context) {
-    return <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuSettings,
-        hint: UiStrings.mainMenuSettingsHint,
-        icon: Icons.settings_outlined,
-        onTap: () => SettingsPanel.show(context),
       ),
     ];
   }
@@ -752,14 +732,12 @@ class _MenuSectionsLayout extends StatelessWidget {
     required this.journeyItems,
     required this.growthItems,
     required this.archiveItems,
-    required this.settingsItems,
     required this.debugItems,
   });
 
   final List<Widget> journeyItems;
   final List<Widget> growthItems;
   final List<Widget> archiveItems;
-  final List<Widget> settingsItems;
   final List<Widget> debugItems;
 
   @override
@@ -794,14 +772,6 @@ class _MenuSectionsLayout extends StatelessWidget {
                 icon: Icons.article_outlined,
                 items: archiveItems,
                 twoColumn: canUseTwoColumns,
-              ),
-              const SizedBox(height: 18),
-              _MenuSection(
-                title: UiStrings.mainMenuGroupSettings,
-                subtitle: UiStrings.mainMenuGroupSettingsHint,
-                icon: Icons.tune_outlined,
-                items: settingsItems,
-                twoColumn: false,
               ),
               if (debugItems.isNotEmpty) ...[
                 const SizedBox(height: 18),
@@ -855,47 +825,22 @@ class _MenuSectionsLayout extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            if (debugItems.isEmpty)
+            if (debugItems.isNotEmpty) ...[
+              const SizedBox(height: 18),
               Align(
                 alignment: Alignment.centerRight,
                 child: SizedBox(
-                  width: 420,
+                  width: 720,
                   child: _MenuSection(
-                    title: UiStrings.mainMenuGroupSettings,
-                    subtitle: UiStrings.mainMenuGroupSettingsHint,
-                    icon: Icons.tune_outlined,
-                    items: settingsItems,
-                    twoColumn: false,
+                    title: UiStrings.mainMenuGroupDebug,
+                    subtitle: UiStrings.mainMenuGroupDebugHint,
+                    icon: Icons.bug_report_outlined,
+                    items: debugItems,
+                    twoColumn: true,
                   ),
                 ),
-              )
-            else
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _MenuSection(
-                      title: UiStrings.mainMenuGroupSettings,
-                      subtitle: UiStrings.mainMenuGroupSettingsHint,
-                      icon: Icons.tune_outlined,
-                      items: settingsItems,
-                      twoColumn: false,
-                    ),
-                  ),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    flex: 2,
-                    child: _MenuSection(
-                      title: UiStrings.mainMenuGroupDebug,
-                      subtitle: UiStrings.mainMenuGroupDebugHint,
-                      icon: Icons.bug_report_outlined,
-                      items: debugItems,
-                      twoColumn: true,
-                    ),
-                  ),
-                ],
               ),
+            ],
           ],
         );
       },
@@ -1003,7 +948,7 @@ class _TodayFestivalChip extends ConsumerWidget {
   }
 }
 
-/// 右上角常驻操作排:扫荡战备/银两 pill + 退出按钮(桌面标配,置最上层确保可点)。
+/// 右上角常驻工具区：资源、设置、退出与既有状态 pill。
 class _TopRightActions extends StatelessWidget {
   const _TopRightActions();
 
@@ -1025,6 +970,22 @@ class _TopRightActions extends StatelessWidget {
               const SilverBalancePill(
                 tone: CurrencyPillTone.dark,
                 compact: true,
+              ),
+              const SizedBox(width: 8),
+              WuxiaIconButton(
+                tooltip: UiStrings.mainMenuResourceOverview,
+                icon: Icons.account_balance_wallet_outlined,
+                onPressed: () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => const ResourceOverviewScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              WuxiaIconButton(
+                tooltip: UiStrings.mainMenuSettings,
+                icon: Icons.settings_outlined,
+                onPressed: () => SettingsPanel.show(context),
               ),
               const SizedBox(width: 8),
               WuxiaIconButton(

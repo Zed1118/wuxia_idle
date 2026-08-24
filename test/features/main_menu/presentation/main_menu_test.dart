@@ -39,7 +39,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 宗门 / 武学与行囊 / 档案等）
-///   - 14 个默认菜单入口 WuxiaInkButton（条件入口未解锁时）
+///   - 12 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -119,7 +119,7 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('14 个默认菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('12 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -134,12 +134,9 @@ void main() {
     expect(find.text(UiStrings.mainMenuSectRecruit), findsOneWidget);
     expect(find.text(UiStrings.mainMenuRedlineAudit), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMartialInventory), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuResourceOverview), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuSettings), findsOneWidget);
     expect(find.text(UiStrings.mainMenuGroupJourney), findsOneWidget);
     expect(find.text(UiStrings.mainMenuGroupGrowth), findsOneWidget);
     expect(find.text(UiStrings.mainMenuGroupArchive), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuGroupSettings), findsOneWidget);
 
     // 顺序(视觉批次水墨版式):江湖行程 / 养成经营 / 档案藏卷 / 设置。
     // 900 宽触发窄屏两列堆叠,便于断言分区纵向顺序。
@@ -158,10 +155,6 @@ void main() {
       y(UiStrings.mainMenuGroupGrowth) < y(UiStrings.mainMenuGroupArchive),
       isTrue,
     );
-    expect(
-      y(UiStrings.mainMenuGroupArchive) < y(UiStrings.mainMenuGroupSettings),
-      isTrue,
-    );
 
     // 江湖行程:主线 / 爬塔同排,再进入晚期试炼。
     expect(
@@ -170,35 +163,23 @@ void main() {
     );
     expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
 
-    // 养成经营:宗门/武学与行囊在前,资源总览/江湖声望承接。
+    // 养成经营:宗门/武学与行囊在前，江湖声望承接。
     expect(
       (y(UiStrings.mainMenuSectHub) - y(UiStrings.mainMenuMartialInventory))
               .abs() <
           2.0,
       isTrue,
     );
-    expect(
-      (y(UiStrings.mainMenuResourceOverview) - y(UiStrings.mainMenuJianghu))
-              .abs() <
-          2.0,
-      isTrue,
-    );
-
     // 档案藏卷收拢为单一江湖纪事入口。
     expect(
       y(UiStrings.mainMenuGroupArchive) < y(UiStrings.mainMenuJianghuChronicle),
       isTrue,
     );
-    expect(
-      y(UiStrings.mainMenuJianghuChronicle) <
-          y(UiStrings.mainMenuGroupSettings),
-      isTrue,
-    );
   });
 
-  testWidgets('14 个默认菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('12 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(14));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(12));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -225,7 +206,6 @@ void main() {
       expect(find.text(UiStrings.mainMenuGroupJourney), findsOneWidget);
       expect(find.text(UiStrings.mainMenuGroupGrowth), findsOneWidget);
       expect(find.text(UiStrings.mainMenuGroupArchive), findsOneWidget);
-      expect(find.text(UiStrings.mainMenuGroupSettings), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
