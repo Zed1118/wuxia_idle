@@ -2813,7 +2813,7 @@ tasks:
     branch: codex/phase2-m5-r01-inner-demon-cultivation-penalty-removal-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-r01-inner-demon-cultivation-penalty-removal
     status: in_progress
-    base_commit: registration_commit_pending
+    base_commit: f1dc0c9e
     prerequisites:
       - P2-G1-C17A-INNER-DEMON-INJURY
       - P2-G1-C17B-INNER-DEMON-SEMANTICS
@@ -2828,6 +2828,8 @@ tasks:
       - test/features/inner_demon/application/inner_demon_failure_resolution_test.dart
       - test/features/inner_demon/application/inner_demon_service_test.dart
       - test/features/inner_demon/domain/inner_demon_def_test.dart
+      - test/features/inner_demon/domain/inner_demon_panel_test.dart
+      - test/features/inner_demon/domain/inner_demon_progress_test.dart
       - docs/superpowers/plans/2026-08-24-p2-m5-r01-inner-demon-cultivation-penalty-removal.md
     protected_behavior:
       - remove the retired ten percent main technique cultivation loss from config schema parsing and production failure resolution
@@ -2845,7 +2847,7 @@ tasks:
     branch: codex/phase2-m5-r02-inner-demon-defeat-summary-alignment-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-r02-inner-demon-defeat-summary-alignment
     status: in_progress
-    base_commit: registration_commit_pending
+    base_commit: f1dc0c9e
     prerequisites:
       - INNER-DEMON-CULTIVATION-01
     owned_files:
