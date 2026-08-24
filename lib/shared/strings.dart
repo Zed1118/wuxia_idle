@@ -1630,6 +1630,24 @@ class UiStrings {
   static const String massBattleLocationEnter = '进入守城试炼';
   static const String massBattleLocationEnterHint = '查看关卡并挑战当前可用守城战';
   static const String massBattleLocationEnterReplayHint = '查看关卡并重打已通守城战';
+  static const String gauntletLocationDetailTitle = '断魂庄 · 地点详情';
+  static const String gauntletLocationUnavailable = '庄中情报暂不可核实，暂不能进入';
+  static const String gauntletLocationProgressLabel = '当前进度';
+  static const String gauntletLocationRecommendedRealmLabel = '推荐境界';
+  static const String gauntletLocationEnemyEcologyLabel = '三关敌情';
+  static const String gauntletLocationCoreRewardLabel = '核心收获';
+  static const String gauntletLocationTicketLabel = '行前筹备';
+  static const String gauntletLocationParticipantLabel = '可用参与者';
+  static const String gauntletLocationEntryModeLabel = '进入方式';
+  static const String gauntletLocationOccupancyLabel = '预计占用';
+  static const String gauntletLocationEntryModeDirect =
+      '进入整备后选择一名可用角色亲战；当前无差遣入口';
+  static const String gauntletLocationExpectedOccupancy =
+      '角色在完整三关庄局期间占用，结算或认输后释放';
+  static const String gauntletLocationEnter = '进入断魂庄整备';
+  static const String gauntletLocationEnterHint = '选人、装载补给并选择可挑战周目';
+  static const String gauntletLocationResume = '续入断魂庄';
+  static const String gauntletLocationResumeHint = '回到原整备屏恢复进行中庄局';
 
   static String lightFootLocationProgress(
     int cleared,
@@ -1661,6 +1679,36 @@ class UiStrings {
       '$name（$school）';
   static String massBattleLocationCoreReward(int exp, List<String> names) =>
       names.isEmpty ? '修为 $exp' : '修为 $exp · ${names.join(' · ')}';
+  static String gauntletLocationFreshProgress(int total) => '尚未全通 · 共 $total 关';
+  static String gauntletLocationProgress(int cycle, int total) =>
+      '最高已通第 $cycle 周目 · 共 $total 关';
+  static String gauntletLocationActiveProgress(
+    int stage,
+    int total,
+    String phase,
+  ) => '庄局进行中 · 第 $stage/$total 关 · $phase';
+  static String gauntletLocationStageEnemy(
+    int ordinal,
+    bool isBoss,
+    String enemies,
+  ) => '第 $ordinal 关·${isBoss ? '庄主' : '精英'}：$enemies';
+  static String gauntletLocationEnemy(String name, String school) =>
+      '$name（$school）';
+  static String gauntletLocationCoreReward(
+    String skill,
+    List<String> equipment,
+    int exp,
+    int insight,
+    int eliteExp,
+  ) =>
+      '首次全通：$skill、${equipment.join('、')}三选一、修为 $exp、领悟 $insight；'
+      '击败每名精英记修为 $eliteExp';
+  static String gauntletLocationTicketAndSupply(int tickets, int supplyCap) =>
+      '断魂帖 $tickets 张 · 最多携带 $supplyCap 份补给';
+  static String gauntletLocationParticipantCandidates(
+    int available,
+    int total,
+  ) => '可用 $available / 候选 $total 名，进入整备后选择';
   static String towerLocationProgress(int highest, int total, int next) =>
       '已通 $highest/$total 层 · 下一层 $next';
   static String towerLocationCompleteProgress(int highest, int total) =>

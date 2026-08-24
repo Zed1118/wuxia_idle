@@ -10,7 +10,6 @@ import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
-import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../expedition/application/expedition_providers.dart';
 import '../../expedition/domain/expedition_run.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
@@ -26,6 +25,7 @@ import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
 import '../application/light_foot_location_detail_provider.dart';
 import '../application/mass_battle_location_detail_provider.dart';
+import 'gauntlet_location_detail_screen.dart';
 import 'light_foot_location_detail_screen.dart';
 import 'mass_battle_location_detail_screen.dart';
 import 'tower_location_detail_screen.dart';
@@ -263,7 +263,7 @@ class JianghuMapScreen extends ConsumerWidget {
                     thumbnailPath: WuxiaUi.entryJianghu,
                     onTap: () => Navigator.of(context).push<void>(
                       MaterialPageRoute(
-                        builder: (_) => const GauntletLoadoutScreen(),
+                        builder: (_) => const GauntletLocationDetailScreen(),
                       ),
                     ),
                   ),

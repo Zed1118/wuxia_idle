@@ -68,7 +68,11 @@ void main() {
         activeParticipantNames: active ? const ['沈无归'] : const [],
       );
 
-  Widget app({GauntletLocationDetail? value, Object? error}) => ProviderScope(
+  Widget app({
+    GauntletLocationDetail? value,
+    Object? error,
+    BossGauntletRun? activeRun,
+  }) => ProviderScope(
     overrides: [
       gauntletLocationDetailProvider.overrideWith(
         (ref) => error == null
@@ -82,7 +86,7 @@ void main() {
       gauntletLoadoutInfoProvider.overrideWith(
         (ref) async => const GauntletLoadoutInfo(ticketCount: 0, supplies: []),
       ),
-      activeGauntletProvider.overrideWith((ref) async => null),
+      activeGauntletProvider.overrideWith((ref) async => activeRun),
     ],
     child: const MaterialApp(home: GauntletLocationDetailScreen()),
   );
@@ -129,7 +133,12 @@ void main() {
 
   testWidgets('进行中庄局展示关次、阶段、真实参与者和续行 CTA', (tester) async {
     final value = detail(active: true);
-    await tester.pumpWidget(app(value: value));
+    final run = BossGauntletRun()
+      ..saveDataId = 0
+      ..seed = 7
+      ..currentStage = 2
+      ..sessionPhase = GauntletPhase.interlude;
+    await tester.pumpWidget(app(value: value, activeRun: run));
     await tester.pumpAndSettle();
 
     expect(
@@ -144,6 +153,13 @@ void main() {
     );
     expect(find.text('沈无归'), findsOneWidget);
     expect(find.text(UiStrings.gauntletLocationResume), findsOneWidget);
+
+    await tester.tap(find.text(UiStrings.gauntletLocationResume));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(find.byType(GauntletLoadoutScreen), findsOneWidget);
+    expect(find.text(UiStrings.gauntletResumeTitle), findsOneWidget);
   });
 
   testWidgets('provider 异常时 fail closed 且不显示进入 CTA', (tester) async {
