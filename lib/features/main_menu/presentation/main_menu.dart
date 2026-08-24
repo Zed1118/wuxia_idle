@@ -16,7 +16,6 @@ import '../../debug/presentation/phase2_test_menu.dart';
 import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
-import '../../inner_demon/presentation/inner_demon_screen.dart';
 import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
@@ -424,17 +423,6 @@ class MainMenu extends ConsumerWidget {
           ref: ref,
           onAllowed: () => _push(context, const TowerFloorListScreen()),
         ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuInnerDemon,
-        hint: lateLocked
-            ? UiStrings.mainMenuLateGameLockedHint
-            : UiStrings.mainMenuInnerDemonHint,
-        icon: Icons.psychology_alt_outlined,
-        thumbnailPath: WuxiaUi.entryTechnique,
-        disabled: lateLocked,
-        locked: lateLocked,
-        onTap: () => _push(context, const InnerDemonScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuLightFoot,

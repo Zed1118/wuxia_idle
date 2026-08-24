@@ -39,7 +39,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 宗门 / 武学与行囊 / 档案等）
-///   - 12 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
+///   - 11 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -119,12 +119,11 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('12 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('11 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuInnerDemon), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
@@ -177,9 +176,9 @@ void main() {
     );
   });
 
-  testWidgets('12 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('11 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(12));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(11));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -720,12 +719,11 @@ void main() {
       child: const MaterialApp(home: MainMenu()),
     );
 
-    testWidgets('全新存档 → 心魔/社交锁定，纪事入口不继承社交门', (tester) async {
+    testWidgets('全新存档 → 心魔不在主菜单，社交锁定且纪事不继承社交门', (tester) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
-      // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显；PVP 已切除。
-      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
+      expect(find.text(UiStrings.mainMenuInnerDemon), findsNothing);
       expect(opacityOf(tester, UiStrings.mainMenuJianghuChronicle), 1.0);
       expect(find.text('论剑对决'), findsNothing);
       expect((await openSectHub(tester)).sectLocked, isTrue);
@@ -738,16 +736,15 @@ void main() {
       // 社交声望 Ch1 prereq 满足 → enabled；纪事入口始终可进。
       expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuJianghuChronicle), 1.0);
-      // 心魔仍需 Ch6 末关 → 仍 disabled。
-      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
+      expect(find.text(UiStrings.mainMenuInnerDemon), findsNothing);
       expect((await openSectHub(tester)).sectLocked, isFalse);
     });
 
-    testWidgets('通关 Ch6 末关(stage_06_05)→ 后期系统解锁', (tester) async {
+    testWidgets('通关 Ch6 末关 → 心魔仍不在主菜单且其余后期试炼解锁', (tester) async {
       await tester.pumpWidget(appWithCleared(['stage_06_05']));
       await tester.pump();
       await tester.pump();
-      expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 1.0);
+      expect(find.text(UiStrings.mainMenuInnerDemon), findsNothing);
       expect(opacityOf(tester, UiStrings.mainMenuLightFoot), 1.0);
       expect(opacityOf(tester, UiStrings.mainMenuMassBattle), 1.0);
     });

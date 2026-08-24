@@ -14,6 +14,7 @@ import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
 import 'package:wuxia_idle/features/inner_demon/domain/inner_demon_progress.dart';
+import 'package:wuxia_idle/features/inner_demon/presentation/inner_demon_screen.dart';
 import 'package:wuxia_idle/shared/widgets/dark_parchment_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/light_paper_panel.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
@@ -1123,6 +1124,30 @@ void main() {
     expect(find.text(UiStrings.innerDemonPanelTitle), findsOneWidget);
     expect(find.text(UiStrings.innerDemonPanelProgress(2, 7)), findsOneWidget);
     expect(find.text(UiStrings.innerDemonBreakthroughCta), findsOneWidget);
+  });
+
+  testWidgets('③ 心魔突破 CTA 仍进入既有 InnerDemonScreen', (tester) async {
+    final xueTu = mkCharacter(realmTier: RealmTier.xueTu)
+      ..realmLayer = RealmLayer.yuanShu
+      ..experience = 999999
+      ..experienceToNextLayer = 100;
+    await pumpPanel(
+      tester,
+      character: xueTu,
+      innerDemonProgress: const InnerDemonProgress(
+        clearedCount: 2,
+        totalCount: 7,
+        clearedStageIds: {'stage_inner_demon_01', 'stage_inner_demon_02'},
+        nextUnclearedStageId: 'stage_inner_demon_03',
+      ),
+    );
+
+    await tester.ensureVisible(find.text(UiStrings.innerDemonBreakthroughCta));
+    await tester.tap(find.text(UiStrings.innerDemonBreakthroughCta));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(find.byType(InnerDemonScreen), findsOneWidget);
   });
 
   testWidgets('② 主修 hero:显主修名(真 def name)+ 宣纸底 + 进度条', (tester) async {
