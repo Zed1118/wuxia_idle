@@ -12,6 +12,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_builder.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_resolver.dart';
 import 'package:wuxia_idle/features/cultivation/application/skill_loadout_service.dart';
+import 'package:wuxia_idle/features/cultivation/domain/skill_drop_result.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart';
 import 'package:wuxia_idle/features/cultivation/presentation/stage_skill_drop_hook.dart';
 
@@ -236,13 +237,15 @@ void main() {
       final svc = SkillUnlockService(isar);
 
       // 1. 首通 hook(clearedStageIds 不含本关 = 首通)。
-      await runStageSkillDropHookAfterVictory(
+      final firstClear = await runStageSkillDropHookAfterVictory(
         stage: repo.stageDefs['stage_01_05']!,
         svc: svc,
         clearedStageIds: const {},
         towerFragmentDropProb: repo.numbers.skillUnlock.towerFragmentDropProb,
         rng: Random(1),
       );
+      expect(firstClear.manualGranted, 'skill_xie_yu_chuan_lian');
+      expect(firstClear.isMajor, isTrue);
       expect(
         await svc.isUnlocked('skill_xie_yu_chuan_lian'),
         isTrue,
@@ -281,13 +284,14 @@ void main() {
       );
 
       // 4. 重打不再重复给(幂等,真解只首通)。
-      await runStageSkillDropHookAfterVictory(
+      final replay = await runStageSkillDropHookAfterVictory(
         stage: repo.stageDefs['stage_01_05']!,
         svc: svc,
         clearedStageIds: const {'stage_01_05'},
         towerFragmentDropProb: 0.0,
         rng: Random(2),
       );
+      expect(replay, SkillDropResult.none);
       expect(await svc.isUnlocked('skill_xie_yu_chuan_lian'), isTrue);
     });
 

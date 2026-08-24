@@ -102,6 +102,47 @@ void main() {
       expect(entries[1].status, StageStatus.available);
     });
 
+    test('stage_01_03 胜利后只解锁 stage_01_04', () async {
+      await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      for (var i = 1; i <= 3; i++) {
+        await MainlineProgressService(isar: IsarSetup.instance).recordVictory(
+          stageId: 'stage_01_0$i',
+          now: DateTime(2026, 5, 10 + i),
+        );
+      }
+
+      final progress = await MainlineProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: 1);
+      final entries = MainlineProgressService.availableStages(
+        progress: progress,
+        chapterIndex: 1,
+      );
+
+      expect(entries.map((entry) => entry.def.id), [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_03',
+        'stage_01_04',
+        'stage_01_05',
+      ]);
+      expect(entries.map((entry) => entry.status), [
+        StageStatus.cleared,
+        StageStatus.cleared,
+        StageStatus.cleared,
+        StageStatus.available,
+        StageStatus.locked,
+      ]);
+      expect(
+        entries
+            .where((entry) => entry.status == StageStatus.available)
+            .map((entry) => entry.def.id),
+        ['stage_01_04'],
+      );
+    });
+
     test('Ch1 全通（5 关）→ 全部 cleared', () async {
       await MainlineProgressService(
         isar: IsarSetup.instance,

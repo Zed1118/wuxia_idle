@@ -10,8 +10,10 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_productio
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
@@ -118,6 +120,44 @@ void main() {
 
     // 过渡 R 的 typed break 契约进入生产 input adapter(breakPower > 0)。
     expect(mapping.playerAdapter.clearSkillBinding!.breakPower, greaterThan(0));
+  });
+
+  test('stage_01_05 生产映射:首领招牌技与第二阶段入口来自真实定义', () {
+    final numbers = repo.numbers;
+    final stage = repo.getStage('stage_01_05');
+    final mapping = Phase0aStageContentMapper.map(
+      stage: stage,
+      playerSnapshot: makeChargeProbeEvenPlayer(numbers),
+      numbers: numbers,
+    );
+    final boss = mapping.waves.last.enemies.single;
+
+    expect(stage.isBossStage, isTrue);
+    expect(stage.dropSkillManualId, 'skill_xie_yu_chuan_lian');
+    expect(boss.chargeCast, isNotNull);
+    expect(boss.chargeCast!.skill.id, 'skill_xie_yu_chuan_lian');
+    expect(
+      boss.chargeCast!.cooldownSeconds,
+      boss.chargeCast!.skill.phase0aEnemyCooldownSeconds,
+    );
+    expect(boss.phaseChargeCasts, hasLength(2));
+    expect(boss.phaseChargeCasts[1]!.skill.id, 'skill_yinrou_jichu_fang_ult');
+    expect(
+      boss.phaseChargeCasts[1]!.cooldownSeconds,
+      boss.phaseChargeCasts[1]!.skill.phase0aEnemyCooldownSeconds,
+    );
+    expect(
+      boss.staggerTicksTotal,
+      numbers.combat.bossCharge.defaultStaggerTicks,
+    );
+    // 当前 stage_01_05 只证明蓄力/破招/踉跄/CD，不宣称存在易伤倍率。
+    expect(boss.vulnerabilityMult, isNull);
+    expect(
+      mapping.enemyAiAdapter.skillBindingsByActor[boss.id]!.map(
+        (binding) => binding.skill.id,
+      ),
+      contains('skill_xie_yu_chuan_lian'),
+    );
   });
 
   test('stage_02_05 headless:真实 skill id 贯穿蓄力事件与结算,可回放', () {
@@ -351,5 +391,150 @@ void main() {
     expect(bossAfter.staggerTicksRemaining, greaterThan(0));
     expect(bossAfter.chargingCast, isNull);
     expect(bossAfter.chargeTicksRemaining, 0);
+  });
+
+  test('stage_01_05 e2e:真实招牌蓄力可释放，也可被破招并进入 CD', () {
+    final numbers = repo.numbers;
+    final mapping = Phase0aStageContentMapper.map(
+      stage: repo.getStage('stage_01_05'),
+      playerSnapshot: makeChargeProbeEvenPlayer(numbers),
+      numbers: numbers,
+    );
+    final boss = mapping.waves.last.enemies.single;
+    final chargeCast = boss.chargeCast!;
+
+    Phase0aWaveBattleFlow buildFlow() {
+      final chargingBoss = Phase0aActor(
+        id: boss.id,
+        side: boss.side,
+        position: ArenaVector.zero,
+        facing: boss.facing,
+        maxHealth: boss.maxHealth,
+        currentHealth: boss.currentHealth,
+        moveSpeed: boss.moveSpeed,
+        qiCurrent: boss.qiMax,
+        qiMax: boss.qiMax,
+        attackCooldownRemaining: 0,
+        defeatKind: boss.defeatKind,
+        autoUltimate: boss.autoUltimate,
+        bossPhases: boss.bossPhases,
+        bossPhaseIndex: boss.bossPhaseIndex,
+        enemySkillCooldowns: boss.enemySkillCooldowns,
+        chargeCast: boss.chargeCast,
+        phaseChargeCasts: boss.phaseChargeCasts,
+        staggerTicksTotal: boss.staggerTicksTotal,
+        guardianDefIds: boss.guardianDefIds,
+        guardianWardMult: boss.guardianWardMult,
+        guardInterceptsInterrupt: boss.guardInterceptsInterrupt,
+        vulnerabilityMult: boss.vulnerabilityMult,
+        // 只保留本项要验证的真实招牌技，避免普通技能优先级遮蔽
+        // stage_01_05 的 chargeSkillId；技能本体和绑定仍来自生产 YAML。
+        unlockedEnemySkillIds: const ['skill_xie_yu_chuan_lian'],
+      );
+      final chargingState = Phase0aArenaState(
+        tick: 0,
+        nextSeq: 1,
+        player: mapping.initialState.player.copyWith(
+          position: ArenaVector.zero,
+        ),
+        enemies: [chargingBoss],
+        skillSlots: mapping.initialState.skillSlots,
+      );
+      final aiIntent = mapping.enemyAiAdapter
+          .intentsFor(state: chargingState)
+          .single;
+      expect(aiIntent, isA<Phase0aEnemySkillIntent>());
+      expect(
+        (aiIntent as Phase0aEnemySkillIntent).skill.id,
+        chargeCast.skill.id,
+      );
+      return Phase0aProductionFlowAssembler.assemble(
+        initialState: chargingState,
+        waves: [
+          Phase0aWave(enemies: [chargingBoss]),
+        ],
+        combatants: mapping.combatants
+            .where(
+              (combatant) =>
+                  combatant.actorId == chargingState.player.id ||
+                  combatant.actorId == chargingBoss.id,
+            )
+            .toList(),
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260824),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+    }
+
+    final releaseFlow = buildFlow();
+    final releaseEvents = <Phase0aEvent>[
+      ...releaseFlow.advance(
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(),
+      ),
+    ];
+    expect(releaseFlow.state.enemies.single.chargingCast, isNotNull);
+    for (var tick = 0; tick < chargeCast.chargeTicks + 1; tick++) {
+      releaseEvents.addAll(
+        releaseFlow.advance(
+          deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+          command: const Phase0aPlayerCommand(),
+        ),
+      );
+    }
+    expect(
+      releaseEvents.whereType<Phase0aBossChargeStarted>().map(
+        (event) => event.skillId,
+      ),
+      contains('skill_xie_yu_chuan_lian'),
+    );
+    expect(
+      releaseEvents.whereType<Phase0aEnemySkillStarted>().map(
+        (event) => event.skillId,
+      ),
+      contains('skill_xie_yu_chuan_lian'),
+    );
+
+    final interruptFlow = buildFlow();
+    final delta = numbers.phase0aArena.fixedDeltaSeconds;
+    final startEvents = interruptFlow.advance(
+      deltaSeconds: delta,
+      command: const Phase0aPlayerCommand(),
+    );
+    expect(
+      startEvents.whereType<Phase0aBossChargeStarted>().map(
+        (event) => event.skillId,
+      ),
+      contains('skill_xie_yu_chuan_lian'),
+    );
+    Phase0aArenaState? interruptedState;
+    var interruptEvents = const <Phase0aEvent>[];
+    for (var tick = 0; tick < 20 && interruptedState == null; tick++) {
+      final events = interruptFlow.advance(
+        deltaSeconds: delta,
+        command: const Phase0aPlayerCommand(clear: true),
+      );
+      if (events.whereType<Phase0aBossChargeInterrupted>().isNotEmpty) {
+        interruptEvents = events;
+        interruptedState = interruptFlow.state;
+      }
+    }
+
+    expect(interruptedState, isNotNull);
+    final interrupted = interruptEvents
+        .whereType<Phase0aBossChargeInterrupted>()
+        .single;
+    expect(interrupted.skillId, 'skill_xie_yu_chuan_lian');
+    expect(interruptEvents.whereType<Phase0aEnemySkillStarted>(), isEmpty);
+    final bossAfter = interruptedState!.enemies.single;
+    expect(bossAfter.chargingCast, isNull);
+    expect(bossAfter.chargeTicksRemaining, 0);
+    expect(bossAfter.staggerTicksRemaining, greaterThan(0));
+    expect(
+      bossAfter.enemySkillCooldowns['skill_xie_yu_chuan_lian'],
+      chargeCast.cooldownSeconds,
+    );
   });
 }
