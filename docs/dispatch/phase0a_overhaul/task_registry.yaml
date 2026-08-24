@@ -2974,6 +2974,7 @@ tasks:
     owned_files:
       - CLAUDE.md
       - GDD.md
+      - docs/_archive/GDD_CHANGELOG.md
       - PROGRESS.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml

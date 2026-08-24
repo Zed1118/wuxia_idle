@@ -32,11 +32,12 @@
 
 1. `CLAUDE.md`
 2. `GDD.md`
-3. `PROGRESS.md`
-4. `docs/dispatch/phase0a_overhaul/task_registry.yaml`
-5. `docs/dispatch/phase0a_overhaul/decision_registry.yaml`
-6. `docs/audit/phase2_post_g2_m5_m6_integration_2026-08-24.md`
-7. 本计划文件
+3. `docs/_archive/GDD_CHANGELOG.md`
+4. `PROGRESS.md`
+5. `docs/dispatch/phase0a_overhaul/task_registry.yaml`
+6. `docs/dispatch/phase0a_overhaul/decision_registry.yaml`
+7. `docs/audit/phase2_post_g2_m5_m6_integration_2026-08-24.md`
+8. 本计划文件
 
 `BACKLOG.md`、G2 验收记录、玩法数值、schema、奖励、解锁与 main/origin main
 均禁止修改。

@@ -46,7 +46,7 @@ cherry-pick：先核对 ancestry、tree diff、文件交集和实际语义，再
 ## 4. 文档与注册表漂移
 
 1. primary checkout 的 `CLAUDE.md`、`GDD.md`、`PROGRESS.md` 仍是 G2 前快照；primary/main 本批不改。
-2. G2 READY 上 `PROGRESS.md` 已记录 G2，但 `CLAUDE.md v1.54` 与 `GDD.md v1.36` 头部仍写 G2 未关闭。本批分别以 v1.55/v1.37 标记旧快照已被取代。
+2. G2 READY 上 `PROGRESS.md` 已记录 G2，但 `CLAUDE.md v1.54` 与 `GDD.md v1.36` 头部仍写 G2 未关闭。本批分别以 v1.55/v1.37 标记旧快照已被取代，并按 GDD 头部只留最近两版的体例把 v1.35 摘要迁入 changelog。
 3. `task_registry.yaml` 的 M5/M6 两项仍写 `in_progress` 和已消失 worktree；本批按原 task 最终提交、测试与审查证据改为 `ready_reviewed`，并保留历史路径及 `removed_after_ready` 状态。
 4. registry 原来没有 G2 最终 `stage_01_03` 八项验收条目；本批补登记并显式限定 `completion_scope`。
 5. `decision_registry.yaml` 的 `COMBAT-WAVE-CD-01` 仍是 `implementation_gap`，与 G1 closeout 和 owner task READY 冲突；本批按既有审计改为 `frozen_implemented`，没有改变设计值。
