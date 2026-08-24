@@ -25,6 +25,10 @@ import 'defs/technique_def.dart';
 import 'defs/tower_floor_def.dart';
 import 'defs/expedition_config.dart';
 import 'defs/boss_gauntlet_config.dart';
+import 'combat_catalog_repository.dart';
+import 'defs/combat_catalog_manifest_def.dart';
+import 'defs/combat_encounter_def.dart';
+import 'defs/combat_enemy_archetype_def.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
@@ -157,6 +161,7 @@ class GameRepository {
   /// yaml 存在但结构非法 → 加载期 FormatException fail-fast。
   final ExpeditionConfig? expeditionConfig;
   final BossGauntletConfig? bossGauntletConfig;
+  final CombatCatalogManifestDef? combatCatalog;
 
   GameRepository._({
     required this.numbers,
@@ -183,6 +188,7 @@ class GameRepository {
     required this.itemDefs,
     this.expeditionConfig,
     this.bossGauntletConfig,
+    this.combatCatalog,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -454,6 +460,7 @@ class GameRepository {
       (raw) => BossGauntletConfig.fromYaml(parseYamlMap(raw)),
       fallback: null,
     );
+    final combatCatalog = await loadProductionCombatCatalogIfPresent(load);
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -480,6 +487,7 @@ class GameRepository {
       itemDefs: itemDefs,
       expeditionConfig: expeditionConfig,
       bossGauntletConfig: bossGauntletConfig,
+      combatCatalog: combatCatalog,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);
@@ -1289,6 +1297,18 @@ class GameRepository {
 
   /// 取 encounter 定义,未配置返回 null(避免 caller try/catch)。
   EncounterDef? findEncounter(String id) => encounterDefs[id];
+
+  /// 按显式 production combat catalog assignment 查询 stage。
+  CombatStageEncounterAssignment? combatAssignmentForStage(String stageId) =>
+      combatCatalog?.assignmentForStage(stageId);
+
+  /// 查询已迁移 stage 的 catalog encounter；legacy/未知 stage 返回 null。
+  CombatEncounterDef? combatEncounterForStage(String stageId) =>
+      combatCatalog?.encounterForStage(stageId);
+
+  /// 按显式 catalog id 查询 enemy archetype；未知 id 返回 null。
+  CombatEnemyArchetypeDef? combatArchetypeById(String archetypeId) =>
+      combatCatalog?.archetypeById(archetypeId);
 
   /// 全部 encounter 列表,按 id 字典序(便于测试稳定 + UI 列表)。
   List<EncounterDef> get allEncounters {
