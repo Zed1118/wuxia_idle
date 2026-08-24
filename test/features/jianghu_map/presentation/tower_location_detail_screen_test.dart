@@ -1,0 +1,145 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/jianghu_map/application/tower_location_detail_provider.dart';
+import 'package:wuxia_idle/features/jianghu_map/domain/tower_location_detail.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/tower_location_detail_screen.dart';
+import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
+import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
+import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
+import 'package:wuxia_idle/shared/strings.dart';
+
+import '../../../support/test_data.dart';
+
+void main() {
+  setUpAll(loadTestGameRepository);
+
+  TowerLocationDetail detail({bool complete = false}) {
+    final repository = GameRepository.instance;
+    final floor = repository.getTowerFloor(7);
+    return TowerLocationDetail(
+      highestClearedFloor: complete ? repository.towerMaxFloor : 6,
+      totalFloors: repository.towerMaxFloor,
+      nextFloorIndex: complete ? null : floor.floorIndex,
+      recommendedRealm: complete ? null : floor.requiredRealm,
+      enemies: complete
+          ? const []
+          : [
+              for (final enemy in floor.enemyTeam)
+                TowerLocationEnemySummary(
+                  name: enemy.name,
+                  school: enemy.school,
+                ),
+            ],
+      rewardRumor: complete
+          ? null
+          : DropRumorTable.fromDropTable(
+              floor.dropTable,
+              gating: FirstClearGating.wholeChannel,
+            ),
+      baseExpReward: complete ? null : floor.baseExpReward,
+      participantId: 7,
+      participantName: '沈掌门',
+    );
+  }
+
+  Widget app({
+    TowerLocationDetail? value,
+    Object? error,
+    RetreatSession? retreat,
+  }) => ProviderScope(
+    overrides: [
+      towerLocationDetailProvider.overrideWith(
+        (ref) => error == null
+            ? Future.value(value ?? detail())
+            : Future.error(error),
+      ),
+      activeRetreatSessionProvider.overrideWith((ref) async => retreat),
+    ],
+    child: const MaterialApp(home: TowerLocationDetailScreen()),
+  );
+
+  testWidgets('展示七类权威地点信息', (tester) async {
+    final value = detail();
+    await tester.pumpWidget(app(value: value));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        UiStrings.towerLocationProgress(
+          value.highestClearedFloor,
+          value.totalFloors,
+          value.nextFloorIndex!,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('沈掌门'), findsOneWidget);
+    expect(find.text(UiStrings.towerLocationEntryModeDirect), findsOneWidget);
+    expect(find.text(UiStrings.towerLocationExpectedOccupancy), findsOneWidget);
+    expect(find.text(UiStrings.towerLocationEnter), findsOneWidget);
+    expect(find.textContaining(value.enemies.first.name), findsOneWidget);
+  });
+
+  testWidgets('登顶态明确无下一层且仍提供重打入口', (tester) async {
+    final value = detail(complete: true);
+    await tester.pumpWidget(app(value: value));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        UiStrings.towerLocationCompleteProgress(
+          value.highestClearedFloor,
+          value.totalFloors,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.towerLocationNoNextFloor), findsNWidgets(3));
+    expect(
+      find.byKey(const ValueKey('tower-location-detail-enter')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('provider 异常时 fail closed 且不显示进入 CTA', (tester) async {
+    await tester.pumpWidget(app(error: StateError('dangling leader')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.towerLocationUnavailable), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('tower-location-detail-enter')),
+      findsNothing,
+    );
+    expect(find.textContaining('dangling leader'), findsNothing);
+  });
+
+  testWidgets('进入 CTA 经原门禁放行后进入塔层列表', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.towerLocationEnter));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(find.byType(TowerFloorListScreen), findsOneWidget);
+  });
+
+  testWidgets('闭关进行中时进入 CTA 被原门禁阻挡', (tester) async {
+    final retreat = RetreatSession()
+      ..saveDataId = 0
+      ..mapType = RetreatMapType.shanLin
+      ..startedAt = DateTime(2026, 8, 25);
+    await tester.pumpWidget(app(retreat: retreat));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.towerLocationEnter));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.seclusionBattleLockTitle), findsOneWidget);
+    expect(find.byType(TowerFloorListScreen), findsNothing);
+  });
+}

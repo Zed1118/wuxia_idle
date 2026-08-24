@@ -25,7 +25,7 @@ import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
-import '../../tower/presentation/tower_floor_list_screen.dart';
+import 'tower_location_detail_screen.dart';
 
 String jianghuMapTowerStatus(TowerProgress progress) {
   final highest = progress.highestClearedFloor;
@@ -199,13 +199,9 @@ class JianghuMapScreen extends ConsumerWidget {
                   status: towerStatus,
                   icon: Icons.filter_hdr_outlined,
                   thumbnailPath: WuxiaUi.entryTower,
-                  onTap: () => guardBattleEntry(
-                    context: context,
-                    ref: ref,
-                    onAllowed: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => const TowerFloorListScreen(),
-                      ),
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => const TowerLocationDetailScreen(),
                     ),
                   ),
                 ),

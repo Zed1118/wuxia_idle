@@ -1583,6 +1583,29 @@ class UiStrings {
   static const String jianghuMapSubtitle = '循迹而行，各处机缘自有门槛';
   static const String jianghuMapKnownLocations = '已知地点';
   static const String jianghuMapKnownLocationsHint = '山河辽阔，未闻之处尚隐于烟岚';
+  static const String towerLocationDetailTitle = '九霄塔 · 地点详情';
+  static const String towerLocationUnavailable = '塔中情报暂不可核实，暂不能进入';
+  static const String towerLocationProgressLabel = '当前进度';
+  static const String towerLocationRecommendedRealmLabel = '推荐境界';
+  static const String towerLocationEnemyEcologyLabel = '敌方生态';
+  static const String towerLocationCoreRewardLabel = '核心收获';
+  static const String towerLocationParticipantLabel = '实际参与者';
+  static const String towerLocationEntryModeLabel = '进入方式';
+  static const String towerLocationOccupancyLabel = '预计占用';
+  static const String towerLocationEntryModeDirect = '亲自挑战，不可派遣';
+  static const String towerLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String towerLocationNoNextFloor = '已登顶，无下一层情报';
+  static const String towerLocationEnter = '进入九霄塔';
+  static const String towerLocationEnterHint = '查看塔层并选择可挑战层';
+  static const String towerLocationEnterReplayHint = '查看塔层并重打已通层';
+  static String towerLocationProgress(int highest, int total, int next) =>
+      '已通 $highest/$total 层 · 下一层 $next';
+  static String towerLocationCompleteProgress(int highest, int total) =>
+      '已通 $highest/$total 层 · 已登顶';
+  static String towerLocationEnemy(String name, String school) =>
+      '$name（$school）';
+  static String towerLocationCoreReward(int exp, List<String> names) =>
+      names.isEmpty ? '修为 $exp' : '修为 $exp · ${names.join(' · ')}';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
