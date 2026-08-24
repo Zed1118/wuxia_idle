@@ -8,6 +8,7 @@ import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_combat_session.dart';
 import 'phase0a_attack_token_lease_batch_receipt.dart';
 import 'phase0a_encounter_objective_event_source.dart';
+import 'phase0a_encounter_runtime_observation.dart';
 import 'phase0a_event_order_adapter.dart';
 import '../../domain/phase0a/phase0a_wave.dart' show Phase0aBattleOutcome;
 import 'phase0a_battle_flow.dart';
@@ -22,7 +23,8 @@ import 'phase0a_wave_battle_flow.dart';
 /// This wrapper deliberately delegates to the legacy wave flow. It does not
 /// create another session/reducer, consume encounter directors, or infer any
 /// production policy.
-final class Phase0aEncounterFlow implements Phase0aBattleFlow {
+final class Phase0aEncounterFlow
+    implements Phase0aBattleFlow, Phase0aEncounterRuntimeObservationSource {
   Phase0aEncounterFlow.compatibility({required Phase0aWaveBattleFlow legacy})
     : _legacy = legacy,
       _objectiveTracker = null,
@@ -118,6 +120,13 @@ final class Phase0aEncounterFlow implements Phase0aBattleFlow {
 
   Phase0aAttackTokenLeaseBatchReceipt? get lastAttackTokenLeaseBatchReceipt =>
       _session?.lastAttackTokenLeaseBatchReceipt;
+
+  @override
+  Phase0aEncounterRuntimeObservation get runtimeObservation =>
+      Phase0aEncounterRuntimeObservation(
+        objectiveProgress: objectiveProgress,
+        lastAttackTokenLeaseBatchReceipt: lastAttackTokenLeaseBatchReceipt,
+      );
 
   SpawnDirectorState get spawnState {
     final director = _director;
