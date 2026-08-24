@@ -27,5 +27,7 @@
 - [x] Batch19 READY `43209cb3a4d77c45eda0fdc6aebe57a1465d7e58` 已冻结，full 5129/5129、独立终审 P0/P1/P2=0，main/origin main 未修改。
 - [x] Batch20 两任务已由独立只读预检核验；没有第三条不跨 Gate 且非重复的切片。
 - [x] Batch20 integration 已完成 `flutter pub get`、build_runner 126 outputs（63 个 `.g.dart`）与 `libisar.dylib` 恢复；两 source worktree 已从登记提交 `44032d62` 创建并派发。
-- [ ] R27/V02B 各自在 source worktree 完成并行实现与来源 READY。
-- [ ] 联合/full 验证、独立终审与 Batch20 READY。
+- [x] R27 source READY `78c5d6b82e4bc8bcbffce9c9d1b017a4ca06809a`：83/83、analyze 0、format 0、Codex 替代终审 P0/P1/P2=0；Pi 设计审查通过，但最终审查两次有界 5 分钟无输出，未伪造 Pi final PASS。
+- [x] V02B source READY `fc41e42bd2e039ba334789fc60dc13cf7bc724c0`：116/116、analyze 0、format 0；Qoder 设计阶段两次有界 5 分钟无输出，最终 actual-diff 审查由 exact Qwen3.8-Max high 返回 PASS，P0/P1/P2=0。
+- [x] 12/12 source→integration stable patch-id、9/9 owned blobs、精确 12 paths；联合 targeted 160/160、7 changed Dart analyze 0、format 0、full 5153/5153，registry 102/0/0，main/origin main 未修改。
+- [ ] 独立集成终审、docs-only closure 与 Batch20 READY。

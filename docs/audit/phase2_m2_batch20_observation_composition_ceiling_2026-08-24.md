@@ -20,9 +20,37 @@
 - failure 诚实性：只保证 flow-owned state/progress/receipt 不发布失败候选，不承诺 caller RNG/planner/source 等外部副作用回滚。
 - production/candidate promotion/checkpoint-anchor/settlement identity/durable/tuning/Profile/G2/真人验收继续 Gate。
 
+## 来源实现与审查
+
+### R27 遭遇运行时观测快照
+
+- source READY：`78c5d6b82e4bc8bcbffce9c9d1b017a4ca06809a`；实现提交 `3bc33cb1`。
+- 7 个非空 source commits 已逐一集成为 `0f7edc3a`、`bfb0ea41`、`3392bac6`、`35217a1b`、`dc485629`、`2919b6b3`、`c5cb8fbf`。
+- 只改 5 个 owned paths；targeted 83/83、4 changed Dart analyze 0、format 0、path/diff/status guards 通过。
+- Pi + DeepSeek V4 Flash 设计审查返回 DESIGN PASS。最终 actual-diff 完整 prompt 与精简重试均在约 5 分钟内零输出并有界退出，故没有 Pi final PASS；Codex 独立替代终审复跑 39/39 并检查 actual diff，P0/P1/P2=0。
+- 实现只新增 immutable `Phase0aEncounterRuntimeObservation` 与窄 source；每读 fresh 容器，nullable members 保持 R25 getter 的 exact identity；未改 BattleFlow、assembler、advance 或任何 Gate。
+
+### V02B 候选可观测事务组合矩阵
+
+- source READY：`fc41e42bd2e039ba334789fc60dc13cf7bc724c0`；实现提交 `d441f6d7`。
+- 5 个非空 source commits 已逐一集成为 `ab27791a`、`ad7a254c`、`9555d5d3`、`716fd237`、`a5f85e9e`。
+- 只改 4 个 owned paths；targeted 116/116、3 changed Dart analyze 0、format 0、path/diff/status guards 通过。
+- Qoder CLI 1.1.28、exact Qwen3.8-Max、reasoning high、Read/Grep/Glob-only：设计阶段完整与精简 prompt 各约 5 分钟零输出并有界退出；最终 actual-diff 审查约 152 秒返回 PASS，P0/P1/P2=0。
+- V02A 的 95 条 declaration（67 Target / 3 Commander / 25 empty）机械搬入 test-support，70 条独立 expected events 留在 V02A；五关各只做一个 caller-declared idle/drop-all/no-mutation tick，不声称 defeat/lifecycle/host/promotion。
+
+## 集成验证
+
+- source→integration stable patch-id：12/12 精确一致；9 个来源 owned files 的 tip blobs：9/9 精确一致。
+- 相对 Batch19 READY 精确 12 个 changed paths：3 个 Batch20 登记/计划/审计文档、5 个 R27 owned paths、4 个 V02B owned paths；两来源 owned files 不重叠。
+- 去重联合 targeted：14 个文件，160/160。
+- 7 个 changed Dart items：`flutter analyze --no-pub` 0 issue；`dart format --output=none --set-exit-if-changed` 0 changed。
+- 单次 full suite：5153/5153；相对 Batch19 的 5129 项新增 24 项。
+- `git diff --check` 通过；registry 102 tasks / 0 duplicate ids / 0 dangling prerequisites。
+- 集成终审前 `main` 与 `origin/main` 均保持 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
+
 ## 待完成验证
 
-待两来源 READY 后补充外部模型证据、来源/集成提交、targeted/analyze/format/full、仓库闸门、独立终审与最终 READY。
+待独立集成终审、docs-only closure 复核与最终 READY；不再重复 full suite。
 
 ## 集成环境恢复点
 
