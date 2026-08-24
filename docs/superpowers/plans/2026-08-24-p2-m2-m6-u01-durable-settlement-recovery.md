@@ -34,9 +34,11 @@
 - `lib/features/weapon_codex/application/equipment_catalog_hook.dart`
 - `lib/features/encounter/application/encounter_service.dart`
 - `lib/features/encounter/presentation/encounter_hook.dart`
+- `lib/features/jianghu/application/reputation_service.dart`
 - `lib/shared/strings.dart`
 - `lib/features/mainline/presentation/stage_victory_dialog.dart`
 - `test/features/mainline/domain/mainline_settlement_journal_test.dart`
+- `test/features/mainline/domain/mainline_run_test.dart`
 - `test/features/mainline/application/mainline_settlement_journal_service_test.dart`
 - `test/features/mainline/presentation/mainline_durable_settlement_recovery_test.dart`
 - `test/data/mainline_settlement_journal_migration_test.dart`
@@ -55,7 +57,9 @@
 `stage_01_04/05` 有 Boss 战绩，所有装备掉落要同步兵器谱，所有胜利要累计
 奇遇击杀计数；这些都是当前分段提交且会在崩溃重放时重复的存档写入，必须
 为既有 service 增加 transaction-owned 变体并由 journal 核心事务调用。奇遇
-弹窗/招降等玩家选择仍留给 U04，不在本批伪造待处理事件队列。
+弹窗/招降等玩家选择仍留给 U04，不在本批伪造待处理事件队列。第一章章末
+Boss 另有确定性声望变化，纳入同一核心事务；招降随机与玩家确认仍保持 U04
+边界。
 
 ## 红测与验收
 
@@ -69,8 +73,8 @@
 
 ## 当前恢复点
 
-- 状态：`in_progress / admission_and_design`。
-- 最后完成：从 clean READY `d134f68d` 建立隔离分支/worktree；确认 registry 无其他 `in_progress` owner；确认现有 reward/failure ledger 仅进程内且存档无 settlement identity。
-- 下一步：登记任务后，细查第一章所有后置写 effect 的幂等边界，锁定 journal 状态与 outbox effect 集合，再提交缺失 API 红测。
-- 已跑验证：基线 `5274/5274 PASS`、root analyze 0 来自前批 READY；本批尚未运行测试。
-- 阻塞：无；schema 与恢复策略已由用户批准。若 effect 原子化要求改变玩法/概率或扩至 U04/U05，立即停下。
+- 状态：`ready_reviewed / clean_ready`。
+- 最后完成：存档 `0.40.0`、journal/outbox 状态机、权威核心事务、同人同关恢复、已提交 receipt 去重、后置动作持久化与关间原子交接均已接入第一章连续首通生产路径；代码候选 `9712bdc9da01d41df892fd2134b17ce28d77e244`。
+- 下一步：由后续独立切片完成 U04 互动奇遇/招降持久待处理队列，再分别处理听剑生产接线与全模式一致性；本切片不扩大。
+- 已跑验证：journal/run/事务 `44/44`、生产恢复 `2/2`、受影响 service `57/57`、主线目录 `387/387`、root analyze 0 issue、全量 `5295/5295 PASS`。
+- 阻塞：本切片无。U04/U05、听剑调优与 replay/manual/auto/headless/扫荡一致性仍是明确后续边界，不由本 READY 状态外推。

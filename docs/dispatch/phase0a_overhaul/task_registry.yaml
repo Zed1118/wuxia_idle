@@ -3363,8 +3363,10 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-m6-u01-durable-settlement-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-durable-settlement
-    status: in_progress
+    status: ready_reviewed
     base_commit: d134f68d6b3f5a239554a33df5970d26a8a3a7ee
+    code_candidate_commit: 9712bdc9da01d41df892fd2134b17ce28d77e244
+    ready_marker: "[READY][CODEX][P2-M2-M6-U01-DURABLE] 收口第一章持久结算恢复切片"
     completion_scope: chapter_1_first_clear_durable_settlement_recovery_slice
     approved_schema_version: 0.40.0
     approved_recovery_policy:
@@ -3375,6 +3377,14 @@ tasks:
       - P2-M2-M6-U01-CH1-CONTINUOUS-RUN
       - FAILURE-POLICY-CORE-01
       - REWARD-POLICY-CORE-01
+    verification:
+      journal_run_transaction_tests: 44
+      production_recovery_tests: 2
+      affected_service_tests: 57
+      mainline_feature_tests: 387
+      root_analyze_issues: 0
+      full_tests: 5295
+      independent_semantic_review_p0_p1: 0
     owned_files:
       - lib/features/mainline/domain/mainline_settlement_journal.dart
       - lib/features/mainline/domain/mainline_settlement_journal.g.dart
@@ -3391,9 +3401,11 @@ tasks:
       - lib/features/weapon_codex/application/equipment_catalog_hook.dart
       - lib/features/encounter/application/encounter_service.dart
       - lib/features/encounter/presentation/encounter_hook.dart
+      - lib/features/jianghu/application/reputation_service.dart
       - lib/shared/strings.dart
       - lib/features/mainline/presentation/stage_victory_dialog.dart
       - test/features/mainline/domain/mainline_settlement_journal_test.dart
+      - test/features/mainline/domain/mainline_run_test.dart
       - test/features/mainline/application/mainline_settlement_journal_service_test.dart
       - test/features/mainline/presentation/mainline_durable_settlement_recovery_test.dart
       - test/data/mainline_settlement_journal_migration_test.dart
