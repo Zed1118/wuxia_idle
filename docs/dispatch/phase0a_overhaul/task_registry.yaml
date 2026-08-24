@@ -3874,9 +3874,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-jianghu-map-mass-battle-location-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-mass-battle-location
-    status: in_progress
+    status: ready_reviewed
     base_commit: 8207d4bcf1e73864b98c266500ea20a6e1acc275
+    code_candidate_commit: e64ef14b182455379daaf7b71182d8bc47f1c8d8
+    reviewed_candidate_commit: e64ef14b182455379daaf7b71182d8bc47f1c8d8
+    ready_marker: "[READY][CODEX][P2-M6-U06-JIANGHU-MAP-MASS-BATTLE-LOCATION] 迁移守城试炼到江湖地图"
     completion_scope: move_mass_battle_from_flat_main_menu_to_third_production_jianghu_map_location
+    verification:
+      red_tests: 3
+      focused_location_tests: 12
+      paper_contrast_audit_tests: 4
+      focused_with_paper_tests: 16
+      adjacent_main_menu_map_mass_battle_tests: 123
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5387
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-LIGHT-FOOT-LOCATION
     owned_files:

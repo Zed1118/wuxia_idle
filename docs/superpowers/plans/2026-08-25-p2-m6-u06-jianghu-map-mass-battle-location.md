@@ -6,7 +6,9 @@
 - base: `8207d4bcf1e73864b98c266500ea20a6e1acc275`
 - branch: `codex/phase2-m6-u06-jianghu-map-mass-battle-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-mass-battle-location`
-- status: `in_progress`
+- status: `ready_reviewed`
+- code candidate: `e64ef14b182455379daaf7b71182d8bc47f1c8d8`
+- evidence: real red `0/3`; focused location `12/12`; paper contrast `4/4`; adjacent `123/123`; full `5387/5387`; independent review `P0/P1/P2=0`
 
 ## 目标
 
