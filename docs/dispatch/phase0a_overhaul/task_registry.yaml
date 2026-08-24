@@ -3357,3 +3357,49 @@ tasks:
       - fail closed before the next stage when the participant or exact successor is invalid
       - keep replay special modes tuning rewards unlock schema and main untouched
       - do not claim persistent crash recovery U01 M2 M6 or overall Phase 2 completion
+
+  - id: P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-m6-u01-durable-settlement-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-durable-settlement
+    status: in_progress
+    base_commit: d134f68d6b3f5a239554a33df5970d26a8a3a7ee
+    completion_scope: chapter_1_first_clear_durable_settlement_recovery_slice
+    approved_schema_version: 0.40.0
+    approved_recovery_policy:
+      unsettled_battle_restart: same_stage_same_participant
+      committed_receipt_recovery: resume_post_settlement_without_regrant
+      storage: dedicated_settlement_journal_outbox
+    dependencies:
+      - P2-M2-M6-U01-CH1-CONTINUOUS-RUN
+      - FAILURE-POLICY-CORE-01
+      - REWARD-POLICY-CORE-01
+    owned_files:
+      - lib/features/mainline/domain/mainline_settlement_journal.dart
+      - lib/features/mainline/domain/mainline_settlement_journal.g.dart
+      - lib/features/mainline/application/mainline_settlement_journal_service.dart
+      - lib/features/mainline/application/mainline_progress_service.dart
+      - lib/features/mainline/domain/mainline_run.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/data/isar_setup.dart
+      - test/features/mainline/domain/mainline_settlement_journal_test.dart
+      - test/features/mainline/application/mainline_settlement_journal_service_test.dart
+      - test/features/mainline/presentation/mainline_durable_settlement_recovery_test.dart
+      - test/data/mainline_settlement_journal_migration_test.dart
+      - test/data/save_migration_version_gate_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m2-m6-u01-durable-settlement-recovery.md
+      - docs/audit/phase2_m2_m6_u01_durable_settlement_recovery_2026-08-24.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - bind durable settlement identity to run stage loadout version and actual participant
+      - restart an unsettled battle at the same stage with the same participant
+      - never replay committed growth injury drops or progress
+      - keep persistent effects atomic with their receipt or individually durable and idempotent
+      - do not change tuning reward amounts probabilities unlock narrative or gameplay numbers
+      - do not claim replay sweep U04 U05 M2 M6 or overall Phase 2 completion
+      - do not modify or push main
