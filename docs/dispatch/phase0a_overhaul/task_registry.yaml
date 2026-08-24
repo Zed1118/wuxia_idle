@@ -3112,7 +3112,9 @@ tasks:
     review_model: Qwen3.8-Max
     owned_files:
       - lib/features/dispel/application/dispel_service.dart
+      - lib/features/technique_panel/presentation/technique_panel_screen.dart
       - test/features/dispel/application/dispel_persist_test.dart
+      - test/features/technique_panel/presentation/technique_panel_screen_test.dart
       - docs/superpowers/plans/2026-08-24-p2-m6-a12-dispel-activity-lock-enforcement.md
     forbidden_files:
       - CLAUDE.md
@@ -3126,11 +3128,12 @@ tasks:
       - lib/core/domain/save_data.dart
       - data/**
     protected_behavior:
-      - DispelService persistResult rechecks canonical activity occupancy in the same authoritative transaction that writes the result
-      - retreat expedition and boss gauntlet occupancy fail closed without mutating Character or primary and secondary Technique state
+      - the production dispel flow rechecks canonical activity occupancy in the same authoritative transaction that fresh reads and writes the result
+      - retreat expedition and boss gauntlet occupancy fail closed without persisted or live object mutation and without a false success message
+      - detached Character or Technique state cannot overwrite canonical main role owner or occupancy changes made while the confirmation dialog was open
       - the same operation may succeed once after activity occupancy ends
       - no dispel tuning UI narrative schema unlock or reward behavior changes
     exit_criteria:
       - Qoder CLI Qwen3.8 Max read only design and final actual diff review are bound to the final code tree
-      - focused persist and service tests cover all three occupancy sources and zero side effects
+      - focused persist service and production UI tests cover all three occupancy sources stale prechecks and zero side effects
       - scoped analyze format diff check exact whitelist and source worktree cleanliness pass
