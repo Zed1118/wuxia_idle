@@ -4,14 +4,12 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
-import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 /// M6 心魔关战败惩罚纯逻辑（applyFailurePenalty）TDD 验收。
 ///
-/// 惩罚规则（来自 InnerDemonFailurePenalty defaults）：
+/// 冻结规则：
 ///   - 永久内力不扣，改为临时内息紊乱
-///   - mainCultivationMultiplier = 0.90（扣 10%，floor 取整）
-///   - cultivationLayer 不回退（核心红线）
+///   - 主修修炼度与 cultivationLayer 均保持不变
 ///   - ch.innerBreathDisorderHoursRemaining 受上限约束
 void main() {
   /// 构造最简 Character，含 internalForce / internalForceMax /
@@ -62,8 +60,6 @@ void main() {
     return t;
   }
 
-  final penalty = InnerDemonDef.empty().failurePenalty;
-
   // ────────────────────────────────────────────────────────────────────────────
   // 永久内力保护
   // ────────────────────────────────────────────────────────────────────────────
@@ -76,7 +72,6 @@ void main() {
       final r = InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -93,7 +88,6 @@ void main() {
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -107,7 +101,6 @@ void main() {
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -121,7 +114,6 @@ void main() {
       final r = InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -130,60 +122,54 @@ void main() {
   });
 
   // ────────────────────────────────────────────────────────────────────────────
-  // 主修修炼度惩罚（layer 绝不回退）
+  // 主修修炼度与层级保持不变
   // ────────────────────────────────────────────────────────────────────────────
 
-  group('主修修炼度惩罚（layer 不回退）', () {
-    test('主修 progress ×0.90，layer 保持不变', () {
-      // 200 × 0.90 = 180；layer = daCheng 不变
+  group('主修修炼度与层级保持不变', () {
+    test('主修 progress 与 layer 都保持原值', () {
       final ch = newChar();
       final tech = newTech(layer: CultivationLayer.daCheng, progress: 200);
 
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
-      expect(tech.cultivationProgress, 180);
-      expect(tech.cultivationLayer, CultivationLayer.daCheng); // 关键红线：不掉层
+      expect(tech.cultivationProgress, 200);
+      expect(tech.cultivationLayer, CultivationLayer.daCheng);
     });
 
-    test('progress floor 精度：101 × 0.90 = 90.9 → floor → 90', () {
+    test('非整十 progress 不再经过倍率或 floor', () {
       final ch = newChar();
       final tech = newTech(layer: CultivationLayer.xiaoCheng, progress: 101);
 
       final r = InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
-      expect(tech.cultivationProgress, 90);
-      expect(r.progressAfter, 90);
+      expect(tech.cultivationProgress, 101);
+      expect(r.progressAfter, 101);
       expect(r.progressBefore, 101);
     });
 
-    test('最低层（chuKui）progress ×0.90 也不回退 layer', () {
-      // chuKui 是最低层；心魔失败不回退境界层，仅按当前主修系数扣修炼度。
+    test('最低层（chuKui）的 progress 与 layer 均不变', () {
       final ch = newChar();
       final tech = newTech(layer: CultivationLayer.chuKui, progress: 50);
 
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
-      expect(tech.cultivationProgress, 45); // 50 × 0.90 = 45
+      expect(tech.cultivationProgress, 50);
       expect(tech.cultivationLayer, CultivationLayer.chuKui);
     });
 
-    test('高层（yuanMan）progress ×0.90，layer 仍不回退', () {
-      // 确保即便进入「前一层阈值」也不触发回退（与 dispel 的核心区别）
+    test('高层（yuanMan）的 progress、阈值与 layer 均不变', () {
       final ch = newChar();
       final tech = newTech(
         layer: CultivationLayer.yuanMan,
@@ -194,12 +180,12 @@ void main() {
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
-      expect(tech.cultivationProgress, 90); // 100 × 0.90
-      expect(tech.cultivationLayer, CultivationLayer.yuanMan); // 不回 daCheng
+      expect(tech.cultivationProgress, 100);
+      expect(tech.cultivationProgressToNext, 1500);
+      expect(tech.cultivationLayer, CultivationLayer.yuanMan);
     });
   });
 
@@ -215,7 +201,6 @@ void main() {
       final r = InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -230,7 +215,6 @@ void main() {
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
@@ -244,7 +228,6 @@ void main() {
       InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 12,
       );
 
@@ -264,14 +247,13 @@ void main() {
       final r = InnerDemonService.applyFailurePenalty(
         ch: ch,
         mainTech: tech,
-        penalty: penalty,
         residueHours: 8,
       );
 
       expect(r.internalForceBefore, 1000);
       expect(r.internalForceAfter, 1000);
       expect(r.progressBefore, 200);
-      expect(r.progressAfter, 180);
+      expect(r.progressAfter, 200);
       expect(r.residueHoursApplied, 8.0);
     });
   });

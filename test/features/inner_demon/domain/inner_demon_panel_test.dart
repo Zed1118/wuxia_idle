@@ -42,7 +42,6 @@ void main() {
     return InnerDemonDef(
       mirrorBuffPerStage: b.mirrorBuffPerStage,
       mirrorCaps: b.mirrorCaps,
-      failurePenalty: b.failurePenalty,
       unlockTriggers: b.unlockTriggers,
       requiredRealmLayer: req,
     );

@@ -23,7 +23,6 @@ InnerDemonDef _fullDef() => const InnerDemonDef(
     internalForceMax: 15000,
     attackPowerMax: 6000,
   ),
-  failurePenalty: InnerDemonFailurePenalty(mainCultivationMultiplier: 0.90),
   unlockTriggers: {
     'stage_06_05': 'stage_inner_demon_01',
     'stage_inner_demon_01': 'stage_inner_demon_02',
@@ -72,7 +71,6 @@ InnerDemonDef _releaseDef() {
   return InnerDemonDef(
     mirrorBuffPerStage: base.mirrorBuffPerStage,
     mirrorCaps: base.mirrorCaps,
-    failurePenalty: base.failurePenalty,
     unlockTriggers: const {},
     requiredRealmLayer: const {
       'stage_inner_demon_05': RealmCoord(
@@ -249,7 +247,6 @@ void main() {
           'internal_force_max': 15000,
           'attack_power_max': 6000,
         },
-        'failure_penalty': {'main_cultivation_multiplier': 0.90},
         'unlock_triggers': {'stage_06_05': 'stage_inner_demon_01'},
         'required_realm_layer': {
           'stage_inner_demon_01': {'tier': 'wuSheng', 'layer': 'qiMeng'},
@@ -260,7 +257,6 @@ void main() {
       expect(def.mirrorBuffPerStage['stage_inner_demon_01'], 0.10);
       expect(def.mirrorBuffPerStage['stage_inner_demon_07'], 0.20);
       expect(def.mirrorCaps.hpMax, 20000);
-      expect(def.failurePenalty.mainCultivationMultiplier, 0.90);
       expect(def.unlockTriggers['stage_06_05'], 'stage_inner_demon_01');
       expect(
         def.requiredRealmLayer['stage_inner_demon_01'],
