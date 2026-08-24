@@ -68,6 +68,7 @@ final class Phase0aPlayerRuntimeMapping {
     required this.skillSlots,
     required this.moveBindings,
     required this.playerAdapter,
+    required this.defenseTuning,
   });
 
   final Phase0aActor initialPlayer;
@@ -75,6 +76,7 @@ final class Phase0aPlayerRuntimeMapping {
   final List<Phase0aSkillSlot> skillSlots;
   final Map<Phase0aDamageKind, SkillDef?> moveBindings;
   final Phase0aPlayerInputAdapter playerAdapter;
+  final Phase0aDefenseTuning? defenseTuning;
 }
 
 final class Phase0aStageContentMapper {
@@ -99,6 +101,7 @@ final class Phase0aStageContentMapper {
     }
     final numeric = _numericSkillBindings(playerSnapshot, arena);
     final tactical = _tacticalSkillBindings(arena);
+    final defenseTuning = Phase0aDefenseTuningMapper.fromNumbers(numbers);
     final player = Phase0aActor(
       id: playerId,
       side: Phase0aSide.player,
@@ -117,12 +120,14 @@ final class Phase0aStageContentMapper {
       initialPlayer: player,
       skillSlots: _skillSlots(numeric, tactical, playerSnapshot.currentQi),
       moveBindings: _moveBindings(playerBasicSkill, numeric, tactical),
+      defenseTuning: defenseTuning,
       playerAdapter: _playerAdapter(
         arena: arena,
         playerId: playerId,
         numericSkillBindings: numeric,
         tacticalSkillBindings: tactical,
         attackQiDelta: playerBasicSkill.qiDelta,
+        defenseTuning: defenseTuning,
       ),
     );
   }
@@ -587,6 +592,7 @@ final class Phase0aStageContentMapper {
       playerId: playerId,
     );
     final arena = numbers.phase0aArena;
+    final defenseTuning = playerMapping.defenseTuning;
     final skillSlots = playerMapping.skillSlots;
     final moveBindings = playerMapping.moveBindings;
     if (enemyTeam.isEmpty &&

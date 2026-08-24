@@ -150,6 +150,7 @@ Phase0aEncounterHost _assemble({
         request.numbers.phase0aArena.enemyAttackCooldownSeconds,
     skillBindingsByActor: skillsByActor,
     basicQiDeltaByActor: basicQiByActor,
+    defenseTuning: player.defenseTuning,
   );
   final plan = buildPhase0aMigratedEncounterPlan(
     route,
