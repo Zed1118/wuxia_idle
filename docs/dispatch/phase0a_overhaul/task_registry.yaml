@@ -4281,6 +4281,43 @@ tasks:
       - do not change schema save version tuning narrative rewards economy YAML or main
       - do not claim U06 U14 M5 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U06-GAUNTLET-LOCATION-DETAIL
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-gauntlet-location-detail-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-gauntlet-location-detail
+    status: in_progress
+    base_commit: 7f57d5be2cb9d7388dd53160ffdcda6b8de26ab7
+    completion_scope: add_production_gauntlet_location_detail_before_loadout
+    dependencies:
+      - P2-M6-U06-MASS-BATTLE-LOCATION-DETAIL
+    owned_files:
+      - lib/features/jianghu_map/domain/gauntlet_location_detail.dart
+      - lib/features/jianghu_map/application/gauntlet_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/jianghu_map/application/gauntlet_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/gauntlet_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - test/features/main_menu/presentation/main_menu_gauntlet_gate_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-gauntlet-location-detail.md
+      - docs/audit/phase2_m6_u06_gauntlet_location_detail_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - detail reads production gauntlet config progress ticket candidates active run enemies and rewards
+      - map opens detail before GauntletLoadoutScreen and detail CTA preserves the existing loadout route
+      - hidden gate invalid config dangling active participant and provider errors fail closed without an entry CTA
+      - active runs retain their existing resume path through GauntletLoadoutScreen
+      - preserve current candidate selection supply cycle recovery combat settlement and reward behavior
+      - no dispatch realtime bot participant policy progressive unlock or automation UI is invented
+      - do not change schema save version tuning narrative rewards economy YAML or main
+      - do not claim U06 U14 M5 M6 or overall Phase 2 completion
+
   - id: P2-M6-U06-MASS-BATTLE-LOCATION-DETAIL
     milestone: M6
     owner: codex_root
