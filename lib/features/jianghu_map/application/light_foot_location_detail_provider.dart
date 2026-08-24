@@ -4,6 +4,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/light_foot_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
@@ -11,6 +12,44 @@ import '../../light_foot/application/light_foot_service.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../domain/light_foot_location_detail.dart';
+
+/// 为地点详情校验轻功解锁图，避免不合法配置在通用链遍历中循环。
+List<String> validatedLightFootLocationStageIds(LightFootDef config) {
+  final routeIds = config.stageTerrain.keys
+      .where((id) => id.startsWith('stage_light_foot_'))
+      .toSet();
+  if (routeIds.isEmpty || config.unlockTriggers.length != routeIds.length) {
+    throw StateError('Light foot location detail has invalid route graph');
+  }
+
+  final externalRoots = config.unlockTriggers.entries
+      .where((entry) => !routeIds.contains(entry.key))
+      .toList(growable: false);
+  final values = config.unlockTriggers.values.toList(growable: false);
+  if (externalRoots.length != 1 ||
+      values.any((id) => !routeIds.contains(id)) ||
+      values.toSet().length != values.length ||
+      values.toSet().length != routeIds.length) {
+    throw StateError('Light foot location detail has invalid route graph');
+  }
+
+  final ordered = <String>[];
+  final visited = <String>{};
+  String? current = externalRoots.single.value;
+  while (current != null && ordered.length <= routeIds.length) {
+    if (!routeIds.contains(current) || !visited.add(current)) {
+      throw StateError('Light foot location detail has cyclic route graph');
+    }
+    ordered.add(current);
+    current = config.unlockTriggers[current];
+  }
+  if (current != null ||
+      ordered.length != routeIds.length ||
+      !visited.containsAll(routeIds)) {
+    throw StateError('Light foot location detail has truncated route graph');
+  }
+  return List.unmodifiable(ordered);
+}
 
 final lightFootLocationDetailProvider = FutureProvider<LightFootLocationDetail>(
   (ref) async {
@@ -24,10 +63,7 @@ final lightFootLocationDetailProvider = FutureProvider<LightFootLocationDetail>(
     final progress = await ref.watch(mainlineProgressProvider.future);
     final repository = GameRepository.instance;
     final config = repository.numbers.lightFoot;
-    final stageIds = LightFootService.orderedStageIds(config);
-    if (stageIds.isEmpty || stageIds.toSet().length != stageIds.length) {
-      throw StateError('Light foot location detail has invalid route chain');
-    }
+    final stageIds = validatedLightFootLocationStageIds(config);
 
     final stages = <StageDef>[];
     for (final stageId in stageIds) {

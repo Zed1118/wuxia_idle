@@ -7,6 +7,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/defs/light_foot_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/jianghu_map/application/light_foot_location_detail_provider.dart';
 import 'package:wuxia_idle/features/jianghu_map/domain/light_foot_location_detail.dart';
@@ -144,5 +145,78 @@ void main() {
       readDetail(const ['stage_06_05', 'stage_light_foot_02']),
       throwsA(isA<StateError>()),
     );
+  });
+
+  group('轻功地点解锁图 fail closed', () {
+    LightFootDef graph(Map<String, String> edges) => LightFootDef(
+      terrainModifiers: const {},
+      stageTerrain: const {
+        'stage_light_foot_01': TerrainBiome.water,
+        'stage_light_foot_02': TerrainBiome.rooftop,
+        'stage_light_foot_03': TerrainBiome.bamboo,
+        'stage_light_foot_04': TerrainBiome.water,
+      },
+      unlockTriggers: edges,
+    );
+
+    test('合法单链按生产顺序返回', () {
+      expect(
+        validatedLightFootLocationStageIds(
+          graph(const {
+            'stage_06_05': 'stage_light_foot_01',
+            'stage_light_foot_01': 'stage_light_foot_02',
+            'stage_light_foot_02': 'stage_light_foot_03',
+            'stage_light_foot_03': 'stage_light_foot_04',
+          }),
+        ),
+        const [
+          'stage_light_foot_01',
+          'stage_light_foot_02',
+          'stage_light_foot_03',
+          'stage_light_foot_04',
+        ],
+      );
+    });
+
+    test('脱离根链的环不会永久遍历', () {
+      expect(
+        () => validatedLightFootLocationStageIds(
+          graph(const {
+            'stage_06_05': 'stage_light_foot_01',
+            'stage_light_foot_01': 'stage_light_foot_02',
+            'stage_light_foot_03': 'stage_light_foot_04',
+            'stage_light_foot_04': 'stage_light_foot_03',
+          }),
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('多根或汇合分支拒绝', () {
+      expect(
+        () => validatedLightFootLocationStageIds(
+          graph(const {
+            'stage_06_05': 'stage_light_foot_01',
+            'stage_alt_gate': 'stage_light_foot_02',
+            'stage_light_foot_01': 'stage_light_foot_02',
+            'stage_light_foot_02': 'stage_light_foot_03',
+          }),
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('截断链拒绝', () {
+      expect(
+        () => validatedLightFootLocationStageIds(
+          graph(const {
+            'stage_06_05': 'stage_light_foot_01',
+            'stage_light_foot_01': 'stage_light_foot_02',
+            'stage_light_foot_02': 'stage_light_foot_03',
+          }),
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
   });
 }
