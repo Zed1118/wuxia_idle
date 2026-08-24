@@ -2945,9 +2945,10 @@ tasks:
   - id: P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
     milestone: M6
     owner: codex_app_thread_mainline_narrative
-    branch: codex_app_thread_pending
-    worktree: codex_app_worktree_pending
-    status: dispatching
+    thread_id: 01a0318a-cd28-75e2-876e-ce057dfd993a
+    branch: codex/phase2-m6-u02-u03-mainline-narrative-deblocking-20260824
+    worktree: /Users/a10506/.codex/worktrees/0e60/挂机武侠
+    status: in_progress
     base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
       - MAINLINE-NARRATIVE-DEBLOCKING-01
@@ -2989,9 +2990,10 @@ tasks:
   - id: P2-M5-GAUNTLET-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_app_thread_gauntlet_admission
-    branch: codex_app_thread_pending
-    worktree: codex_app_worktree_pending
-    status: dispatching
+    thread_id: 01a0318a-cd28-75e2-876e-ce2e57b3a023
+    branch: codex/phase2-m5-gauntlet-automation-admission-20260824
+    worktree: /Users/a10506/.codex/worktrees/d832/挂机武侠
+    status: in_progress
     base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
       - GAUNTLET-VISIBLE-BOT-01
