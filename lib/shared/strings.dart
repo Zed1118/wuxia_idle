@@ -1633,7 +1633,7 @@ class UiStrings {
   static const String gauntletLocationDetailTitle = '断魂庄 · 地点详情';
   static const String gauntletLocationUnavailable = '庄中情报暂不可核实，暂不能进入';
   static const String gauntletLocationProgressLabel = '当前进度';
-  static const String gauntletLocationRecommendedRealmLabel = '推荐境界';
+  static const String gauntletLocationRecommendedRealmLabel = '基础推荐境界';
   static const String gauntletLocationEnemyEcologyLabel = '三关敌情';
   static const String gauntletLocationCoreRewardLabel = '核心收获';
   static const String gauntletLocationTicketLabel = '行前筹备';
