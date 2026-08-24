@@ -26,5 +26,6 @@
 
 - [x] Batch19 READY `43209cb3a4d77c45eda0fdc6aebe57a1465d7e58` 已冻结，full 5129/5129、独立终审 P0/P1/P2=0，main/origin main 未修改。
 - [x] Batch20 两任务已由独立只读预检核验；没有第三条不跨 Gate 且非重复的切片。
-- [ ] Batch20 integration/source worktree 环境恢复、两来源并行实现与来源 READY。
+- [x] Batch20 integration 已完成 `flutter pub get`、build_runner 126 outputs（63 个 `.g.dart`）与 `libisar.dylib` 恢复；两 source worktree 已从登记提交 `44032d62` 创建并派发。
+- [ ] R27/V02B 各自在 source worktree 完成并行实现与来源 READY。
 - [ ] 联合/full 验证、独立终审与 Batch20 READY。
