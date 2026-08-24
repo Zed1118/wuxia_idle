@@ -4,6 +4,7 @@ import '../../../../data/defs/skill_def.dart';
 import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
 import 'defense_resolution.dart';
+import 'phase0a_enemy_behavior_profile.dart';
 
 const _noBreakPower = 0;
 
@@ -53,9 +54,14 @@ final class Phase0aDefenseIntent extends Phase0aIntent {
 
 /// 移动请求:[direction] 为零向量时不改变位置与朝向。
 final class Phase0aMoveIntent extends Phase0aIntent {
-  const Phase0aMoveIntent({required super.actorId, required this.direction});
+  const Phase0aMoveIntent({
+    required super.actorId,
+    required this.direction,
+    this.behaviorProfile,
+  });
 
   final ArenaVector direction;
+  final Phase0aEnemyBehaviorProfile? behaviorProfile;
 }
 
 /// 普攻请求:距离 + 朝向扇区双条件由 reducer 用显式参数判定;
@@ -70,6 +76,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.aimDirection,
     required this.qiDelta,
     this.defenseFlags,
+    this.behaviorProfile,
   });
 
   final double range;
@@ -82,6 +89,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   /// fixtures; production mapping supplies the bound basic skill value.
   final int qiDelta;
   final AttackDefenseFlags? defenseFlags;
+  final Phase0aEnemyBehaviorProfile? behaviorProfile;
 }
 
 /// Enemy phase-unlocked skill request. Binding and policy are resolved in the
@@ -98,6 +106,7 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
     required this.cooldownSeconds,
     required this.actionCooldownSeconds,
     this.defenseFlags,
+    this.behaviorProfile,
   });
 
   final SkillDef skill;
@@ -108,6 +117,7 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
   final double cooldownSeconds;
   final double actionCooldownSeconds;
   final AttackDefenseFlags? defenseFlags;
+  final Phase0aEnemyBehaviorProfile? behaviorProfile;
 }
 
 /// Q 聚怪请求:作用半径内目标逐目标结算 outcomes;

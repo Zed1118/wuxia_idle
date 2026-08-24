@@ -11,6 +11,7 @@ import '../../battle/application/phase0a/phase0a_migrated_encounter_plan_builder
 import '../../battle/domain/phase0a/phase0a_combat_intent.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
+import '../../battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'phase0a_mainline_encounter_host.dart';
 
 Future<Phase0aEncounterHost?> createFreshPhase0aMainlineEncounter(
@@ -98,6 +99,7 @@ Phase0aEncounterHost _assemble({
   final runtimeIds = <String, String>{};
   final skillsByActor = <String, List<Phase0aEnemySkillBinding>>{};
   final basicQiByActor = <String, int>{};
+  final behaviorProfilesByActor = <String, Phase0aEnemyBehaviorProfile>{};
   final tokensByActor = <String, Phase0aEncounterTokenBinding>{};
   final visualAssetPathByActorId = <String, String>{};
   final arena = request.numbers.phase0aArena;
@@ -140,6 +142,10 @@ Phase0aEncounterHost _assemble({
     );
     skillsByActor[runtimeId] = binding.enemySkillBindings;
     basicQiByActor[runtimeId] = binding.basicQiDelta;
+    final behaviorProfile = binding.behaviorProfile;
+    if (behaviorProfile != null) {
+      behaviorProfilesByActor[runtimeId] = behaviorProfile;
+    }
     tokensByActor[runtimeId] = binding.token;
     visualAssetPathByActorId[runtimeId] = binding.visualAssetPath;
   }
@@ -150,6 +156,7 @@ Phase0aEncounterHost _assemble({
         request.numbers.phase0aArena.enemyAttackCooldownSeconds,
     skillBindingsByActor: skillsByActor,
     basicQiDeltaByActor: basicQiByActor,
+    behaviorProfilesByActor: behaviorProfilesByActor,
     defenseTuning: player.defenseTuning,
   );
   final plan = buildPhase0aMigratedEncounterPlan(

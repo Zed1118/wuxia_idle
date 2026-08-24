@@ -14,7 +14,9 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
@@ -235,6 +237,38 @@ void main() {
       expect(crossbow.token.kind, AttackTokenKind.ranged);
       expect(rope.token.kind, AttackTokenKind.charge);
       expect(leader.token.kind, AttackTokenKind.support);
+      expect(
+        blade.behaviorProfile,
+        const Phase0aEnemyBehaviorProfile(
+          id: 'ai_bandit_press',
+          movementPolicy: Phase0aEnemyMovementPolicy.directAdvance,
+          attackPolicy: Phase0aEnemyAttackPolicy.closeRange,
+        ),
+      );
+      expect(
+        crossbow.behaviorProfile,
+        const Phase0aEnemyBehaviorProfile(
+          id: 'ai_crossbow_offset',
+          movementPolicy: Phase0aEnemyMovementPolicy.holdDistance,
+          attackPolicy: Phase0aEnemyAttackPolicy.rangedPressure,
+        ),
+      );
+      expect(
+        rope.behaviorProfile,
+        const Phase0aEnemyBehaviorProfile(
+          id: 'ai_rope_flank',
+          movementPolicy: Phase0aEnemyMovementPolicy.lateralFlank,
+          attackPolicy: Phase0aEnemyAttackPolicy.chargeAndReposition,
+        ),
+      );
+      expect(
+        leader.behaviorProfile,
+        const Phase0aEnemyBehaviorProfile(
+          id: 'ai_gong_command',
+          movementPolicy: Phase0aEnemyMovementPolicy.guardedPosition,
+          attackPolicy: Phase0aEnemyAttackPolicy.supportPulse,
+        ),
+      );
       expect(leader.token.priority, 3);
       expect(leader.visualAssetPath, startsWith('assets/enemies/'));
       final ropeActor = rope.createActor('runtime-rope');
@@ -253,7 +287,54 @@ void main() {
         ),
       );
       expect(host, isNotNull);
-      expect(host!.mapping!.combatants, hasLength(41));
+      final mapping = host!.mapping!;
+      expect(mapping.combatants, hasLength(41));
+      expect(mapping.enemyAiAdapter.behaviorProfilesByActor, hasLength(40));
+      final encounter = catalog.encounterForStage('stage_01_03')!;
+      String runtimeIdFor(String entryId) {
+        final ordinal = encounter.spawnEntries.indexWhere(
+          (entry) => entry.entryId == entryId,
+        );
+        return 'stage_01_03/${encounter.id}/actor-${ordinal.toString().padLeft(3, '0')}';
+      }
+
+      final intentState = Phase0aArenaState(
+        tick: 0,
+        nextSeq: 1,
+        player: mapping.initialState.player,
+        enemies: [
+          for (final entryId in const [
+            'ch1_s03_blade_01',
+            'ch1_s03_crossbow_01',
+            'ch1_s03_rope_01',
+            'ch1_s03_leader_01',
+          ])
+            bundle.actorBindingsByEntryId[entryId]!.createActor(
+              runtimeIdFor(entryId),
+            ),
+        ],
+        skillSlots: mapping.initialState.skillSlots,
+      );
+      final profileIds = {
+        for (final intent in mapping.enemyAiAdapter.intentsFor(
+          state: intentState,
+        ))
+          switch (intent) {
+            Phase0aMoveIntent(:final behaviorProfile) =>
+              behaviorProfile?.id,
+            Phase0aAttackIntent(:final behaviorProfile) =>
+              behaviorProfile?.id,
+            Phase0aEnemySkillIntent(:final behaviorProfile) =>
+              behaviorProfile?.id,
+            _ => null,
+          },
+      };
+      expect(profileIds, {
+        'ai_bandit_press',
+        'ai_crossbow_offset',
+        'ai_rope_flank',
+        'ai_gong_command',
+      });
       host.advanceManual(
         deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
         command: const Phase0aPlayerCommand(),

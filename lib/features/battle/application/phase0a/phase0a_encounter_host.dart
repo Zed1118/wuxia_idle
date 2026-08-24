@@ -20,6 +20,7 @@ import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_skill_binding.dart';
+import '../../domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'phase0a_headless_runner.dart';
 import 'phase0a_migrated_encounter_plan_builder.dart';
 import 'phase0a_player_bot_adapter.dart';
@@ -41,6 +42,7 @@ final class Phase0aEncounterActorRuntimeBinding {
     required this.basicQiDelta,
     required this.entrance,
     required this.behaviorAiProfile,
+    this.behaviorProfile,
     required this.attackSet,
     required this.visualVariant,
     required this.visualAssetPath,
@@ -53,6 +55,7 @@ final class Phase0aEncounterActorRuntimeBinding {
   final int basicQiDelta;
   final String entrance;
   final String behaviorAiProfile;
+  final Phase0aEnemyBehaviorProfile? behaviorProfile;
   final String attackSet;
   final String visualVariant;
   final String visualAssetPath;

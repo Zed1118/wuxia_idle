@@ -11,6 +11,7 @@ import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
+import '../../battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'phase0a_mainline_encounter_host.dart';
 
 Phase0aMainlineEncounterRuntimeBindingBundle
@@ -168,6 +169,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       basicQiDelta: basicSkill.qiDelta,
       entrance: binding.entranceId,
       behaviorAiProfile: binding.behavior.aiProfile.id,
+      behaviorProfile: _behaviorProfile(binding.behavior.aiProfile),
       attackSet: binding.attackSet.id,
       visualVariant: binding.visualVariant.id,
       visualAssetPath: binding.visualVariant.assetPath,
@@ -186,6 +188,33 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     encounterId: encounterId,
     tickDuration: tickDuration,
     actorBindingsByEntryId: Map.unmodifiable(actorBindings),
+  );
+}
+
+Phase0aEnemyBehaviorProfile _behaviorProfile(CombatRuntimeAiProfile profile) {
+  final movementPolicy = switch (profile.movementPolicy) {
+    CombatRuntimeMovementPolicy.directAdvance =>
+      Phase0aEnemyMovementPolicy.directAdvance,
+    CombatRuntimeMovementPolicy.holdDistance =>
+      Phase0aEnemyMovementPolicy.holdDistance,
+    CombatRuntimeMovementPolicy.lateralFlank =>
+      Phase0aEnemyMovementPolicy.lateralFlank,
+    CombatRuntimeMovementPolicy.guardedPosition =>
+      Phase0aEnemyMovementPolicy.guardedPosition,
+  };
+  final attackPolicy = switch (profile.attackPolicy) {
+    CombatRuntimeAttackPolicy.closeRange => Phase0aEnemyAttackPolicy.closeRange,
+    CombatRuntimeAttackPolicy.rangedPressure =>
+      Phase0aEnemyAttackPolicy.rangedPressure,
+    CombatRuntimeAttackPolicy.chargeAndReposition =>
+      Phase0aEnemyAttackPolicy.chargeAndReposition,
+    CombatRuntimeAttackPolicy.supportPulse =>
+      Phase0aEnemyAttackPolicy.supportPulse,
+  };
+  return Phase0aEnemyBehaviorProfile(
+    id: profile.id,
+    movementPolicy: movementPolicy,
+    attackPolicy: attackPolicy,
   );
 }
 

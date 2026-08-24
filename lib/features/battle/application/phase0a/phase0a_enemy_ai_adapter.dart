@@ -2,6 +2,7 @@ import '../../../../core/domain/enums.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'phase0a_enemy_skill_binding.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
 
@@ -17,6 +18,7 @@ final class Phase0aEnemyAiAdapter {
     required this.attackCooldownSeconds,
     this.skillBindingsByActor = const {},
     this.basicQiDeltaByActor = const {},
+    this.behaviorProfilesByActor = const {},
     this.defenseTuning,
   });
 
@@ -25,6 +27,7 @@ final class Phase0aEnemyAiAdapter {
   final double attackCooldownSeconds;
   final Map<String, List<Phase0aEnemySkillBinding>> skillBindingsByActor;
   final Map<String, int> basicQiDeltaByActor;
+  final Map<String, Phase0aEnemyBehaviorProfile> behaviorProfilesByActor;
   final Phase0aDefenseTuning? defenseTuning;
 
   List<Phase0aIntent> intentsFor({required Phase0aArenaState state}) {
@@ -43,9 +46,19 @@ final class Phase0aEnemyAiAdapter {
         continue;
       }
       final delta = player.position - enemy.position;
-      if (delta.lengthSquared > attackRange * attackRange) {
+      final behaviorProfile = behaviorProfilesByActor[enemy.id];
+      final movement = _movementFor(
+        profile: behaviorProfile,
+        actor: enemy,
+        delta: delta,
+      );
+      if (movement != null) {
         intents.add(
-          Phase0aMoveIntent(actorId: enemy.id, direction: delta.normalized()),
+          Phase0aMoveIntent(
+            actorId: enemy.id,
+            direction: movement,
+            behaviorProfile: behaviorProfile,
+          ),
         );
         continue;
       }
@@ -64,6 +77,7 @@ final class Phase0aEnemyAiAdapter {
             cooldownSeconds: skill.cooldownSeconds,
             actionCooldownSeconds: attackCooldownSeconds,
             defenseFlags: defenseTuning?.skillAttackFlags,
+            behaviorProfile: behaviorProfile,
           ),
         );
         continue;
@@ -80,10 +94,44 @@ final class Phase0aEnemyAiAdapter {
               : ArenaVector.zero,
           qiDelta: basicQiDeltaByActor[enemy.id] ?? 0,
           defenseFlags: defenseTuning?.basicAttackFlags,
+          behaviorProfile: behaviorProfile,
         ),
       );
     }
     return intents;
+  }
+
+  ArenaVector? _movementFor({
+    required Phase0aEnemyBehaviorProfile? profile,
+    required Phase0aActor actor,
+    required ArenaVector delta,
+  }) {
+    final policy =
+        profile?.movementPolicy ?? Phase0aEnemyMovementPolicy.directAdvance;
+    final inRange = delta.lengthSquared <= attackRange * attackRange;
+    switch (policy) {
+      case Phase0aEnemyMovementPolicy.directAdvance:
+        return inRange ? null : delta.normalized();
+      case Phase0aEnemyMovementPolicy.holdDistance:
+        if (!inRange) return delta.normalized();
+        if (actor.attackCooldownRemaining > 0) {
+          return delta.lengthSquared > 0
+              ? ArenaVector(-delta.x, -delta.y).normalized()
+              : ArenaVector.zero;
+        }
+        return null;
+      case Phase0aEnemyMovementPolicy.lateralFlank:
+        if (inRange) {
+          if (actor.attackCooldownRemaining <= 0) return null;
+          return delta.lengthSquared > 0
+              ? ArenaVector(-delta.y, delta.x).normalized()
+              : ArenaVector.zero;
+        }
+        final toward = delta.normalized();
+        return (toward + ArenaVector(-toward.y, toward.x)).normalized();
+      case Phase0aEnemyMovementPolicy.guardedPosition:
+        return inRange ? null : ArenaVector.zero;
+    }
   }
 
   Phase0aEnemySkillBinding? _pickSkill(Phase0aActor actor) {
