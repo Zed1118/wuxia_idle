@@ -115,16 +115,30 @@ Phase0aEncounterRuntimeObservation get runtimeObservation =>
 
 ## CLAUDE §8.2 checklist
 
-- [ ] 有效缺 API 红灯后最小实现，小提交按 plan → red →
+- [x] 有效缺 API 红灯后最小实现，小提交按 plan → red →
   implementation → fix/evidence。
-- [ ] 6 文件 targeted 全绿，4 changed Dart analyze 0，format/diff/path/status
+- [x] 6 文件 targeted 全绿，4 changed Dart analyze 0，format/diff/path/status
   clean，未跑 full。
 - [ ] Pi 同配置完成最终只读审查，triage 后 P0/P1/P2=0。
 - [ ] 红线影响 0，Gate 诚实；最后追加精确 READY 空提交。
 
 ## 恢复点
 
-- 状态：环境与 Pi 设计审查完成，待提交计划并进入红测。
+- 状态：计划、红测、实现、守卫加固、6 文件 targeted 与 scoped
+  analyze 已完成；待 Pi 最终只读审查、triage、最终证据与 READY。
+- 提交：`8fc8a28e` plan；`33748337` red；`3bc33cb1`
+  implementation；`19938f32` source guard 加固。
+- 有效红灯：两个 owned tests 仅因新
+  `phase0a_encounter_runtime_observation.dart` 不存在，value/source/getter 类型
+  无法解析而编译失败；最小生产实现后转绿。
+- targeted 合计 83/83：R25 runtime observation 25/25，R26 migrated
+  composition 14/14，lease session 17/17，dynamic objective 15/15，
+  production lease wiring 10/10，production objective integration 2/2；
+  未跑 full。守卫加固后又复跑 R25 25/25。
+- 静态验证：4 changed Dart items `flutter analyze --no-pub` 0 issue；
+  `dart format` 4 items 0 changed；`git diff --check`、exact 5-path guard 与
+  status clean。R25 测试相对基线仅新增行，既有 getter/order/owner
+  guard 未删改。
 - 环境：`flutter pub get` 成功；build_runner 写 126 ignored outputs；
   `libisar.dylib` SHA-256 =
   `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`，
