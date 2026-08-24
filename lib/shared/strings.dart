@@ -3188,7 +3188,7 @@ class UiStrings {
   static String defeatTechniqueProgressSegment(String techniqueName) =>
       '$techniqueName 修炼度回退';
 
-  /// 心魔失败余毒标记段（追加在内力段之后）：`余毒未消`
+  /// 心魔失败摘要状态段：`内息紊乱`
   static const String innerDemonResidueNote = '内息紊乱';
 
   // ── 双层伤势 UI（第八阶段 Task 9）──────────────────────────────────────────
