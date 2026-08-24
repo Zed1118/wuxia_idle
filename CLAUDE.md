@@ -4,11 +4,13 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.58**
+> **版本:v1.59**
+>
+> v1.59 变更摘要(2026-08-25 二阶段 M2/M6 U01 可见重打参与者归属纵切):已通关主线的可见真人重打现在从 active roster 选择存活、有主修且空闲的角色，经既有参与政策解析并把同一角色快照传入真实 `Phase0aMainlineBattleHost`；占用、角色/主修/装备悬空或领队指针损坏均 fail closed，不回退掌门。经验、熟练度、伤势与无主掉落历史事件归实际参与者，founder tutorial 语义不变。本纵切不开放前台 bot，不改 headless/扫荡/特殊模式，不关闭听剑、U01/U05、M2/M6 或整个二阶段；零 schema/saveVersion、数值、奖励、概率、解锁与叙事变更。
+>
+> **前版:v1.58**
 >
 > v1.58 变更摘要(2026-08-25 二阶段 M2/M6 U04 第一章待处理江湖事持久队列纵切):复用 `0.40.0` `MainlineSettlementJournal` 现有 outbox，以严格版本化 typed ref 持久互动奇遇与 Boss 招降，在权威 core settlement 事务内生成 canonical 来源、稳定 seed 与 FIFO 顺序。展示中仍保持 pending，重启重现；玩家选择、属性/声望/招收/来源标记与 claim 同一 Isar 事务，失败整体回滚，已完成旧队首重放幂等返回。返回/下一关动作可先记录，但只在队列排空后关闭/交接 receipt。本纵切只关闭第一章连续首通的 U04 互动事项恢复，不代表非主线全局队列、U01/U05、M2/M6 或整个二阶段完成；零 schema/saveVersion、数值、概率、奖励、解锁与文案变更。
->
-> **前版:v1.57**
 >
 > v1.57 变更摘要(2026-08-24 二阶段 M2/M6 U01 第一章持久结算恢复切片):存档 schema 以加法迁移升至 `0.40.0`，新增专用 `MainlineSettlementJournal`/outbox，持久身份严格绑定 `runId + stageId + loadoutVersion + participantId`。第一章连续首通在战前写入 `prepared`：权威结算前崩溃只能以同一参与者重试同关；角色/装备/心法/掉落/伤势/进度及确定性战绩、图鉴、击杀计数和声望与 `coreApplied` receipt 同一 Isar 事务落库，已提交 receipt 重启只恢复结算后 UI/推进且不重复发放。“返回/下一关”动作持久化，进入下一关时原子关闭旧 receipt 并创建新 `prepared`，保持同 run/同人且快照版本递增。本切片**仍不关闭**互动奇遇/招降的 U04 持久待处理队列、听剑生产接线、replay/manual/auto/headless/扫荡一致性、U05、M2、M6 或整个二阶段；未改任何调优值。
 >

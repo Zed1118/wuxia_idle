@@ -8,7 +8,8 @@
 - baseCommit：`94b5f0e9b4b9bcfd57a4c83a1abb808bdaf47a3c`
 - branch：`codex/phase2-m2-m6-u01-participant-attribution-parity-20260825`
 - worktree：`/Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-participant-attribution-parity`
-- status：`in_progress`
+- status：`ready_reviewed`
+- codeCandidate：`3e46d216d93090f389fd7b9894ee969ad42f7c95`
 
 ## 已确认生产缺口
 
@@ -66,3 +67,13 @@ eligible 空闲角色，记录、成长与伤势归实际参与者；headless/�
 
 若出现 schema bump、听剑调优、前台 bot 新产品入口或与活跃 owner 文件冲突，记录
 精确阻塞并转向无冲突切片；不得借本任务扩大 UI 信息架构。
+
+## 完成证据
+
+- 可见重打选角、政策解析、精确角色快照与生产 Host 参数链已接通。
+- 经验及无主掉落历史事件归实际参与者；首推 founder tutorial 语义未改。
+- 占用、主修悬空、装备悬空、领队指针损坏均 fail closed，不回退掌门。
+- 独立复核首次发现悬空装备 P1，真实红测复现后修复；复审 P0/P1/P2=0。
+- 联合定向 57/57、主线目录 408/408、根 analyze 0、最终全量
+  5322/5322、`git diff --check` 通过。
+- 本纵切不关闭前台 bot、headless/扫荡归属、听剑、U01/M2/M6 或二阶段。

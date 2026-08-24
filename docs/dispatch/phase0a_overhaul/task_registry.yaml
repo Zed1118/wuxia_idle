@@ -3487,9 +3487,17 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-m6-u01-participant-attribution-parity-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-participant-attribution-parity
-    status: in_progress
+    status: ready_reviewed
     base_commit: 94b5f0e9b4b9bcfd57a4c83a1abb808bdaf47a3c
+    code_candidate_commit: 3e46d216d93090f389fd7b9894ee969ad42f7c95
+    ready_marker: "[READY][CODEX][P2-M2-M6-U01-VISIBLE-REPLAY] 收口可见重打参与者归属"
     completion_scope: visible_human_mainline_replay_participant_selection_and_attribution
+    verification:
+      targeted_tests: 57
+      mainline_tests: 408
+      root_analyze_issues: 0
+      full_tests: 5322
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
       - P2-M2-M6-U04-PENDING-JIANGHU-AFFAIRS
