@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +8,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/shared/widgets/cycle_select_control.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_narrative_manifest.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -17,10 +20,15 @@ import '../../../support/test_data.dart';
 /// CycleSelectControl;整章未通 → 内部 guard 不渲染周目文案。
 /// 不接 Isar — provider override 喂态。
 void main() {
+  late MainlineNarrativeManifest narrativeManifest;
+
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+    narrativeManifest = await MainlineNarrativeManifest.load(
+      loader: (path) => File(path).readAsString(),
+    );
   });
 
   /// Ch1 整章已通(章末 Boss cycle 1)→ 章级周目 key ch1#1。
@@ -63,6 +71,9 @@ void main() {
       ProviderScope(
         overrides: [
           mainlineProgressProvider.overrideWith((ref) async => progress),
+          mainlineNarrativeManifestProvider.overrideWith(
+            (ref) async => narrativeManifest,
+          ),
           numbersConfigProvider.overrideWithValue(
             _NumbersStub(maxCycleMainline: maxCycle),
           ),
@@ -179,6 +190,16 @@ void main() {
 
     // 第1周目视图:5 关全已通关。
     expect(find.text(UiStrings.stageListCleared), findsNWidgets(5));
+    expect(
+      find.text(UiStrings.mainlineNarrativeVictoryLabel),
+      findsNWidgets(5),
+      reason: '一周目通关证据解锁 5 个胜利旧卷',
+    );
+    expect(
+      find.text(UiStrings.mainlineNarrativeDefeatLabel),
+      findsNWidgets(2),
+      reason: 'Ch1 两个 Boss 的战败旧卷均按首通证据保守解锁',
+    );
 
     await tester.tap(find.text(UiStrings.cycleChallengeNextLabel(2)));
     await tester.pump();
@@ -193,6 +214,16 @@ void main() {
       find.text(UiStrings.stageListAvailable),
       findsNWidgets(5),
       reason: '第2周目全关解锁可挑战',
+    );
+    expect(
+      find.text(UiStrings.mainlineNarrativeVictoryLabel),
+      findsNWidgets(5),
+      reason: '切二周目不能重新锁住一周目已解锁的胜利旧卷',
+    );
+    expect(
+      find.text(UiStrings.mainlineNarrativeDefeatLabel),
+      findsNWidgets(2),
+      reason: 'defeat 无持久失败证据，保守沿用周目无关首通证据',
     );
   });
 }

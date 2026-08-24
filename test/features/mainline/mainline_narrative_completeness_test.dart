@@ -20,6 +20,7 @@ void main() {
 
   test('主线 stage 绑定的 narrative id 全部能加载到真内容', () async {
     final checked = <String>[];
+    final manifestScopedIds = <String>[];
     final mainlineStages =
         repo.stageDefs.values
             .where((s) => s.stageType == StageType.mainline)
@@ -34,6 +35,13 @@ void main() {
         if (stage.bossRecruit != null) '${stage.id}_boss_recruit',
         if (stage.bossRecruit != null) '${stage.id}_boss_fail_recover',
       ];
+      manifestScopedIds.addAll(
+        [
+          stage.narrativeOpeningId,
+          stage.narrativeVictoryId,
+          stage.narrativeDefeatId,
+        ].whereType<String>(),
+      );
 
       for (final id in ids.whereType<String>()) {
         final content = await NarrativeLoader.load(id, loader: fileLoader);
@@ -56,6 +64,16 @@ void main() {
     }
 
     expect(mainlineStages.length, 105, reason: '当前主线应覆盖 Ch1-21 共 105 关');
+    expect(
+      manifestScopedIds,
+      hasLength(252),
+      reason: '冻结合同为 105 opening + 105 victory + 42 defeat',
+    );
+    expect(
+      manifestScopedIds.toSet(),
+      hasLength(252),
+      reason: '主线三类旧叙事 ID 不得跨关或跨类型复用',
+    );
     expect(
       checked.length,
       greaterThanOrEqualTo(190),

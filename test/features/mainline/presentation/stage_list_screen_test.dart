@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +8,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_narrative_manifest.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
@@ -17,10 +20,15 @@ import '../../../support/test_data.dart';
 /// 不接真实 Isar：mainlineProgressProvider override 为 fixture，
 /// chapterStagesProvider 走真 service.availableStages（依赖 GameRepository）。
 void main() {
+  late MainlineNarrativeManifest narrativeManifest;
+
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+    narrativeManifest = await MainlineNarrativeManifest.load(
+      loader: (path) => File(path).readAsString(),
+    );
   });
 
   MainlineProgress mkProgress({
@@ -61,6 +69,9 @@ void main() {
       ProviderScope(
         overrides: [
           mainlineProgressProvider.overrideWith((ref) async => progress),
+          mainlineNarrativeManifestProvider.overrideWith(
+            (ref) async => narrativeManifest,
+          ),
           if (activeCharacter != null) ...[
             activeCharacterIdsProvider.overrideWith(
               (ref) async => [activeCharacter.id],
@@ -326,16 +337,14 @@ void main() {
     );
   });
 
-  testWidgets('点 available 关卡 → 进入剧情阅读屏（T37 流程串联，P1 #1 真实剧情加载）', (
-    tester,
-  ) async {
+  testWidgets('点章节卷轴「开场」→ 主动进入真实剧情阅读屏', (tester) async {
     await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
 
-    await tester.tap(find.text('山门之外'));
+    await tester.tap(find.text(UiStrings.mainlineNarrativeOpeningLabel));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // runStageFlow → NarrativeLoader.load('stage_01_01_opening')
+    // timeline optional reading → NarrativeLoader.load('stage_01_01_opening')
     // P1 #1 后 NarrativeLoader 扫 data/narratives/stages/ 子目录，
     // widget test 中 rootBundle 能读到 pubspec 声明的真实 asset →
     // 加载 DeepSeek 写的「山门之外 · 启」，不走 placeholder

@@ -1584,7 +1584,15 @@ class UiStrings {
   static const String stageListEmpty = '该章暂无关卡';
   static const String stageListJourneyTitle = '章内行程';
   static const String stageListTimelineTitle = '章节卷轴';
-  static const String stageListTimelineHint = '沿路标推进，朱印为章末首领';
+  static const String stageListTimelineHint = '沿路标推进，已解锁旧事可主动翻阅';
+  static const String mainlineNarrativeOptionalLabel = '旧事可阅';
+  static const String mainlineNarrativeOpeningLabel = '开场';
+  static const String mainlineNarrativeVictoryLabel = '胜利';
+  static const String mainlineNarrativeDefeatLabel = '战败';
+  static String mainlineNarrativeReadSemantics(
+    String stageName,
+    String section,
+  ) => '翻阅$stageName的$section旧事';
   static const String stageListBoss = '首领';
   static const String stageListJourneyMinorBoss = '强敌';
   static const String stageListJourneyFinalBoss = '章末';
@@ -3168,6 +3176,9 @@ class UiStrings {
 
   /// 战败散功代价卡标题（Boss 关散功惩罚场景）
   static const String defeatLossTitle = '战败 · 散功代价';
+
+  /// 主线 Boss 事实损失弹层确认动作。
+  static const String mainlineDefeatLossAcknowledge = '知道了';
 
   /// 战败心魔反噬卡标题（M6 心魔关余毒场景，与散功 Boss 关互斥）
   static const String defeatLossTitleInnerDemon = '战败 · 心魔反噬';

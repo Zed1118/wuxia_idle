@@ -49,10 +49,14 @@ void main() {
     difficultyMultiplier: 1.0,
   );
 
-  StageDef bossStage({String? factionId, String? defeatId}) => StageDef(
+  StageDef bossStage({
+    StageType stageType = StageType.mainline,
+    String? factionId,
+    String? defeatId,
+  }) => StageDef(
     id: 'stage_branch_boss',
     name: '测试 Boss 关',
-    stageType: StageType.mainline,
+    stageType: stageType,
     requiredRealm: RealmTier.xueTu,
     enemyTeam: const [],
     isBossStage: true,
@@ -124,7 +128,7 @@ void main() {
     expect(harness.error, isNull);
   });
 
-  testWidgets('Boss 战败 + 损失 entries 非空 → 战败剧情 push 带 banner(L139-176)', (
+  testWidgets('主线 Boss 战败 + 损失 entries 非空 → 事实弹层且不 push defeat reader', (
     tester,
   ) async {
     final observer = _RecordingNavigatorObserver();
@@ -150,22 +154,63 @@ void main() {
     );
     await tester.pumpWidget(harness.build());
     await tester.pump();
-    final baseline = observer.pushedRoutes.length;
+    final baselineReaders = observer.pushedRoutes
+        .whereType<MaterialPageRoute<void>>()
+        .length;
 
     await tester.tap(find.text('start'));
-    // 不 settle:NarrativeReaderScreen 内部异步易死锁,只验 push 被触发
-    // (对齐既有 stage_entry_flow_test 的 victory narrative 测法)。
+    await tester.pumpAndSettle();
+
+    expect(penaltyStage?.id, 'stage_branch_boss', reason: '散功结算以本关调用');
+    expect(find.text(UiStrings.defeatLossTitle), findsOneWidget);
+    expect(find.textContaining('测试甲'), findsOneWidget);
+    expect(
+      observer.pushedRoutes.whereType<MaterialPageRoute<void>>().length,
+      baselineReaders,
+      reason: 'mainline defeat narrative reader must stay deblocked',
+    );
+
+    await tester.tap(find.text(UiStrings.mainlineDefeatLossAcknowledge));
+    await tester.pumpAndSettle();
+
+    expect(harness.completed, isTrue);
+    expect(harness.error, isNull);
+  });
+
+  testWidgets('特殊模式 Boss 战败 → 保留 defeat reader 与损失 banner', (tester) async {
+    final observer = _RecordingNavigatorObserver();
+    final harness = _FlowHarness(
+      stage: bossStage(
+        stageType: StageType.innerDemon,
+        defeatId: 'stage_inner_demon_01_defeat',
+      ),
+      battleOutcome: () async => (won: false, surrendered: false),
+      bossDefeatPenalty: (_) async => const [
+        DefeatLossEntry(
+          characterName: '测试甲',
+          internalForceBefore: 3000,
+          internalForceAfter: 3000,
+          residueApplied: true,
+        ),
+      ],
+      navigatorObservers: [observer],
+    );
+    await tester.pumpWidget(harness.build());
+    await tester.pump();
+    final baselineReaders = observer.pushedRoutes
+        .whereType<MaterialPageRoute<void>>()
+        .length;
+
+    await tester.tap(find.text('start'));
     for (var i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    expect(penaltyStage?.id, 'stage_branch_boss', reason: '散功结算以本关调用');
     expect(
-      observer.pushedRoutes.length,
-      greaterThan(baseline),
-      reason: 'narrativeDefeatId 非空 → 战败剧情 MaterialPageRoute 已 push',
+      observer.pushedRoutes.whereType<MaterialPageRoute<void>>().length,
+      greaterThan(baselineReaders),
     );
-    expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+    expect(find.text(UiStrings.defeatLossTitleInnerDemon), findsOneWidget);
     expect(harness.error, isNull);
   });
 
