@@ -14,6 +14,8 @@ void main() {
         numbers,
         isNot(contains('internal_force_recovery_multiplier: 0.80')),
       );
+      expect(numbers, isNot(contains('failure_penalty:')));
+      expect(numbers, isNot(contains('main_cultivation_multiplier:')));
     },
   );
 }

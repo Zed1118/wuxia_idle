@@ -2,35 +2,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/defs/inner_demon_def.dart';
 
 void main() {
-  group('InnerDemonFailurePenalty', () {
-    test('fromYaml 保留主修修炼度系数', () {
-      final p = InnerDemonFailurePenalty.fromYaml({
-        'main_cultivation_multiplier': 0.90,
-      });
-      expect(p.mainCultivationMultiplier, 0.90);
-    });
-
-    test('fromYaml rejects retired legacy fields', () {
+  group('InnerDemonDef.fromYaml 退役配置拒绝', () {
+    test('存在旧 failure_penalty 段即拒绝', () {
       expect(
-        () => InnerDemonFailurePenalty.fromYaml({
-          'internal_force_multiplier': 0.85,
-          'main_cultivation_multiplier': 0.90,
+        () => InnerDemonDef.fromYaml({
+          'failure_penalty': {'main_cultivation_multiplier': 0.90},
         }),
         throwsFormatException,
       );
     });
 
-    test('fromYaml 缺省保持 0.90，并拒绝越界主修系数', () {
+    test('空段与 null 值也不能静默兼容', () {
       expect(
-        InnerDemonFailurePenalty.fromYaml({}).mainCultivationMultiplier,
-        0.90,
-      );
-      expect(
-        () => InnerDemonFailurePenalty.fromYaml({
-          'main_cultivation_multiplier': 1.1,
-        }),
+        () => InnerDemonDef.fromYaml({'failure_penalty': <String, dynamic>{}}),
         throwsFormatException,
       );
+      expect(
+        () => InnerDemonDef.fromYaml({'failure_penalty': null}),
+        throwsFormatException,
+      );
+    });
+
+    test('缺少退役段仍可解析空配置', () {
+      final def = InnerDemonDef.fromYaml(const {});
+      expect(def.mirrorBuffPerStage, isEmpty);
+      expect(def.unlockTriggers, isEmpty);
     });
   });
 }

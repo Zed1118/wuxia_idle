@@ -72,7 +72,7 @@ void main() {
     difficultyMultiplier: 1,
   );
 
-  test('心魔战败保留内息紊乱与主修惩罚，但不增加轻伤或重伤', () {
+  test('心魔战败只施加 capped 内息紊乱并保留通用结算', () {
     final character = makeCharacter();
     final technique = makeTechnique();
     final equipment = Equipment.create(
@@ -86,9 +86,12 @@ void main() {
       battleCount: 4,
     );
     final beforeForce = character.internalForce;
+    final beforeRealmTier = character.realmTier;
+    final beforeRealmLayer = character.realmLayer;
     final beforeLayer = technique.cultivationLayer;
+    final beforeProgress = technique.cultivationProgress;
 
-    CombatResolutionService.resolveSnapshot(
+    final result = CombatResolutionService.resolveSnapshot(
       settlement: defeatSnapshot(),
       participatingCharacters: [character],
       equipmentsByCharacter: {
@@ -109,8 +112,13 @@ void main() {
     );
 
     expect(character.internalForce, beforeForce);
+    expect(character.realmTier, beforeRealmTier);
+    expect(character.realmLayer, beforeRealmLayer);
     expect(technique.cultivationLayer, beforeLayer);
-    expect(technique.cultivationProgress, 180);
+    expect(technique.cultivationProgress, beforeProgress);
+    final evidence = result.innerDemonPenaltyByCharacter[character.id]!;
+    expect(evidence.progressBefore, beforeProgress);
+    expect(evidence.progressAfter, beforeProgress);
     expect(equipment.defId, 'weapon_test');
     expect(equipment.ownerCharacterId, character.id);
     expect(equipment.enhanceLevel, 3);
