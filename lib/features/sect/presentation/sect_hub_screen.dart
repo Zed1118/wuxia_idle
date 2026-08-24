@@ -15,6 +15,7 @@ import '../../expedition/presentation/expedition_overview_screen.dart';
 import '../../lineup/presentation/team_lineup_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
+import 'sect_itinerary_panel.dart';
 import 'sect_screen.dart';
 
 /// 二阶段 §11.1 “宗门”一级 Hub。
@@ -85,6 +86,8 @@ class SectHubScreen extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               children: [
+                const SectItineraryPanel(),
+                const SizedBox(height: 12),
                 LightPaperPanel(
                   padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
                   child: Column(

@@ -490,6 +490,26 @@ class UiStrings {
   static const String sectHubAffairsHint = '处理门派事件、成员与领地';
   static const String sectHubCharacterLoadingHint = '角色名册仍在载入';
   static const String sectHubNoActiveCharacterHint = '暂无可用的出战角色';
+  static const String sectItineraryTitle = '宗门行止';
+  static const String sectItineraryLoading = '正在核对掌门与门人去向……';
+  static const String sectItineraryUnavailable = '宗门行止暂不可核实';
+  static String sectItineraryLeader(String name, String status) =>
+      '掌门：$name · $status';
+  static const String sectItineraryLeaderAtSect = '坐镇宗门';
+  static const String sectItineraryNoOccupancy = '门人皆在宗门待命';
+  static const String sectItineraryActivityRetreat = '闭关';
+  static const String sectItineraryActivityExpedition = '百草岭';
+  static const String sectItineraryActivityGauntlet = '断魂庄';
+  static String sectItineraryOccupiedMembers(
+    String activity,
+    List<String> names,
+  ) => '$activity：${names.join('、')}';
+  static const String sectItineraryExpeditionIdle = '百草岭：当前无远征';
+  static String sectItineraryExpeditionActive(int depth, bool defeated) =>
+      defeated ? '百草岭：第 $depth 处战败待归' : '百草岭：已深入第 $depth 处';
+  static const String sectItineraryGauntletIdle = '断魂庄：当前无庄局';
+  static String sectItineraryGauntletActive(int stage, String phase) =>
+      '断魂庄：第 $stage 关 · $phase';
   static const String mainMenuMartialInventory = '武学与行囊';
   static const String mainMenuMartialInventoryHint = '招式、主修、装备与物品';
   static const String martialInventoryHubTitle = '武学与行囊';
