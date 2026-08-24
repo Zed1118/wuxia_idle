@@ -3823,3 +3823,35 @@ tasks:
       - tower progress battle guard and production destination stay unchanged
       - do not change schema save version tuning narrative rewards economy unlocks or main
       - do not claim all locations U06 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U06-JIANGHU-MAP-LIGHT-FOOT-LOCATION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-jianghu-map-light-foot-location-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-light-foot-location
+    status: in_progress
+    base_commit: 269e1baaad6b89544c90c66b8f86815ecb8c54ca
+    completion_scope: move_light_foot_from_flat_main_menu_to_second_production_jianghu_map_location
+    dependencies:
+      - P2-M6-U06-JIANGHU-MAP-TOWER-LOCATION
+    owned_files:
+      - lib/features/main_menu/presentation/main_menu.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/main_menu/presentation/main_menu_jianghu_map_light_foot_location_test.dart
+      - test/features/main_menu/presentation/main_menu_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-jianghu-map-light-foot-location.md
+      - docs/audit/phase2_m6_u06_jianghu_map_light_foot_location_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - light foot leaves the flattened main menu and becomes the second jianghu map production location
+      - locked and progress state derive from MainlineProgress LightFootService and production config
+      - light foot keeps the existing battle guard and LightFootScreen destination
+      - do not migrate other locations or implement the unified location detail in this slice
+      - do not change schema save version tuning narrative rewards economy unlocks or main
+      - do not claim U06 U14 M5 M6 or overall Phase 2 completion
