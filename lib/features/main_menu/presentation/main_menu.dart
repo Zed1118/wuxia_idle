@@ -19,7 +19,6 @@ import '../../festival/application/festival_service_providers.dart';
 import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import '../../jianghu_map/presentation/jianghu_map_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
-import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import '../../mass_battle/presentation/mass_battle_screen.dart';
 import '../../martial_inventory/presentation/martial_inventory_hub_screen.dart';
@@ -145,7 +144,7 @@ class MainMenu extends ConsumerWidget {
   static const int _seclusionUnlockStep = 5;
 
   // H1 批1 §5.7:未解锁系统门控 — 镜像各屏 clearedStageIds prereq(单一真相源)。
-  static const String _lateGameUnlockStage = 'stage_06_05'; // 心魔/轻功/群战
+  static const String _lateGameUnlockStage = 'stage_06_05'; // 群战
   static const String _socialUnlockStage = 'stage_01_05'; // 江湖/门派/排行榜
 
   static TutorialHintDef? _firstUnreadHint(
@@ -406,21 +405,6 @@ class MainMenu extends ConsumerWidget {
           ),
         ),
         onOpenMap: () => _push(context, const JianghuMapScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLightFoot,
-        hint: lateLocked
-            ? UiStrings.mainMenuLateGameLockedHint
-            : UiStrings.mainMenuLightFootHint,
-        icon: Icons.directions_run,
-        thumbnailPath: WuxiaUi.entryLightFoot,
-        disabled: lateLocked,
-        locked: lateLocked,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const LightFootScreen()),
-        ),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuMassBattle,

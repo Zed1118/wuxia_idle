@@ -6,6 +6,10 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../light_foot/application/light_foot_service.dart';
+import '../../light_foot/presentation/light_foot_screen.dart';
+import '../../mainline/application/mainline_providers.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
@@ -31,6 +35,39 @@ String jianghuMapTowerStatus(TowerProgress progress) {
       : UiStrings.mainMenuTowerStatus(highest, next);
 }
 
+({bool locked, String status}) jianghuMapLightFootLocationState(
+  MainlineProgress progress,
+) {
+  final config = GameRepository.instance.numbers.lightFoot;
+  final stageIds = LightFootService.orderedStageIds(config);
+  if (stageIds.isEmpty) {
+    return (locked: true, status: UiStrings.lightFootEmpty);
+  }
+  final cleared = progress.clearedStageIds.toSet();
+  final firstStagePrerequisites = config.unlockTriggers.entries
+      .where((entry) => entry.value == stageIds.first)
+      .map((entry) => entry.key)
+      .toList(growable: false);
+  if (firstStagePrerequisites.length != 1) {
+    return (locked: true, status: UiStrings.lightFootEmpty);
+  }
+  final firstStatus = LightFootService.statusOf(
+    stageId: stageIds.first,
+    config: config,
+    clearedStageIds: cleared,
+  );
+  final locked =
+      !cleared.contains(firstStagePrerequisites.single) ||
+      firstStatus == LightFootStageStatus.locked;
+  final clearedCount = stageIds.where(cleared.contains).length;
+  return (
+    locked: locked,
+    status: locked
+        ? UiStrings.mainMenuLateGameLockedHint
+        : UiStrings.jianghuMapLightFootProgress(clearedCount, stageIds.length),
+  );
+}
+
 class JianghuMapScreen extends ConsumerWidget {
   const JianghuMapScreen({super.key});
 
@@ -39,6 +76,9 @@ class JianghuMapScreen extends ConsumerWidget {
     final towerStatus = ref
         .watch(towerProgressProvider)
         .maybeWhen(data: jianghuMapTowerStatus, orElse: () => null);
+    final lightFootState = ref
+        .watch(mainlineProgressProvider)
+        .maybeWhen(data: jianghuMapLightFootLocationState, orElse: () => null);
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -80,6 +120,26 @@ class JianghuMapScreen extends ConsumerWidget {
                     onAllowed: () => Navigator.of(context).push<void>(
                       MaterialPageRoute(
                         builder: (_) => const TowerFloorListScreen(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                WuxiaInkButton(
+                  key: const ValueKey('jianghu-map-light-foot-location'),
+                  label: UiStrings.mainMenuLightFoot,
+                  hint: UiStrings.mainMenuLightFootHint,
+                  status: lightFootState?.status,
+                  icon: Icons.directions_run,
+                  thumbnailPath: WuxiaUi.entryLightFoot,
+                  disabled: lightFootState == null || lightFootState.locked,
+                  locked: lightFootState == null || lightFootState.locked,
+                  onTap: () => guardBattleEntry(
+                    context: context,
+                    ref: ref,
+                    onAllowed: () => Navigator.of(context).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => const LightFootScreen(),
                       ),
                     ),
                   ),

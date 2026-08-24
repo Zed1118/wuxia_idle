@@ -2057,6 +2057,8 @@ class UiStrings {
   // ─── 轻功对决（1.0 P3.1 §12.3,Batch B.3 入口）────────────────────────────
   static const String mainMenuLightFoot = '轻功试炼';
   static const String mainMenuLightFootHint = '5 关地形 · 一寸余地';
+  static String jianghuMapLightFootProgress(int cleared, int total) =>
+      '已过 $cleared / $total';
 
   // ─── 群战守城（1.0 P3.2 §12.3,Batch 2.4 入口）────────────────────────────
   static const String mainMenuMassBattle = '守城试炼';

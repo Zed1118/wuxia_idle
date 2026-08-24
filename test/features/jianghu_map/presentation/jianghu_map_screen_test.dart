@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
+import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
@@ -17,13 +20,20 @@ void main() {
     ..saveDataId = 0
     ..highestClearedFloor = highest;
 
-  Widget app({int highest = 6}) => ProviderScope(
-    overrides: [
-      towerProgressProvider.overrideWith((ref) async => progressAt(highest)),
-      activeRetreatSessionProvider.overrideWith((ref) async => null),
-    ],
-    child: const MaterialApp(home: JianghuMapScreen()),
-  );
+  Widget app({int highest = 6, List<String> clearedStageIds = const []}) =>
+      ProviderScope(
+        overrides: [
+          towerProgressProvider.overrideWith(
+            (ref) async => progressAt(highest),
+          ),
+          mainlineProgressProvider.overrideWith(
+            (ref) async =>
+                MainlineProgress()..clearedStageIds = clearedStageIds,
+          ),
+          activeRetreatSessionProvider.overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(home: JianghuMapScreen()),
+      );
 
   test('九霄塔地点状态继续读取生产塔数据', () {
     expect(
@@ -39,6 +49,31 @@ void main() {
     expect(find.text(UiStrings.jianghuMapTitle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
     expect(find.text(UiStrings.mainMenuTowerBossStatus(6, 7)), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsOneWidget);
+  });
+
+  test('轻功地点锁定和进度从生产链派生', () {
+    final locked = jianghuMapLightFootLocationState(MainlineProgress());
+    expect(locked.locked, isTrue);
+    expect(locked.status, UiStrings.mainMenuLateGameLockedHint);
+
+    final inconsistent = jianghuMapLightFootLocationState(
+      MainlineProgress()..clearedStageIds = const ['stage_light_foot_01'],
+    );
+    expect(inconsistent.locked, isTrue);
+    expect(inconsistent.status, UiStrings.mainMenuLateGameLockedHint);
+
+    final progressed = jianghuMapLightFootLocationState(
+      MainlineProgress()
+        ..clearedStageIds = const [
+          'stage_06_05',
+          'stage_light_foot_01',
+          'stage_light_foot_02',
+        ],
+    );
+    expect(progressed.locked, isFalse);
+    expect(progressed.status, UiStrings.jianghuMapLightFootProgress(2, 5));
   });
 
   testWidgets('九霄塔地点仍经生产入口进入 TowerFloorListScreen', (tester) async {
@@ -52,6 +87,17 @@ void main() {
     expect(find.byType(TowerFloorListScreen), findsOneWidget);
   });
 
+  testWidgets('轻功地点在原 Ch6 门槛前保持锁定且不导航', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text(UiStrings.mainMenuLightFoot));
+    await tester.pump();
+
+    expect(find.byType(LightFootScreen), findsNothing);
+  });
+
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
     testWidgets('江湖地图 ${size.width.toInt()}x${size.height.toInt()} 无布局异常', (
       tester,
@@ -62,6 +108,7 @@ void main() {
       await tester.pump();
 
       expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
