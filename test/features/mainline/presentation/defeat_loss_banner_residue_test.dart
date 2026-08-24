@@ -3,14 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-/// M6 心魔余毒战败损失摘要 banner widget 层守卫:
+/// M6 心魔内息紊乱战败摘要 banner widget 层守卫:
 /// 验证 [buildDefeatLossBanner]（VISUAL_ROUTE defeat_inner_demon_residue 与本测
-/// 共用入口）对心魔余毒 entry 渲染「余毒未消」段,对 Boss 散功 entry 不渲染。
+/// 共用入口）对心魔 entry 仅渲染角色名与内息紊乱，对 Boss 散功 entry
+/// 继续渲染旧损失段。
 void main() {
   Widget wrap(List<DefeatLossEntry> entries) =>
       MaterialApp(home: Scaffold(body: buildDefeatLossBanner(entries)));
 
-  testWidgets('心魔余毒 entry(residueApplied=true)渲染「余毒未消」段', (tester) async {
+  testWidgets('心魔 entry 仅渲染角色名与内息紊乱', (tester) async {
     await tester.binding.setSurfaceSize(const Size(800, 600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -27,8 +28,22 @@ void main() {
     );
 
     expect(
-      find.textContaining(UiStrings.innerDemonResidueNote),
+      find.text('测试甲  ·  ${UiStrings.innerDemonResidueNote}'),
       findsOneWidget,
+    );
+    expect(
+      find.textContaining(UiStrings.defeatInternalForceSegment(1480, 1258)),
+      findsNothing,
+    );
+    expect(
+      find.textContaining(UiStrings.defeatTechniqueProgressSegment('伏魔禅功')),
+      findsNothing,
+    );
+    expect(
+      find.textContaining(
+        UiStrings.defeatTechniqueLayerSegment('伏魔禅功', null, null, 0),
+      ),
+      findsNothing,
     );
     // 全余毒 → 上下文感知标题为「心魔反噬」，非「散功代价」。
     expect(find.text(UiStrings.defeatLossTitleInnerDemon), findsOneWidget);
