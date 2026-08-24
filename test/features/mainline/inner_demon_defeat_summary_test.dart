@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
@@ -8,6 +9,7 @@ import 'package:wuxia_idle/features/combat_shared/application/combat_resolution_
 import 'package:wuxia_idle/features/equipment/application/drop_service.dart';
 import 'package:wuxia_idle/features/inner_demon/application/inner_demon_service.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import '../../support/test_data.dart';
 
 /// Task 8：心魔关战败损失摘要展示心魔惩罚 + 余毒。
@@ -32,6 +34,7 @@ void main() {
     int id = 1,
     int? mainTechniqueId,
     int internalForce = 3000,
+    double injuryHoursRemaining = 0,
   }) {
     final c = Character.create(
       name: name,
@@ -44,6 +47,7 @@ void main() {
       internalForce: internalForce,
       mainTechniqueId: mainTechniqueId,
     );
+    c.injuryHoursRemaining = injuryHoursRemaining;
     // 手动设定 id（Isar autoIncrement sentinel；测试中手动赋值区分角色）
     c.id = id;
     return c;
@@ -133,6 +137,36 @@ void main() {
     );
 
     expect(entries.first.residueApplied, isTrue, reason: '心魔惩罚 entry 应标记余毒');
+  });
+
+  testWidgets('入场前已有伤势不冒充心魔失败后果', (tester) async {
+    final ch = makeCharacter(name: '张无忌', id: 1, injuryHoursRemaining: 4.5);
+    const penalty = InnerDemonPenaltyResult(
+      internalForceBefore: 3000,
+      internalForceAfter: 3000,
+      progressBefore: 80,
+      progressAfter: 80,
+      residueHoursApplied: 12.0,
+    );
+
+    final entries = buildDefeatLossEntries(
+      characters: [ch],
+      techsByCh: const {},
+      result: innerDemonDefeatResult(innerDemonPenalty: {1: penalty}),
+    );
+
+    expect(entries, hasLength(1));
+    expect(entries.single.injuryApplied, isFalse);
+
+    await tester.pumpWidget(
+      MaterialApp(home: Scaffold(body: buildDefeatLossBanner(entries))),
+    );
+
+    expect(find.text(UiStrings.defeatInjuredDisciples(1)), findsNothing);
+    expect(
+      find.text('张无忌  ·  ${UiStrings.innerDemonResidueNote}'),
+      findsOneWidget,
+    );
   });
 
   test('心魔惩罚 entry layersRolledBack=0（心魔不掉层）', () {

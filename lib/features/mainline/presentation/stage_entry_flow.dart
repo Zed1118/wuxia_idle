@@ -561,7 +561,7 @@ List<DefeatLossEntry> buildDefeatLossEntries({
     );
   }
 
-  // 心魔惩罚 entries（不掉层，余毒标记）
+  // 心魔惩罚 entries（不掉层，仅陈述本次新增的内息紊乱）
   for (final ch in characters) {
     final ip = result.innerDemonPenaltyByCharacter[ch.id];
     if (ip == null) continue;
@@ -576,7 +576,9 @@ List<DefeatLossEntry> buildDefeatLossEntries({
         newLayerLabel: null,
         layersRolledBack: 0,
         residueApplied: true,
-        injuryApplied: ch.injuryHoursRemaining > 0,
+        // 心魔失败不会新增伤势。角色入场前已有的伤势不能被误报为
+        // 本次失败后果；普通 Boss 的伤势投影仍由上方独立分支处理。
+        injuryApplied: false,
       ),
     );
   }
