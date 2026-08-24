@@ -59,16 +59,18 @@ promotion 或全目标 executable 声明。
 
 ## 当前恢复点
 
-- 状态：实现与本地验证完成，待 post-triage Pi 复核与 READY。
+- 状态：实现、验证与最终只读审查全部完成，待空 READY。
 - 最后完成：计划 `0b35f02f`、红测 `25b4e420`、实现
-  `e7e60561`。首轮 Pi 为 `FINAL PASS`、P0/P1=0；唯一可操作 P2
-  是验收清单未勾选，本恢复点已关闭；其余两条为非阻断测试方法
-  信息，已通过 declaration/expected 独立区块唯一性与 95/67/3/70
-  精确计数 guard 加固。
-- 下一步：用同一 Pi 精确配置做 post-triage 复核，提交证据并
-  追加空 READY marker。
+  `e7e60561`、guard/triage 收口 `85e83185`。Pi CLI 0.84.1 使用
+  exact `deepseek/deepseek-v4-flash`、thinking high、Read/Grep/Find/Ls-only；
+  首轮 `FINAL PASS` 的唯一可操作 P2（checklist 滞后）已关闭，
+  post-triage 首次调用五分钟无输出后有界中止，同 exact 配置精简
+  prompt 重试在五分钟边界内返回 `FINAL PASS`，P0/P1/P2=0；纯方法
+  限制单列 non-finding。
+- 下一步：提交本证据恢复点，追加空 READY marker。
 - 已跑验证：`flutter pub get`；`dart run build_runner build`（126 outputs）；
   红测 0/1（预期）；新矩阵 8/8 PASS；9 个影响集逐文件
   89/89 PASS；`flutter analyze --no-pub <new-test>` 0 issue；format 1 file /
-  0 changed。加固 guard 后新矩阵再次 8/8、analyze 0。
+  0 changed。加固 guard 后新矩阵再次 8/8、analyze 0；最终
+  format 1 file / 0 changed、`git diff --check` clean、精确 2 owned paths。
 - 阻塞项：无。
