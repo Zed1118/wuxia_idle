@@ -3005,6 +3005,7 @@ tasks:
       - test/features/boss_gauntlet/gauntlet_automation_policy_test.dart
       - test/features/boss_gauntlet/gauntlet_automation_admission_test.dart
       - test/features/boss_gauntlet/gauntlet_drive_test.dart
+      - test/features/boss_gauntlet/phase0a_gauntlet_continuation_test.dart
       - docs/superpowers/plans/2026-08-24-p2-m5-gauntlet-automation-admission.md
     forbidden_files:
       - CLAUDE.md

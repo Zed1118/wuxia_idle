@@ -8,6 +8,7 @@
 
 - 新增纯领域 policy 与 application admission/orchestrator；输入使用现有 `ActivityParticipationRequest`，不得从字段组合猜默认值。
 - 现有 `fightCurrentStagePhase0a` 的公开 headless 路径必须经过显式准入，或收窄为只能由已准入路径调用；防止调用者绕过 Gate。
+- 若显式请求改变该公开方法签名，允许同步适配唯一额外调用点 `test/features/boss_gauntlet/phase0a_gauntlet_continuation_test.dart`；不得以兼容旧测试为由保留隐式准入默认值。
 - complete clear 的唯一当前证据为精确 `gauntletId` 存在于 `SaveData.clearedGauntletIds`。
 - 自动执行到终关胜利后停在 `GauntletPhase.awaitingRewardChoice`，不得替玩家挑选、结算或重复抽取奖励。
 - 不新增 `rulesVersion`、save migration、完整 automation key、UI、数值或模式解锁改动；这些仍是后续关闭项。
