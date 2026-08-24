@@ -27,6 +27,10 @@ import '../../../data/defs/mass_battle_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -49,8 +53,11 @@ import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
+import '../application/mainline_run_coordinator.dart';
+import '../application/phase0a_mainline_production_encounter_factory.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
+import '../domain/mainline_run.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../combat_shared/presentation/hero_camera_overlay.dart'
     show HeroCameraData;
@@ -72,6 +79,182 @@ typedef MainlineBattleExit = ({
 bool shouldAutomaticallyPresentStageNarratives(StageDef stage) =>
     stage.stageType != StageType.mainline;
 
+Future<void> runStageFlow({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  int targetCycle = 1,
+  bool continueFirstClearRun = false,
+  @visibleForTesting Future<bool> Function()? battleRunnerForTest,
+  @visibleForTesting
+  Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
+  @visibleForTesting
+  Future<MainlineBattleExit> Function()? phase0aBattleOutcomeForTest,
+  @visibleForTesting Future<bool> Function()? stageRetryDeciderForTest,
+  @visibleForTesting
+  Future<void> Function(String stageId)? victoryRecorderForTest,
+  @visibleForTesting
+  Future<List<DefeatLossEntry>> Function(StageDef stage)?
+  bossDefeatPenaltyForTest,
+}) async {
+  if (!continueFirstClearRun ||
+      targetCycle != 1 ||
+      stage.stageType != StageType.mainline) {
+    await _runSingleStageFlow(
+      context: context,
+      ref: ref,
+      stage: stage,
+      targetCycle: targetCycle,
+      battleRunnerForTest: battleRunnerForTest,
+      battleOutcomeForTest: battleOutcomeForTest,
+      phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
+      stageRetryDeciderForTest: stageRetryDeciderForTest,
+      victoryRecorderForTest: victoryRecorderForTest,
+      bossDefeatPenaltyForTest: bossDefeatPenaltyForTest,
+    );
+    return;
+  }
+
+  final bootstrap = await _bootstrapMainlineRun(stage);
+  if (bootstrap == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.mainlineRunParticipantUnavailable),
+        ),
+      );
+    }
+    return;
+  }
+  final coordinator = MainlineRunCoordinator(
+    executeStage: (launch) async {
+      StageVictoryAction? action;
+      final nextStage = _nextStageInSameChapter(launch.stage);
+      await _runSingleStageFlow(
+        context: context,
+        ref: ref,
+        stage: launch.stage,
+        targetCycle: targetCycle,
+        playerSnapshot: launch.playerSnapshot,
+        allowEnterNextStage: nextStage != null,
+        victoryActionSink: (value) => action = value,
+        battleRunnerForTest: battleRunnerForTest,
+        battleOutcomeForTest: battleOutcomeForTest,
+        phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
+        stageRetryDeciderForTest: stageRetryDeciderForTest,
+        victoryRecorderForTest: victoryRecorderForTest,
+        bossDefeatPenaltyForTest: bossDefeatPenaltyForTest,
+      );
+      final resolvedAction = action;
+      if (resolvedAction == null) {
+        return MainlineStageFlowDecision.stoppedBeforeVictory;
+      }
+      if (nextStage == null) {
+        return MainlineStageFlowDecision.enterNextStage;
+      }
+      return resolvedAction == StageVictoryAction.enterNextStage
+          ? MainlineStageFlowDecision.enterNextStage
+          : MainlineStageFlowDecision.returnToMapAfterVictory;
+    },
+    nextStageOf: _nextStageInSameChapter,
+    loadNextSnapshot: ({required run, required nextStage}) =>
+        _loadNextMainlineSnapshot(run: run, nextStage: nextStage),
+  );
+  final result = await coordinator.run(
+    initialStage: stage,
+    initialRun: bootstrap.run,
+    initialPlayerSnapshot: bootstrap.playerSnapshot,
+  );
+  if (result.reason ==
+          MainlineRunCompletionReason
+              .participantNotBattleEligibleForNextStage &&
+      context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(UiStrings.mainlineRunParticipantUnavailable),
+      ),
+    );
+  }
+}
+
+typedef _MainlineRunBootstrap = ({
+  MainlineRun run,
+  CombatantSnapshot playerSnapshot,
+});
+
+Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
+  final isar = IsarSetup.instance;
+  final save = await isar.saveDatas.get(0);
+  final participantId = await CurrentLeaderResolver.resolve(
+    save: save,
+    characterExists: (characterId) async =>
+        await isar.characters.get(characterId) != null,
+  );
+  final playerSnapshot = await _loadMainlineParticipantSnapshot(participantId);
+  if (playerSnapshot == null) return null;
+  final runId =
+      'mainline:${IsarSetup.currentSlotId}:${stage.id}:'
+      '${DateTime.now().microsecondsSinceEpoch}';
+  return (
+    run: MainlineRun.begin(
+      runId: runId,
+      participantId: participantId,
+      stageId: stage.id,
+      loadoutSnapshotId: '$runId:loadout:1',
+    ),
+    playerSnapshot: playerSnapshot,
+  );
+}
+
+Future<PreparedMainlineLoadoutSnapshot?> _loadNextMainlineSnapshot({
+  required MainlineRun run,
+  required StageDef nextStage,
+}) async {
+  final snapshot = await _loadMainlineParticipantSnapshot(run.participantId);
+  if (snapshot == null) return null;
+  final nextVersion = run.currentLoadoutVersion + 1;
+  return PreparedMainlineLoadoutSnapshot(
+    playerSnapshot: snapshot,
+    loadoutSnapshotId: '${run.runId}:loadout:$nextVersion',
+  );
+}
+
+Future<CombatantSnapshot?> _loadMainlineParticipantSnapshot(
+  int participantId,
+) async {
+  final isar = IsarSetup.instance;
+  final character = await isar.characters.get(participantId);
+  if (character == null ||
+      !character.isAlive ||
+      character.mainTechniqueId == null) {
+    return null;
+  }
+  final occupancy = await CharacterOccupancyService(isar).snapshot();
+  if (occupancy.isCharacterOccupied(participantId)) return null;
+  final roster = await PlayerCombatantSnapshotAssembler(
+    isar: isar,
+  ).loadExactRoster([participantId]);
+  if (roster.length != 1 || roster.single.characterId != participantId) {
+    throw StateError('Mainline run snapshot participant mismatch');
+  }
+  return roster.single;
+}
+
+StageDef? _nextStageInSameChapter(StageDef currentStage) {
+  final repository = GameRepository.instance;
+  final nextStageId = nextMainlineStageId(repository, currentStage.id);
+  if (nextStageId == null) return null;
+  final currentChapter = _mainlineChapterOf(currentStage.id);
+  if (currentChapter == null ||
+      currentChapter != _mainlineChapterOf(nextStageId)) {
+    return null;
+  }
+  return repository.getStage(nextStageId);
+}
+
+String? _mainlineChapterOf(String stageId) =>
+    RegExp(r'^stage_(\d{2})_\d{2}$').firstMatch(stageId)?.group(1);
+
 /// Phase 3 T37 关卡进入流程串联。
 ///
 /// 状态机（async 串联，无中间 widget）：
@@ -89,11 +272,14 @@ bool shouldAutomaticallyPresentStageNarratives(StageDef stage) =>
 /// [phase0aBattleOutcomeForTest] 仅供 widget test 注入，生产端始终使用
 /// [Phase0aMainlineBattleHost]。
 /// D1: [targetCycle] 默认 1（零回归）。Task E 加 UI 后从 caller 传入。
-Future<void> runStageFlow({
+Future<void> _runSingleStageFlow({
   required BuildContext context,
   required WidgetRef ref,
   required StageDef stage,
   int targetCycle = 1,
+  CombatantSnapshot? playerSnapshot,
+  bool allowEnterNextStage = false,
+  ValueChanged<StageVictoryAction>? victoryActionSink,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -150,6 +336,7 @@ Future<void> runStageFlow({
         context: context,
         stage: stage,
         targetCycle: targetCycle,
+        playerSnapshot: playerSnapshot,
       );
     }
 
@@ -316,7 +503,7 @@ Future<void> runStageFlow({
       extraDisplayTiers: outcome.extraDisplayTiers,
     );
     if (!context.mounted) return;
-    await showStageVictoryDialog(
+    final victoryAction = await showStageVictoryDialog(
       context: context,
       stage: stage,
       drops: outcome.drops,
@@ -332,7 +519,9 @@ Future<void> runStageFlow({
         ).setLocked(equipmentId: equipment.id, locked: locked);
         return result == EquipOutcome.success;
       },
+      allowEnterNextStage: allowEnterNextStage,
     );
+    victoryActionSink?.call(victoryAction);
   }
 
   // 胜利仪式 + 结算在战斗界面之上播完,退回关卡列表(再走胜利剧情)。
@@ -406,11 +595,13 @@ Future<MainlineBattleExit> _runBattle({
   required BuildContext context,
   required StageDef stage,
   int targetCycle = 1,
+  CombatantSnapshot? playerSnapshot,
 }) async {
   return _runPhase0aBattle(
     context: context,
     stage: stage,
     targetCycle: targetCycle,
+    playerSnapshot: playerSnapshot,
   );
 }
 
@@ -424,6 +615,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required BuildContext context,
   required StageDef stage,
   required int targetCycle,
+  CombatantSnapshot? playerSnapshot,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
       ? await _pickFormation(
@@ -442,6 +634,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
           builder: (_) => Phase0aMainlineBattleHost(
             stage: stage,
             cycleIndex: targetCycle,
+            playerSnapshot: playerSnapshot,
             massBattleFormation: massBattleFormation,
             onVictory: (settlement) {
               if (!completer.isCompleted) {

@@ -215,7 +215,7 @@ Phase0aEncounterHost _assemble({
 
   return Phase0aEncounterHost.fromPlan(
     plan: plan,
-    nextStageId: _nextStageId(repository, request.stage.id),
+    nextStageId: nextMainlineStageId(repository, request.stage.id),
     numbers: request.numbers,
     rng: request.rng,
     tokenRequestMapper: tokenMapper,
@@ -228,7 +228,7 @@ Future<Phase0aEncounterHost?> buildPhase0aMainlineProductionEncounterHost(
   Phase0aMainlineEncounterHostBuildRequest request,
 ) => createFreshPhase0aMainlineEncounter(request);
 
-String? _nextStageId(GameRepository repository, String stageId) {
+String? nextMainlineStageId(GameRepository repository, String stageId) {
   final successors = repository.stageDefs.values
       .where((stage) => stage.prevStageId == stageId)
       .map((stage) => stage.id)

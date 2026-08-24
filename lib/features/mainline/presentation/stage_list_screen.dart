@@ -234,12 +234,21 @@ class StageListScreen extends ConsumerWidget {
                               activeCharacters: activeCharacters,
                               goalGuidance: currentGoal,
                               replayRewardUnlocked: replayRewardUnlocked,
-                              onRunStage: (stage) => runStageFlow(
-                                context: context,
-                                ref: ref,
-                                stage: stage,
-                                targetCycle: cycleFor(),
-                              ),
+                              onRunStage: (stage) {
+                                final targetCycle = cycleFor();
+                                final entry = entries.singleWhere(
+                                  (candidate) => candidate.def.id == stage.id,
+                                );
+                                runStageFlow(
+                                  context: context,
+                                  ref: ref,
+                                  stage: stage,
+                                  targetCycle: targetCycle,
+                                  continueFirstClearRun:
+                                      targetCycle == 1 &&
+                                      statusFor(entry) == StageStatus.available,
+                                );
+                              },
                             ),
                           ],
                         ),

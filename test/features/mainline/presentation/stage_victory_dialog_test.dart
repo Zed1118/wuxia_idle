@@ -688,18 +688,25 @@ void main() {
 
   group('showStageVictoryDialog', () {
     testWidgets('首次推进有后继关时显示“进入下一关”和“返回江湖地图”双动作', (tester) async {
+      Future<StageVictoryAction>? pendingAction;
+      tester.view.physicalSize = const Size(1280, 720);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Builder(
               builder: (ctx) => ElevatedButton(
-                onPressed: () => showStageVictoryDialog(
-                  context: ctx,
-                  stage: _stage(),
-                  drops: _emptyDrops(),
-                  advancements: const [],
-                  allowEnterNextStage: true,
-                ),
+                onPressed: () {
+                  pendingAction = showStageVictoryDialog(
+                    context: ctx,
+                    stage: _stage(),
+                    drops: _emptyDrops(),
+                    advancements: const [],
+                    allowEnterNextStage: true,
+                  );
+                },
                 child: const Text('open'),
               ),
             ),
@@ -712,6 +719,14 @@ void main() {
 
       expect(find.text('进入下一关'), findsOneWidget);
       expect(find.text('返回江湖地图'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('进入下一关'));
+      await tester.pumpAndSettle();
+      await expectLater(
+        pendingAction,
+        completion(StageVictoryAction.enterNextStage),
+      );
     });
 
     testWidgets('点确认按钮关闭 dialog', (tester) async {

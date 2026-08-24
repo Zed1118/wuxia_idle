@@ -34,8 +34,8 @@ import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
 /// 重试语义走 runStageFlow 循环头(新 host 新装配新 seed),故屏内
 /// retryFlowBuilder 传 null(终局不出现「再战」,避免双轨重试)。
 ///
-/// [playerSnapshotForTest] / [seedForTest] 仅供 widget test 注入,
-/// 生产端勿传(沿 stage_entry_flow DI 体例)。
+/// [playerSnapshot] 由连续主线锁定参与者后注入；未注入时沿既有生产路径现场装配。
+/// [playerSnapshotForTest] / [seedForTest] 仅供 widget test 注入。
 class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   const Phase0aMainlineBattleHost({
     super.key,
@@ -43,6 +43,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     required this.onVictory,
     required this.onDefeat,
     this.cycleIndex = 1,
+    this.playerSnapshot,
     this.playerSnapshotForTest,
     this.seedForTest,
     this.massBattleFormation,
@@ -54,6 +55,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
   final int cycleIndex;
   final Formation? massBattleFormation;
+  final CombatantSnapshot? playerSnapshot;
 
   @visibleForTesting
   final Phase0aMainlineEncounterHostFactory? encounterHostFactory;
@@ -86,7 +88,9 @@ class _Phase0aMainlineBattleHostState
       if (!mounted) return;
       try {
         final playerSnapshot =
-            widget.playerSnapshotForTest ?? await _buildPlayerSnapshot();
+            widget.playerSnapshot ??
+            widget.playerSnapshotForTest ??
+            await _buildPlayerSnapshot();
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
         final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(

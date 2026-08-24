@@ -130,6 +130,9 @@ final class MainlineRunCoordinator {
           completedStageIds: List.unmodifiable(completedStageIds),
         );
       }
+      if (nextStage.id == stage.id || nextStage.prevStageId != stage.id) {
+        throw StateError('Mainline next stage is not the exact successor');
+      }
       final prepared = await loadNextSnapshot(
         run: currentRun,
         nextStage: nextStage,
