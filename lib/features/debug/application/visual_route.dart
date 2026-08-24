@@ -64,6 +64,10 @@ enum VisualRoute {
     'phase0a_battle_profile',
     'Phase 0A 生产 Profile·同核 bot 循环负载与自动重开',
   ),
+  phase0aBlackRidgeProfile(
+    'phase0a_black_ridge_profile',
+    'G2 黑风岭生产 Profile·真实 catalog/runtime binding/40 敌人/12 active 循环负载',
+  ),
   phase0aBattleAttackFeedback(
     'phase0a_battle_attack_feedback',
     'Phase 0A 单角色战斗·首拍 J 攻击反馈静态验收',

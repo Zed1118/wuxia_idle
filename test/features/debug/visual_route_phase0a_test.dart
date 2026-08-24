@@ -19,6 +19,10 @@ void main() {
         parseVisualRoute('phase0a_battle_profile'),
         VisualRoute.phase0aBattleProfile,
       );
+      expect(
+        parseVisualRoute('phase0a_black_ridge_profile'),
+        VisualRoute.phase0aBlackRidgeProfile,
+      );
     });
 
     test('Boss 机制实机 route id 可解析', () {

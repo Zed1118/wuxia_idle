@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,10 +70,18 @@ import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
+import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
 import '../../battle/application/phase0a/phase0a_battle_flow.dart';
+import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../battle/domain/phase0a/phase0a_combat_events.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
+import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+import '../../mainline/application/phase0a_mainline_encounter_host.dart';
+import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
+import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
@@ -509,6 +518,61 @@ Future<Widget> buildVisualTarget(
         numbers: GameRepository.instance.numbers,
       );
       return _Phase0aProfilePreview(initialFixture: fixture);
+    case VisualRoute.phase0aBlackRidgeProfile:
+      final repository = GameRepository.instance;
+      await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();
+      final seededPlayer = (await PlayerCombatantSnapshotAssembler(
+        isar: isar,
+      ).loadExactRoster(const [1])).single;
+      final redLines = repository.numbers.combat.redLines;
+      final playerSnapshot = seededPlayer.copyWith(
+        maxHp: redLines.playerHpMax,
+        currentHp: redLines.playerHpMax,
+        internalForce: redLines.internalForceMax,
+        maxQi: redLines.internalForceMax,
+        currentQi: redLines.internalForceMax,
+        defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
+        totalEquipmentAttack: redLines.equipmentBaseAttackMax,
+      );
+      Future<Phase0aEncounterHost> freshHost() async {
+        final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
+          contentId: 'stage_01_03',
+          playerSnapshot: playerSnapshot,
+          numbers: repository.numbers,
+        );
+        final host = await createFreshPhase0aMainlineEncounter(
+          Phase0aMainlineEncounterHostBuildRequest(
+            stage: repository.getStage('stage_01_03'),
+            playerMapping: playerMapping,
+            numbers: repository.numbers,
+            cycleIndex: 1,
+            rng: Random(20260824),
+            runtimeBindingSource:
+                const Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+                  loader: loadPhase0aMainlineRuntimeBindingBundleFromRepository,
+                ),
+            catalogOverride: repository.combatCatalog,
+          ),
+        );
+        if (host == null) {
+          throw StateError('stage_01_03 did not resolve to the migrated host');
+        }
+        return host;
+      }
+
+      final initialHost = await freshHost();
+      final mapping = initialHost.mapping!;
+      final roster = Phase0aVisualRoster.fromCombatants(
+        playerId: mapping.initialState.player.id,
+        combatants: mapping.combatants,
+        assetPathByActorId: initialHost.visualAssetPathByActorId,
+      );
+      return _Phase0aBlackRidgeProfilePreview(
+        initialHost: initialHost,
+        roster: roster,
+        freshHost: freshHost,
+        fixedDeltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+      );
     case VisualRoute.phase0aBattleBossMechanics:
       final fixture = await Phase0aDebugBattleFixture.load(
         assetLoader: rootBundle.loadString,
@@ -1058,6 +1122,87 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
     } finally {
       _restarting = false;
     }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      Phase0aBattleScreen(controller: _controller, autoStep: false);
+}
+
+/// G2 黑风岭实机 Profile：真实 production catalog → runtime binding →
+/// Encounter Host → reducer → production screen。终局以同 seed 重建 Host，
+/// 60 秒 Profile 不在结算页空跑。
+class _Phase0aBlackRidgeProfilePreview extends StatefulWidget {
+  const _Phase0aBlackRidgeProfilePreview({
+    required this.initialHost,
+    required this.roster,
+    required this.freshHost,
+    required this.fixedDeltaSeconds,
+  });
+
+  final Phase0aEncounterHost initialHost;
+  final Phase0aVisualRoster roster;
+  final Future<Phase0aEncounterHost> Function() freshHost;
+  final double fixedDeltaSeconds;
+
+  @override
+  State<_Phase0aBlackRidgeProfilePreview> createState() =>
+      _Phase0aBlackRidgeProfilePreviewState();
+}
+
+class _Phase0aBlackRidgeProfilePreviewState
+    extends State<_Phase0aBlackRidgeProfilePreview> {
+  late final Phase0aBattleController _controller;
+  late Phase0aPlayerBotAdapter _bot;
+  Timer? _timer;
+  bool _restarting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Phase0aBattleController(
+      flow: widget.initialHost.flow,
+      roster: widget.roster,
+      fixedDeltaSeconds: widget.fixedDeltaSeconds,
+    );
+    _bot = _botFor(widget.initialHost);
+    _timer = Timer.periodic(
+      Duration(
+        milliseconds:
+            (widget.fixedDeltaSeconds * Duration.millisecondsPerSecond).round(),
+      ),
+      (_) => _advance(),
+    );
+  }
+
+  Phase0aPlayerBotAdapter _botFor(Phase0aEncounterHost host) =>
+      Phase0aPlayerBotAdapter(
+        playerAdapter: host.mapping!.playerAdapter,
+        policy: const Phase0aBotTacticPolicy.steadyGuard(),
+      );
+
+  void _advance() {
+    if (!mounted || _restarting) return;
+    if (_controller.outcome == Phase0aBattleOutcome.ongoing) {
+      _controller.step(_bot.commandFor(_controller.state));
+      return;
+    }
+    _restarting = true;
+    widget
+        .freshHost()
+        .then((host) {
+          if (!mounted) return;
+          _bot = _botFor(host);
+          _controller.restart(host.flow);
+        })
+        .whenComplete(() => _restarting = false);
   }
 
   @override
