@@ -3610,9 +3610,19 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-sect-hub-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-sect-hub
-    status: in_progress
+    status: ready_reviewed
     base_commit: 7e1708f005444f31a0e7cf0f90568b808e00eedc
+    code_candidate_commit: 6e1ce4a725f655a948a89aa12828323bb3757946
+    reviewed_candidate_commit: 6e1ce4a725f655a948a89aa12828323bb3757946
+    ready_marker: "[READY][CODEX][P2-M6-U05-SECT-HUB] 收口宗门一级 Hub"
     completion_scope: sect_primary_hub_and_existing_role_dispatch_retreat_healing_expedition_production_routes
+    verification:
+      slice_tests: 12
+      main_menu_joint_tests: 63
+      adjacent_production_screen_tests: 191
+      root_application_analyze_issues: 0
+      full_tests: 5345
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U05-MARTIAL-INVENTORY-HUB
     owned_files:
