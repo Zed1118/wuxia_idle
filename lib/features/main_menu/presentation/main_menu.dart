@@ -17,6 +17,7 @@ import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
+import '../../jianghu_map/presentation/jianghu_map_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
@@ -51,10 +52,6 @@ import '../../tutorial/presentation/tutorial_banner_card.dart';
 import 'main_menu_retreat_banner.dart';
 import 'sect_banner.dart';
 import '../application/main_menu_status_summary_provider.dart';
-import '../../tower/application/tower_progress_service.dart';
-import '../../tower/application/tower_providers.dart';
-import '../../tower/domain/tower_progress.dart';
-import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../shop/presentation/shop_screen.dart';
@@ -183,9 +180,6 @@ class MainMenu extends ConsumerWidget {
         ? null
         : resolveContinueJianghuStage(mainlineProgress);
 
-    final towerStatus = ref
-        .watch(towerProgressProvider)
-        .maybeWhen(data: _towerMenuStatus, orElse: () => null);
     final inventoryStatus = ref
         .watch(allEquipmentsProvider)
         .maybeWhen(data: _inventoryMenuStatus, orElse: () => null);
@@ -250,7 +244,6 @@ class MainMenu extends ConsumerWidget {
       mainlineStatus: mainlineStatus,
       mainlineGoal: mainlineGoal,
       continueJianghuStage: continueJianghuStage,
-      towerStatus: towerStatus,
       lateLocked: lateLocked,
       jianghuJourneyUnlocked: jianghuJourneyUnlocked,
     );
@@ -385,44 +378,34 @@ class MainMenu extends ConsumerWidget {
     required String? mainlineStatus,
     required NewSaveGoalGuidance? mainlineGoal,
     required StageDef? continueJianghuStage,
-    required String? towerStatus,
     required bool lateLocked,
     required bool jianghuJourneyUnlocked,
   }) {
     return <Widget>[
-      WuxiaInkButton(
-        label: UiStrings.mainMenuMainline,
-        hint: mainlineGoal == null
-            ? UiStrings.mainMenuMainlineHint
-            : NewSaveGoalText.mainMenuHint(mainlineGoal),
-        icon: Icons.map_outlined,
-        thumbnailPath: WuxiaUi.entryMainline,
-        status: mainlineStatus,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () {
-            if (continueJianghuStage == null) {
-              _push(context, const ChapterListScreen());
-              return;
-            }
-            unawaited(
-              _launchContinueJianghu(context, ref, continueJianghuStage),
-            );
-          },
+      _ContinueJianghuEntry(
+        primary: WuxiaInkButton(
+          label: UiStrings.mainMenuMainline,
+          hint: mainlineGoal == null
+              ? UiStrings.mainMenuMainlineHint
+              : NewSaveGoalText.mainMenuHint(mainlineGoal),
+          icon: Icons.map_outlined,
+          thumbnailPath: WuxiaUi.entryMainline,
+          status: mainlineStatus,
+          onTap: () => guardBattleEntry(
+            context: context,
+            ref: ref,
+            onAllowed: () {
+              if (continueJianghuStage == null) {
+                _push(context, const ChapterListScreen());
+                return;
+              }
+              unawaited(
+                _launchContinueJianghu(context, ref, continueJianghuStage),
+              );
+            },
+          ),
         ),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuTower,
-        hint: UiStrings.mainMenuTowerHint,
-        icon: Icons.filter_hdr_outlined,
-        thumbnailPath: WuxiaUi.entryTower,
-        status: towerStatus,
-        onTap: () => guardBattleEntry(
-          context: context,
-          ref: ref,
-          onAllowed: () => _push(context, const TowerFloorListScreen()),
-        ),
+        onOpenMap: () => _push(context, const JianghuMapScreen()),
       ),
       WuxiaInkButton(
         label: UiStrings.mainMenuLightFoot,
@@ -620,26 +603,6 @@ class MainMenu extends ConsumerWidget {
     return null;
   }
 
-  static String _towerMenuStatus(TowerProgress progress) {
-    final highest = progress.highestClearedFloor;
-    // 塔层数由 towers.yaml 定义，不写死——扩层后「已通关」判定须跟随数据。
-    // Repo 未加载（极早期启动帧）→ 退化为「下一层 = highest+1」，不误报通关。
-    if (!GameRepository.isLoaded) {
-      return UiStrings.mainMenuTowerStatus(highest, highest + 1);
-    }
-    final maxFloor = GameRepository.instance.towerMaxFloor;
-    if (highest >= maxFloor) return UiStrings.mainMenuTowerCompleteStatus;
-    final next = TowerProgressService.availableFloor(
-      progress,
-      maxFloor: maxFloor,
-    );
-    final nextIsBoss = GameRepository.instance.towerFloors.any(
-      (f) => f.floorIndex == next && f.isBoss,
-    );
-    if (nextIsBoss) return UiStrings.mainMenuTowerBossStatus(highest, next);
-    return UiStrings.mainMenuTowerStatus(highest, next);
-  }
-
   static String _inventoryMenuStatus(List<Equipment> equipments) {
     if (equipments.isEmpty) {
       return UiStrings.mainMenuInventoryStatus(0, '');
@@ -650,6 +613,48 @@ class MainMenu extends ConsumerWidget {
     return UiStrings.mainMenuInventoryStatus(
       equipments.length,
       EnumL10n.equipmentTier(top.tier),
+    );
+  }
+}
+
+class _ContinueJianghuEntry extends StatelessWidget {
+  const _ContinueJianghuEntry({required this.primary, required this.onOpenMap});
+
+  final Widget primary;
+  final VoidCallback onOpenMap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        primary,
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Semantics(
+            button: true,
+            label: UiStrings.mainMenuJianghuMapAction,
+            hint: UiStrings.mainMenuJianghuMapActionHint,
+            child: TextButton.icon(
+              key: const ValueKey('main-menu-jianghu-map-action'),
+              onPressed: onOpenMap,
+              style: TextButton.styleFrom(
+                foregroundColor: WuxiaColors.resultHighlight,
+                backgroundColor: WuxiaUi.ink.withValues(alpha: 0.48),
+                side: BorderSide(
+                  color: WuxiaColors.resultHighlight.withValues(alpha: 0.42),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              icon: const Icon(Icons.public_outlined, size: 17),
+              label: const Text(UiStrings.mainMenuJianghuMapAction),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

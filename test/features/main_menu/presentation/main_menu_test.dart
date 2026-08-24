@@ -38,8 +38,8 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 ///
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
-///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 宗门 / 武学与行囊 / 档案等）
-///   - 11 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
+///   - 菜单按钮 label 匹配（继续江湖 / 宗门 / 武学与行囊 / 档案等）
+///   - 10 个默认玩法入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -119,11 +119,12 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('11 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('10 个默认玩法按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuTower), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuTower), findsNothing);
+    expect(find.text(UiStrings.mainMenuJianghuMapAction), findsOneWidget);
     expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
@@ -155,12 +156,15 @@ void main() {
       isTrue,
     );
 
-    // 江湖行程:主线 / 爬塔同排,再进入晚期试炼。
+    // 江湖行程:继续江湖与轻功同排，九霄塔已迁地图。
     expect(
-      (y(UiStrings.mainMenuMainline) - y(UiStrings.mainMenuTower)).abs() < 2.0,
+      y(UiStrings.mainMenuMainline) < y(UiStrings.mainMenuLightFoot),
       isTrue,
     );
-    expect(y(UiStrings.mainMenuTower) < y(UiStrings.mainMenuLightFoot), isTrue);
+    expect(
+      y(UiStrings.mainMenuLightFoot) < y(UiStrings.mainMenuMassBattle),
+      isTrue,
+    );
 
     // 养成经营:宗门/武学与行囊在前，江湖声望承接。
     expect(
@@ -176,9 +180,9 @@ void main() {
     );
   });
 
-  testWidgets('11 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('10 个默认玩法按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(11));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(10));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -300,8 +304,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('目标：打第1章第2关「荒山野店」'), findsOneWidget);
-    // 批 A 塔重排:大 Boss 位 7(黑风寨主),fixture highest=6 → 下一层 7 走 Boss 文案分支。
-    expect(find.text(UiStrings.mainMenuTowerBossStatus(6, 7)), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghuMapAction), findsOneWidget);
     expect(
       find.text(UiStrings.mainMenuInventoryStatus(2, '宝物')),
       findsOneWidget,
@@ -329,19 +332,14 @@ void main() {
 
   // ── W17 长期挂账 #31 销账探路:NavigatorObserver mock 套路 ──────────────
   //
-  // W6 drift 5 轮探路无解的「main_menu 问鼎九霄 widget test pumpAndSettle 死循环」
-  // 根因:tap 后 push TowerFloorListScreen,其内部 watch towerProgressProvider +
-  // Isar 异步 future + CircularProgressIndicator 无限动画,pumpAndSettle 永不
-  // 完成。Phase 5 #2 销账 #28 用 Consumer 化 + provider override 套路绕过同类
-  // 边界,本批用更轻量套路:**不 settle 子屏 build,只验 Navigator.push 触发**。
+  // 江湖地图为“继续江湖”卡内次级动作；这里只用 NavigatorObserver 证明它
+  // 独立 push，不抢占继续江湖主动作，也不新增 WuxiaInkButton 一级卡。
   //
   // 用法:NavigatorObserver 子类记录 didPush,tap 后单帧 pump(不 pumpAndSettle),
   // 验证 push 增量(initial 1 次 + tap 后 1 次 = 2 次)。子屏内部 build 即使抛错
   // 或仍在 loading 也不阻塞 test(单帧 pump 不进死循环)。
 
-  testWidgets('tap 问鼎九霄 → Navigator.push 触发(不 settle 子屏,#31 销账)', (
-    tester,
-  ) async {
+  testWidgets('tap 次级江湖地图 → Navigator.push 触发且不增加一级卡', (tester) async {
     final observer = _RecordingNavigatorObserver();
     await tester.pumpWidget(
       ProviderScope(
@@ -354,15 +352,14 @@ void main() {
     // 验证 initial push(MainMenu 自身)已记录
     expect(observer.pushedRoutes.length, 1);
 
-    // Phase A 重排后爬塔下移到「演武」组,默认 viewport 装不下 → 扩高再 tap。
+    // 默认 viewport 需滚动才能看到次级动作，测试扩高后直接 tap。
     await tester.binding.setSurfaceSize(const Size(800, 3000));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pump();
-    await tester.tap(find.text(UiStrings.mainMenuTower));
-    await tester.pump(); // 单帧,不 settle:子屏 TowerFloorListScreen 内部
-    // towerProgressProvider AsyncValue.loading 不阻塞断言
+    await tester.tap(find.text(UiStrings.mainMenuJianghuMapAction));
+    await tester.pump();
 
-    // tap 后应有 1 次新 push(TowerFloorListScreen)
+    // tap 后应有 1 次新 push(JianghuMapScreen)
     expect(observer.pushedRoutes.length, 2);
     // 验证最新 push 是 MaterialPageRoute(_push 包装)
     expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());

@@ -1557,6 +1557,12 @@ class UiStrings {
 
   static const String mainMenuMainline = '继续江湖';
   static const String mainMenuMainlineHint = '21 章 105 关，按章节顺序解锁';
+  static const String mainMenuJianghuMapAction = '江湖地图';
+  static const String mainMenuJianghuMapActionHint = '查看已知地点与支线去处';
+  static const String jianghuMapTitle = '江湖地图';
+  static const String jianghuMapSubtitle = '循迹而行，各处机缘自有门槛';
+  static const String jianghuMapKnownLocations = '已知地点';
+  static const String jianghuMapKnownLocationsHint = '山河辽阔，未闻之处尚隐于烟岚';
   static String mainMenuMainlineGoalHint(
     String target,
     String reward,
