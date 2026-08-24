@@ -586,9 +586,8 @@ List<DefeatLossEntry> buildDefeatLossEntries({
 
 /// 以给定 [entries] 渲染战败损失摘要 banner（[_DefeatLossBanner] 的公开入口）。
 ///
-/// 私有 widget 的薄暴露，供 VISUAL_ROUTE 截图验收与 widget 测复用，**不改任何
-/// 运行时行为**（真实流程仍直接 new [_DefeatLossBanner]）。不加 `@visibleForTesting`
-/// 以免 debug 路由（非 test 库）引用时触发 lint。
+/// 私有 widget 的薄暴露，供 widget 测复用，**不改任何运行时行为**
+/// （真实流程仍直接 new [_DefeatLossBanner]）。
 Widget buildDefeatLossBanner(List<DefeatLossEntry> entries) =>
     _DefeatLossBanner(entries: entries);
 
@@ -953,8 +952,8 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
 
 /// 战败损失摘要 banner（Phase 4 W10）。
 ///
-/// 渲染于 [NarrativeReaderScreen] 顶部（在占位提示下方）。每个 entry 一行：
-/// 「{角色} 内力 {before}→{after} · {心法} {oldLayer}→{newLayer} (-{N}层)」
+/// 渲染于 [NarrativeReaderScreen] 顶部（在占位提示下方）。普通 Boss entry
+/// 显示内力与心法损失；心魔 entry 仅显示角色名与内息紊乱。
 class _DefeatLossBanner extends StatelessWidget {
   const _DefeatLossBanner({required this.entries});
 
