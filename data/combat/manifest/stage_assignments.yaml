@@ -1,0 +1,14 @@
+# Only stage_01_03 is migrated in this production vertical slice.
+# Other Ch1 stages remain legacy and continue using data/stages.yaml.
+stage_assignments:
+  - stage_id: stage_01_01
+    migration_state: legacy
+  - stage_id: stage_01_02
+    migration_state: legacy
+  - stage_id: stage_01_03
+    migration_state: migrated
+    encounter_id: ch1_encounter_03_ambush
+  - stage_id: stage_01_04
+    migration_state: legacy
+  - stage_id: stage_01_05
+    migration_state: legacy

@@ -1,0 +1,85 @@
+# Production runtime binding contract for the Ch1 Black Wind Ridge slice.
+# Coordinates and role composition remain TUNING candidates for G2.
+# The current host does not consume the verified-only namespaces below.
+runtime_bindings:
+  - stage_id: stage_01_03
+    encounter_id: ch1_encounter_03_ambush
+    entrances:
+      - id: ch1_entrance_s03_front
+        spawn_position: {x: -520, y: 80}
+      - id: ch1_entrance_s03_rear
+        spawn_position: {x: 520, y: 80}
+      - id: ch1_entrance_s03_upper
+        spawn_position: {x: 0, y: -120}
+    positions:
+      - id: ch1_position_s03_front
+        world_position: {x: -240, y: 80}
+      - id: ch1_position_s03_rear
+        world_position: {x: 240, y: 80}
+      - id: ch1_position_s03_upper
+        world_position: {x: 0, y: -80}
+    behaviors:
+      - id: ch1_behavior_blade_press
+        ai_profile_id: ai_bandit_press
+      - id: ch1_behavior_crossbow_offset
+        ai_profile_id: ai_crossbow_offset
+      - id: ch1_behavior_rope_flank
+        ai_profile_id: ai_rope_flank
+      - id: ch1_behavior_gong_command
+        ai_profile_id: ai_gong_command
+    ai_profiles:
+      - id: ai_bandit_press
+        target_policy: nearest_player
+        movement_policy: direct_advance
+        attack_policy: close_range
+      - id: ai_crossbow_offset
+        target_policy: nearest_player
+        movement_policy: hold_distance
+        attack_policy: ranged_pressure
+      - id: ai_rope_flank
+        target_policy: nearest_player
+        movement_policy: lateral_flank
+        attack_policy: charge_and_reposition
+      - id: ai_gong_command
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: support_pulse
+    attack_sets:
+      - id: ch1_attack_set_blade
+        skill_ids: [skill_gangmeng_jichu_basic]
+      - id: ch1_attack_set_crossbow
+        skill_ids: [skill_lingqiao_jichu_basic]
+      - id: ch1_attack_set_rope_raider
+        skill_ids: [skill_yinrou_jichu_basic]
+      - id: ch1_attack_set_gong_leader
+        skill_ids: [skill_gangmeng_jichu_skill]
+    visual_variants:
+      - id: ch1_visual_blade_a
+        asset_path: assets/enemies/battle_bandit_blade.png
+      - id: ch1_visual_blade_b
+        asset_path: assets/enemies/battle_bandit_blade_sample_v2.png
+      - id: ch1_visual_crossbow_a
+        asset_path: assets/enemies/battle_bandit_archer.png
+      - id: ch1_visual_crossbow_b
+        asset_path: assets/enemies/battle_bandit_archer_sample_v2.png
+      - id: ch1_visual_rope_raider_a
+        asset_path: assets/enemies/battle_ruffian_a.png
+      - id: ch1_visual_rope_raider_b
+        asset_path: assets/enemies/battle_thug_a.png
+      - id: ch1_visual_gong_leader_a
+        asset_path: assets/enemies/battle_guntou_zhu.png
+      - id: ch1_visual_gong_leader_b
+        asset_path: assets/enemies/battle_fu_zhaizhu.png
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids:
+        - ch1_posture_blade
+        - ch1_posture_crossbow
+        - ch1_posture_rope_raider
+        - ch1_posture_gong_leader
+      drop_group_ids: [ch1_drop_group_bandit_encounter]
+      sfx_group_ids:
+        - ch1_sfx_blade
+        - ch1_sfx_crossbow
+        - ch1_sfx_rope_raider
+        - ch1_sfx_gong_leader

@@ -56,6 +56,10 @@ flutter:
   # Flutter 不递归子目录，需逐个声明
   assets:
     - data/
+    - data/combat/
+    - data/combat/archetypes/
+    - data/combat/encounters/
+    - data/combat/manifest/
     - data/events/
     - data/lore/
     - data/lore/_templates/
