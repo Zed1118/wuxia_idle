@@ -5,6 +5,7 @@ import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
+import '../../../shared/theme/wuxia_tokens.dart';
 import '../application/sweep_controller.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
@@ -155,7 +156,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                   UiStrings.botTacticSelectionTitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: WuxiaColors.textPrimary,
+                    color: WuxiaUi.ink,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -164,10 +165,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                 const Text(
                   UiStrings.botTacticSelectionHint,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: WuxiaColors.textSecondary,
-                    height: 1.5,
-                  ),
+                  style: TextStyle(color: WuxiaUi.muted, height: 1.5),
                 ),
                 const SizedBox(height: 22),
                 Wrap(

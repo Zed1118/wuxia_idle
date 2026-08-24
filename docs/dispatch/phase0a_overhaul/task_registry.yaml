@@ -392,60 +392,69 @@ tasks:
 
   - id: P2-G1-C11-COOLDOWN-SECONDS
     milestone: M1
-    owner: codex_terra_medium
-    branch: codex/phase2-g1-c11-cooldown-seconds-20260823
-    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c11-cooldown-seconds
-    status: ready_reviewed_partial
-    tip_commit: 022321df
+    owner: codex_root
+    branch: codex/phase2-g1-c11-cooldown-seconds-authority-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-c11-cooldown-seconds-authority
+    status: ready_reviewed
+    tip_commit: 4ad8d3a4eaf5e772a41ad5a20867295f278d2d9c
+    source_candidate_tip: 022321df
     decision_ids:
       - SKILL-COOLDOWN-SECONDS-01
     protected_behavior:
       - preserve current timing where conversion evidence is ambiguous
       - do not guess tuning values
-    remaining_production_gap:
-      - numeric player skills still read cooldownTurns multiplied by player attack cooldown seconds
-      - enemy phase skills still read cooldownTurns multiplied by enemy attack cooldown seconds
-      - enemy charge skills still read cooldownTurns multiplied by enemy attack cooldown seconds
-    blocker: explicit player and enemy seconds authority requires user freeze
+    completion_evidence:
+      - user explicitly approved the recommended seconds authority on 2026-08-24
+      - all 261 production skills materialize player and enemy realtime seconds
+      - Phase0A production mapper has zero cooldownTurns reads
+      - focused 13 of 13 extended 53 of 53 and scoped 1093 of 1093 tests pass
+      - independent read only review reports P0 and P1 zero
     owned_globs:
       - lib/data/defs/skill_def.dart
       - data/skills.yaml
       - data/encounter_skills.yaml
       - lib/features/battle/application/phase0a/*skill_binding.dart
       - lib/features/battle/application/phase0a/phase0a_stage_content_mapper.dart
+      - lib/shared/battle_shared/enemy_combatant_snapshot_assembler.dart
       - test/data/**
       - test/features/battle/application/phase0a/**
       - docs/superpowers/plans/2026-08-23-p2-g1-c11-cooldown-seconds.md
+      - docs/superpowers/plans/2026-08-24-p2-g1-c11-cooldown-seconds-authority.md
 
   - id: P2-G1-C12-BOT-TACTICS
     milestone: M1
-    owner: codex_luna_medium
-    branch: codex/phase2-g1-c12-bot-tactics-20260823
-    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-c12-bot-tactics
-    status: ready_reviewed_partial
-    tip_commit: b3143d1a
+    owner: codex_root
+    branch: codex/phase2-g1-c12-production-selector-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-c12-production-selector
+    status: ready_reviewed
+    tip_commit: 39ed522804295dfd6b93dbbd867f152d2b7d2ed2
+    source_candidate_tip: b3143d1a
     decision_ids:
       - PLAYER-BOT-TACTICS-01
     protected_behavior:
       - default bot policy preserves current commands
       - no hidden information or alternate combat rules
-    remaining_production_gap:
-      - typed seekGap assault and steadyGuard policies have no real production selector or consumer
-      - all current production adapter construction preserves the default compatibility policy
+    completion_evidence:
+      - sweep requires an explicit seekGap assault or steadyGuard selection before starting
+      - the exact typed policy crosses screen unit runner and player bot adapter
+      - selection before run and all three values are covered by production boundary tests
+      - sweep runner and adapter suites pass with scoped analyze zero
     owned_globs:
       - lib/features/battle/application/phase0a/phase0a_player_bot_adapter.dart
       - lib/features/battle/application/phase0a/phase0a_bot_tactic.dart
       - test/features/battle/application/phase0a/phase0a_player_bot_adapter_test.dart
       - test/features/battle/application/phase0a/phase0a_headless_kernel_test.dart
       - docs/superpowers/plans/2026-08-23-p2-g1-c12-bot-tactics.md
+      - docs/superpowers/plans/2026-08-24-p2-g1-c12-production-selector.md
 
   - id: P2-G1-CRITICAL-PATH-AUDIT
     milestone: M1
     owner: codex_root
     branch: codex/phase2-g1-critical-path-closeout-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-g1-critical-path-closeout
-    status: in_progress
+    status: ready_reviewed
     base_commit: 6941bca57299df6d7c5c97476610f1d18eb0bea4
+    tip_commit: 75c2f1f7a4878c56eb00e0e269b9cdaf076067c6
     decision_ids:
       - SKILL-COOLDOWN-SECONDS-01
       - PLAYER-BOT-TACTICS-01

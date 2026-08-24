@@ -195,27 +195,27 @@ decisions:
     batch_action: active
 
   - id: SKILL-COOLDOWN-SECONDS-01
-    status: frozen_with_migration_evidence_required
+    status: frozen_implemented
     summary: Phase 0A 冷却以显式秒值为权威，禁止继续模糊换算旧 cooldownTurns
-    batch_action: c11a_qr_seconds_integrated_remaining_mapper_conversion_blocked
+    batch_action: c11b_all_phase0a_seconds_authority_integrated
     owner_task: P2-G1-C11-COOLDOWN-SECONDS
     safe_default: preserve_current_timing_when_mapping_is_not_proven
-    current_production_gap:
-      player_numeric: cooldownTurns_times_player_attack_cooldown_seconds
-      enemy_phase: cooldownTurns_times_enemy_attack_cooldown_seconds
-      enemy_charge: cooldownTurns_times_enemy_attack_cooldown_seconds
-    recommended_freeze:
+    approved_freeze:
       player_numeric: materialize_current_turns_times_0_55_as_skill_seconds
       enemy_phase: materialize_current_turns_times_1_0_as_explicit_enemy_binding_seconds
       enemy_charge: materialize_current_turns_times_1_0_as_explicit_enemy_binding_seconds
-    freeze_status: awaiting_explicit_user_approval
+    freeze_status: explicitly_approved_and_implemented
+    approved_at: "2026-08-24"
+    approval_basis: '当前 Codex 会话：用户明确回复“c11批准推进方案”'
+    evidence_tip: 4ad8d3a4eaf5e772a41ad5a20867295f278d2d9c
 
   - id: PLAYER-BOT-TACTICS-01
-    status: frozen
+    status: frozen_implemented
     summary: 玩家 bot 提供寻隙、强攻、稳守三种确定性战术并与手动共用 reducer
-    batch_action: c12a_visible_window_policy_integrated_command_surface_gap_retained
+    batch_action: c12b_sweep_production_selector_and_consumer_integrated
     owner_task: P2-G1-C12-BOT-TACTICS
-    current_production_gap: no_real_selector_or_consumer_all_adapter_construction_uses_compatibility_policy
+    production_consumer: sweep_screen_to_unit_to_headless_runner_to_player_bot_adapter
+    evidence_tip: 39ed522804295dfd6b93dbbd867f152d2b7d2ed2
 
   - id: FAILURE-POLICY-CORE-01
     status: frozen_with_tuning_edges
