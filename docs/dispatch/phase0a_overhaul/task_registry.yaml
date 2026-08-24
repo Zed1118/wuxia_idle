@@ -3481,3 +3481,38 @@ tasks:
       - do not claim a global non-mainline pending affair queue
       - do not claim U01 U05 M2 M6 or overall Phase 2 completion
       - do not modify or push main
+
+  - id: P2-M2-M6-U01-VISIBLE-REPLAY-PARTICIPANT
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-m6-u01-participant-attribution-parity-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u01-participant-attribution-parity
+    status: in_progress
+    base_commit: 94b5f0e9b4b9bcfd57a4c83a1abb808bdaf47a3c
+    completion_scope: visible_human_mainline_replay_participant_selection_and_attribution
+    dependencies:
+      - P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
+      - P2-M2-M6-U04-PENDING-JIANGHU-AFFAIRS
+      - MAINLINE-REPLAY-PARTICIPANT-01
+    owned_files:
+      - lib/features/mainline/presentation/stage_list_screen.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/combat_shared/application/combat_progression_settlement_service.dart
+      - lib/shared/strings.dart
+      - test/features/mainline/presentation/mainline_visible_replay_participant_test.dart
+      - test/features/mainline/presentation/apply_victory_resolution_test.dart
+      - test/features/battle/application/combat_progression_settlement_service_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m2-m6-u01-visible-replay-participant.md
+      - docs/audit/phase2_m2_m6_u01_visible_replay_participant_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - visible human replay selects an eligible idle active character
+      - selected participant snapshot reaches the production mainline battle host
+      - record growth injury and battle events belong to the actual participant
+      - founder tutorial ownership remains separate from battle event ownership
+      - first clear headless sweep tuning rewards unlock schema narrative and main remain unchanged
+      - do not claim front bot headless sweep mentor insight U01 M2 M6 or overall Phase 2 completion
