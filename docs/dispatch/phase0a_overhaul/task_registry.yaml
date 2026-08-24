@@ -2941,3 +2941,113 @@ tasks:
       - R01 and R02 pass external model review root diff review and independent integration review
       - integrated targeted tests scoped analyze full tests and repository checks pass
       - CLAUDE GDD PROGRESS decision registry audit plan and READY marker match the frozen integration tip
+
+  - id: P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
+    milestone: M6
+    owner: codex_app_thread_mainline_narrative
+    branch: codex_app_thread_pending
+    worktree: codex_app_worktree_pending
+    status: dispatching
+    base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    decision_ids:
+      - MAINLINE-NARRATIVE-DEBLOCKING-01
+      - REOPEN-CHRONICLE-01
+      - REOPEN-FAILURE-DIAGNOSIS-01
+    owned_files:
+      - data/narratives/mainline_narrative_manifest.yaml
+      - lib/features/mainline/application/mainline_narrative_manifest.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/mainline/presentation/stage_list_screen.dart
+      - lib/shared/strings.dart
+      - test/data/mainline_narrative_manifest_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_branches_test.dart
+      - test/features/mainline/presentation/mainline_narrative_deblocking_test.dart
+      - test/features/mainline/presentation/mainline_chapter_scroll_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m6-u02-u03-mainline-narrative-deblocking.md
+    forbidden_files:
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - lib/features/boss_gauntlet/**
+      - lib/core/domain/save_data.dart
+      - data/stages.yaml
+      - data/narratives/chapters/**
+    protected_behavior:
+      - all StageType mainline stages including chapter mini bosses and bosses skip automatic opening victory and defeat narrative readers
+      - special modes retain their current narrative behavior
+      - boss defeat penalties still settle and remain visible through fact only non narrative presentation
+      - every existing mainline opening victory and defeat narrative ID has exactly one manifest destination and no source asset is deleted
+      - optional reading reuses the existing chapter timeline and does not add a primary navigation entry or save migration
+    exit_criteria:
+      - Qoder CLI Qwen3.8 Max read only design review and final diff review are recorded with exact model evidence
+      - targeted tests cover all 105 mainline stages Boss defeat fact display optional reading and special mode regressions
+      - scoped analyze format diff check and source worktree cleanliness pass
+
+  - id: P2-M5-GAUNTLET-AUTOMATION-ADMISSION
+    milestone: M5
+    owner: codex_app_thread_gauntlet_admission
+    branch: codex_app_thread_pending
+    worktree: codex_app_worktree_pending
+    status: dispatching
+    base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    decision_ids:
+      - GAUNTLET-VISIBLE-BOT-01
+      - MAINLINE-REPLAY-PARTICIPANT-01
+    owned_files:
+      - lib/features/boss_gauntlet/domain/gauntlet_automation_policy.dart
+      - lib/features/boss_gauntlet/application/gauntlet_automation_admission.dart
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - test/features/boss_gauntlet/gauntlet_automation_policy_test.dart
+      - test/features/boss_gauntlet/gauntlet_automation_admission_test.dart
+      - test/features/boss_gauntlet/gauntlet_drive_test.dart
+      - docs/superpowers/plans/2026-08-24-p2-m5-gauntlet-automation-admission.md
+    forbidden_files:
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - lib/shared/strings.dart
+      - lib/core/domain/save_data.dart
+      - lib/features/mainline/**
+      - data/**
+    protected_behavior:
+      - reject visible realtime player bot gauntlet execution
+      - reject first clear headless gauntlet execution
+      - allow deterministic headless replay only after the exact gauntlet ID is present in clearedGauntletIds
+      - automation must stop at awaitingRewardChoice and cannot select or settle rewards
+      - no save schema rulesVersion full automation key UI or tuning change is introduced
+    exit_criteria:
+      - Pi DeepSeek V4 Flash read only design review and final diff review are recorded with exact model evidence
+      - pure policy admission service and drive regression tests pass including adversarial request combinations
+      - scoped analyze format diff check and source worktree cleanliness pass
+
+  - id: P2-M6-BATCH1-DEBLOCKING-GAUNTLET-ADMISSION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-batch1-deblocking-gauntlet-admission-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-batch1-deblocking-gauntlet-admission
+    status: in_progress
+    base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    source_tasks:
+      - P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
+      - P2-M5-GAUNTLET-AUTOMATION-ADMISSION
+    owned_files:
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-m6-batch1-deblocking-gauntlet-admission.md
+      - docs/audit/phase2_m6_batch1_deblocking_gauntlet_admission_2026-08-24.md
+    protected_behavior:
+      - integrate only the two file disjoint source patches after independent review
+      - do not claim U01 U04 U05 or full continuous five stage mainline closure
+      - keep G2 M3 M4 production gates unresolved and main origin main untouched
+    exit_criteria:
+      - both user visible Codex tasks reach clean READY commits with external model review evidence
+      - root verifies source diffs targeted tests scoped analyze and independent integration review
+      - joint targeted full tests repository checks audit truth docs and READY marker pass

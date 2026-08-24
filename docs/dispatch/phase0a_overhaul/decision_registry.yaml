@@ -281,6 +281,33 @@ decisions:
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
+  - id: MAINLINE-NARRATIVE-DEBLOCKING-01
+    status: frozen_plan_requirement
+    summary: 所有主线关含第 4/5 关 Boss 均不自动弹 opening victory defeat 阅读器，旧叙事逐 ID 搬迁到现有章节卷轴等可选载体且不删除资产
+    source_authority: '/Users/a10506/Desktop/二阶段优化方案.md §1.3 / §20 U02 U03 U12'
+    applies_to_stage_type: mainline
+    automatic_readers_forbidden:
+      - opening
+      - victory
+      - defeat
+    optional_carrier: existing_chapter_timeline
+    manifest_fields:
+      - targetType
+      - targetId
+      - unlockTrigger
+      - disposition
+    allowed_dispositions:
+      - migrate
+      - merge
+      - archive_with_content_owner_reason
+    protected_behavior:
+      - preserve_fact_only_boss_defeat_loss_summary
+      - preserve_special_mode_narrative_flows
+      - preserve_all_narrative_assets
+      - add_no_new_primary_navigation
+    related_decision: REOPEN-CHRONICLE-01
+    batch_action: implement_via_p2_m6_u02_u03_mainline_narrative_deblocking
+
   - id: TUNE-FORWARD-FAN-01
     status: tuning
     summary: 前向扇形边界候选生成

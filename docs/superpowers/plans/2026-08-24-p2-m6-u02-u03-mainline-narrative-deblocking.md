@@ -1,0 +1,24 @@
+# P2 M6 U02/U03：主线叙事去阻塞与章节卷轴搬迁
+
+## 目标
+
+一次原子关闭 U02 与其必要的 U03/U12 最小承载：105 个 `StageType.mainline` 关卡（含第 4/5 关 Boss）不再自动 push opening、victory、defeat 阅读器；所有旧 ID 保留并逐项登记 manifest；玩家从现有章节 timeline 主动阅读已解锁内容。
+
+## 实现边界
+
+- 不改变特殊模式 opening/victory/defeat 行为，不删除或改写 narrative YAML，不增加主菜单一级入口。
+- Boss 失败照常原子结算惩罚；损失通过事实性、非叙事 UI 显示，不给配装或打法建议。
+- manifest 每个现有主线 opening/victory/defeat ID 恰好一行，字段为 `targetType/targetId/unlockTrigger/disposition`；仅允许 `migrate`、`merge`、带内容 owner 理由的 `archive`。
+- 解锁只能使用现有进度证据；若 defeat 缺少可持久化证据，采用保守可解释规则并通过测试固定，不引入 saveVersion 或已读状态迁移。
+- 本任务不实现 U01 连续下一关、U04 待处理事件、U05 四入口，也不改变结算、招募、奇遇领域语义。
+
+## 外部模型与验收
+
+- 开工前和 actual diff 后分别调用 Qoder CLI `Qwen3.8-Max` 高强度只读审查，记录命令、版本、精确模型、退出码与 P0/P1/P2。
+- 定向测试覆盖 105 关完整性、三类自动 reader 归零、Boss 事实性损失展示、可选阅读解锁、特殊模式不回归。
+- `dart format --output=none --set-exit-if-changed`、changed/scoped `flutter analyze --no-pub`、`git diff --check` 和 clean worktree 全部通过后提交唯一 READY 恢复点。
+
+## 恢复点
+
+- 基线：`693ed157071e8242dc44ef81b9bae7d289809e58`。
+- 执行端不得改 registry、`CLAUDE.md`、`GDD.md`、`PROGRESS.md`；由主控集成后统一收口。
