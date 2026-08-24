@@ -2,6 +2,9 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/combat_catalog_repository.dart';
+import 'package:wuxia_idle/data/validation/combat_encounter_runtime_contract_mapper.dart';
+import 'package:wuxia_idle/data/validation/combat_stage_encounter_route_selector.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_migration_resolver.dart';
 
 const root = 'test/fixtures/phase2/combat/catalog_loader';
 
@@ -68,10 +71,25 @@ void main() {
     () async {
       final catalog = await loadProductionCombatCatalogIfPresent((path) async {
         throw FileSystemException('missing', path);
-      });
+      }, isMissingAssetError: (error) => error is FileSystemException);
       expect(catalog, isNull);
     },
   );
+
+  test('non-missing manifest read failure is classified and not swallowed', () {
+    expect(
+      loadProductionCombatCatalogIfPresent((path) async {
+        throw StateError('permission denied');
+      }),
+      throwsA(
+        isA<CombatCatalogLoadException>().having(
+          (error) => error.kind,
+          'kind',
+          CombatCatalogLoadFailureKind.manifestRead,
+        ),
+      ),
+    );
+  });
 
   test('manifest with a missing referenced source fails closed', () async {
     expect(
@@ -80,20 +98,20 @@ void main() {
           return '''archetype_sources: [missing.yaml]
 encounter_sources: [missing.yaml]
 reference_index:
-  entrance_ids: []
-  position_ids: []
-  behavior_ids: []
-  attack_set_ids: []
-  attack_tag_ids: []
-  posture_profile_ids: []
-  drop_group_ids: []
-  sfx_group_ids: []
-  visual_variant_ids: []
-  objective_target_ids: []
-  objective_anchor_ids: []
-  objective_entity_ids: []
-  objective_checkpoint_ids: []
-  objective_marker_ids: []
+  entrance_ids: [fixture]
+  position_ids: [fixture]
+  behavior_ids: [fixture]
+  attack_set_ids: [fixture]
+  attack_tag_ids: [fixture]
+  posture_profile_ids: [fixture]
+  drop_group_ids: [fixture]
+  sfx_group_ids: [fixture]
+  visual_variant_ids: [fixture]
+  objective_target_ids: [fixture]
+  objective_anchor_ids: [fixture]
+  objective_entity_ids: [fixture]
+  objective_checkpoint_ids: [fixture]
+  objective_marker_ids: [fixture]
 stage_assignments:
   - stage_id: legacy
     migration_state: legacy''';
@@ -101,12 +119,86 @@ stage_assignments:
         throw FileSystemException('missing', path);
       }),
       throwsA(
-        isA<FormatException>().having(
-          (error) => error.message,
-          'message',
-          contains('missing.yaml'),
-        ),
+        isA<CombatCatalogLoadException>()
+            .having(
+              (error) => error.kind,
+              'kind',
+              CombatCatalogLoadFailureKind.sourceMissing,
+            )
+            .having(
+              (error) => error.message,
+              'message',
+              contains('missing.yaml'),
+            ),
       ),
     );
+  });
+
+  test('production stage_01_03 binds a migrated route and runtime contract', () async {
+    final catalog = await loadProductionCombatCatalogIfPresent(
+      (path) => File(path).readAsString(),
+    );
+    expect(catalog, isNotNull);
+    expect(
+      catalog!.encounterForStage('stage_01_03')!.id,
+      'ch1_encounter_03_ambush',
+    );
+    expect(catalog.archetypeById('ch1_bandits')!.id, 'ch1_bandits');
+    final resolver = Phase0aEncounterMigrationResolver(
+      legacyContentIds: const [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_04',
+        'stage_01_05',
+      ],
+    );
+    final route = selectCombatStageEncounterRoute(
+      manifest: catalog,
+      stageId: 'stage_01_03',
+      migrationResolver: resolver,
+      hasLegacyContent: false,
+    );
+    expect(route, isA<MigratedCombatStageEncounterRoute>());
+    final encounter = (route as MigratedCombatStageEncounterRoute).encounter;
+    final contract = mapCombatEncounterRuntimeContract(
+      encounter,
+      tickDuration: const Duration(milliseconds: 100),
+      resolveEnemyId: (entry) => 'runtime_${entry.entryId}',
+    );
+    expect(contract.spawnDirector.config.activeLimit, 12);
+    expect(contract.spawnDirector.state.units, hasLength(40));
+    expect(contract.attackTokenBudgets.melee, 1);
+    expect(contract.attackTokenBudgets.ranged, 1);
+    expect(contract.attackTokenBudgets.charge, 1);
+    expect(contract.attackTokenBudgets.support, 1);
+  });
+
+  test('production Ch1 stages other than stage_01_03 remain legacy', () async {
+    final catalog = (await loadProductionCombatCatalogIfPresent(
+      (path) => File(path).readAsString(),
+    ))!;
+    final resolver = Phase0aEncounterMigrationResolver(
+      legacyContentIds: const [
+        'stage_01_01',
+        'stage_01_02',
+        'stage_01_04',
+        'stage_01_05',
+      ],
+    );
+    for (final stageId in const [
+      'stage_01_01',
+      'stage_01_02',
+      'stage_01_04',
+      'stage_01_05',
+    ]) {
+      final route = selectCombatStageEncounterRoute(
+        manifest: catalog,
+        stageId: stageId,
+        migrationResolver: resolver,
+        hasLegacyContent: true,
+      );
+      expect(route, isA<LegacyCombatStageEncounterRoute>());
+      expect(catalog.encounterForStage(stageId), isNull);
+    }
   });
 }

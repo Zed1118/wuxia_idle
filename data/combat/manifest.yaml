@@ -1,0 +1,108 @@
+# Loader entry for the production Ch1 Black Wind Ridge catalog.
+# Only stage_01_03 is migrated; all other Ch1 stages remain legacy.
+archetype_sources:
+  - data/combat/archetypes/bandits.yaml
+encounter_sources:
+  - data/combat/encounters/black_wind_ridge.yaml
+reference_index:
+  entrance_ids:
+    - ch1_entrance_s03_front
+    - ch1_entrance_s03_rear
+    - ch1_entrance_s03_upper
+  position_ids:
+    - ch1_position_s03_front
+    - ch1_position_s03_rear
+    - ch1_position_s03_upper
+  behavior_ids:
+    - ch1_behavior_blade_press
+    - ch1_behavior_crossbow_offset
+    - ch1_behavior_rope_flank
+    - ch1_behavior_gong_command
+  attack_set_ids:
+    - ch1_attack_set_blade
+    - ch1_attack_set_crossbow
+    - ch1_attack_set_rope_raider
+    - ch1_attack_set_gong_leader
+  attack_tag_ids:
+    - ch1_attack_tag_melee
+    - ch1_attack_tag_projectile
+    - ch1_attack_tag_charge
+    - ch1_attack_tag_support
+  posture_profile_ids:
+    - ch1_posture_blade
+    - ch1_posture_crossbow
+    - ch1_posture_rope_raider
+    - ch1_posture_gong_leader
+  drop_group_ids:
+    - ch1_drop_group_bandit_encounter
+  sfx_group_ids:
+    - ch1_sfx_blade
+    - ch1_sfx_crossbow
+    - ch1_sfx_rope_raider
+    - ch1_sfx_gong_leader
+  visual_variant_ids:
+    - ch1_visual_blade_a
+    - ch1_visual_blade_b
+    - ch1_visual_crossbow_a
+    - ch1_visual_crossbow_b
+    - ch1_visual_rope_raider_a
+    - ch1_visual_rope_raider_b
+    - ch1_visual_gong_leader_a
+    - ch1_visual_gong_leader_b
+  objective_target_ids:
+    - ch1_s03_blade_01
+    - ch1_s03_blade_02
+    - ch1_s03_blade_03
+    - ch1_s03_blade_04
+    - ch1_s03_blade_05
+    - ch1_s03_blade_06
+    - ch1_s03_blade_07
+    - ch1_s03_blade_08
+    - ch1_s03_blade_09
+    - ch1_s03_blade_10
+    - ch1_s03_blade_11
+    - ch1_s03_blade_12
+    - ch1_s03_blade_13
+    - ch1_s03_blade_14
+    - ch1_s03_blade_15
+    - ch1_s03_blade_16
+    - ch1_s03_blade_17
+    - ch1_s03_blade_18
+    - ch1_s03_crossbow_01
+    - ch1_s03_crossbow_02
+    - ch1_s03_crossbow_03
+    - ch1_s03_crossbow_04
+    - ch1_s03_crossbow_05
+    - ch1_s03_crossbow_06
+    - ch1_s03_crossbow_07
+    - ch1_s03_crossbow_08
+    - ch1_s03_crossbow_09
+    - ch1_s03_crossbow_10
+    - ch1_s03_rope_01
+    - ch1_s03_rope_02
+    - ch1_s03_rope_03
+    - ch1_s03_rope_04
+    - ch1_s03_rope_05
+    - ch1_s03_rope_06
+    - ch1_s03_rope_07
+    - ch1_s03_rope_08
+    - ch1_s03_rope_09
+    - ch1_s03_rope_10
+    - ch1_s03_leader_01
+    - ch1_s03_leader_02
+  objective_anchor_ids: []
+  objective_entity_ids: []
+  objective_checkpoint_ids: []
+  objective_marker_ids: []
+stage_assignments:
+  - stage_id: stage_01_01
+    migration_state: legacy
+  - stage_id: stage_01_02
+    migration_state: legacy
+  - stage_id: stage_01_03
+    migration_state: migrated
+    encounter_id: ch1_encounter_03_ambush
+  - stage_id: stage_01_04
+    migration_state: legacy
+  - stage_id: stage_01_05
+    migration_state: legacy

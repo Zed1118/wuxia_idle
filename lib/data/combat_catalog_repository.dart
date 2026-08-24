@@ -1,7 +1,32 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
 import 'defs/combat_catalog_manifest_def.dart';
 import 'defs/combat_catalog_reference_index.dart';
 import 'combat_encounter_catalog_loader.dart';
 import 'yaml_loader.dart';
+
+enum CombatCatalogLoadFailureKind {
+  manifestRead,
+  manifestInvalid,
+  sourceMissing,
+  sourceRead,
+  catalogInvalid,
+}
+
+final class CombatCatalogLoadException extends FormatException {
+  CombatCatalogLoadException({
+    required this.kind,
+    required this.path,
+    required String message,
+    this.cause,
+  }) : super(message);
+
+  final CombatCatalogLoadFailureKind kind;
+  final String path;
+  final Object? cause;
+}
 
 /// Loads the production combat catalog from an explicit manifest.
 ///
@@ -11,29 +36,59 @@ import 'yaml_loader.dart';
 /// treated as "catalog not installed yet" so legacy fixtures remain usable;
 /// this is deliberately the only non-fatal path.
 Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
-  Future<String> Function(String path) load,
-) async {
+  Future<String> Function(String path) load, {
+  bool Function(Object error)? isMissingAssetError,
+}) async {
   const manifestPath = 'data/combat/manifest.yaml';
+  final isMissing = isMissingAssetError ?? _isMissingAssetError;
   final String manifestRaw;
   try {
     manifestRaw = await load(manifestPath);
-  } catch (_) {
-    return null;
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw CombatCatalogLoadException(
+      kind: CombatCatalogLoadFailureKind.manifestRead,
+      path: manifestPath,
+      cause: error,
+      message: 'production combat catalog manifest cannot be read: $error',
+    );
   }
 
-  final manifest = parseYamlMap(manifestRaw);
-  final archetypePaths = _requiredPaths(manifest, 'archetype_sources');
-  final encounterPaths = _requiredPaths(manifest, 'encounter_sources');
-  final references = _parseReferenceIndex(manifest['reference_index']);
+  late final Map<String, dynamic> manifest;
+  late final List<String> archetypePaths;
+  late final List<String> encounterPaths;
+  late final CombatCatalogReferenceIndex references;
+  late final String assignmentYaml;
+  try {
+    manifest = parseYamlMap(manifestRaw);
+    archetypePaths = _requiredPaths(manifest, 'archetype_sources');
+    encounterPaths = _requiredPaths(manifest, 'encounter_sources');
+    references = _parseReferenceIndex(manifest['reference_index']);
+    assignmentYaml = _assignmentYaml(manifest['stage_assignments']);
+  } catch (error) {
+    if (error is CombatCatalogLoadException) rethrow;
+    throw CombatCatalogLoadException(
+      kind: CombatCatalogLoadFailureKind.manifestInvalid,
+      path: manifestPath,
+      cause: error,
+      message: 'production combat catalog manifest is invalid: $error',
+    );
+  }
 
   Future<List<CombatCatalogYamlSource>> sources(List<String> paths) async {
     final result = <CombatCatalogYamlSource>[];
     for (final path in paths) {
       try {
         result.add((path, await load(path)));
-      } catch (e) {
-        throw FormatException(
-          'production combat catalog source "$path" cannot be loaded: $e',
+      } catch (error) {
+        final kind = isMissing(error)
+            ? CombatCatalogLoadFailureKind.sourceMissing
+            : CombatCatalogLoadFailureKind.sourceRead;
+        throw CombatCatalogLoadException(
+          kind: kind,
+          path: path,
+          cause: error,
+          message: 'production combat catalog source "$path" cannot be read: $error',
         );
       }
     }
@@ -44,16 +99,24 @@ Future<CombatCatalogManifestDef?> loadProductionCombatCatalogIfPresent(
     return loadCombatCatalogManifest(
       archetypeSources: await sources(archetypePaths),
       encounterSources: await sources(encounterPaths),
-      manifestSource: (
-        manifestPath,
-        _assignmentYaml(manifest['stage_assignments']),
-      ),
+      manifestSource: (manifestPath, assignmentYaml),
       referenceIndex: references,
     );
-  } on FormatException {
-    rethrow;
-  } on ArgumentError catch (e) {
-    throw FormatException('production combat catalog manifest invalid: $e');
+  } on FormatException catch (error) {
+    if (error is CombatCatalogLoadException) rethrow;
+    throw CombatCatalogLoadException(
+      kind: CombatCatalogLoadFailureKind.catalogInvalid,
+      path: manifestPath,
+      cause: error,
+      message: 'production combat catalog content is invalid: $error',
+    );
+  } on ArgumentError catch (error) {
+    throw CombatCatalogLoadException(
+      kind: CombatCatalogLoadFailureKind.catalogInvalid,
+      path: manifestPath,
+      cause: error,
+      message: 'production combat catalog content is invalid: $error',
+    );
   }
 }
 
@@ -72,8 +135,10 @@ String _assignmentYaml(Object? raw) {
         'production combat catalog manifest.stage_assignments contains an invalid entry',
       );
     }
-    lines.add('  - stage_id: ${entry['stage_id']}');
-    lines.add('    migration_state: ${entry['migration_state']}');
+    lines.add('  - stage_id: ${_yamlString(entry['stage_id'] as String)}');
+    lines.add(
+      '    migration_state: ${_yamlString(entry['migration_state'] as String)}',
+    );
     final encounterId = entry['encounter_id'];
     if (encounterId != null) {
       if (encounterId is! String) {
@@ -81,11 +146,13 @@ String _assignmentYaml(Object? raw) {
           'production combat catalog manifest.stage_assignments.encounter_id must be a string',
         );
       }
-      lines.add('    encounter_id: $encounterId');
+      lines.add('    encounter_id: ${_yamlString(encounterId)}');
     }
   }
   return lines.join('\n');
 }
+
+String _yamlString(String value) => "'${value.replaceAll("'", "''")}'";
 
 List<String> _requiredPaths(Map<String, dynamic> manifest, String field) {
   final raw = manifest[field];
@@ -136,4 +203,13 @@ CombatCatalogReferenceIndex _parseReferenceIndex(Object? raw) {
     objectiveCheckpointIds: ids('objective_checkpoint_ids'),
     objectiveMarkerIds: ids('objective_marker_ids'),
   );
+}
+
+bool _isMissingAssetError(Object error) {
+  if (error is FileSystemException) {
+    final code = error.osError?.errorCode;
+    return code == null || code == 2 || code == 3;
+  }
+  return error is FlutterError &&
+      error.toString().contains('Unable to load asset');
 }
