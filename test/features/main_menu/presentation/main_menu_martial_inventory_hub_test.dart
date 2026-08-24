@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,6 +118,82 @@ void main() {
           .disabled,
       isFalse,
     );
+  });
+
+  testWidgets('step=2 时招式与主修仍保持锁定', (tester) async {
+    await tester.pumpWidget(hubApp(tutorialStep: 2));
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<WuxiaInkButton>(hubButton(UiStrings.martialInventorySkills))
+          .disabled,
+      isTrue,
+    );
+    expect(
+      tester
+          .widget<WuxiaInkButton>(
+            hubButton(UiStrings.martialInventoryTechniques),
+          )
+          .disabled,
+      isTrue,
+    );
+  });
+
+  for (final step in const [5, 8]) {
+    testWidgets('step=$step 时招式与主修保持向上兼容解锁', (tester) async {
+      await tester.pumpWidget(hubApp(tutorialStep: step));
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        tester
+            .widget<WuxiaInkButton>(hubButton(UiStrings.martialInventorySkills))
+            .disabled,
+        isFalse,
+      );
+      expect(
+        tester
+            .widget<WuxiaInkButton>(
+              hubButton(UiStrings.martialInventoryTechniques),
+            )
+            .disabled,
+        isFalse,
+      );
+    });
+  }
+
+  testWidgets('active roster 仍 loading 时武学入口 fail closed', (tester) async {
+    final activeIds = Completer<List<int>>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentTutorialStepProvider.overrideWith((ref) async => 5),
+          activeCharacterIdsProvider.overrideWith((ref) => activeIds.future),
+        ],
+        child: const MaterialApp(home: MartialInventoryHubScreen()),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<WuxiaInkButton>(hubButton(UiStrings.martialInventorySkills))
+          .disabled,
+      isTrue,
+    );
+    expect(
+      tester
+          .widget<WuxiaInkButton>(
+            hubButton(UiStrings.martialInventoryTechniques),
+          )
+          .disabled,
+      isTrue,
+    );
+
+    activeIds.complete(const []);
+    await tester.pump();
   });
 
   testWidgets('step 已开放但 active roster 为空时武学入口 fail closed', (tester) async {
