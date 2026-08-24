@@ -4281,6 +4281,42 @@ tasks:
       - do not change schema save version tuning narrative rewards economy YAML or main
       - do not claim U06 U14 M5 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U06-EXPEDITION-LOCATION-DETAIL
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-expedition-location-detail-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-expedition-location-detail
+    status: in_progress
+    base_commit: c6c9e7a9eef846a2125c4d33cccf33499352c4b2
+    completion_scope: add_production_expedition_location_detail_before_overview
+    dependencies:
+      - P2-M6-U06-GAUNTLET-LOCATION-DETAIL
+    owned_files:
+      - lib/features/jianghu_map/domain/expedition_location_detail.dart
+      - lib/features/jianghu_map/application/expedition_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/expedition_location_detail_screen.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/jianghu_map/application/expedition_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/expedition_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_expedition_location_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-expedition-location-detail.md
+      - docs/audit/phase2_m6_u06_expedition_location_detail_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - detail reads production expedition config max depth candidates active run participant characters enemies and reward definitions
+      - map opens detail before ExpeditionOverviewScreen and detail CTA preserves the existing overview route
+      - hidden gate invalid config invalid progress dangling active participant and provider errors fail closed without an entry CTA
+      - active runs retain their existing depth defeated policy and recall path through ExpeditionOverviewScreen
+      - preserve current single non founder dispatch candidate policy cycle offline settlement recall combat rewards and return behavior
+      - no direct play front bot multiplayer new automation participant policy or progressive unlock is invented
+      - do not change schema save version tuning narrative rewards economy YAML or main
+      - do not claim U06 U14 M5 M6 or overall Phase 2 completion
+
   - id: P2-M6-U06-GAUNTLET-LOCATION-DETAIL
     milestone: M6
     owner: codex_root
