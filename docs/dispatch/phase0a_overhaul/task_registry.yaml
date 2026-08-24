@@ -3524,3 +3524,34 @@ tasks:
       - founder tutorial ownership remains separate from battle event ownership
       - first clear headless sweep tuning rewards unlock schema narrative and main remain unchanged
       - do not claim front bot headless sweep mentor insight U01 M2 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U05-CONTINUE-JIANGHU-DIRECT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u05-continue-jianghu-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-continue-jianghu
+    status: in_progress
+    base_commit: 3fbf945a5d89648b5c4bced3802e20f333b53636
+    completion_scope: continue_jianghu_dynamic_current_mainline_direct_entry
+    dependencies:
+      - P2-M2-M6-U01-VISIBLE-REPLAY-PARTICIPANT
+      - MAINLINE-PARTICIPANT-01
+      - MAINLINE-RUN-01
+    owned_files:
+      - lib/features/main_menu/presentation/main_menu.dart
+      - lib/shared/strings.dart
+      - test/features/main_menu/presentation/main_menu_continue_jianghu_test.dart
+      - test/features/main_menu/presentation/main_menu_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u05-continue-jianghu-direct.md
+      - docs/audit/phase2_m6_u05_continue_jianghu_direct_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - continue jianghu resolves the current first clear stage from production data
+      - direct entry consumes the existing mainline flow and first clear run contract
+      - unresolved or fully cleared progress keeps the chapter map fallback
+      - do not change progression admission participant settlement reward unlock tuning schema narrative or main
+      - do not claim the remaining three primary hubs U05 M6 or overall Phase 2 completion
