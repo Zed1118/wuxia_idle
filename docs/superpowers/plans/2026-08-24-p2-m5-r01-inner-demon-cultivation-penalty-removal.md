@@ -41,13 +41,14 @@
 ## TDD 与验证清单
 
 - [x] 外部设计复核有命令、版本、精确模型和结论证据。
-- [ ] 配置键与类型入口退役；任意 `failure_penalty` 键（含空 map）显式拒绝。
-- [ ] service 仅应用 capped disorder，主修 before/after 恒等且不写回。
-- [ ] combat resolution 锁主修、境界、永久内力、装备字段、伤势不变；正常
+- [x] 配置键与类型入口退役；任意 `failure_penalty` 键（含空 map、null）显式拒绝。
+- [x] service 仅应用 capped disorder，主修 before/after 恒等且不写回。
+- [x] combat resolution 锁主修、境界、永久内力、装备字段、伤势不变；正常
   `equipment.battleCount` 增长继续发生。
-- [ ] targeted 覆盖死配置、配置加载、service、combat resolution、直接构造夹具及
-  R02 兼容回归，逐文件记录 pass 数。
-- [ ] scoped analyze 为零；format、diff check、exact owned paths、clean status 通过。
+- [x] targeted 覆盖死配置、配置加载、service、combat resolution、直接构造夹具及
+  R02 兼容回归：11 个 test file、106/106 pass。
+- [x] scoped analyze 10 items 为零；format 10 files 零改动，diff check 通过。
+- [ ] exact owned paths、clean status 在 READY 前复核。
 - [ ] Pi 以同一精确模型完成 actual diff 只读终审，Codex triage 后 P0/P1/P2=0。
 
 ## CLAUDE §8.2 四项证据
@@ -55,17 +56,23 @@
 1. **生产接线**：真实路径为 `CombatResolutionService.resolveSnapshot` 心魔失败分支
    → `InnerDemonService.applyFailurePenalty` → `InnerBreathDisorder.apply`；删除唯一
    cultivation 写回，但保留完整通用结算与事务。
-2. **Targeted tests**：待实现后回填逐文件命令与 pass 总数，不以 analyze 替代。
+2. **Targeted tests**：逐文件运行 `flutter test --no-pub <file>`；owned 7
+   files 为 38/38，`game_repository_test.dart`、`phase2_scenarios_test.dart`、
+   `inner_demon_defeat_summary_test.dart`、`inner_demon_progress_panel_test.dart` 回归
+   为 68/68，合计 11 files、106/106 pass。scoped analyze 10 items 为零。
 3. **红线影响**：不改伤害/血量/内力上限、三系、在线=离线、反主流项或玩家文案；
    删除的是已冻结退役的 10% 惩罚数值，schema 对死配置 fail-fast。
-4. **残留风险**：R02 负责 defeat summary 文案对齐；本任务不改 AI、tuning、host、
-   durable/schema persistence 结构或历史审计快照。最终回填未覆盖项。
+4. **残留风险**：R02 负责 defeat summary 文案对齐，兼容回归已通过；本任务
+   不改 AI、tuning、host、durable/schema persistence 结构或历史审计快照。
+   source 阶段未跑 full，批次整合仍需主控运行全量；当前无已知功能残留风险。
 
 ## 当前恢复点（CLAUDE §8.0）
 
-- 状态：设计复核完成，准备进入 TDD 红测。
-- 最后完成：完整读取 CLAUDE、rejected registry、R01 计划、task/decision contract；
-  核验基线与 clean；完成 Pi 0.84.1 exact model 只读设计复核并获 DESIGN PASS。
-- 下一步：读取 owned production/tests 现状，先写退役配置与不变项红测。
-- 已跑验证：仅只读合同核对与 Pi 设计复核；尚未运行任务测试。
-- 阻塞项：无。R02 文案与本任务边界已明确。
+- 状态：TDD 红→绿与本地定向验证完成，待 Pi actual diff 终审。
+- 最后完成：红测提交 `8c0d8db9`；schema/结算实现提交 `80f9a7b8`；
+  11 个定向文件 106/106 pass，scoped analyze 10 items 无问题。
+- 下一步：用 Pi 0.84.1 同一 exact model 只读审查
+  `f1dc0c9e..HEAD` actual diff，Codex triage 后回填结论并复核 Gate。
+- 已跑验证：owned 38/38 + 影响回归 68/68；format 10 files 零改动；
+  diff check 通过。
+- 阻塞项：无。source 阶段不跑 full；R02 文案与本任务边界已明确。
