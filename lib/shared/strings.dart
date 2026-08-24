@@ -2276,6 +2276,38 @@ class UiStrings {
   static const String mainMenuBaike = '江湖见闻录';
   static const String mainMenuBaikeHint = '记事与典故,永久可查';
 
+  // ── 二阶段 §11.1 江湖纪事一级 Hub ──
+  static const String mainMenuJianghuChronicle = '江湖纪事';
+  static const String mainMenuJianghuChronicleHint = '卷轴、人物、地点与未了江湖事';
+  static const String jianghuChronicleTitle = '江湖纪事';
+  static const String jianghuChronicleSectionTitle = '江湖留痕';
+  static const String jianghuChronicleSubtitle = '旧事可翻，已行之地可查，未了之事仍从原处续接。';
+  static const String jianghuChronicleChapters = '章节卷轴';
+  static const String jianghuChronicleChaptersHint = '按章节回看已开放的关前关后文字';
+  static const String jianghuChronicleCharacters = '人物';
+  static const String jianghuChronicleCharactersHint = '查看祖师、门人与历代传承';
+  static const String jianghuChronicleLocations = '地点';
+  static const String jianghuChronicleLocationsHint = '只记录已踏足或当前可达之地';
+  static const String jianghuChronicleEnemies = '敌手';
+  static const String jianghuChronicleEnemiesHint = '回看已经留下战绩的首领';
+  static const String jianghuChronicleEquipmentLore = '装备典故';
+  static const String jianghuChronicleEquipmentLoreHint = '按阶查阅器物与既有典故';
+  static const String jianghuChroniclePendingAffairs = '待处理江湖事';
+  static const String jianghuChroniclePendingAffairsHint = '续接结算后尚未完成的抉择与招降';
+  static const String jianghuChronicleLocationCleared = '已踏足';
+  static const String jianghuChronicleLocationAvailable = '可前往';
+  static const String jianghuChronicleLocationsEmpty = '尚未留下可查的行迹';
+  static const String jianghuChronicleLocationsUnavailable = '主线行迹暂不可读取';
+  static const String pendingJianghuAffairsTitle = '未了之事';
+  static const String pendingJianghuAffairsEmpty = '眼下没有待处理的江湖事';
+  static const String pendingJianghuAffairsUnavailable = '待处理事项暂不可读取';
+  static String pendingJianghuAffairsSource(String stageName) =>
+      '起于：$stageName';
+  static const String pendingJianghuAffairEncounterChoice = '奇遇抉择';
+  static const String pendingJianghuAffairBossRecruit = '首领招降';
+  static const String pendingJianghuAffairsResume = '继续处理';
+  static const String pendingJianghuAffairsResumeHint = '返回原结算流程，按既有顺序逐项处理';
+
   // ── 藏卷阁 Hub ──
   static const String mainMenuZangjuange = '藏卷阁';
   static const String mainMenuZangjuangeHint = '合看战绩、兵器、奇遇与武学缺口';

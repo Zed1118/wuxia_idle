@@ -33,6 +33,7 @@
 - `lib/shared/strings.dart`
 - `test/features/main_menu/presentation/main_menu_jianghu_chronicle_hub_test.dart`
 - `test/features/main_menu/presentation/main_menu_test.dart`
+- `test/features/baike/presentation/baike_screen_navigation_test.dart`
 - `test/features/mainline/application/mainline_pending_jianghu_affair_service_test.dart`
 - `test/features/jianghu_chronicle/presentation/mainline_location_archive_screen_test.dart`
 - `test/features/jianghu_chronicle/presentation/pending_jianghu_affairs_screen_test.dart`

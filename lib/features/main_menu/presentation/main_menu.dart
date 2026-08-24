@@ -9,18 +9,15 @@ import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
-import '../../baike/presentation/baike_screen.dart';
 import '../../battle_record/application/boss_memory_providers.dart';
-import '../../battle_record/presentation/battle_record_screen.dart';
 import '../../weapon_codex/application/equipment_catalog_providers.dart';
-import '../../weapon_codex/presentation/weapon_codex_screen.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
-import '../../character_panel/presentation/lineage_panel_screen.dart';
 import '../../debug/presentation/phase2_test_menu.dart';
 import '../../debug/presentation/redline_audit_screen.dart';
 import '../../debug/presentation/sect_recruit_debug_screen.dart';
 import '../../festival/application/festival_service_providers.dart';
 import '../../inner_demon/presentation/inner_demon_screen.dart';
+import '../../jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
@@ -52,7 +49,6 @@ import '../../../shared/widgets/wuxia_ui/wuxia_icon_button.dart';
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../tutorial/domain/tutorial_hint_def.dart';
 import '../../tutorial/presentation/tutorial_banner_card.dart';
-import '../../tower/presentation/leaderboard_screen.dart';
 import 'main_menu_retreat_banner.dart';
 import 'sect_banner.dart';
 import '../application/main_menu_status_summary_provider.dart';
@@ -63,7 +59,6 @@ import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../shop/application/shop_providers.dart';
 import '../../shop/presentation/shop_screen.dart';
-import '../../zangjuange/presentation/zangjuange_screen.dart';
 import 'main_menu_status_summary.dart';
 import 'main_menu_startup_gate.dart';
 
@@ -271,7 +266,6 @@ class MainMenu extends ConsumerWidget {
     );
     final archiveItems = _archiveItems(
       context,
-      socialLocked: socialLocked,
       battleRecordUnlocked: battleRecordUnlocked,
       weaponCodexUnlocked: weaponCodexUnlocked,
     );
@@ -568,60 +562,22 @@ class MainMenu extends ConsumerWidget {
 
   List<Widget> _archiveItems(
     BuildContext context, {
-    required bool socialLocked,
     required bool battleRecordUnlocked,
     required bool weaponCodexUnlocked,
   }) {
     return <Widget>[
       WuxiaInkButton(
-        label: UiStrings.mainMenuLineage,
-        hint: UiStrings.mainMenuLineageHint,
-        icon: Icons.account_tree_outlined,
-        thumbnailPath: WuxiaUi.entryCharacter,
-        onTap: () => _push(context, const LineagePanelScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuLeaderboard,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuLeaderboardHint,
-        icon: Icons.emoji_events_outlined,
-        thumbnailPath: WuxiaUi.entryTower,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const LeaderboardScreen()),
-      ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuZangjuange,
-        hint: socialLocked
-            ? UiStrings.mainMenuSocialLockedHint
-            : UiStrings.mainMenuZangjuangeHint,
-        icon: Icons.library_books_outlined,
+        label: UiStrings.mainMenuJianghuChronicle,
+        hint: UiStrings.mainMenuJianghuChronicleHint,
+        icon: Icons.auto_stories_outlined,
         thumbnailPath: WuxiaUi.entryCodex,
-        disabled: socialLocked,
-        locked: socialLocked,
-        onTap: () => _push(context, const ZangjuangeScreen()),
-      ),
-      if (battleRecordUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuBattleRecord,
-          hint: UiStrings.mainMenuBattleRecordHint,
-          icon: Icons.history_edu_outlined, // 美术待补专属 thumbnail
-          onTap: () => _push(context, const BattleRecordScreen()),
+        onTap: () => _push(
+          context,
+          JianghuChronicleHubScreen(
+            battleRecordUnlocked: battleRecordUnlocked,
+            equipmentLoreUnlocked: weaponCodexUnlocked,
+          ),
         ),
-      if (weaponCodexUnlocked)
-        WuxiaInkButton(
-          label: UiStrings.mainMenuWeaponCodex,
-          hint: UiStrings.mainMenuWeaponCodexHint,
-          icon: Icons.auto_stories_outlined,
-          onTap: () => _push(context, const WeaponCodexScreen()),
-        ),
-      WuxiaInkButton(
-        label: UiStrings.mainMenuBaike,
-        hint: UiStrings.mainMenuBaikeHint,
-        icon: Icons.menu_book_outlined,
-        thumbnailPath: WuxiaUi.entryCodex,
-        onTap: () => _push(context, const BaikeScreen()),
       ),
     ];
   }

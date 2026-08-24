@@ -18,6 +18,7 @@ import 'package:wuxia_idle/core/game_loop/monthly_tick.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/battle_record/application/boss_memory_providers.dart';
 import 'package:wuxia_idle/features/festival/application/festival_service_providers.dart';
+import 'package:wuxia_idle/features/jianghu_chronicle/presentation/jianghu_chronicle_hub_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -38,7 +39,7 @@ import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 /// 用例覆盖：
 ///   - 标题 mainMenuTitle 渲染
 ///   - 菜单按钮 label 匹配（继续江湖 / 问鼎九霄 / 宗门 / 武学与行囊 / 档案等）
-///   - 17 个默认菜单入口 WuxiaInkButton（条件入口未解锁时）
+///   - 14 个默认菜单入口 WuxiaInkButton（条件入口未解锁时）
 ///   - Tap "Phase 2 调试场景" → push Phase2TestMenu
 ///
 /// 主线 / 问鼎九霄 / 角色 / 师徒名单 / 装备 / 心法 按钮 push 的页面依赖 Isar（师徒名单经
@@ -63,6 +64,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SectHubScreen), findsOneWidget);
     return tester.widget<SectHubScreen>(find.byType(SectHubScreen));
+  }
+
+  Future<JianghuChronicleHubScreen> openChronicleHub(
+    WidgetTester tester,
+  ) async {
+    final entry = find.text(UiStrings.mainMenuJianghuChronicle);
+    await tester.ensureVisible(entry);
+    await tester.pumpAndSettle();
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(find.byType(JianghuChronicleHubScreen), findsOneWidget);
+    return tester.widget<JianghuChronicleHubScreen>(
+      find.byType(JianghuChronicleHubScreen),
+    );
   }
 
   testWidgets('标题渲染：mainMenuTitle 可见', (tester) async {
@@ -104,7 +119,7 @@ void main() {
     expect(tickCount, 1);
   });
 
-  testWidgets('17 个默认菜单按钮 label 全部可见且顺序正确', (tester) async {
+  testWidgets('14 个默认菜单按钮 label 全部可见且顺序正确', (tester) async {
     await tester.pumpWidget(app());
 
     expect(find.text(UiStrings.mainMenuMainline), findsOneWidget);
@@ -114,12 +129,10 @@ void main() {
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSectHub), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuLeaderboard), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuZangjuange), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghuChronicle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuPhase2), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSectRecruit), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuLineage), findsOneWidget);
-    expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuRedlineAudit), findsOneWidget);
     expect(find.text(UiStrings.mainMenuMartialInventory), findsOneWidget);
     expect(find.text(UiStrings.mainMenuResourceOverview), findsOneWidget);
     expect(find.text(UiStrings.mainMenuSettings), findsOneWidget);
@@ -171,21 +184,21 @@ void main() {
       isTrue,
     );
 
-    // 档案藏卷:谱牒/榜单先于藏卷/百科。
+    // 档案藏卷收拢为单一江湖纪事入口。
     expect(
-      y(UiStrings.mainMenuLineage) < y(UiStrings.mainMenuZangjuange),
+      y(UiStrings.mainMenuGroupArchive) < y(UiStrings.mainMenuJianghuChronicle),
       isTrue,
     );
     expect(
-      (y(UiStrings.mainMenuZangjuange) - y(UiStrings.mainMenuBaike)).abs() <
-          2.0,
+      y(UiStrings.mainMenuJianghuChronicle) <
+          y(UiStrings.mainMenuGroupSettings),
       isTrue,
     );
   });
 
-  testWidgets('17 个默认菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
+  testWidgets('14 个默认菜单按钮均为 WuxiaInkButton（可点入口）', (tester) async {
     await tester.pumpWidget(app());
-    expect(find.byType(WuxiaInkButton), findsNWidgets(17));
+    expect(find.byType(WuxiaInkButton), findsNWidgets(14));
   });
 
   testWidgets('入口按钮显示语义图标牌', (tester) async {
@@ -194,10 +207,9 @@ void main() {
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
     expect(find.byIcon(Icons.home_work_outlined), findsOneWidget);
     expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.account_tree_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.library_books_outlined), findsOneWidget);
-    // 百科 + 武学与行囊共 2 个 menu_book_outlined 图标
-    expect(find.byIcon(Icons.menu_book_outlined), findsNWidgets(2));
+    expect(find.byIcon(Icons.auto_stories_outlined), findsOneWidget);
+    // 主菜单只保留「武学与行囊」使用 menu_book_outlined。
+    expect(find.byIcon(Icons.menu_book_outlined), findsOneWidget);
   });
 
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
@@ -728,13 +740,13 @@ void main() {
       child: const MaterialApp(home: MainMenu()),
     );
 
-    testWidgets('全新存档 → 心魔/社交锁定且 Hub 收到门派事务锁定', (tester) async {
+    testWidgets('全新存档 → 心魔/社交锁定，纪事入口不继承社交门', (tester) async {
       await tester.pumpWidget(appWithCleared([]));
       await tester.pump();
       await tester.pump();
       // 后期系统(Ch6 prereq)、社交(Ch1)在空进度全灰显；PVP 已切除。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
-      expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 0.4);
+      expect(opacityOf(tester, UiStrings.mainMenuJianghuChronicle), 1.0);
       expect(find.text('论剑对决'), findsNothing);
       expect((await openSectHub(tester)).sectLocked, isTrue);
     });
@@ -743,9 +755,9 @@ void main() {
       await tester.pumpWidget(appWithCleared(['stage_01_05']));
       await tester.pump();
       await tester.pump();
-      // 社交(江湖/排行榜/藏卷阁)Ch1 prereq 满足 → enabled。
+      // 社交声望 Ch1 prereq 满足 → enabled；纪事入口始终可进。
       expect(opacityOf(tester, UiStrings.mainMenuJianghu), 1.0);
-      expect(opacityOf(tester, UiStrings.mainMenuZangjuange), 1.0);
+      expect(opacityOf(tester, UiStrings.mainMenuJianghuChronicle), 1.0);
       // 心魔仍需 Ch6 末关 → 仍 disabled。
       expect(opacityOf(tester, UiStrings.mainMenuInnerDemon), 0.4);
       expect((await openSectHub(tester)).sectLocked, isFalse);
@@ -763,11 +775,10 @@ void main() {
 
   // ── P4 Task10 §5.7 战绩册入口门控（首胜后解锁） ──────────────────────────
   //
-  // §5.7：首次击败任一 Boss 前隐藏入口；bossMemoryCount>0 才显「战绩册」按钮。
-  // 隐藏式 gating（与灰显不同，按钮整体不渲染）。
+  // §5.7：主菜单始终只有「江湖纪事」；首次击败任一 Boss 后，Hub 内才显敌手。
 
   group('§5.7 战绩册入口门控', () {
-    testWidgets('0 纪念 → 无战绩册入口（隐藏）', (tester) async {
+    testWidgets('0 纪念 → 主菜单不平铺战绩册且 Hub 收到关闭门', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [bossMemoryCountProvider.overrideWith((ref) async => 0)],
@@ -778,9 +789,10 @@ void main() {
       await tester.pump();
 
       expect(find.text(UiStrings.mainMenuBattleRecord), findsNothing);
+      expect((await openChronicleHub(tester)).battleRecordUnlocked, isFalse);
     });
 
-    testWidgets('≥1 纪念 → 有战绩册入口', (tester) async {
+    testWidgets('≥1 纪念 → 主菜单仍不平铺且 Hub 收到开放门', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [bossMemoryCountProvider.overrideWith((ref) async => 1)],
@@ -790,10 +802,11 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text(UiStrings.mainMenuBattleRecord), findsOneWidget);
+      expect(find.text(UiStrings.mainMenuBattleRecord), findsNothing);
+      expect((await openChronicleHub(tester)).battleRecordUnlocked, isTrue);
     });
 
-    testWidgets('≥1 纪念 → tap 战绩册 → Navigator.push 触发', (tester) async {
+    testWidgets('≥1 纪念 → tap 江湖纪事 → Navigator.push 触发', (tester) async {
       final observer = _RecordingNavigatorObserver();
       await tester.pumpWidget(
         ProviderScope(
@@ -811,8 +824,8 @@ void main() {
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pump();
 
-      await tester.tap(find.text(UiStrings.mainMenuBattleRecord));
-      await tester.pump(); // 单帧，不 settle（子屏依赖 Isar）
+      await tester.tap(find.text(UiStrings.mainMenuJianghuChronicle));
+      await tester.pump();
 
       expect(observer.pushedRoutes.length, 2);
       expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());

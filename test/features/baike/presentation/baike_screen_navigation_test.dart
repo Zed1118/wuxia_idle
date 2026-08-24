@@ -7,11 +7,12 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/baike/presentation/baike_screen.dart';
 import 'package:wuxia_idle/features/event/application/game_event_feed_providers.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
+import 'package:wuxia_idle/features/weapon_codex/application/equipment_catalog_providers.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 import '../../../support/test_data.dart';
 
-/// Nightshift T05 · BaikeScreen MainMenu 11 按钮导航 + 见闻 tab 6 档时间 override edge。
+/// Nightshift T05 · BaikeScreen 江湖纪事导航 + 见闻 tab 6 档时间 override edge。
 ///
 /// 测试 A/B 用 MainMenu widget 直接 pump，测试 C 直接覆盖事件 feed provider。
 /// 测试 C 直接 pump BaikeScreen + provider override。
@@ -22,35 +23,56 @@ void main() {
     }
   });
 
-  // ── A: 「江湖见闻录」按钮可见(B 测试前置 sanity)──────────────────────────
+  // ── A: 「江湖纪事」按钮可见(B 测试前置 sanity)────────────────────────────
   //
-  // 11 按钮全集断言已在 main_menu_test.dart「11 个菜单按钮 label 全部可见且顺序正确」
-  // 覆盖,本测试只单点检查 B 测试依赖的「江湖见闻录」按钮 fixture。
-  testWidgets('A: MainMenu 含「江湖见闻录」按钮(B 测试前置 sanity)', (tester) async {
+  // 默认入口全集断言已在 main_menu_test.dart 的菜单顺序测试覆盖；
+  // 覆盖,本测试只单点检查 B 测试依赖的「江湖纪事」按钮 fixture。
+  testWidgets('A: MainMenu 含「江湖纪事」按钮(B 测试前置 sanity)', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: MaterialApp(home: MainMenu())),
     );
-    expect(find.text(UiStrings.mainMenuBaike), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuJianghuChronicle), findsOneWidget);
+    expect(find.text(UiStrings.mainMenuBaike), findsNothing);
   });
 
-  // ── B: tap「江湖见闻录」→ Navigator.push 到 BaikeScreen ─────────────────
+  // ── B: tap「江湖纪事/装备典故」→ BaikeScreen 装备 tab ────────────────────
   //
-  // 「江湖见闻录」是第 9 个按钮,800×600 默认视口需 ensureVisible 滚入再 tap。
+  // 主菜单和 Hub 均需 ensureVisible；图鉴计数>0 才显示装备典故。
   // BaikeScreen._FeedTab 以 isarProvider=null → gameEventsFeed 立即返回 []，
   // 无持续动画，pumpAndSettle 不死循环。
-  testWidgets('B: tap「江湖见闻录」→ 导航到 BaikeScreen（find.byType 验证）', (tester) async {
+  testWidgets('B: 经江湖纪事装备典故 → 导航到 BaikeScreen 装备 tab', (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: MainMenu())),
+      ProviderScope(
+        overrides: [
+          equipmentCatalogCountProvider.overrideWith((ref) async => 1),
+        ],
+        child: const MaterialApp(home: MainMenu()),
+      ),
     );
-    final baikeEntry = find.widgetWithText(
+    await tester.pump();
+    await tester.pump();
+    final chronicleEntry = find.widgetWithText(
       WuxiaInkButton,
-      UiStrings.mainMenuBaike,
+      UiStrings.mainMenuJianghuChronicle,
     );
-    await Scrollable.ensureVisible(tester.element(baikeEntry), alignment: 0.5);
+    await Scrollable.ensureVisible(
+      tester.element(chronicleEntry),
+      alignment: 0.5,
+    );
     await tester.pumpAndSettle();
-    await tester.tap(baikeEntry);
+    await tester.tap(chronicleEntry);
+    await tester.pumpAndSettle();
+
+    final loreEntry = find.widgetWithText(
+      WuxiaInkButton,
+      UiStrings.jianghuChronicleEquipmentLore,
+    );
+    await Scrollable.ensureVisible(tester.element(loreEntry), alignment: 0.5);
+    await tester.pumpAndSettle();
+    await tester.tap(loreEntry);
     await tester.pumpAndSettle();
     expect(find.byType(BaikeScreen), findsOneWidget);
+    expect(tester.widget<BaikeScreen>(find.byType(BaikeScreen)).initialTab, 1);
   });
 
   // ── C: 见闻 tab 6 档时间 override 详化 ────────────────────────────────

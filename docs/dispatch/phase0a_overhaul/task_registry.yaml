@@ -3550,6 +3550,7 @@ tasks:
       - lib/shared/strings.dart
       - test/features/main_menu/presentation/main_menu_continue_jianghu_test.dart
       - test/features/main_menu/presentation/main_menu_test.dart
+      - test/features/baike/presentation/baike_screen_navigation_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m6-u05-continue-jianghu-direct.md
       - docs/audit/phase2_m6_u05_continue_jianghu_direct_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -3667,6 +3668,7 @@ tasks:
       - lib/shared/strings.dart
       - test/features/main_menu/presentation/main_menu_jianghu_chronicle_hub_test.dart
       - test/features/main_menu/presentation/main_menu_test.dart
+      - test/features/baike/presentation/baike_screen_navigation_test.dart
       - test/features/mainline/application/mainline_pending_jianghu_affair_service_test.dart
       - test/features/jianghu_chronicle/presentation/mainline_location_archive_screen_test.dart
       - test/features/jianghu_chronicle/presentation/pending_jianghu_affairs_screen_test.dart

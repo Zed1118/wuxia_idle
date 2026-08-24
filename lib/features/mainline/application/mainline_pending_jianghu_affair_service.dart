@@ -2,6 +2,12 @@ import '../domain/mainline_pending_jianghu_affair.dart';
 import '../domain/mainline_settlement_journal.dart';
 import 'mainline_settlement_journal_service.dart';
 
+typedef MainlinePendingJianghuAffairsSnapshot = ({
+  MainlineSettlementIdentity identity,
+  String stageId,
+  List<MainlinePendingJianghuAffairRef> affairs,
+});
+
 /// Typed facade over the settlement journal's durable outbox.
 ///
 /// The journal remains the sole persistence/transaction owner. This facade
@@ -10,6 +16,36 @@ final class MainlinePendingJianghuAffairService {
   const MainlinePendingJianghuAffairService(this.journalService);
 
   final MainlineSettlementJournalService journalService;
+
+  /// Reads the current save's durable FIFO without creating another queue.
+  ///
+  /// Prepared battles and core-applied receipts without pending typed affairs
+  /// are not Chronicle work, so they return null. Unknown effect encodings and
+  /// identity mismatches throw instead of being guessed by the presentation.
+  Future<MainlinePendingJianghuAffairsSnapshot?> pendingForSave(
+    int saveDataId,
+  ) async {
+    final journal = await journalService.activeForSave(saveDataId);
+    if (journal == null ||
+        journal.phase != MainlineSettlementPhase.coreApplied) {
+      return null;
+    }
+    final affairs = <MainlinePendingJianghuAffairRef>[];
+    for (final effectId in journal.pendingEffectIds) {
+      if (journal.completedEffectIds.contains(effectId)) continue;
+      final affair = _parse(effectId);
+      if (affair.settlementId != journal.identity.canonical) {
+        throw StateError('Pending affair settlement mismatch');
+      }
+      affairs.add(affair);
+    }
+    if (affairs.isEmpty) return null;
+    return (
+      identity: journal.identity,
+      stageId: journal.stageId,
+      affairs: List<MainlinePendingJianghuAffairRef>.unmodifiable(affairs),
+    );
+  }
 
   Future<MainlineCoreCommitDisposition> commitCore({
     required MainlineSettlementIdentity identity,

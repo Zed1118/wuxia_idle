@@ -319,4 +319,76 @@ void main() {
 
     expect(await service.firstPending(identity: identity()), isNull);
   });
+
+  test('按 save 读取同一 active journal 的 typed FIFO 快照', () async {
+    final journal = MainlineSettlementJournalService(IsarSetup.instance);
+    final service = MainlinePendingJianghuAffairService(journal);
+    await journal.prepare(
+      saveDataId: 1,
+      identity: identity(),
+      loadoutSnapshotId: 'snapshot-1',
+      now: DateTime.utc(2026, 8, 25),
+    );
+    await service.commitCore(
+      identity: identity(),
+      now: DateTime.utc(2026, 8, 25, 0, 1),
+      applyInTxn: () async => [encounter(1), encounter(2)],
+    );
+
+    var snapshot = await service.pendingForSave(1);
+    expect(snapshot, isNotNull);
+    expect(snapshot!.identity, identity());
+    expect(snapshot.stageId, identity().stageId);
+    expect(snapshot.affairs, [encounter(1), encounter(2)]);
+
+    await service.apply(
+      identity: identity(),
+      affair: encounter(1),
+      now: DateTime.utc(2026, 8, 25, 0, 2),
+      applyInTxn: () async {},
+    );
+    snapshot = await service.pendingForSave(1);
+    expect(snapshot!.affairs, [encounter(2)]);
+  });
+
+  test('prepared、空 outbox 与不存在 save 均没有待处理快照', () async {
+    final journal = MainlineSettlementJournalService(IsarSetup.instance);
+    final service = MainlinePendingJianghuAffairService(journal);
+    await journal.prepare(
+      saveDataId: 1,
+      identity: identity(),
+      loadoutSnapshotId: 'snapshot-1',
+      now: DateTime.utc(2026, 8, 25),
+    );
+
+    expect(await service.pendingForSave(1), isNull);
+    expect(await service.pendingForSave(999), isNull);
+
+    await journal.commitCore(
+      identity: identity(),
+      pendingEffectIds: const [],
+      now: DateTime.utc(2026, 8, 25, 0, 1),
+      applyInTxn: () async {},
+    );
+    expect(await service.pendingForSave(1), isNull);
+  });
+
+  test('按 save 读取遇到非 typed effect 时拒绝猜测并 fail closed', () async {
+    final journal = MainlineSettlementJournalService(IsarSetup.instance);
+    final service = MainlinePendingJianghuAffairService(journal);
+    await journal.prepare(
+      saveDataId: 1,
+      identity: identity(),
+      loadoutSnapshotId: 'snapshot-1',
+      now: DateTime.utc(2026, 8, 25),
+    );
+    await journal.commitCore(
+      identity: identity(),
+      pendingEffectIds: const ['legacy:string-guessed-effect'],
+      now: DateTime.utc(2026, 8, 25, 0, 1),
+      applyInTxn: () async {},
+    );
+
+    await expectLater(service.pendingForSave(1), throwsFormatException);
+  });
 }
