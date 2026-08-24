@@ -8,6 +8,7 @@ import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
@@ -196,6 +197,23 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('断魂庄地点先进入统一地点详情而非直接进整备屏', (tester) async {
+    await tester.pumpWidget(app(journeyUnlocked: true));
+    await tester.pump();
+    await tester.pump();
+
+    final location = find.byKey(
+      const ValueKey('jianghu-map-gauntlet-location'),
+    );
+    await tester.ensureVisible(location);
+    await tester.pumpAndSettle();
+    await tester.tap(location);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    expect(find.byType(GauntletLocationDetailScreen), findsOneWidget);
   });
 
   testWidgets('九霄塔地点先进入统一地点详情而非直接进入塔层列表', (tester) async {

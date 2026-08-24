@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
-import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
@@ -58,7 +58,7 @@ void main() {
     expect(find.text(UiStrings.gauntletName), findsOneWidget);
   });
 
-  testWidgets('地图断魂庄地点进入原 GauntletLoadoutScreen', (tester) async {
+  testWidgets('地图断魂庄地点先进入统一地点详情', (tester) async {
     await tester.pumpWidget(mapWith(true));
     await tester.pump();
     await tester.pump();
@@ -72,7 +72,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(GauntletLoadoutScreen), findsOneWidget);
+    expect(find.byType(GauntletLocationDetailScreen), findsOneWidget);
   });
 
   testWidgets('既有隐藏门未满足时地图不泄露断魂庄', (tester) async {
