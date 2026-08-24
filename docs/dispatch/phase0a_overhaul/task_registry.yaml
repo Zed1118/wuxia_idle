@@ -4094,3 +4094,38 @@ tasks:
       - shop and the existing five locations remain unchanged
       - do not change progressive unlock decisions schema save version tuning narrative rewards economy or main
       - do not claim U05 U06 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U07-SECT-ITINERARY-CURRENT-STATE
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u07-sect-itinerary-current-state-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u07-sect-itinerary-current-state
+    status: in_progress
+    base_commit: b63adc8fa41bef63b9bcd51668ec3c2e524059f4
+    completion_scope: add_read_only_current_sect_itinerary_summary_to_sect_hub
+    dependencies:
+      - P2-M6-U06-JIANGHU-MAP-REPUTATION-LOCATION
+    owned_files:
+      - lib/features/sect/domain/sect_itinerary_summary.dart
+      - lib/features/sect/application/sect_itinerary_provider.dart
+      - lib/features/sect/presentation/sect_itinerary_panel.dart
+      - lib/features/sect/presentation/sect_hub_screen.dart
+      - lib/shared/strings.dart
+      - test/features/sect/application/sect_itinerary_provider_test.dart
+      - test/features/sect/presentation/sect_itinerary_panel_test.dart
+      - test/features/main_menu/presentation/main_menu_sect_hub_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u07-sect-itinerary-current-state.md
+      - docs/audit/phase2_m6_u07_sect_itinerary_current_state_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - itinerary reads the real current leader and unified retreat expedition gauntlet occupancy
+      - active expedition depth and gauntlet stage phase remain read only
+      - missing or dangling leader and provider errors fail closed without guessed identity
+      - existing seven sect hub routes and gates remain unchanged
+      - no completed report healing or mentor insight occupancy is invented
+      - do not change schema save version tuning narrative rewards economy unlocks or main
+      - do not claim U07 M6 or overall Phase 2 completion
