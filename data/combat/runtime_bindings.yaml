@@ -12,12 +12,30 @@ runtime_bindings:
       - id: ch1_entrance_s03_upper
         spawn_position: {x: 0, y: -120}
     positions:
-      - id: ch1_position_s03_front
-        world_position: {x: -240, y: 80}
-      - id: ch1_position_s03_rear
-        world_position: {x: 240, y: 80}
-      - id: ch1_position_s03_upper
-        world_position: {x: 0, y: -80}
+      - id: ch1_position_s03_slot_01
+        world_position: {x: -360, y: 120}
+      - id: ch1_position_s03_slot_02
+        world_position: {x: -240, y: 140}
+      - id: ch1_position_s03_slot_03
+        world_position: {x: -120, y: 120}
+      - id: ch1_position_s03_slot_04
+        world_position: {x: 0, y: 140}
+      - id: ch1_position_s03_slot_05
+        world_position: {x: 120, y: 120}
+      - id: ch1_position_s03_slot_06
+        world_position: {x: 240, y: 140}
+      - id: ch1_position_s03_slot_07
+        world_position: {x: 360, y: 120}
+      - id: ch1_position_s03_slot_08
+        world_position: {x: -360, y: 0}
+      - id: ch1_position_s03_slot_09
+        world_position: {x: -120, y: 0}
+      - id: ch1_position_s03_slot_10
+        world_position: {x: 120, y: 0}
+      - id: ch1_position_s03_slot_11
+        world_position: {x: 360, y: 0}
+      - id: ch1_position_s03_slot_12
+        world_position: {x: 0, y: -40}
     behaviors:
       - id: ch1_behavior_blade_press
         ai_profile_id: ai_bandit_press

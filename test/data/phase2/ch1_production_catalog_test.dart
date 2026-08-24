@@ -28,9 +28,18 @@ CombatCatalogReferenceIndex _referenceIndex() => CombatCatalogReferenceIndex(
     'ch1_entrance_s03_upper',
   },
   positionIds: const {
-    'ch1_position_s03_front',
-    'ch1_position_s03_rear',
-    'ch1_position_s03_upper',
+    'ch1_position_s03_slot_01',
+    'ch1_position_s03_slot_02',
+    'ch1_position_s03_slot_03',
+    'ch1_position_s03_slot_04',
+    'ch1_position_s03_slot_05',
+    'ch1_position_s03_slot_06',
+    'ch1_position_s03_slot_07',
+    'ch1_position_s03_slot_08',
+    'ch1_position_s03_slot_09',
+    'ch1_position_s03_slot_10',
+    'ch1_position_s03_slot_11',
+    'ch1_position_s03_slot_12',
   },
   behaviorIds: const {
     'ch1_behavior_blade_press',
@@ -196,6 +205,57 @@ void main() {
       _canonicalRoles,
     );
   });
+
+  test(
+    'sorted 12-entry refill windows have unique in-bounds world positions',
+    () async {
+      final manifest = await _loadProductionCatalog();
+      final encounter = manifest.encounterForStage('stage_01_03')!;
+      final binding =
+          (_loadRuntimeBinding()['runtime_bindings'] as YamlList).single
+              as YamlMap;
+      final positionBindings = {
+        for (final item in binding['positions'] as YamlList)
+          (item as YamlMap)['id'] as String:
+              (item['world_position'] as YamlMap),
+      };
+
+      expect(positionBindings, hasLength(12));
+      final coordinates = <String, String>{};
+      for (final entry in positionBindings.entries) {
+        final x = (entry.value['x'] as num).toDouble();
+        final y = (entry.value['y'] as num).toDouble();
+        expect(x, inInclusiveRange(-640, 640), reason: entry.key);
+        expect(y, inInclusiveRange(-260, 260), reason: entry.key);
+        coordinates[entry.key] = '$x,$y';
+      }
+      expect(coordinates.values.toSet(), hasLength(12));
+
+      final sortedEntries = [...encounter.spawnEntries]
+        ..sort((left, right) => left.entryId.compareTo(right.entryId));
+      expect(
+        sortedEntries.take(12).map((entry) => entry.positionId).toSet(),
+        hasLength(12),
+      );
+      expect(
+        sortedEntries.take(12).map((entry) => entry.entryId).toSet(),
+        hasLength(12),
+      );
+
+      for (var start = 0; start <= sortedEntries.length - 12; start++) {
+        final window = sortedEntries.sublist(start, start + 12);
+        final windowCoordinates = window
+            .map((entry) => coordinates[entry.positionId])
+            .toSet();
+        expect(
+          windowCoordinates,
+          hasLength(12),
+          reason:
+              'sorted refill window start=$start contains stacked positions',
+        );
+      }
+    },
+  );
 
   test('production sources contain no candidate namespace or marker', () async {
     final paths = [
