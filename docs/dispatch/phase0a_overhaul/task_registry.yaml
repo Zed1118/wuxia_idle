@@ -4236,9 +4236,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-light-foot-location-detail-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-light-foot-location-detail
-    status: in_progress
+    status: ready_reviewed
     base_commit: af71e90b166470d663c338fe62d3d6f7375d2bbe
+    code_candidate_commit: de594c89fe4ddecd8a82b373b2ec8ff186e0914c
+    reviewed_candidate_commit: f333f07418d9746190714c5e2b698a9b75705895
+    ready_marker: "[READY][CODEX][P2-M6-U06-LIGHT-FOOT-LOCATION-DETAIL] 接入轻功统一地点详情"
     completion_scope: add_production_light_foot_location_detail_before_stage_list
+    verification:
+      red_compile_targets: 3
+      focused_tests: 31
+      adjacent_tests: 181
+      double_viewport_tests: 2
+      invalid_graph_tests: 5
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5447
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-CURRENT-MATTERS-TARGET-ROUTING
     owned_files:
