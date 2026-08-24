@@ -42,5 +42,6 @@ G0 `INNER-DEMON-CULTIVATION-01` 已从设计决议迁移到生产：心魔失败
 ## 仓库边界
 
 - 集成分支：`codex/phase2-m5-batch1-inner-demon-cultivation-closeout-20260824`。
+- 验证提交：`f78b6b033d4b72054f2ff99a36418cda8545ecff`（代码、测试、设计真相源与验收证据冻结点）。
 - `main` 与 `origin/main` 在本批启动和收口检查中均应保持 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
 - READY 只在完整测试、独立复核、registry/audit 真相源与工作树检查全部闭合后生成。

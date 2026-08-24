@@ -2902,6 +2902,7 @@ tasks:
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-batch1-inner-demon-cultivation-closeout
     status: ready_reviewed
     base_commit: a0f3ee5b96a2d125f0df0cb9f44a84910c0d0655
+    validated_commit: f78b6b033d4b72054f2ff99a36418cda8545ecff
     ready_marker: "[READY][CODEX][P2-M5-BATCH1] 冻结心魔修炼度惩罚迁移"
     source_tasks:
       - P2-M5-R01-INNER-DEMON-CULTIVATION-PENALTY-REMOVAL
