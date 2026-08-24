@@ -22,8 +22,11 @@ void main() {
         historicalMaxDepth: 18,
         activeDepth: active ? 12 : null,
         activePolicy: active ? ExpeditionPolicy.xunJiFangYou : null,
+        activeCycleIndex: active ? 2 : null,
         activeDefeated: active,
         recommendedRealm: RealmTier.erLiu,
+        normalNodeMinutes: 90,
+        eliteNodeMinutes: 180,
         normalEnemyTeams: const [
           ExpeditionLocationEnemyTeamSummary(
             id: 'normal_a',
@@ -125,7 +128,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text(UiStrings.expeditionLocationActiveProgress(12, true)),
+      find.text(
+        UiStrings.expeditionLocationActiveProgress(
+          12,
+          true,
+          cycleIndex: value.activeCycleIndex,
+        ),
+      ),
       findsOneWidget,
     );
     expect(
@@ -136,8 +145,7 @@ void main() {
     expect(find.text(UiStrings.expeditionLocationResume), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.expeditionLocationResume));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
 
     expect(find.byType(ExpeditionOverviewScreen), findsOneWidget);
     expect(find.text(UiStrings.expeditionActiveSection), findsOneWidget);
@@ -160,8 +168,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(UiStrings.expeditionLocationEnter));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
 
     expect(find.byType(ExpeditionOverviewScreen), findsOneWidget);
     expect(find.text(UiStrings.expeditionDispatchTeamSection), findsOneWidget);

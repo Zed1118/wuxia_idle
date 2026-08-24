@@ -39,8 +39,8 @@
 
 ## 当前恢复点
 
-- 状态：真实红测已冻结，待生产实现。
-- 最后完成：fresh worktree 已执行 `flutter pub get` 与 `dart run build_runner build`；provider/详情屏/地图路由三目标在新合同缺失时均真实编译失败 `0/3`。
-- 下一步：实现只读 DTO/provider/详情屏与地图路由，守住基础境界、单门人差遣和 active 恢复语义。
-- 已跑验证：红测 `0/3`；失败原因为缺失新 domain/provider/screen/UiStrings/route，非环境缺件。
+- 状态：生产实现、相邻域与两层 analyze 已绿，待冻结代码候选并独立语义复审。
+- 最后完成：新增只读 DTO/provider/详情屏并将地图百草岭路由改为先进详情；生产最高基础境界确认为“三流”，idle/active CTA 均续接原 `ExpeditionOverviewScreen`，异常态无 CTA；旧周目零、旧多人、负周目与悬空参与者均有 fail-closed 反例。
+- 下一步：提交实现候选，交独立审查核对完整地点对比、远征生产语义、白名单与越界风险；关闭全部有效发现后再跑最终全量。
+- 已跑验证：真实红测 `0/3`；聚焦 provider/详情屏/地图 `19/19 PASS`，其中双视口 `2/2`；地图、远征和宗门入口相邻域 `211/211 PASS`；scoped/root analyze 均 0 issue。转绿中仅修正测试把生产“三流”误写成“二流”的预期，未改 YAML/数值。
 - 阻塞项：无；任何渐进解锁或新参与方式需求必须保持不做。

@@ -112,7 +112,9 @@ void main() {
 
     expect(detail.historicalMaxDepth, 18);
     expect(detail.activeDepth, isNull);
-    expect(detail.recommendedRealm, RealmTier.erLiu);
+    expect(detail.recommendedRealm, RealmTier.sanLiu);
+    expect(detail.normalNodeMinutes, config.normalNodeMinutes);
+    expect(detail.eliteNodeMinutes, config.eliteNodeMinutes);
     expect(detail.normalEnemyTeams, hasLength(config.normalEnemyTeams.length));
     expect(detail.eliteEnemyTeams, hasLength(config.eliteEnemyTeams.length));
     expect(detail.normalEnemyTeams.first.enemies.first.name, isNotEmpty);
@@ -139,6 +141,7 @@ void main() {
 
     expect(detail.activeDepth, 12);
     expect(detail.activePolicy, ExpeditionPolicy.xunJiFangYou);
+    expect(detail.activeCycleIndex, 2);
     expect(detail.activeDefeated, isTrue);
     expect(detail.activeParticipantNames, const ['沈无归']);
     expect(detail.hasActiveRun, isTrue);
@@ -177,6 +180,52 @@ void main() {
       ..departedAt = DateTime(2026, 8, 25)
       ..currentNode = 3
       ..members = [ActivityMemberSnapshot()..characterId = 77];
+
+    await expectLater(readDetail(active: run), throwsA(isA<StateError>()));
+  });
+
+  test('旧进行中远征的周目零按第一周目展示', () async {
+    await seed();
+    final run = ExpeditionRun()
+      ..saveDataId = 0
+      ..policy = ExpeditionPolicy.yanJingCaiYao
+      ..seed = 7
+      ..departedAt = DateTime(2026, 8, 25)
+      ..currentNode = 3
+      ..cycleIndex = 0
+      ..members = [ActivityMemberSnapshot()..characterId = 7];
+
+    final detail = await readDetail(active: run);
+
+    expect(detail.activeCycleIndex, 1);
+  });
+
+  test('旧多人进行中远征不猜测参与者并 fail closed', () async {
+    await seed();
+    final run = ExpeditionRun()
+      ..saveDataId = 0
+      ..policy = ExpeditionPolicy.yanJingCaiYao
+      ..seed = 7
+      ..departedAt = DateTime(2026, 8, 25)
+      ..currentNode = 3
+      ..members = [
+        ActivityMemberSnapshot()..characterId = 7,
+        ActivityMemberSnapshot()..characterId = 8,
+      ];
+
+    await expectLater(readDetail(active: run), throwsA(isA<StateError>()));
+  });
+
+  test('负周目进行中远征 fail closed', () async {
+    await seed();
+    final run = ExpeditionRun()
+      ..saveDataId = 0
+      ..policy = ExpeditionPolicy.yanJingCaiYao
+      ..seed = 7
+      ..departedAt = DateTime(2026, 8, 25)
+      ..currentNode = 3
+      ..cycleIndex = -1
+      ..members = [ActivityMemberSnapshot()..characterId = 7];
 
     await expectLater(readDetail(active: run), throwsA(isA<StateError>()));
   });

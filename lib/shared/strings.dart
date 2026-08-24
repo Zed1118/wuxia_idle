@@ -4170,6 +4170,61 @@ class UiStrings {
   static const String expeditionRecallConfirm = '召回';
   static const String expeditionRecallRacedSnack = '召回恰逢结算入账，队伍未动——请再试一次';
 
+  // ── 百草岭远征 · 江湖地图统一地点详情 ──────────────────────
+  static const String expeditionLocationDetailTitle = '百草岭·地点详情';
+  static const String expeditionLocationUnavailable = '百草岭情报暂不可用，本次不能从此进入远征。';
+  static const String expeditionLocationProgressLabel = '远征进度';
+  static const String expeditionLocationRecommendedRealmLabel = '基础推荐境界';
+  static const String expeditionLocationEnemyEcologyLabel = '敌方生态';
+  static const String expeditionLocationRouteEcologyLabel = '路线生态';
+  static const String expeditionLocationCoreRewardLabel = '核心产出';
+  static const String expeditionLocationParticipantLabel = '参与者';
+  static const String expeditionLocationEntryModeLabel = '参与方式';
+  static const String expeditionLocationOccupancyLabel = '预计占用';
+  static String expeditionLocationHistoricalProgress(int maxDepth) =>
+      maxDepth <= 0 ? '尚无远征记录' : '历史最深第 $maxDepth 处节点';
+  static String expeditionLocationActiveProgress(
+    int depth,
+    bool defeated, {
+    int? cycleIndex,
+  }) {
+    final cycle = cycleIndex == null ? '' : '·第 $cycleIndex 周目';
+    final state = defeated ? '·已战败待召回' : '·正在途中';
+    return '当前第 $depth 处节点$cycle$state';
+  }
+
+  static String expeditionLocationEnemy(
+    String name,
+    String realm,
+    String school,
+  ) => '$name（$realm·$school）';
+  static String expeditionLocationEnemyPool(bool elite, String enemies) =>
+      '${elite ? '险关' : '普通'}敌队：$enemies';
+  static String expeditionLocationRouteEcology(
+    int normalMinutes,
+    int eliteMinutes,
+    String policies,
+  ) =>
+      '采药、废驿、遭遇、遗迹四类普通节点，每五处为险关；'
+      '普通节点约 $normalMinutes 分钟，险关约 $eliteMinutes 分钟。'
+      '可选方针：$policies。';
+  static String expeditionLocationCoreRewards(
+    List<String> itemNames,
+    bool includesExperience,
+  ) => [if (includesExperience) '修为', ...itemNames].join('、');
+  static String expeditionLocationParticipantCandidates(
+    int available,
+    int total,
+  ) => '当前可派遣 $available / $total 名门人';
+  static const String expeditionLocationEntryModeDispatch =
+      '仅支持差遣 1 名非祖师门人；无玩家亲战入口';
+  static const String expeditionLocationExpectedOccupancy =
+      '所选门人及其出发时冻结的装备/心法持续占用至召回或战败返程；无固定总时长';
+  static const String expeditionLocationEnter = '前往派遣';
+  static const String expeditionLocationEnterHint = '进入原远征总览选人、选方针并出发';
+  static const String expeditionLocationResume = '查看在途远征';
+  static const String expeditionLocationResumeHint = '进入原远征总览查看进度或召回';
+
   // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
   static const String gauntletName = '断魂庄';
 
