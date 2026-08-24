@@ -40,21 +40,21 @@
 
 ## §8.2 交付 Gate
 
-- [ ] 生产接线：`numbers.yaml` → `InnerDemonDef` → `BattleResolutionService` → `InnerDemonService` 的旧惩罚入口已完整移除。
-- [ ] 定向验证：规则、数据、结算和摘要联合测试记录真实命令与通过数。
-- [ ] 红线说明：不碰数值硬上限、三系锁死、在线离线等价和反主流禁区；不在 Dart 新增数值或中文文案。
-- [ ] UI 验证：普通 Boss 摘要不变；心魔摘要在常规桌面视口完成 smoke，或如实记录环境阻塞与残留风险。
-- [ ] 残留风险：未覆盖的视觉、配置迁移、性能、存档和调参风险显式列出。
-- [ ] 外审结论完成证伪/复核，不把模型输出直接当验收。
-- [ ] `flutter analyze`、联合定向测试、完整 `flutter test --no-pub`、仓库检查全部通过。
+- [x] 生产接线：`numbers.yaml` → `InnerDemonDef` → `BattleResolutionService` → `InnerDemonService` 的旧惩罚入口已完整移除。
+- [x] 定向验证：规则、数据、结算和摘要联合测试记录真实命令与通过数。
+- [x] 红线说明：不碰数值硬上限、三系锁死、在线离线等价和反主流禁区；不在 Dart 新增数值或中文文案。
+- [x] UI 验证：普通 Boss 摘要不变；心魔摘要在 1280×720、1440×900 widget surface 完成 smoke。
+- [x] 残留风险：未覆盖的视觉、配置迁移、性能、存档和调参风险显式列出。
+- [x] 外审结论完成证伪/复核，不把模型输出直接当验收；独立审查发现的既有伤势误报 P1 已由 `93258f68` 关闭。
+- [x] 根应用 `flutter analyze --no-pub lib test tool`、联合定向 127/127、完整 `flutter test --no-pub`、仓库检查全部通过。
 
 ## 当前恢复点
 
-- 状态：源任务并行实现中。
-- 最后完成：登记提交 `f1dc0c9e`；所有权/基线冻结提交 `c0f72b8e`；R01/R02 worktree 已从 `f1dc0c9e` 创建。
-- 下一步：等待两个 READY 源补丁，主控逐 diff 审查后以稳定提交身份集成。
-- 已跑验证：两份 registry 均可被 Ruby YAML 解析；登记 diff 通过 `git diff --check`。
-- 阻塞项：无。M2 结算身份、真实 lease 生命周期等架构 Gate 与本批无关，继续保持未决。
+- 状态：批次验收完成，等待文档冻结提交与唯一 READY marker。
+- 最后完成：R01 READY `83755eb5`、R02 READY `50ae2d5c` 已按稳定 patch identity 集成；独立审查 P1 由 `93258f68` 修复、注释 P2 由 `cb4c9179` 关闭，最终 P0/P1/P2=0/0/0。
+- 下一步：冻结 audit/registry 的 validated commit 后生成 READY marker。
+- 已跑验证：联合定向 13 files 127/127；完整测试 5156/5156；变更 15 Dart analyze 0；根应用 `lib test tool` analyze 0；两份 registry 可解析且无 dangling prerequisite/decision reference。
+- 阻塞项：无。无参数 analyze 对隔离 nested `tools/phase0minus_probe` 的依赖缺失为既有边界，不属于根应用或本批缺陷；M2 结算身份、真实 lease 生命周期等架构 Gate 继续保持未决。
 
 ## 停止条件
 

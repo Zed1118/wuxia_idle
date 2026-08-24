@@ -2812,8 +2812,19 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m5-r01-inner-demon-cultivation-penalty-removal-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-r01-inner-demon-cultivation-penalty-removal
-    status: in_progress
+    status: ready_reviewed
     base_commit: f1dc0c9e
+    implementation_commit: 80f9a7b8
+    tip_commit: 83755eb597bf4f8315f86e2ad9eeac9f0b4ec254
+    integration_commits:
+      - 76e28501
+      - c66e983b
+      - d4a6869e
+    verification:
+      targeted_tests: 106
+      scoped_analyze_items: 10
+      scoped_analyze_issues: 0
+      pi_owned_review_p0_p1_p2: 0
     prerequisites:
       - P2-G1-C17A-INNER-DEMON-INJURY
       - P2-G1-C17B-INNER-DEMON-LEGACY-CLEANUP
@@ -2847,8 +2858,22 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m5-r02-inner-demon-defeat-summary-alignment-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-r02-inner-demon-defeat-summary-alignment
-    status: in_progress
+    status: ready_reviewed
     base_commit: f1dc0c9e
+    implementation_commit: f10559cb
+    tip_commit: 50ae2d5c96b4646a1d70177c8e88c70a47f54bb5
+    integration_commits:
+      - 6e2db703
+      - 4c17fe34
+      - ce1cf0a9
+      - d4a6869e
+      - 93258f68
+      - cb4c9179
+    verification:
+      targeted_tests: 40
+      scoped_analyze_items: 5
+      scoped_analyze_issues: 0
+      qoder_final_review_p0_p1_p2: 0
     prerequisites:
       - P2-G1-C17A-INNER-DEMON-INJURY
     decision_ids:
@@ -2875,11 +2900,29 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m5-batch1-inner-demon-cultivation-closeout-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m5-batch1-inner-demon-cultivation-closeout
-    status: in_progress
+    status: ready_reviewed
     base_commit: a0f3ee5b96a2d125f0df0cb9f44a84910c0d0655
+    ready_marker: "[READY][CODEX][P2-M5-BATCH1] 冻结心魔修炼度惩罚迁移"
     source_tasks:
       - P2-M5-R01-INNER-DEMON-CULTIVATION-PENALTY-REMOVAL
       - P2-M5-R02-INNER-DEMON-DEFEAT-SUMMARY-ALIGNMENT
+    integration_commits:
+      - 76e28501
+      - c66e983b
+      - 6e2db703
+      - 4c17fe34
+      - ce1cf0a9
+      - d4a6869e
+      - 93258f68
+      - cb4c9179
+    verification:
+      joint_targeted_tests: 127
+      full_tests: 5156
+      changed_dart_items: 15
+      changed_dart_analyze_issues: 0
+      root_application_analyze_issues: 0
+      source_external_review_p0_p1_p2: 0
+      integration_independent_review_p0_p1_p2: 0
     owned_files:
       - CLAUDE.md
       - GDD.md

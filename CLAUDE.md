@@ -4,6 +4,10 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
+> **版本:v1.52**
+>
+> v1.52 变更摘要(2026-08-24 二阶段 M5 Batch1 · G0 心魔失败语义生产迁移):`INNER-DEMON-CULTIVATION-01` 已落实到生产：删除旧 10% 主修修炼度失败惩罚的配置、类型、调用参数与写回，任意退役 `failure_penalty` 配置均 fail-closed；心魔失败只保留有上限的内息紊乱，战败摘要不再声称内力/修炼度回退或把入场前既有伤势误报为本次后果。普通 Boss 战败结算与摘要不变，零存档 schema/saveVersion 迁移。
+>
 > **版本:v1.51**
 > **2026-08-24 G7 退役平衡诊断口径收口**：随旧 3v3 删除的历史平衡诊断不再被写成活动守卫；13.5–21 万仅保留为 2026-06-14 历史测量记录。当前可重跑守卫分为 `test/balance/full_build_damage_redline_test.dart` 的满 build calculator 探针，以及 `test/tools/phase0a_full_content_balance_diagnostic_test.dart` 的 Ch1 祖师起手画像 × 154 条生产内容 × 5 熟练阶段 × 3 流派（2310 次）真实 Phase 0A reducer 路径。后者不是满 build / 飞升阶差 / 周目 / 地形阵型恩怨极值；Phase 0A 满 build 真实路径极值探针须另立后续任务。
 > v1.51 变更摘要(2026-08-24 二阶段 G7 · 0 改数值/公式/断言/生产行为):清除已删除旧 3v3 平衡诊断的活动引用，给历史 13.5–21 万加退役标签，拆清当前两道伤害守卫的覆盖边界并登记真实路径满 build 极值缺口。
