@@ -3530,9 +3530,17 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u05-continue-jianghu-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u05-continue-jianghu
-    status: in_progress
+    status: ready_reviewed
     base_commit: 3fbf945a5d89648b5c4bced3802e20f333b53636
+    code_candidate_commit: 39b15a11e9dd1e9296f4fa59f471da101a1ab173
+    ready_marker: "[READY][CODEX][P2-M6-U05-CONTINUE-JIANGHU] 收口继续江湖直达入口"
     completion_scope: continue_jianghu_dynamic_current_mainline_direct_entry
+    verification:
+      slice_tests: 7
+      targeted_tests: 93
+      root_application_analyze_issues: 0
+      full_tests: 5329
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M2-M6-U01-VISIBLE-REPLAY-PARTICIPANT
       - MAINLINE-PARTICIPANT-01
