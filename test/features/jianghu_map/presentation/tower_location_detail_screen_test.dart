@@ -142,4 +142,22 @@ void main() {
     expect(find.text(UiStrings.seclusionBattleLockTitle), findsOneWidget);
     expect(find.byType(TowerFloorListScreen), findsNothing);
   });
+
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('地点详情 ${size.width.toInt()}x${size.height.toInt()} 无布局异常', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(size);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(app());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('tower-location-detail-intel')),
+        findsOneWidget,
+      );
+      expect(find.text(UiStrings.towerLocationEnter), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
