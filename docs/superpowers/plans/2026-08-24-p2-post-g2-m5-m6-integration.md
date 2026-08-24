@@ -55,6 +55,8 @@
 
 ## 当前恢复点
 
-- 已建立独立 branch/worktree，HEAD 精确为 G2 READY。
-- 已只读核对 source 祖先、tree diff、文件交集、计划、测试证据和终审结论。
-- 下一步：纳入精确 source commits，核对 blob identity，再执行本批定向验证与文档治理。
+- 已从 G2 READY 建立独立 branch/worktree，并逐提交纳入两个 source READY。
+- 八个 source-owned 文件与 source tip blob 逐文件一致；主控实际 diff 复核 P0/P1=0。
+- M5 14/14 + 108/108、M6 10/10 + 16/16 + 20/20 + 27/27、G2 94/94 全绿。
+- 6 个 changed Dart format 0 改动；应用 analyze 0 issue；嵌套 probe 补齐离线 package metadata 后根 analyze 0 issue。
+- 已同步 G2/M5/M6 真实状态并生成整合审计；下一步只剩 YAML/diff/白名单复核、提交 READY 与 clean-tree 验签。

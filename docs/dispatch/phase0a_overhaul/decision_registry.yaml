@@ -23,10 +23,12 @@ decisions:
     owner_task: P2-G2-C02-FORWARD-FAN
 
   - id: COMBAT-WAVE-CD-01
-    status: implementation_gap
+    status: frozen_implemented
     summary: 同关换波保留技能冷却，间歇自然推进，新关重置
-    batch_action: production_candidate_integrated
+    batch_action: production_integrated
     owner_task: P2-G1-C15-WAVE-COOLDOWN
+    completion_evidence:
+      - docs/audit/phase2_g1_closeout_2026-08-24.md
 
   - id: EXP-CONCURRENCY-01
     status: frozen

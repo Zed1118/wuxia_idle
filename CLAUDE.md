@@ -4,9 +4,11 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.54**
+> **版本:v1.55**
 >
-> v1.54 变更摘要(2026-08-24 二阶段 G1 收口):21 项 G1 生产合同与 1 项关键路径审计全部 `ready_reviewed`。C11 按用户批准将玩家数字技冷却物化为当前 `turns × 0.55s`，敌方阶段/蓄力技物化为 `turns × 1.0s`，Q/R 保持 5s/8s，Phase 0A mapper 对 `cooldownTurns` 零读方。C12 在扫荡开跑前必选寻隙/强攻/稳守，typed policy 原值透传到同核 player bot adapter；不表示前台主线 bot 已开放。Ch1 production catalog、黑风岭纵切和 G2 八项仍未关闭，候选数值不得冒充冻结事实。
+> v1.55 变更摘要(2026-08-24 二阶段 G2 后最小整合):黑风岭 `stage_01_03` G2 正式记录 8/8、定向 94/94、全量 5249/5249、双视口正式矩阵均已关闭，后续二阶段分支以 G2 READY `e7932cc3` 为唯一整合基线；这只关闭第一章黑风岭纵切，不代表连续五关、U01/U04/U05、M2/M5/M6 或整个二阶段完成。另纳入两个互不重叠的 READY 小批：远征入口在权威事务内拒绝死亡角色且零副作用，散功在同一权威事务内重检闭关/远征/断魂庄占用与 canonical tuple，拒绝 stale/occupied 写入及假成功。20 项 `TUNE-*`、听剑比例/cap、七心魔 AI、渐进解锁和其余生态分配均未升级，main/origin main 未动。
+>
+> v1.54 变更摘要(2026-08-24 二阶段 G1 收口，状态快照已由 v1.55 取代):21 项 G1 生产合同与 1 项关键路径审计全部 `ready_reviewed`。C11 按用户批准将玩家数字技冷却物化为当前 `turns × 0.55s`，敌方阶段/蓄力技物化为 `turns × 1.0s`，Q/R 保持 5s/8s，Phase 0A mapper 对 `cooldownTurns` 零读方。C12 在扫荡开跑前必选寻隙/强攻/稳守，typed policy 原值透传到同核 player bot adapter；不表示前台主线 bot 已开放。当时 Ch1 production catalog、黑风岭纵切和 G2 八项仍未关闭；现以 v1.55 为准，候选数值仍不得冒充冻结事实。
 >
 > v1.53 变更摘要(2026-08-24 二阶段 M6 Batch1 · 主线叙事去阻塞与断魂庄自动准入):全部 105 个主线关的 opening/victory/defeat 自动阅读器已关闭，252 个既有叙事 ID 通过严格 manifest 搬入现有章节卷轴可选阅读；主线 Boss 战败仍先结算并显示事实性损失，特殊模式叙事不变。断魂庄前台可见 bot 与 headless 首通继续拒绝，仅允许 exact gauntlet 已完整首通后的确定性 headless 重刷，胜利硬停奖励选择、败局只结算一次。本批不代表 U01/U04/U05、完整五连关或 G2 已完成；零数值、schema/saveVersion、解锁和奖励改动。
 >

@@ -3160,12 +3160,20 @@ tasks:
     thread_id: 01a031c2-fb61-7930-99d9-4033b53cb064
     branch: codex/phase2-m5-expedition-entry-availability-guard-20260824
     worktree: /Users/a10506/.codex/worktrees/05b0/挂机武侠
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: ee527d90f775e1ba1a6abe622a886cfa21ac6d0e
+    owner_session_state: completed
+    worktree_state: removed_after_ready
     base_commit: 8296db0c033b64faa1eb09b24f2f22269f281363
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
       - EXP-CONCURRENCY-01
     review_model: deepseek/deepseek-v4-flash
+    verification:
+      focused_dispatch_tests: 14
+      expedition_feature_tests: 108
+      scoped_analyze_issues: 0
+      final_review_p0_p1: 0
     owned_files:
       - lib/features/expedition/application/expedition_service.dart
       - test/features/expedition/expedition_dispatch_test.dart
@@ -3197,10 +3205,20 @@ tasks:
     thread_id: 01a031c2-fb5f-7dc0-8145-08abc325d5d8
     branch: codex/phase2-m6-a12-dispel-activity-lock-enforcement-20260824
     worktree: /Users/a10506/.codex/worktrees/ae48/挂机武侠
-    status: in_progress
+    status: ready_reviewed
+    tip_commit: 5e1edac2a939d09c0f36cea9c6b295e70996befb
+    owner_session_state: completed
+    worktree_state: removed_after_ready
     base_commit: 8296db0c033b64faa1eb09b24f2f22269f281363
     semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     review_model: Qwen3.8-Max
+    verification:
+      focused_persist_tests: 10
+      focused_service_tests: 16
+      focused_ui_tests: 20
+      dispel_feature_tests: 27
+      scoped_analyze_issues: 0
+      final_review_p0_p1: 0
     owned_files:
       - lib/features/dispel/application/dispel_service.dart
       - lib/features/technique_panel/presentation/technique_panel_screen.dart
@@ -3228,3 +3246,66 @@ tasks:
       - Qoder CLI Qwen3.8 Max read only design and final actual diff review are bound to the final code tree
       - focused persist service and production UI tests cover all three occupancy sources stale prechecks and zero side effects
       - scoped analyze format diff check exact whitelist and source worktree cleanliness pass
+
+  - id: P2-G2-STAGE-01-03-PRODUCTION-ACCEPTANCE
+    milestone: G2
+    owner: codex_root
+    branch: codex/phase2-ch1-black-ridge-integration-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-ch1-black-ridge-integration
+    status: ready_reviewed
+    code_candidate_commit: 811256300fa1b9af72bda6cbbc2e9df9257d9c5f
+    tip_commit: e7932cc35be42a5228a14f9707135f96656e20b1
+    completion_scope: stage_01_03_black_ridge_vertical_slice_only
+    verification:
+      formal_acceptance_items_passed: 8
+      formal_acceptance_items_total: 8
+      targeted_tests: 94
+      full_tests: 5249
+      root_analyze_issues: 0
+      mac_1280x720_matrix_passed: 3
+      mac_1440x900_recheck_passed: 3
+    completion_evidence:
+      - test/tools/output/phase2_g2_stage_01_03_acceptance_record.md
+    protected_behavior:
+      - G2 closes only the Black Ridge production vertical slice
+      - do not infer M2 M5 M6 or overall Phase 2 completion
+      - keep candidate wave parameters and all TUNE items unfrozen
+      - keep main and origin main untouched
+
+  - id: P2-M5-M6-POST-G2-INTEGRATION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-post-g2-m5-m6-integration-20260824
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-post-g2-m5-m6-integration
+    status: ready_reviewed
+    base_commit: e7932cc35be42a5228a14f9707135f96656e20b1
+    source_tasks:
+      - P2-M5-EXPEDITION-ENTRY-AVAILABILITY-GUARD
+      - P2-M6-A12-DISPEL-ACTIVITY-LOCK-ENFORCEMENT
+    source_tip_commits:
+      - ee527d90f775e1ba1a6abe622a886cfa21ac6d0e
+      - 5e1edac2a939d09c0f36cea9c6b295e70996befb
+    verification:
+      source_owned_blob_matches: 8
+      expedition_focused_tests: 14
+      expedition_feature_tests: 108
+      dispel_persist_tests: 10
+      dispel_service_tests: 16
+      dispel_ui_tests: 20
+      dispel_feature_tests: 27
+      g2_regression_tests: 94
+      root_analyze_issues: 0
+      independent_semantic_review_p0_p1: 0
+    owned_files:
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/superpowers/plans/2026-08-24-p2-post-g2-m5-m6-integration.md
+      - docs/audit/phase2_post_g2_m5_m6_integration_2026-08-24.md
+    protected_behavior:
+      - source owned files remain blob identical to their source READY tips
+      - do not change tuning unlock reward schema narrative or gameplay numbers
+      - do not claim M2 M5 M6 or overall Phase 2 completion
+      - do not modify or push main
