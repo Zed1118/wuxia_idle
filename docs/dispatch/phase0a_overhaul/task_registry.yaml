@@ -2816,7 +2816,8 @@ tasks:
     base_commit: f1dc0c9e
     prerequisites:
       - P2-G1-C17A-INNER-DEMON-INJURY
-      - P2-G1-C17B-INNER-DEMON-SEMANTICS
+      - P2-G1-C17B-INNER-DEMON-LEGACY-CLEANUP
+    decision_ids:
       - INNER-DEMON-CULTIVATION-01
     owned_files:
       - data/numbers.yaml
@@ -2849,6 +2850,8 @@ tasks:
     status: in_progress
     base_commit: f1dc0c9e
     prerequisites:
+      - P2-G1-C17A-INNER-DEMON-INJURY
+    decision_ids:
       - INNER-DEMON-CULTIVATION-01
     owned_files:
       - lib/features/mainline/presentation/stage_entry_flow.dart
