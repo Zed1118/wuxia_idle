@@ -687,9 +687,7 @@ void main() {
   });
 
   group('showStageVictoryDialog', () {
-    testWidgets('首次推进有后继关时显示“进入下一关”和“返回江湖地图”双动作', (
-      tester,
-    ) async {
+    testWidgets('首次推进有后继关时显示“进入下一关”和“返回江湖地图”双动作', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

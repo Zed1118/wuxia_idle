@@ -1812,6 +1812,8 @@ class UiStrings {
 
   static const String stageVictoryTitle = '战斗胜利';
   static const String stageVictoryConfirm = '继续';
+  static const String stageVictoryReturnToMap = '返回江湖地图';
+  static const String stageVictoryEnterNextStage = '进入下一关';
   static const String stageVictoryDropLabel = '掉落：';
   static const String stageVictoryNoDrop = '本战无固定掉落';
   static const String stageVictoryReportTitle = '战后卷宗';

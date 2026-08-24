@@ -57,110 +57,150 @@ Future<StageVictoryAction> showStageVictoryDialog({
     SoundManager.instance.playSfx(SfxId.realmAdvance);
   }
   return await showDialog<StageVictoryAction>(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) => Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 620),
-        child: LightPaperPanel(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-          paperOpacity: 0.22,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: LightPaperPanel(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+              paperOpacity: 0.22,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${stage.name} · ${UiStrings.stageVictoryTitle}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: WuxiaUi.ink,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 3,
-                          ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${stage.name} · ${UiStrings.stageVictoryTitle}',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: WuxiaUi.ink,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              UiStrings.stageVictoryReportTitle,
+                              style: TextStyle(
+                                color: WuxiaUi.muted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 3),
-                        const Text(
-                          UiStrings.stageVictoryReportTitle,
-                          style: TextStyle(
-                            color: WuxiaUi.muted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 2,
-                          ),
+                      ),
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: WuxiaImage(
+                          WuxiaUi.sealRed,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  DefaultTextStyle.merge(
+                    style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
+                    child: StageVictoryContent(
+                      drops: drops,
+                      advancements: advancements,
+                      resonanceUpgrades: resonanceUpgrades,
+                      firstClearTitle: firstClearTitle,
+                      firstClearSubtitle: firstClearSubtitle,
+                      stats: stats,
+                      injurySummaryCharacters: injurySummaryCharacters,
+                      equipmentHintCharacters: equipmentHintCharacters,
+                      skillFragmentLine: skillFragmentLine,
+                      onEquipmentLockToggle: onEquipmentLockToggle,
                     ),
                   ),
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: WuxiaImage(
-                      WuxiaUi.sealRed,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  const SizedBox(height: 14),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: WuxiaUi.ink.withValues(alpha: 0.16),
+                        ),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: allowEnterNextStage
+                            ? Wrap(
+                                spacing: 10,
+                                runSpacing: 8,
+                                alignment: WrapAlignment.end,
+                                children: [
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 132,
+                                    ),
+                                    child: PlaqueButton(
+                                      label: UiStrings.stageVictoryReturnToMap,
+                                      onTap: () => Navigator.of(
+                                        ctx,
+                                      ).pop(StageVictoryAction.returnToMap),
+                                    ),
+                                  ),
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      minWidth: 132,
+                                    ),
+                                    child: PlaqueButton(
+                                      label:
+                                          UiStrings.stageVictoryEnterNextStage,
+                                      primary: true,
+                                      autofocus: true,
+                                      onTap: () => Navigator.of(
+                                        ctx,
+                                      ).pop(StageVictoryAction.enterNextStage),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minWidth: 112,
+                                ),
+                                child: PlaqueButton(
+                                  label: UiStrings.stageVictoryConfirm,
+                                  primary: true,
+                                  autofocus: true,
+                                  onTap: () => Navigator.of(
+                                    ctx,
+                                  ).pop(StageVictoryAction.returnToMap),
+                                ),
+                              ),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              DefaultTextStyle.merge(
-                style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
-                child: StageVictoryContent(
-                  drops: drops,
-                  advancements: advancements,
-                  resonanceUpgrades: resonanceUpgrades,
-                  firstClearTitle: firstClearTitle,
-                  firstClearSubtitle: firstClearSubtitle,
-                  stats: stats,
-                  injurySummaryCharacters: injurySummaryCharacters,
-                  equipmentHintCharacters: equipmentHintCharacters,
-                  skillFragmentLine: skillFragmentLine,
-                  onEquipmentLockToggle: onEquipmentLockToggle,
-                ),
-              ),
-              const SizedBox(height: 14),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: WuxiaUi.ink.withValues(alpha: 0.16)),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 112),
-                      child: PlaqueButton(
-                        label: UiStrings.stageVictoryConfirm,
-                        primary: true,
-                        autofocus: true,
-                        onTap: () => Navigator.of(
-                          ctx,
-                        ).pop(StageVictoryAction.returnToMap),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
-    ),
-  ) ??
+      ) ??
       StageVictoryAction.returnToMap;
 }
 
