@@ -28,5 +28,6 @@
 - [x] Batch18 READY `b6fd77242d8d72fd75822b70e7353e60b9542e0a` 已冻结，full 5102/5102、独立终审 P0/P1/P2=0，main/origin main 未修改。
 - [x] Batch19 三任务契约已由三路只读预检核验，无用户决策依赖。
 - [x] Batch19 integration 已完成 `flutter pub get`、build_runner 126 outputs（63 个 `.g.dart`）与 `libisar.dylib` 恢复；三 source worktree 已从登记提交 `cc09030c` 创建并派发。
-- [ ] R25/R26/V02A 各自在 source worktree 完成并行实现与来源 READY。
-- [ ] 联合/full 验证、独立终审与 Batch19 READY。
+- [x] R25/R26/V02A 各自在 source worktree 完成 TDD、精确模型审查、targeted/analyze/format/path/diff/status 与来源 READY；主控复核 15/15 stable patch-id、8/8 owned blobs 一致。
+- [x] 集成态去重联合 targeted 197/197、changed-Dart scoped analyze 5 items / 0 issue、format 5 files / 0 changed、full 5129/5129 与 11-file path guard 通过。
+- [ ] 独立集成终审、registry/docs 闭环复核与 Batch19 READY。

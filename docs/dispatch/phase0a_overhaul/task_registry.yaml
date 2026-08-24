@@ -2542,8 +2542,21 @@ tasks:
     owner: pi_deepseek_v4_flash
     branch: codex/phase2-m2-r25-encounter-flow-runtime-observation-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r25-encounter-flow-runtime-observation
-    status: in_progress
+    status: ready_reviewed
     base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    implementation_commit: 974c6b2a
+    tip_commit: 55bead7e27a15301e041248b9cfacb20abead5bb
+    integration_commits:
+      - a5e00d67
+      - 5bae8bb2
+      - d688bfc4
+      - cfa22618
+      - b1611ea7
+      - 9ed96c24
+    verification:
+      targeted_tests: 58
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R06-OBJECTIVE-RUNTIME-TRACKER
       - P2-M2-R09-OBJECTIVE-AWARE-ENCOUNTER-FLOW
@@ -2562,8 +2575,19 @@ tasks:
     owner: qoder_qwen3_8_max
     branch: codex/phase2-m2-r26-migrated-encounter-explicit-lease-assembler-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-r26-migrated-encounter-explicit-lease-assembler
-    status: in_progress
+    status: ready_reviewed
     base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    implementation_commit: e5816b23
+    tip_commit: 414d616d9e6d6969b60e3b8b7ba3f52a6b5f58d1
+    integration_commits:
+      - e04a3706
+      - 0448813e
+      - ceb7587a
+      - 3c19fd28
+    verification:
+      targeted_tests: 60
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-R11-MIGRATED-ENCOUNTER-PLAN-BUILDER
       - P2-M2-R12C-ATTACK-TOKEN-LEASE-ASSEMBLER-SEAM
@@ -2582,8 +2606,20 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m2-v02a-ch1-candidate-defeat-objective-execution-matrix-20260824
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-v02a-ch1-candidate-defeat-objective-execution-matrix
-    status: in_progress
+    status: ready_reviewed
     base_commit: b6fd77242d8d72fd75822b70e7353e60b9542e0a
+    implementation_commit: e7e60561
+    tip_commit: 095ef9edafd6eca5d174b3d447156fbbafbf396f
+    integration_commits:
+      - aac4580e
+      - 80d56bb6
+      - 4839ae7a
+      - db4fe573
+      - cd6b02c4
+    verification:
+      targeted_tests: 89
+      scoped_analyze_issues: 0
+      independent_review_p0_p1_p2: 0
     prerequisites:
       - P2-M2-D01-CH1-CANDIDATE-CATALOG
       - P2-M2-V01-CH1-CANDIDATE-RUNTIME-CONSTRUCTION-MATRIX

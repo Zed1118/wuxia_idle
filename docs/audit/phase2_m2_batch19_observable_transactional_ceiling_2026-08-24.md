@@ -20,9 +20,24 @@
 - objective 过报：stage 01 的 defeat clause 完成但 aggregate 因 checkpoint 为 false；stage 02 只由 commander `any` 分支完成，anchor 仍未执行。
 - production/candidate promotion/checkpoint-anchor host/timeline/durable/tuning/Profile/G2/真人验收继续 Gate。
 
-## 待完成验证
+## 已完成来源
 
-待三来源 READY 后补充外部工具证据、来源/集成提交、targeted/analyze/format/full、仓库闸门、独立终审与最终 READY。
+- R25：计划 `3098b000`、红测 `6ab21afa`、实现 `974c6b2a`、guard `46c0bde6` / `e79a50b1`、证据 `ac031f37`，来源 READY `55bead7e27a15301e041248b9cfacb20abead5bb`。Pi 0.84.1 使用精确 `deepseek/deepseek-v4-flash`、thinking high、Read/Grep/Find/Ls-only；设计 P1/P2 全采纳，最终原始 P0/P1/P2=0/0/2，修复 nullable owner getter guard 并关闭流程态后有效 P0/P1/P2=0。targeted 58/58、scoped analyze 2 items / 0 issue、format/path/diff/status clean；六个集成提交 `a5e00d67` / `5bae8bb2` / `d688bfc4` / `cfa22618` / `b1611ea7` / `9ed96c24` 的 patch-id 与来源逐项一致，3/3 blobs 一致。
+- R26：计划 `784d76b6`、红测 `e8891ddb`、实现 `e5816b23`、证据 `9a72782a`，来源 READY `414d616d9e6d6969b60e3b8b7ba3f52a6b5f58d1`。Qoder CLI 1.1.28 使用精确 selector `Qwen3.8-Max`、reasoning high、Read/Grep/Glob-only，终审 P0/P1/P2=0；targeted 60/60、scoped analyze 2 items / 0 issue、format/path/diff/status clean。四个集成提交 `e04a3706` / `0448813e` / `ceb7587a` / `3c19fd28` 的 patch-id 与来源逐项一致，3/3 blobs 一致。
+- V02A：计划 `0b35f02f`、红测 `25b4e420`、实现 `e7e60561`、guard/triage `85e83185`、证据 `b4986d13`，来源 READY `095ef9edafd6eca5d174b3d447156fbbafbf396f`。Pi 精确 DeepSeek Flash high 首轮 FINAL PASS P0/P1=0，关闭 checklist P2 并加固独立计数 guard；post-triage 首调超时后有界中止，同配置精简重试返回 FINAL PASS P0/P1/P2=0。影响集 89/89、scoped analyze 1 item / 0 issue、format/path/diff/status clean；五个集成提交 `aac4580e` / `80d56bb6` / `4839ae7a` / `db4fe573` / `cd6b02c4` 的 patch-id 与来源逐项一致，2/2 blobs 一致。
+
+## 集成验证
+
+- 主控逐项重算 R25/R26/V02A 共 15 个 source→integration stable patch-id 与 8 个 owned blobs，全部与来源 READY tip 一致。
+- 影响集去重联合 targeted 197/197 PASS；changed-Dart scoped analyze 5 items / 0 issue；format 5 files / 0 changed。
+- `flutter test --no-pub --reporter compact` 从 clean integration 起点单次完成 5129/5129 PASS；未并行启动第二个 full 进程。
+- registry 99 tasks / 0 duplicate IDs / 0 dangling refs；相对 Batch18 精确 11-file path guard、`git diff --check` 与 clean status 通过。
+- main 与 origin/main 仍均为 `e292d3a069fbc0e129dd74fafc1ebb3746f53557`。
+
+## 最终结论（待独立终审）
+
+- Batch19 只冻结 EncounterFlow 只读 progress/receipt、显式 caller-owned lease assembler 与 candidate defeat-objective execution ceiling；不宣称 production host、candidate promotion、checkpoint/anchor projector、timeline 推断、durable store/schema/CAS/outbox、tuning/Profile/G2/真人验收已完成。
+- registry 结构与独立集成终审将在本验证提交后复核，清零后再追加 READY marker。
 
 ## 集成环境恢复点
 
