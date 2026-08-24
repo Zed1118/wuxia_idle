@@ -48,6 +48,7 @@ void main() {
       saveDataId: 1,
       identity: identity(),
       loadoutSnapshotId: 'run-1:loadout:1',
+      loadoutSnapshotIds: const ['run-1:loadout:1'],
       now: DateTime.utc(2026, 8, 24),
     );
     expect(prepared.recoveryAction, MainlineSettlementRecoveryAction.restartSameStage);
@@ -58,6 +59,7 @@ void main() {
     expect(restored, isNotNull);
     expect(restored!.identity, identity());
     expect(restored.loadoutSnapshotId, 'run-1:loadout:1');
+    expect(restored.loadoutSnapshotIds, const ['run-1:loadout:1']);
   });
 
   test('同槽只允许一条 active journal；同 identity prepare 幂等复用', () async {
@@ -241,5 +243,52 @@ void main() {
       now: DateTime.utc(2026, 8, 24, 0, 4),
     );
     expect(await service().activeForSave(1), isNull);
+  });
+
+  test('结算后动作与 journal 同事务持久化且冲突选择 fail closed', () async {
+    final key = identity();
+    await service().prepare(
+      saveDataId: 1,
+      identity: key,
+      loadoutSnapshotId: 'run-1:loadout:1',
+      now: DateTime.utc(2026, 8, 24),
+    );
+    await service().commitCore(
+      identity: key,
+      pendingEffectIds: const [],
+      now: DateTime.utc(2026, 8, 24, 0, 1),
+      applyInTxn: () async {},
+    );
+
+    expect(
+      await service().recordPostSettlementAction(
+        identity: key,
+        action: MainlinePostSettlementAction.enterNextStage,
+        now: DateTime.utc(2026, 8, 24, 0, 2),
+      ),
+      isTrue,
+    );
+    await IsarSetup.close();
+    await IsarSetup.init(directory: tempDir, inspector: false);
+    expect(
+      (await service().activeForSave(1))!.postSettlementAction,
+      MainlinePostSettlementAction.enterNextStage,
+    );
+    expect(
+      await service().recordPostSettlementAction(
+        identity: key,
+        action: MainlinePostSettlementAction.enterNextStage,
+        now: DateTime.utc(2026, 8, 24, 0, 3),
+      ),
+      isFalse,
+    );
+    expect(
+      () => service().recordPostSettlementAction(
+        identity: key,
+        action: MainlinePostSettlementAction.returnToMap,
+        now: DateTime.utc(2026, 8, 24, 0, 4),
+      ),
+      throwsStateError,
+    );
   });
 }

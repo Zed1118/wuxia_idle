@@ -26,6 +26,16 @@
 - `lib/features/mainline/domain/mainline_run.dart`
 - `lib/features/mainline/presentation/stage_entry_flow.dart`
 - `lib/data/isar_setup.dart`
+- `lib/features/cultivation/domain/skill_unlock_service.dart`
+- `lib/features/cultivation/presentation/stage_skill_drop_hook.dart`
+- `lib/features/battle_record/application/boss_memory_service.dart`
+- `lib/features/battle_record/application/boss_memory_hook.dart`
+- `lib/features/weapon_codex/application/equipment_catalog_service.dart`
+- `lib/features/weapon_codex/application/equipment_catalog_hook.dart`
+- `lib/features/encounter/application/encounter_service.dart`
+- `lib/features/encounter/presentation/encounter_hook.dart`
+- `lib/shared/strings.dart`
+- `lib/features/mainline/presentation/stage_victory_dialog.dart`
 - `test/features/mainline/domain/mainline_settlement_journal_test.dart`
 - `test/features/mainline/application/mainline_settlement_journal_service_test.dart`
 - `test/features/mainline/presentation/mainline_durable_settlement_recovery_test.dart`
@@ -40,6 +50,12 @@
 - `docs/_archive/GDD_CHANGELOG.md`
 
 若审计证明既有后置 effect 必须修改其他文件，先在本计划记录理由并扩白名单，不静默扩大。
+
+白名单扩充依据（生产接线前审计）：第一章 `stage_01_05` 有真解掉落，
+`stage_01_04/05` 有 Boss 战绩，所有装备掉落要同步兵器谱，所有胜利要累计
+奇遇击杀计数；这些都是当前分段提交且会在崩溃重放时重复的存档写入，必须
+为既有 service 增加 transaction-owned 变体并由 journal 核心事务调用。奇遇
+弹窗/招降等玩家选择仍留给 U04，不在本批伪造待处理事件队列。
 
 ## 红测与验收
 

@@ -97,6 +97,33 @@ final class MainlineRun {
          ],
        );
 
+  factory MainlineRun.restore({
+    required String runId,
+    required int participantId,
+    required String stageId,
+    required List<String> loadoutSnapshotIds,
+  }) {
+    if (loadoutSnapshotIds.isEmpty) {
+      throw ArgumentError.value(
+        loadoutSnapshotIds,
+        'loadoutSnapshotIds',
+        'must not be empty',
+      );
+    }
+    return MainlineRun._(
+      runId: runId,
+      participantId: participantId,
+      stageId: stageId,
+      snapshots: [
+        for (var index = 0; index < loadoutSnapshotIds.length; index++)
+          MainlineRunLoadoutSnapshot(
+            version: index + 1,
+            loadoutSnapshotId: loadoutSnapshotIds[index],
+          ),
+      ],
+    );
+  }
+
   MainlineRun._({
     required String runId,
     required this.participantId,
@@ -117,6 +144,18 @@ final class MainlineRun {
     }
     if (_currentStageId.isEmpty) {
       throw ArgumentError.value(stageId, 'stageId', 'must not be empty');
+    }
+    if (_loadoutSnapshots.isEmpty) {
+      throw ArgumentError.value(snapshots, 'snapshots', 'must not be empty');
+    }
+    for (var index = 0; index < _loadoutSnapshots.length; index++) {
+      if (_loadoutSnapshots[index].version != index + 1) {
+        throw ArgumentError.value(
+          snapshots,
+          'snapshots',
+          'versions must be contiguous from 1',
+        );
+      }
     }
   }
 

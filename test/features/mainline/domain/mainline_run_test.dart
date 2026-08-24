@@ -66,6 +66,36 @@ void main() {
     });
   });
 
+  group('持久 journal 恢复', () {
+    test('恢复完整版本化快照历史与当前关', () {
+      final restored = MainlineRun.restore(
+        runId: 'run-1',
+        participantId: 42,
+        stageId: 'mainline_1_3',
+        loadoutSnapshotIds: const ['snap-1', 'snap-2', 'snap-3'],
+      );
+
+      expect(restored.currentLoadoutVersion, 3);
+      expect(restored.currentStageId, 'mainline_1_3');
+      expect(
+        restored.loadoutSnapshots.map((value) => value.loadoutSnapshotId),
+        const ['snap-1', 'snap-2', 'snap-3'],
+      );
+    });
+
+    test('空快照历史拒绝，避免恢复出版本 0 run', () {
+      expect(
+        () => MainlineRun.restore(
+          runId: 'run-1',
+          participantId: 42,
+          stageId: 'mainline_1_1',
+          loadoutSnapshotIds: const [],
+        ),
+        throwsArgumentError,
+      );
+    });
+  });
+
   group('A：整段锁定同一参与者', () {
     test('跨多关推进后参与者不变', () {
       final run =

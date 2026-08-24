@@ -97,6 +97,8 @@ enum MainlineSettlementRecoveryAction {
   none,
 }
 
+enum MainlinePostSettlementAction { none, returnToMap, enterNextStage }
+
 /// 第一章连续首通的持久 stage-boundary journal。
 ///
 /// `prepared` 只证明同一参与者/关卡/装配版本已获准开战，不证明胜负或结算；
@@ -119,9 +121,14 @@ class MainlineSettlementJournal {
   late int participantId;
   late int loadoutVersion;
   late String loadoutSnapshotId;
+  List<String> loadoutSnapshotIds = [];
 
   @Enumerated(EnumType.name)
   MainlineSettlementPhase phase = MainlineSettlementPhase.prepared;
+
+  @Enumerated(EnumType.name)
+  MainlinePostSettlementAction postSettlementAction =
+      MainlinePostSettlementAction.none;
 
   List<String> pendingEffectIds = [];
   List<String> completedEffectIds = [];
@@ -135,6 +142,7 @@ class MainlineSettlementJournal {
     required int saveDataId,
     required MainlineSettlementIdentity identity,
     required String loadoutSnapshotId,
+    List<String>? loadoutSnapshotIds,
     required DateTime createdAt,
   }) {
     if (saveDataId < 1) {
@@ -148,6 +156,18 @@ class MainlineSettlementJournal {
         'must not be empty',
       );
     }
+    final normalizedSnapshotIds = (loadoutSnapshotIds ?? [loadoutSnapshotId])
+        .map((value) => value.trim())
+        .toList(growable: false);
+    if (normalizedSnapshotIds.length != identity.loadoutVersion ||
+        normalizedSnapshotIds.any((value) => value.isEmpty) ||
+        normalizedSnapshotIds.last != normalizedSnapshotId) {
+      throw ArgumentError.value(
+        loadoutSnapshotIds,
+        'loadoutSnapshotIds',
+        'must contain every version and end with loadoutSnapshotId',
+      );
+    }
     return MainlineSettlementJournal()
       ..settlementId = identity.canonical
       ..saveDataId = saveDataId
@@ -156,7 +176,9 @@ class MainlineSettlementJournal {
       ..participantId = identity.participantId
       ..loadoutVersion = identity.loadoutVersion
       ..loadoutSnapshotId = normalizedSnapshotId
+      ..loadoutSnapshotIds = normalizedSnapshotIds
       ..phase = MainlineSettlementPhase.prepared
+      ..postSettlementAction = MainlinePostSettlementAction.none
       ..pendingEffectIds = []
       ..completedEffectIds = []
       ..createdAt = createdAt
@@ -169,7 +191,10 @@ class MainlineSettlementJournal {
     if (parsed.runId != runId ||
         parsed.stageId != stageId ||
         parsed.participantId != participantId ||
-        parsed.loadoutVersion != loadoutVersion) {
+        parsed.loadoutVersion != loadoutVersion ||
+        loadoutSnapshotIds.length != loadoutVersion ||
+        loadoutSnapshotIds.isEmpty ||
+        loadoutSnapshotIds.last != loadoutSnapshotId) {
       throw StateError('Mainline settlement journal identity fields drifted');
     }
     return parsed;
@@ -232,6 +257,27 @@ class MainlineSettlementJournal {
   @ignore
   bool get allEffectsCompleted =>
       pendingEffectIds.every(completedEffectIds.contains);
+
+  /// 持久记录玩家离开结算页后的唯一去向。恢复流程只能重放同一选择，不能
+  /// 在已推进下一关后改成返回地图（反之亦然）。
+  bool recordPostSettlementAction(
+    MainlinePostSettlementAction action, {
+    required DateTime at,
+  }) {
+    if (phase != MainlineSettlementPhase.coreApplied) {
+      throw StateError('Post-settlement action requires applied settlement');
+    }
+    if (action == MainlinePostSettlementAction.none) {
+      throw ArgumentError.value(action, 'action', 'must not be none');
+    }
+    if (postSettlementAction == action) return false;
+    if (postSettlementAction != MainlinePostSettlementAction.none) {
+      throw StateError('Mainline post-settlement action already recorded');
+    }
+    postSettlementAction = action;
+    updatedAt = at;
+    return true;
+  }
 
   void close({required DateTime at}) {
     if (phase != MainlineSettlementPhase.coreApplied) {

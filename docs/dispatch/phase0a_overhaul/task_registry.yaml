@@ -3383,6 +3383,16 @@ tasks:
       - lib/features/mainline/domain/mainline_run.dart
       - lib/features/mainline/presentation/stage_entry_flow.dart
       - lib/data/isar_setup.dart
+      - lib/features/cultivation/domain/skill_unlock_service.dart
+      - lib/features/cultivation/presentation/stage_skill_drop_hook.dart
+      - lib/features/battle_record/application/boss_memory_service.dart
+      - lib/features/battle_record/application/boss_memory_hook.dart
+      - lib/features/weapon_codex/application/equipment_catalog_service.dart
+      - lib/features/weapon_codex/application/equipment_catalog_hook.dart
+      - lib/features/encounter/application/encounter_service.dart
+      - lib/features/encounter/presentation/encounter_hook.dart
+      - lib/shared/strings.dart
+      - lib/features/mainline/presentation/stage_victory_dialog.dart
       - test/features/mainline/domain/mainline_settlement_journal_test.dart
       - test/features/mainline/application/mainline_settlement_journal_service_test.dart
       - test/features/mainline/presentation/mainline_durable_settlement_recovery_test.dart

@@ -83,6 +83,7 @@ void main() {
         participantId: 42,
       ),
       loadoutSnapshotId: 'run-1:loadout:1',
+      loadoutSnapshotIds: const ['run-1:loadout:1'],
       createdAt: DateTime.utc(2026, 8, 24),
     );
 
@@ -94,6 +95,7 @@ void main() {
         MainlineSettlementRecoveryAction.restartSameStage,
       );
       expect(journal.completedEffectIds, isEmpty);
+      expect(journal.loadoutSnapshotIds, const ['run-1:loadout:1']);
     });
 
     test('coreApplied 重启只恢复后置流且 effect claim 幂等', () {
@@ -164,6 +166,36 @@ void main() {
       journal.close(at: DateTime.utc(2026, 8, 24, 0, 3));
       expect(journal.phase, MainlineSettlementPhase.closed);
       expect(journal.recoveryAction, MainlineSettlementRecoveryAction.none);
+    });
+
+    test('结算后选择持久化；同值重放幂等、冲突选择拒绝', () {
+      final journal = prepared();
+      journal.markCoreApplied(
+        pendingEffectIds: const [],
+        at: DateTime.utc(2026, 8, 24, 0, 1),
+      );
+      expect(journal.postSettlementAction, MainlinePostSettlementAction.none);
+      expect(
+        journal.recordPostSettlementAction(
+          MainlinePostSettlementAction.enterNextStage,
+          at: DateTime.utc(2026, 8, 24, 0, 2),
+        ),
+        isTrue,
+      );
+      expect(
+        journal.recordPostSettlementAction(
+          MainlinePostSettlementAction.enterNextStage,
+          at: DateTime.utc(2026, 8, 24, 0, 3),
+        ),
+        isFalse,
+      );
+      expect(
+        () => journal.recordPostSettlementAction(
+          MainlinePostSettlementAction.returnToMap,
+          at: DateTime.utc(2026, 8, 24, 0, 4),
+        ),
+        throwsStateError,
+      );
     });
   });
 }

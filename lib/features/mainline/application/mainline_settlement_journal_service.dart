@@ -32,6 +32,7 @@ class MainlineSettlementJournalService {
     required int saveDataId,
     required MainlineSettlementIdentity identity,
     required String loadoutSnapshotId,
+    List<String>? loadoutSnapshotIds,
     required DateTime now,
   }) async {
     late MainlineSettlementJournal result;
@@ -39,7 +40,12 @@ class MainlineSettlementJournalService {
       final active = await _activeForSaveInTxn(saveDataId);
       if (active != null) {
         if (active.identity != identity ||
-            active.loadoutSnapshotId != loadoutSnapshotId.trim()) {
+            active.loadoutSnapshotId != loadoutSnapshotId.trim() ||
+            (loadoutSnapshotIds != null &&
+                !_stringListsEqual(
+                  active.loadoutSnapshotIds,
+                  loadoutSnapshotIds.map((value) => value.trim()).toList(),
+                ))) {
           throw StateError(
             'Another mainline settlement journal is already active',
           );
@@ -59,12 +65,21 @@ class MainlineSettlementJournalService {
         saveDataId: saveDataId,
         identity: identity,
         loadoutSnapshotId: loadoutSnapshotId,
+        loadoutSnapshotIds: loadoutSnapshotIds,
         createdAt: now,
       );
       await isar.mainlineSettlementJournals.put(journal);
       result = journal;
     });
     return result;
+  }
+
+  static bool _stringListsEqual(List<String> left, List<String> right) {
+    if (left.length != right.length) return false;
+    for (var index = 0; index < left.length; index++) {
+      if (left[index] != right[index]) return false;
+    }
+    return true;
   }
 
   Future<MainlineCoreCommitDisposition> commitCore({
@@ -128,6 +143,22 @@ class MainlineSettlementJournalService {
       journal.close(at: now);
       await isar.mainlineSettlementJournals.put(journal);
     });
+  }
+
+  Future<bool> recordPostSettlementAction({
+    required MainlineSettlementIdentity identity,
+    required MainlinePostSettlementAction action,
+    required DateTime now,
+  }) async {
+    var recorded = false;
+    await isar.writeTxn(() async {
+      final journal = await _requireByIdentityInTxn(identity);
+      recorded = journal.recordPostSettlementAction(action, at: now);
+      if (recorded) {
+        await isar.mainlineSettlementJournals.put(journal);
+      }
+    });
+    return recorded;
   }
 
   Future<MainlineSettlementJournal?> _activeForSaveInTxn(int saveDataId) async {
