@@ -9,9 +9,11 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu_status_summary.dart';
+import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/core/domain/island_building_state.dart';
 import 'package:wuxia_idle/core/domain/island_building_type.dart';
@@ -33,9 +35,10 @@ void main() {
     int lightInjuryStacks = 0,
     double injuryHoursRemaining = 0,
     double residueHours = 0,
+    RealmTier realmTier = RealmTier.xueTu,
   }) => Character.create(
     name: name,
-    realmTier: RealmTier.xueTu,
+    realmTier: realmTier,
     realmLayer: RealmLayer.qiMeng,
     attributes: Attributes()
       ..constitution = 5
@@ -52,7 +55,8 @@ void main() {
     innerBreathDisorderHoursRemaining: residueHours,
   )..id = id;
 
-  RetreatSession retreat() => RetreatSession()
+  RetreatSession retreat({int id = 77}) => RetreatSession()
+    ..id = id
     ..saveDataId = 1
     ..mapType = RetreatMapType.shanLin
     ..durationHours = 4
@@ -73,14 +77,19 @@ void main() {
     ..clearedAt = [for (final _ in cleared) DateTime(2026, 6, 29)];
 
   test('provider returns at most five items in fixed priority order', () async {
+    final retreating = character(
+      id: 7,
+      name: '闭关者',
+      realmTier: RealmTier.sanLiu,
+    )..currentRetreatSessionId = 77;
     final injured = character(
-      id: 1,
+      id: 17,
       name: '甲',
       lightInjuryStacks: 1,
       injuryHoursRemaining: 3.5,
     );
     final ready = character(
-      id: 2,
+      id: 42,
       name: '乙',
       experience: 120,
       experienceToNextLayer: 100,
@@ -92,9 +101,10 @@ void main() {
         mainMenuSaveSnapshotProvider.overrideWith(
           (ref) async => islandSave(2.8),
         ),
-        activeCharacterIdsProvider.overrideWith((ref) async => [1, 2]),
-        characterByIdProvider(1).overrideWith((ref) async => injured),
-        characterByIdProvider(2).overrideWith((ref) async => ready),
+        activeCharacterIdsProvider.overrideWith((ref) async => [7, 17, 42]),
+        characterByIdProvider(7).overrideWith((ref) async => retreating),
+        characterByIdProvider(17).overrideWith((ref) async => injured),
+        characterByIdProvider(42).overrideWith((ref) async => ready),
         mainlineProgressProvider.overrideWith(
           (ref) async => progress(['stage_01_01']),
         ),
@@ -112,9 +122,41 @@ void main() {
       MainMenuStatusKind.breakthrough,
       MainMenuStatusKind.mainline,
     ]);
+    expect(items[0].targetCharacterId, 7);
+    expect(items[0].targetRealmTier, RealmTier.sanLiu);
     expect(items[1].detail, UiStrings.mainMenuStatusIslandDetail(2));
+    expect(items[2].targetCharacterId, 17);
     expect(items[3].detail, UiStrings.mainMenuStatusBreakthroughDetail('乙'));
+    expect(items[3].targetCharacterId, 42);
   });
+
+  test(
+    'provider omits a retreat item with no unique active character',
+    () async {
+      final founder = character(id: 8, name: '祖师');
+      final container = ProviderContainer(
+        overrides: [
+          activeRetreatSessionProvider.overrideWith(
+            (ref) async => retreat(id: 99),
+          ),
+          mainMenuSaveSnapshotProvider.overrideWith(
+            (ref) async => islandSave(0),
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [8]),
+          characterByIdProvider(8).overrideWith((ref) async => founder),
+          mainlineProgressProvider.overrideWith((ref) async => progress([])),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final items = await container.read(mainMenuStatusSummaryProvider.future);
+
+      expect(
+        items.where((item) => item.kind == MainMenuStatusKind.retreat),
+        isEmpty,
+      );
+    },
+  );
 
   test(
     'provider falls back to next mainline target when no urgent status',
@@ -185,6 +227,106 @@ void main() {
 
     expect(observer.pushedRoutes.length, 2);
     expect(observer.pushedRoutes.last, isA<MaterialPageRoute<void>>());
+  });
+
+  testWidgets('character status opens its exact character', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.injury,
+                route: MainMenuStatusRoute.character,
+                title: UiStrings.mainMenuStatusInjuryTitle,
+                detail: '受伤',
+                targetCharacterId: 42,
+              ),
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pump();
+
+    final screen = tester.widget<CharacterPanelScreen>(
+      find.byType(CharacterPanelScreen),
+    );
+    expect(screen.characterId, 42);
+  });
+
+  testWidgets('retreat status opens its exact character and realm', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.retreat,
+                route: MainMenuStatusRoute.retreat,
+                title: UiStrings.mainMenuStatusRetreatTitle,
+                detail: '闭关中',
+                targetCharacterId: 73,
+                targetRealmTier: RealmTier.erLiu,
+              ),
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusRetreatTitle));
+    await tester.pump();
+
+    final screen = tester.widget<SeclusionMapListScreen>(
+      find.byType(SeclusionMapListScreen),
+    );
+    expect(screen.characterId, 73);
+    expect(screen.charRealmTier, RealmTier.erLiu);
+  });
+
+  testWidgets('missing character payload fails closed without navigation', (
+    tester,
+  ) async {
+    final observer = _RecordingNavigatorObserver();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainMenuStatusSummaryProvider.overrideWith(
+            (ref) async => const [
+              MainMenuStatusSummaryItem(
+                kind: MainMenuStatusKind.injury,
+                route: MainMenuStatusRoute.character,
+                title: UiStrings.mainMenuStatusInjuryTitle,
+                detail: '受伤',
+              ),
+            ],
+          ),
+        ],
+        child: MaterialApp(
+          navigatorObservers: [observer],
+          home: const Scaffold(body: MainMenuStatusSummaryPanel()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
+    await tester.pump();
+
+    expect(observer.pushedRoutes, hasLength(1));
   });
 }
 
