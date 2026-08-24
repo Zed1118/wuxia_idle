@@ -4250,6 +4250,7 @@ tasks:
       - test/features/jianghu_map/application/light_foot_location_detail_provider_test.dart
       - test/features/jianghu_map/presentation/light_foot_location_detail_screen_test.dart
       - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - test/features/main_menu/presentation/main_menu_jianghu_map_light_foot_location_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m6-u06-light-foot-location-detail.md
       - docs/audit/phase2_m6_u06_light_foot_location_detail_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml

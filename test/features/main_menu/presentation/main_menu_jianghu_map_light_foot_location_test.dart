@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
-import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -58,7 +57,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsNWidgets(2));
   });
 
-  testWidgets('原 Ch6 门槛满足后轻功地点进入 LightFootScreen', (tester) async {
+  testWidgets('原 Ch6 门槛满足后轻功地点先进入统一地点详情', (tester) async {
     await tester.pumpWidget(mapWith(const ['stage_06_05']));
     await tester.pump();
     await tester.pump();
@@ -67,6 +66,9 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(LightFootScreen), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('light-foot-location-detail-screen')),
+      findsOneWidget,
+    );
   });
 }
