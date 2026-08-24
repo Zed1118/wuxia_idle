@@ -687,6 +687,35 @@ void main() {
   });
 
   group('showStageVictoryDialog', () {
+    testWidgets('首次推进有后继关时显示“进入下一关”和“返回江湖地图”双动作', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => showStageVictoryDialog(
+                  context: ctx,
+                  stage: _stage(),
+                  drops: _emptyDrops(),
+                  advancements: const [],
+                  allowEnterNextStage: true,
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('进入下一关'), findsOneWidget);
+      expect(find.text('返回江湖地图'), findsOneWidget);
+    });
+
     testWidgets('点确认按钮关闭 dialog', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

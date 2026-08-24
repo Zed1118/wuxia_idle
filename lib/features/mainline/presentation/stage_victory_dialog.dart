@@ -27,6 +27,8 @@ import '../../inventory/presentation/post_battle_healing_panel.dart';
 typedef EquipmentDropLockHandler =
     Future<bool> Function(Equipment equipment, bool locked);
 
+enum StageVictoryAction { returnToMap, enterNextStage }
+
 /// 主线 victory dialog(W15 #30 P3 后续 A 任务)。
 ///
 /// 体例对齐塔 `_showVictoryDialog`,但主线 victory 此前完全无 dialog,本批新建。
@@ -34,7 +36,7 @@ typedef EquipmentDropLockHandler =
 /// + 共鸣度晋阶 sub-row(P1.1 候选 3-a)。
 /// dialog 关闭后由 caller 继续执行对应模式的战后流程；主线胜利旧卷改由
 /// 章节 timeline 主动阅读，特殊模式仍保留既有 narrative flow。
-Future<void> showStageVictoryDialog({
+Future<StageVictoryAction> showStageVictoryDialog({
   required BuildContext context,
   required StageDef stage,
   required DropResult drops,
@@ -47,13 +49,14 @@ Future<void> showStageVictoryDialog({
   List<Character> equipmentHintCharacters = const [],
   String? skillFragmentLine,
   EquipmentDropLockHandler? onEquipmentLockToggle,
+  bool allowEnterNextStage = false,
 }) async {
   // 结算 jingle:跨 tier 大境界突破响 realmAdvance(爆装备音已移到 playTreasureDropIfAny
   // 动画层 + 门槛化,2026-06-11)。
   if (advancements.any((e) => e.result.crossedTier)) {
     SoundManager.instance.playSfx(SfxId.realmAdvance);
   }
-  await showDialog<void>(
+  return await showDialog<StageVictoryAction>(
     context: context,
     barrierDismissible: false,
     builder: (ctx) => Dialog(
@@ -144,7 +147,9 @@ Future<void> showStageVictoryDialog({
                         label: UiStrings.stageVictoryConfirm,
                         primary: true,
                         autofocus: true,
-                        onTap: () => Navigator.of(ctx).pop(),
+                        onTap: () => Navigator.of(
+                          ctx,
+                        ).pop(StageVictoryAction.returnToMap),
                       ),
                     ),
                   ),
@@ -155,7 +160,8 @@ Future<void> showStageVictoryDialog({
         ),
       ),
     ),
-  );
+  ) ??
+      StageVictoryAction.returnToMap;
 }
 
 /// dialog content widget(公开便于 widget test 直接 pump,无需走 showDialog)。
