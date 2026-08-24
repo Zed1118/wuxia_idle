@@ -62,9 +62,21 @@
 
 - 测试隔离根因：初版在同一 widget 文件内连续多次打开真实 reader，前一用例留下导航/语义异步状态，使后续交互产生顺序依赖。最终语义+键盘合并为一次受控 reader 生命周期并显式 pop/settle；鼠标不冒泡复用另一授权文件的现有真实点击用例。没有污染 asset messenger、没有新增静态 cache，也没有降低并发度。
 
+## 最终 Qoder actual-diff 终审
+
+- final code commit：`2272def524beb439a36a61610a8ee966df17f490`；patch range：`a6a373e137f72a69040199eb9431052f8095d1e1..2272def524beb439a36a61610a8ee966df17f490`。
+- CLI/version/model/reasoning：`/Users/a10506/.local/bin/qoderclicn` / `1.1.28` / `Qwen3.8-Max` / `high`。
+- 精确工具与权限参数：`--print --no-session-persistence --model Qwen3.8-Max --reasoning-effort high --permission-mode dont_ask --tools Read --allowed-tools Read --disallowed-tools Write --disallowed-tools Edit --disallowed-tools Bash --max-output-tokens 8000`。
+- 附件参数：`--attachment .qoder-p2-m6-u02-u03-2272def5.diff --attachment docs/superpowers/plans/2026-08-24-p2-m6-u02-u03-mainline-narrative-deblocking.md --attachment docs/dispatch/phase0a_overhaul/task_registry.yaml --attachment CLAUDE.md --attachment GDD.md`。临时 diff 附件未提交，终审后已删除。
+- 退出码：0。模型明确证明完整读取 2378 行 actual diff，首文件为 manifest，末文件为 `stage_list_screen_test.dart`，并明确绑定 `2272def5`。
+- 终审结论：READY candidate；P0=0，P1=0，P2=2，must-fix=0。
+- P2 triage：
+  - “修改 5 个旧测试”不越界：2 个 flow 测试在原 registry owned scope，另 3 个 completeness/stage-list/cycle 测试是主控后续显式扩权；source plan 的“额外授权 3 个”口径正确。
+  - YAML duplicate mapping key 是已披露、未声称覆盖的底层限制；列表级 duplicate ID、252 set equality 与三物理目录唯一性已覆盖本批合同。
+
 ## 已跑验证（post-review candidate）
 
-以下命令均逐文件独立运行并出现 `All tests passed`：
+各文件计数如下；最终以同一默认并发命令联合运行：
 
 - `flutter test --no-pub test/data/mainline_narrative_manifest_test.dart`：9 pass。
 - `flutter test --no-pub test/features/mainline/presentation/stage_entry_flow_test.dart`：9 pass。
@@ -91,7 +103,7 @@
 
 ## 当前恢复点
 
-- 状态：`a1d68a4b` 后续必修已完成，等待 fix commit 与唯一有效的最终 actual-diff 终审。
-- 最后完成：默认并发 103 targeted pass 连续两次、13-item scoped analyze 0 issue、format 0 change、base-to-tree diff-check 通过。
-- 下一步：commit review fixes → Qoder `Qwen3.8-Max/high` 绑定最终 code tree 只读终审 → 写回终审分级 → READY commit。
+- 状态：READY；实现提交 `a1d68a4b`，审查修复/final code commit `2272def5`，本文档随后一条 `[READY][CODEX][P2-M6-U02-U03]` 证据提交固化。
+- 最后完成：默认并发 103 targeted pass 连续两次、13-item scoped analyze 0 issue、format 0 change、base-to-code-tree diff-check 通过；Qoder final actual-diff P0=0/P1=0/must-fix=0。
+- 工作区：最终证据提交后 `git status --short` 必须为空；临时 Qoder 附件已删除且不进入提交。
 - 阻塞项：无。
