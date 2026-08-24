@@ -158,6 +158,31 @@ void main() {
     },
   );
 
+  test('provider omits a retreat item linked by multiple characters', () async {
+    final first = character(id: 8, name: '甲')..currentRetreatSessionId = 99;
+    final second = character(id: 9, name: '乙')..currentRetreatSessionId = 99;
+    final container = ProviderContainer(
+      overrides: [
+        activeRetreatSessionProvider.overrideWith(
+          (ref) async => retreat(id: 99),
+        ),
+        mainMenuSaveSnapshotProvider.overrideWith((ref) async => islandSave(0)),
+        activeCharacterIdsProvider.overrideWith((ref) async => [8, 9]),
+        characterByIdProvider(8).overrideWith((ref) async => first),
+        characterByIdProvider(9).overrideWith((ref) async => second),
+        mainlineProgressProvider.overrideWith((ref) async => progress([])),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final items = await container.read(mainMenuStatusSummaryProvider.future);
+
+    expect(
+      items.where((item) => item.kind == MainMenuStatusKind.retreat),
+      isEmpty,
+    );
+  });
+
   test(
     'provider falls back to next mainline target when no urgent status',
     () async {
@@ -253,7 +278,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(UiStrings.mainMenuStatusInjuryTitle));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final screen = tester.widget<CharacterPanelScreen>(
       find.byType(CharacterPanelScreen),
@@ -273,7 +298,7 @@ void main() {
                 kind: MainMenuStatusKind.retreat,
                 route: MainMenuStatusRoute.retreat,
                 title: UiStrings.mainMenuStatusRetreatTitle,
-                detail: '闭关中',
+                detail: '测试闭关详情',
                 targetCharacterId: 73,
                 targetRealmTier: RealmTier.erLiu,
               ),
@@ -288,7 +313,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(UiStrings.mainMenuStatusRetreatTitle));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final screen = tester.widget<SeclusionMapListScreen>(
       find.byType(SeclusionMapListScreen),
@@ -328,6 +353,70 @@ void main() {
 
     expect(observer.pushedRoutes, hasLength(1));
   });
+
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets(
+      'panel has no overflow at ${size.width.toInt()}x${size.height.toInt()}',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              mainMenuStatusSummaryProvider.overrideWith(
+                (ref) async => const [
+                  MainMenuStatusSummaryItem(
+                    kind: MainMenuStatusKind.retreat,
+                    route: MainMenuStatusRoute.retreat,
+                    title: UiStrings.mainMenuStatusRetreatTitle,
+                    detail: '测试闭关详情',
+                    targetCharacterId: 73,
+                    targetRealmTier: RealmTier.erLiu,
+                  ),
+                  MainMenuStatusSummaryItem(
+                    kind: MainMenuStatusKind.island,
+                    route: MainMenuStatusRoute.island,
+                    title: UiStrings.mainMenuStatusIslandTitle,
+                    detail: '测试桃花详情',
+                  ),
+                  MainMenuStatusSummaryItem(
+                    kind: MainMenuStatusKind.injury,
+                    route: MainMenuStatusRoute.character,
+                    title: UiStrings.mainMenuStatusInjuryTitle,
+                    detail: '测试伤势详情',
+                    targetCharacterId: 42,
+                  ),
+                  MainMenuStatusSummaryItem(
+                    kind: MainMenuStatusKind.breakthrough,
+                    route: MainMenuStatusRoute.character,
+                    title: UiStrings.mainMenuStatusBreakthroughTitle,
+                    detail: '测试突破详情',
+                    targetCharacterId: 42,
+                  ),
+                  MainMenuStatusSummaryItem(
+                    kind: MainMenuStatusKind.mainline,
+                    route: MainMenuStatusRoute.mainline,
+                    title: UiStrings.mainMenuStatusMainlineTitle,
+                    detail: UiStrings.mainMenuStatusMainlineCompleteDetail,
+                  ),
+                ],
+              ),
+            ],
+            child: const MaterialApp(
+              home: Scaffold(body: MainMenuStatusSummaryPanel()),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MainMenuStatusSummaryPanel), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }
 
 class _RecordingNavigatorObserver extends NavigatorObserver {

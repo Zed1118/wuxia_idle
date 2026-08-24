@@ -22,12 +22,16 @@ class MainMenuStatusSummaryItem {
   final MainMenuStatusRoute route;
   final String title;
   final String detail;
+  final int? targetCharacterId;
+  final RealmTier? targetRealmTier;
 
   const MainMenuStatusSummaryItem({
     required this.kind,
     required this.route,
     required this.title,
     required this.detail,
+    this.targetCharacterId,
+    this.targetRealmTier,
   });
 }
 
@@ -43,15 +47,16 @@ final mainMenuStatusSummaryProvider =
       final items = <MainMenuStatusSummaryItem>[];
       if (!GameRepository.isLoaded) return items;
 
+      final characters = await _activeCharacters(ref);
+
       final retreat = await ref.watch(activeRetreatSessionProvider.future);
-      final retreatItem = _retreatItem(retreat);
+      final retreatItem = _retreatItem(retreat, characters);
       if (retreatItem != null) items.add(retreatItem);
 
       final save = await ref.watch(mainMenuSaveSnapshotProvider.future);
       final islandItem = _islandItem(save);
       if (islandItem != null) items.add(islandItem);
 
-      final characters = await _activeCharacters(ref);
       final injuryItem = _injuryItem(characters);
       if (injuryItem != null) items.add(injuryItem);
 
@@ -81,8 +86,16 @@ Future<List<Character>> _activeCharacters(Ref ref) async {
   return characters;
 }
 
-MainMenuStatusSummaryItem? _retreatItem(RetreatSession? session) {
-  if (session == null) return null;
+MainMenuStatusSummaryItem? _retreatItem(
+  RetreatSession? session,
+  List<Character> characters,
+) {
+  if (session == null || session.id <= 0) return null;
+  final participants = characters
+      .where((character) => character.currentRetreatSessionId == session.id)
+      .toList(growable: false);
+  if (participants.length != 1) return null;
+  final participant = participants.single;
   final mapDef = GameRepository.instance.getSeclusionMap(session.mapType);
   final elapsed =
       DateTime.now().difference(session.startedAt).inSeconds / 3600.0;
@@ -95,6 +108,8 @@ MainMenuStatusSummaryItem? _retreatItem(RetreatSession? session) {
     route: MainMenuStatusRoute.retreat,
     title: UiStrings.mainMenuStatusRetreatTitle,
     detail: detail,
+    targetCharacterId: participant.id,
+    targetRealmTier: participant.realmTier,
   );
 }
 
@@ -116,6 +131,7 @@ MainMenuStatusSummaryItem? _islandItem(SaveData? save) {
 MainMenuStatusSummaryItem? _injuryItem(List<Character> characters) {
   var count = 0;
   double maxHours = 0;
+  Character? firstInjured;
   for (final character in characters) {
     final hours = character.injuryHoursRemaining;
     final injured =
@@ -123,15 +139,17 @@ MainMenuStatusSummaryItem? _injuryItem(List<Character> characters) {
         character.lightInjuryStacks > 0 ||
         character.innerBreathDisorderHoursRemaining > 0;
     if (!injured) continue;
+    firstInjured ??= character;
     count += 1;
     if (hours > maxHours) maxHours = hours;
   }
-  if (count <= 0) return null;
+  if (count <= 0 || firstInjured == null) return null;
   return MainMenuStatusSummaryItem(
     kind: MainMenuStatusKind.injury,
     route: MainMenuStatusRoute.character,
     title: UiStrings.mainMenuStatusInjuryTitle,
     detail: UiStrings.mainMenuStatusInjuryDetail(count, maxHours),
+    targetCharacterId: firstInjured.id,
   );
 }
 
@@ -147,6 +165,7 @@ MainMenuStatusSummaryItem? _breakthroughItem(
       route: MainMenuStatusRoute.character,
       title: UiStrings.mainMenuStatusBreakthroughTitle,
       detail: UiStrings.mainMenuStatusBreakthroughDetail(character.name),
+      targetCharacterId: character.id,
     );
   }
   return null;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -13,9 +12,6 @@ import '../application/main_menu_status_summary_provider.dart';
 
 class MainMenuStatusSummaryPanel extends ConsumerWidget {
   const MainMenuStatusSummaryPanel({super.key});
-
-  static const int _defaultCharacterId = 1;
-  static const RealmTier _defaultRealmTier = RealmTier.xueTu;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,7 +62,7 @@ class MainMenuStatusSummaryPanel extends ConsumerWidget {
                                 : constraints.maxWidth,
                             child: _SummaryTile(
                               item: item,
-                              onTap: () => _open(context, item.route),
+                              onTap: () => _open(context, item),
                             ),
                           ),
                       ],
@@ -82,18 +78,30 @@ class MainMenuStatusSummaryPanel extends ConsumerWidget {
     );
   }
 
-  void _open(BuildContext context, MainMenuStatusRoute route) {
-    final screen = switch (route) {
-      MainMenuStatusRoute.retreat => const SeclusionMapListScreen(
-        charRealmTier: _defaultRealmTier,
-        characterId: _defaultCharacterId,
-      ),
-      MainMenuStatusRoute.island => const TaohuaIslandScreen(),
-      MainMenuStatusRoute.character => const CharacterPanelScreen(
-        characterId: _defaultCharacterId,
-      ),
-      MainMenuStatusRoute.mainline => const ChapterListScreen(),
-    };
+  void _open(BuildContext context, MainMenuStatusSummaryItem item) {
+    final Widget screen;
+    switch (item.route) {
+      case MainMenuStatusRoute.retreat:
+        final characterId = item.targetCharacterId;
+        final realmTier = item.targetRealmTier;
+        if (characterId == null || characterId <= 0 || realmTier == null) {
+          return;
+        }
+        screen = SeclusionMapListScreen(
+          charRealmTier: realmTier,
+          characterId: characterId,
+        );
+      case MainMenuStatusRoute.island:
+        screen = const TaohuaIslandScreen();
+      case MainMenuStatusRoute.character:
+        final characterId = item.targetCharacterId;
+        if (characterId == null || characterId <= 0) {
+          return;
+        }
+        screen = CharacterPanelScreen(characterId: characterId);
+      case MainMenuStatusRoute.mainline:
+        screen = const ChapterListScreen();
+    }
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
   }
 }
