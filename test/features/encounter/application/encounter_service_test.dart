@@ -866,6 +866,59 @@ void main() {
     });
   });
 
+  group('transaction-owned API', () {
+    test('caller 事务注入失败时 outcome 与 triggered 整体回滚', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final encounter = _mkFortune(id: 'enc_txn_rollback');
+
+      await expectLater(
+        IsarSetup.instance.writeTxn(() async {
+          await svc.applyOutcomeInTxn(
+            saveDataId: 1,
+            encounter: encounter,
+            outcomeId: 'gain_wisdom',
+          );
+          await svc.markTriggeredInTxn(
+            saveDataId: 1,
+            encounterId: encounter.id,
+          );
+          throw StateError('injected failure');
+        }),
+        throwsA(isA<StateError>()),
+      );
+
+      final progress = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(progress!.attributeGainsTotal, 0);
+      expect(progress.triggeredEncounterIds, isEmpty);
+    });
+
+    test('caller 事务成功时 outcome 与 triggered 同时落库', () async {
+      final svc = EncounterService(isar: IsarSetup.instance);
+      await svc.getOrCreate(saveDataId: 1);
+      final encounter = _mkFortune(id: 'enc_txn_commit');
+
+      await IsarSetup.instance.writeTxn(() async {
+        await svc.applyOutcomeInTxn(
+          saveDataId: 1,
+          encounter: encounter,
+          outcomeId: 'gain_wisdom',
+        );
+        await svc.markTriggeredInTxn(saveDataId: 1, encounterId: encounter.id);
+      });
+
+      final progress = await IsarSetup.instance.encounterProgress
+          .filter()
+          .saveDataIdEqualTo(1)
+          .findFirst();
+      expect(progress!.attributeGainsTotal, 1);
+      expect(progress.triggeredEncounterIds, [encounter.id]);
+    });
+  });
+
   group('equipEncounterSkill / unequipEncounterSkill (C-W14-3-A)', () {
     // 测试用 character 在 Isar 内的最小构造,境界可注入。realm 7 值
     // index 0-6,tier 1-7 等于 index+1。

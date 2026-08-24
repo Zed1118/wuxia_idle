@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/encounter_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/encounter_event_loader.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
@@ -15,6 +17,7 @@ import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../shared/utils/math_random.dart';
+import '../../../shared/utils/rng.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../combat_shared/application/combat_resolution_service.dart'
     show BattleResolutionResult, CombatResolutionService;
@@ -37,11 +40,16 @@ import '../../cultivation/domain/skill_unlock_service.dart';
 import '../../cultivation/presentation/skill_treasure_overlay.dart';
 import '../../cultivation/presentation/stage_skill_drop_hook.dart';
 import '../../encounter/presentation/encounter_hook.dart';
+import '../../encounter/presentation/encounter_dialog.dart';
+import '../../encounter/presentation/sect_recruit_confirm_dialog.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../equipment/presentation/milestone_grant_hook.dart';
 import '../../jianghu/application/jianghu_providers.dart';
+import '../../jianghu/application/reputation_service.dart';
+import '../../festival/application/festival_service_providers.dart';
 import '../../lineage/presentation/disciple_join_hook.dart';
 import '../../sect/presentation/stage_boss_recruit_hook.dart';
+import '../../sect/application/sect_recruit_transaction_service.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_service.dart';
 import '../../equipment/application/first_acquisition_tiers.dart';
@@ -53,12 +61,14 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
+import '../application/mainline_pending_jianghu_affair_service.dart';
 import '../application/mainline_providers.dart';
 import '../application/mainline_run_coordinator.dart';
 import '../application/mainline_settlement_journal_service.dart';
 import '../application/phase0a_mainline_production_encounter_factory.dart';
 import '../domain/chapter_assets.dart';
 import '../domain/mainline_progress.dart';
+import '../domain/mainline_pending_jianghu_affair.dart';
 import '../domain/mainline_run.dart';
 import '../domain/mainline_settlement_journal.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
@@ -333,6 +343,88 @@ StageDef? _nextStageInSameChapter(StageDef currentStage) {
 String? _mainlineChapterOf(String stageId) =>
     RegExp(r'^stage_(\d{2})_\d{2}$').firstMatch(stageId)?.group(1);
 
+/// 在主结算事务内决定本关待处理江湖事。
+///
+/// caller 必须持有 `isar.writeTxn`；返回的 typed refs 由结算
+/// journal 与核心结算同事务持久化。顺序与旧生产链一致：
+/// 奇遇在前，Boss 招降在后。
+@visibleForTesting
+Future<List<MainlinePendingJianghuAffairRef>>
+planMainlinePendingJianghuAffairsInTxn({
+  required Isar isar,
+  required MainlineSettlementIdentity identity,
+  required StageDef stage,
+  required int saveDataId,
+  required EncounterService encounterService,
+  required List<EncounterDef> encounters,
+  required Rng rng,
+  Festival? festivalToday,
+}) async {
+  final refs = <MainlinePendingJianghuAffairRef>[];
+  final save = await isar.saveDatas.get(0);
+  final founder = await isar.characters.get(identity.participantId);
+
+  if (stage.enemyTeam.isNotEmpty && founder != null && encounters.isNotEmpty) {
+    final encounter = await encounterService.evaluateTriggers(
+      saveDataId: saveDataId,
+      attributes: founder.attributes,
+      encounters: encounters,
+      rng: rng,
+      festivalToday: festivalToday,
+    );
+    if (encounter != null) {
+      final sourceId = 'encounter:${encounter.id}';
+      refs.add(
+        MainlinePendingJianghuAffairRef.encounterChoice(
+          settlementId: identity.canonical,
+          encounterId: encounter.id,
+          ordinal: refs.length + 1,
+          resolutionSeed: _stablePendingAffairSeed(
+            '${identity.canonical}|$sourceId',
+          ),
+        ),
+      );
+    }
+  }
+
+  final bossRecruit = stage.bossRecruit;
+  final bossAlreadyTriggered =
+      save?.triggeredBossRecruitStageIds.contains(stage.id) ?? false;
+  if (stage.isBossStage &&
+      bossRecruit != null &&
+      save != null &&
+      !bossAlreadyTriggered &&
+      GameRepository.instance.sectCandidates.containsKey(
+        bossRecruit.candidateRef,
+      ) &&
+      rng.nextDouble() < bossRecruit.baseProbability) {
+    final sourceId =
+        'stage-boss-recruit:${stage.id}:${bossRecruit.candidateRef}';
+    refs.add(
+      MainlinePendingJianghuAffairRef.stageBossRecruit(
+        settlementId: identity.canonical,
+        stageId: stage.id,
+        candidateRef: bossRecruit.candidateRef,
+        ordinal: refs.length + 1,
+        resolutionSeed: _stablePendingAffairSeed(
+          '${identity.canonical}|$sourceId',
+        ),
+      ),
+    );
+  }
+  return List.unmodifiable(refs);
+}
+
+int _stablePendingAffairSeed(String value) {
+  var hash = 0x811c9dc5;
+  for (final byte in value.codeUnits) {
+    hash ^= byte;
+    hash = (hash * 0x01000193) & 0xffffffff;
+  }
+  final positive = hash & 0x7fffffff;
+  return positive == 0 ? 1 : positive;
+}
+
 /// Phase 3 T37 关卡进入流程串联。
 ///
 /// 状态机（async 串联，无中间 widget）：
@@ -376,6 +468,14 @@ Future<void> _runSingleStageFlow({
     throw StateError('Durable settlement context must be complete');
   }
   if (durableJournal?.phase == MainlineSettlementPhase.coreApplied) {
+    final drained = await _drainMainlinePendingJianghuAffairs(
+      context: context,
+      ref: ref,
+      stage: stage,
+      durableSettlement: durableSettlement!,
+      includeStageBossRecruit: true,
+    );
+    if (!drained) return;
     var action = switch (durableJournal!.postSettlementAction) {
       MainlinePostSettlementAction.returnToMap =>
         StageVictoryAction.returnToMap,
@@ -390,7 +490,7 @@ Future<void> _runSingleStageFlow({
         stage: stage,
         allowEnterNextStage: allowEnterNextStage,
       );
-      await durableSettlement!.service.recordPostSettlementAction(
+      await durableSettlement.service.recordPostSettlementAction(
         identity: durableSettlement.identity,
         action: action == StageVictoryAction.enterNextStage
             ? MainlinePostSettlementAction.enterNextStage
@@ -399,7 +499,7 @@ Future<void> _runSingleStageFlow({
       );
     }
     if (action == StageVictoryAction.returnToMap || !allowEnterNextStage) {
-      await durableSettlement!.service.close(
+      await durableSettlement.service.close(
         identity: durableSettlement.identity,
         now: DateTime.now(),
       );
@@ -606,6 +706,7 @@ Future<void> _runSingleStageFlow({
   // W15 #30 P3 后续 A:victory dialog 显 drop + 升层 banner;outcome=null 时
   // (Isar 未 ready / characters 空)兜底跳过 dialog 不阻塞剧情流。
   // 第七阶段 批一:Boss 首胜先弹英雄镜头，再走胜利仪式。
+  StageVictoryAction? durableVictoryAction;
   if (outcome != null && context.mounted) {
     final isFirstClear = !clearedBeforeVictory.contains(stage.id);
     if (shouldShowHeroCamera(
@@ -648,6 +749,7 @@ Future<void> _runSingleStageFlow({
       allowEnterNextStage: allowEnterNextStage,
     );
     if (durableSettlement != null) {
+      durableVictoryAction = victoryAction;
       await durableSettlement.service.recordPostSettlementAction(
         identity: durableSettlement.identity,
         action: victoryAction == StageVictoryAction.enterNextStage
@@ -655,15 +757,9 @@ Future<void> _runSingleStageFlow({
             : MainlinePostSettlementAction.returnToMap,
         now: DateTime.now(),
       );
-      if (victoryAction == StageVictoryAction.returnToMap ||
-          !allowEnterNextStage) {
-        await durableSettlement.service.close(
-          identity: durableSettlement.identity,
-          now: DateTime.now(),
-        );
-      }
+    } else {
+      victoryActionSink?.call(victoryAction);
     }
-    victoryActionSink?.call(victoryAction);
   }
 
   // 胜利仪式 + 结算在战斗界面之上播完,退回关卡列表(再走胜利剧情)。
@@ -690,14 +786,24 @@ Future<void> _runSingleStageFlow({
   // 放在 victory narrative 之后:通关剧情是这关的收尾,奇遇作为下一段开端。
   // W14-2 抽到 encounter_hook.dart,与爬塔共享。
   if (!context.mounted) return;
-  await runEncounterHookAfterVictory(
-    context: context,
-    ref: ref,
-    defeatedSchools: stage.enemyTeam
-        .map((e) => e.school)
-        .toList(growable: false),
-    recordDefeatedSchools: durableSettlement == null,
-  );
+  if (durableSettlement == null) {
+    await runEncounterHookAfterVictory(
+      context: context,
+      ref: ref,
+      defeatedSchools: stage.enemyTeam
+          .map((e) => e.school)
+          .toList(growable: false),
+    );
+  } else {
+    final drained = await _drainMainlinePendingJianghuAffairs(
+      context: context,
+      ref: ref,
+      stage: stage,
+      durableSettlement: durableSettlement,
+      includeStageBossRecruit: false,
+    );
+    if (!drained) return;
+  }
 
   // 第七阶段批三:命名弟子拜入 hook(过 join 触发关 → 拜师叙事 + 最小立绘题字)。
   // 在 encounter hook 之后、boss 招降 hook 之前;service 内 gate 决定是否真触发,
@@ -719,11 +825,33 @@ Future<void> _runSingleStageFlow({
   // _2026-05-26.md §3.2)· 在 encounter hook 之后顺序执行 · isBossStage +
   // bossRecruit 非 null + rng 命中 + markTriggered 守通过才弹 confirm dialog。
   if (!context.mounted) return;
-  await runStageBossRecruitHookAfterVictory(
-    context: context,
-    ref: ref,
-    stage: stage,
-  );
+  if (durableSettlement == null) {
+    await runStageBossRecruitHookAfterVictory(
+      context: context,
+      ref: ref,
+      stage: stage,
+    );
+  } else {
+    final drained = await _drainMainlinePendingJianghuAffairs(
+      context: context,
+      ref: ref,
+      stage: stage,
+      durableSettlement: durableSettlement,
+      includeStageBossRecruit: true,
+    );
+    if (!drained) return;
+    final action = durableVictoryAction;
+    if (action == null) {
+      throw StateError('Durable settlement victory action was not recorded');
+    }
+    if (action == StageVictoryAction.returnToMap || !allowEnterNextStage) {
+      await durableSettlement.service.close(
+        identity: durableSettlement.identity,
+        now: DateTime.now(),
+      );
+    }
+    victoryActionSink?.call(action);
+  }
 
   // P1.2 Boss 击杀 → 声望 delta(boss 所属派系 -delta · 对立阵营 +rivalDelta)。
   if (durableSettlement == null) {
@@ -733,6 +861,321 @@ Future<void> _runSingleStageFlow({
   // 后置 hook（技能掉落、战绩册、里程碑装备、招降等）发生在主结算 helper 之后。
   // 返回关卡列表前再刷一次最终态，避免主菜单门控 / 仓库 / 资源数量读到旧缓存。
   invalidateAfterCombatSettlement(ref.invalidate);
+}
+
+Future<bool> _drainMainlinePendingJianghuAffairs({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required MainlineDurableSettlementContext durableSettlement,
+  required bool includeStageBossRecruit,
+}) async {
+  final isar = IsarSetup.instance;
+  final affairs = MainlinePendingJianghuAffairService(
+    durableSettlement.service,
+  );
+  final numbers = GameRepository.instance.numbers;
+  final encounterService = EncounterService(
+    isar: isar,
+    attributeGainCap: numbers.adventureAttributeLifetimeCap,
+    attributeEffects: numbers.attributeEffects,
+  );
+
+  while (true) {
+    final affair = await affairs.firstPending(
+      identity: durableSettlement.identity,
+    );
+    if (affair == null) return true;
+    if (affair.kind == MainlinePendingJianghuAffairKind.stageBossRecruit &&
+        !includeStageBossRecruit) {
+      return true;
+    }
+    if (!context.mounted) return false;
+
+    switch (affair.kind) {
+      case MainlinePendingJianghuAffairKind.encounterChoice:
+        final encounter = _encounterForPendingAffair(affair);
+        final founderId = durableSettlement.identity.participantId;
+        final founder = await isar.characters.get(founderId);
+        if (founder == null) {
+          throw StateError('Pending encounter founder is unavailable');
+        }
+        final content = await EncounterEventLoader.load(encounter.id);
+        if (!context.mounted) return false;
+        final outcomeId = await showEncounterDialog(
+          context: context,
+          def: encounter,
+          content: content,
+          fortune: founder.attributes.fortune,
+        );
+        if (outcomeId == null) return false;
+
+        final membership = encounter.affectsSectMembership;
+        if (membership == null || outcomeId != 'accept_recruit') {
+          late OutcomeApplied applied;
+          final claimed = await affairs.apply(
+            identity: durableSettlement.identity,
+            affair: affair,
+            now: DateTime.now(),
+            applyInTxn: () async {
+              applied = await _applyPendingEncounterOutcomeInTxn(
+                encounterService: encounterService,
+                reputationService: ref.read(reputationServiceProvider),
+                encounter: encounter,
+                outcomeId: outcomeId,
+                founderId: founderId,
+                encounterTitle: content.title ?? encounter.id,
+                resolutionSeed: affair.resolutionSeed,
+                seededRngFactory: ref.read(seededRngFactoryProvider),
+                now: DateTime.now(),
+              );
+              await encounterService.markTriggeredInTxn(
+                saveDataId: IsarSetup.currentSlotId,
+                encounterId: encounter.id,
+              );
+            },
+          );
+          if (!claimed) {
+            throw StateError('Pending encounter claim was not applied');
+          }
+          if (!context.mounted) return false;
+          showEncounterOutcomeBanner(context: context, applied: applied);
+          continue;
+        }
+
+        final candidate =
+            GameRepository.instance.sectCandidates[membership.candidateRef];
+        if (candidate == null) {
+          throw StateError(
+            'Pending encounter candidate is unavailable: '
+            '${membership.candidateRef}',
+          );
+        }
+        if (!context.mounted) return false;
+        final confirmed = await showSectRecruitConfirmDialog(
+          context,
+          candidate,
+        );
+        if (!context.mounted) return false;
+        SectRecruitTransactionResult? recruitResult;
+        OutcomeApplied? fallbackApplied;
+        final claimed = await affairs.apply(
+          identity: durableSettlement.identity,
+          affair: affair,
+          now: DateTime.now(),
+          applyInTxn: () async {
+            final recruitService = SectRecruitTransactionService(isar);
+            await recruitService.ensureDefaultSectInTxn(
+              defaultSectName: UiStrings.sectLazyInitName,
+              now: DateTime.now(),
+            );
+            await _applyPendingEncounterOutcomeInTxn(
+              encounterService: encounterService,
+              reputationService: ref.read(reputationServiceProvider),
+              encounter: encounter,
+              outcomeId: outcomeId,
+              founderId: founderId,
+              encounterTitle: content.title ?? encounter.id,
+              resolutionSeed: affair.resolutionSeed,
+              seededRngFactory: ref.read(seededRngFactoryProvider),
+              now: DateTime.now(),
+            );
+            if (confirmed) {
+              recruitResult = await recruitService.recruitInTxn(
+                candidate: candidate,
+                defaultSectName: UiStrings.sectLazyInitName,
+                now: DateTime.now(),
+              );
+              if (recruitResult == SectRecruitTransactionResult.success) {
+                await encounterService.markTriggeredInTxn(
+                  saveDataId: IsarSetup.currentSlotId,
+                  encounterId: encounter.id,
+                );
+              }
+            }
+            if (!confirmed ||
+                recruitResult == SectRecruitTransactionResult.fullCap) {
+              final fallbackId = membership.fallbackOutcomeId;
+              if (fallbackId != null) {
+                fallbackApplied = await _applyPendingEncounterOutcomeInTxn(
+                  encounterService: encounterService,
+                  reputationService: ref.read(reputationServiceProvider),
+                  encounter: encounter,
+                  outcomeId: fallbackId,
+                  founderId: founderId,
+                  encounterTitle: content.title ?? encounter.id,
+                  resolutionSeed: affair.resolutionSeed ^ 0x5f3759df,
+                  seededRngFactory: ref.read(seededRngFactoryProvider),
+                  now: DateTime.now(),
+                );
+              }
+            }
+          },
+        );
+        if (!claimed) {
+          throw StateError('Pending sect encounter claim was not applied');
+        }
+        if (!context.mounted) return false;
+        if (fallbackApplied != null) {
+          showEncounterOutcomeBanner(
+            context: context,
+            applied: fallbackApplied!,
+          );
+        }
+        if (recruitResult == SectRecruitTransactionResult.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                UiStrings.sectEncounterRecruitSuccess(candidate.name),
+              ),
+            ),
+          );
+        } else if (recruitResult == SectRecruitTransactionResult.fullCap) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                UiStrings.sectEncounterRecruitCapFull(candidate.name),
+              ),
+            ),
+          );
+        }
+
+      case MainlinePendingJianghuAffairKind.stageBossRecruit:
+        if (affair.stageId != stage.id ||
+            affair.candidateRef != stage.bossRecruit?.candidateRef) {
+          throw StateError(
+            'Pending Boss recruit source no longer matches stage',
+          );
+        }
+        final candidate =
+            GameRepository.instance.sectCandidates[affair.candidateRef];
+        if (candidate == null) {
+          throw StateError(
+            'Pending Boss recruit candidate is unavailable: '
+            '${affair.candidateRef}',
+          );
+        }
+        final narrative = await NarrativeLoader.load(
+          '${stage.id}_boss_recruit',
+        );
+        if (!narrative.isPlaceholder) {
+          if (!context.mounted) return false;
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => NarrativeReaderScreen(
+                content: narrative,
+                fallbackTitle: UiStrings.stageBossRecruitFallbackTitle(
+                  stage.name,
+                ),
+              ),
+            ),
+          );
+        }
+        if (!context.mounted) return false;
+        final confirmed = await showSectRecruitConfirmDialog(
+          context,
+          candidate,
+        );
+        if (!context.mounted) return false;
+        SectRecruitTransactionResult? recruitResult;
+        final claimed = await affairs.apply(
+          identity: durableSettlement.identity,
+          affair: affair,
+          now: DateTime.now(),
+          applyInTxn: () async {
+            final recruitService = SectRecruitTransactionService(isar);
+            await recruitService.ensureDefaultSectInTxn(
+              defaultSectName: UiStrings.sectLazyInitName,
+              now: DateTime.now(),
+            );
+            if (!confirmed) return;
+            recruitResult = await recruitService.recruitInTxn(
+              candidate: candidate,
+              defaultSectName: UiStrings.sectLazyInitName,
+              now: DateTime.now(),
+            );
+            if (recruitResult != SectRecruitTransactionResult.success) return;
+            final save = await isar.saveDatas.get(0);
+            if (save == null) {
+              throw StateError('Pending Boss recruit save is unavailable');
+            }
+            if (!save.triggeredBossRecruitStageIds.contains(stage.id)) {
+              save.triggeredBossRecruitStageIds = List.of(
+                save.triggeredBossRecruitStageIds,
+              )..add(stage.id);
+              await isar.saveDatas.put(save);
+            }
+          },
+        );
+        if (!claimed) {
+          throw StateError('Pending Boss recruit claim was not applied');
+        }
+        if (!context.mounted) return false;
+        if (recruitResult == SectRecruitTransactionResult.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(UiStrings.stageBossRecruitSuccess(candidate.name)),
+            ),
+          );
+        } else if (recruitResult == SectRecruitTransactionResult.fullCap) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(UiStrings.stageBossRecruitCapFull(candidate.name)),
+            ),
+          );
+        }
+    }
+  }
+}
+
+EncounterDef _encounterForPendingAffair(
+  MainlinePendingJianghuAffairRef affair,
+) {
+  final matches = GameRepository.instance.allEncounters
+      .where((encounter) => encounter.id == affair.encounterId)
+      .toList(growable: false);
+  if (matches.length != 1) {
+    throw StateError(
+      'Pending encounter source is missing or ambiguous: '
+      '${affair.encounterId}',
+    );
+  }
+  return matches.single;
+}
+
+Future<OutcomeApplied> _applyPendingEncounterOutcomeInTxn({
+  required EncounterService encounterService,
+  required ReputationService? reputationService,
+  required EncounterDef encounter,
+  required String outcomeId,
+  required int founderId,
+  required String encounterTitle,
+  required int resolutionSeed,
+  required SeededRngFactory seededRngFactory,
+  required DateTime now,
+}) async {
+  final applied = await encounterService.applyOutcomeInTxn(
+    saveDataId: IsarSetup.currentSlotId,
+    encounter: encounter,
+    outcomeId: outcomeId,
+    founderCharacterId: founderId,
+    encounterTitle: encounterTitle,
+    skillNameLookup: (skillId) =>
+        GameRepository.instance.skillDefs[skillId]?.name ?? skillId,
+  );
+  final affects = encounter.affectsReputation;
+  if (affects != null && reputationService != null) {
+    final rng = seededRngFactory(seed: resolutionSeed);
+    final span = affects.deltaMax - affects.deltaMin;
+    final delta = affects.deltaMin + (span > 0 ? rng.nextInt(span + 1) : 0);
+    await reputationService.applyDeltaInTxn(
+      1,
+      affects.factionId,
+      delta,
+      now: now,
+    );
+  }
+  return applied;
 }
 
 /// 推 Phase0A 主线战斗宿主并 wait 胜/败/系统返回回调。
@@ -1333,12 +1776,30 @@ applyVictoryResolution({
   if (durableSettlement == null) {
     await isar.writeTxn(persistResolutionInTxn);
   } else {
-    final disposition = await durableSettlement.service.commitCore(
-      identity: durableSettlement.identity,
-      pendingEffectIds: const [],
-      now: now,
-      applyInTxn: persistResolutionInTxn,
-    );
+    final disposition =
+        await MainlinePendingJianghuAffairService(
+          durableSettlement.service,
+        ).commitCore(
+          identity: durableSettlement.identity,
+          now: now,
+          applyInTxn: () async {
+            await persistResolutionInTxn();
+            return planMainlinePendingJianghuAffairsInTxn(
+              isar: isar,
+              identity: durableSettlement.identity,
+              stage: stage,
+              saveDataId: IsarSetup.currentSlotId,
+              encounterService: EncounterService(
+                isar: isar,
+                attributeGainCap: numbers.adventureAttributeLifetimeCap,
+                attributeEffects: numbers.attributeEffects,
+              ),
+              encounters: GameRepository.instance.allEncounters,
+              rng: ref.read(rngProvider),
+              festivalToday: ref.read(todayFestivalProvider),
+            );
+          },
+        );
     if (disposition != MainlineCoreCommitDisposition.applied) {
       throw StateError('Mainline settlement core was already applied');
     }

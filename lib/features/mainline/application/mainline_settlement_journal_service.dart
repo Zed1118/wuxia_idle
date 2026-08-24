@@ -28,6 +28,11 @@ class MainlineSettlementJournalService {
     return active.firstOrNull;
   }
 
+  /// Reads a receipt by its typed settlement identity for outbox facades.
+  Future<MainlineSettlementJournal?> journalFor(
+    MainlineSettlementIdentity identity,
+  ) => _findByIdentityInTxn(identity);
+
   Future<MainlineSettlementJournal> prepare({
     required int saveDataId,
     required MainlineSettlementIdentity identity,
@@ -128,6 +133,26 @@ class MainlineSettlementJournalService {
     required List<String> pendingEffectIds,
     required DateTime now,
     required Future<void> Function() applyInTxn,
+  }) => _commitCore(
+    identity: identity,
+    now: now,
+    applyInTxn: () async {
+      await applyInTxn();
+      return pendingEffectIds;
+    },
+  );
+
+  /// 与核心业务写入同事务产生 outbox refs，避免在事务外按旧进度预判事项。
+  Future<MainlineCoreCommitDisposition> commitCoreProducingEffects({
+    required MainlineSettlementIdentity identity,
+    required DateTime now,
+    required Future<List<String>> Function() applyInTxn,
+  }) => _commitCore(identity: identity, now: now, applyInTxn: applyInTxn);
+
+  Future<MainlineCoreCommitDisposition> _commitCore({
+    required MainlineSettlementIdentity identity,
+    required DateTime now,
+    required Future<List<String>> Function() applyInTxn,
   }) async {
     var disposition = MainlineCoreCommitDisposition.alreadyApplied;
     await isar.writeTxn(() async {
@@ -139,8 +164,8 @@ class MainlineSettlementJournalService {
       if (journal.phase != MainlineSettlementPhase.prepared) {
         throw StateError('Invalid journal phase for core settlement');
       }
-      await applyInTxn();
-      journal.markCoreApplied(pendingEffectIds: pendingEffectIds, at: now);
+      final producedEffectIds = await applyInTxn();
+      journal.markCoreApplied(pendingEffectIds: producedEffectIds, at: now);
       await isar.mainlineSettlementJournals.put(journal);
       disposition = MainlineCoreCommitDisposition.applied;
     });

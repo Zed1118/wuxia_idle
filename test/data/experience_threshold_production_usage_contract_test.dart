@@ -11,6 +11,9 @@ void main() {
       'lib/features/onboarding/application/master_builder.dart',
       'lib/features/recruitment/application/recruitment_service.dart',
       'lib/features/sect/presentation/sect_recruit_handler.dart',
+      // U04 transaction-owned 角色创建 sink；与上述 handler 同样
+      // 先取 RealmDef，只把权威 experienceToNext 写入兼容镜像。
+      'lib/features/sect/application/sect_recruit_transaction_service.dart',
     };
 
     final files = Directory('lib')

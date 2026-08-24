@@ -267,18 +267,23 @@ class EncounterService {
   Future<void> markTriggered({
     required int saveDataId,
     required String encounterId,
+  }) => isar.writeTxn(
+    () => markTriggeredInTxn(saveDataId: saveDataId, encounterId: encounterId),
+  );
+
+  Future<void> markTriggeredInTxn({
+    required int saveDataId,
+    required String encounterId,
   }) async {
-    await isar.writeTxn(() async {
-      final progress = await isar.encounterProgress
-          .filter()
-          .saveDataIdEqualTo(saveDataId)
-          .findFirst();
-      if (progress == null) return;
-      if (progress.triggeredEncounterIds.contains(encounterId)) return;
-      progress.triggeredEncounterIds = List.of(progress.triggeredEncounterIds)
-        ..add(encounterId);
-      await isar.encounterProgress.put(progress);
-    });
+    final progress = await isar.encounterProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (progress == null) return;
+    if (progress.triggeredEncounterIds.contains(encounterId)) return;
+    progress.triggeredEncounterIds = List.of(progress.triggeredEncounterIds)
+      ..add(encounterId);
+    await isar.encounterProgress.put(progress);
   }
 
   /// 应用 outcome,返回结构化结果(UI 用)。
@@ -301,118 +306,16 @@ class EncounterService {
     ReputationDeltaApplier? reputationApplier,
     int? reputationPlayerId,
   }) async {
-    final outcome = encounter.resolveOutcome(outcomeId);
-
-    OutcomeApplied result = const NoneOutcome();
+    late OutcomeApplied result;
     await isar.writeTxn(() async {
-      final progress = await isar.encounterProgress
-          .filter()
-          .saveDataIdEqualTo(saveDataId)
-          .findFirst();
-      if (progress == null) {
-        throw StateError(
-          'EncounterProgress 未初始化:getOrCreate 未在 applyOutcome 前调用',
-        );
-      }
-
-      switch (outcome.type) {
-        case OutcomeType.unlockSkill:
-          final sid = outcome.skillId!;
-          // 波A A4 来源统一:解锁写 SaveData.skillUnlockProgress(单一真相源);
-          // EncounterProgress.unlockedSkillIds 退役只读(旧档迁移见 IsarSetup)。
-          final save = await isar.saveDatas.get(0);
-          if (save != null && !save.skillUnlockProgress.isUnlocked(sid)) {
-            save.skillUnlockProgress = List.of(save.skillUnlockProgress)
-              ..markUnlocked(sid);
-            await isar.saveDatas.put(save);
-          }
-          result = UnlockSkillApplied(sid);
-
-        case OutcomeType.attributeBonus:
-          if (progress.attributeGainsTotal >= attributeGainCap) {
-            result = AttributeCapReached(attributeGainCap);
-            return;
-          }
-          final key = outcome.attributeKey!;
-          final delta = outcome.attributeDelta;
-          // 部分超 cap 时按剩余空间裁剪(保证总和 ≤ cap)
-          final remaining = attributeGainCap - progress.attributeGainsTotal;
-          final applied = delta < remaining ? delta : remaining;
-          switch (key) {
-            case AttributeKey.constitution:
-              progress.attributeGainsConstitution += applied;
-            case AttributeKey.enlightenment:
-              progress.attributeGainsEnlightenment += applied;
-            case AttributeKey.agility:
-              progress.attributeGainsAgility += applied;
-            case AttributeKey.fortune:
-              progress.attributeGainsFortune += applied;
-          }
-          await isar.encounterProgress.put(progress);
-          // 审计②修复:把 +applied 真正加到主角属性(GDD §4.1「生涯弥补」)。
-          // founderCharacterId 由 caller 从 save.founderCharacterId 传(reputation
-          // hook 同源);null 时仅记 EncounterProgress cap 不改角色(向后兼容旧测/
-          // debug 路径)。lifetime cap 已由上方 attributeGainsTotal 兜底,不再额外
-          // 裁剪;按 AttributeKey 写对应 @embedded 字段后 put 持久化。
-          if (founderCharacterId != null && applied > 0) {
-            final character = await isar.characters.get(founderCharacterId);
-            if (character != null) {
-              switch (key) {
-                case AttributeKey.constitution:
-                  character.attributes.constitution += applied;
-                case AttributeKey.enlightenment:
-                  character.attributes.enlightenment += applied;
-                case AttributeKey.agility:
-                  character.attributes.agility += applied;
-                case AttributeKey.fortune:
-                  character.attributes.fortune += applied;
-              }
-              // Character.attributeBonusFromAdventure:本角色经奇遇获得的属性生涯
-              // 累计(此前为 never-written 死字段,审计 A-F3)。在此写活成有意义的
-              // per-char 计数,持久于 Isar,供后续角色页「奇遇弥补 +N」展示(读端
-              // 待接,不删字段免 schema churn)。
-              character.attributeBonusFromAdventure += applied;
-              // ⚠ 这里**故意不重算** `character.rarity`(2026-08-08 用户拍板)。
-              // GDD §4.1「不可重 roll·出生即命运」把资质定为**出生属性**,奇遇只
-              // 加点数、不改档位标签;设计理由那句「让投胎本身具有意义」要求档位
-              // 终身不变。若跟随 attributes.total 重算:祖师起手两条来源都落资优
-              // (masters.yaml masters[0]=22 / founder_creation fatePool 六命格 21-22),
-              // 吃满生涯 cap +5 后一律钳到「绝世」(GDD 标 2%),档位失去区分度。
-              await isar.characters.put(character);
-            }
-          }
-          result = AttributeBonusApplied(key, applied);
-
-        case OutcomeType.none:
-          result = const NoneOutcome();
-      }
-
-      // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
-      // #2 adventureTriggered 必发(任何 outcomeId 都算"奇遇触发了");
-      // #5 skillEnlightened 条件发(unlockSkill outcome,且 result 实际 new skill)。
-      // founderCharacterId 由 caller 从 save.founderCharacterId 传入,
-      // null 时跳过(test fixture 路径不必传)。
-      if (founderCharacterId != null) {
-        final events = GameEventService(isar);
-        await events.recordAdventureTriggered(
-          characterId: founderCharacterId,
-          encounterId: encounter.id,
-          encounterTitle: encounterTitle ?? encounter.id,
-        );
-        if (result is UnlockSkillApplied) {
-          final sid = (result as UnlockSkillApplied).skillId;
-          final skillName = skillNameLookup?.call(sid) ?? sid;
-          await events.recordSkillEnlightened(
-            characterId: founderCharacterId,
-            skillId: sid,
-            skillName: skillName,
-          );
-        }
-        // P1 #42 Phase 2 §10 P1.y:第 1 次奇遇触发 → 推 step 7。
-        // 第 2 次起靠 [advanceToStep] 单调 no-op,无需独立 first 字段。
-        final tutorialSvc = TutorialService(isar);
-        await tutorialSvc.advanceForFirstAdventure();
-      }
+      result = await applyOutcomeInTxn(
+        saveDataId: saveDataId,
+        encounter: encounter,
+        outcomeId: outcomeId,
+        founderCharacterId: founderCharacterId,
+        encounterTitle: encounterTitle,
+        skillNameLookup: skillNameLookup,
+      );
     });
 
     // P1.2 §3 reputation hook · writeTxn 外调(ReputationService 有自己的 writeTxn,
@@ -428,7 +331,129 @@ class EncounterService {
         deltaMax: affects.deltaMax,
       );
     }
+    return result;
+  }
 
+  /// transaction-owned outcome 写入口；caller 必须持有 `isar.writeTxn`。
+  Future<OutcomeApplied> applyOutcomeInTxn({
+    required int saveDataId,
+    required EncounterDef encounter,
+    required String outcomeId,
+    int? founderCharacterId,
+    String? encounterTitle,
+    String? Function(String skillId)? skillNameLookup,
+  }) async {
+    final outcome = encounter.resolveOutcome(outcomeId);
+
+    OutcomeApplied result = const NoneOutcome();
+    final progress = await isar.encounterProgress
+        .filter()
+        .saveDataIdEqualTo(saveDataId)
+        .findFirst();
+    if (progress == null) {
+      throw StateError(
+        'EncounterProgress 未初始化:getOrCreate 未在 applyOutcome 前调用',
+      );
+    }
+
+    switch (outcome.type) {
+      case OutcomeType.unlockSkill:
+        final sid = outcome.skillId!;
+        // 波A A4 来源统一:解锁写 SaveData.skillUnlockProgress(单一真相源);
+        // EncounterProgress.unlockedSkillIds 退役只读(旧档迁移见 IsarSetup)。
+        final save = await isar.saveDatas.get(0);
+        if (save != null && !save.skillUnlockProgress.isUnlocked(sid)) {
+          save.skillUnlockProgress = List.of(save.skillUnlockProgress)
+            ..markUnlocked(sid);
+          await isar.saveDatas.put(save);
+        }
+        result = UnlockSkillApplied(sid);
+
+      case OutcomeType.attributeBonus:
+        if (progress.attributeGainsTotal >= attributeGainCap) {
+          result = AttributeCapReached(attributeGainCap);
+          return result;
+        }
+        final key = outcome.attributeKey!;
+        final delta = outcome.attributeDelta;
+        // 部分超 cap 时按剩余空间裁剪(保证总和 ≤ cap)
+        final remaining = attributeGainCap - progress.attributeGainsTotal;
+        final applied = delta < remaining ? delta : remaining;
+        switch (key) {
+          case AttributeKey.constitution:
+            progress.attributeGainsConstitution += applied;
+          case AttributeKey.enlightenment:
+            progress.attributeGainsEnlightenment += applied;
+          case AttributeKey.agility:
+            progress.attributeGainsAgility += applied;
+          case AttributeKey.fortune:
+            progress.attributeGainsFortune += applied;
+        }
+        await isar.encounterProgress.put(progress);
+        // 审计②修复:把 +applied 真正加到主角属性(GDD §4.1「生涯弥补」)。
+        // founderCharacterId 由 caller 从 save.founderCharacterId 传(reputation
+        // hook 同源);null 时仅记 EncounterProgress cap 不改角色(向后兼容旧测/
+        // debug 路径)。lifetime cap 已由上方 attributeGainsTotal 兜底,不再额外
+        // 裁剪;按 AttributeKey 写对应 @embedded 字段后 put 持久化。
+        if (founderCharacterId != null && applied > 0) {
+          final character = await isar.characters.get(founderCharacterId);
+          if (character != null) {
+            switch (key) {
+              case AttributeKey.constitution:
+                character.attributes.constitution += applied;
+              case AttributeKey.enlightenment:
+                character.attributes.enlightenment += applied;
+              case AttributeKey.agility:
+                character.attributes.agility += applied;
+              case AttributeKey.fortune:
+                character.attributes.fortune += applied;
+            }
+            // Character.attributeBonusFromAdventure:本角色经奇遇获得的属性生涯
+            // 累计(此前为 never-written 死字段,审计 A-F3)。在此写活成有意义的
+            // per-char 计数,持久于 Isar,供后续角色页「奇遇弥补 +N」展示(读端
+            // 待接,不删字段免 schema churn)。
+            character.attributeBonusFromAdventure += applied;
+            // ⚠ 这里**故意不重算** `character.rarity`(2026-08-08 用户拍板)。
+            // GDD §4.1「不可重 roll·出生即命运」把资质定为**出生属性**,奇遇只
+            // 加点数、不改档位标签;设计理由那句「让投胎本身具有意义」要求档位
+            // 终身不变。若跟随 attributes.total 重算:祖师起手两条来源都落资优
+            // (masters.yaml masters[0]=22 / founder_creation fatePool 六命格 21-22),
+            // 吃满生涯 cap +5 后一律钳到「绝世」(GDD 标 2%),档位失去区分度。
+            await isar.characters.put(character);
+          }
+        }
+        result = AttributeBonusApplied(key, applied);
+
+      case OutcomeType.none:
+        result = const NoneOutcome();
+    }
+
+    // P1 #42 Phase 2:GameEvent 写入(同 writeTxn 原子)。
+    // #2 adventureTriggered 必发(任何 outcomeId 都算"奇遇触发了");
+    // #5 skillEnlightened 条件发(unlockSkill outcome,且 result 实际 new skill)。
+    // founderCharacterId 由 caller 从 save.founderCharacterId 传入,
+    // null 时跳过(test fixture 路径不必传)。
+    if (founderCharacterId != null) {
+      final events = GameEventService(isar);
+      await events.recordAdventureTriggered(
+        characterId: founderCharacterId,
+        encounterId: encounter.id,
+        encounterTitle: encounterTitle ?? encounter.id,
+      );
+      if (result is UnlockSkillApplied) {
+        final sid = result.skillId;
+        final skillName = skillNameLookup?.call(sid) ?? sid;
+        await events.recordSkillEnlightened(
+          characterId: founderCharacterId,
+          skillId: sid,
+          skillName: skillName,
+        );
+      }
+      // P1 #42 Phase 2 §10 P1.y:第 1 次奇遇触发 → 推 step 7。
+      // 第 2 次起靠 [advanceToStep] 单调 no-op,无需独立 first 字段。
+      final tutorialSvc = TutorialService(isar);
+      await tutorialSvc.advanceForFirstAdventure();
+    }
     return result;
   }
 

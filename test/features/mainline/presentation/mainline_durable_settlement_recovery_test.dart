@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/cultivation/domain/skill_unlock_service.dart
 import 'package:wuxia_idle/features/encounter/domain/encounter_progress.dart';
 import 'package:wuxia_idle/features/jianghu/domain/reputation.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_settlement_journal_service.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_pending_jianghu_affair_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_settlement_journal.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
@@ -228,14 +229,25 @@ void main() {
       expect(restored!.identity, evidence.identity);
       expect(restored.phase, MainlineSettlementPhase.coreApplied);
       expect(restored.loadoutSnapshotIds, hasLength(5));
+      final affairs = MainlinePendingJianghuAffairService(service);
+      while (true) {
+        final pending = await affairs.firstPending(identity: evidence.identity);
+        if (pending == null) break;
+        await affairs.apply(
+          identity: evidence.identity,
+          affair: pending,
+          now: DateTime.utc(2026, 8, 24, 0, 1),
+          applyInTxn: () async {},
+        );
+      }
       await service.recordPostSettlementAction(
         identity: evidence.identity,
         action: MainlinePostSettlementAction.enterNextStage,
-        now: DateTime.utc(2026, 8, 24, 0, 1),
+        now: DateTime.utc(2026, 8, 24, 0, 2),
       );
       await service.close(
         identity: evidence.identity,
-        now: DateTime.utc(2026, 8, 24, 0, 2),
+        now: DateTime.utc(2026, 8, 24, 0, 3),
       );
       expect(await service.activeForSave(IsarSetup.currentSlotId), isNull);
     });
