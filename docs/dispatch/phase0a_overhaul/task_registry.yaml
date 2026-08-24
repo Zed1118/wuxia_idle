@@ -3425,3 +3425,39 @@ tasks:
       - do not change tuning reward amounts probabilities unlock narrative or gameplay numbers
       - do not claim replay sweep U04 U05 M2 M6 or overall Phase 2 completion
       - do not modify or push main
+
+  - id: P2-M2-M6-U04-PENDING-JIANGHU-AFFAIRS
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-m2-m6-u04-pending-jianghu-affairs-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m2-m6-u04-pending-jianghu-affairs
+    status: in_progress
+    base_commit: 6c849cccaec85703438bc53e7e4d958e3962d358
+    completion_scope: chapter_1_pending_interactive_affairs_durable_queue
+    approved_schema_version: 0.40.0
+    dependencies:
+      - P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
+    owned_files:
+      - lib/features/jianghu/domain/pending_jianghu_affair.dart
+      - lib/features/jianghu/domain/pending_jianghu_affair.g.dart
+      - lib/features/jianghu/application/pending_jianghu_affair_service.dart
+      - lib/data/isar_setup.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/encounter/application/encounter_service.dart
+      - lib/features/encounter/presentation/encounter_hook.dart
+      - lib/features/sect/presentation/stage_boss_recruit_hook.dart
+      - lib/features/sect/presentation/sect_recruit_handler.dart
+      - test/features/jianghu/domain/pending_jianghu_affair_contract_test.dart
+      - test/features/jianghu/application/pending_jianghu_affair_service_test.dart
+      - test/features/mainline/presentation/mainline_pending_jianghu_affair_recovery_test.dart
+      - test/data/pending_jianghu_affair_migration_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m2-m6-u04-pending-jianghu-affairs.md
+      - docs/audit/phase2_m2_m6_u04_pending_jianghu_affairs_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - keep settlement journal as the sole authority for core settlement
+      - persist typed affair payloads and canonical source identity without callbacks or string guessing
+      - resolve player choice and business writes atomically
+      - keep presenting affairs recoverable and consume FIFO exactly once
+      - do not change tuning probabilities rewards unlock narrative or gameplay numbers
+      - do not modify or push main
