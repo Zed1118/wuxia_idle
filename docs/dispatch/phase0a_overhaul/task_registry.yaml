@@ -3874,9 +3874,24 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-jianghu-map-gauntlet-location-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-gauntlet-location
-    status: in_progress
+    status: ready_reviewed
     base_commit: cec23572e10bb3f47eff7a1875f6b4a6abec490a
+    code_candidate_commit: c06489f2ec79caf7766959a3431f75da6b228ac2
+    reviewed_candidate_commit: c06489f2ec79caf7766959a3431f75da6b228ac2
+    ready_marker: "[READY][CODEX][P2-M6-U06-JIANGHU-MAP-GAUNTLET-LOCATION] 迁移断魂庄到江湖地图"
     completion_scope: move_gauntlet_from_flat_main_menu_to_fourth_production_jianghu_map_location
+    verification:
+      red_tests: 3
+      focused_location_tests: 15
+      paper_contrast_audit_tests: 4
+      focused_with_paper_tests: 19
+      changed_and_joint_tests: 66
+      adjacent_main_menu_map_gauntlet_tests: 299
+      independent_adjacent_navigation_tests: 85
+      root_application_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5391
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-JIANGHU-MAP-MASS-BATTLE-LOCATION
     owned_files:

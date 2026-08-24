@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.68**
+> **版本:v1.69**
+>
+> v1.69 变更摘要(2026-08-25 二阶段 M6 U06 江湖地图断魂庄第四地点纵切):“断魂庄”从主菜单平铺区迁为江湖地图第四个生产地点；可见性只读既有 `jianghuJourneyUnlocked` 隐藏门，未决或异常时 fail closed，进行中状态只读 `activeGauntletProvider`，点击仍直达 `GauntletLoadoutScreen` 并由原页处理恢复。本纵切只关闭断魂庄第四地点缺口；其他地点、统一地点详情、U06/U14/M5/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、数值、参与者、奖励、经济、解锁或叙事变更，不开放前台 bot 或代选奖励。
 >
 > v1.68 变更摘要(2026-08-25 二阶段 M6 U06 江湖地图守城第三地点纵切):“守城试炼”从主菜单平铺区迁为江湖地图第三个生产地点；锁定与五关进度只从 `MainlineProgress`、`MassBattleService` 和生产配置派生，数据未决或链异常时 fail closed，点击仍经 `guardBattleEntry` 进入 `MassBattleScreen`。本纵切只关闭守城第三地点缺口；其他地点、统一地点详情、U06/U14/M5/M6/二阶段仍开放；零 schema/saveVersion、YAML、数值、阵型、概率、奖励、经济、解锁或叙事变更。
 >

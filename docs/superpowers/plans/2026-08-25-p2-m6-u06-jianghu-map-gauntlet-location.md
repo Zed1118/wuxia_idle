@@ -6,7 +6,8 @@
 - base: `cec23572e10bb3f47eff7a1875f6b4a6abec490a`
 - branch: `codex/phase2-m6-u06-jianghu-map-gauntlet-location-20260825`
 - worktree: `/Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-gauntlet-location`
-- status: `in_progress`
+- status: `ready_reviewed`
+- code candidate: `c06489f2ec79caf7766959a3431f75da6b228ac2`
 
 ## 目标
 
@@ -47,3 +48,10 @@
 ## 停止条件
 
 若迁移必须改变 `jianghuJourneyUnlocked`、庄局恢复、参与者、奖励或需要 schema/调优决策，立即记录精确 `BLOCKED`；不在地图复制第二套断魂庄状态。
+
+## 完成证据
+
+- 修正测试 fixture 后的真实红测为 `1/4`，其中三项目标行为各自精确失败；首次因未加载测试仓库而无效的运行不计证据。
+- 断魂庄门控与地图 `15/15`，纸面对比 `4/4`，联合 `19/19`；地图、断魂庄与主菜单联合 `66/66`，相邻域 `299/299`。
+- `flutter analyze --no-pub lib test tool` 与根 `flutter analyze --no-pub` 均为 0 issue；最终全量 `5391/5391 PASS`。
+- 独立语义复核 `P0=0 / P1=0 / P2=0`，建议 READY；代码候选和评审候选均为 `c06489f2ec79caf7766959a3431f75da6b228ac2`。
