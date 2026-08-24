@@ -90,13 +90,13 @@ pi --no-session --no-skills --model deepseek/deepseek-v4-flash --thinking high -
 
 ## 当前恢复点
 
-- 状态：Pi 与主控独立 Codex 设计审查完成，四项死亡入口矩阵已写，
-  已获得有效 TDD 红灯。
-- 最后完成：新测中 dead-only / canonical reload / serial=41 三条均因
-  `dispatch` 错误成功建 run 而红；alive control 与既有 10 条均绿，合计
-  11 pass / 3 fail，证明红灯未借旧 gate 伪造。
-- 下一步：提交红测，仅在 `dispatch` 事务内 canonical null 检查后增加
-  `isAlive` 权威闸。
+- 状态：Pi 与主控独立 Codex 设计审查完成，TDD 红灯有效，最小
+  production gate 已实现并转绿。
+- 最后完成：`dispatch` 在权威 `writeTxn` 内读取 canonical `Character`
+  后，紧跟 null 检查拒绝 `isAlive == false`；新测由 11 pass / 3 fail 转为
+  focused dispatch 14/14 PASS。
+- 下一步：提交最小 production 实现，再跑完整 expedition feature、
+  scoped analyze、format/diff/path/status。
 - 已跑验证：Pi 只读审查 exit 0；首轮 focused 在 native-assets 编译前
   崩溃，二轮因 fresh worktree 缺少 gitignored Isar `*.g.dart` 编译失败，
   两者均不计业务红灯；`flutter pub get --offline` 与

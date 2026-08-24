@@ -72,6 +72,9 @@ class ExpeditionService {
       for (final cid in characterIds) {
         final c = await _isar.characters.get(cid);
         if (c == null) throw StateError('远征派遣：角色 $cid 不存在');
+        if (!c.isAlive) {
+          throw StateError('expedition_dispatch_character_dead:$cid');
+        }
         if (c.isFounder) throw StateError('远征派遣：祖师不可派遣');
         if (c.realmTier.index > entryMaxTier.index) entryMaxTier = c.realmTier;
         if (occupancy.isCharacterOccupied(cid)) {
