@@ -139,6 +139,12 @@ Phase0aEncounterRuntimeObservation get runtimeObservation =>
   `dart format` 4 items 0 changed；`git diff --check`、exact 5-path guard 与
   status clean。R25 测试相对基线仅新增行，既有 getter/order/owner
   guard 未删改。
+- Pi final 首轮使用完整 prompt，同设计审查 exact 配置运行
+  5 分钟仍 0 输出，有界 `Ctrl-C` 终止；随后使用同配置精简 prompt
+  重试，再次 5 分钟 0 输出并有界终止。两轮均 exit 1，未得到
+  `FINAL PASS/FAIL`，未启动第三轮。
+- 当前唯一阻塞：Pi final 外部返回证据尚缺，因此 checklist 与 READY
+  保持未完成，不伪称 P0/P1/P2 清零。代码/测试/本地 Gate 无其他阻塞。
 - 环境：`flutter pub get` 成功；build_runner 写 126 ignored outputs；
   `libisar.dylib` SHA-256 =
   `f22f60782156ff3205c4ef72ff157337640604a8a0c4c416555a2432c764742d`，
