@@ -300,6 +300,8 @@ decisions:
       - migrate
       - merge
       - archive_with_content_owner_reason
+    current_batch_disposition: migrate_only
+    merge_or_archive_requires_explicit_content_owner_review: true
     protected_behavior:
       - preserve_fact_only_boss_defeat_loss_summary
       - preserve_special_mode_narrative_flows

@@ -2949,7 +2949,8 @@ tasks:
     branch: codex/phase2-m6-u02-u03-mainline-narrative-deblocking-20260824
     worktree: /Users/a10506/.codex/worktrees/0e60/挂机武侠
     status: in_progress
-    base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    base_commit: a6a373e137f72a69040199eb9431052f8095d1e1
+    semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
       - MAINLINE-NARRATIVE-DEBLOCKING-01
       - REOPEN-CHRONICLE-01
@@ -2988,6 +2989,7 @@ tasks:
     exit_criteria:
       - Qoder CLI Qwen3.8 Max read only design review and final diff review are recorded with exact model evidence
       - targeted tests cover all 105 mainline stages Boss defeat fact display optional reading and special mode regressions
+      - chapter timeline passes 1280x720 and 1440x900 overflow semantics and keyboard accessible regression checks
       - scoped analyze format diff check and source worktree cleanliness pass
 
   - id: P2-M5-GAUNTLET-AUTOMATION-ADMISSION
@@ -2997,10 +2999,10 @@ tasks:
     branch: codex/phase2-m5-gauntlet-automation-admission-20260824
     worktree: /Users/a10506/.codex/worktrees/d832/挂机武侠
     status: in_progress
-    base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
+    base_commit: a6a373e137f72a69040199eb9431052f8095d1e1
+    semantic_base_commit: 693ed157071e8242dc44ef81b9bae7d289809e58
     decision_ids:
       - GAUNTLET-VISIBLE-BOT-01
-      - MAINLINE-REPLAY-PARTICIPANT-01
     owned_files:
       - lib/features/boss_gauntlet/domain/gauntlet_automation_policy.dart
       - lib/features/boss_gauntlet/application/gauntlet_automation_admission.dart
@@ -3041,6 +3043,8 @@ tasks:
     source_tasks:
       - P2-M6-U02-U03-MAINLINE-NARRATIVE-DEBLOCKING
       - P2-M5-GAUNTLET-AUTOMATION-ADMISSION
+    integration_allowed_scope: union_of_source_task_owned_files_and_batch_owned_files
+    integration_authored_scope: batch_owned_files_only
     owned_files:
       - CLAUDE.md
       - GDD.md
