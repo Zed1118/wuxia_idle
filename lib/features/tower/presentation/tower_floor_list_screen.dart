@@ -17,6 +17,7 @@ import '../application/tower_progress_summary.dart';
 import '../application/tower_providers.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
+import 'leaderboard_screen.dart';
 import 'tower_entry_flow.dart';
 import 'tower_floor_card.dart';
 
@@ -104,6 +105,14 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
         onBack: Navigator.of(context).canPop()
             ? () => Navigator.of(context).pop()
             : null,
+        trailing: WuxiaIconButton(
+          key: const ValueKey('tower-leaderboard-action'),
+          icon: Icons.emoji_events_outlined,
+          tooltip: UiStrings.mainMenuLeaderboard,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const LeaderboardScreen()),
+          ),
+        ),
       ),
       body: SafeArea(
         // skipLoadingOnReload:通关后 invalidate(towerProgressProvider) 重载时
