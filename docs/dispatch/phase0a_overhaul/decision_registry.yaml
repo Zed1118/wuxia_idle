@@ -114,7 +114,11 @@ decisions:
     g0_choice: B
     main_cultivation_penalty: none
     retained_penalty: capped_inner_disorder
-    batch_action: implement_and_regress_in_m5
+    batch_action: in_progress_via_p2_m5_batch1
+    owner_tasks:
+      - P2-M5-R01-INNER-DEMON-CULTIVATION-PENALTY-REMOVAL
+      - P2-M5-R02-INNER-DEMON-DEFEAT-SUMMARY-ALIGNMENT
+      - P2-M5-BATCH1-INNER-DEMON-CULTIVATION-CLOSEOUT
     current_production_drift: ten_percent_cultivation_penalty_still_requires_migration
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
