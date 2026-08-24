@@ -4049,3 +4049,36 @@ tasks:
       - do not migrate other locations or implement the unified location detail in this slice
       - do not change schema save version tuning narrative rewards economy unlocks or main
       - do not claim U06 U14 M5 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U06-JIANGHU-MAP-REPUTATION-LOCATION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-jianghu-map-reputation-location-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-jianghu-map-reputation-location
+    status: in_progress
+    base_commit: 0dc51a34544481a41b1a8212ffe182b9c0d06e96
+    completion_scope: move_reputation_from_flat_main_menu_to_sixth_production_jianghu_map_location
+    dependencies:
+      - P2-M6-U05-TOWER-LEADERBOARD-RELOCATION
+    owned_files:
+      - lib/features/main_menu/presentation/main_menu.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - test/features/jianghu_map/presentation/jianghu_map_reputation_location_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - test/features/main_menu/presentation/main_menu_test.dart
+      - test/features/main_menu/presentation/main_menu_martial_inventory_hub_test.dart
+      - test/features/jianghu/reputation_panel_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-jianghu-map-reputation-location.md
+      - docs/audit/phase2_m6_u06_jianghu_map_reputation_location_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - reputation leaves the flattened main menu and becomes the sixth jianghu map production location
+      - locked and enabled state preserve the existing first chapter final stage gate
+      - destination remains ReputationPanelScreen and reputation domain behavior is unchanged
+      - shop and the existing five locations remain unchanged
+      - do not change progressive unlock decisions schema save version tuning narrative rewards economy or main
+      - do not claim U05 U06 U14 M6 or overall Phase 2 completion
