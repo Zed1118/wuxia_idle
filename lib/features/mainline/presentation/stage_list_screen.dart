@@ -108,155 +108,142 @@ class StageListScreen extends ConsumerWidget {
                 ),
               ),
               data: (entries) {
-                return manifestAsync.when(
-                  loading: () => const Center(child: InkLoadingIndicator()),
-                  error: (e, _) => Center(
-                    child: SelectableText(
-                      UiStrings.loadFailed(e),
-                      style: const TextStyle(color: WuxiaColors.hpLow),
+                final manifest = manifestAsync.asData?.value;
+                if (entries.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      UiStrings.stageListEmpty,
+                      style: TextStyle(color: WuxiaColors.textMuted),
                     ),
-                  ),
-                  data: (manifest) {
-                    if (entries.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          UiStrings.stageListEmpty,
-                          style: TextStyle(color: WuxiaColors.textMuted),
-                        ),
-                      );
-                    }
-                    // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
-                    final chapterKey = 'ch$chapterIndex';
-                    final progress = ref
-                        .watch(mainlineProgressProvider)
-                        .maybeWhen(data: (d) => d, orElse: () => null);
-                    // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
-                    // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
-                    final selectedCycle = ref.watch(
-                      selectedChallengeCycleForCurrentSlot(chapterKey),
+                  );
+                }
+                // 周目按章(Phase 2):章 key + 该章已通最高周目决定进入周目。
+                final chapterKey = 'ch$chapterIndex';
+                final progress = ref
+                    .watch(mainlineProgressProvider)
+                    .maybeWhen(data: (d) => d, orElse: () => null);
+                // watch(非 read):玩家在 CycleSelectControl 切周目时本屏须重建,
+                // 使扫荡按钮标签/门槛、各关卡按周目状态都随选定周目刷新。
+                final selectedCycle = ref.watch(
+                  selectedChallengeCycleForCurrentSlot(chapterKey),
+                );
+                int cycleFor() {
+                  if (progress == null) return 1;
+                  return resolveTargetCycle(
+                    selectedCycle,
+                    progress,
+                    chapterKey,
+                  );
+                }
+
+                // 按选定周目算关卡显示状态:cycle 1 用原解锁链状态;cycle≥2 时全关已由
+                // 首周目解锁→该周目通过该关(clearedStageCycleKeys 含 id#cycle)显「已通关」,
+                // 否则显「可挑战」。修正旧 bug:二周目视图沿用首周目 clearedStageIds 全显
+                // 「已通关」误导玩家以为本周目已打完。
+                StageStatus statusFor(StageEntry e) {
+                  final c = cycleFor();
+                  if (c <= 1 || progress == null) return e.status;
+                  final clearedThisCycle = progress.clearedStageCycleKeys
+                      .contains('${e.def.id}#$c');
+                  return clearedThisCycle
+                      ? StageStatus.cleared
+                      : StageStatus.available;
+                }
+
+                // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
+                // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
+                final activeIds = ref
+                    .watch(activeCharacterIdsProvider)
+                    .maybeWhen(data: (ids) => ids, orElse: () => const <int>[]);
+                final activeCharacters = <Character>[
+                  for (final id in activeIds)
+                    if (ref
+                            .watch(characterByIdProvider(id))
+                            .maybeWhen(data: (c) => c, orElse: () => null)
+                        case final Character c)
+                      c,
+                ];
+                final currentRealm = activeCharacters.isEmpty
+                    ? null
+                    : activeCharacters.first.realmTier;
+                final currentGoal = NewSaveGoalGuidance.fromChapterEntries(
+                  chapterIndex: chapterIndex,
+                  entries: [
+                    for (final entry in entries)
+                      (def: entry.def, status: statusFor(entry)),
+                  ],
+                );
+
+                final sweepEligible =
+                    progress != null &&
+                    SweepEligibility.forChapter(
+                      clearedStageCycleKeys: progress.clearedStageCycleKeys,
+                      cycle: cycleFor(),
+                      chapterStageIds: [for (final e in entries) e.def.id],
                     );
-                    int cycleFor() {
-                      if (progress == null) return 1;
-                      return resolveTargetCycle(
-                        selectedCycle,
-                        progress,
-                        chapterKey,
-                      );
-                    }
-
-                    // 按选定周目算关卡显示状态:cycle 1 用原解锁链状态;cycle≥2 时全关已由
-                    // 首周目解锁→该周目通过该关(clearedStageCycleKeys 含 id#cycle)显「已通关」,
-                    // 否则显「可挑战」。修正旧 bug:二周目视图沿用首周目 clearedStageIds 全显
-                    // 「已通关」误导玩家以为本周目已打完。
-                    StageStatus statusFor(StageEntry e) {
-                      final c = cycleFor();
-                      if (c <= 1 || progress == null) return e.status;
-                      final clearedThisCycle = progress.clearedStageCycleKeys
-                          .contains('${e.def.id}#$c');
-                      return clearedThisCycle
-                          ? StageStatus.cleared
-                          : StageStatus.available;
-                    }
-
-                    // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
-                    // 任一层 async 未就绪 → null（dialog 宽容 null，仅跳过超境提示）。
-                    final activeIds = ref
-                        .watch(activeCharacterIdsProvider)
-                        .maybeWhen(
-                          data: (ids) => ids,
-                          orElse: () => const <int>[],
-                        );
-                    final activeCharacters = <Character>[
-                      for (final id in activeIds)
-                        if (ref
-                                .watch(characterByIdProvider(id))
-                                .maybeWhen(data: (c) => c, orElse: () => null)
-                            case final Character c)
-                          c,
-                    ];
-                    final currentRealm = activeCharacters.isEmpty
-                        ? null
-                        : activeCharacters.first.realmTier;
-                    final currentGoal = NewSaveGoalGuidance.fromChapterEntries(
-                      chapterIndex: chapterIndex,
-                      entries: [
-                        for (final entry in entries)
-                          (def: entry.def, status: statusFor(entry)),
-                      ],
+                final everCleared =
+                    progress != null &&
+                    MainlineProgressService.highestClearedCycleForChapter(
+                          progress,
+                          chapterKey,
+                        ) >=
+                        1;
+                final replayRewardUnlocked =
+                    progress != null &&
+                    progress.clearedStageIds.contains(
+                      kFirstChapterFinalStageId,
                     );
 
-                    final sweepEligible =
-                        progress != null &&
-                        SweepEligibility.forChapter(
-                          clearedStageCycleKeys: progress.clearedStageCycleKeys,
-                          cycle: cycleFor(),
-                          chapterStageIds: [for (final e in entries) e.def.id],
-                        );
-                    final everCleared =
-                        progress != null &&
-                        MainlineProgressService.highestClearedCycleForChapter(
-                              progress,
-                              chapterKey,
-                            ) >=
-                            1;
-                    final replayRewardUnlocked =
-                        progress != null &&
-                        progress.clearedStageIds.contains(
-                          kFirstChapterFinalStageId,
-                        );
-
-                    return LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Align(
-                          alignment: Alignment.topCenter,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1120),
-                            child: ListView(
-                              padding: EdgeInsets.fromLTRB(
-                                constraints.maxWidth >= 900 ? 24 : 16,
-                                16,
-                                constraints.maxWidth >= 900 ? 24 : 16,
-                                20,
-                              ),
-                              children: [
-                                _StageJourneyMap(
-                                  chapterIndex: chapterIndex,
-                                  entries: entries,
-                                ),
-                                _ChapterFarmSpotsPanel(entries: entries),
-                                const SizedBox(height: 12),
-                                _StageActionBand(
-                                  chapterKey: chapterKey,
-                                  chapterIndex: chapterIndex,
-                                  entries: entries,
-                                  eligible: sweepEligible,
-                                  everCleared: everCleared,
-                                  cycle: cycleFor(),
-                                ),
-                                _ChapterStageTimeline(
-                                  entries: entries,
-                                  manifest: manifest,
-                                  clearedStageIds:
-                                      progress?.clearedStageIds.toSet() ??
-                                      const <String>{},
-                                  statusFor: statusFor,
-                                  targetCycle: cycleFor(),
-                                  currentRealm: currentRealm,
-                                  activeCharacters: activeCharacters,
-                                  goalGuidance: currentGoal,
-                                  replayRewardUnlocked: replayRewardUnlocked,
-                                  onRunStage: (stage) => runStageFlow(
-                                    context: context,
-                                    ref: ref,
-                                    stage: stage,
-                                    targetCycle: cycleFor(),
-                                  ),
-                                ),
-                              ],
-                            ),
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1120),
+                        child: ListView(
+                          padding: EdgeInsets.fromLTRB(
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            16,
+                            constraints.maxWidth >= 900 ? 24 : 16,
+                            20,
                           ),
-                        );
-                      },
+                          children: [
+                            _StageJourneyMap(
+                              chapterIndex: chapterIndex,
+                              entries: entries,
+                            ),
+                            _ChapterFarmSpotsPanel(entries: entries),
+                            const SizedBox(height: 12),
+                            _StageActionBand(
+                              chapterKey: chapterKey,
+                              chapterIndex: chapterIndex,
+                              entries: entries,
+                              eligible: sweepEligible,
+                              everCleared: everCleared,
+                              cycle: cycleFor(),
+                            ),
+                            _ChapterStageTimeline(
+                              entries: entries,
+                              manifest: manifest,
+                              clearedStageIds:
+                                  progress?.clearedStageIds.toSet() ??
+                                  const <String>{},
+                              statusFor: statusFor,
+                              targetCycle: cycleFor(),
+                              currentRealm: currentRealm,
+                              activeCharacters: activeCharacters,
+                              goalGuidance: currentGoal,
+                              replayRewardUnlocked: replayRewardUnlocked,
+                              onRunStage: (stage) => runStageFlow(
+                                context: context,
+                                ref: ref,
+                                stage: stage,
+                                targetCycle: cycleFor(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );
@@ -488,7 +475,7 @@ class _ChapterStageTimeline extends StatelessWidget {
   });
 
   final List<StageEntry> entries;
-  final MainlineNarrativeManifest manifest;
+  final MainlineNarrativeManifest? manifest;
   final Set<String> clearedStageIds;
   final _StageStatusResolver statusFor;
   final int targetCycle;
@@ -599,7 +586,7 @@ class _TimelineStageStop extends StatelessWidget {
 
   final int stageIndex;
   final StageEntry entry;
-  final MainlineNarrativeManifest manifest;
+  final MainlineNarrativeManifest? manifest;
   final bool clearedEver;
   final StageStatus status;
   final bool first;
@@ -943,7 +930,7 @@ class _StageRow extends StatelessWidget {
 
   final int stageIndex;
   final StageDef def;
-  final MainlineNarrativeManifest narrativeManifest;
+  final MainlineNarrativeManifest? narrativeManifest;
   final bool narrativeClearedEver;
   final StageStatus status;
   final int targetCycle;
@@ -1181,12 +1168,14 @@ class _StageNarrativeLinks extends StatelessWidget {
   });
 
   final StageDef stage;
-  final MainlineNarrativeManifest manifest;
+  final MainlineNarrativeManifest? manifest;
   final bool stageAvailable;
   final bool stageCleared;
 
   @override
   Widget build(BuildContext context) {
+    final manifest = this.manifest;
+    if (manifest == null) return const SizedBox.shrink();
     final links = <_StageNarrativeLink>[];
 
     void addLink({
@@ -1247,35 +1236,42 @@ class _StageNarrativeLinks extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          for (final link in links)
-            Semantics(
-              button: true,
-              label: UiStrings.mainlineNarrativeReadSemantics(
-                stage.name,
-                link.label,
-              ),
-              child: ExcludeSemantics(
-                child: TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: WuxiaColors.resultHighlight,
-                    visualDensity: VisualDensity.compact,
-                    minimumSize: const Size(40, 30),
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () =>
-                      _showOptionalStageNarrative(context, stage, link),
-                  icon: const Icon(Icons.menu_book_outlined, size: 14),
-                  label: Text(
+          for (final link in links) ...[
+            Builder(
+              builder: (context) {
+                Future<void> readNarrative() =>
+                    _showOptionalStageNarrative(context, stage, link);
+
+                return Semantics(
+                  button: true,
+                  excludeSemantics: true,
+                  label: UiStrings.mainlineNarrativeReadSemantics(
+                    stage.name,
                     link.label,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                  ),
+                  onTap: readNarrative,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: WuxiaColors.resultHighlight,
+                      visualDensity: VisualDensity.compact,
+                      minimumSize: const Size(40, 30),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: readNarrative,
+                    icon: const Icon(Icons.menu_book_outlined, size: 14),
+                    label: Text(
+                      link.label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
+          ],
         ],
       ),
     );

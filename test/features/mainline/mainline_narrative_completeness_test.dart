@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
+import 'package:wuxia_idle/data/yaml_loader.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import '../../support/test_data.dart';
 
@@ -79,6 +80,60 @@ void main() {
       greaterThanOrEqualTo(190),
       reason: '至少覆盖 95 关开场/胜利(95×2) + Boss 战败/招降扩展文本',
     );
+  });
+
+  test('252 个主线 source 在 NarrativeLoader 三目录物理唯一且无孤儿', () {
+    final sourceIds = repo.stageDefs.values
+        .where((stage) => stage.stageType == StageType.mainline)
+        .expand(
+          (stage) => [
+            stage.narrativeOpeningId,
+            stage.narrativeVictoryId,
+            stage.narrativeDefeatId,
+          ].whereType<String>(),
+        )
+        .toSet();
+    final stageNarrativePattern = RegExp(
+      r'^stage_\d{2}_\d{2}_(opening|victory|defeat)$',
+    );
+    final pathsById = <String, List<String>>{};
+
+    for (final root in const [
+      'data/narratives',
+      'data/narratives/stages',
+      'data/narratives/ascension',
+    ]) {
+      final files = Directory(root)
+          .listSync(followLinks: false)
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.yaml'));
+      for (final file in files) {
+        final fileName = file.uri.pathSegments.last;
+        final stem = fileName.substring(0, fileName.length - '.yaml'.length);
+        if (!stageNarrativePattern.hasMatch(stem)) continue;
+        final yaml = parseYamlMap(file.readAsStringSync());
+        expect(
+          yaml['id'],
+          stem,
+          reason: '${file.path} file stem and YAML id must agree',
+        );
+        pathsById.putIfAbsent(stem, () => []).add(file.path);
+      }
+    }
+
+    expect(sourceIds, hasLength(252));
+    expect(
+      pathsById.keys.toSet(),
+      sourceIds,
+      reason: 'stage-pattern assets must equal the 252 source IDs (0 orphan)',
+    );
+    for (final id in sourceIds) {
+      expect(
+        pathsById[id],
+        hasLength(1),
+        reason: '$id must exist in exactly one loader directory (0 shadow)',
+      );
+    }
   });
 
   test('主线 chapter_01..21 卷首卷尾全为真内容', () async {

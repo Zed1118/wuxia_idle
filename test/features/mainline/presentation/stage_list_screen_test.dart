@@ -62,6 +62,7 @@ void main() {
     required int chapterIndex,
     required MainlineProgress progress,
     Character? activeCharacter,
+    List<NavigatorObserver> navigatorObservers = const [],
   }) async {
     await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -81,7 +82,10 @@ void main() {
             ).overrideWith((ref) async => activeCharacter),
           ],
         ],
-        child: MaterialApp(home: StageListScreen(chapterIndex: chapterIndex)),
+        child: MaterialApp(
+          navigatorObservers: navigatorObservers,
+          home: StageListScreen(chapterIndex: chapterIndex),
+        ),
       ),
     );
     await tester.pump();
@@ -338,7 +342,14 @@ void main() {
   });
 
   testWidgets('点章节卷轴「开场」→ 主动进入真实剧情阅读屏', (tester) async {
-    await pumpScreen(tester, chapterIndex: 1, progress: mkProgress());
+    final observer = _RecordingNavigatorObserver();
+    await pumpScreen(
+      tester,
+      chapterIndex: 1,
+      progress: mkProgress(),
+      navigatorObservers: [observer],
+    );
+    final baseline = observer.pushedRoutes.length;
 
     await tester.tap(find.text(UiStrings.mainlineNarrativeOpeningLabel));
     await tester.pump();
@@ -358,6 +369,11 @@ void main() {
       findsOneWidget,
       reason: 'DeepSeek narrative title 渲染（stage_01_01_opening.yaml）',
     );
+    expect(
+      observer.pushedRoutes.length,
+      baseline + 1,
+      reason: 'mouse click must not bubble into the stage-row battle action',
+    );
   });
 
   testWidgets('点行尾 info 图标 → 弹战前情报（含敌阵段）而非纯掉落', (tester) async {
@@ -373,4 +389,14 @@ void main() {
       reason: 'info 图标升级为战前情报入口，含行内没有的敌阵详列',
     );
   });
+}
+
+class _RecordingNavigatorObserver extends NavigatorObserver {
+  final pushedRoutes = <Route<dynamic>>[];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushedRoutes.add(route);
+    super.didPush(route, previousRoute);
+  }
 }
