@@ -84,6 +84,12 @@ enum VisualRoute {
     'phase0a_battle_guardian_mechanics',
     'Phase 0A guardian ward / intercept / coop visual fixture',
   ),
+  inkVfxLightDemo('ink_vfx_light_demo', 'Ink VFX light-attack vertical slice'),
+  inkVfxBreakDemo('ink_vfx_break_demo', 'Ink VFX interrupt vertical slice'),
+  inkVfxDomainDemo(
+    'ink_vfx_domain_demo',
+    'Ink VFX domain-clear vertical slice',
+  ),
   equipmentDetailScreen(
     'equipment_detail_screen',
     '装备详情页·水墨包装验收(神物天问剑 + 共鸣/强化/典故)',

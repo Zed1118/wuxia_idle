@@ -34,6 +34,24 @@ void main() {
     expect(ids.join(','), isNot(contains('3v3')));
   });
 
+  test('水墨招式三垂直样片 route id 稳定', () {
+    expect(VisualRoute.inkVfxLightDemo.id, 'ink_vfx_light_demo');
+    expect(VisualRoute.inkVfxBreakDemo.id, 'ink_vfx_break_demo');
+    expect(VisualRoute.inkVfxDomainDemo.id, 'ink_vfx_domain_demo');
+    expect(
+      [
+        VisualRoute.inkVfxLightDemo,
+        VisualRoute.inkVfxBreakDemo,
+        VisualRoute.inkVfxDomainDemo,
+      ].map((route) => parseVisualRoute(route.id)).toList(),
+      [
+        VisualRoute.inkVfxLightDemo,
+        VisualRoute.inkVfxBreakDemo,
+        VisualRoute.inkVfxDomainDemo,
+      ],
+    );
+  });
+
   test('路由语义类型覆盖生产壳、组件、图册与瞬时浮层', () {
     expect(
       VisualRoute.values.map((route) => route.kind).toSet(),

@@ -110,6 +110,7 @@ import '../../expedition/presentation/expedition_recap_screen.dart';
 import '../../../core/domain/reward_entry.dart';
 import 'hitbox_debug_overlay.dart';
 import 'visual_fidelity_region_probe.dart';
+import 'ink_vfx_vertical_slice_demo.dart';
 
 /// 出版美术验收入口 App。
 /// Task 4 直接 `runApp(VisualRouteApp(route: route))` 调用。
@@ -537,6 +538,12 @@ Future<Widget> buildVisualTarget(
         ),
         fixedDeltaSeconds: fixture.fixedDeltaSeconds,
       );
+    case VisualRoute.inkVfxLightDemo:
+      return const InkVfxVerticalSliceDemo(initialSlice: InkVfxSlice.light);
+    case VisualRoute.inkVfxBreakDemo:
+      return const InkVfxVerticalSliceDemo(initialSlice: InkVfxSlice.interrupt);
+    case VisualRoute.inkVfxDomainDemo:
+      return const InkVfxVerticalSliceDemo(initialSlice: InkVfxSlice.domain);
     case VisualRoute.equipmentDetailScreen:
       final def = GameRepository.instance.getEquipment(
         'weapon_shenwu_tian_wen_jian',

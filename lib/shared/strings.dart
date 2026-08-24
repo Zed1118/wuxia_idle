@@ -212,6 +212,21 @@ class UiStrings {
   static const String phase0aStaggered = '踉跄';
   static const String phase0aGuardianIntercepted = '护法截招';
 
+  // Debug-only 水墨招式垂直样片。生产战斗不读取这些说明文案。
+  static const String inkVfxDemoTitle = '水墨招式 · 三垂直样片';
+  static const String inkVfxLightTitle = '飞白断痕';
+  static const String inkVfxLightRank = '轻墨 · 普攻';
+  static const String inkVfxLightHint = '短、薄、快：飞白弧线穿过命中点，墨滴只在接触瞬间迸开。';
+  static const String inkVfxInterruptTitle = '一笔截势';
+  static const String inkVfxInterruptRank = '成势 · 破招';
+  static const String inkVfxInterruptHint = '蓄力墨环被纵向断笔截开，暖色只保留在破势中心。';
+  static const String inkVfxDomainTitle = '江山入墨';
+  static const String inkVfxDomainRank = '入画 · 清场';
+  static const String inkVfxDomainHint = '战场短暂退入宣纸山水，横向主笔锋贯穿敌群后迅速让回视野。';
+  static const String inkVfxReplay = '重演';
+  static const String inkVfxBreakGlyph = '破';
+  static const String inkVfxDomainGlyph = '墨';
+
   /// Esc 暂停横幅(0C):暂停时世界零推进,再按 Esc 继续。
   static const String phase0aPausedBanner = '稍歇 · Esc 继续';
   static const String phase0aPlayerHealth = '气血';
