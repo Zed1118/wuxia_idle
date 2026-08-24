@@ -23,17 +23,17 @@
 
 ## 交付验收
 
-- [ ] 生产入口在同一 `writeTxn` 内重读 canonical `Character`，并在任何
+- [x] 生产入口在同一 `writeTxn` 内重读 canonical `Character`，并在任何
   run/serial 写入前拒绝 `isAlive == false`。
-- [ ] TDD 红灯先证明现状会错误建 run；实现后同一测试转绿。
-- [ ] 死亡 + 有主心法 + 空闲回归同时断言抛错、run count=0、
+- [x] TDD 红灯先证明现状会错误建 run；实现后同一测试转绿。
+- [x] 死亡 + 有主心法 + 空闲回归同时断言抛错、run count=0、
   serial 不变，防止仅断言 throw 的 fake-green。
-- [ ] 死亡矩阵覆盖：dead-only serial=0、alive 落库后独立事务改 dead 并只
+- [x] 死亡矩阵覆盖：dead-only serial=0、alive 落库后独立事务改 dead 并只
   传 ID、预置 serial=41 后失败仍为 41、alive control 成功且 serial 精确
   +1。
-- [ ] 既有 dispatch 整文件回归保持正常派遣、founder、occupied/no-main、
+- [x] 既有 dispatch 整文件回归保持正常派遣、founder、occupied/no-main、
   single-active 行为。
-- [ ] 运行 focused dispatch、完整 `test/features/expedition`、scoped
+- [x] 运行 focused dispatch、完整 `test/features/expedition`、scoped
   analyze、format 与 `git diff --check`。
 - [ ] 同一 Pi 模型对 `base..final` 实际 diff 进行只读终审，triage 后
   P0/P1 清零。
@@ -90,18 +90,20 @@ pi --no-session --no-skills --model deepseek/deepseek-v4-flash --thinking high -
 
 ## 当前恢复点
 
-- 状态：Pi 与主控独立 Codex 设计审查完成，TDD 红灯有效，最小
-  production gate 已实现并转绿。
+- 状态：实现、TDD 与本地验证完成，待 Pi 实际 diff 终审。
 - 最后完成：`dispatch` 在权威 `writeTxn` 内读取 canonical `Character`
   后，紧跟 null 检查拒绝 `isAlive == false`；新测由 11 pass / 3 fail 转为
   focused dispatch 14/14 PASS。
-- 下一步：提交最小 production 实现，再跑完整 expedition feature、
-  scoped analyze、format/diff/path/status。
+- 下一步：提交验证证据，将 `8296db0c...HEAD` 实际三文件 diff 交给
+  同一 Pi 配置只读终审。
 - 已跑验证：Pi 只读审查 exit 0；首轮 focused 在 native-assets 编译前
   崩溃，二轮因 fresh worktree 缺少 gitignored Isar `*.g.dart` 编译失败，
   两者均不计业务红灯；`flutter pub get --offline` 与
   `dart run build_runner build` 恢复本地派生态且零 tracked diff 后，focused
-  获得上述有效 11/3 红灯。
+  获得上述有效 11/3 红灯；实现后 focused dispatch 14/14、完整
+  `test/features/expedition` 108/108；`flutter analyze --no-pub` scoped 2 items
+  0 issue；format 2 files / 0 changed；`git diff --check` 与 owned-path guard PASS；
+  验证后 worktree clean。
 - 阻塞：无。
 
 ## READY
