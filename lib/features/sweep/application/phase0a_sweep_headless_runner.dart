@@ -13,6 +13,7 @@ import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_occupancy.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../battle/application/phase0a/phase0a_headless_runner.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
@@ -38,11 +39,13 @@ final class Phase0aSweepHeadlessRunner {
     required this.isar,
     required this.numbers,
     required this.rng,
+    required this.botPolicy,
   });
 
   final Isar isar;
   final NumbersConfig numbers;
   final Random rng;
+  final Phase0aBotTacticPolicy botPolicy;
 
   static const int _uiYieldEveryTicks = 32;
 
@@ -88,7 +91,10 @@ final class Phase0aSweepHeadlessRunner {
     );
     final result = await Phase0aHeadlessRunner.runToEndAsync(
       flow: flow,
-      bot: Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+      bot: Phase0aPlayerBotAdapter(
+        playerAdapter: mapping.playerAdapter,
+        policy: botPolicy,
+      ),
       deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
       maxTicks: numbers.phase0aArena.maxSimulationTicks,
       yieldEveryTicks: _uiYieldEveryTicks,

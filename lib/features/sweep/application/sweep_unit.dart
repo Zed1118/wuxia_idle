@@ -11,6 +11,7 @@ import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
+import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'phase0a_sweep_headless_runner.dart';
 
 /// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个运行 Phase 0A
@@ -29,7 +30,10 @@ abstract class SweepUnit {
   BgmTrack get bgmTrack;
 
   /// 同核 headless 跑至终局；预算耗尽由结果显式标记。
-  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref);
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(
+    WidgetRef ref, {
+    required Phase0aBotTacticPolicy policy,
+  });
 
   /// 把 headless 终局接回既有重打结算。
   Future<SweepBattleOutcome?> settlePhase0a(
@@ -59,13 +63,15 @@ class MainlineSweepUnit implements SweepUnit {
       bgmTrackForStage(stage.stageType, isBoss: stage.isBossStage);
 
   @override
-  @override
-  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
-      Phase0aSweepHeadlessRunner(
-        isar: IsarSetup.instance,
-        numbers: ref.read(numbersConfigProvider),
-        rng: ref.read(mathRandomProvider),
-      ).runMainline(stage: stage, cycleIndex: cycle);
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(
+    WidgetRef ref, {
+    required Phase0aBotTacticPolicy policy,
+  }) => Phase0aSweepHeadlessRunner(
+    isar: IsarSetup.instance,
+    numbers: ref.read(numbersConfigProvider),
+    rng: ref.read(mathRandomProvider),
+    botPolicy: policy,
+  ).runMainline(stage: stage, cycleIndex: cycle);
 
   @override
   Future<SweepBattleOutcome?> settlePhase0a(
@@ -102,13 +108,15 @@ class TowerSweepUnit implements SweepUnit {
   BgmTrack get bgmTrack => BgmTrack.tower;
 
   @override
-  @override
-  Future<Phase0aSweepRunResult> runPhase0aHeadless(WidgetRef ref) =>
-      Phase0aSweepHeadlessRunner(
-        isar: IsarSetup.instance,
-        numbers: ref.read(numbersConfigProvider),
-        rng: ref.read(mathRandomProvider),
-      ).runTower(floor: floor, cycleIndex: cycleIndex);
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(
+    WidgetRef ref, {
+    required Phase0aBotTacticPolicy policy,
+  }) => Phase0aSweepHeadlessRunner(
+    isar: IsarSetup.instance,
+    numbers: ref.read(numbersConfigProvider),
+    rng: ref.read(mathRandomProvider),
+    botPolicy: policy,
+  ).runTower(floor: floor, cycleIndex: cycleIndex);
 
   @override
   Future<SweepBattleOutcome?> settlePhase0a(

@@ -3636,6 +3636,16 @@ class UiStrings {
   /// 爬塔扫荡入口主按钮。
   static const String sweepTowerButton = '一键扫荡 49 层';
 
+  /// 扫荡开跑前的本次战术选择。不写存档，不改变角色装配与结算规则。
+  static const String botTacticSelectionTitle = '选择自动战术';
+  static const String botTacticSelectionHint = '本次扫荡沿用同一角色装配与同核规则，只改变出手取舍。';
+  static const String botTacticSeekGap = '寻隙';
+  static const String botTacticSeekGapHint = '保留资源，等待破绽再出手。';
+  static const String botTacticAssault = '强攻';
+  static const String botTacticAssaultHint = '优先聚怪、爆发与追击。';
+  static const String botTacticSteadyGuard = '稳守';
+  static const String botTacticSteadyGuardHint = '优先打断与保守出手。';
+
   /// 未达门槛时的灰显提示（需本周目通关全部关卡）。
   static const String sweepLockedHint = '需本周目通关全部关卡后解锁';
 

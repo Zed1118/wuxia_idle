@@ -10,6 +10,15 @@ enum Phase0aBotAction { gather, clear, numericSkill }
 /// 玩家 Bot 的 typed policy。数值门槛仍由 [Phase0aPlayerInputAdapter] 和
 /// reducer 负责；policy 只决定哪些已 ready 的 command 可以被发出。
 final class Phase0aBotTacticPolicy {
+  /// 生产入口对显式选择的三种战术做唯一 typed 映射。
+  static Phase0aBotTacticPolicy forTactic(Phase0aBotTactic tactic) =>
+      switch (tactic) {
+        Phase0aBotTactic.seekGap => const Phase0aBotTacticPolicy.seekGap(),
+        Phase0aBotTactic.assault => const Phase0aBotTacticPolicy.assault(),
+        Phase0aBotTactic.steadyGuard =>
+          const Phase0aBotTacticPolicy.steadyGuard(),
+      };
+
   Phase0aBotTacticPolicy({
     required this.tactic,
     required List<Phase0aBotAction> actionPriority,

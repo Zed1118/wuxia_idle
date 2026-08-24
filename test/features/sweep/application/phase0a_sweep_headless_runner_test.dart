@@ -10,6 +10,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
 
 import '../../../support/isar_test_support.dart';
@@ -26,6 +27,15 @@ void main() {
     expect(
       source,
       contains('waveTransitionPolicy: mapping.waveTransitionPolicy,'),
+    );
+    expect(source, contains('policy: botPolicy,'));
+    expect(
+      source,
+      isNot(
+        contains(
+          'Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter)',
+        ),
+      ),
     );
   });
 
@@ -65,6 +75,7 @@ void main() {
           isar: isar,
           numbers: GameRepository.instance.numbers,
           rng: Random(20260822 + index),
+          botPolicy: const Phase0aBotTacticPolicy.assault(),
         ).runMainline(
           stage: GameRepository.instance.getStage('stage_01_0$index'),
           cycleIndex: 1,
@@ -77,6 +88,7 @@ void main() {
         isar: isar,
         numbers: GameRepository.instance.numbers,
         rng: Random(20260822),
+        botPolicy: const Phase0aBotTacticPolicy.assault(),
       ).runMainline(
         stage: GameRepository.instance.getStage('stage_01_01'),
         cycleIndex: 2,
@@ -87,6 +99,7 @@ void main() {
         isar: isar,
         numbers: GameRepository.instance.numbers,
         rng: Random(20260822),
+        botPolicy: const Phase0aBotTacticPolicy.assault(),
       ).runMainline(
         stage: GameRepository.instance.getStage('stage_21_01'),
         cycleIndex: 1,
@@ -98,6 +111,7 @@ void main() {
           isar: isar,
           numbers: GameRepository.instance.numbers,
           rng: Random(20260822 + floorIndex),
+          botPolicy: const Phase0aBotTacticPolicy.assault(),
         ).runTower(
           floor: GameRepository.instance.towerFloors.firstWhere(
             (floor) => floor.floorIndex == floorIndex,
@@ -134,6 +148,7 @@ void main() {
       isar: isar,
       numbers: GameRepository.instance.numbers,
       rng: Random(1),
+      botPolicy: const Phase0aBotTacticPolicy.assault(),
     );
 
     await expectLater(

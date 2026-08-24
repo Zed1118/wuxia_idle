@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../combat_shared/application/combat_content_providers.dart';
+import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../application/sweep_controller.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
+import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
+import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 
@@ -45,11 +48,20 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   late final SweepController _controller;
   int _index = 0;
   bool _preparing = true;
+  Phase0aBotTacticPolicy? _botPolicy;
 
   @override
   void initState() {
     super.initState();
     _controller = SweepController(totalUnits: widget.units.length);
+  }
+
+  void _selectTactic(Phase0aBotTactic tactic) {
+    if (_botPolicy != null) return;
+    setState(() {
+      _botPolicy = Phase0aBotTacticPolicy.forTactic(tactic);
+      _preparing = true;
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) => _startCurrent());
   }
 
@@ -61,7 +73,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     // 事件循环，结束后才检查 stopRequested，保持“当前关打完后停”语义。
     await Future<void>.delayed(Duration.zero);
     try {
-      final result = await unit.runPhase0aHeadless(ref);
+      final result = await unit.runPhase0aHeadless(ref, policy: _botPolicy!);
       if (!mounted) return;
       if (result.timedOut) {
         _controller.recordTimeout();
@@ -108,7 +120,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !_controller.isRunning,
+      canPop: _botPolicy == null || !_controller.isRunning,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _controller.isRunning) _controller.requestStop();
       },
@@ -117,7 +129,73 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
         body: SafeArea(
           // config 仅连播分支需要（读 fastForward/gap）；recap 分支不读，
           // 使「装配失败→战败 recap」路径在无 GameRepository 的轻量测下可达。
-          child: _controller.isRunning ? _buildRunning() : _buildRecap(),
+          child: _botPolicy == null
+              ? _buildTacticSelection()
+              : _controller.isRunning
+              ? _buildRunning()
+              : _buildRecap(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTacticSelection() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: LightPaperPanel(
+            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  UiStrings.botTacticSelectionTitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: WuxiaColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  UiStrings.botTacticSelectionHint,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: WuxiaColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 14,
+                  runSpacing: 14,
+                  children: [
+                    _TacticChoice(
+                      label: UiStrings.botTacticSeekGap,
+                      hint: UiStrings.botTacticSeekGapHint,
+                      onTap: () => _selectTactic(Phase0aBotTactic.seekGap),
+                    ),
+                    _TacticChoice(
+                      label: UiStrings.botTacticAssault,
+                      hint: UiStrings.botTacticAssaultHint,
+                      autofocus: true,
+                      onTap: () => _selectTactic(Phase0aBotTactic.assault),
+                    ),
+                    _TacticChoice(
+                      label: UiStrings.botTacticSteadyGuard,
+                      hint: UiStrings.botTacticSteadyGuardHint,
+                      onTap: () => _selectTactic(Phase0aBotTactic.steadyGuard),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -273,6 +351,51 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _TacticChoice extends StatelessWidget {
+  const _TacticChoice({
+    required this.label,
+    required this.hint,
+    required this.onTap,
+    this.autofocus = false,
+  });
+
+  final String label;
+  final String hint;
+  final VoidCallback onTap;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 210,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: PlaqueButton(
+              label: label,
+              onTap: onTap,
+              primary: autofocus,
+              autofocus: autofocus,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            hint,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: WuxiaColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }
