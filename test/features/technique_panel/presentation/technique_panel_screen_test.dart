@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 
 import '../../../support/image_test_helpers.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -10,11 +11,38 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/skill_usage_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
+import 'package:wuxia_idle/features/dispel/application/dispel_service_providers.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/technique_panel/presentation/technique_panel_screen.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../support/test_data.dart';
+
+class _FakeDispelService implements DispelService {
+  _FakeDispelService({required this.persistResult});
+
+  final DispelResult persistResult;
+  int persistCalls = 0;
+
+  @override
+  Isar get isar => throw UnsupportedError('fake service has no Isar');
+
+  @override
+  Future<bool> isCharacterOccupied(int characterId) async => false;
+
+  @override
+  Future<DispelResult> dispelAndPersist({
+    required int characterId,
+    required int expectedMainTechniqueId,
+    required int newMainTechniqueId,
+    required NumbersConfig n,
+  }) async {
+    persistCalls += 1;
+    return persistResult;
+  }
+}
 
 /// T31 心法面板 widget 测试（phase2_tasks.md §483）。
 ///
@@ -85,6 +113,9 @@ void main() {
     WidgetTester tester, {
     required Character character,
     required Map<int, Technique> techniques,
+    DispelService? dispelService,
+    VoidCallback? onCharacterLoad,
+    ValueChanged<int>? onTechniqueLoad,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -92,16 +123,20 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          if (dispelService != null)
+            dispelServiceProvider.overrideWith((ref) => dispelService),
           activeCharacterIdsProvider.overrideWith(
             (ref) async => [character.id],
           ),
-          characterByIdProvider(
-            character.id,
-          ).overrideWith((ref) async => character),
+          characterByIdProvider(character.id).overrideWith((ref) async {
+            onCharacterLoad?.call();
+            return character;
+          }),
           for (final entry in techniques.entries)
-            techniqueByIdProvider(
-              entry.key,
-            ).overrideWith((ref) async => entry.value),
+            techniqueByIdProvider(entry.key).overrideWith((ref) async {
+              onTechniqueLoad?.call(entry.key);
+              return entry.value;
+            }),
         ],
         child: MaterialApp(
           home: TechniquePanelScreen(characterId: character.id),
@@ -284,6 +319,119 @@ void main() {
     expect(main.role, TechniqueRole.main);
     expect(main.cultivationProgress, 800);
     expect(assist.role, TechniqueRole.assist);
+  });
+
+  testWidgets('二确期间才被活动占用 → 不污染 live 对象且绝不显示散功成功', (tester) async {
+    var characterLoads = 0;
+    final techniqueLoads = <int, int>{};
+    final character = mkCharacter(
+      mainTechniqueId: 100,
+      assistTechniqueIds: [101],
+      internalForce: 1000,
+    );
+    final main = mkTechnique(
+      id: 100,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      cultivationProgress: 800,
+    );
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+    final service = _FakeDispelService(
+      persistResult: const DispelResult(
+        outcome: DispelOutcome.characterOccupied,
+      ),
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {100: main, 101: assist},
+      dispelService: service,
+      onCharacterLoad: () => characterLoads += 1,
+      onTechniqueLoad: (id) =>
+          techniqueLoads.update(id, (count) => count + 1, ifAbsent: () => 1),
+    );
+    await tester.ensureVisible(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.dispelConfirm));
+    await tester.pumpAndSettle();
+
+    expect(service.persistCalls, 1);
+    expect(character.mainTechniqueId, 100);
+    expect(character.internalForce, 1000);
+    expect(character.innerBreathDisorderHoursRemaining, 0);
+    expect(main.role, TechniqueRole.main);
+    expect(main.cultivationProgress, 800);
+    expect(assist.role, TechniqueRole.assist);
+    expect(
+      characterLoads,
+      greaterThan(1),
+      reason: 'occupied 后须 reload Character',
+    );
+    expect(
+      techniqueLoads[100],
+      greaterThan(1),
+      reason: 'occupied 后须 reload 旧主修',
+    );
+    expect(
+      techniqueLoads[101],
+      greaterThan(1),
+      reason: 'occupied 后须 reload 候选',
+    );
+    expect(find.text(UiStrings.dispelOccupiedSnack), findsOneWidget);
+    expect(find.text(UiStrings.dispelSuccess), findsNothing);
+  });
+
+  testWidgets('二确后 canonical tuple 漂移 → reload 路径且不显示假成功', (tester) async {
+    var characterLoads = 0;
+    final techniqueLoads = <int, int>{};
+    final character = mkCharacter(
+      mainTechniqueId: 100,
+      assistTechniqueIds: [101],
+      internalForce: 1000,
+    );
+    final main = mkTechnique(
+      id: 100,
+      ownerId: 1,
+      role: TechniqueRole.main,
+      cultivationProgress: 800,
+    );
+    final assist = mkTechnique(id: 101, ownerId: 1, role: TechniqueRole.assist);
+    final service = _FakeDispelService(
+      persistResult: const DispelResult(
+        outcome: DispelOutcome.canonicalStateChanged,
+      ),
+    );
+
+    await pumpPanel(
+      tester,
+      character: character,
+      techniques: {100: main, 101: assist},
+      dispelService: service,
+      onCharacterLoad: () => characterLoads += 1,
+      onTechniqueLoad: (id) =>
+          techniqueLoads.update(id, (count) => count + 1, ifAbsent: () => 1),
+    );
+    await tester.ensureVisible(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.setAsMainButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.dispelConfirm));
+    await tester.pumpAndSettle();
+
+    expect(service.persistCalls, 1);
+    expect(character.mainTechniqueId, 100);
+    expect(character.innerBreathDisorderHoursRemaining, 0);
+    expect(main.role, TechniqueRole.main);
+    expect(main.cultivationProgress, 800);
+    expect(assist.role, TechniqueRole.assist);
+    expect(characterLoads, greaterThan(1), reason: 'stale 后须 reload Character');
+    expect(techniqueLoads[100], greaterThan(1), reason: 'stale 后须 reload 旧主修');
+    expect(techniqueLoads[101], greaterThan(1), reason: 'stale 后须 reload 候选');
+    expect(find.text(UiStrings.dispelOccupiedSnack), findsNothing);
+    expect(find.text(UiStrings.dispelSuccess), findsNothing);
   });
 
   // ── 用例 5：凝练领悟入口常驻态（H1 批3）─────────────────────────────────

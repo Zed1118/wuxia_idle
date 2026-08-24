@@ -11,7 +11,7 @@ import '../../activity/application/character_occupancy_service.dart';
 ///
 /// `outcome` 区分校验失败与成功：
 ///   - [DispelOutcome.success]：所有副作用已写到 [Character] / [Technique]
-///   - 其余 3 类失败：调用前后状态完全未变（fail-fast，未触发任何字段写入）
+///   - 其余失败：调用前后状态完全未变（fail-fast，未触发任何字段写入）
 class DispelResult {
   final DispelOutcome outcome;
 
@@ -46,6 +46,8 @@ class DispelResult {
 
 enum DispelOutcome {
   success,
+  characterOccupied,
+  canonicalStateChanged,
   oldMainTechIsNotMain, // mainTech.role != main
   newMainTechNotOwnedByCharacter, // newMainTech.ownerCharacterId != ch.id
   newMainTechIsNotAssist, // newMainTech.role != assist（必须从已学辅修挑）
@@ -184,18 +186,65 @@ class DispelService {
     );
   }
 
-  /// T32 #22b：将 [dispel] 的 in-place 改写（ch.internalForce / mainTechniqueId /
-  /// assistTechniqueIds、mainTech.disperse、newMainTech.role=main）落地 Isar。
-  /// writeTxn 内 putAll 3 个对象。无物料消耗（散功代价是数值代价，已写进对象内）。
-  Future<void> persistResult({
-    required Character ch,
-    required Technique mainTech,
-    required Technique newMainTech,
+  /// 原子校验、执行并持久化一次散功。
+  ///
+  /// UI 预检只负责提前提示，不能承担提交点正确性。本方法在同一个权威
+  /// [Isar.writeTxn] 内依次：
+  /// 1. 重新读取闭关/远征/断魂庄 canonical occupancy；
+  /// 2. fresh-read 角色、预期旧主修和候选新主修并校验 exact tuple；
+  /// 3. 调用 [dispel] 改写 fresh canonical 对象；
+  /// 4. 写入 Character 与两条 Technique。
+  ///
+  /// 任一占用返回 [DispelOutcome.characterOccupied]；预检后主修指针、owner、
+  /// role、辅修槽或对象存在性发生漂移时返回
+  /// [DispelOutcome.canonicalStateChanged]。两类拒绝都发生在 [dispel] 和任意
+  /// put 之前，因此数据库和调用方 live 对象均保持不变。
+  Future<DispelResult> dispelAndPersist({
+    required int characterId,
+    required int expectedMainTechniqueId,
+    required int newMainTechniqueId,
+    required NumbersConfig n,
   }) async {
-    await isar.writeTxn(() async {
+    return isar.writeTxn(() async {
+      final occupancy = await CharacterOccupancyService(isar).snapshot();
+      if (occupancy.isCharacterOccupied(characterId)) {
+        return const DispelResult(outcome: DispelOutcome.characterOccupied);
+      }
+
+      final ch = await isar.characters.get(characterId);
+      if (ch == null ||
+          expectedMainTechniqueId == newMainTechniqueId ||
+          ch.mainTechniqueId != expectedMainTechniqueId ||
+          !ch.assistTechniqueIds.contains(newMainTechniqueId)) {
+        return const DispelResult(outcome: DispelOutcome.canonicalStateChanged);
+      }
+
+      final mainTech = await isar.techniques.get(expectedMainTechniqueId);
+      final newMainTech = await isar.techniques.get(newMainTechniqueId);
+      if (mainTech == null ||
+          newMainTech == null ||
+          mainTech.ownerCharacterId != characterId ||
+          mainTech.role != TechniqueRole.main ||
+          newMainTech.ownerCharacterId != characterId ||
+          newMainTech.role != TechniqueRole.assist) {
+        return const DispelResult(outcome: DispelOutcome.canonicalStateChanged);
+      }
+
+      // Isar 反序列化的 int list 可能是 fixed-length typed list；纯函数需要
+      // remove/add 辅修槽，先复制为可变列表，仍只作用于本事务 fresh 对象。
+      ch.assistTechniqueIds = List<int>.from(ch.assistTechniqueIds);
+      final result = dispel(
+        ch: ch,
+        mainTech: mainTech,
+        newMainTech: newMainTech,
+        n: n,
+      );
+      if (!result.success) return result;
+
       await isar.characters.put(ch);
       await isar.techniques.put(mainTech);
       await isar.techniques.put(newMainTech);
+      return result;
     });
   }
 

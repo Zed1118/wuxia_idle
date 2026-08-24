@@ -37,11 +37,11 @@ import 'dispel_dialog.dart';
 /// - 已学心法按 [TechniqueTier] 高→低 分组，每组一段 section header
 /// - 每条心法 tile：流派色条 / 主修-辅修标签 / 流派 / cultivationLayer / 进度条 / 数值
 /// - 辅修 tile 尾部带「设为主修」按钮 → 弹 [DispelConfirmDialog] 二确 →
-///   `DispelService.dispel(...)` + [DispelService.persistResult] writeTxn 落地 +
+///   [DispelService.dispelAndPersist] 在 writeTxn 内校验、执行并落地 +
 ///   invalidate 4 个 provider + SnackBar 反馈
 ///
 /// **测试旁路**：widget test FakeAsync 不兼容真 Isar 异步 IO；未 init Isar
-/// 时 persistResult 跳过。真落地由 `test/services/dispel_persist_test.dart` 覆盖。
+/// 时原子散功跳过。真落地由 dispel_persist_test 覆盖。
 class TechniquePanelScreen extends ConsumerWidget {
   const TechniquePanelScreen({super.key, required this.characterId});
 
@@ -1021,24 +1021,14 @@ class _TechniqueTile extends ConsumerWidget {
     if (confirmed != true) return;
     if (!context.mounted) return;
 
-    final n = ref.read(numbersConfigProvider);
-    final result = DispelService.dispel(
-      ch: character,
-      mainTech: mainTech,
-      newMainTech: technique,
-      n: n,
+    // 测试旁路：未 init Isar 时 service 为 null，不在 UI 侧原地改 live 对象。
+    if (dispelSvc == null) return;
+    final result = await dispelSvc.dispelAndPersist(
+      characterId: character.id,
+      expectedMainTechniqueId: mainId,
+      newMainTechniqueId: technique.id,
+      n: ref.read(numbersConfigProvider),
     );
-    if (!result.success) return;
-
-    // T32 #22b（Phase 5 W6-S2 重构）：落地 Isar putAll ch/oldMain/newMain。
-    // 测试旁路：未 init Isar 时 service 为 null,短路。
-    if (dispelSvc != null) {
-      await dispelSvc.persistResult(
-        ch: character,
-        mainTech: mainTech,
-        newMainTech: technique,
-      );
-    }
 
     ref.invalidate(characterByIdProvider(character.id));
     ref.invalidate(characterAllTechniquesProvider(character.id));
@@ -1046,6 +1036,16 @@ class _TechniqueTile extends ConsumerWidget {
     ref.invalidate(techniqueByIdProvider(technique.id));
 
     if (!context.mounted) return;
+    if (result.outcome == DispelOutcome.characterOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.dispelOccupiedSnack)),
+      );
+      return;
+    }
+    if (result.outcome == DispelOutcome.canonicalStateChanged ||
+        !result.success) {
+      return;
+    }
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text(UiStrings.dispelSuccess)));
