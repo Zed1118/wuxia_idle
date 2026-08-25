@@ -5146,25 +5146,49 @@ tasks:
   - id: P2-M5-TOWER-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_root
-    branch: codex/phase2-tower-automation-admission-blocked-audit-20260825
+    branch: codex/phase2-tower-automation-admission-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: blocked
+    status: ready_reviewed
     current_authoritative_wip: false
-    base_commit: 29df638e008a532fc4ecb107428b1f52a107a507
+    base_commit: 218f74094473b7a20de705d523f10ff6307c35c0
     completion_scope: connect_post_first_clear_typed_tower_automation_admission_to_a_real_production_headless_runner_and_existing_settlement
     acceptance_baseline: 0_of_1_typed_production_tower_automation_path
     acceptance_target: 1_of_1_typed_production_tower_automation_path
-    acceptance_result: 0_of_1_blocked
-    blocker:
-      type: missing_production_runner
-      summary: tower_headless_execution_exists_only_as_test_side_direct_assembly_of_the_generic_kernel_and_has_no_player_reachable_production_runner_or_admission
-      required_precondition: establish_an_authoritative_tower_headless_runner_consumer_before_adding_typed_admission
+    code_candidate_commit: e0069f7ea1d651f4682a40e02a5d062b37c3b37d
+    reviewed_candidate_commit: e0069f7ea1d651f4682a40e02a5d062b37c3b37d
+    ready_marker: "[READY][CODEX][P2-M5-TOWER-AUTOMATION-ADMISSION] 关闭九霄塔首通后 typed automation 真实生产纵切"
+    acceptance_result: 1_of_1_typed_production_tower_automation_path
+    requalification:
+      prior_blocker: missing_production_runner
+      result: existing_player_reachable_tower_sweep_runner_found_in_sweep_application_domain
+      production_path: tower_sweep_button_to_sweep_screen_to_tower_sweep_unit_to_phase0a_sweep_headless_runner_to_existing_tower_settlement
+      remaining_gap: none_for_this_subgate
     evidence:
-      tower_feature_tests: 117
-      activity_participation_request_consumers_in_tower_lib: 0
-      phase0a_headless_runner_consumers_in_tower_lib: 0
+      focused_typed_admission_and_production_tests: 18
+      tower_and_sweep_domain_tests: 177
+      adjacent_occupancy_mainline_settlement_tests: 22
+      truth_source_guard_tests: 9
+      scoped_analyze_issues: 0
+      production_entry: tower_sweep_button_to_sweep_screen
+      application_runner: tower_sweep_unit_to_phase0a_sweep_headless_runner
+      exact_participant_settlement_guard: true
+      actual_participant_report: true
       schema_or_shared_truth_source_changes_made: 0
     owned_files:
+      - lib/features/tower/domain/tower_automation_policy.dart
+      - lib/features/tower/application/tower_automation_admission.dart
+      - lib/features/tower/presentation/tower_entry_flow.dart
+      - lib/features/sweep/application/phase0a_sweep_headless_runner.dart
+      - lib/features/sweep/application/sweep_unit.dart
+      - lib/features/sweep/application/sweep_settlement.dart
+      - test/features/tower/domain/tower_automation_policy_test.dart
+      - test/features/tower/application/tower_automation_admission_test.dart
+      - test/features/sweep/application/tower_automation_production_path_test.dart
+      - test/features/sweep/application/phase0a_sweep_headless_runner_test.dart
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
       - docs/superpowers/plans/2026-08-25-p2-m5-tower-automation-admission.md
       - docs/audit/phase2_m5_tower_automation_admission_blocked_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml

@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.93**
+> **版本:v1.94**
+>
+> v1.94 变更摘要(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):玩家可达的既有塔扫荡链 `_TowerSweepButton → SweepScreen → TowerSweepUnit → Phase0aSweepHeadlessRunner` 现只在对应塔层已首通后接收 `direct + playerBot + headless + sweep` typed request；当前掌门、exact snapshot、角色/装备/心法占用、精确装配与进度在开战前准入并在共享 settlement 前重验，扫荡回顾显示实际参与者。无效/悬空/跨代掌门、死亡、疗养、无主修、重复占用、provider/进度异常、悬空/错主装备心法、stale admission 或错人 settlement 均在写入前 fail closed。定向 `18/18`、塔+sweep `177/177`、相邻占用/主线/结算 `22/22`、truth guard `9/9`、analyze 0 issue。本纵切只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增 reducer/session/headless 内核/provider/settlement 真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.93 变更摘要(2026-08-25 二阶段 U14 六模式入口全状态路由子门):塔、轻功、守城、断魂庄、百草岭地图卡片在相关 provider loading/error 时现统一 disabled 且 `onTap == null`；心魔角色入口在进度 loading/error 时继续隐藏。结合既有隐藏、锁定、开放、进行中、完成和 zero-eligible 证据，适用的八类入口状态路由子门已关闭；异步边界由 `2/12` 补齐为 `12/12`。RED `50 PASS / 10 FAIL`，定向 `60/60`、全状态集合 `117/117`、江湖地图+角色面板+心魔相邻域 `256/256`、analyze 0 issue。本子门由 `0/1 → 1/1`，但 U14 权威门仍因塔/轻功/守城缺真实 automation runner/admission 而 `0/1 BLOCKED`，顶层 M0–M9 仍 `1/10`；不新增 provider/policy/runner，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
