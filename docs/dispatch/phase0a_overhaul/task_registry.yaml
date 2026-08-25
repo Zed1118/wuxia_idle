@@ -4550,6 +4550,8 @@ tasks:
       - lib/features/expedition/application/expedition_service.dart
       - lib/features/boss_gauntlet/application/gauntlet_providers.dart
       - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - lib/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart
+      - lib/shared/strings.dart
       - test/features/expedition/expedition_dispatch_test.dart
       - test/features/expedition/expedition_providers_test.dart
       - test/features/expedition/expedition_overview_screen_test.dart

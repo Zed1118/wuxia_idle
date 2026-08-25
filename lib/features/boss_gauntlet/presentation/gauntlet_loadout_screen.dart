@@ -19,7 +19,7 @@ import 'gauntlet_defeat_screen.dart';
 import 'gauntlet_entry_flow.dart';
 
 /// 断魂庄装载屏（§7.1 · C2.5）。断魂帖库存 / 庄中三关（三 Boss + 推荐境界）/ 择人
-/// 单人（非祖师·已修主修）/ 补给装载（≤3 份托管）/ 持帖入庄。
+/// 单人（当前掌门或门人·已修主修）/ 补给装载（≤3 份托管）/ 持帖入庄。
 ///
 /// 入庄写路径经 [GauntletService.enter] 单事务（屏内零直接 Isar 写），成功后 invalidate
 /// active/candidates/loadoutInfo provider，随即 push [runGauntletFlow] 逐关战斗流

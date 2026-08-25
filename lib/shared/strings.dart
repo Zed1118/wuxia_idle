@@ -4198,14 +4198,14 @@ class UiStrings {
   static const String expeditionBaicaoSubtitle = '整队远征，深入无尽药径';
   // 派遣态
   static const String expeditionDispatchTeamSection = '择人出征';
-  static const String expeditionDispatchTeamHint = '选 1 名门人独行；祖师坐镇门中，不亲赴远征。';
+  static const String expeditionDispatchTeamHint = '选 1 名空闲掌门或门人独行。';
   static const String expeditionDispatchPolicySection = '出发方针';
   static const String expeditionDispatchButton = '拔营出发';
   static String expeditionSelectedCountWithMax(int n, int max) =>
       '已择 $n / $max 人';
   static const String expeditionCandidateOccupiedTag = '在外';
   static const String expeditionCandidateNoMainTag = '未修主修';
-  static const String expeditionNoCandidates = '暂无可出征门人。招收弟子、研习主修之后再来。';
+  static const String expeditionNoCandidates = '暂无可出征角色。请先结束占用或研习主修。';
   static const String expeditionDispatchFailed = '出征受阻，稍后再试。';
   // active 态
   static const String expeditionActiveSection = '远征在途';
@@ -4269,11 +4269,11 @@ class UiStrings {
   static String expeditionLocationParticipantCandidates(
     int available,
     int total,
-  ) => '当前可派遣 $available / $total 名门人';
+  ) => '当前可派遣 $available / $total 名角色';
   static const String expeditionLocationEntryModeDispatch =
-      '仅支持差遣 1 名非祖师门人；无玩家亲战入口';
+      '仅支持差遣 1 名空闲掌门或门人；无玩家亲战入口';
   static const String expeditionLocationExpectedOccupancy =
-      '所选门人及其出发时冻结的装备/心法持续占用至召回或战败返程；无固定总时长';
+      '所选角色及其出发时冻结的装备/心法持续占用至召回或战败返程；无固定总时长';
   static const String expeditionLocationEnter = '前往派遣';
   static const String expeditionLocationEnterHint = '进入原远征总览选人、选方针并出发';
   static const String expeditionLocationResume = '查看在途远征';
@@ -4294,11 +4294,11 @@ class UiStrings {
   static String gauntletRecommendedRealm(String realm) => '推荐境界 · $realm 上下';
   // 择人
   static const String gauntletTeamSection = '择人入庄';
-  static const String gauntletTeamHint = '选 1 名弟子闯庄；祖师坐镇门中，不亲入庄。';
+  static const String gauntletTeamHint = '选 1 名空闲掌门或门人闯庄。';
   static String gauntletSelectedCount(int n) => '已择 $n / 1 人';
   static const String gauntletCandidateOccupiedTag = '在外';
   static const String gauntletCandidateNoMainTag = '未修主修';
-  static const String gauntletNoCandidates = '暂无可入庄弟子。招收弟子、研习主修之后再来。';
+  static const String gauntletNoCandidates = '暂无可入庄角色。请先结束占用或研习主修。';
   // 补给装载
   static const String gauntletSupplySection = '整备补给';
   static String gauntletSupplyHint(int cap) => '至多携 $cap 份，庄内两次整备时用；未用者出庄原数奉还。';
