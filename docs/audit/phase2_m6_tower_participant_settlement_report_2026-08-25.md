@@ -1,8 +1,11 @@
 # Phase 2 M6 九霄塔实际参与者结算报告审计
 
-日期：2026-08-25  
-分支：`codex/phase2-m6-tower-participant-settlement-report-20260825`  
-基线：`81feab07bd0d79ec6ee7c4f568dc7b50644810cd`  
+日期：2026-08-25
+
+分支：`codex/phase2-m6-tower-participant-settlement-report-20260825`
+
+基线：`81feab07bd0d79ec6ee7c4f568dc7b50644810cd`
+
 代码候选：`e261a14d66a6baa649dd96d55266ad3a9b8dd1f4`
 
 ## 结果合同与门变化

@@ -1,7 +1,7 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-24"
+updated_at: "2026-08-26"
 
 resource_locks:
   full_flutter_test: 1
@@ -5440,3 +5440,61 @@ tasks:
       - existing inner demon live stage flow failure settlement disorder and personal breakthrough owners remain unchanged
       - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim M5 U14 M6 or overall Phase 2 completion
+
+  - id: P2-CANDIDATE-STABILIZATION
+    milestone: governance
+    owner: codex_root
+    branch: codex/phase2-candidate-stabilization-20260826
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 4226a9c2e6b8e6be240299b51101361ce7c38e8d
+    governance_source_commit: 503d1ad3f2c1f845027b48fb9cdc940d9147b3ff
+    completion_scope: stabilize_the_unified_phase2_candidate_with_governance_cost_truth_branch_classification_and_final_regression
+    acceptance_baseline: 0_of_1_unified_candidate_stabilization_gate
+    acceptance_target: 1_of_1_unified_candidate_stabilization_gate
+    acceptance_result: 0_of_1_blocked_by_full_suite_isolation_failure
+    blocker:
+      type: full_suite_deleted_running_worktree
+      summary: default_parallel_flutter_test_removed_the_entire_candidate_worktree_then_lost_cwd_and_hung
+      required_precondition: reproduce_in_disposable_worktree_and_constrain_recursive_cleanup_before_final_full_suite
+    evidence:
+      local_branches: 187
+      candidate_ancestor_branch_tips: 100
+      divergent_historical_branch_tips: 87
+      semantically_absorbed_new_divergent_governance_branches: 1
+      local_worktrees_before_failure: 154
+      local_worktrees_after_failure: 153
+      local_worktrees_after_explicit_recovery: 154
+      progress_lines_after_compaction: 40
+      known_false_five_hour_claims_corrected: 12
+      initial_scoped_analyze_issues: 0
+      initial_scoped_analyze_wall_clock_seconds: 5.7
+      first_full_suite_reporter_before_cwd_loss: at_least_1151_pass_28_fail
+      first_full_suite_exit: 130_manual_interrupt_after_cwd_loss
+      first_full_suite_wall_clock: 3m44.14s
+      final_full_suite_result: pending_isolation_fix
+      diff_check_issues: pending
+      registry_parse: pending
+    owned_files:
+      - CLAUDE.md
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-08-26-phase2-candidate-stabilization.md
+      - docs/audit/phase2_candidate_branch_worktree_classification_2026-08-26.md
+      - docs/audit/phase2_candidate_full_suite_isolation_failure_2026-08-26.md
+      - docs/audit/phase2_m6_e2e_manual_dispatch_report_2026-08-25.md
+      - docs/audit/phase2_u01_all_mode_consistency_2026-08-25.md
+      - docs/audit/phase2_u10_factual_failure_injury_display_2026-08-25.md
+      - docs/audit/phase2_m5_tower_automation_admission_blocked_2026-08-25.md
+      - docs/audit/phase2_g1_closeout_2026-08-24.md
+      - docs/audit/phase2_m5_batch1_inner_demon_cultivation_closeout_2026-08-24.md
+      - docs/audit/phase2_m6_tower_participant_settlement_report_2026-08-25.md
+      - docs/superpowers/plans/2026-08-25-p2-u01-all-mode-consistency.md
+      - docs/superpowers/plans/2026-08-25-p2-m5-tower-automation-admission.md
+    protected_behavior:
+      - do not modify production behavior schema save version YAML tuning gameplay art or main
+      - do not promote M0_M9 U14 M5 M6 or overall Phase 2 from this governance gate
+      - do not delete move merge or reuse historical branches or worktrees
+      - keep light foot and mass battle schema choices pending explicit human authorization
+      - do not rerun destructive full suite from an uncommitted authoritative candidate worktree

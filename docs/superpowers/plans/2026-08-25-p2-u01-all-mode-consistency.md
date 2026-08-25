@@ -6,7 +6,7 @@
 - 已冻结政策：首推固定当前掌门；可见真人/前台 bot 重打可选 eligible 空闲角色；无人值守 headless/扫荡固定当前掌门；记录、成长、伤势归实际参与者；重打不重复唯一首通奖励与随行听剑。
 - 生产路径：`StageList/ContinueJianghu → typed request → exact participant snapshot → visible human/bot or headless/sweep → existing Phase0a encounter/reducer/event → existing shared settlement → actual participant report/record`。
 - fail closed：无效/悬空掌门、死亡、疗养、无主修、活动占用、悬空装备/心法、stale snapshot、错人 settlement、未通关自动化和模式字段组合不合法。
-- 成本上限：主成本读数为墙钟；90 分钟无模式验收门变化即停线重评。先 RED 合同，再逐模式转绿；不重复跑五小时全量，候选稳定后以风险匹配定向、主线/扫荡域、analyze 与一次受控生产 smoke 验收。
+- 成本上限：主成本读数为墙钟；90 分钟无模式验收门变化即停线重评。先 RED 合同，再逐模式转绿；局部施工不重复跑全量，最终候选稳定后以风险匹配定向、主线/扫荡域、analyze、一次受控生产 smoke 和一次完整套件验收。历史“五小时”口径系误读，实际约 4–7 分钟。
 - 非目标：schema/saveVersion、YAML、TUNING/candidate、奖励数量/概率、经济、解锁阈值、叙事、战斗规则、新 reducer/session/headless/provider/settlement 真相源、main 修改/合并/push。
 
 ## 验收顺序
@@ -21,4 +21,4 @@
 
 - 验收门已由 `2/5` 提升为 `5/5`：首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打、即时扫荡均连入 typed request、exact participant snapshot、既有 Phase 0A reducer/event 与共享 settlement。
 - 主线+扫荡域 `470/470 PASS`，相邻活动/设置/bot/headless/结算域 `146/146 PASS`，`flutter analyze --no-pub lib test` 0 issue。
-- 遵守 90 分钟成本停止线，未重复执行已知约 5 小时的整仓全量；本结果只关闭 U01 生产子门，M2、M6 和 Phase 2 仍 WIP。
+- 当时因把 reporter `5:00` 误读为约 5 小时而未重复执行整仓全量；该成本口径已订正，最终统一候选须补一次完整套件。本结果只关闭 U01 生产子门，M2、M6 和 Phase 2 仍 WIP。

@@ -34,7 +34,7 @@ UI 不再直接调用 legacy raw dispatch。生产 selector/runner 只消费 dur
 - 百草岭活动域：`121/121 PASS`。
 - 相邻掌门解析、当代调度、活动占用、主线参与者政策/可见重打、江湖地图身份与随机源域串行 `48/48 PASS`。
 - 应用路径：`flutter analyze --no-pub lib test`，0 issue。
-- 全量：唯一一次 `flutter test --no-pub` 在约 `5:00` 结束为 `5559 PASS / 1 FAIL`；失败是本门新增 `ExpeditionService` 在共享结算内 inline `DefaultRng()`，由全仓随机源棘轮准确拦截。修复为构造注入既有 `Rng`、生产 provider 注入既有 `rngProvider` 后，棘轮 `5/5`、定向 `19/19`、活动域 `121/121`、相邻域 `48/48`、analyze 0。受 90 分钟成本停止线约束未重跑第二次五小时全量，因此本审计明确不把全量写成全绿。
+- 全量：唯一一次 `flutter test --no-pub` 在 reporter 约 `5:00`（约 5 分钟）结束为 `5559 PASS / 1 FAIL`；失败是本门新增 `ExpeditionService` 在共享结算内 inline `DefaultRng()`，由全仓随机源棘轮准确拦截。修复为构造注入既有 `Rng`、生产 provider 注入既有 `rngProvider` 后，棘轮 `5/5`、定向 `19/19`、活动域 `121/121`、相邻域 `48/48`、analyze 0。当时因成本单位误读而未重跑第二次全量，因此本审计明确不把该次全量写成全绿；最终统一候选须补一次完整套件。
 - `git diff --check`、registry YAML 解析与 owned-file 双向白名单通过。
 
 ## fail-closed 与保留边界
@@ -45,7 +45,7 @@ UI 不再直接调用 legacy raw dispatch。生产 selector/runner 只消费 dur
 
 ## 成本、阻塞与下一门
 
-主成本读数为墙钟时间。一次全量验证约五小时，明显超过 90 分钟停止线；它发现并关闭了一个真实随机源注入 P1。修复后的风险匹配验证全部通过，但不追加第二次五小时全量；后续门默认使用固定定向验收，代码风险确实扩散时才重新评估全量。
+主成本读数为墙钟时间。该次全量 reporter 约 `5:00`，实际约五分钟；历史上误读为五小时并据此停止追加全量。它发现并关闭了一个真实随机源注入 P1；修复后的风险匹配验证全部通过，最终统一候选须补一次完整套件。后续门使用固定定向验收，跨切面最终候选再执行一次全量。
 
 当前前三 blocker：
 

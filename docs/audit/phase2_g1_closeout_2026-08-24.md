@@ -1,7 +1,9 @@
 # P2 G1 整合收口
 
-日期：2026-08-24  
-整合基线：`4ad8d3a4eaf5e772a41ad5a20867295f278d2d9c`  
+日期：2026-08-24
+
+整合基线：`4ad8d3a4eaf5e772a41ad5a20867295f278d2d9c`
+
 main / origin main：`e292d3a069fbc0e129dd74fafc1ebb3746f53557`
 
 ## 结论

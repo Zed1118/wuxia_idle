@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.94**
+> **版本:v1.95**
+>
+> v1.95 变更摘要(2026-08-26 二阶段候选稳定化):吸收结果驱动交付门禁，固定“一个权威 Gate + 受控集成态 + 真实墙钟成本”口径；纠正将测试 reporter 的 `5:00` 误读为约 5 小时的历史错误，当前整仓并发全量基线约为 4–7 分钟。M0–M9 仍只按未加权 `1/10` 报告，不因 READY、局部绿测或文档数量晋升；本次不改 schema/saveVersion、玩法、数值、YAML 或 main。
 >
 > v1.94 变更摘要(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):玩家可达的既有塔扫荡链 `_TowerSweepButton → SweepScreen → TowerSweepUnit → Phase0aSweepHeadlessRunner` 现只在对应塔层已首通后接收 `direct + playerBot + headless + sweep` typed request；当前掌门、exact snapshot、角色/装备/心法占用、精确装配与进度在开战前准入并在共享 settlement 前重验，扫荡回顾显示实际参与者。无效/悬空/跨代掌门、死亡、疗养、无主修、重复占用、provider/进度异常、悬空/错主装备心法、stale admission 或错人 settlement 均在写入前 fail closed。定向 `18/18`、塔+sweep `177/177`、相邻占用/主线/结算 `22/22`、truth guard `9/9`、analyze 0 issue。本纵切只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增 reducer/session/headless 内核/provider/settlement 真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
@@ -16,7 +18,7 @@
 >
 > v1.90 变更摘要(2026-08-25 二阶段 U10 事实性失败与新增伤势展示):mainline、tower、innerDemon、expedition、gauntlet、lightFoot、massBattle 七类内容的失败/返程事实展示由 `4/7` 补齐为 `7/7`。共享 stage flow 在玩家放弃重试并落地既有结算后，显示 exact participant 与伤势 before/after 差分；入场前既有伤势不得冒充本次后果。九霄塔败北也在共享战斗账本落库后展示实际参与者与新增轻/重伤。重试框已删除“换装备/先历练”建议型诊断，仅保留失败事实和操作选择。RED `0/4`，定向 `24/24`、主线+塔展示域 `213/213`、七内容失败/伤势域 `551/551`、analyze 0 issue。本门关闭 U10，但 U09 仍因 durable reward receipt/outbox 的 schema/共享真相源未授权而 BLOCKED，U14、M6 和 Phase 2 仍开放；不改伤势数值、FailurePolicy 权重、schema/saveVersion、YAML、TUNING、奖励、经济、解锁或 main。
 >
-> v1.89 变更摘要(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed `ActivityParticipationRequest`、exact participant snapshot、既有 Phase 0A reducer/event 与共享 settlement，战报归实际参与者。首推仍当前掌门+人控；可见重打可选 eligible 角色；无人值守重打/扫荡仍按决策使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。主线+扫荡域 `470/470`、相邻域 `146/146`、analyze 0 issue；遵守 90 分钟停止线未重跑约 5 小时整仓全量。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
+> v1.89 变更摘要(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed `ActivityParticipationRequest`、exact participant snapshot、既有 Phase 0A reducer/event 与共享 settlement，战报归实际参与者。首推仍当前掌门+人控；可见重打可选 eligible 角色；无人值守重打/扫荡仍按决策使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。主线+扫荡域 `470/470`、相邻域 `146/146`、analyze 0 issue；当时将 reporter 的 `5:00` 误读为约 5 小时而未复跑，实际墙钟约 5 分钟，此成本口径由 v1.95 纠正，最终候选必须执行一次完整套件。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.88 变更摘要(2026-08-25 二阶段 M6 百草岭真实差遣端到端生产纵切):宗门 Hub 与江湖地图继续汇入既有百草岭总览，但生产派遣现提交 typed `ActivityParticipationRequest`，严格核验当前代际 eligible 实际参与者并落 `ActivityMemberSnapshot`；真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有 `CombatResolutionService` 写实际参与者的装备/心法战斗账本，返程行记显示该人。身份、代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁仍由原 owner 处理，避免重复结算。该纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP；不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
@@ -389,7 +391,7 @@ Demo 必交付内容量（已全部达标）：
 
 **执行纪律**:
 - 每个子线程只处理一个明确切片,不要把设计、多个大功能、全量测试、合并都塞进同一线程。
-- 每完成一个可独立验证的小切片就 commit 一次,并同步更新计划文件的恢复点。
+- 在形成有意义、可验证、可恢复的检查点时 commit，并同步更新计划文件的恢复点；不按文件数或固定分钟数制造机械小提交。被迫中断且尚未达验收时，明确使用 `[WIP]` / `[PARKED]`，不得伪装为 READY。
 - 接近中断、测试失败、依赖未满足或需要人类拍板时,先更新恢复点再停。
 - **测试节奏(v1.29·别无脑全量)**:自包含改动(纯资产/文案/单 feature 表现层)只跑 targeted + `flutter analyze`,不跑全量;跨切面改动(numbers/结算/schema/saveVer/公式/全仓 sed/迁移)或批末合并才跑全量。全量默认用**并发** `flutter test --no-pub`(10 核实测 2m34s / 3587 pass 0 fail·2026-07-03),`-j1` 慢 3.8×,仅排查隔离型 flaky 时临时用。大范围视觉验收由主窗口在合并前统一安排。
 - **交接/开局不无脑全量**:session 开始若 `HEAD=origin/main` + 工作树干净 + 上会话已验绿并 push(PROGRESS/session 文档记录在案)→ 只 `flutter analyze` 即可,跳过全量(绿状态已是记录事实);仅当树脏、或要在此基础上做跨切面大改时才开局全量。
@@ -472,6 +474,20 @@ choices:
 - 合并通过后 `git branch -d`(就绪标记随分支消失,无残留;用户指定保留的分支除外)。
 
 **例外**:用户显式点名「现在评审 X 分支」→ 直接走 §8.2,不要求先打 `[READY]`。
+
+### 8.4 二阶段结果驱动交付门禁
+
+> 2026-08-26 v1.95 固化。用于二阶段、长任务、无人值守任务和高消耗候选；目标是让活动量服从可验收的生产结果。
+
+- **固定分母**：M0–M9 只按权威里程碑未加权计数报告；权重未经人类批准前只写 `x/10 Gate`，不得杜撰“成熟度百分比”。子门、局部测试、提交数、代码量、文档和孤立 READY 不进入顶层分母。
+- **一个权威 Gate**：同时只保留一个主 WIP。必要子门可在同一受控集成链内串行关闭，但子门 READY 不等于上级 Gate 关闭，也不得转去堆积无关小切片。
+- **四项验收证据**：生产路径已连接、风险匹配验证通过、进入统一候选/集成态、工作树 clean；四项缺一，不得晋升完成状态。
+- **两类债务分开报**：孤立集成债是“已实现但尚未进入当前统一候选链”的交付；main 发布债是“已关闭权威 Gate 但尚未进入 main”的交付。历史分支先分类再结论，不把数量直接等同于欠债。
+- **成本按真实墙钟**：先查日志起止与命令退出状态，不从测试 reporter 的 `mm:ss` 直接推断小时。当前并发 `flutter test --no-pub` 实测基线约 4–7 分钟；跨切面最终候选必须跑一次完整套件，局部开发期仍用 targeted + analyze。
+- **预算停线**：约 90 分钟没有权威 Gate 变化时，暂停当前路线并重评；前置调研、架构和基础设施必须写明解锁哪个 Gate 及其上限，不得冒充完成。
+- **无人值守施工**：只派一个有确定 RED、生产路径、回退边界和停止条件的主任务；不建立“计划/文档/微任务流水线”。
+- **集成纪律**：每关闭一个权威 Gate 就进入受控候选态、跑风险相匹配的回归并刷新 PROGRESS；未经用户另行授权，不合并或推送 main，不删除历史分支/worktree。
+- **仪表盘口径**：PROGRESS 顶部只保留权威 Gate、当前候选、已连接能力、验证、预算、前三阻塞和待决项；历史证据进入 audit/plan/git，不在顶栏堆叠 READY 日志。
 
 ## 9. 不要做的事（操作清单）
 

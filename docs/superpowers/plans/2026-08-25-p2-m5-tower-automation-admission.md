@@ -3,7 +3,7 @@
 - 单一目标：九霄塔已首通层以 typed `ActivityParticipationRequest` 进入真实 production headless runner，并继续复用既有参与者快照、Phase 0A 内核与塔结算 owner。
 - 固定验收门：`0/1 → 1/1`；policy、admission、真实 runner、结算与报告必须在同一生产路径成立。
 - 重资格化基线：玩家可达生产链实际位于 sweep application 域：`_TowerSweepButton → SweepScreen → TowerSweepUnit → Phase0aSweepHeadlessRunner → settleTowerSweepVictory`。旧审计只检索 `lib/features/tower`，遗漏该 owner。
-- 成本上限：单门约 90 分钟无验收门变化即停线；整仓全量已知约 5 小时，稳定子门先跑风险匹配域，待今晚跨门候选稳定后只跑一次必要全量。
+- 成本上限：单门约 90 分钟无验收门变化即停线；原“整仓全量约 5 小时”系把 reporter `5:00` 误读为小时，实际基线约 4–7 分钟。稳定子门先跑风险匹配域，跨门候选稳定后只跑一次必要全量。
 - 非目标：新 reducer/session/headless 内核/provider/settlement 真相源、schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 
 ## READY 结果

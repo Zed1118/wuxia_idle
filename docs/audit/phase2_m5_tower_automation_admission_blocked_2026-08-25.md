@@ -35,7 +35,7 @@
 - 相邻活动、lineup occupancy、主线参与者、sweep settlement、current leader：`22/22 PASS`。
 - `flutter test --no-pub test/data/truth_source_guard_test.dart`：`9/9 PASS`。
 - `flutter analyze --no-pub lib test`：0 issue；`git diff --check`：PASS。
-- 已知整仓全量约 5 小时，遵守单门 90 分钟停止线，本子门未冒称整仓全量；待今晚跨门候选稳定后只跑一次必要全量。
+- 原“整仓全量约 5 小时”系把 reporter `5:00` 误读为小时，实际基线约 4–7 分钟。本子门未冒称整仓全量；跨门候选稳定后只跑一次必要全量。
 
 ## 非变更边界
 
