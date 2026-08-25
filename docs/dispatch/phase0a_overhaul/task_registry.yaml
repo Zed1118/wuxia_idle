@@ -4647,3 +4647,51 @@ tasks:
       - tower floor progress cycle first-clear rewards replay leaderboard and victory ceremony remain unchanged
       - do not change sweep headless duty training schema save version YAML tuning rewards economy unlocks narrative combat or main
       - do not claim M6 or overall Phase 2 completion
+
+  - id: P2-M6-GAUNTLET-LIVE-SETTLEMENT-REPORT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-gauntlet-live-settlement-report-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-gauntlet-live-settlement-report
+    status: in_progress
+    base_commit: 8671f8920a9e2ef3cd7bf869a047808d0fd742b1
+    ready_marker: "[READY][CODEX][P2-M6-GAUNTLET-LIVE-SETTLEMENT-REPORT] 接通断魂庄亲战结算报告闭环"
+    completion_scope: connect_exact_gauntlet_participant_live_and_headless_stage_results_to_shared_combat_ledger_and_victory_report
+    verification:
+      focused_tests: pending
+      adjacent_activity_and_entry_tests: pending
+      double_viewport_tests: pending
+      initial_red_failures: pending
+      scoped_analyze_issues: pending
+      root_app_analyze_issues: pending
+      full_tests: pending
+      semantic_review_p0_p1_p2: pending
+    dependencies:
+      - P2-M6-TOWER-PARTICIPANT-SELECTION
+    owned_files:
+      - lib/features/boss_gauntlet/application/phase0a_gauntlet_stage_runner.dart
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - lib/features/boss_gauntlet/application/gauntlet_providers.dart
+      - lib/features/boss_gauntlet/presentation/phase0a_gauntlet_battle_host.dart
+      - lib/features/boss_gauntlet/presentation/gauntlet_reward_screen.dart
+      - lib/shared/strings.dart
+      - lib/features/debug/presentation/visual_route_host.dart
+      - test/features/boss_gauntlet/gauntlet_stage_seam_test.dart
+      - test/features/boss_gauntlet/gauntlet_providers_test.dart
+      - test/features/boss_gauntlet/gauntlet_reward_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-gauntlet-live-settlement-report.md
+      - docs/audit/phase2_m6_gauntlet_live_settlement_report_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - the exact selected character remains the only live and headless gauntlet participant
+      - every terminal stage snapshot feeds the shared CombatResolutionService before the run advances
+      - equipment battle count and technique usage persist for the actual participant only
+      - per-stage shared settlement must not duplicate gauntlet session-end injuries rewards experience or insight
+      - victory reward report names the exact participant and dangling identity fails closed
+      - preserve gauntlet entry occupancy three-stage checkpoints supplies reward choice defeat and recovery semantics
+      - do not change schema save version YAML tuning rewards economy unlocks narrative combat or main
+      - do not claim complete M6 or overall Phase 2 completion
