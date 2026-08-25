@@ -26,7 +26,7 @@
 - `dart format`、`git diff --check`：通过。
 - 最终全量：`5549/5549 PASS`，耗时 `5:01`。首轮异步句柄未返回退出摘要，未据此冒称通过；随后以可轮询会话补获明确 `exit_code=0`。
 - 默认整仓 analyze 仍会扫描独立 `tools/phase0minus_probe`，因其 worktree 缺 package 依赖报告错误；该目录不属于本应用验收范围，`lib test` 根应用 analyze 已独立通过。
-- registry、audit、CLAUDE/GDD/PROGRESS/GDD_CHANGELOG 已同步；提交前另做 owned-files 双向白名单、语义复核与 clean READY 检查。main 与 primary main 不修改。
+- registry、audit、CLAUDE/GDD/PROGRESS/GDD_CHANGELOG 已同步；owned-files 双向白名单、语义复核与 clean READY 检查均已完成。main 与 primary main 不修改。
 
 ## 未关闭范围
 
