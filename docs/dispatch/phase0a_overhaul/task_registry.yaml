@@ -5008,3 +5008,38 @@ tasks:
       - do not add reducer session headless provider or settlement truth sources
       - do not change schema save version YAML tuning reward values economy unlock narrative combat rules or main
       - do not claim complete M2 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-u09-reward-layers-blocked-audit-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: blocked
+    current_authoritative_wip: false
+    base_commit: 0275ffb53bc6fcc6e220734c9211b6225c31d32f
+    completion_scope: connect_first_clear_repeat_and_personal_growth_reward_layers_to_one_durable_shared_and_personal_claim_boundary
+    acceptance_baseline: 0_of_1_durable_cross_mode_reward_claim_boundary
+    acceptance_target: 1_of_1_durable_cross_mode_reward_claim_boundary
+    acceptance_result: 0_of_1_blocked
+    blocker:
+      type: schema_and_shared_truth_source
+      summary: existing_reward_guard_is_memory_only_and_mode_specific_progress_or_run_markers_do_not_provide_one_crash_safe_receipt_or_outbox_boundary
+      required_decision: authorize_a_versioned_durable_reward_claim_receipt_or_explicitly_extend_each_existing_mode_journal_with_one_canonical_contract
+    evidence:
+      reward_contract_tests: 33
+      production_consumers_of_reward_policy: 0
+      durable_generic_reward_claim_collections: 0
+      mainline_durable_journal_only: true
+      tower_progress_and_reward_persistence_split: true
+      schema_or_shared_truth_source_changes_made: 0
+    owned_files:
+      - docs/superpowers/plans/2026-08-25-p2-u09-reward-layers-production-wiring.md
+      - docs/audit/phase2_u09_reward_layers_blocked_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - first clear unique rewards remain save or sect shared except personal inner demon breakthrough
+      - repeat output and personal growth remain distinct layers
+      - manual automatic dispatch and sweep do not receive reward multipliers
+      - no memory only guard may be presented as durable duplicate prevention
+      - no schema save version reward values tuning economy unlock or main change without authorization
+      - do not claim U09 M6 or overall Phase 2 completion
