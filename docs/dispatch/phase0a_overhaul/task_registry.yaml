@@ -4832,8 +4832,8 @@ tasks:
     status: ready_reviewed
     current_authoritative_wip: false
     base_commit: 81feab07bd0d79ec6ee7c4f568dc7b50644810cd
-    code_candidate_commit: e261a14d
-    reviewed_candidate_commit: e261a14d
+    code_candidate_commit: e261a14d66a6baa649dd96d55266ad3a9b8dd1f4
+    reviewed_candidate_commit: e261a14d66a6baa649dd96d55266ad3a9b8dd1f4
     ready_marker: "[READY][CODEX][P2-M6-TOWER-PARTICIPANT-SETTLEMENT-REPORT] 接通九霄塔实际参与者胜利报告闭环"
     completion_scope: connect_existing_tower_shared_settlement_exact_participant_to_the_production_victory_identity_report
     verification:
