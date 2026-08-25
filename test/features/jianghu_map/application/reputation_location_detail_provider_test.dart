@@ -166,6 +166,25 @@ void main() {
     );
   });
 
+  test('门派定义不是恰六个时校验器 fail closed', () {
+    final definitions = Map.fromEntries(
+      GameRepository.instance.factionDefs.entries.take(5),
+    );
+    final tiers = validatedReputationLocationTiers(
+      GameRepository.instance.numbers.jianghu.reputationTiers,
+    );
+
+    expect(
+      () => validatedReputationLocationFactions(
+        definitions: definitions,
+        reputations: const [],
+        tiers: tiers,
+        tierOf: (_) => 'yiLiu',
+      ),
+      throwsA(isA<StateError>()),
+    );
+  });
+
   test('生产 numbers provider 与 repository 均可消费', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
