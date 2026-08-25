@@ -4770,6 +4770,8 @@ tasks:
     status: ready_reviewed
     current_authoritative_wip: false
     base_commit: 2bf020b004aeb8f6f2d0c6e28a92c4f1bcdf2847
+    code_candidate_commit: 979df7a8dd7243f48399d94a181ebf6275c80295
+    reviewed_candidate_commit: 979df7a8dd7243f48399d94a181ebf6275c80295
     completion_scope: connect_exact_mass_battle_participant_to_existing_formation_host_shared_settlement_and_identity_reports
     ready_marker: "[READY][CODEX][P2-M6-MASS-BATTLE-PARTICIPANT-SETTLEMENT-REPORT] 接通守城逐次选人结算报告闭环"
     verification:
