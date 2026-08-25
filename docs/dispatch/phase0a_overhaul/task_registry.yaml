@@ -5096,3 +5096,38 @@ tasks:
       - mainline light foot mass battle tower inner demon gauntlet and expedition keep their existing settlement owners
       - no failure policy weights reward economy unlock tuning schema save version YAML or main change
       - do not claim U10 M6 or overall Phase 2 completion before seven of seven
+
+  - id: P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-u14-special-mode-matrix-blocked-audit-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: blocked
+    current_authoritative_wip: false
+    base_commit: eb247d7f72610534f39b6ca5281b044252d2bc34
+    completion_scope: prove_six_special_mode_allowed_matrix_through_real_production_admissions_and_full_entry_route_states
+    acceptance_baseline: 0_of_1_six_mode_production_matrix_and_route_gate
+    acceptance_target: 1_of_1_six_mode_production_matrix_and_route_gate
+    acceptance_result: 0_of_1_blocked
+    blocker:
+      type: missing_production_mode_admissions
+      summary: tower_light_foot_mass_battle_and_inner_demon_have_no_activity_participation_request_production_consumers_so_an_isolated_matrix_test_would_not_prove_real_wiring
+      required_precondition: implement_bounded_real_admission_and_runner_verticals_for_the_four_missing_modes_before_the_cross_mode_u14_gate
+    evidence:
+      special_modes: 6
+      typed_request_production_consumers: 2
+      dedicated_automation_policy_consumers: 1
+      missing_typed_production_modes: 4
+      focused_existing_contract_and_route_tests: 90
+      schema_or_shared_truth_source_changes_made: 0
+    owned_files:
+      - docs/superpowers/plans/2026-08-25-p2-u14-special-mode-matrix-and-route-states.md
+      - docs/audit/phase2_u14_special_mode_matrix_blocked_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - tower light foot mass battle gauntlet expedition and inner demon keep their frozen per_mode manual automation dispatch offline and sweep rules
+      - inner demon remains self only manual only and outside the jianghu map
+      - location and participant errors fail closed without fallback identity or false CTA
+      - no isolated policy table or enum test may be presented as a production matrix
+      - no reducer session headless provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - do not claim U14 M6 or overall Phase 2 completion
