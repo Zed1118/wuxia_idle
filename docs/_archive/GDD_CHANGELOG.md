@@ -1,5 +1,7 @@
 # GDD.md 历史变更摘要归档
 
+> **v1.71 变更**(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed 参与请求、exact participant snapshot、既有 Phase 0A reducer/event 与共享结算，记录与报告归实际参与者。首推仍当前掌门人控，可见重打可选 eligible 角色，无人值守重打/扫荡仍使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.73 批按体例迁入)
+
 > **v1.70 变更**(2026-08-25 二阶段百草岭真实差遣端到端生产纵切):宗门与江湖地图的百草岭入口继续汇入同一生产总览；逐次差遣现以 typed request 锁定 eligible 实际参与者并落 durable snapshot，真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有共享战斗账本归属该人，返程行记显示实际参与者。无效身份/代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁语义不变。本纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP，不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.72 批按体例迁入)
 
 > **v1.68 变更**(2026-08-25 二阶段守城实际参与者结算报告生产纵切):守城地点详情不再固定掌门；每次挑战从当前掌门与当代存活门人逐次选择 eligible 空闲角色，二次复核后以 exact snapshot 进入既有 `Phase0aMainlineBattleHost`，保留原阵型选择与 `mapMassBattle` 语义。胜利与最终战败均严格绑定实际参与者并走共享战斗账本，报告显示该人；占用、疗养、死亡、无主修、历史/跨代、重复占用、悬空装备/心法或错人 settlement fail closed，不回退掌门。本纵切只关闭 M6 守城必要生产子门，不晋升 M6/二阶段，不改 schema、YAML、调优、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.71 批按体例迁入)

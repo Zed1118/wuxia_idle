@@ -5234,12 +5234,26 @@ tasks:
     owner: codex_root
     branch: codex/phase2-inner-demon-manual-only-admission-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 3fa0655c0b0c88500946aba55dc4f0069cd8e504
+    code_candidate_commit: c6368ce431d9596a5c218fec4b0d6599171a16b2
+    reviewed_candidate_commit: c6368ce431d9596a5c218fec4b0d6599171a16b2
+    ready_marker: "[READY][CODEX][P2-M5-INNER-DEMON-MANUAL-ONLY-ADMISSION] 心魔本人手动 typed 准入"
     completion_scope: connect_character_panel_target_to_typed_self_only_direct_human_realtime_inner_demon_admission_and_exact_live_settlement
     acceptance_baseline: 0_of_1_typed_production_inner_demon_manual_only_path
     acceptance_target: 1_of_1_typed_production_inner_demon_manual_only_path
+    acceptance_result: 1_of_1_typed_production_inner_demon_manual_only_path
+    verification:
+      initial_red_contract_files: 3
+      initial_green_tests: 5
+      inner_demon_and_character_panel_tests: 88
+      adjacent_stage_flow_host_settlement_tests: 61
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      diff_check_issues: 0
+      full_suite_rerun: not_run_due_90_minute_cost_stop
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
     owned_files:
