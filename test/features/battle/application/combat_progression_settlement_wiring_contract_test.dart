@@ -24,7 +24,9 @@ void main() {
     expect(mainline, contains('experienceReward: stage.baseExpReward'));
     expect(
       tower,
-      contains('experienceReward: isFirstClear ? floor.baseExpReward : 0'),
+      contains(
+        'experienceReward: grantsFirstClearExperience ? floor.baseExpReward : 0',
+      ),
     );
   });
 

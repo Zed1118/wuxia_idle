@@ -120,7 +120,7 @@ void main() {
       );
       expect(
         towerCall.namedArguments['experienceReward'],
-        'isFirstClear ? floor.baseExpReward : 0',
+        'grantsFirstClearExperience ? floor.baseExpReward : 0',
         reason: '爬塔仅首通发放经验',
       );
     },

@@ -154,6 +154,7 @@ void main() {
 
     test('有 ref 的 service 构造点传 rngProvider 的随机源', () async {
       const paths = [
+        'lib/features/boss_gauntlet/application/gauntlet_providers.dart',
         'lib/features/recruitment/application/recruitment_providers.dart',
         'lib/features/recruitment/presentation/recruitment_dialog.dart',
         'lib/features/lineage/presentation/disciple_join_hook.dart',

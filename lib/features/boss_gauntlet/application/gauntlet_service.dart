@@ -133,12 +133,16 @@ final class GauntletAutomationDriveResult {
 /// 读补给效果（`gauntletHpHealPct`/`gauntletQiRestorePct`）与库存重建类型，生产由
 /// `GameRepository.instance.itemDefs` 注入；[enter] 不需。
 class GauntletService {
-  const GauntletService(this._isar, {this.itemDefs = const {}});
+  GauntletService(this._isar, {this.itemDefs = const {}, Rng? rng})
+    : rng = rng ?? DefaultRng();
 
   final Isar _isar;
 
   /// 道具效果查表（defId → [ItemDef]）。
   final Map<String, ItemDef> itemDefs;
+
+  /// 共享结算随机源。生产构造点由 `rngProvider` 注入，测试可覆写。
+  final Rng rng;
 
   /// 副本凭证 defId（断魂帖）。每次入场消耗一张，消耗凭证与建会话同事务（§5.1）。
   static const String ticketDefId = 'item_duanhuntie';
@@ -752,7 +756,7 @@ class GauntletService {
       equipmentsByCharacter: {character.id: equipments},
       techniquesByCharacter: {character.id: techniques},
       // 断魂庄逐关不投放共享掉落；stageDef=null 时该随机源不被消费。
-      rng: DefaultRng(seed: run.seed * 31 + run.currentStage),
+      rng: rng,
       progressToNextMap: numbers.cultivationProgressToNext,
       techniqueDefLookup: repository.getTechnique,
       dropService: DropService(equipmentDefLookup: repository.getEquipment),

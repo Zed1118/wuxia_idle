@@ -9,6 +9,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
@@ -28,6 +29,7 @@ GauntletService? gauntletService(Ref ref) {
   return GauntletService(
     isar,
     itemDefs: GameRepository.instanceOrNull?.itemDefs ?? const {},
+    rng: ref.read(rngProvider),
   );
 }
 
