@@ -5120,7 +5120,8 @@ tasks:
       dedicated_automation_policy_consumers: 1
       inner_demon_manual_only_typed_admission_ready: true
       missing_typed_production_modes: 3
-      focused_existing_contract_and_route_tests: 92
+      focused_existing_contract_and_route_tests: 96
+      five_location_zero_eligible_routes_ready: true
       schema_or_shared_truth_source_changes_made: 0
     prerequisite_tasks:
       - P2-M5-TOWER-AUTOMATION-ADMISSION
@@ -5177,14 +5178,30 @@ tasks:
     owner: codex_root
     branch: codex/phase2-u14-zero-eligible-routes-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 948def3598e742483484fdeb7f4ae2d202cdb4ac
     completion_scope: fail_closed_zero_eligible_routes_for_all_five_jianghu_activity_locations_while_preserving_active_resume
     acceptance_baseline: 0_of_1_five_location_zero_eligible_route_gate
     acceptance_target: 1_of_1_five_location_zero_eligible_route_gate
     behavior_baseline: 3_of_5_locations
     explicit_widget_coverage_baseline: 1_of_5_locations
+    code_candidate_commit: b4c8dcbe814162cc8be997f056b1b8c99f320227
+    reviewed_candidate_commit: b4c8dcbe814162cc8be997f056b1b8c99f320227
+    ready_marker: "[READY][CODEX][P2-M6-U14-ZERO-ELIGIBLE-ROUTES] 关闭五地点零 eligible 入口路由子门"
+    acceptance_result: 1_of_1_five_location_zero_eligible_route_gate
+    behavior_result: 5_of_5_locations
+    explicit_widget_coverage_result: 5_of_5_locations
+    verification:
+      initial_red_passed: 28
+      initial_red_failed: 2
+      five_location_focused_tests: 38
+      jianghu_gauntlet_expedition_adjacent_tests: 419
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      diff_check_issues: 0
+      full_suite_rerun: not_run_due_90_minute_cost_stop
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
     owned_files:

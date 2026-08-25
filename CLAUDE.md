@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.91**
+> **版本:v1.92**
+>
+> v1.92 变更摘要(2026-08-25 二阶段 U14 五地点零 eligible 路由子门):九霄塔、轻功、守城、断魂庄和百草岭地点详情在 idle 且无 eligible 参与者时均 fail closed，不显示可用进入 CTA；断魂庄与百草岭已有 active 会话时，即使当前候选为零也仍可恢复。生产行为覆盖由 `3/5` 补齐为 `5/5`，显式 widget 回归由 `1/5` 补齐为 `5/5`；RED `28 PASS / 2 FAIL`，定向 `38/38`、江湖地图+断魂庄+百草岭相邻域 `419/419`、analyze 0 issue。本子门由 `0/1 → 1/1`，但 U14 权威门仍因塔/轻功/守城缺真实自动 runner/admission 而 `0/1 BLOCKED`，顶层 M0–M9 仍 `1/10`；不改 provider、schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.91 变更摘要(2026-08-25 二阶段 M5 心魔本人手动准入生产纵切):角色面板已把当前目标 ID 传入心魔页；首通/重打只提交 typed `direct + human + realtime` 请求，经当代、占用、生死、疗养、主修与精确装配复核后，将本人 exact snapshot 交给既有 live `runStageFlow`，共享结算与胜败报告归该人。错关/错人、跨代、无效掌门、死亡、疗养、占用、无主修、provider、悬空/错主装备心法、stale snapshot 或错人 settlement 均 fail closed；bot/headless/差遣/扫荡/离线恢复全禁。心魔+角色面板 `88/88`、相邻 stage flow/Host/结算 `61/61`、analyze 0 issue。本纵切只关闭心魔 manual-only 子门，顶层 M0–M9 仍 `1/10`，M5/U14/M6/Phase 2 仍开放；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >

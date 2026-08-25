@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.73
+> **版本**:v1.74
+> **v1.74 变更**(2026-08-25 二阶段 U14 五地点零 eligible 路由子门):九霄塔、轻功、守城、断魂庄和百草岭地点详情在 idle 且无 eligible 参与者时均 fail closed；断魂庄与百草岭 active 会话仍可在当前候选为零时恢复。生产行为与显式 widget 回归均达到 `5/5`。本子门关闭为 `1/1`，但塔、轻功、守城仍缺真实 automation runner/admission，故 U14 权威门仍 `0/1 BLOCKED`、顶层 M0–M9 仍 `1/10`；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
 > **v1.73 变更**(2026-08-25 二阶段 M5 心魔本人手动准入生产纵切):心魔仍只由角色突破阻断区进入，但现在保留当前目标身份；首通/重打只允许本人 `direct + human + realtime`，经当代、占用、生死、疗养和精确装配复核后，exact snapshot 进入既有 live stage flow，共享结算与胜败报告归该人。bot/headless/差遣/扫荡/离线恢复、替代角色、跨代、占用、无主修、悬空装配或错人 settlement 均 fail closed。这只关闭心魔 manual-only 子门，顶层 M0–M9 仍 `1/10`，M5/U14/M6/Phase 2 仍开放；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
-> **v1.72 变更**(2026-08-25 二阶段 U10 事实性失败与新增伤势展示):七类内容的失败/返程事实展示已由 `4/7` 补齐为 `7/7`。主线、轻功、守城的共享 stage flow 在放弃重试并落既有结算后，只显示 exact participant 和伤势 before/after 差分；入场前既有伤势不冒充本次后果。九霄塔败北也在共享战斗账本落库后显示实际参与者与新增轻/重伤；心魔、断魂庄、远征保留独立事实摘要。建议型“换装备/先历练”重试文案已删除，不新增配装/战术诊断或统一完成报告。本门关闭 U10，但 U09 仍 BLOCKED，U14/M6/Phase 2 仍开放；不改伤势数值、FailurePolicy 权重、schema/saveVersion、YAML、TUNING、奖励、经济、解锁或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)

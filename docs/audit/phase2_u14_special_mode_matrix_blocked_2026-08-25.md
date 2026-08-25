@@ -25,18 +25,18 @@
 
 ## 地点/入口状态审计
 
-- 九霄塔：开放、登顶重打、provider error、原门禁路由已有测试；零 eligible 的生产禁用逻辑存在，但缺独立 widget 回归。
+- 九霄塔：开放、登顶重打、provider error、原门禁路由已有测试；零 eligible 的生产禁用已有独立 widget 回归。
 - 轻功：锁定、开放、全通重打、零 eligible、provider error、掌门闭关而空闲门人可进均已有测试。
-- 守城：锁定、开放、全通重打、provider error、闭关门禁已有测试；零 eligible 的生产禁用逻辑存在，但缺独立 widget 回归。
-- 断魂庄：隐藏/开放/active/provider error/原整备路由已有测试；idle 且 `availableCandidateCount == 0` 时详情 CTA 当前没有显式禁用。
-- 百草岭：隐藏/开放/active/defeated/provider error/原总览路由已有测试；idle 且 `availableCandidateCount == 0` 时详情 CTA 当前没有显式禁用。
+- 守城：锁定、开放、全通重打、provider error、闭关门禁已有测试；零 eligible 的生产禁用已有独立 widget 回归。
+- 断魂庄：隐藏/开放/active/provider error/原整备路由已有测试；idle 且 `availableCandidateCount == 0` 时 CTA 禁用，active 会话即使当前候选为零仍可恢复。
+- 百草岭：隐藏/开放/active/defeated/provider error/原总览路由已有测试；idle 且 `availableCandidateCount == 0` 时 CTA 禁用，active 会话即使当前候选为零仍可恢复。
 - 心魔按冻结规则不在江湖地图，角色突破页是唯一入口；本人首通/重打与替代/差遣/bot/headless/扫荡/离线恢复已有 typed admission 穷举证据。
 
-这些地点侧缺口可以在相应生产 admission 建立后一次补齐，但它们本身不能解除六模式生产矩阵缺失。
+五地点 `zero-eligible` 路由子门现已达到 `5/5`，但它本身不能解除六模式生产矩阵缺失。
 
 ## 验证证据
 
-以下现有回归合计 `92/92 PASS`：
+以下现有回归合计 `96/96 PASS`：
 
 - `ActivityParticipationRequest` 值对象合同；
 - 断魂庄 automation policy 与 admission；
