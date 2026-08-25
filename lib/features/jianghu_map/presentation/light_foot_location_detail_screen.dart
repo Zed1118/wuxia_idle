@@ -8,7 +8,6 @@ import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../light_foot/presentation/light_foot_screen.dart';
 import '../../loot_preview/domain/drop_name_resolver.dart';
-import '../../seclusion/presentation/seclusion_gate.dart';
 import '../application/light_foot_location_detail_provider.dart';
 import '../domain/light_foot_location_detail.dart';
 
@@ -147,12 +146,8 @@ class _DetailContent extends ConsumerWidget {
           icon: Icons.directions_run,
           disabled: !detail.hasEligibleParticipant,
           onTap: detail.hasEligibleParticipant
-              ? () => guardBattleEntry(
-                  context: context,
-                  ref: ref,
-                  onAllowed: () => Navigator.of(context).push<void>(
-                    MaterialPageRoute(builder: (_) => const LightFootScreen()),
-                  ),
+              ? () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(builder: (_) => const LightFootScreen()),
                 )
               : null,
         ),

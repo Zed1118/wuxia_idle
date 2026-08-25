@@ -137,6 +137,36 @@ void main() {
     expect(detail.eligibleParticipantCount, 1);
   });
 
+  test('掌门闭关时详情仍保留空闲当代门人作为可用参与者', () async {
+    await seedLeader();
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final currentLeader = (await isar.characters.get(7))!;
+      currentLeader.currentRetreatSessionId = 88;
+      await isar.characters.put(currentLeader);
+
+      final disciple = leader(8, '空闲门人')
+        ..lineageRole = LineageRole.disciple
+        ..isFounder = false
+        ..masterId = 7;
+      await isar.characters.put(disciple);
+      final technique = Technique.create(
+        defId: 'tech_gangmeng_jichu',
+        ownerCharacterId: disciple.id,
+        tier: TechniqueTier.values.first,
+        school: TechniqueSchool.gangMeng,
+        role: TechniqueRole.main,
+        learnedAt: DateTime(2026, 8, 25),
+      );
+      disciple.mainTechniqueId = await isar.techniques.put(technique);
+      await isar.characters.put(disciple);
+    });
+
+    final detail = await readDetail(const ['stage_06_05']);
+    expect(detail.eligibleParticipantCount, 1);
+    expect(detail.hasEligibleParticipant, isTrue);
+  });
+
   test('掌门指针缺失或悬空时 fail closed', () async {
     await seedLeader(pointer: null);
     await expectLater(

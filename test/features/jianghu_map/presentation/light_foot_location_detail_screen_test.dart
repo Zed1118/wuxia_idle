@@ -171,7 +171,7 @@ void main() {
     expect(find.byType(LightFootScreen), findsOneWidget);
   });
 
-  testWidgets('闭关进行中时进入 CTA 被原门禁阻挡', (tester) async {
+  testWidgets('掌门闭关时地点入口仍允许空闲门人进入逐次选人', (tester) async {
     final retreat = RetreatSession()
       ..saveDataId = 0
       ..mapType = RetreatMapType.shanLin
@@ -182,8 +182,8 @@ void main() {
     await tester.tap(find.text(UiStrings.lightFootLocationEnter));
     await tester.pumpAndSettle();
 
-    expect(find.text(UiStrings.seclusionBattleLockTitle), findsOneWidget);
-    expect(find.byType(LightFootScreen), findsNothing);
+    expect(find.text(UiStrings.seclusionBattleLockTitle), findsNothing);
+    expect(find.byType(LightFootScreen), findsOneWidget);
   });
 
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
