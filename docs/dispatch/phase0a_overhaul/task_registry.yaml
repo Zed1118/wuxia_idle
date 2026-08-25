@@ -4878,10 +4878,28 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-e2e-manual-dispatch-report-closeout-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 47b2d4a706ed38c13181c0250866fc3f775e0604
+    code_candidate_commit: bcf2c0396c1f610e6e7d102d674cf59b51199f77
+    reviewed_candidate_commit: f69f61ce96db542a319253c6d7e2d77890d542a8
+    ready_marker: "[READY][CODEX][P2-M6-E2E-MANUAL-DISPATCH-REPORT] 收口百草岭真实差遣结算报告闭环"
     completion_scope: connect_real_baicao_manual_dispatch_exact_participant_snapshot_headless_shared_settlement_and_return_identity_report
+    verification:
+      focused_tests: 19
+      expedition_activity_tests: 121
+      adjacent_occupancy_participation_and_identity_tests: 48
+      initial_red_failures: 3
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      full_tests_passed: 5559
+      full_tests_failed: 1
+      full_suite_elapsed: "5:00"
+      full_suite_failure: inline_DefaultRng_in_expedition_shared_settlement
+      post_fix_rng_contract_tests: 5
+      post_fix_full_suite_rerun: not_run_due_90_minute_cost_stop
+      integration_failures_found_and_closed: 1
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-TOWER-PARTICIPANT-SETTLEMENT-REPORT
       - MAINLINE-REPLAY-PARTICIPANT-01
@@ -4897,10 +4915,13 @@ tasks:
       - lib/features/expedition/presentation/expedition_recap_screen.dart
       - lib/features/debug/presentation/visual_route_host.dart
       - test/features/expedition/expedition_manual_dispatch_contract_test.dart
+      - test/features/expedition/expedition_overview_screen_test.dart
       - test/features/expedition/expedition_providers_test.dart
+      - test/features/expedition/expedition_recall_test.dart
       - test/features/expedition/expedition_recap_screen_test.dart
-      - test/features/expedition/expedition_startup_core_test.dart
       - test/features/expedition/phase0a_expedition_combat_runner_test.dart
+      - test/features/jianghu_map/application/expedition_location_detail_provider_test.dart
+      - test/shared/utils/rng_provider_wiring_contract_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m6-e2e-manual-dispatch-report.md
       - docs/audit/phase2_m6_e2e_manual_dispatch_report_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml

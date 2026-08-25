@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.87**
+> **版本:v1.88**
+>
+> v1.88 变更摘要(2026-08-25 二阶段 M6 百草岭真实差遣端到端生产纵切):宗门 Hub 与江湖地图继续汇入既有百草岭总览，但生产派遣现提交 typed `ActivityParticipationRequest`，严格核验当前代际 eligible 实际参与者并落 `ActivityMemberSnapshot`；真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有 `CombatResolutionService` 写实际参与者的装备/心法战斗账本，返程行记显示该人。身份、代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁仍由原 owner 处理，避免重复结算。该纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP；不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.87 变更摘要(2026-08-25 二阶段 M6 九霄塔实际参与者结算报告生产纵切):九霄塔胜利报告现从既有共享 `CombatResolutionService` 结算结果读取本次 exact participant，并显示实际参与者姓名；姓名来自已经通过单一参与者、身份、占用、装备/心法与 settlement 复核的生产角色，不新增 reducer、session、provider 或身份真相源。塔逐次选人、真实 `Phase0aTowerBattleHost`、阵型/塔进度、奖励、重打、排行榜与 fail-closed 边界保持不变。本纵切只关闭 M6 塔实际参与者报告必要生产子门，不晋升 M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
