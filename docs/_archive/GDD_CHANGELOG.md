@@ -1,5 +1,7 @@
 # GDD.md 历史变更摘要归档
 
+> **v1.73 变更**(2026-08-25 二阶段 M5 心魔本人手动准入生产纵切):心魔仍只由角色突破阻断区进入，但现在保留当前目标身份；首通/重打只允许本人 `direct + human + realtime`，经当代、占用、生死、疗养和精确装配复核后，exact snapshot 进入既有 live stage flow，共享结算与胜败报告归该人。bot/headless/差遣/扫荡/离线恢复、替代角色、跨代、占用、无主修、悬空装配或错人 settlement 均 fail closed。这只关闭心魔 manual-only 子门，顶层 M0–M9 仍 `1/10`，M5/U14/M6/Phase 2 仍开放；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.75 批按体例迁入)
+
 > **v1.72 变更**(2026-08-25 二阶段 U10 事实性失败与新增伤势展示):七类内容的失败/返程事实展示已由 `4/7` 补齐为 `7/7`。主线、轻功、守城的共享 stage flow 在放弃重试并落既有结算后，只显示 exact participant 和伤势 before/after 差分；入场前既有伤势不冒充本次后果。九霄塔败北也在共享战斗账本落库后显示实际参与者与新增轻/重伤；心魔、断魂庄、远征保留独立事实摘要。建议型“换装备/先历练”重试文案已删除，不新增配装/战术诊断或统一完成报告。本门关闭 U10，但 U09 仍 BLOCKED，U14/M6/Phase 2 仍开放；不改伤势数值、FailurePolicy 权重、schema/saveVersion、YAML、TUNING、奖励、经济、解锁或战斗规则。(2026-08-25 v1.74 批按体例迁入)
 
 > **v1.71 变更**(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed 参与请求、exact participant snapshot、既有 Phase 0A reducer/event 与共享结算，记录与报告归实际参与者。首推仍当前掌门人控，可见重打可选 eligible 角色，无人值守重打/扫荡仍使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.73 批按体例迁入)

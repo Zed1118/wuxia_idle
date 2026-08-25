@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.92**
+> **版本:v1.93**
+>
+> v1.93 变更摘要(2026-08-25 二阶段 U14 六模式入口全状态路由子门):塔、轻功、守城、断魂庄、百草岭地图卡片在相关 provider loading/error 时现统一 disabled 且 `onTap == null`；心魔角色入口在进度 loading/error 时继续隐藏。结合既有隐藏、锁定、开放、进行中、完成和 zero-eligible 证据，适用的八类入口状态路由子门已关闭；异步边界由 `2/12` 补齐为 `12/12`。RED `50 PASS / 10 FAIL`，定向 `60/60`、全状态集合 `117/117`、江湖地图+角色面板+心魔相邻域 `256/256`、analyze 0 issue。本子门由 `0/1 → 1/1`，但 U14 权威门仍因塔/轻功/守城缺真实 automation runner/admission 而 `0/1 BLOCKED`，顶层 M0–M9 仍 `1/10`；不新增 provider/policy/runner，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.92 变更摘要(2026-08-25 二阶段 U14 五地点零 eligible 路由子门):九霄塔、轻功、守城、断魂庄和百草岭地点详情在 idle 且无 eligible 参与者时均 fail closed，不显示可用进入 CTA；断魂庄与百草岭已有 active 会话时，即使当前候选为零也仍可恢复。生产行为覆盖由 `3/5` 补齐为 `5/5`，显式 widget 回归由 `1/5` 补齐为 `5/5`；RED `28 PASS / 2 FAIL`，定向 `38/38`、江湖地图+断魂庄+百草岭相邻域 `419/419`、analyze 0 issue。本子门由 `0/1 → 1/1`，但 U14 权威门仍因塔/轻功/守城缺真实自动 runner/admission 而 `0/1 BLOCKED`，顶层 M0–M9 仍 `1/10`；不改 provider、schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
