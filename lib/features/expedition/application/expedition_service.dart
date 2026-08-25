@@ -38,9 +38,10 @@ import 'phase0a_expedition_combat_runner.dart';
 /// A1 冻结 `ExpeditionRun`/`ActivityMemberSnapshot`/`SaveData.expeditionRunSerial`；
 /// 本服务负责派遣入场事务（B2.1）。离线分批结算/召回战败见 B2.2/B2.3。
 class ExpeditionService {
-  const ExpeditionService(this._isar);
+  ExpeditionService(this._isar, {Rng? rng}) : rng = rng ?? DefaultRng();
 
   final Isar _isar;
+  final Rng rng;
 
   static const String contentId = 'baicao_expedition';
 
@@ -349,7 +350,7 @@ class ExpeditionService {
       participatingCharacters: [character],
       equipmentsByCharacter: {character.id: equipments},
       techniquesByCharacter: {character.id: techniques},
-      rng: DefaultRng(),
+      rng: rng,
       progressToNextMap: numbers.cultivationProgressToNext,
       techniqueDefLookup: repository.getTechnique,
       dropService: DropService(equipmentDefLookup: repository.getEquipment),
@@ -362,10 +363,13 @@ class ExpeditionService {
     if (techniques.isNotEmpty) await _isar.techniques.putAll(techniques);
   }
 
-  static bool _sameIdSet(List<int> left, List<int> right) =>
-      left.length == right.length &&
-      left.toSet().containsAll(right) &&
-      right.toSet().containsAll(left);
+  static bool _sameIdSet(List<int> left, List<int> right) {
+    if (left.length != right.length) return false;
+    for (var i = 0; i < left.length; i++) {
+      if (left[i] != right[i]) return false;
+    }
+    return true;
+  }
 
   /// 单批离线结算允许的最大节点数（禁数十节点一事务，§4.4）。
   // TODO(batch3-probe): 探针定案后可下沉 expeditions.yaml。

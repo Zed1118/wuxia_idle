@@ -94,10 +94,13 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
     }
   }
 
-  static bool _sameIds(List<int> current, List<int> expected) =>
-      current.length == expected.length &&
-      current.toSet().containsAll(expected) &&
-      expected.toSet().containsAll(current);
+  static bool _sameIds(List<int> current, List<int> expected) {
+    if (current.length != expected.length) return false;
+    for (var i = 0; i < current.length; i++) {
+      if (current[i] != expected[i]) return false;
+    }
+    return true;
+  }
 
   @override
   Future<Map<int, ExpeditionMemberCaps>> memberCaps(List<int> ids) async {

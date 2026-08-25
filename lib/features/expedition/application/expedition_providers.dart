@@ -7,6 +7,7 @@ import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
 import '../../../data/defs/expedition_config.dart';
+import '../../../shared/utils/rng_provider.dart';
 import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_service.dart';
@@ -21,7 +22,9 @@ part 'expedition_providers.g.dart';
 @riverpod
 ExpeditionService? expeditionService(Ref ref) {
   final isar = ref.watch(isarProvider);
-  return isar == null ? null : ExpeditionService(isar);
+  return isar == null
+      ? null
+      : ExpeditionService(isar, rng: ref.read(rngProvider));
 }
 
 /// 当前 active 远征（总览/派遣中屏 watch；无远征 → null）。派遣/召回/结算写路径

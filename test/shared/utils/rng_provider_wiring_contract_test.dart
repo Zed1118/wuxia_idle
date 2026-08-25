@@ -136,6 +136,7 @@ void main() {
 
     test('service 层随机源走构造注入,不在方法体内 new', () async {
       const paths = [
+        'lib/features/expedition/application/expedition_service.dart',
         'lib/features/recruitment/application/recruitment_service.dart',
         'lib/features/lineage/application/disciple_join_service.dart',
         'lib/features/equipment/application/milestone_equipment_grant_service.dart',
@@ -154,6 +155,7 @@ void main() {
 
     test('有 ref 的 service 构造点传 rngProvider 的随机源', () async {
       const paths = [
+        'lib/features/expedition/application/expedition_providers.dart',
         'lib/features/boss_gauntlet/application/gauntlet_providers.dart',
         'lib/features/recruitment/application/recruitment_providers.dart',
         'lib/features/recruitment/presentation/recruitment_dialog.dart',
