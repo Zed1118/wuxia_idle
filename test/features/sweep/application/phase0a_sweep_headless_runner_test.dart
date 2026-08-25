@@ -15,6 +15,8 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tacti
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -67,6 +69,15 @@ void main() {
               .map((stage) => stage.id)
               .toList(growable: false)
           ..clearedAt = [],
+      );
+      await IsarSetup.instance.towerProgress.put(
+        TowerProgress()
+          ..saveDataId = save.slotId
+          ..highestClearedFloor = GameRepository.instance.towerMaxFloor
+          ..highestClearedAt = DateTime(2026, 8, 25)
+          ..createdAt = DateTime(2026, 8, 25)
+          ..currentCycleIndex = 1
+          ..maxClearedCycle = 1,
       );
     });
   });
@@ -130,6 +141,10 @@ void main() {
             (floor) => floor.floorIndex == floorIndex,
           ),
           cycleIndex: 1,
+          request: _towerRequest(
+            floorIndex: floorIndex,
+            characterId: founderId,
+          ),
         ),
       );
     }
@@ -140,6 +155,18 @@ void main() {
       expect(result.settlement!.participantCharacterIds.where((id) => id > 0), {
         founderId,
       });
+    }
+    for (final result in results.skip(results.length - 4)) {
+      expect(result.expectedParticipantId, founderId);
+      expect(result.participantName, isNotEmpty);
+      expect(result.towerAutomationAdmission, isNotNull);
+      expect(
+        result.towerAutomationAdmission!.request,
+        _towerRequest(
+          floorIndex: result.towerAutomationAdmission!.floorIndex,
+          characterId: founderId,
+        ),
+      );
     }
   });
 
@@ -226,3 +253,20 @@ void main() {
     }
   });
 }
+
+ActivityParticipationRequest _towerRequest({
+  required int floorIndex,
+  required int characterId,
+}) => ActivityParticipationRequest(
+  contentId: towerAutomationContentId(floorIndex),
+  contentKind: ActivityContentKind.tower,
+  characterId: characterId,
+  loadoutPlanId: towerAutomationLoadoutPlanId(
+    floorIndex: floorIndex,
+    characterId: characterId,
+  ),
+  participation: ActivityParticipationMode.direct,
+  controller: ActivityController.playerBot,
+  clock: ActivityClock.headless,
+  entryKind: ActivityEntryKind.sweep,
+);

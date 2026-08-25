@@ -22,6 +22,7 @@ import '../domain/sweep_recap.dart';
 import 'sweep_readiness_providers.dart';
 import 'sweep_readiness_service.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../tower/application/tower_automation_admission.dart';
 
 /// 扫荡结算（复用既有 victory 数据路径，跳过全部 UI 仪式/剧情/弹窗）。
 ///
@@ -175,7 +176,26 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
   required WidgetRef ref,
   required TowerFloorDef floor,
   CombatSettlementSnapshot? settlementSnapshot,
+  TowerAutomationAdmission? admission,
 }) async {
+  if (settlementSnapshot != null) {
+    if (admission == null) {
+      throw StateError('Tower headless settlement requires an admission');
+    }
+    await TowerAutomationAdmissionService(
+      IsarSetup.instance,
+    ).revalidate(admission);
+    final participantIds = settlementSnapshot.participantCharacterIds
+        .where((id) => id > 0)
+        .toSet();
+    if (!settlementSnapshot.isFinished ||
+        participantIds.length != 1 ||
+        !participantIds.contains(admission.participantCharacterId)) {
+      throw StateError(
+        'Tower headless settlement participant does not match the request',
+      );
+    }
+  }
   // recordClear 幂等：重打 floor ≤ highestClearedFloor → isFirstClear=false。
   final svc = TowerProgressService(isar: IsarSetup.instance);
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
@@ -191,6 +211,7 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
     ref: ref,
     floor: floor,
     grantsFirstClearExperience: clearResult.isFirstClear,
+    expectedParticipantId: admission?.participantCharacterId,
     settlementSnapshot: settlementSnapshot,
   );
   // 体检批3 P1-6:塔扫荡同样累 battleCount / skillUsage,失效角色 family + 门控。

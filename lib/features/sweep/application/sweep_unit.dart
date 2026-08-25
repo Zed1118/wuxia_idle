@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/domain/character.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/audio/audio_assets.dart';
@@ -8,11 +10,13 @@ import '../../../data/defs/tower_floor_def.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_settlement.dart';
 import '../../../shared/battle_shared/battle_result.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../mainline/application/phase0a_mainline_encounter_host.dart';
+import '../../tower/domain/tower_automation_policy.dart';
 import 'phase0a_sweep_headless_runner.dart';
 
 /// 扫荡一个单位（主线一关 / 爬塔一层）。SweepScreen 逐个运行 Phase 0A
@@ -184,12 +188,33 @@ class TowerSweepUnit implements SweepUnit {
   Future<Phase0aSweepRunResult> runPhase0aHeadless(
     WidgetRef ref, {
     required Phase0aBotTacticPolicy policy,
-  }) => Phase0aSweepHeadlessRunner(
-    isar: IsarSetup.instance,
-    numbers: ref.read(numbersConfigProvider),
-    rng: ref.read(mathRandomProvider),
-    botPolicy: policy,
-  ).runTower(floor: floor, cycleIndex: cycleIndex);
+  }) async {
+    final isar = IsarSetup.instance;
+    final save = await isar.saveDatas.get(0);
+    final participantId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (id) async => await isar.characters.get(id) != null,
+    );
+    final request = ActivityParticipationRequest(
+      contentId: towerAutomationContentId(floor.floorIndex),
+      contentKind: ActivityContentKind.tower,
+      characterId: participantId,
+      loadoutPlanId: towerAutomationLoadoutPlanId(
+        floorIndex: floor.floorIndex,
+        characterId: participantId,
+      ),
+      participation: ActivityParticipationMode.direct,
+      controller: ActivityController.playerBot,
+      clock: ActivityClock.headless,
+      entryKind: ActivityEntryKind.sweep,
+    );
+    return Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: ref.read(numbersConfigProvider),
+      rng: ref.read(mathRandomProvider),
+      botPolicy: policy,
+    ).runTower(floor: floor, cycleIndex: cycleIndex, request: request);
+  }
 
   @override
   Future<SweepBattleOutcome?> settlePhase0a(
@@ -203,6 +228,7 @@ class TowerSweepUnit implements SweepUnit {
       ref: ref,
       floor: floor,
       settlementSnapshot: settlement,
+      admission: result.towerAutomationAdmission,
     );
   }
 }

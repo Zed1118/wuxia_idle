@@ -10,8 +10,6 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
-import '../../activity/application/character_occupancy_service.dart';
-import '../../activity/domain/activity_occupancy.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../battle/application/phase0a/phase0a_headless_runner.dart';
@@ -19,13 +17,13 @@ import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart'
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
-import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../mainline/application/mainline_participant_snapshot_service.dart';
 import '../../mainline/domain/mainline_participation_policy.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
+import '../../tower/application/tower_automation_admission.dart';
 
 /// 扫荡消费面的 Phase 0A 同核 headless runner。
 ///
@@ -37,11 +35,13 @@ final class Phase0aSweepRunResult {
     this.settlement, {
     this.expectedParticipantId,
     this.participantName,
+    this.towerAutomationAdmission,
   }) : timedOut = false;
 
   const Phase0aSweepRunResult.timeout({
     this.expectedParticipantId,
     this.participantName,
+    this.towerAutomationAdmission,
   }) : settlement = null,
        timedOut = true;
 
@@ -49,6 +49,7 @@ final class Phase0aSweepRunResult {
   final bool timedOut;
   final int? expectedParticipantId;
   final String? participantName;
+  final TowerAutomationAdmission? towerAutomationAdmission;
 }
 
 final class Phase0aSweepHeadlessRunner {
@@ -151,21 +152,32 @@ final class Phase0aSweepHeadlessRunner {
   Future<Phase0aSweepRunResult> runTower({
     required TowerFloorDef floor,
     required int cycleIndex,
+    required ActivityParticipationRequest request,
   }) async {
-    final player = await _loadPlayerSnapshot();
+    final admission = await TowerAutomationAdmissionService(isar).admit(
+      request: request,
+      floorIndex: floor.floorIndex,
+      cycleIndex: cycleIndex,
+    );
     final mapping = Phase0aStageContentMapper.mapTower(
       floor: floor,
-      playerSnapshot: player,
+      playerSnapshot: admission.snapshot,
       numbers: numbers,
       cycleIndex: cycleIndex,
     );
-    return _run(mapping);
+    return _run(
+      mapping,
+      expectedParticipantId: admission.participantCharacterId,
+      participantName: admission.snapshot.name,
+      towerAutomationAdmission: admission,
+    );
   }
 
   Future<Phase0aSweepRunResult> _run(
     Phase0aStageMapping mapping, {
     int? expectedParticipantId,
     String? participantName,
+    TowerAutomationAdmission? towerAutomationAdmission,
   }) async {
     final flow = Phase0aProductionFlowAssembler.assemble(
       initialState: mapping.initialState,
@@ -192,6 +204,7 @@ final class Phase0aSweepHeadlessRunner {
       return Phase0aSweepRunResult.timeout(
         expectedParticipantId: expectedParticipantId,
         participantName: participantName,
+        towerAutomationAdmission: towerAutomationAdmission,
       );
     }
     return Phase0aSweepRunResult.terminal(
@@ -203,6 +216,7 @@ final class Phase0aSweepHeadlessRunner {
       ),
       expectedParticipantId: expectedParticipantId,
       participantName: participantName,
+      towerAutomationAdmission: towerAutomationAdmission,
     );
   }
 
@@ -247,27 +261,5 @@ final class Phase0aSweepHeadlessRunner {
     } on MainlineParticipationRefusedError catch (error) {
       throw StateError('Phase0a mainline headless refused: ${error.message}');
     }
-  }
-
-  Future<CombatantSnapshot> _loadPlayerSnapshot() async {
-    final save = await isar.saveDatas.get(0);
-    final playerId = await CurrentLeaderResolver.resolve(
-      save: save,
-      characterExists: (characterId) async =>
-          await isar.characters.get(characterId) != null,
-    );
-    final occupancy = await CharacterOccupancyService(isar).snapshot();
-    final activity = occupancy.activityOf(playerId);
-    if (activity == ActivityKind.expedition ||
-        activity == ActivityKind.bossGauntlet) {
-      throw StateError('Phase0a sweep founder is dispatched: $activity');
-    }
-    final roster = await PlayerCombatantSnapshotAssembler(
-      isar: isar,
-    ).loadExactRoster([playerId]);
-    if (roster.isEmpty) {
-      throw StateError('Phase0a 扫荡: 玩家队伍装配为空');
-    }
-    return roster.first;
   }
 }
