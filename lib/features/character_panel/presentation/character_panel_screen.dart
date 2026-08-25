@@ -1030,7 +1030,7 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
             ? null
             : () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const InnerDemonScreen(),
+                  builder: (_) => InnerDemonScreen(characterId: character.id),
                 ),
               ),
       ),

@@ -1126,8 +1126,8 @@ void main() {
     expect(find.text(UiStrings.innerDemonBreakthroughCta), findsOneWidget);
   });
 
-  testWidgets('③ 心魔突破 CTA 仍进入既有 InnerDemonScreen', (tester) async {
-    final xueTu = mkCharacter(realmTier: RealmTier.xueTu)
+  testWidgets('③ 心魔突破 CTA 把当前目标传入 InnerDemonScreen', (tester) async {
+    final xueTu = mkCharacter(id: 7, realmTier: RealmTier.xueTu)
       ..realmLayer = RealmLayer.yuanShu
       ..experience = 999999
       ..experienceToNextLayer = 100;
@@ -1148,6 +1148,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
 
     expect(find.byType(InnerDemonScreen), findsOneWidget);
+    expect(
+      tester
+          .widget<InnerDemonScreen>(find.byType(InnerDemonScreen))
+          .characterId,
+      7,
+    );
   });
 
   testWidgets('② 主修 hero:显主修名(真 def name)+ 宣纸底 + 进度条', (tester) async {

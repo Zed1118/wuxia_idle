@@ -126,11 +126,12 @@ Future<void> runStageFlow({
 }) async {
   if (directParticipantSnapshot != null) {
     if (stage.stageType != StageType.lightFoot &&
-        stage.stageType != StageType.massBattle) {
+        stage.stageType != StageType.massBattle &&
+        stage.stageType != StageType.innerDemon) {
       throw ArgumentError.value(
         directParticipantSnapshot.characterId,
         'directParticipantSnapshot',
-        'is supported only for direct light foot or mass battle challenge',
+        'is supported only for a direct special-mode challenge',
       );
     }
     if (visibleReplayParticipantId != null || continueFirstClearRun) {
@@ -755,10 +756,12 @@ Future<void> _runSingleStageFlow({
   }
   final automaticallyPresentsNarratives =
       shouldAutomaticallyPresentStageNarratives(stage);
-  // 轻功与守城均使用逐次选择的 exact participant；主线连续 run 仍走原掌门锁定。
+  // 特殊亲战均使用逐次准入的 exact participant；主线连续 run
+  // 仍走原掌门锁定。
   final usesExactParticipant =
       stage.stageType == StageType.lightFoot ||
-      stage.stageType == StageType.massBattle;
+      stage.stageType == StageType.massBattle ||
+      stage.stageType == StageType.innerDemon;
   final expectedParticipantId = playerSnapshot?.characterId;
   final participantName = playerSnapshot?.name;
 

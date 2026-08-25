@@ -5248,9 +5248,11 @@ tasks:
       - lib/features/inner_demon/presentation/inner_demon_screen.dart
       - lib/features/character_panel/presentation/character_panel_screen.dart
       - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/shared/strings.dart
       - test/features/inner_demon/domain/inner_demon_participation_policy_test.dart
       - test/features/inner_demon/application/inner_demon_participant_service_test.dart
       - test/features/inner_demon/presentation/inner_demon_screen_test.dart
+      - test/features/character_panel/presentation/character_panel_screen_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m5-inner-demon-manual-only-admission.md
       - docs/audit/phase2_m5_inner_demon_manual_only_admission_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml

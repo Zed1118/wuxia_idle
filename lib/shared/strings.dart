@@ -1714,6 +1714,7 @@ class UiStrings {
   static const String massBattleParticipantNoMainTechnique = '未修主修';
   static const String massBattleParticipantNoneEligible = '当前没有可参加守城试炼的角色。';
   static const String massBattleParticipantUnavailable = '守城者状态暂不可用，请稍后重试。';
+  static const String innerDemonParticipantUnavailable = '当前人物状态暂不可挑战心魔，请稍后重试。';
   static const String gauntletLocationDetailTitle = '断魂庄 · 地点详情';
   static const String gauntletLocationUnavailable = '庄中情报暂不可核实，暂不能进入';
   static const String gauntletLocationProgressLabel = '当前进度';

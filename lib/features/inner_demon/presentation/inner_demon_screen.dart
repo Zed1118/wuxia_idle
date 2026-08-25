@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../combat_shared/application/selected_cycle_provider.dart';
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
+import '../application/inner_demon_participant_service.dart';
+import '../domain/inner_demon_participation_policy.dart';
 import '../../../data/defs/inner_demon_def.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
@@ -24,8 +29,34 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///   - stage_01_03 是 _01 的 prev(首个成长节点 victory → 自动解 _01)
 ///   - _01 victory → _02 解;_02 victory → _03 解;... 链式
 ///   - _07 victory → A1 飞升(P2.3 留接口,本 widget 不涉)
+typedef InnerDemonStageRunner =
+    Future<void> Function({
+      required BuildContext context,
+      required WidgetRef ref,
+      required StageDef stage,
+      required int targetCycle,
+      required CombatantSnapshot participantSnapshot,
+    });
+
+typedef InnerDemonParticipantSnapshotResolver =
+    Future<CombatantSnapshot> Function({
+      required ActivityParticipationRequest request,
+      required String expectedStageId,
+      required int expectedCharacterId,
+    });
+
 class InnerDemonScreen extends ConsumerWidget {
-  const InnerDemonScreen({super.key});
+  const InnerDemonScreen({
+    required this.characterId,
+    super.key,
+    this.stageRunnerForTest,
+    this.participantSnapshotResolverForTest,
+  });
+
+  final int characterId;
+  final InnerDemonStageRunner? stageRunnerForTest;
+  final InnerDemonParticipantSnapshotResolver?
+  participantSnapshotResolverForTest;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,11 +128,19 @@ class InnerDemonScreen extends ConsumerWidget {
                           status: status,
                           onTap: status == _InnerDemonStageStatus.locked
                               ? null
-                              : () => runStageFlow(
+                              : () => runInnerDemonChallenge(
                                   context: context,
                                   ref: ref,
                                   stage: s,
                                   targetCycle: cycleFor(),
+                                  characterId: characterId,
+                                  entryKind:
+                                      status == _InnerDemonStageStatus.cleared
+                                      ? ActivityEntryKind.replay
+                                      : ActivityEntryKind.firstClear,
+                                  stageRunner: stageRunnerForTest,
+                                  participantSnapshotResolver:
+                                      participantSnapshotResolverForTest,
                                 ),
                         ),
                       );
@@ -140,6 +179,77 @@ class InnerDemonScreen extends ConsumerWidget {
     return _InnerDemonStageStatus.locked;
   }
 }
+
+Future<void> runInnerDemonChallenge({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  required int characterId,
+  required ActivityEntryKind entryKind,
+  InnerDemonStageRunner? stageRunner,
+  InnerDemonParticipantSnapshotResolver? participantSnapshotResolver,
+}) async {
+  final request = ActivityParticipationRequest(
+    contentId: stage.id,
+    contentKind: ActivityContentKind.innerDemon,
+    characterId: characterId,
+    loadoutPlanId: innerDemonLoadoutPlanId(
+      stageId: stage.id,
+      characterId: characterId,
+    ),
+    participation: ActivityParticipationMode.direct,
+    controller: ActivityController.human,
+    clock: ActivityClock.realtime,
+    entryKind: entryKind,
+  );
+  late final CombatantSnapshot participantSnapshot;
+  try {
+    participantSnapshot = participantSnapshotResolver == null
+        ? await resolveInnerDemonParticipantSnapshot(
+            isar: IsarSetup.instance,
+            request: request,
+            expectedStageId: stage.id,
+            expectedCharacterId: characterId,
+          )
+        : await participantSnapshotResolver(
+            request: request,
+            expectedStageId: stage.id,
+            expectedCharacterId: characterId,
+          );
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.innerDemonParticipantUnavailable),
+        ),
+      );
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  await (stageRunner ?? runInnerDemonStageFlow)(
+    context: context,
+    ref: ref,
+    stage: stage,
+    targetCycle: targetCycle,
+    participantSnapshot: participantSnapshot,
+  );
+}
+
+Future<void> runInnerDemonStageFlow({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  required CombatantSnapshot participantSnapshot,
+}) => runStageFlow(
+  context: context,
+  ref: ref,
+  stage: stage,
+  targetCycle: targetCycle,
+  directParticipantSnapshot: participantSnapshot,
+);
 
 enum _InnerDemonStageStatus { cleared, available, locked }
 
