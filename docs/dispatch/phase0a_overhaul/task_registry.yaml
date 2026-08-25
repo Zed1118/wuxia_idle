@@ -5225,6 +5225,41 @@ tasks:
       - no automation matrix runner admission provider schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim U14 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U14-ROUTE-STATE-MATRIX
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-u14-route-state-matrix-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 837be271bd0a7f3c6fb058245b6e3dc57cf2e00c
+    completion_scope: fail_closed_six_mode_entry_routes_across_applicable_loading_hidden_locked_open_active_complete_error_and_zero_eligible_states
+    acceptance_baseline: 0_of_1_six_mode_entry_route_state_gate
+    acceptance_target: 1_of_1_six_mode_entry_route_state_gate
+    async_boundary_baseline: 2_of_12_cells
+    async_boundary_target: 12_of_12_cells
+    dependencies:
+      - P2-M6-U14-ZERO-ELIGIBLE-ROUTES
+      - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
+    owned_files:
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - test/features/character_panel/presentation/character_panel_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-u14-route-state-matrix.md
+      - docs/audit/phase2_u14_route_state_matrix_2026-08-25.md
+      - docs/audit/phase2_u14_special_mode_matrix_blocked_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - unresolved or failed production providers expose no actionable route
+      - hidden locked open active complete and zero eligible semantics remain owned by existing production providers and screens
+      - inner demon remains outside the jianghu map and only appears from the character breakthrough route
+      - no automation runner admission policy table provider reducer session headless kernel settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - do not claim U14 M6 or overall Phase 2 completion
+
   - id: P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_root
