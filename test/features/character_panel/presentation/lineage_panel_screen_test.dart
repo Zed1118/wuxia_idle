@@ -118,7 +118,7 @@ void main() {
     await pumpScreen(tester, [gen]);
 
     await tester.tap(find.text(UiStrings.discipleSchedulingTitle));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.byType(DiscipleSchedulingScreen), findsOneWidget);
   });
 

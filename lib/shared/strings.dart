@@ -477,7 +477,7 @@ class UiStrings {
   static const String sectHubCharacters = '角色档案';
   static const String sectHubCharactersHint = '查看当前角色属性、成长与状态';
   static const String sectHubLineup = '门人调度';
-  static const String sectHubLineupHint = '安排出战席位与空闲门人';
+  static const String sectHubLineupHint = '查看门人去向，各玩法入场时再择参与者';
   static const String sectHubSeclusion = '闭关修炼';
   static const String sectHubSeclusionHint = '择地闭关，按真实时长修行疗养';
   static const String sectHubHealing = '伤势疗养';
@@ -1553,6 +1553,19 @@ class UiStrings {
   /// 首门心法择路 dialog(出战编成批并入 PR #36 观察① · 2026-07-14):
   /// 无主修时研习弹「立为主修/纳为辅修」选择;有主修维持仅辅修。
   static const String learnTechniqueFirstChoiceBody = '此为首门心法，请择修行之路。';
+
+  // ── 门人调度（二阶段 M6 U08）───────────────────────────────────────
+  static const String discipleSchedulingTitle = '门人调度';
+  static const String discipleSchedulingSectionTitle = '当代门人行止';
+  static const String discipleSchedulingPerActivityHint =
+      '此处不设全局出战阵容。亲战、重打与差遣均在对应玩法入口逐次择人。';
+  static const String discipleSchedulingLoadError = '门人状态暂不可核实';
+  static const String discipleSchedulingLeaderTag = '掌门';
+  static const String discipleSchedulingAvailable = '空闲';
+  static const String discipleSchedulingUnavailable = '无法出行';
+  static const String discipleSchedulingActivityRetreat = '闭关中';
+  static const String discipleSchedulingActivityExpedition = '百草岭中';
+  static const String discipleSchedulingActivityGauntlet = '断魂庄中';
 
   // ── 出战编成(玩法评估 §十三 #4 · 2026-07-14)──────────────────────────
   static const String lineupTitle = '出战编成';

@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_occupancy.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/lineup/application/disciple_scheduling_provider.dart';
 
@@ -38,6 +39,7 @@ void main() {
     bool active = false,
     int? masterId,
     int? retreatSessionId,
+    List<int> discipleIds = const [],
   }) => Character.create(
     name: name,
     realmTier: RealmTier.yiLiu,
@@ -55,17 +57,21 @@ void main() {
     isActive: active,
     masterId: masterId,
     currentRetreatSessionId: retreatSessionId,
+    discipleIds: discipleIds,
   )..id = id;
 
-  SaveData save({int? leaderId = 10, List<int> activeIds = const [10, 12]}) =>
-      SaveData()
-        ..saveVersion = '0.40.0'
-        ..createdAt = DateTime(2026, 8, 25)
-        ..lastSavedAt = DateTime(2026, 8, 25)
-        ..lastOnlineAt = DateTime(2026, 8, 25)
-        ..founderCharacterId = leaderId
-        ..activeCharacterIds = activeIds
-        ..recruitedDiscipleIds = [11, 12];
+  SaveData save({
+    int? leaderId = 10,
+    List<int> activeIds = const [10, 12],
+    List<int> recruitedIds = const [11, 12],
+  }) => SaveData()
+    ..saveVersion = '0.40.0'
+    ..createdAt = DateTime(2026, 8, 25)
+    ..lastSavedAt = DateTime(2026, 8, 25)
+    ..lastOnlineAt = DateTime(2026, 8, 25)
+    ..founderCharacterId = leaderId
+    ..activeCharacterIds = activeIds
+    ..recruitedDiscipleIds = recruitedIds;
 
   test('只读聚合当代掌门、全体门人与三类真实活动状态', () async {
     final isar = IsarSetup.instance;
@@ -104,8 +110,16 @@ void main() {
           role: LineageRole.disciple,
           active: true,
         ),
+        character(
+          id: 13,
+          name: '季无尘',
+          role: LineageRole.disciple,
+          masterId: 10,
+        ),
       ]);
-      await isar.saveDatas.put(save(activeIds: const [10, 12, 2]));
+      await isar.saveDatas.put(
+        save(activeIds: const [10, 12, 2], recruitedIds: const [11, 12, 13]),
+      );
       await isar.expeditionRuns.put(
         ExpeditionRun()
           ..saveDataId = 0
@@ -115,6 +129,12 @@ void main() {
           ..currentNode = 6
           ..members = [ActivityMemberSnapshot()..characterId = 12],
       );
+      await isar.bossGauntletRuns.put(
+        BossGauntletRun()
+          ..saveDataId = 0
+          ..seed = 11
+          ..members = [ActivityMemberSnapshot()..characterId = 13],
+      );
     });
 
     final container = ProviderContainer();
@@ -122,16 +142,23 @@ void main() {
     final summary = await container.read(discipleSchedulingProvider.future);
 
     expect(summary.leaderId, 10);
-    expect(summary.members.map((member) => member.characterId), [10, 11, 12]);
+    expect(summary.members.map((member) => member.characterId), [
+      10,
+      11,
+      12,
+      13,
+    ]);
     expect(summary.members.map((member) => member.name), [
       '沈掌门',
       '叶问舟',
       '程青崖',
+      '季无尘',
     ]);
     expect(summary.members[0].isLeader, isTrue);
     expect(summary.members[0].activity, isNull);
     expect(summary.members[1].activity, ActivityKind.retreat);
     expect(summary.members[2].activity, ActivityKind.expedition);
+    expect(summary.members[3].activity, ActivityKind.bossGauntlet);
 
     final persisted = await isar.saveDatas.get(0);
     expect(persisted!.activeCharacterIds, [10, 12, 2]);
@@ -200,6 +227,37 @@ void main() {
       await isar.saveDatas.put(save(leaderId: 77, activeIds: const [77]));
     });
     container = ProviderContainer();
+    addTearDown(container.dispose);
+    await expectLater(
+      container.read(discipleSchedulingProvider.future),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('掌门直系列表指向旧代成员时 fail closed', () async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      await isar.characters.putAll([
+        character(
+          id: 10,
+          name: '沈掌门',
+          role: LineageRole.founder,
+          founder: true,
+          discipleIds: const [11],
+        ),
+        character(
+          id: 11,
+          name: '旧代门人',
+          role: LineageRole.disciple,
+          masterId: 1,
+        ),
+      ]);
+      await isar.saveDatas.put(
+        save(activeIds: const [10], recruitedIds: const []),
+      );
+    });
+
+    final container = ProviderContainer();
     addTearDown(container.dispose);
     await expectLater(
       container.read(discipleSchedulingProvider.future),

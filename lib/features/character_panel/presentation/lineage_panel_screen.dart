@@ -14,7 +14,7 @@ import '../../../shared/widgets/wuxia_ui/error_fallback.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../ascension/application/ascend_service_providers.dart';
 import '../../ascension/presentation/ascension_screen.dart';
-import '../../lineup/presentation/team_lineup_screen.dart';
+import '../../lineup/presentation/disciple_scheduling_screen.dart';
 import '../application/lineage_codex_provider.dart';
 import 'lineage_character_detail_screen.dart';
 import 'lineage_widgets.dart';
@@ -44,17 +44,17 @@ class LineagePanelScreen extends ConsumerWidget {
           onBack: Navigator.of(context).canPop()
               ? () => Navigator.of(context).pop()
               : null,
-          // 出战编成入口(玩法评估 §十三 #4 · spec §1:顶部动作位,主菜单不加)。
+          // 二阶段 U08：生产入口只展示逐活动调度状态，不再编辑全局三席阵容。
           trailing: Padding(
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => const TeamLineupScreen(),
+                  builder: (_) => const DiscipleSchedulingScreen(),
                 ),
               ),
               style: TextButton.styleFrom(foregroundColor: WuxiaUi.goldOnPaper),
-              child: const Text(UiStrings.lineupTitle),
+              child: const Text(UiStrings.discipleSchedulingTitle),
             ),
           ),
         ),

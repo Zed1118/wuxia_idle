@@ -12,7 +12,7 @@ import '../../../shared/widgets/wuxia_ui/section_header.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_title_bar.dart';
 import '../../character_panel/presentation/character_panel_screen.dart';
 import '../../expedition/presentation/expedition_overview_screen.dart';
-import '../../lineup/presentation/team_lineup_screen.dart';
+import '../../lineup/presentation/disciple_scheduling_screen.dart';
 import '../../seclusion/presentation/seclusion_map_list_screen.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import 'sect_itinerary_panel.dart';
@@ -126,7 +126,8 @@ class SectHubScreen extends ConsumerWidget {
                         hint: UiStrings.sectHubLineupHint,
                         icon: Icons.groups_2_outlined,
                         thumbnailPath: WuxiaUi.entryCharacter,
-                        onTap: () => _push(context, const TeamLineupScreen()),
+                        onTap: () =>
+                            _push(context, const DiscipleSchedulingScreen()),
                       ),
                       const SizedBox(height: 12),
                       WuxiaInkButton(

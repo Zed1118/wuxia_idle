@@ -42,6 +42,16 @@ void main() {
         activity: null,
         portraitPath: null,
       ),
+      DiscipleSchedulingMember(
+        characterId: 13,
+        name: '季无尘',
+        realmTier: RealmTier.erLiu,
+        realmLayer: RealmLayer.dengFeng,
+        isLeader: false,
+        isAlive: true,
+        activity: ActivityKind.bossGauntlet,
+        portraitPath: null,
+      ),
     ],
   );
 
@@ -56,13 +66,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(UiStrings.discipleSchedulingTitle), findsOneWidget);
-    expect(find.text(UiStrings.discipleSchedulingPerActivityHint), findsOneWidget);
+    expect(
+      find.text(UiStrings.discipleSchedulingPerActivityHint),
+      findsOneWidget,
+    );
     expect(find.text('沈掌门'), findsOneWidget);
     expect(find.text('叶问舟'), findsOneWidget);
     expect(find.text('程青崖'), findsOneWidget);
+    expect(find.text('季无尘'), findsOneWidget);
     expect(find.text(UiStrings.discipleSchedulingLeaderTag), findsOneWidget);
     expect(
       find.text(UiStrings.discipleSchedulingActivityRetreat),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.discipleSchedulingActivityGauntlet),
       findsOneWidget,
     );
     expect(find.text(UiStrings.discipleSchedulingUnavailable), findsOneWidget);
@@ -81,7 +99,9 @@ void main() {
   });
 
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
-    testWidgets('${size.width.toInt()}x${size.height.toInt()} 无溢出', (tester) async {
+    testWidgets('${size.width.toInt()}x${size.height.toInt()} 无溢出', (
+      tester,
+    ) async {
       await tester.binding.setSurfaceSize(size);
       addTearDown(() => tester.binding.setSurfaceSize(null));
       await tester.pumpWidget(app((ref) async => summary));
