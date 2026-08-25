@@ -4,12 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.70
+> **版本**:v1.71
+> **v1.71 变更**(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed 参与请求、exact participant snapshot、既有 Phase 0A reducer/event 与共享结算，记录与报告归实际参与者。首推仍当前掌门人控，可见重打可选 eligible 角色，无人值守重打/扫荡仍使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
 > **v1.70 变更**(2026-08-25 二阶段百草岭真实差遣端到端生产纵切):宗门与江湖地图的百草岭入口继续汇入同一生产总览；逐次差遣现以 typed request 锁定 eligible 实际参与者并落 durable snapshot，真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有共享战斗账本归属该人，返程行记显示实际参与者。无效身份/代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁语义不变。本纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP，不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
-> **v1.69 变更**(2026-08-25 二阶段九霄塔实际参与者结算报告生产纵切):九霄塔胜利报告现从既有共享 `CombatResolutionService` 结算结果读取本次 exact participant，并显示实际参与者姓名；姓名来自已经通过单一参与者、身份、占用、装备/心法与 settlement 复核的生产角色，不新增 reducer、session、provider 或身份真相源。塔逐次选人、真实 `Phase0aTowerBattleHost`、阵型/塔进度、奖励、重打、排行榜与 fail-closed 边界保持不变。本纵切只关闭 M6 塔实际参与者报告必要生产子门，不晋升 M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
-> **v1.68 变更**(2026-08-25 二阶段守城实际参与者结算报告生产纵切):守城地点详情不再固定掌门；每次挑战从当前掌门与当代存活门人逐次选择 eligible 空闲角色，二次复核后以 exact snapshot 进入既有 `Phase0aMainlineBattleHost`，保留原阵型选择与 `mapMassBattle` 语义。胜利与最终战败均严格绑定实际参与者并走共享战斗账本，报告显示该人；占用、疗养、死亡、无主修、历史/跨代、重复占用、悬空装备/心法或错人 settlement fail closed，不回退掌门。本纵切只关闭 M6 守城必要生产子门，不晋升 M6/二阶段，不改 schema、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
-> **v1.67 变更**(2026-08-25 二阶段轻功实际参与者结算报告生产纵切):轻功每次挑战现从当前掌门与当代存活门人逐次选择 eligible 空闲角色，exact snapshot 进入真实 `Phase0aMainlineBattleHost`；胜利与最终战败均严格绑定该单一参与者并走共享战斗账本，成长、伤势、装备战斗次数与心法使用归实际角色，胜负报告显示该人。占用、疗养、无主修、身份/资源悬空或错人结算 fail closed，不回退掌门；掌门闭关时空闲门人仍可挑战。该纵切只关闭轻功逐次选人/共享账本/身份报告子门，不晋升 M6/二阶段，不改 schema、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
-> **v1.66 变更**(2026-08-25 二阶段断魂庄亲战结算报告生产纵切):断魂庄 live controller 与 headless runner 现从同一 Phase 0A 终态生成共享 settlement，同事务核验实际单人并将装备战斗次数、招式使用写入该参与者；逐关不重复断魂庄会话末伤势、经验、领悟、奖励或补给。胜利页显示真实亲历者，悬空/错人 fail closed；旧多人待选奖存档保持恢复路径。该纵切只关闭断魂庄共享战斗账本/参与者报告子门，不晋升 M6/二阶段，不改 schema、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)

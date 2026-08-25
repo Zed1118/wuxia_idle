@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.88**
+> **版本:v1.89**
+>
+> v1.89 变更摘要(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed `ActivityParticipationRequest`、exact participant snapshot、既有 Phase 0A reducer/event 与共享 settlement，战报归实际参与者。首推仍当前掌门+人控；可见重打可选 eligible 角色；无人值守重打/扫荡仍按决策使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。主线+扫荡域 `470/470`、相邻域 `146/146`、analyze 0 issue；遵守 90 分钟停止线未重跑约 5 小时整仓全量。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.88 变更摘要(2026-08-25 二阶段 M6 百草岭真实差遣端到端生产纵切):宗门 Hub 与江湖地图继续汇入既有百草岭总览，但生产派遣现提交 typed `ActivityParticipationRequest`，严格核验当前代际 eligible 实际参与者并落 `ActivityMemberSnapshot`；真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有 `CombatResolutionService` 写实际参与者的装备/心法战斗账本，返程行记显示该人。身份、代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁仍由原 owner 处理，避免重复结算。该纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP；不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >

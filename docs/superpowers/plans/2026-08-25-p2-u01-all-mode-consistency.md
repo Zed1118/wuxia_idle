@@ -16,3 +16,9 @@
 3. headless replay：已通关单关显式入口，固定当前掌门、同核确定性模拟、复用既有重打结算，不消费 sweep readiness。
 4. sweep：显式 `sweep` request 固定当前掌门，完整可战/占用复核后复用既有 runner 与结算；readiness 原语义不变。
 5. 联合验证：五模式同 seed/装配终局与实际参与者归属矩阵、相关主线/扫荡/占用/结算域、`flutter analyze --no-pub lib test`、diff/白名单/语义复核、文档与 registry、clean READY。
+
+## 收口结果
+
+- 验收门已由 `2/5` 提升为 `5/5`：首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打、即时扫荡均连入 typed request、exact participant snapshot、既有 Phase 0A reducer/event 与共享 settlement。
+- 主线+扫荡域 `470/470 PASS`，相邻活动/设置/bot/headless/结算域 `146/146 PASS`，`flutter analyze --no-pub lib test` 0 issue。
+- 遵守 90 分钟成本停止线，未重复执行已知约 5 小时的整仓全量；本结果只关闭 U01 生产子门，M2、M6 和 Phase 2 仍 WIP。

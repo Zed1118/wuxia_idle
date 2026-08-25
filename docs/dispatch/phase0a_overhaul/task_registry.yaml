@@ -4945,12 +4945,28 @@ tasks:
     owner: codex_root
     branch: codex/phase2-u01-all-mode-consistency-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 403e4f01c97a15e84e6026ea625debb9ccf8da04
+    code_candidate_commit: 43ef5b9ce99eec368b902874ac74c2d24b8928e2
+    reviewed_candidate_commit: 43ef5b9ce99eec368b902874ac74c2d24b8928e2
+    ready_marker: "[READY][CODEX][P2-M2-M6-U01-ALL-MODE-CONSISTENCY] 五模式共用实际参与者与结算合同"
     completion_scope: connect_manual_visible_bot_headless_replay_and_sweep_to_one_mainline_participant_snapshot_reducer_and_settlement_contract
     acceptance_baseline: 2_of_5_production_modes
     acceptance_target: 5_of_5_production_modes
+    acceptance_result: 5_of_5_production_modes
+    verification:
+      initial_red_contract_failures: 5
+      focused_mainline_bot_and_mode_tests: 23
+      mainline_and_sweep_domain_tests: 470
+      adjacent_activity_settings_bot_headless_and_settlement_tests: 146
+      real_ch1_headless_replay_smoke: 1
+      truth_source_guard_tests: 9
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      diff_check_issues: 0
+      full_suite_rerun: not_run_due_previous_5h_cost_and_90_minute_stop
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M2-M6-U01-CH1-CONTINUOUS-RUN
       - P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
@@ -4958,7 +4974,6 @@ tasks:
       - P2-M6-E2E-MANUAL-DISPATCH-REPORT
       - MAINLINE-REPLAY-PARTICIPANT-01
     owned_files:
-      - lib/features/mainline/domain/mainline_participation_policy.dart
       - lib/features/mainline/application/mainline_participant_snapshot_service.dart
       - lib/features/mainline/presentation/stage_entry_flow.dart
       - lib/features/mainline/presentation/phase0a_mainline_battle_host.dart
@@ -4970,7 +4985,6 @@ tasks:
       - lib/features/sweep/presentation/sweep_screen.dart
       - lib/shared/strings.dart
       - test/features/mainline/presentation/mainline_all_mode_consistency_test.dart
-      - test/features/mainline/presentation/mainline_visible_replay_participant_test.dart
       - test/features/mainline/presentation/phase0a_mainline_wiring_test.dart
       - test/features/sweep/application/phase0a_sweep_headless_runner_test.dart
       - test/features/sweep/application/sweep_settlement_test.dart
