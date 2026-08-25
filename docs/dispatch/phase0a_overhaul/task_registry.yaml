@@ -4281,6 +4281,42 @@ tasks:
       - do not change schema save version tuning narrative rewards economy YAML or main
       - do not claim U06 U14 M5 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U06-REPUTATION-LOCATION-DETAIL
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-u06-reputation-location-detail-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-reputation-location-detail
+    status: in_progress
+    base_commit: 5966e2348987a87bf1e61b237bc209f17ee85716
+    completion_scope: add_production_reputation_location_detail_before_panel
+    dependencies:
+      - P2-M6-U06-EXPEDITION-LOCATION-DETAIL
+    owned_files:
+      - lib/features/jianghu_map/domain/reputation_location_detail.dart
+      - lib/features/jianghu_map/application/reputation_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/reputation_location_detail_screen.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/jianghu_map/application/reputation_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/reputation_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_reputation_location_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-u06-reputation-location-detail.md
+      - docs/audit/phase2_m6_u06_reputation_location_detail_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - detail reads the first chapter production unlock gate repository faction definitions reputation tiers trigger rules and persisted player reputation rows
+      - sparse factions without persisted rows remain explicitly unrecorded and are not silently written or guessed
+      - map opens detail before ReputationPanelScreen and the detail CTA preserves the existing panel route
+      - unresolved gate missing repository or service invalid faction tier trigger or reputation data and provider errors fail closed without an entry CTA
+      - current NPC relation counts are not inferred because the location route has no frozen source character identity contract
+      - preserve current reputation writes encounter and boss triggers clamp tier mapping combat relation behavior and panel semantics
+      - do not change schema save version tuning narrative rewards economy YAML or main
+      - do not claim U06 U14 M6 or overall Phase 2 completion
+
   - id: P2-M6-U06-EXPEDITION-LOCATION-DETAIL
     milestone: M6
     owner: codex_root
