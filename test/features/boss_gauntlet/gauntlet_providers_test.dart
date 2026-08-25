@@ -279,6 +279,22 @@ void main() {
     expect(entered.selectable, isFalse, reason: '占用 → 不可再入场(selectable=false)');
   });
 
+  test('candidates:当前掌门指针悬空时 fail closed', () async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      await isar.characters.put(makeChar(name: '可用门人', mainTechniqueId: 5));
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = 999999;
+      await isar.saveDatas.put(save);
+    });
+    final container = makeContainer();
+
+    await expectLater(
+      container.read(gauntletCandidatesProvider.future),
+      throwsStateError,
+    );
+  });
+
   test('interludeView:成员名查表 + 托管剩余 + 疗伤标;非 interlude → null', () async {
     final (runId, discipleId) = await enterRun();
     final container = makeContainer();

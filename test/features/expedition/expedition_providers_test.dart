@@ -145,4 +145,22 @@ void main() {
     expect(a2.occupied, isTrue);
     expect(a2.dispatchable, isFalse);
   });
+
+  test('expeditionCandidates：当前掌门指针悬空时 fail closed', () async {
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.characters.put(
+        _char(name: '可用门人', mainTechniqueId: 5),
+      );
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      save.founderCharacterId = 999999;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(expeditionCandidatesProvider.future),
+      throwsStateError,
+    );
+  });
 }
