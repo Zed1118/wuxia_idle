@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_reward_screen.dart';
+import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../support/isar_test_support.dart';
@@ -197,7 +198,7 @@ void main() {
   ) async {
     fixViewport(tester);
     await tester.runAsync(() async {
-      await seedSave();
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       await putRun(
         phase: GauntletPhase.awaitingRewardChoice,
         currentStage: 3,
@@ -275,7 +276,7 @@ void main() {
   testWidgets('奖励屏：择取确认后正常出栈（PopScope 不挡显式 pop）', (tester) async {
     fixViewport(tester);
     await tester.runAsync(() async {
-      await seedSave();
+      await Phase2SeedService(isar: IsarSetup.instance).seedP3();
       await putRun(
         phase: GauntletPhase.awaitingRewardChoice,
         currentStage: 3,

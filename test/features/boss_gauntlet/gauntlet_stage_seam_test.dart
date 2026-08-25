@@ -274,7 +274,7 @@ void main() {
     await GauntletService(IsarSetup.instance).settlePhase0aStageResult(
       result: GauntletStageSettlement(
         leftWin: false,
-        checkpoint: GauntletMemberCheckpoint(
+        checkpoint: const GauntletMemberCheckpoint(
           characterId: 1,
           currentHp: 0,
           currentQi: 0,
