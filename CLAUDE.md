@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.81**
+> **版本:v1.82**
+>
+> v1.82 变更摘要(2026-08-25 二阶段 M6 掌门支线准入生产纵切):百草岭与断魂庄的真实候选页、地点详情和写事务现允许存活、空闲且有主修的当前掌门参与；掌门身份经 `CurrentLeaderResolver` 核实，占用经 `CharacterOccupancyService` 在 provider 与 service 两层复核。无效/悬空掌门、历史祖师、死亡、无主修、闭关或活动重复占用均 fail closed，不回退其他角色。原单人、方针、周目、补给、恢复、战斗、离线推进、结算、召回、奖励和返程不变。本纵切只关闭掌门参加两项支线的 M6 必要子门，不晋升 U08/M6/二阶段；零 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗变更。
 >
 > v1.81 变更摘要(2026-08-25 二阶段 M6 U08 门人调度当前态纵切):宗门 Hub 与门派谱两个生产入口已从旧 `TeamLineupScreen` 切到只读 `DiscipleSchedulingScreen`，不再暴露全局三席编成写路。当前掌门经 `CurrentLeaderResolver` 核实，当代门人沿既有门派谱口径组合直系列表、`masterId` 及 active/recruited 兼容引用，闭关/百草岭/断魂庄仅读 `CharacterOccupancyService`。无效掌门、悬空当代成员、掌门直系列表跨代、重复占用或 provider 异常均 fail closed。新页不写 `activeCharacterIds` / `isActive`，参与者仍由各活动入口逐次选择；旧屏与 `LineupService` 只留兼容/debug。本纵切只关闭 U08 的必要生产子门，不新增差遣策略，不晋升 U08/M6/二阶段；零业务写入、schema/saveVersion、YAML、调优、奖励、经济、解锁或战斗变更。
 >

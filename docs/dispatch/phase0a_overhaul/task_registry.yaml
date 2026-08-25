@@ -4540,9 +4540,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-leader-side-activity-admission-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-leader-side-activity-admission
-    status: in_progress
+    status: ready_reviewed
     base_commit: 8d63c62105b9bf35f111259673edaf8fea3fdcd3
+    code_candidate_commit: 4aadbea75225216b867b69806a158c62f7f8a2c1
+    reviewed_candidate_commit: 4aadbea75225216b867b69806a158c62f7f8a2c1
+    ready_marker: "[READY][CODEX][P2-M6-LEADER-SIDE-ACTIVITY-ADMISSION] 接通空闲掌门支线准入"
     completion_scope: allow_idle_current_leader_and_reject_occupied_current_leader_in_expedition_and_gauntlet_production_entries
+    verification:
+      focused_tests: 60
+      adjacent_activity_and_entry_tests: 324
+      double_viewport_tests: 4
+      initial_red_tests: 4
+      review_red_tests: 1
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      full_tests: 5523
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U08-DISCIPLE-SCHEDULING-STATUS
     owned_files:
