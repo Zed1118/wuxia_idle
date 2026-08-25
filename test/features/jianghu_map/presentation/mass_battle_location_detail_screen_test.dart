@@ -14,13 +14,17 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(loadTestGameRepository);
 
-  MassBattleLocationDetail detail({bool complete = false}) {
+  MassBattleLocationDetail detail({
+    bool complete = false,
+    int eligibleParticipantCount = 1,
+  }) {
     final stage = GameRepository.instance.getStage('stage_mass_battle_03');
     return MassBattleLocationDetail(
       clearedRoutes: complete ? 5 : 2,
@@ -52,7 +56,7 @@ void main() {
               gating: FirstClearGating.wholeChannel,
             ),
       baseExpReward: complete ? null : stage.baseExpReward,
-      eligibleParticipantCount: 1,
+      eligibleParticipantCount: eligibleParticipantCount,
     );
   }
 
@@ -123,6 +127,17 @@ void main() {
     );
     expect(find.text(UiStrings.massBattleLocationEnter), findsOneWidget);
     expect(find.textContaining(value.enemies.first.name), findsOneWidget);
+  });
+
+  testWidgets('没有空闲合格参与者时入口 fail closed', (tester) async {
+    await tester.pumpWidget(app(value: detail(eligibleParticipantCount: 0)));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('mass-battle-location-detail-enter')),
+    );
+    expect(button.disabled, isTrue);
+    expect(button.onTap, isNull);
   });
 
   testWidgets('全通态明确无下一关且仍提供重打入口', (tester) async {

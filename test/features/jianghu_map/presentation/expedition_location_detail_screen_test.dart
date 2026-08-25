@@ -11,52 +11,55 @@ import 'package:wuxia_idle/features/jianghu_map/domain/expedition_location_detai
 import 'package:wuxia_idle/features/jianghu_map/presentation/expedition_location_detail_screen.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(loadTestGameRepository);
 
-  ExpeditionLocationDetail detail({bool active = false}) =>
-      ExpeditionLocationDetail(
-        historicalMaxDepth: 18,
-        activeDepth: active ? 12 : null,
-        activePolicy: active ? ExpeditionPolicy.xunJiFangYou : null,
-        activeCycleIndex: active ? 2 : null,
-        activeDefeated: active,
-        recommendedRealm: RealmTier.erLiu,
-        normalNodeMinutes: 90,
-        eliteNodeMinutes: 180,
-        normalEnemyTeams: const [
-          ExpeditionLocationEnemyTeamSummary(
-            id: 'normal_a',
-            enemies: [
-              ExpeditionLocationEnemySummary(
-                name: '百草岭山匪',
-                realmTier: RealmTier.sanLiu,
-                school: TechniqueSchool.gangMeng,
-              ),
-            ],
+  ExpeditionLocationDetail detail({
+    bool active = false,
+    int availableCandidateCount = 2,
+  }) => ExpeditionLocationDetail(
+    historicalMaxDepth: 18,
+    activeDepth: active ? 12 : null,
+    activePolicy: active ? ExpeditionPolicy.xunJiFangYou : null,
+    activeCycleIndex: active ? 2 : null,
+    activeDefeated: active,
+    recommendedRealm: RealmTier.erLiu,
+    normalNodeMinutes: 90,
+    eliteNodeMinutes: 180,
+    normalEnemyTeams: const [
+      ExpeditionLocationEnemyTeamSummary(
+        id: 'normal_a',
+        enemies: [
+          ExpeditionLocationEnemySummary(
+            name: '百草岭山匪',
+            realmTier: RealmTier.sanLiu,
+            school: TechniqueSchool.gangMeng,
           ),
         ],
-        eliteEnemyTeams: const [
-          ExpeditionLocationEnemyTeamSummary(
-            id: 'elite_a',
-            enemies: [
-              ExpeditionLocationEnemySummary(
-                name: '瘠地药人',
-                realmTier: RealmTier.erLiu,
-                school: TechniqueSchool.yinRou,
-              ),
-            ],
+      ),
+    ],
+    eliteEnemyTeams: const [
+      ExpeditionLocationEnemyTeamSummary(
+        id: 'elite_a',
+        enemies: [
+          ExpeditionLocationEnemySummary(
+            name: '瘠地药人',
+            realmTier: RealmTier.erLiu,
+            school: TechniqueSchool.yinRou,
           ),
         ],
-        coreRewardItemNames: const ['药草', '灵泉水', '银两', '断魂帖'],
-        includesExperienceReward: true,
-        candidateCount: 4,
-        availableCandidateCount: 2,
-        activeParticipantNames: active ? const ['沈无归'] : const [],
-      );
+      ),
+    ],
+    coreRewardItemNames: const ['药草', '灵泉水', '银两', '断魂帖'],
+    includesExperienceReward: true,
+    candidateCount: 4,
+    availableCandidateCount: availableCandidateCount,
+    activeParticipantNames: active ? const ['沈无归'] : const [],
+  );
 
   ExpeditionRun run() => ExpeditionRun()
     ..saveDataId = 0
@@ -123,7 +126,7 @@ void main() {
   });
 
   testWidgets('进行中远征展示深度、战败、方针、真实参与者与续行 CTA', (tester) async {
-    final value = detail(active: true);
+    final value = detail(active: true, availableCandidateCount: 0);
     await tester.pumpWidget(app(value: value, activeRun: run()));
     await tester.pumpAndSettle();
 
@@ -143,12 +146,28 @@ void main() {
     );
     expect(find.text('沈无归'), findsOneWidget);
     expect(find.text(UiStrings.expeditionLocationResume), findsOneWidget);
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('expedition-location-detail-enter')),
+    );
+    expect(button.disabled, isFalse);
+    expect(button.onTap, isNotNull);
 
     await tester.tap(find.text(UiStrings.expeditionLocationResume));
     await tester.pumpAndSettle();
 
     expect(find.byType(ExpeditionOverviewScreen), findsOneWidget);
     expect(find.text(UiStrings.expeditionActiveSection), findsOneWidget);
+  });
+
+  testWidgets('idle 且没有空闲合格参与者时入口 fail closed', (tester) async {
+    await tester.pumpWidget(app(value: detail(availableCandidateCount: 0)));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('expedition-location-detail-enter')),
+    );
+    expect(button.disabled, isTrue);
+    expect(button.onTap, isNull);
   });
 
   testWidgets('provider 异常时 fail closed 且不显示进入 CTA', (tester) async {

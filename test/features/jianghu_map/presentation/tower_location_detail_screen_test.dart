@@ -11,13 +11,17 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(loadTestGameRepository);
 
-  TowerLocationDetail detail({bool complete = false}) {
+  TowerLocationDetail detail({
+    bool complete = false,
+    int eligibleParticipantCount = 2,
+  }) {
     final repository = GameRepository.instance;
     final floor = repository.getTowerFloor(7);
     return TowerLocationDetail(
@@ -41,7 +45,7 @@ void main() {
               gating: FirstClearGating.wholeChannel,
             ),
       baseExpReward: complete ? null : floor.baseExpReward,
-      eligibleParticipantCount: 2,
+      eligibleParticipantCount: eligibleParticipantCount,
     );
   }
 
@@ -84,6 +88,17 @@ void main() {
     expect(find.text(UiStrings.towerLocationExpectedOccupancy), findsOneWidget);
     expect(find.text(UiStrings.towerLocationEnter), findsOneWidget);
     expect(find.textContaining(value.enemies.first.name), findsOneWidget);
+  });
+
+  testWidgets('没有空闲合格参与者时入口 fail closed', (tester) async {
+    await tester.pumpWidget(app(value: detail(eligibleParticipantCount: 0)));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('tower-location-detail-enter')),
+    );
+    expect(button.disabled, isTrue);
+    expect(button.onTap, isNull);
   });
 
   testWidgets('登顶态明确无下一层且仍提供重打入口', (tester) async {

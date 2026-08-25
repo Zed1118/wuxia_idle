@@ -11,62 +11,65 @@ import 'package:wuxia_idle/features/jianghu_map/domain/gauntlet_location_detail.
 import 'package:wuxia_idle/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
 
 void main() {
   setUpAll(loadTestGameRepository);
 
-  GauntletLocationDetail detail({bool active = false}) =>
-      GauntletLocationDetail(
-        clearedCyclesMax: 2,
-        totalStages: 3,
-        activeStage: active ? 2 : null,
-        activePhase: active ? GauntletPhase.interlude : null,
-        recommendedRealm: RealmTier.erLiu,
-        stages: const [
-          GauntletLocationStageSummary(
-            ordinal: 1,
-            isBoss: false,
-            enemies: [
-              GauntletLocationEnemySummary(
-                name: '苏无咎',
-                school: TechniqueSchool.lingQiao,
-              ),
-            ],
-          ),
-          GauntletLocationStageSummary(
-            ordinal: 2,
-            isBoss: false,
-            enemies: [
-              GauntletLocationEnemySummary(
-                name: '石镇岳',
-                school: TechniqueSchool.gangMeng,
-              ),
-            ],
-          ),
-          GauntletLocationStageSummary(
-            ordinal: 3,
-            isBoss: true,
-            enemies: [
-              GauntletLocationEnemySummary(
-                name: '闻九针',
-                school: TechniqueSchool.yinRou,
-              ),
-            ],
+  GauntletLocationDetail detail({
+    bool active = false,
+    int availableCandidateCount = 2,
+  }) => GauntletLocationDetail(
+    clearedCyclesMax: 2,
+    totalStages: 3,
+    activeStage: active ? 2 : null,
+    activePhase: active ? GauntletPhase.interlude : null,
+    recommendedRealm: RealmTier.erLiu,
+    stages: const [
+      GauntletLocationStageSummary(
+        ordinal: 1,
+        isBoss: false,
+        enemies: [
+          GauntletLocationEnemySummary(
+            name: '苏无咎',
+            school: TechniqueSchool.lingQiao,
           ),
         ],
-        rewardSkillName: '锁脉针法',
-        rewardEquipmentNames: const ['锁脉囊', '镇岳铁衣', '摄魂铃'],
-        firstClearRewardExp: 300,
-        firstClearRewardInsight: 20,
-        eliteRewardExp: 50,
-        ticketCount: 3,
-        supplyCap: 3,
-        candidateCount: 4,
-        availableCandidateCount: 2,
-        activeParticipantNames: active ? const ['沈无归'] : const [],
-      );
+      ),
+      GauntletLocationStageSummary(
+        ordinal: 2,
+        isBoss: false,
+        enemies: [
+          GauntletLocationEnemySummary(
+            name: '石镇岳',
+            school: TechniqueSchool.gangMeng,
+          ),
+        ],
+      ),
+      GauntletLocationStageSummary(
+        ordinal: 3,
+        isBoss: true,
+        enemies: [
+          GauntletLocationEnemySummary(
+            name: '闻九针',
+            school: TechniqueSchool.yinRou,
+          ),
+        ],
+      ),
+    ],
+    rewardSkillName: '锁脉针法',
+    rewardEquipmentNames: const ['锁脉囊', '镇岳铁衣', '摄魂铃'],
+    firstClearRewardExp: 300,
+    firstClearRewardInsight: 20,
+    eliteRewardExp: 50,
+    ticketCount: 3,
+    supplyCap: 3,
+    candidateCount: 4,
+    availableCandidateCount: availableCandidateCount,
+    activeParticipantNames: active ? const ['沈无归'] : const [],
+  );
 
   Widget app({
     GauntletLocationDetail? value,
@@ -132,7 +135,7 @@ void main() {
   });
 
   testWidgets('进行中庄局展示关次、阶段、真实参与者和续行 CTA', (tester) async {
-    final value = detail(active: true);
+    final value = detail(active: true, availableCandidateCount: 0);
     final run = BossGauntletRun()
       ..saveDataId = 0
       ..seed = 7
@@ -153,6 +156,11 @@ void main() {
     );
     expect(find.text('沈无归'), findsOneWidget);
     expect(find.text(UiStrings.gauntletLocationResume), findsOneWidget);
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('gauntlet-location-detail-enter')),
+    );
+    expect(button.disabled, isFalse);
+    expect(button.onTap, isNotNull);
 
     await tester.tap(find.text(UiStrings.gauntletLocationResume));
     await tester.pump();
@@ -160,6 +168,17 @@ void main() {
 
     expect(find.byType(GauntletLoadoutScreen), findsOneWidget);
     expect(find.text(UiStrings.gauntletResumeTitle), findsOneWidget);
+  });
+
+  testWidgets('idle 且没有空闲合格参与者时入口 fail closed', (tester) async {
+    await tester.pumpWidget(app(value: detail(availableCandidateCount: 0)));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('gauntlet-location-detail-enter')),
+    );
+    expect(button.disabled, isTrue);
+    expect(button.onTap, isNull);
   });
 
   testWidgets('provider 异常时 fail closed 且不显示进入 CTA', (tester) async {

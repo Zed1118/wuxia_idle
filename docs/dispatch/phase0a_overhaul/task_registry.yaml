@@ -5191,7 +5191,6 @@ tasks:
       - lib/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart
       - lib/features/jianghu_map/presentation/expedition_location_detail_screen.dart
       - test/features/jianghu_map/presentation/tower_location_detail_screen_test.dart
-      - test/features/jianghu_map/presentation/light_foot_location_detail_screen_test.dart
       - test/features/jianghu_map/presentation/mass_battle_location_detail_screen_test.dart
       - test/features/jianghu_map/presentation/gauntlet_location_detail_screen_test.dart
       - test/features/jianghu_map/presentation/expedition_location_detail_screen_test.dart

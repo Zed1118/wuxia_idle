@@ -68,6 +68,7 @@ class _DetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canEnter = detail.hasActiveRun || detail.availableCandidateCount > 0;
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
       children: [
@@ -136,9 +137,14 @@ class _DetailContent extends StatelessWidget {
               ? UiStrings.gauntletLocationResumeHint
               : UiStrings.gauntletLocationEnterHint,
           icon: Icons.whatshot_outlined,
-          onTap: () => Navigator.of(context).push<void>(
-            MaterialPageRoute(builder: (_) => const GauntletLoadoutScreen()),
-          ),
+          disabled: !canEnter,
+          onTap: canEnter
+              ? () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => const GauntletLoadoutScreen(),
+                  ),
+                )
+              : null,
         ),
       ],
     );
