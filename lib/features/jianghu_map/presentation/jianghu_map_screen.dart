@@ -152,33 +152,46 @@ class JianghuMapScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final towerStatus = ref
-        .watch(towerProgressProvider)
-        .maybeWhen(data: jianghuMapTowerStatus, orElse: () => null);
-    final lightFootState = ref
-        .watch(mainlineProgressProvider)
-        .maybeWhen(data: jianghuMapLightFootLocationState, orElse: () => null);
-    final massBattleState = ref
-        .watch(mainlineProgressProvider)
-        .maybeWhen(data: jianghuMapMassBattleLocationState, orElse: () => null);
-    final reputationLocked = ref
-        .watch(mainlineProgressProvider)
-        .maybeWhen(
-          data: jianghuMapReputationLocationLocked,
-          orElse: () => null,
-        );
+    final towerProgress = ref.watch(towerProgressProvider);
+    final towerReady = towerProgress.asData != null;
+    final towerStatus = towerProgress.maybeWhen(
+      data: jianghuMapTowerStatus,
+      orElse: () => null,
+    );
+    final mainlineProgress = ref.watch(mainlineProgressProvider);
+    final mainlineReady = mainlineProgress.asData != null;
+    final lightFootState = mainlineProgress.maybeWhen(
+      data: jianghuMapLightFootLocationState,
+      orElse: () => null,
+    );
+    final lightFootReady = mainlineReady && lightFootState?.locked == false;
+    final massBattleState = mainlineProgress.maybeWhen(
+      data: jianghuMapMassBattleLocationState,
+      orElse: () => null,
+    );
+    final massBattleReady = mainlineReady && massBattleState?.locked == false;
+    final reputationLocked = mainlineProgress.maybeWhen(
+      data: jianghuMapReputationLocationLocked,
+      orElse: () => null,
+    );
     final jianghuJourneyUnlocked = ref
         .watch(mainMenuSaveSnapshotProvider)
         .maybeWhen(
           data: (save) => save?.jianghuJourneyUnlocked ?? false,
           orElse: () => false,
         );
-    final gauntletStatus = ref
-        .watch(activeGauntletProvider)
-        .maybeWhen(data: jianghuMapGauntletStatus, orElse: () => null);
-    final expeditionStatus = ref
-        .watch(activeExpeditionProvider)
-        .maybeWhen(data: jianghuMapExpeditionStatus, orElse: () => null);
+    final activeGauntlet = ref.watch(activeGauntletProvider);
+    final gauntletReady = activeGauntlet.asData != null;
+    final gauntletStatus = activeGauntlet.maybeWhen(
+      data: jianghuMapGauntletStatus,
+      orElse: () => null,
+    );
+    final activeExpedition = ref.watch(activeExpeditionProvider);
+    final expeditionReady = activeExpedition.asData != null;
+    final expeditionStatus = activeExpedition.maybeWhen(
+      data: jianghuMapExpeditionStatus,
+      orElse: () => null,
+    );
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -214,11 +227,14 @@ class JianghuMapScreen extends ConsumerWidget {
                   status: towerStatus,
                   icon: Icons.filter_hdr_outlined,
                   thumbnailPath: WuxiaUi.entryTower,
-                  onTap: () => Navigator.of(context).push<void>(
-                    MaterialPageRoute(
-                      builder: (_) => const TowerLocationDetailScreen(),
-                    ),
-                  ),
+                  disabled: !towerReady,
+                  onTap: towerReady
+                      ? () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) => const TowerLocationDetailScreen(),
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 WuxiaInkButton(
@@ -228,13 +244,16 @@ class JianghuMapScreen extends ConsumerWidget {
                   status: lightFootState?.status,
                   icon: Icons.directions_run,
                   thumbnailPath: WuxiaUi.entryLightFoot,
-                  disabled: lightFootState == null || lightFootState.locked,
-                  locked: lightFootState == null || lightFootState.locked,
-                  onTap: () => Navigator.of(context).push<void>(
-                    MaterialPageRoute(
-                      builder: (_) => const LightFootLocationDetailScreen(),
-                    ),
-                  ),
+                  disabled: !lightFootReady,
+                  locked: !lightFootReady,
+                  onTap: lightFootReady
+                      ? () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const LightFootLocationDetailScreen(),
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 12),
                 WuxiaInkButton(
@@ -244,13 +263,16 @@ class JianghuMapScreen extends ConsumerWidget {
                   status: massBattleState?.status,
                   icon: Icons.groups_2_outlined,
                   thumbnailPath: WuxiaUi.entryJianghu,
-                  disabled: massBattleState == null || massBattleState.locked,
-                  locked: massBattleState == null || massBattleState.locked,
-                  onTap: () => Navigator.of(context).push<void>(
-                    MaterialPageRoute(
-                      builder: (_) => const MassBattleLocationDetailScreen(),
-                    ),
-                  ),
+                  disabled: !massBattleReady,
+                  locked: !massBattleReady,
+                  onTap: massBattleReady
+                      ? () => Navigator.of(context).push<void>(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const MassBattleLocationDetailScreen(),
+                          ),
+                        )
+                      : null,
                 ),
                 if (jianghuJourneyUnlocked) ...[
                   const SizedBox(height: 12),
@@ -261,11 +283,15 @@ class JianghuMapScreen extends ConsumerWidget {
                     status: gauntletStatus,
                     icon: Icons.whatshot_outlined,
                     thumbnailPath: WuxiaUi.entryJianghu,
-                    onTap: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => const GauntletLocationDetailScreen(),
-                      ),
-                    ),
+                    disabled: !gauntletReady,
+                    onTap: gauntletReady
+                        ? () => Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const GauntletLocationDetailScreen(),
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   WuxiaInkButton(
@@ -275,11 +301,15 @@ class JianghuMapScreen extends ConsumerWidget {
                     status: expeditionStatus,
                     icon: Icons.travel_explore_outlined,
                     thumbnailPath: WuxiaUi.entryJianghu,
-                    onTap: () => Navigator.of(context).push<void>(
-                      MaterialPageRoute(
-                        builder: (_) => const ExpeditionLocationDetailScreen(),
-                      ),
-                    ),
+                    disabled: !expeditionReady,
+                    onTap: expeditionReady
+                        ? () => Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const ExpeditionLocationDetailScreen(),
+                            ),
+                          )
+                        : null,
                   ),
                 ],
                 const SizedBox(height: 12),

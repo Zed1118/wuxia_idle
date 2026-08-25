@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -143,8 +145,19 @@ void main() {
     Map<int, Equipment> equipments = const {},
     Map<int, Technique> techniques = const {},
     InnerDemonProgress? innerDemonProgress,
+    Future<InnerDemonProgress>? innerDemonProgressFuture,
+    Object? innerDemonProgressError,
     Size surfaceSize = const Size(1280, 720),
   }) async {
+    assert(
+      [
+            innerDemonProgress,
+            innerDemonProgressFuture,
+            innerDemonProgressError,
+          ].where((value) => value != null).length <=
+          1,
+      'Use only one inner demon progress fixture.',
+    );
     await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -176,6 +189,14 @@ void main() {
           if (innerDemonProgress != null)
             innerDemonProgressProvider.overrideWith(
               (ref) async => innerDemonProgress,
+            ),
+          if (innerDemonProgressFuture != null)
+            innerDemonProgressProvider.overrideWith(
+              (ref) => innerDemonProgressFuture,
+            ),
+          if (innerDemonProgressError != null)
+            innerDemonProgressProvider.overrideWith(
+              (ref) async => throw innerDemonProgressError,
             ),
         ],
         child: MaterialApp(
@@ -1104,6 +1125,41 @@ void main() {
       ),
     );
     expect(find.text(UiStrings.innerDemonPanelTitle), findsNothing);
+  });
+
+  Future<void> expectInnerDemonAsyncEntryClosed(
+    WidgetTester tester, {
+    Future<InnerDemonProgress>? future,
+    Object? error,
+  }) async {
+    final xueTu = mkCharacter(realmTier: RealmTier.xueTu)
+      ..realmLayer = RealmLayer.yuanShu
+      ..experience = 999999
+      ..experienceToNextLayer = 100;
+    await pumpPanel(
+      tester,
+      character: xueTu,
+      innerDemonProgressFuture: future,
+      innerDemonProgressError: error,
+    );
+
+    expect(find.text(UiStrings.innerDemonPanelTitle), findsNothing);
+    expect(find.text(UiStrings.innerDemonBreakthroughCta), findsNothing);
+    expect(find.byType(InnerDemonScreen), findsNothing);
+  }
+
+  testWidgets('③ 心魔进度 provider loading 时入口 fail closed', (tester) async {
+    await expectInnerDemonAsyncEntryClosed(
+      tester,
+      future: Completer<InnerDemonProgress>().future,
+    );
+  });
+
+  testWidgets('③ 心魔进度 provider error 时入口 fail closed', (tester) async {
+    await expectInnerDemonAsyncEntryClosed(
+      tester,
+      error: StateError('inner demon route fixture error'),
+    );
   });
 
   testWidgets('③ 学徒 exp满被拦 → 显心魔面板 + X/7 + 突破 CTA', (tester) async {

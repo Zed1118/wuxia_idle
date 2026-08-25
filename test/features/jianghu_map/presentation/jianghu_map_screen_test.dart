@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +10,7 @@ import 'package:wuxia_idle/data/defs/mass_battle_def.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
@@ -20,8 +23,11 @@ import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
+
+enum _ProviderFixtureState { data, loading, error }
 
 void main() {
   setUpAll(loadTestGameRepository);
@@ -30,26 +36,110 @@ void main() {
     ..saveDataId = 0
     ..highestClearedFloor = highest;
 
+  Future<T> providerFuture<T>(_ProviderFixtureState state, T value) =>
+      switch (state) {
+        _ProviderFixtureState.data => Future<T>.value(value),
+        _ProviderFixtureState.loading => Completer<T>().future,
+        _ProviderFixtureState.error => Future<T>.error(
+          StateError('route state fixture error'),
+        ),
+      };
+
   Widget app({
     int highest = 6,
     List<String> clearedStageIds = const [],
     bool journeyUnlocked = false,
     BossGauntletRun? activeGauntlet,
+    _ProviderFixtureState towerState = _ProviderFixtureState.data,
+    _ProviderFixtureState mainlineState = _ProviderFixtureState.data,
+    _ProviderFixtureState gauntletState = _ProviderFixtureState.data,
+    _ProviderFixtureState expeditionState = _ProviderFixtureState.data,
   }) => ProviderScope(
     overrides: [
-      towerProgressProvider.overrideWith((ref) async => progressAt(highest)),
+      towerProgressProvider.overrideWith(
+        (ref) => providerFuture(towerState, progressAt(highest)),
+      ),
       mainlineProgressProvider.overrideWith(
-        (ref) async => MainlineProgress()..clearedStageIds = clearedStageIds,
+        (ref) => providerFuture(
+          mainlineState,
+          MainlineProgress()..clearedStageIds = clearedStageIds,
+        ),
       ),
       activeRetreatSessionProvider.overrideWith((ref) async => null),
       mainMenuSaveSnapshotProvider.overrideWith(
         (ref) async => SaveData()..jianghuJourneyUnlocked = journeyUnlocked,
       ),
-      activeGauntletProvider.overrideWith((ref) async => activeGauntlet),
-      activeExpeditionProvider.overrideWith((ref) async => null),
+      activeGauntletProvider.overrideWith(
+        (ref) =>
+            providerFuture<BossGauntletRun?>(gauntletState, activeGauntlet),
+      ),
+      activeExpeditionProvider.overrideWith(
+        (ref) => providerFuture<ExpeditionRun?>(expeditionState, null),
+      ),
     ],
     child: const MaterialApp(home: JianghuMapScreen()),
   );
+
+  final asyncRouteCases =
+      <
+        ({
+          String name,
+          ValueKey<String> key,
+          Widget Function(_ProviderFixtureState state) build,
+        })
+      >[
+        (
+          name: '九霄塔',
+          key: const ValueKey('jianghu-map-tower-location'),
+          build: (state) => app(journeyUnlocked: true, towerState: state),
+        ),
+        (
+          name: '轻功',
+          key: const ValueKey('jianghu-map-light-foot-location'),
+          build: (state) => app(journeyUnlocked: true, mainlineState: state),
+        ),
+        (
+          name: '守城',
+          key: const ValueKey('jianghu-map-mass-battle-location'),
+          build: (state) => app(journeyUnlocked: true, mainlineState: state),
+        ),
+        (
+          name: '断魂庄',
+          key: const ValueKey('jianghu-map-gauntlet-location'),
+          build: (state) => app(journeyUnlocked: true, gauntletState: state),
+        ),
+        (
+          name: '百草岭',
+          key: const ValueKey('jianghu-map-expedition-location'),
+          build: (state) => app(journeyUnlocked: true, expeditionState: state),
+        ),
+      ];
+
+  for (final state in const [
+    _ProviderFixtureState.loading,
+    _ProviderFixtureState.error,
+  ]) {
+    for (final routeCase in asyncRouteCases) {
+      testWidgets('${routeCase.name} provider ${state.name} 时入口 fail closed', (
+        tester,
+      ) async {
+        await tester.pumpWidget(routeCase.build(state));
+        await tester.pump();
+
+        if (find.byKey(routeCase.key).evaluate().isEmpty) {
+          await tester.scrollUntilVisible(
+            find.byKey(routeCase.key),
+            240,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.pump();
+        }
+        final button = tester.widget<WuxiaInkButton>(find.byKey(routeCase.key));
+        expect(button.disabled, isTrue);
+        expect(button.onTap, isNull);
+      });
+    }
+  }
 
   test('九霄塔地点状态继续读取生产塔数据', () {
     expect(
