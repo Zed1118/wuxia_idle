@@ -38,14 +38,17 @@ void main() {
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
 
-  Future<int> insertCharacter(String name) {
+  Future<int> insertCharacter(
+    String name, {
+    LineageRole lineageRole = LineageRole.founder,
+  }) {
     final character = Character.create(
       name: name,
       realmTier: RealmTier.xueTu,
       realmLayer: RealmLayer.qiMeng,
       attributes: Attributes(),
       rarity: RarityTier.biaoZhun,
-      lineageRole: LineageRole.founder,
+      lineageRole: lineageRole,
       createdAt: DateTime(2026, 8, 22),
       internalForce: 3000,
     );
@@ -64,11 +67,74 @@ void main() {
           ..createdAt = DateTime(2026, 8, 22)
           ..lastSavedAt = DateTime(2026, 8, 22)
           ..lastOnlineAt = DateTime(2026, 8, 22)
-          ..activeCharacterIds = [founderId, reserveId]
+          ..activeCharacterIds = [
+            founderId,
+            if (reserveId != founderId) reserveId,
+          ]
           ..founderCharacterId = founderId,
       ),
     );
   }
+
+  testWidgets('非 active 空闲门人实际参战时由本人承接塔结算', (tester) async {
+    final ids = (await tester.runAsync(() async {
+      final founderId = await insertCharacter('掌门');
+      final discipleId = await insertCharacter(
+        '门人',
+        lineageRole: LineageRole.disciple,
+      );
+      await writeSave(founderId, founderId);
+      return (founderId, discipleId);
+    }))!;
+    final floor = GameRepository.instance.getTowerFloor(1);
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 37,
+      hadActions: true,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: ids.$2,
+          currentHp: 7000,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 456,
+      criticalCount: 3,
+      damageByCharacterId: {ids.$2: 456},
+    );
+
+    WidgetRef? capturedRef;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Consumer(
+            builder: (_, ref, _) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.runAsync(
+      () => applyTowerVictoryResolution(
+        ref: capturedRef!,
+        floor: floor,
+        isFirstClear: true,
+        settlementSnapshot: settlement,
+      ),
+    );
+
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(ids.$1);
+      final disciple = await IsarSetup.instance.characters.get(ids.$2);
+      expect(founder!.experience, 0, reason: '未参战掌门不得承接门人的塔结算');
+      expect(disciple!.experience, floor.baseExpReward);
+      expect(founder.lightInjuryStacks, 0);
+      expect(disciple.lightInjuryStacks, 1);
+    });
+  });
 
   testWidgets('0A snapshot 只结算真实参战祖师，替补零污染', (tester) async {
     final ids = (await tester.runAsync(() async {

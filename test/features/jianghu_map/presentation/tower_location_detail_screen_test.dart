@@ -128,7 +128,7 @@ void main() {
     expect(find.byType(TowerFloorListScreen), findsOneWidget);
   });
 
-  testWidgets('闭关进行中时进入 CTA 被原门禁阻挡', (tester) async {
+  testWidgets('有角色闭关时仍进入塔层列表并在逐次选人时精确拦人', (tester) async {
     final retreat = RetreatSession()
       ..saveDataId = 0
       ..mapType = RetreatMapType.shanLin
@@ -137,10 +137,11 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text(UiStrings.towerLocationEnter));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.text(UiStrings.seclusionBattleLockTitle), findsOneWidget);
-    expect(find.byType(TowerFloorListScreen), findsNothing);
+    expect(find.text(UiStrings.seclusionBattleLockTitle), findsNothing);
+    expect(find.byType(TowerFloorListScreen), findsOneWidget);
   });
 
   for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
