@@ -136,6 +136,24 @@ void main() {
         damageByCharacterId: {for (final id in participantIds) id: 0},
       );
 
+  CombatSettlementSnapshot defeatSettlement(int participantId) =>
+      CombatSettlementSnapshot(
+        result: BattleResult.rightWin,
+        totalTicks: 9,
+        hadActions: true,
+        participants: [
+          CombatParticipantSnapshot(
+            characterId: participantId,
+            currentHp: 0,
+            maxHp: 8000,
+          ),
+        ],
+        skillCasts: const [],
+        totalDamage: 0,
+        criticalCount: 0,
+        damageByCharacterId: const {},
+      );
+
   Future<void> writeSaveData({
     List<int> activeIds = const [],
     int? founderId,
@@ -255,6 +273,27 @@ void main() {
     );
 
     expect(outcome, isNull, reason: 'finalState.isFinished == false → null');
+  });
+
+  testWidgets('轻功 exact participant 缺少完成快照时 fail closed', (tester) async {
+    final participantId = (await tester.runAsync(() async {
+      final participant = await insertCharacter(name: '轻功门人');
+      await writeSaveData(activeIds: const []);
+      return participant;
+    }))!;
+    final error = await runWithRef<Object?>(tester, (ref) async {
+      try {
+        await applyVictoryResolution(
+          ref: ref,
+          stage: normalStage(),
+          expectedParticipantId: participantId,
+        );
+        return null;
+      } catch (caught) {
+        return caught;
+      }
+    });
+    expect(error, isA<StateError>());
   });
 
   testWidgets('显式 0A 末态胜利 → 不读未结束的旧 provider,只结算真实参战者', (tester) async {
@@ -497,18 +536,20 @@ void main() {
       return (founder, participant);
     }))!;
 
-    await expectLater(
-      runWithRef(
-        tester,
-        (ref) => applyVictoryResolution(
+    final error = await runWithRef<Object?>(tester, (ref) async {
+      try {
+        await applyVictoryResolution(
           ref: ref,
           stage: normalStage(baseExpReward: 23),
           settlementSnapshot: finishedSettlement([founderId]),
           expectedParticipantId: participantId,
-        ),
-      ),
-      throwsStateError,
-    );
+        );
+        return null;
+      } catch (caught) {
+        return caught;
+      }
+    });
+    expect(error, isA<StateError>());
     await tester.runAsync(() async {
       expect(
         (await IsarSetup.instance.characters.get(founderId))!.experience,
@@ -518,6 +559,36 @@ void main() {
         (await IsarSetup.instance.characters.get(participantId))!.experience,
         0,
       );
+    });
+  });
+
+  testWidgets('轻功最终败北只给 exact 非 active 门人记伤势且不发经验', (tester) async {
+    final (founderId, participantId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '掌门');
+      final participant = await insertCharacter(name: '轻功门人');
+      await writeSaveData(activeIds: [founder], founderId: founder);
+      return (founder, participant);
+    }))!;
+
+    await runWithRef(
+      tester,
+      (ref) => applyParticipantDefeatResolution(
+        ref: ref,
+        stage: normalStage(baseExpReward: 99),
+        settlementSnapshot: defeatSettlement(participantId),
+        expectedParticipantId: participantId,
+      ),
+    );
+
+    await tester.runAsync(() async {
+      final founder = (await IsarSetup.instance.characters.get(founderId))!;
+      final participant = (await IsarSetup.instance.characters.get(
+        participantId,
+      ))!;
+      expect(founder.lightInjuryStacks, 0);
+      expect(participant.lightInjuryStacks, 1);
+      expect(founder.experience, 0);
+      expect(participant.experience, 0);
     });
   });
 

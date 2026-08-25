@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/defs/light_foot_def.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -45,6 +46,8 @@ void main() {
     ..attributes = Attributes()
     ..rarity = RarityTier.biaoZhun
     ..lineageRole = LineageRole.founder
+    ..isFounder = true
+    ..isAlive = true
     ..createdAt = DateTime(2026, 8, 25);
 
   SaveData save({int? leaderId = 7}) => SaveData()
@@ -57,7 +60,20 @@ void main() {
   Future<void> seedLeader({int? pointer = 7, bool insert = true}) async {
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      if (insert) await isar.characters.put(leader(7, '沈掌门'));
+      if (insert) {
+        final value = leader(7, '沈掌门');
+        await isar.characters.put(value);
+        final technique = Technique.create(
+          defId: 'tech_gangmeng_jichu',
+          ownerCharacterId: value.id,
+          tier: TechniqueTier.values.first,
+          school: TechniqueSchool.gangMeng,
+          role: TechniqueRole.main,
+          learnedAt: DateTime(2026, 8, 25),
+        );
+        value.mainTechniqueId = await isar.techniques.put(technique);
+        await isar.characters.put(value);
+      }
       await isar.saveDatas.put(save(leaderId: pointer));
     });
   }
@@ -74,7 +90,7 @@ void main() {
     return container.read(lightFootLocationDetailProvider.future);
   }
 
-  test('读取下一可挑战路线的生产配置、掉落与真实当前掌门', () async {
+  test('读取下一可挑战路线的生产配置、掉落与逐次选人可用数', () async {
     await seedLeader();
     final nextStage = GameRepository.instance.getStage('stage_light_foot_03');
 
@@ -96,11 +112,10 @@ void main() {
     );
     expect(detail.rewardRumor, isNotNull);
     expect(detail.baseExpReward, nextStage.baseExpReward);
-    expect(detail.participantId, 7);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 1);
   });
 
-  test('五路全通时无下一路情报但保留真实参与者', () async {
+  test('五路全通时无下一路情报但保留逐次选人可用数', () async {
     await seedLeader();
     final detail = await readDetail(const [
       'stage_06_05',
@@ -119,7 +134,7 @@ void main() {
     expect(detail.enemies, isEmpty);
     expect(detail.rewardRumor, isNull);
     expect(detail.baseExpReward, isNull);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 1);
   });
 
   test('掌门指针缺失或悬空时 fail closed', () async {

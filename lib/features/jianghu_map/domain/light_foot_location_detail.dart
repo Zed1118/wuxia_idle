@@ -26,8 +26,7 @@ class LightFootLocationDetail {
     required this.enemies,
     required this.rewardRumor,
     required this.baseExpReward,
-    required this.participantId,
-    required this.participantName,
+    required this.eligibleParticipantCount,
   });
 
   final int clearedRoutes;
@@ -39,8 +38,8 @@ class LightFootLocationDetail {
   final List<LightFootLocationEnemySummary> enemies;
   final DropRumorTable? rewardRumor;
   final int? baseExpReward;
-  final int participantId;
-  final String participantName;
+  final int eligibleParticipantCount;
 
   bool get isComplete => nextStageId == null;
+  bool get hasEligibleParticipant => eligibleParticipantCount > 0;
 }

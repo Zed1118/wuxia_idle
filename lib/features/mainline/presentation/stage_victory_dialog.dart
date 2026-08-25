@@ -107,6 +107,7 @@ Future<StageVictoryAction> showStageVictoryDialog({
   required StageDef stage,
   required DropResult drops,
   required List<AdvancementEntry> advancements,
+  String? participantName,
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   String? firstClearTitle,
   String? firstClearSubtitle,
@@ -187,6 +188,7 @@ Future<StageVictoryAction> showStageVictoryDialog({
                   DefaultTextStyle.merge(
                     style: const TextStyle(color: WuxiaUi.ink, fontSize: 13),
                     child: StageVictoryContent(
+                      participantName: participantName,
                       drops: drops,
                       advancements: advancements,
                       resonanceUpgrades: resonanceUpgrades,
@@ -276,6 +278,7 @@ class StageVictoryContent extends StatelessWidget {
     super.key,
     required this.drops,
     required this.advancements,
+    this.participantName,
     this.resonanceUpgrades = const [],
     this.firstClearTitle,
     this.firstClearSubtitle,
@@ -288,6 +291,7 @@ class StageVictoryContent extends StatelessWidget {
 
   final DropResult drops;
   final List<AdvancementEntry> advancements;
+  final String? participantName;
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
   final String? firstClearTitle;
   final String? firstClearSubtitle;
@@ -332,6 +336,16 @@ class StageVictoryContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (participantName != null) ...[
+                Text(
+                  UiStrings.stageReportParticipant(participantName!),
+                  style: const TextStyle(
+                    color: WuxiaUi.ink,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               if (firstClearTitle != null) ...[
                 FirstClearBanner(
                   title: firstClearTitle!,

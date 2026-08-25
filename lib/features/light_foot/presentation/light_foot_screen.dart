@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../combat_shared/application/selected_cycle_provider.dart';
@@ -12,6 +14,8 @@ import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../application/light_foot_service.dart';
+import '../application/light_foot_participant_service.dart';
+import 'light_foot_participant_picker.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 轻功试炼 stage list 屏(1.0 P3.1 §12.3,Batch B.3 reactive 三态)。
@@ -27,8 +31,28 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 ///
 /// **不接管 wuSheng 突破链**(平行支线 · 沿 inner_demon_screen 体例但不嵌
 /// isLayerLocked 路径)。
+typedef LightFootStageRunner =
+    Future<void> Function({
+      required BuildContext context,
+      required WidgetRef ref,
+      required StageDef stage,
+      required int targetCycle,
+      required CombatantSnapshot participantSnapshot,
+    });
+
+typedef LightFootParticipantSnapshotResolver =
+    Future<CombatantSnapshot> Function(int requestedParticipantId);
+
 class LightFootScreen extends ConsumerWidget {
-  const LightFootScreen({super.key});
+  const LightFootScreen({
+    super.key,
+    this.stageRunnerForTest,
+    this.participantSnapshotResolverForTest,
+  });
+
+  final LightFootStageRunner? stageRunnerForTest;
+  final LightFootParticipantSnapshotResolver?
+  participantSnapshotResolverForTest;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,11 +124,14 @@ class LightFootScreen extends ConsumerWidget {
                           status: status,
                           onTap: status == LightFootStageStatus.locked
                               ? null
-                              : () => runStageFlow(
+                              : () => runLightFootChallenge(
                                   context: context,
                                   ref: ref,
                                   stage: s,
                                   targetCycle: cycleFor(),
+                                  stageRunner: stageRunnerForTest,
+                                  participantSnapshotResolver:
+                                      participantSnapshotResolverForTest,
                                 ),
                         ),
                       );
@@ -119,6 +146,63 @@ class LightFootScreen extends ConsumerWidget {
     );
   }
 }
+
+/// 每次路线挑战都先选择参与者，再以 exact snapshot 进入共享生产流程。
+Future<void> runLightFootChallenge({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  LightFootStageRunner? stageRunner,
+  LightFootParticipantSnapshotResolver? participantSnapshotResolver,
+}) async {
+  final participantId = await selectLightFootParticipant(
+    context: context,
+    ref: ref,
+  );
+  if (participantId == null || !context.mounted) return;
+
+  late final CombatantSnapshot participantSnapshot;
+  try {
+    participantSnapshot = participantSnapshotResolver == null
+        ? await resolveLightFootParticipantSnapshot(
+            isar: IsarSetup.instance,
+            requestedParticipantId: participantId,
+          )
+        : await participantSnapshotResolver(participantId);
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.lightFootParticipantUnavailable),
+        ),
+      );
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  await (stageRunner ?? runLightFootStageFlow)(
+    context: context,
+    ref: ref,
+    stage: stage,
+    targetCycle: targetCycle,
+    participantSnapshot: participantSnapshot,
+  );
+}
+
+Future<void> runLightFootStageFlow({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  required CombatantSnapshot participantSnapshot,
+}) => runStageFlow(
+  context: context,
+  ref: ref,
+  stage: stage,
+  targetCycle: targetCycle,
+  directParticipantSnapshot: participantSnapshot,
+);
 
 class _LightFootRow extends StatelessWidget {
   const _LightFootRow({

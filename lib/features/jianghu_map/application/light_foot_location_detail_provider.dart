@@ -1,13 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
-import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/light_foot_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
-import '../../../shared/battle_shared/current_leader_resolver.dart';
+import '../../light_foot/application/light_foot_participant_service.dart';
 import '../../light_foot/application/light_foot_service.dart';
 import '../../loot_preview/domain/drop_rumor.dart';
 import '../../mainline/application/mainline_providers.dart';
@@ -120,17 +118,9 @@ final lightFootLocationDetailProvider = FutureProvider<LightFootLocationDetail>(
       nextStage = candidate;
     }
 
-    final save = await isar.saveDatas.get(0);
-    final leaderId = await CurrentLeaderResolver.resolve(
-      save: save,
-      characterExists: (id) async => await isar.characters.get(id) != null,
+    final participantCandidates = await loadLightFootParticipantCandidates(
+      isar: isar,
     );
-    final leader = await isar.characters.get(leaderId);
-    if (leader == null) {
-      throw StateError(
-        'Light foot location detail leader disappeared: $leaderId',
-      );
-    }
 
     return LightFootLocationDetail(
       clearedRoutes: clearedRoutes,
@@ -150,8 +140,9 @@ final lightFootLocationDetailProvider = FutureProvider<LightFootLocationDetail>(
               gating: FirstClearGating.wholeChannel,
             ),
       baseExpReward: nextStage?.baseExpReward,
-      participantId: leaderId,
-      participantName: leader.name,
+      eligibleParticipantCount: participantCandidates
+          .where((candidate) => candidate.selectable)
+          .length,
     );
   },
   dependencies: [isarProvider, mainlineProgressProvider],

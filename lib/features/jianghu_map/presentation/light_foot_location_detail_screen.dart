@@ -121,7 +121,9 @@ class _DetailContent extends ConsumerWidget {
               ),
               _DetailRow(
                 label: UiStrings.lightFootLocationParticipantLabel,
-                value: detail.participantName,
+                value: UiStrings.lightFootLocationEligibleParticipants(
+                  detail.eligibleParticipantCount,
+                ),
               ),
               const _DetailRow(
                 label: UiStrings.lightFootLocationEntryModeLabel,
@@ -143,13 +145,16 @@ class _DetailContent extends ConsumerWidget {
               ? UiStrings.lightFootLocationEnterReplayHint
               : UiStrings.lightFootLocationEnterHint,
           icon: Icons.directions_run,
-          onTap: () => guardBattleEntry(
-            context: context,
-            ref: ref,
-            onAllowed: () => Navigator.of(context).push<void>(
-              MaterialPageRoute(builder: (_) => const LightFootScreen()),
-            ),
-          ),
+          disabled: !detail.hasEligibleParticipant,
+          onTap: detail.hasEligibleParticipant
+              ? () => guardBattleEntry(
+                  context: context,
+                  ref: ref,
+                  onAllowed: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const LightFootScreen()),
+                  ),
+                )
+              : null,
         ),
       ],
     );

@@ -108,6 +108,7 @@ Future<void> runStageFlow({
   int targetCycle = 1,
   bool continueFirstClearRun = false,
   int? visibleReplayParticipantId,
+  CombatantSnapshot? directParticipantSnapshot,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -120,6 +121,20 @@ Future<void> runStageFlow({
   Future<List<DefeatLossEntry>> Function(StageDef stage)?
   bossDefeatPenaltyForTest,
 }) async {
+  if (directParticipantSnapshot != null) {
+    if (stage.stageType != StageType.lightFoot) {
+      throw ArgumentError.value(
+        directParticipantSnapshot.characterId,
+        'directParticipantSnapshot',
+        'is supported only for light foot challenge',
+      );
+    }
+    if (visibleReplayParticipantId != null || continueFirstClearRun) {
+      throw ArgumentError(
+        'Direct participant cannot be combined with a mainline run or replay',
+      );
+    }
+  }
   if (!continueFirstClearRun ||
       targetCycle != 1 ||
       stage.stageType != StageType.mainline) {
@@ -156,7 +171,7 @@ Future<void> runStageFlow({
       ref: ref,
       stage: stage,
       targetCycle: targetCycle,
-      playerSnapshot: visibleReplaySnapshot,
+      playerSnapshot: directParticipantSnapshot ?? visibleReplaySnapshot,
       battleRunnerForTest: battleRunnerForTest,
       battleOutcomeForTest: battleOutcomeForTest,
       phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
@@ -705,6 +720,13 @@ Future<void> _runSingleStageFlow({
   }
   final automaticallyPresentsNarratives =
       shouldAutomaticallyPresentStageNarratives(stage);
+  // 本切片只收紧轻功逐次选人的结算身份；主线/守城既有语义保持不变。
+  final expectedParticipantId = stage.stageType == StageType.lightFoot
+      ? playerSnapshot?.characterId
+      : null;
+  final participantName = stage.stageType == StageType.lightFoot
+      ? playerSnapshot?.name
+      : null;
 
   // ── opening ──
   if (automaticallyPresentsNarratives && stage.narrativeOpeningId != null) {
@@ -764,10 +786,11 @@ Future<void> _runSingleStageFlow({
       // Phase 4 W10: Boss 关战败结算（被动散功 + battleCount + skillUsage 落地）。
       final summary = bossDefeatPenaltyForTest != null
           ? await bossDefeatPenaltyForTest(stage)
-          : await _applyBossDefeatPenalty(
+          : await applyParticipantDefeatResolution(
               ref: ref,
               stage: stage,
               settlementSnapshot: battleExit.settlement,
+              expectedParticipantId: expectedParticipantId,
             );
       if (summary.isNotEmpty) {
         // W13-v3 fix: writeTxn 写回 character.internalForce / mainTech.layer
@@ -787,9 +810,23 @@ Future<void> _runSingleStageFlow({
       final retry = stageRetryDeciderForTest != null
           ? await stageRetryDeciderForTest()
           : (context.mounted
-                ? await _showStageRetryDialog(context, stage)
+                ? await _showStageRetryDialog(
+                    context,
+                    stage,
+                    participantName: participantName,
+                  )
                 : false);
       if (retry) continue;
+      if (stage.stageType == StageType.lightFoot &&
+          expectedParticipantId != null) {
+        await applyParticipantDefeatResolution(
+          ref: ref,
+          stage: stage,
+          settlementSnapshot: battleExit.settlement,
+          expectedParticipantId: expectedParticipantId,
+        );
+        invalidateAfterCombatSettlement(ref.invalidate);
+      }
     }
 
     // 不重试(Boss 关 / 普通关放弃)→ 特殊模式战败剧情 + 收降,返回。
@@ -836,6 +873,7 @@ Future<void> _runSingleStageFlow({
     cycle: targetCycle,
     settlementSnapshot: completedSettlement,
     durableSettlement: durableSettlement,
+    expectedParticipantId: expectedParticipantId,
   );
   // W13-v3 fix: 同 defeat 分支,invalidate character/equipment/technique family
   // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
@@ -929,6 +967,7 @@ Future<void> _runSingleStageFlow({
     final victoryAction = await showStageVictoryDialog(
       context: context,
       stage: stage,
+      participantName: participantName,
       drops: outcome.drops,
       advancements: outcome.advancements,
       resonanceUpgrades: outcome.resonanceUpgrades,
@@ -1451,11 +1490,15 @@ Future<MainlineBattleExit> _runPhase0aBattle({
 }
 
 /// M3:普通关战败「立即重试」对话框。返回 true=再战(回 runStageFlow 循环头重打本场)。
-Future<bool> _showStageRetryDialog(BuildContext context, StageDef stage) async {
+Future<bool> _showStageRetryDialog(
+  BuildContext context,
+  StageDef stage, {
+  String? participantName,
+}) async {
   final retry = await PaperDialog.show<bool>(
     context,
     title: UiStrings.stageRetryTitle,
-    body: const StageRetryDialogBody(),
+    body: StageRetryDialogBody(participantName: participantName),
     actions: [
       Builder(
         builder: (ctx) => TextButton(
@@ -1642,11 +1685,24 @@ String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
 /// items 写/更新 inventoryItems。
 ///
 /// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回 null，
-/// caller 跳过 victory dialog（与 _applyBossDefeatPenalty 一致风格）。
+/// caller 跳过 victory dialog（与战败结算一致风格）。
 ///
 /// W15 #30 P3 后续 A:返回 `(drops, advancements)` 供 caller push
 /// [showStageVictoryDialog] 显 drop + 升层 banner。
 /// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
+List<int> _requireExactSettlementParticipant({
+  required Iterable<int> participantIds,
+  required int expectedParticipantId,
+}) {
+  final exactIds = participantIds.toSet();
+  if (exactIds.length != 1 || !exactIds.contains(expectedParticipantId)) {
+    throw StateError(
+      'Combat settlement participant does not match the selected character',
+    );
+  }
+  return [expectedParticipantId];
+}
+
 Future<
   ({
     DropResult drops,
@@ -1665,19 +1721,34 @@ applyVictoryResolution({
   int cycle = 1,
   CombatSettlementSnapshot? settlementSnapshot,
   MainlineDurableSettlementContext? durableSettlement,
+  int? expectedParticipantId,
 }) async {
   final isar = IsarSetup.instanceOrNull;
-  if (isar == null) return null;
+  if (isar == null) {
+    if (expectedParticipantId != null) {
+      throw StateError('Expected settlement storage is unavailable');
+    }
+    return null;
+  }
   final combatSettlement = settlementSnapshot;
-  if (combatSettlement == null) return null;
-  if (!combatSettlement.isFinished) return null;
+  if (combatSettlement == null || !combatSettlement.isFinished) {
+    if (expectedParticipantId != null) {
+      throw StateError('Expected participant settlement is incomplete');
+    }
+    return null;
+  }
   final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
-  final save = await isar.saveDatas.get(0);
   final participantIds = combatSettlement.participantCharacterIds;
-  final ids = (save?.activeCharacterIds ?? const <int>[])
-      .where(participantIds.contains)
-      .toList(growable: false);
+  final save = await isar.saveDatas.get(0);
+  final ids = expectedParticipantId == null
+      ? (save?.activeCharacterIds ?? const <int>[])
+            .where(participantIds.contains)
+            .toList(growable: false)
+      : _requireExactSettlementParticipant(
+          participantIds: participantIds,
+          expectedParticipantId: expectedParticipantId,
+        );
   if (ids.isEmpty) return null;
 
   final characters = <Character>[];
@@ -1685,7 +1756,12 @@ applyVictoryResolution({
   final techsByCh = <int, List<Technique>>{};
   for (final cid in ids) {
     final c = await isar.characters.get(cid);
-    if (c == null) continue;
+    if (c == null) {
+      if (expectedParticipantId != null) {
+        throw StateError('Expected settlement participant disappeared: $cid');
+      }
+      continue;
+    }
     characters.add(c);
 
     final eqs = <Equipment>[];
@@ -1696,7 +1772,13 @@ applyVictoryResolution({
     ]) {
       if (eqId == null) continue;
       final e = await isar.equipments.get(eqId);
-      if (e != null) eqs.add(e);
+      if (e == null || e.ownerCharacterId != c.id) {
+        if (expectedParticipantId != null) {
+          throw StateError('Expected settlement participant equipment invalid');
+        }
+        continue;
+      }
+      eqs.add(e);
     }
     equipsByCh[c.id] = eqs;
 
@@ -2036,28 +2118,43 @@ applyVictoryResolution({
 /// 委托 [ItemType.fromDefId]，避免双真相源；新增 defId 只需在 fromDefId 维护。
 ItemType _itemTypeOfMainline(String defId) => ItemType.fromDefId(defId);
 
-/// Boss 关战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑
+/// 战败：从 Isar 拉玩家方角色 + 心法 + 装备，跑
 /// [BattleResolutionService.resolve]（败北由 `finalState.result` 派生），写回 Isar，返回
 /// 用于 UI 损失摘要展示的轻量结构。
 ///
-/// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回空 list，
-/// caller 不展示 banner（不阻塞剧情流）。
-Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
+/// 旧流程在 Isar 未 ready / 角色为空 / finalState 异常时返回空 list；轻功
+/// exact participant 流程必须 fail closed，避免跳过真实参与者的最终败北账本。
+Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
   required WidgetRef ref,
   required StageDef stage,
   CombatSettlementSnapshot? settlementSnapshot,
+  int? expectedParticipantId,
 }) async {
   final isar = IsarSetup.instanceOrNull;
-  if (isar == null) return const [];
+  if (isar == null) {
+    if (expectedParticipantId != null) {
+      throw StateError('Expected defeat settlement storage is unavailable');
+    }
+    return const [];
+  }
   final combatSettlement = settlementSnapshot;
-  if (combatSettlement == null) return const [];
-  if (!combatSettlement.isFinished) return const [];
+  if (combatSettlement == null || !combatSettlement.isFinished) {
+    if (expectedParticipantId != null) {
+      throw StateError('Expected participant defeat settlement is incomplete');
+    }
+    return const [];
+  }
 
-  final save = await isar.saveDatas.get(0);
   final participantIds = combatSettlement.participantCharacterIds;
-  final ids = (save?.activeCharacterIds ?? const <int>[])
-      .where(participantIds.contains)
-      .toList(growable: false);
+  final save = await isar.saveDatas.get(0);
+  final ids = expectedParticipantId == null
+      ? (save?.activeCharacterIds ?? const <int>[])
+            .where(participantIds.contains)
+            .toList(growable: false)
+      : _requireExactSettlementParticipant(
+          participantIds: participantIds,
+          expectedParticipantId: expectedParticipantId,
+        );
   if (ids.isEmpty) return const [];
 
   final characters = <Character>[];
@@ -2065,7 +2162,12 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
   final techsByCh = <int, List<Technique>>{};
   for (final cid in ids) {
     final c = await isar.characters.get(cid);
-    if (c == null) continue;
+    if (c == null) {
+      if (expectedParticipantId != null) {
+        throw StateError('Expected defeat participant disappeared: $cid');
+      }
+      continue;
+    }
     characters.add(c);
 
     final eqs = <Equipment>[];
@@ -2076,7 +2178,13 @@ Future<List<DefeatLossEntry>> _applyBossDefeatPenalty({
     ]) {
       if (eqId == null) continue;
       final e = await isar.equipments.get(eqId);
-      if (e != null) eqs.add(e);
+      if (e == null || e.ownerCharacterId != c.id) {
+        if (expectedParticipantId != null) {
+          throw StateError('Expected defeat participant equipment invalid');
+        }
+        continue;
+      }
+      eqs.add(e);
     }
     equipsByCh[c.id] = eqs;
 
@@ -2350,17 +2458,23 @@ bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
 /// 普通关战败弹框正文：提示 + 非教学化补强短诊断（S3 新手打磨）。
 /// 抽成公开 widget 便于单测（对话框本体私有、测试 harness 注入替换）。
 class StageRetryDialogBody extends StatelessWidget {
-  const StageRetryDialogBody({super.key});
+  const StageRetryDialogBody({super.key, this.participantName});
+
+  final String? participantName;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(UiStrings.stageRetryPrompt),
-        SizedBox(height: 8),
-        Text(
+        if (participantName != null) ...[
+          Text(UiStrings.stageReportParticipant(participantName!)),
+          const SizedBox(height: 8),
+        ],
+        const Text(UiStrings.stageRetryPrompt),
+        const SizedBox(height: 8),
+        const Text(
           UiStrings.stageRetryHintLine,
           style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
         ),

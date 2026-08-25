@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
 
@@ -44,8 +45,7 @@ void main() {
               gating: FirstClearGating.wholeChannel,
             ),
       baseExpReward: complete ? null : stage.baseExpReward,
-      participantId: 7,
-      participantName: '沈掌门',
+      eligibleParticipantCount: 2,
     );
   }
 
@@ -88,7 +88,10 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('沈掌门'), findsOneWidget);
+    expect(
+      find.text(UiStrings.lightFootLocationEligibleParticipants(2)),
+      findsOneWidget,
+    );
     expect(
       find.text(UiStrings.lightFootLocationEntryModeDirect),
       findsOneWidget,
@@ -132,6 +135,29 @@ void main() {
       findsNothing,
     );
     expect(find.textContaining('dangling leader'), findsNothing);
+  });
+
+  testWidgets('没有空闲合格参与者时入口 fail closed', (tester) async {
+    final value = LightFootLocationDetail(
+      clearedRoutes: detail().clearedRoutes,
+      totalRoutes: detail().totalRoutes,
+      nextStageId: detail().nextStageId,
+      nextStageName: detail().nextStageName,
+      recommendedRealm: detail().recommendedRealm,
+      terrainBiome: detail().terrainBiome,
+      enemies: detail().enemies,
+      rewardRumor: detail().rewardRumor,
+      baseExpReward: detail().baseExpReward,
+      eligibleParticipantCount: 0,
+    );
+    await tester.pumpWidget(app(value: value));
+    await tester.pumpAndSettle();
+
+    final button = tester.widget<WuxiaInkButton>(
+      find.byKey(const ValueKey('light-foot-location-detail-enter')),
+    );
+    expect(button.disabled, isTrue);
+    expect(button.onTap, isNull);
   });
 
   testWidgets('进入 CTA 经原门禁放行后进入轻功关卡列表', (tester) async {

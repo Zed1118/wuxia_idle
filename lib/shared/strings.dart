@@ -1669,7 +1669,9 @@ class UiStrings {
   static const String lightFootLocationTerrainLabel = '路线地形';
   static const String lightFootLocationEnemyEcologyLabel = '敌方生态';
   static const String lightFootLocationCoreRewardLabel = '核心收获';
-  static const String lightFootLocationParticipantLabel = '当前参与者';
+  static const String lightFootLocationParticipantLabel = '实际参与者';
+  static String lightFootLocationEligibleParticipants(int count) =>
+      '进入路线后逐次选择 · 可用 $count 人';
   static const String lightFootLocationEntryModeLabel = '进入方式';
   static const String lightFootLocationOccupancyLabel = '预计占用';
   static const String lightFootLocationEntryModeDirect = '当前仅开放亲战，不可派遣';
@@ -1678,6 +1680,15 @@ class UiStrings {
   static const String lightFootLocationEnter = '进入轻功试炼';
   static const String lightFootLocationEnterHint = '查看路线并挑战当前可用试炼';
   static const String lightFootLocationEnterReplayHint = '查看路线并重打已通试炼';
+  static const String lightFootParticipantTitle = '选择试炼者';
+  static const String lightFootParticipantBody = '每次挑战单独选择一名空闲掌门或门人。';
+  static const String lightFootParticipantAvailable = '可亲战';
+  static const String lightFootParticipantOccupied = '活动中';
+  static const String lightFootParticipantHealing = '重伤疗养中';
+  static const String lightFootParticipantNoMainTechnique = '未修主修';
+  static const String lightFootParticipantNoneEligible = '当前没有可参加轻功试炼的角色。';
+  static const String lightFootParticipantUnavailable = '试炼者状态暂不可用，请稍后重试。';
+  static String stageReportParticipant(String name) => '实际参与者：$name';
   static const String massBattleLocationDetailTitle = '守城试炼 · 地点详情';
   static const String massBattleLocationUnavailable = '守城情报暂不可核实，暂不能进入';
   static const String massBattleLocationProgressLabel = '当前进度';
