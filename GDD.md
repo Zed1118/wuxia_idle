@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.71
+> **版本**:v1.72
+> **v1.72 变更**(2026-08-25 二阶段 U10 事实性失败与新增伤势展示):七类内容的失败/返程事实展示已由 `4/7` 补齐为 `7/7`。主线、轻功、守城的共享 stage flow 在放弃重试并落既有结算后，只显示 exact participant 和伤势 before/after 差分；入场前既有伤势不冒充本次后果。九霄塔败北也在共享战斗账本落库后显示实际参与者与新增轻/重伤；心魔、断魂庄、远征保留独立事实摘要。建议型“换装备/先历练”重试文案已删除，不新增配装/战术诊断或统一完成报告。本门关闭 U10，但 U09 仍 BLOCKED，U14/M6/Phase 2 仍开放；不改伤势数值、FailurePolicy 权重、schema/saveVersion、YAML、TUNING、奖励、经济、解锁或战斗规则。
 > **v1.71 变更**(2026-08-25 二阶段 U01 主线五模式一致性生产纵切):主线首推手动、可见真人重打、可见前台 bot 重打、快速 headless 重打与即时扫荡已由 `2/5` 连接至 `5/5`；五模式统一消费 typed 参与请求、exact participant snapshot、既有 Phase 0A reducer/event 与共享结算，记录与报告归实际参与者。首推仍当前掌门人控，可见重打可选 eligible 角色，无人值守重打/扫荡仍使用当前掌门。无效身份/代际、死亡、疗养、无主修、占用、provider、悬空/错配装备心法、stale snapshot、未通关自动化或错人 settlement 均 fail closed。本纵切只关闭 U01 生产子门，顶层 M0–M9 仍 `1/10`，M2/M6/Phase 2 仍 WIP；不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
-> **v1.70 变更**(2026-08-25 二阶段百草岭真实差遣端到端生产纵切):宗门与江湖地图的百草岭入口继续汇入同一生产总览；逐次差遣现以 typed request 锁定 eligible 实际参与者并落 durable snapshot，真实 Phase 0A headless 自动/离线节点在开战前复核角色与精确装配，终局经既有共享战斗账本归属该人，返程行记显示实际参与者。无效身份/代际、生死、疗养、无主修、重复占用、provider、悬空/错配装配、stale snapshot 与错人 settlement 均 fail closed。远征深度、奖励、经验、伤势、周目和解锁语义不变。本纵切只关闭 M6 真实差遣闭环必要子门，顶层 M0–M9 仍 `1/10`、M6 仍 WIP，不晋升 U01/M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)

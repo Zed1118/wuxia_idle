@@ -5049,12 +5049,27 @@ tasks:
     owner: codex_root
     branch: codex/phase2-u10-factual-failure-injury-display-20260825
     worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 38a61a0b
+    code_candidate_commit: ac34d50bade33511e3ff592196a5e97e67c12ec8
+    reviewed_candidate_commit: ac34d50bade33511e3ff592196a5e97e67c12ec8
+    ready_marker: "[READY][CODEX][P2-M6-U10-FACTUAL-FAILURE-INJURY-DISPLAY] 七内容事实性失败与新增伤势展示"
     completion_scope: show_fact_only_failure_participant_and_new_injury_outcomes_across_all_seven_content_kinds_without_advice
     acceptance_baseline: 4_of_7_content_kinds
     acceptance_target: 7_of_7_content_kinds
+    acceptance_result: 7_of_7_content_kinds
+    verification:
+      initial_red_failures: 4
+      focused_failure_and_injury_tests: 24
+      mainline_and_tower_presentation_tests: 213
+      seven_content_failure_injury_domain_tests: 551
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      prescriptive_retry_copy_occurrences: 0
+      diff_check_issues: 0
+      full_suite_rerun: not_run_due_90_minute_cost_stop
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - REOPEN-FAILURE-DIAGNOSIS-01
       - FAILURE-POLICY-CORE-01
