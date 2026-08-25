@@ -41,6 +41,7 @@ void main() {
 
   Future<int> putDisciple({
     bool isFounder = false,
+    bool isAlive = true,
     int? weaponId,
     int? mainTech,
     List<int> assist = const [],
@@ -57,6 +58,7 @@ void main() {
         ..lineageRole = isFounder ? LineageRole.founder : LineageRole.disciple
         ..createdAt = DateTime(2026, 7, 16)
         ..isFounder = isFounder
+        ..isAlive = isAlive
         ..equippedWeaponId = weaponId
         ..mainTechniqueId = mainTech
         ..assistTechniqueIds = assist
@@ -228,6 +230,21 @@ void main() {
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(characterIds: [cid], supplyCap: 3),
+      throwsStateError,
+    );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
+
+  test('已故当前掌门不可入庄且不扣帖', () async {
+    final cid = await putDisciple(isFounder: true, isAlive: false, mainTech: 5);
+    await setCurrentLeader(cid);
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+
+    await expectLater(
+      GauntletService(
+        IsarSetup.instance,
+      ).enter(characterIds: [cid], supplyCap: 3),
       throwsStateError,
     );
     expect(await qtyOf('item_duanhuntie'), 1);

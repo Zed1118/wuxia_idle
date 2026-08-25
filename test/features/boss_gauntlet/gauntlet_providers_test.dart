@@ -116,9 +116,15 @@ void main() {
   /// 返回 (runId, discipleId)。
   Future<(int, int)> enterRun() async {
     final isar = IsarSetup.instance;
-    late int discipleId;
+    late int leaderId, discipleId;
     await isar.writeTxn(() async {
+      leaderId = await isar.characters.put(
+        makeChar(name: '当代掌门', isFounder: true),
+      );
       discipleId = await isar.characters.put(makeChar(name: '入场弟子'));
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = leaderId;
+      await isar.saveDatas.put(save);
     });
     final techId = await seedTechnique(discipleId);
     await isar.writeTxn(() async {

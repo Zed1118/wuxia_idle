@@ -5,6 +5,7 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_run.dart';
@@ -70,27 +71,30 @@ class ExpeditionCandidate {
   bool get dispatchable => !occupied && hasMainTechnique;
 }
 
-/// 派遣候选池（总览派遣态）：全部可上场非祖师角色（`isFounder==false && isAlive`
-/// 一条 Isar 查询即覆盖 active 门人 + inactive 替补），各标占用/主修态。祖师坐镇
-/// 不出征、亡者排除（§4.1）；已被占用者仍列出但标灰（§7.1「远征中」口径），不做
+/// 派遣候选池（总览派遣态）：当前掌门 + 全部存活门人（覆盖 active 门人与 inactive
+/// 替补），各标占用/主修态。当前掌门必须由 [CurrentLeaderResolver] 核实，前代祖师
+/// 不得混入；亡者排除，已被占用者仍列出但标灰（§7.1「远征中」口径），不做
 /// GameRepository 依赖的排序（保持轻量、可在无 defs 环境测）。派遣/召回写路径后由
 /// caller `ref.invalidate(expeditionCandidatesProvider)` 统一失效。
 @riverpod
 Future<List<ExpeditionCandidate>> expeditionCandidates(Ref ref) async {
   final isar = ref.watch(isarProvider);
   if (isar == null) return const [];
-  final chars = await isar.characters
-      .filter()
-      .isFounderEqualTo(false)
-      .isAliveEqualTo(true)
-      .findAll();
+  final save = await isar.saveDatas.get(0);
+  final leaderId = await CurrentLeaderResolver.resolve(
+    save: save,
+    characterExists: (characterId) async =>
+        await isar.characters.get(characterId) != null,
+  );
+  final chars = await isar.characters.filter().isAliveEqualTo(true).findAll();
   final occ = await CharacterOccupancyService(isar).snapshot();
   return [
     for (final c in chars)
-      ExpeditionCandidate(
-        character: c,
-        occupied: occ.isCharacterOccupied(c.id),
-        hasMainTechnique: c.mainTechniqueId != null,
-      ),
+      if (!c.isFounder || c.id == leaderId)
+        ExpeditionCandidate(
+          character: c,
+          occupied: occ.isCharacterOccupied(c.id),
+          hasMainTechnique: c.mainTechniqueId != null,
+        ),
   ];
 }

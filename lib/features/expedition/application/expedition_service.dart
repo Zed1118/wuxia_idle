@@ -12,6 +12,7 @@ import '../../../data/isar_setup.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../injury/application/injury_service.dart';
@@ -34,8 +35,8 @@ class ExpeditionService {
   /// 派遣入场：单 `writeTxn` 校验占用 → 建 [ExpeditionRun] 快照 → `serial++` → put。
   /// 返回落库的 run id；任一校验不过抛 [StateError]，事务回滚。
   ///
-  /// 校验（路线 C）：恰好 1 人、不含祖师、成员未被其它活动占用、成员已修
-  /// 主修；每存档最多一条 active 远征（§8.3）。成员生命/真气不在派遣期计算——
+  /// 校验（路线 C）：恰好 1 人；若为祖师，必须是存档真实当前掌门；成员未被其它
+  /// 活动占用且已修主修；每存档最多一条 active 远征（§8.3）。成员生命/真气不在派遣期计算——
   /// `currentNode==0` 即「未开战」，B2.2 首战按 `BattleCharacter.fromCharacter`
   /// 满血起，之后写回快照 HP/qi（跨节点继承）。
   ///
@@ -75,7 +76,16 @@ class ExpeditionService {
         if (!c.isAlive) {
           throw StateError('expedition_dispatch_character_dead:$cid');
         }
-        if (c.isFounder) throw StateError('远征派遣：祖师不可派遣');
+        if (c.isFounder) {
+          final currentLeaderId = await CurrentLeaderResolver.resolve(
+            save: save,
+            characterExists: (characterId) async =>
+                await _isar.characters.get(characterId) != null,
+          );
+          if (currentLeaderId != cid) {
+            throw StateError('远征派遣：角色 $cid 不是当前掌门');
+          }
+        }
         if (c.realmTier.index > entryMaxTier.index) entryMaxTier = c.realmTier;
         if (occupancy.isCharacterOccupied(cid)) {
           throw StateError('远征派遣：角色 $cid 已被其它活动占用');

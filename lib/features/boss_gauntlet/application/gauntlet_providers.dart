@@ -7,6 +7,7 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/strings.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
@@ -248,28 +249,31 @@ Future<GauntletInterludeView?> gauntletInterludeView(Ref ref) async {
   );
 }
 
-/// 入场候选池（装载屏）：全部可上场非祖师角色（`isFounder==false && isAlive` 一条
-/// Isar 查询覆盖 active 门人 + inactive 替补），各标占用/主修态。祖师坐镇不入场
-/// （`enter` 硬拦）、亡者排除（§5.1）；已被占用者仍列出但标灰。不做 GameRepository
+/// 入场候选池（装载屏）：当前掌门 + 全部存活门人（覆盖 active 门人与 inactive
+/// 替补），各标占用/主修态。当前掌门必须经 [CurrentLeaderResolver] 核实，前代祖师
+/// 不得混入；亡者排除（§5.1），已被占用者仍列出但标灰。不做 GameRepository
 /// 依赖的排序（保持轻量、可在无 defs 环境测）。enter/settle 写路径后由 caller
 /// `ref.invalidate(gauntletCandidatesProvider)` 统一失效。
 @riverpod
 Future<List<GauntletCandidate>> gauntletCandidates(Ref ref) async {
   final isar = ref.watch(isarProvider);
   if (isar == null) return const [];
-  final chars = await isar.characters
-      .filter()
-      .isFounderEqualTo(false)
-      .isAliveEqualTo(true)
-      .findAll();
+  final save = await isar.saveDatas.get(0);
+  final leaderId = await CurrentLeaderResolver.resolve(
+    save: save,
+    characterExists: (characterId) async =>
+        await isar.characters.get(characterId) != null,
+  );
+  final chars = await isar.characters.filter().isAliveEqualTo(true).findAll();
   final occ = await CharacterOccupancyService(isar).snapshot();
   return [
     for (final c in chars)
-      GauntletCandidate(
-        character: c,
-        occupied: occ.isCharacterOccupied(c.id),
-        hasMainTechnique: c.mainTechniqueId != null,
-      ),
+      if (!c.isFounder || c.id == leaderId)
+        GauntletCandidate(
+          character: c,
+          occupied: occ.isCharacterOccupied(c.id),
+          hasMainTechnique: c.mainTechniqueId != null,
+        ),
   ];
 }
 

@@ -22,6 +22,7 @@ import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/equipment_factory.dart';
@@ -190,8 +191,20 @@ class GauntletService {
       for (final cid in characterIds) {
         final c = await _isar.characters.get(cid);
         if (c == null) throw StateError('断魂庄入场：角色 $cid 不存在');
+        if (!c.isAlive) {
+          throw StateError('gauntlet_entry_character_dead:$cid');
+        }
         if (c.realmTier.index > entryMaxTier.index) entryMaxTier = c.realmTier;
-        if (c.isFounder) throw StateError('断魂庄入场：祖师不可入场');
+        if (c.isFounder) {
+          final currentLeaderId = await CurrentLeaderResolver.resolve(
+            save: save,
+            characterExists: (characterId) async =>
+                await _isar.characters.get(characterId) != null,
+          );
+          if (currentLeaderId != cid) {
+            throw StateError('断魂庄入场：角色 $cid 不是当前掌门');
+          }
+        }
         if (occupancy.isCharacterOccupied(cid)) {
           throw StateError('断魂庄入场：角色 $cid 已被其它活动占用');
         }
