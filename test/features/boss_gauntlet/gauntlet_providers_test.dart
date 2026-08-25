@@ -169,7 +169,7 @@ void main() {
       reason: 'GameRepository 已加载 → 配置直读',
     );
 
-    final (runId, _) = await enterRun();
+    final (runId, discipleId) = await enterRun();
     container.invalidate(activeGauntletProvider);
     final active = await container.read(activeGauntletProvider.future);
     expect(active!.id, runId, reason: 'enter 后 active 会话可读');
@@ -326,7 +326,7 @@ void main() {
   });
 
   test('rewardView:候选装备 def 解析成卡;非待选相位 → null', () async {
-    final (runId, _) = await enterRun();
+    final (runId, discipleId) = await enterRun();
     final container = makeContainer();
     expect(
       await container.read(gauntletRewardViewProvider.future),
@@ -347,11 +347,22 @@ void main() {
     final view = await container.read(gauntletRewardViewProvider.future);
     expect(view, isNotNull);
     expect(view!.isFirstClear, isTrue);
+    expect(view.participantName, '入场弟子');
     expect(view.candidates, hasLength(2));
     final first = view.candidates.first;
     final def = GameRepository.instance.equipmentDefs[first.defId]!;
     expect(first.name, def.name);
     expect(first.tier, def.tier);
     expect(first.attackMin, def.baseAttackMin, reason: '属性区间经 def 查表');
+
+    await IsarSetup.instance.writeTxn(
+      () => IsarSetup.instance.characters.delete(discipleId),
+    );
+    container.invalidate(gauntletRewardViewProvider);
+    expect(
+      await container.read(gauntletRewardViewProvider.future),
+      isNull,
+      reason: '参战身份悬空时报告 fail closed，不猜测或回退掌门',
+    );
   });
 }

@@ -51,11 +51,13 @@ const _candidates = [
 ];
 
 const _viewFirstClear = GauntletRewardView(
+  participantName: '入场弟子',
   isFirstClear: true,
   candidates: _candidates,
 );
 
 const _viewRepeat = GauntletRewardView(
+  participantName: '当代掌门',
   isFirstClear: false,
   candidates: _candidates,
 );
@@ -84,6 +86,11 @@ void main() {
     expect(find.text('玄铁重剑'), findsOneWidget);
     expect(find.text('软猬软甲'), findsOneWidget);
     expect(find.text('踏雪无痕'), findsOneWidget);
+    expect(
+      find.text(UiStrings.gauntletRewardParticipant('入场弟子')),
+      findsOneWidget,
+      reason: '胜利报告必须说明实际参战者',
+    );
     // 首通标（非重复）。
     expect(find.text(UiStrings.gauntletRewardFirstClearBadge), findsOneWidget);
     expect(find.text(UiStrings.gauntletRewardRepeatBadge), findsNothing);
@@ -106,6 +113,10 @@ void main() {
     await _pump(tester, const Size(1280, 720), view: _viewRepeat);
     expect(find.text(UiStrings.gauntletRewardRepeatBadge), findsOneWidget);
     expect(find.text(UiStrings.gauntletRewardFirstClearBadge), findsNothing);
+    expect(
+      find.text(UiStrings.gauntletRewardParticipant('当代掌门')),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

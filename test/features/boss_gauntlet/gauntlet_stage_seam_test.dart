@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
@@ -11,6 +14,8 @@ import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_controlle
 import 'package:wuxia_idle/features/boss_gauntlet/application/phase0a_gauntlet_stage_runner.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
+import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
+import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -140,6 +145,23 @@ void main() {
 
   test('prepare + Phase0a run + settle == 原子推进战末快照', () async {
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final weaponDef = GameRepository.instance.equipmentDefs.values.firstWhere(
+      (def) => def.slot.name == 'weapon',
+    );
+    late int equipmentId;
+    await IsarSetup.instance.writeTxn(() async {
+      final equipment = EquipmentFactory.fromDef(
+        weaponDef,
+        rng: DefaultRng(seed: 7),
+        obtainedAt: DateTime(2026, 8, 25),
+        obtainedFrom: 'gauntlet-settlement-red',
+        ownerCharacterId: 1,
+      );
+      equipmentId = await IsarSetup.instance.equipments.put(equipment);
+      final character = (await IsarSetup.instance.characters.get(1))!
+        ..equippedWeaponId = equipmentId;
+      await IsarSetup.instance.characters.put(character);
+    });
     final runId = await putRun(
       phase: GauntletPhase.inBattle,
       currentStage: 1,
@@ -158,9 +180,25 @@ void main() {
       seed: plan.seed,
       cycleIndex: plan.cycleIndex,
     );
+    expect(
+      result.settlement.combatSettlement.participantCharacterIds,
+      {1},
+      reason: 'headless 与 live 必须从真实 mapping/events 产出实际参与者共享结算快照',
+    );
     await service.settlePhase0aStageResult(
       result: result.settlement,
       config: config,
+    );
+
+    final equipment = (await IsarSetup.instance.equipments.get(equipmentId))!;
+    expect(equipment.battleCount, 1, reason: '逐关终局必须进入共享战斗账本');
+    final techniques = await IsarSetup.instance.techniques.where().findAll();
+    expect(
+      techniques
+          .expand((technique) => technique.skillUsageCount)
+          .fold<int>(0, (sum, entry) => sum + entry.count),
+      greaterThan(0),
+      reason: '真实 Phase0a 招式事件必须写回实际参与者心法使用记录',
     );
 
     final run = (await IsarSetup.instance.bossGauntletRuns.get(runId))!;
@@ -188,6 +226,7 @@ void main() {
           maxHp: 1,
           maxQi: 1,
         ),
+        combatSettlement: null,
       ),
       config: config,
     );
