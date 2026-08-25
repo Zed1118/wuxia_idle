@@ -7,11 +7,11 @@ import '../../../shared/strings.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_settlement.dart';
-import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import 'phase0a_sweep_headless_runner.dart';
 
@@ -39,7 +39,7 @@ abstract class SweepUnit {
   /// 把 headless 终局接回既有重打结算。
   Future<SweepBattleOutcome?> settlePhase0a(
     WidgetRef ref,
-    CombatSettlementSnapshot settlement,
+    Phase0aSweepRunResult result,
   );
 }
 
@@ -81,14 +81,82 @@ class MainlineSweepUnit implements SweepUnit {
   @override
   Future<SweepBattleOutcome?> settlePhase0a(
     WidgetRef ref,
-    CombatSettlementSnapshot settlement,
+    Phase0aSweepRunResult result,
   ) {
+    final settlement = result.settlement;
+    if (settlement == null) return Future.value(null);
     if (settlement.result != BattleResult.leftWin) return Future.value(null);
     return settleMainlineSweepVictory(
       ref: ref,
       stage: stage,
       cycle: cycle,
       settlementSnapshot: settlement,
+      expectedParticipantId: result.expectedParticipantId,
+    );
+  }
+}
+
+/// A single already-cleared mainline stage replayed without rendering. It uses
+/// the same headless kernel as sweep but remains a distinct product mode and
+/// never spends sweep readiness.
+class MainlineHeadlessReplayUnit implements SweepUnit {
+  MainlineHeadlessReplayUnit({required this.stage, required this.cycle});
+
+  final StageDef stage;
+  final int cycle;
+
+  @override
+  String get label => stage.name;
+
+  @override
+  String get battleHint => stage.name;
+
+  @override
+  String? get sceneBackgroundPath => stage.sceneBackgroundPath;
+
+  @override
+  BgmTrack get bgmTrack =>
+      bgmTrackForStage(stage.stageType, isBoss: stage.isBossStage);
+
+  @override
+  Future<Phase0aSweepRunResult> runPhase0aHeadless(
+    WidgetRef ref, {
+    required Phase0aBotTacticPolicy policy,
+  }) =>
+      Phase0aSweepHeadlessRunner(
+        isar: IsarSetup.instance,
+        numbers: ref.read(numbersConfigProvider),
+        rng: ref.read(mathRandomProvider),
+        botPolicy: policy,
+        runtimeBindingSource: ref.read(
+          phase0aMainlineEncounterRuntimeBindingSourceProvider,
+        ),
+        routeAuthority: ref.read(
+          phase0aMainlineEncounterRouteAuthorityProvider,
+        ),
+      ).runMainline(
+        stage: stage,
+        cycleIndex: cycle,
+        entryKind: ActivityEntryKind.replay,
+      );
+
+  @override
+  Future<SweepBattleOutcome?> settlePhase0a(
+    WidgetRef ref,
+    Phase0aSweepRunResult result,
+  ) {
+    final settlement = result.settlement;
+    final expectedParticipantId = result.expectedParticipantId;
+    if (settlement == null || expectedParticipantId == null) {
+      return Future.value(null);
+    }
+    if (settlement.result != BattleResult.leftWin) return Future.value(null);
+    return settleMainlineHeadlessReplayVictory(
+      ref: ref,
+      stage: stage,
+      cycle: cycle,
+      settlementSnapshot: settlement,
+      expectedParticipantId: expectedParticipantId,
     );
   }
 }
@@ -126,8 +194,10 @@ class TowerSweepUnit implements SweepUnit {
   @override
   Future<SweepBattleOutcome?> settlePhase0a(
     WidgetRef ref,
-    CombatSettlementSnapshot settlement,
+    Phase0aSweepRunResult result,
   ) {
+    final settlement = result.settlement;
+    if (settlement == null) return Future.value(null);
     if (settlement.result != BattleResult.leftWin) return Future.value(null);
     return settleTowerSweepVictory(
       ref: ref,

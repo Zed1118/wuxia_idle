@@ -72,7 +72,7 @@ class _FakeUnit implements SweepUnit {
   @override
   Future<SweepBattleOutcome?> settlePhase0a(
     WidgetRef ref,
-    CombatSettlementSnapshot settlement,
+    Phase0aSweepRunResult result,
   ) async {
     settleCalls++;
     return const SweepBattleOutcome(expGained: 7);
@@ -116,6 +116,38 @@ Future<void> _chooseAssault(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('快速重演明确显示独立语义与实际参与者报告', (tester) async {
+    final unit = _FakeUnit(
+      Phase0aSweepRunResult.terminal(
+        _victory,
+        expectedParticipantId: 1,
+        participantName: '掌门甲',
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: SweepScreen(
+            units: [unit],
+            unitName: '黑风岭',
+            cycle: 1,
+            presentationMode: HeadlessRunPresentationMode.mainlineReplay,
+          ),
+        ),
+      ),
+    );
+    expect(
+      find.text(UiStrings.headlessReplayTacticSelectionHint),
+      findsOneWidget,
+    );
+    await _chooseAssault(tester);
+    expect(find.text(UiStrings.headlessReplayRecapCompleted), findsOneWidget);
+    expect(
+      find.text(UiStrings.headlessReplayParticipant('掌门甲')),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('headless 胜利直结并显示 recap', (tester) async {
     final unit = _FakeUnit(Phase0aSweepRunResult.terminal(_victory));
     await tester.pumpWidget(

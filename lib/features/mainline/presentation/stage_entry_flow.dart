@@ -61,6 +61,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
+import '../application/mainline_participant_snapshot_service.dart';
 import '../application/mainline_pending_jianghu_affair_service.dart';
 import '../application/mainline_providers.dart';
 import '../application/mainline_run_coordinator.dart';
@@ -108,6 +109,7 @@ Future<void> runStageFlow({
   int targetCycle = 1,
   bool continueFirstClearRun = false,
   int? visibleReplayParticipantId,
+  ActivityController visibleReplayController = ActivityController.human,
   CombatantSnapshot? directParticipantSnapshot,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
@@ -154,6 +156,7 @@ Future<void> runStageFlow({
               isar: IsarSetup.instance,
               stageId: stage.id,
               requestedParticipantId: visibleReplayParticipantId,
+              controller: visibleReplayController,
             );
       } on MainlineParticipationRefusedError {
         if (context.mounted) {
@@ -173,6 +176,9 @@ Future<void> runStageFlow({
       stage: stage,
       targetCycle: targetCycle,
       playerSnapshot: directParticipantSnapshot ?? visibleReplaySnapshot,
+      battleController: visibleReplaySnapshot == null
+          ? ActivityController.human
+          : visibleReplayController,
       battleRunnerForTest: battleRunnerForTest,
       battleOutcomeForTest: battleOutcomeForTest,
       phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
@@ -294,6 +300,7 @@ Future<List<Character>> loadEligibleMainlineVisibleReplayParticipants({
     final character = await isar.characters.get(characterId);
     if (character == null ||
         !character.isAlive ||
+        character.injuryHoursRemaining > 0 ||
         character.mainTechniqueId == null ||
         occupancy.isCharacterOccupied(character.id)) {
       continue;
@@ -310,56 +317,24 @@ Future<CombatantSnapshot> resolveMainlineVisibleReplayParticipantSnapshot({
   required Isar isar,
   required String stageId,
   required int requestedParticipantId,
+  ActivityController controller = ActivityController.human,
 }) async {
-  final save = await isar.saveDatas.get(0);
-  late final int currentLeaderId;
-  try {
-    currentLeaderId = await CurrentLeaderResolver.resolve(
-      save: save,
-      characterExists: (characterId) async =>
-          await isar.characters.get(characterId) != null,
-    );
-  } on StateError {
-    // 领队指针失效是旧档/损坏态，不能绕过已冻结的领队迁移门禁继续开战。
-    throw const MainlineParticipationRefusedError(
-      'Current leader pointer is invalid for visible replay',
-    );
-  }
-  final requestedIsActive =
-      save?.activeCharacterIds.contains(requestedParticipantId) ?? false;
-  CombatantSnapshot? snapshot;
-  if (requestedIsActive) {
-    try {
-      snapshot = await _loadMainlineParticipantSnapshotFromIsar(
-        isar: isar,
-        participantId: requestedParticipantId,
-      );
-    } on StateError {
-      // 旧档/损坏态可出现主修、装备或技能引用悬空；可见重打把该角色视为
-      // 不可用并由参与政策统一拒绝，不能泄漏装配异常或回退掌门。
-      snapshot = null;
-    }
-  }
-  final selection = MainlineParticipationPolicy.resolveParticipant(
-    request: ActivityParticipationRequest(
+  final resolved = await MainlineParticipantSnapshotService(isar).resolve(
+    ActivityParticipationRequest(
       contentId: stageId,
       contentKind: ActivityContentKind.mainline,
       characterId: requestedParticipantId,
-      loadoutPlanId: 'mainline:$stageId:character:$requestedParticipantId',
+      loadoutPlanId: mainlineLoadoutPlanId(
+        stageId: stageId,
+        characterId: requestedParticipantId,
+      ),
       participation: ActivityParticipationMode.direct,
-      controller: ActivityController.human,
+      controller: controller,
       clock: ActivityClock.realtime,
       entryKind: ActivityEntryKind.replay,
     ),
-    currentLeaderId: currentLeaderId,
-    requestedIdleEligible: snapshot != null,
   );
-  if (snapshot == null || snapshot.characterId != selection.participantId) {
-    throw const MainlineParticipationRefusedError(
-      'Visible replay snapshot does not match the selected participant',
-    );
-  }
-  return snapshot;
+  return resolved.snapshot;
 }
 
 Future<int?> showMainlineVisibleReplayParticipantPicker({
@@ -399,6 +374,45 @@ Future<int?> showMainlineVisibleReplayParticipantPicker({
         child: const Text(UiStrings.commonCancel),
       ),
     ],
+  );
+}
+
+enum MainlineReplayMode { visible, headless }
+
+Future<MainlineReplayMode?> showMainlineReplayModePicker(BuildContext context) {
+  return PaperDialog.show<MainlineReplayMode>(
+    context,
+    title: UiStrings.mainlineReplayModeTitle,
+    actions: const [],
+    body: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton(
+          key: const Key('mainline_visible_replay_mode'),
+          onPressed: () =>
+              Navigator.of(context).pop(MainlineReplayMode.visible),
+          child: const Column(
+            children: [
+              Text(UiStrings.mainlineVisibleReplayMode),
+              Text(UiStrings.mainlineVisibleReplayModeHint),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          key: const Key('mainline_headless_replay_mode'),
+          onPressed: () =>
+              Navigator.of(context).pop(MainlineReplayMode.headless),
+          child: const Column(
+            children: [
+              Text(UiStrings.mainlineHeadlessReplayMode),
+              Text(UiStrings.mainlineHeadlessReplayModeHint),
+            ],
+          ),
+        ),
+      ],
+    ),
   );
 }
 
@@ -470,8 +484,26 @@ Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
     characterExists: (characterId) async =>
         await isar.characters.get(characterId) != null,
   );
-  final playerSnapshot = await _loadMainlineParticipantSnapshot(participantId);
-  if (playerSnapshot == null) return null;
+  late final CombatantSnapshot playerSnapshot;
+  try {
+    playerSnapshot = (await MainlineParticipantSnapshotService(isar).resolve(
+      ActivityParticipationRequest(
+        contentId: stage.id,
+        contentKind: ActivityContentKind.mainline,
+        characterId: participantId,
+        loadoutPlanId: mainlineLoadoutPlanId(
+          stageId: stage.id,
+          characterId: participantId,
+        ),
+        participation: ActivityParticipationMode.direct,
+        controller: ActivityController.human,
+        clock: ActivityClock.realtime,
+        entryKind: ActivityEntryKind.firstClear,
+      ),
+    )).snapshot;
+  } on MainlineParticipationRefusedError {
+    return null;
+  }
   final runId =
       'mainline:${IsarSetup.currentSlotId}:${stage.id}:'
       '${DateTime.now().microsecondsSinceEpoch}';
@@ -660,6 +692,7 @@ Future<void> _runSingleStageFlow({
   required StageDef stage,
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
+  ActivityController battleController = ActivityController.human,
   bool allowEnterNextStage = false,
   ValueChanged<StageVictoryAction>? victoryActionSink,
   MainlineDurableSettlementContext? durableSettlement,
@@ -725,10 +758,8 @@ Future<void> _runSingleStageFlow({
   final usesExactParticipant =
       stage.stageType == StageType.lightFoot ||
       stage.stageType == StageType.massBattle;
-  final expectedParticipantId = usesExactParticipant
-      ? playerSnapshot?.characterId
-      : null;
-  final participantName = usesExactParticipant ? playerSnapshot?.name : null;
+  final expectedParticipantId = playerSnapshot?.characterId;
+  final participantName = playerSnapshot?.name;
 
   // ── opening ──
   if (automaticallyPresentsNarratives && stage.narrativeOpeningId != null) {
@@ -772,6 +803,7 @@ Future<void> _runSingleStageFlow({
         stage: stage,
         targetCycle: targetCycle,
         playerSnapshot: playerSnapshot,
+        controller: battleController,
       );
     }
 
@@ -1420,12 +1452,14 @@ Future<MainlineBattleExit> _runBattle({
   required StageDef stage,
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
+  ActivityController controller = ActivityController.human,
 }) async {
   return _runPhase0aBattle(
     context: context,
     stage: stage,
     targetCycle: targetCycle,
     playerSnapshot: playerSnapshot,
+    controller: controller,
   );
 }
 
@@ -1440,6 +1474,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required StageDef stage,
   required int targetCycle,
   CombatantSnapshot? playerSnapshot,
+  ActivityController controller = ActivityController.human,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
       ? await _pickFormation(
@@ -1459,6 +1494,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
             stage: stage,
             cycleIndex: targetCycle,
             playerSnapshot: playerSnapshot,
+            controller: controller,
             massBattleFormation: massBattleFormation,
             onVictory: (settlement) {
               if (!completer.isCompleted) {

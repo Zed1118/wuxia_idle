@@ -147,10 +147,21 @@ void main() {
         stage: _dropStage,
         cycle: 1,
         settlementSnapshot: settlement,
+        expectedParticipantId: founderId,
       ),
     );
 
     expect(outcome, isNotNull);
+    final headlessReplayOutcome = await tester.runAsync(
+      () => settleMainlineHeadlessReplayVictory(
+        ref: ref,
+        stage: _dropStage,
+        cycle: 1,
+        settlementSnapshot: settlement,
+        expectedParticipantId: founderId,
+      ),
+    );
+    expect(headlessReplayOutcome, isNotNull);
     await tester.runAsync(() async {
       final founder = await IsarSetup.instance.characters.get(founderId);
       final reserve = await IsarSetup.instance.characters.get(reserveId);
@@ -159,6 +170,52 @@ void main() {
       expect(reserve!.experience, 0);
       expect(save!.sweepReadinessPoints, 2);
     });
+  });
+
+  testWidgets('错人 settlement 在扣战备前 fail closed，快速重演不扣战备', (tester) async {
+    final founderId = (await tester.runAsync(_seedFounderWithReadiness))!;
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 12,
+      hadActions: true,
+      participants: const [
+        CombatParticipantSnapshot(characterId: 999999, currentHp: 1, maxHp: 1),
+      ],
+      skillCasts: const [],
+      totalDamage: 1,
+      criticalCount: 0,
+      damageByCharacterId: const {999999: 1},
+    );
+    late WidgetRef ref;
+    await tester.pumpWidget(
+      ProviderScope(child: _RefHarness(onReady: (value) => ref = value)),
+    );
+
+    await expectLater(
+      settleMainlineSweepVictory(
+        ref: ref,
+        stage: _stage,
+        cycle: 1,
+        settlementSnapshot: settlement,
+        expectedParticipantId: founderId,
+      ),
+      throwsStateError,
+    );
+    var save = await tester.runAsync(IsarSetup.currentSaveData);
+    expect(save!.sweepReadinessPoints, 3);
+
+    await expectLater(
+      settleMainlineHeadlessReplayVictory(
+        ref: ref,
+        stage: _stage,
+        cycle: 1,
+        settlementSnapshot: settlement,
+        expectedParticipantId: founderId,
+      ),
+      throwsStateError,
+    );
+    save = await tester.runAsync(IsarSetup.currentSaveData);
+    expect(save!.sweepReadinessPoints, 3);
   });
 }
 

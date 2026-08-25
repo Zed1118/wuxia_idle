@@ -14,11 +14,13 @@ import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
+import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../application/phase0a_mainline_encounter_host.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
@@ -48,6 +50,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     this.seedForTest,
     this.massBattleFormation,
     this.encounterHostFactory,
+    this.controller = ActivityController.human,
   });
 
   final StageDef stage;
@@ -56,6 +59,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final int cycleIndex;
   final Formation? massBattleFormation;
   final CombatantSnapshot? playerSnapshot;
+  final ActivityController controller;
 
   @visibleForTesting
   final Phase0aMainlineEncounterHostFactory? encounterHostFactory;
@@ -287,6 +291,9 @@ class _Phase0aMainlineBattleHostState
     return Phase0aBattleScreen(
       controller: controller,
       numericSkillBindings: playerAdapter.numericSkillBindings,
+      botCommandBuilder: widget.controller == ActivityController.playerBot
+          ? Phase0aPlayerBotAdapter(playerAdapter: playerAdapter).commandFor
+          : null,
     );
   }
 }

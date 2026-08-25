@@ -35,7 +35,12 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
   required StageDef stage,
   required int cycle,
   CombatSettlementSnapshot? settlementSnapshot,
+  int? expectedParticipantId,
 }) async {
+  _validateExpectedMainlineSettlement(
+    settlementSnapshot: settlementSnapshot,
+    expectedParticipantId: expectedParticipantId,
+  );
   final readinessSpent = await SweepReadinessService(
     isar: IsarSetup.instance,
     config: ref.read(numbersConfigProvider).sweepReadiness,
@@ -45,12 +50,69 @@ Future<SweepBattleOutcome?> settleMainlineSweepVictory({
     return const SweepBattleOutcome(ignoredDrops: 1);
   }
 
+  return _settleMainlineReplayVictory(
+    ref: ref,
+    stage: stage,
+    cycle: cycle,
+    settlementSnapshot: settlementSnapshot,
+    expectedParticipantId: expectedParticipantId,
+  );
+}
+
+/// One already-cleared mainline stage replayed through the existing headless
+/// kernel. Unlike sweep this does not spend readiness; all repeat reward,
+/// progress, injury, and actual-participant settlement semantics stay shared.
+Future<SweepBattleOutcome?> settleMainlineHeadlessReplayVictory({
+  required WidgetRef ref,
+  required StageDef stage,
+  required int cycle,
+  required CombatSettlementSnapshot settlementSnapshot,
+  required int expectedParticipantId,
+}) async {
+  _validateExpectedMainlineSettlement(
+    settlementSnapshot: settlementSnapshot,
+    expectedParticipantId: expectedParticipantId,
+  );
+  return _settleMainlineReplayVictory(
+    ref: ref,
+    stage: stage,
+    cycle: cycle,
+    settlementSnapshot: settlementSnapshot,
+    expectedParticipantId: expectedParticipantId,
+  );
+}
+
+void _validateExpectedMainlineSettlement({
+  required CombatSettlementSnapshot? settlementSnapshot,
+  required int? expectedParticipantId,
+}) {
+  if (settlementSnapshot == null) return;
+  if (expectedParticipantId == null ||
+      !settlementSnapshot.isFinished ||
+      settlementSnapshot.participantCharacterIds.toSet().length != 1 ||
+      !settlementSnapshot.participantCharacterIds.contains(
+        expectedParticipantId,
+      )) {
+    throw StateError(
+      'Mainline headless settlement participant does not match the request',
+    );
+  }
+}
+
+Future<SweepBattleOutcome?> _settleMainlineReplayVictory({
+  required WidgetRef ref,
+  required StageDef stage,
+  required int cycle,
+  required CombatSettlementSnapshot? settlementSnapshot,
+  required int? expectedParticipantId,
+}) async {
   // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
   final outcome = await applyVictoryResolution(
     ref: ref,
     stage: stage,
     cycle: cycle,
     settlementSnapshot: settlementSnapshot,
+    expectedParticipantId: expectedParticipantId,
   );
   if (outcome == null) return null;
 

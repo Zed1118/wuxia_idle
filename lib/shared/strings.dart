@@ -3975,6 +3975,14 @@ class UiStrings {
   /// 扫荡开跑前的本次战术选择。不写存档，不改变角色装配与结算规则。
   static const String botTacticSelectionTitle = '选择自动战术';
   static const String botTacticSelectionHint = '本次扫荡沿用同一角色装配与同核规则，只改变出手取舍。';
+  static const String headlessReplayTacticSelectionHint =
+      '本次快速重演固定由当前掌门出战，不消耗扫荡战备；只改变自动出手取舍。';
+  static const String mainlineReplayModeTitle = '选择重演方式';
+  static const String mainlineVisibleReplayMode = '可见重打';
+  static const String mainlineVisibleReplayModeHint =
+      '选择一名可战角色；按全局设置由真人或前台 bot 操作。';
+  static const String mainlineHeadlessReplayMode = '快速重演';
+  static const String mainlineHeadlessReplayModeHint = '当前掌门同核无画面演算；不消耗扫荡战备。';
   static const String botTacticSeekGap = '寻隙';
   static const String botTacticSeekGapHint = '保留资源，等待破绽再出手。';
   static const String botTacticAssault = '强攻';
@@ -4051,12 +4059,18 @@ class UiStrings {
 
   /// 醒目停止按钮。
   static const String sweepStopButton = '停止扫荡';
+  static const String headlessReplayStopButton = '停止重演';
 
   /// 收尾 recap 标题（全部扫完）。
   static const String sweepRecapCompleted = '扫荡完成';
+  static const String headlessReplayRecapCompleted = '快速重演完成';
 
   /// 收尾 recap 标题（用户中途停）。
   static const String sweepRecapStopped = '已停止扫荡';
+  static const String headlessReplayRecapStopped = '已停止重演';
+  static String headlessReplayRecapCycle(int cycle) =>
+      '快速重演 · ${sweepCycleBadge(cycle)}';
+  static String headlessReplayParticipant(String name) => '实际参与者 · $name';
 
   /// 收尾 recap 标题（某关战败 halt）。
   static String sweepRecapDefeated(int floorIndex) => '扫到第 $floorIndex 关战败';

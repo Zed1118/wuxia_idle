@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bo
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
@@ -384,6 +385,34 @@ void main() {
   });
 
   group('Phase0aMainlineBattleHost 集成(注入玩家角色,真跑 0A flow)', () {
+    testWidgets('前台 playerBot 每个 fixed tick 驾驶同一宿主至终局', (tester) async {
+      CombatSettlementSnapshot? terminal;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Phase0aMainlineBattleHost(
+              stage: repo.getStage('stage_01_01'),
+              playerSnapshotForTest: _makeCh1Player(repo.numbers),
+              seedForTest: 20260825,
+              controller: ActivityController.playerBot,
+              onVictory: (settlement) => terminal = settlement,
+              onDefeat: (settlement) => terminal = settlement,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      var simulatedSeconds = 0;
+      while (terminal == null && simulatedSeconds < 180) {
+        await tester.pump(const Duration(seconds: 1));
+        simulatedSeconds += 1;
+      }
+
+      expect(terminal, isNotNull);
+      expect(terminal!.isFinished, isTrue);
+      expect(terminal!.participantCharacterIds.where((id) => id > 0), {1});
+    });
+
     testWidgets('stage_01_01 固定 seed → 键盘驾驶至 victory 回调', (tester) async {
       var victoryCalled = false;
       CombatSettlementSnapshot? victorySettlement;

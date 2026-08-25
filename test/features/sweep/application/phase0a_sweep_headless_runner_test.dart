@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
@@ -11,7 +12,9 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -54,7 +57,17 @@ void main() {
         .findFirst();
     await IsarSetup.instance.writeTxn(() async {
       save!.founderCharacterId = firstCharacter!.id;
+      save.activeCharacterIds = [firstCharacter.id];
       await IsarSetup.instance.saveDatas.put(save);
+      await IsarSetup.instance.mainlineProgress.put(
+        MainlineProgress()
+          ..saveDataId = save.slotId
+          ..clearedStageIds = GameRepository.instance.stageDefs.values
+              .where((stage) => stage.stageType == StageType.mainline)
+              .map((stage) => stage.id)
+              .toList(growable: false)
+          ..clearedAt = [],
+      );
     });
   });
 
@@ -158,5 +171,58 @@ void main() {
       ),
       throwsA(isA<StateError>()),
     );
+  });
+
+  test('真实 Ch1 快速 headless 重演返回当前掌门身份报告', () async {
+    final isar = IsarSetup.instance;
+    final save = await isar.saveDatas.get(0);
+    final founder = await isar.characters.get(save!.founderCharacterId!);
+    final result =
+        await Phase0aSweepHeadlessRunner(
+          isar: isar,
+          numbers: GameRepository.instance.numbers,
+          rng: Random(20260825),
+          botPolicy: const Phase0aBotTacticPolicy.assault(),
+        ).runMainline(
+          stage: GameRepository.instance.getStage('stage_01_01'),
+          cycleIndex: 1,
+          entryKind: ActivityEntryKind.replay,
+        );
+
+    expect(result.timedOut, isFalse);
+    expect(result.settlement?.isFinished, isTrue);
+    expect(result.expectedParticipantId, founder!.id);
+    expect(result.participantName, founder.name);
+    expect(result.settlement!.participantCharacterIds.where((id) => id > 0), {
+      founder.id,
+    });
+  });
+
+  test('未通关关卡的快速重演与扫荡均在装配前拒绝', () async {
+    final isar = IsarSetup.instance;
+    final progress = await isar.mainlineProgress.where().findFirst();
+    await isar.writeTxn(() async {
+      progress!.clearedStageIds = [];
+      await isar.mainlineProgress.put(progress);
+    });
+    final runner = Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: GameRepository.instance.numbers,
+      rng: Random(20260825),
+      botPolicy: const Phase0aBotTacticPolicy.assault(),
+    );
+    for (final entryKind in [
+      ActivityEntryKind.replay,
+      ActivityEntryKind.sweep,
+    ]) {
+      await expectLater(
+        runner.runMainline(
+          stage: GameRepository.instance.getStage('stage_01_01'),
+          cycleIndex: 1,
+          entryKind: entryKind,
+        ),
+        throwsStateError,
+      );
+    }
   });
 }

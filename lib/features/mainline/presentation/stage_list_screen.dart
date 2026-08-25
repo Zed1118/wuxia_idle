@@ -28,6 +28,8 @@ import '../../sweep/domain/sweep_eligibility.dart';
 import '../../../data/defs/sweep_readiness.dart';
 import '../../sweep/domain/sweep_reward_preview.dart';
 import '../../sweep/presentation/sweep_screen.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
+import '../../settings/application/gameplay_settings_provider.dart';
 import '../application/mainline_progress_service.dart';
 import '../application/mainline_providers.dart';
 import '../application/mainline_narrative_manifest.dart';
@@ -243,7 +245,37 @@ class StageListScreen extends ConsumerWidget {
                                     targetCycle == 1 &&
                                     statusFor(entry) == StageStatus.available;
                                 int? visibleReplayParticipantId;
+                                var visibleReplayController =
+                                    ActivityController.human;
                                 if (!continueFirstClearRun) {
+                                  final replayMode =
+                                      await showMainlineReplayModePicker(
+                                        context,
+                                      );
+                                  if (replayMode == null || !context.mounted) {
+                                    return;
+                                  }
+                                  if (replayMode ==
+                                      MainlineReplayMode.headless) {
+                                    await Navigator.of(context).push<void>(
+                                      MaterialPageRoute(
+                                        builder: (_) => SweepScreen(
+                                          units: [
+                                            MainlineHeadlessReplayUnit(
+                                              stage: stage,
+                                              cycle: targetCycle,
+                                            ),
+                                          ],
+                                          unitName: stage.name,
+                                          cycle: targetCycle,
+                                          presentationMode:
+                                              HeadlessRunPresentationMode
+                                                  .mainlineReplay,
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   visibleReplayParticipantId =
                                       await selectMainlineVisibleReplayParticipant(
                                         context: context,
@@ -252,6 +284,30 @@ class StageListScreen extends ConsumerWidget {
                                       !context.mounted) {
                                     return;
                                   }
+                                  late final bool autoPlayDefault;
+                                  try {
+                                    autoPlayDefault = (await ref.read(
+                                      gameplaySettingsProvider.future,
+                                    )).autoPlayDefault;
+                                  } catch (_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            UiStrings
+                                                .mainlineReplayParticipantUnavailable,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return;
+                                  }
+                                  visibleReplayController = autoPlayDefault
+                                      ? ActivityController.playerBot
+                                      : ActivityController.human;
+                                  if (!context.mounted) return;
                                 }
                                 await runStageFlow(
                                   context: context,
@@ -261,6 +317,8 @@ class StageListScreen extends ConsumerWidget {
                                   continueFirstClearRun: continueFirstClearRun,
                                   visibleReplayParticipantId:
                                       visibleReplayParticipantId,
+                                  visibleReplayController:
+                                      visibleReplayController,
                                 );
                               },
                             ),

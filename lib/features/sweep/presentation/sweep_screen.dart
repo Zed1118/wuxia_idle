@@ -7,13 +7,15 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../application/sweep_controller.dart';
+import '../application/phase0a_sweep_headless_runner.dart';
 import '../application/sweep_unit.dart';
 import '../domain/sweep_recap.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 import '../../../shared/widgets/wuxia_ui/light_paper_panel.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
-import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/battle_result.dart';
+
+enum HeadlessRunPresentationMode { sweep, mainlineReplay }
 
 /// 一键挂机扫荡屏：逐关托管真战斗，强制 auto + 快进连播，可中途停、战败 halt。
 ///
@@ -26,6 +28,7 @@ class SweepScreen extends ConsumerStatefulWidget {
     required this.unitName,
     required this.cycle,
     this.towerRepeatNote = false,
+    this.presentationMode = HeadlessRunPresentationMode.sweep,
   });
 
   /// 有序扫荡单位（主线整章关列表 / 整塔 30 层）。
@@ -40,6 +43,7 @@ class SweepScreen extends ConsumerStatefulWidget {
 
   /// 爬塔扫荡：顶部显「重打仅掉残页」说明（守 §5.1 防刷）。
   final bool towerRepeatNote;
+  final HeadlessRunPresentationMode presentationMode;
 
   @override
   ConsumerState<SweepScreen> createState() => _SweepScreenState();
@@ -50,6 +54,10 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
   int _index = 0;
   bool _preparing = true;
   Phase0aBotTacticPolicy? _botPolicy;
+  String? _lastParticipantName;
+
+  bool get _isHeadlessReplay =>
+      widget.presentationMode == HeadlessRunPresentationMode.mainlineReplay;
 
   @override
   void initState() {
@@ -75,6 +83,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     await Future<void>.delayed(Duration.zero);
     try {
       final result = await unit.runPhase0aHeadless(ref, policy: _botPolicy!);
+      _lastParticipantName = result.participantName;
       if (!mounted) return;
       if (result.timedOut) {
         _controller.recordTimeout();
@@ -87,7 +96,7 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
         setState(() => _preparing = false);
         return;
       }
-      await _recordVictory(settlement);
+      await _recordVictory(result);
     } catch (e, st) {
       debugPrint(
         'SweepScreen Phase0a headless failed at index $_index: $e\n$st',
@@ -98,9 +107,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     return;
   }
 
-  Future<void> _recordVictory(CombatSettlementSnapshot settlement) async {
+  Future<void> _recordVictory(Phase0aSweepRunResult result) async {
     final unit = widget.units[_index];
-    final outcome = await unit.settlePhase0a(ref, settlement);
+    final outcome = await unit.settlePhase0a(ref, result);
     // 战斗已胜；settle 异常（Isar 故障等）兜底空账继续，不阻塞连播。
     _controller.recordVictory(outcome ?? const SweepBattleOutcome());
     if (!mounted) return;
@@ -162,10 +171,12 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  UiStrings.botTacticSelectionHint,
+                Text(
+                  _isHeadlessReplay
+                      ? UiStrings.headlessReplayTacticSelectionHint
+                      : UiStrings.botTacticSelectionHint,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: WuxiaUi.muted, height: 1.5),
+                  style: const TextStyle(color: WuxiaUi.muted, height: 1.5),
                 ),
                 const SizedBox(height: 22),
                 Wrap(
@@ -232,6 +243,9 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
                 ? UiStrings.sweepTowerCycleBadge(widget.cycle)
                 : UiStrings.sweepCycleBadge(widget.cycle),
             towerRepeatNote: widget.towerRepeatNote,
+            stopLabel: _isHeadlessReplay
+                ? UiStrings.headlessReplayStopButton
+                : UiStrings.sweepStopButton,
             onStop: _controller.requestStop,
           ),
         ),
@@ -246,9 +260,13 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     final bool timedOut = _controller.status == SweepStatus.stoppedByTimeout;
     switch (_controller.status) {
       case SweepStatus.completed:
-        title = UiStrings.sweepRecapCompleted;
+        title = _isHeadlessReplay
+            ? UiStrings.headlessReplayRecapCompleted
+            : UiStrings.sweepRecapCompleted;
       case SweepStatus.stoppedByUser:
-        title = UiStrings.sweepRecapStopped;
+        title = _isHeadlessReplay
+            ? UiStrings.headlessReplayRecapStopped
+            : UiStrings.sweepRecapStopped;
       case SweepStatus.stoppedByDefeat:
         title = UiStrings.sweepRecapDefeated(_index + 1);
       case SweepStatus.stoppedByTimeout:
@@ -258,10 +276,14 @@ class _SweepScreenState extends ConsumerState<SweepScreen> {
     }
 
     final overviewRows = <String>[
-      widget.towerRepeatNote
+      _isHeadlessReplay
+          ? UiStrings.headlessReplayRecapCycle(widget.cycle)
+          : widget.towerRepeatNote
           ? UiStrings.sweepTowerRecapCycle(widget.cycle)
           : UiStrings.sweepRecapCycle(widget.cycle),
       UiStrings.sweepRecapStages(r.stagesCleared),
+      if (_lastParticipantName != null)
+        UiStrings.headlessReplayParticipant(_lastParticipantName!),
     ];
     final layers = r.resultLayers();
 
@@ -486,12 +508,14 @@ class _SweepHud extends StatelessWidget {
     required this.cycleLabel,
     required this.onStop,
     required this.towerRepeatNote,
+    required this.stopLabel,
   });
 
   final String progressLabel;
   final String cycleLabel;
   final VoidCallback onStop;
   final bool towerRepeatNote;
+  final String stopLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -575,7 +599,7 @@ class _SweepHud extends StatelessWidget {
                   ),
                   onPressed: onStop,
                   icon: const Icon(Icons.stop_circle_outlined, size: 20),
-                  label: const Text(UiStrings.sweepStopButton),
+                  label: Text(stopLabel),
                 ),
               ],
             ),

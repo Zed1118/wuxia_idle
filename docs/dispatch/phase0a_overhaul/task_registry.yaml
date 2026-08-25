@@ -4939,3 +4939,58 @@ tasks:
       - do not add reducer session headless provider or settlement truth sources
       - do not change schema save version YAML tuning rewards economy unlocks narrative combat rules or main
       - do not claim complete M6 or overall Phase 2 completion
+
+  - id: P2-M2-M6-U01-ALL-MODE-CONSISTENCY
+    milestone: M2
+    owner: codex_root
+    branch: codex/phase2-u01-all-mode-consistency-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 403e4f01c97a15e84e6026ea625debb9ccf8da04
+    completion_scope: connect_manual_visible_bot_headless_replay_and_sweep_to_one_mainline_participant_snapshot_reducer_and_settlement_contract
+    acceptance_baseline: 2_of_5_production_modes
+    acceptance_target: 5_of_5_production_modes
+    dependencies:
+      - P2-M2-M6-U01-CH1-CONTINUOUS-RUN
+      - P2-M2-M6-U01-DURABLE-SETTLEMENT-RECOVERY
+      - P2-M2-M6-U01-VISIBLE-REPLAY-PARTICIPANT
+      - P2-M6-E2E-MANUAL-DISPATCH-REPORT
+      - MAINLINE-REPLAY-PARTICIPANT-01
+    owned_files:
+      - lib/features/mainline/domain/mainline_participation_policy.dart
+      - lib/features/mainline/application/mainline_participant_snapshot_service.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/mainline/presentation/phase0a_mainline_battle_host.dart
+      - lib/features/mainline/presentation/stage_list_screen.dart
+      - lib/features/battle/presentation/phase0a/phase0a_battle_screen.dart
+      - lib/features/sweep/application/phase0a_sweep_headless_runner.dart
+      - lib/features/sweep/application/sweep_unit.dart
+      - lib/features/sweep/application/sweep_settlement.dart
+      - lib/features/sweep/presentation/sweep_screen.dart
+      - lib/shared/strings.dart
+      - test/features/mainline/presentation/mainline_all_mode_consistency_test.dart
+      - test/features/mainline/presentation/mainline_visible_replay_participant_test.dart
+      - test/features/mainline/presentation/phase0a_mainline_wiring_test.dart
+      - test/features/sweep/application/phase0a_sweep_headless_runner_test.dart
+      - test/features/sweep/application/sweep_settlement_test.dart
+      - test/features/sweep/presentation/sweep_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-u01-all-mode-consistency.md
+      - docs/audit/phase2_u01_all_mode_consistency_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - first clear remains current leader and human controlled
+      - visible human and front bot replay select one eligible idle active character without leader fallback
+      - unattended headless replay and sweep use the validated current leader
+      - all modes use the existing Phase0a reducer event and shared settlement owners
+      - growth injury records and reports belong to the actual participant
+      - replay headless and sweep never regrant first-clear or mentor-insight claims
+      - sweep readiness and existing replay reward semantics remain unchanged
+      - invalid identity eligibility occupancy loadout stale snapshot or wrong settlement fails closed
+      - do not add reducer session headless provider or settlement truth sources
+      - do not change schema save version YAML tuning reward values economy unlock narrative combat rules or main
+      - do not claim complete M2 M6 or overall Phase 2 completion

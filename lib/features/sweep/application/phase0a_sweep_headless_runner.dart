@@ -18,7 +18,11 @@ import '../../battle/application/phase0a/phase0a_headless_runner.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
+import '../../mainline/application/mainline_participant_snapshot_service.dart';
+import '../../mainline/domain/mainline_participation_policy.dart';
+import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
@@ -29,12 +33,22 @@ import '../../mainline/application/phase0a_mainline_repository_runtime_binding_a
 /// 事实进入下一场；不缓存跨场快照。预算耗尽返回显式 timeout，caller 单独
 /// 报告并 halt，不得把 ongoing 伪造成胜利 settlement。
 final class Phase0aSweepRunResult {
-  const Phase0aSweepRunResult.terminal(this.settlement) : timedOut = false;
+  const Phase0aSweepRunResult.terminal(
+    this.settlement, {
+    this.expectedParticipantId,
+    this.participantName,
+  }) : timedOut = false;
 
-  const Phase0aSweepRunResult.timeout() : settlement = null, timedOut = true;
+  const Phase0aSweepRunResult.timeout({
+    this.expectedParticipantId,
+    this.participantName,
+  }) : settlement = null,
+       timedOut = true;
 
   final CombatSettlementSnapshot? settlement;
   final bool timedOut;
+  final int? expectedParticipantId;
+  final String? participantName;
 }
 
 final class Phase0aSweepHeadlessRunner {
@@ -59,8 +73,20 @@ final class Phase0aSweepHeadlessRunner {
   Future<Phase0aSweepRunResult> runMainline({
     required StageDef stage,
     required int cycleIndex,
+    ActivityEntryKind entryKind = ActivityEntryKind.sweep,
   }) async {
-    final player = await _loadPlayerSnapshot();
+    if (entryKind != ActivityEntryKind.sweep &&
+        entryKind != ActivityEntryKind.replay) {
+      throw ArgumentError.value(
+        entryKind,
+        'entryKind',
+        'headless mainline supports replay or sweep only',
+      );
+    }
+    final player = await _loadMainlinePlayerSnapshot(
+      stageId: stage.id,
+      entryKind: entryKind,
+    );
     final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
       contentId: stage.id,
       playerSnapshot: player,
@@ -91,7 +117,12 @@ final class Phase0aSweepHeadlessRunner {
         maxTicks: numbers.phase0aArena.maxSimulationTicks,
         yieldEveryTicks: _uiYieldEveryTicks,
       );
-      if (result.timedOut) return const Phase0aSweepRunResult.timeout();
+      if (result.timedOut) {
+        return Phase0aSweepRunResult.timeout(
+          expectedParticipantId: player.characterId,
+          participantName: player.name,
+        );
+      }
       return Phase0aSweepRunResult.terminal(
         encounterHost
             .settle(
@@ -100,6 +131,8 @@ final class Phase0aSweepHeadlessRunner {
               events: result.events,
             )
             .snapshot,
+        expectedParticipantId: player.characterId,
+        participantName: player.name,
       );
     }
     final mapping = Phase0aStageContentMapper.map(
@@ -108,7 +141,11 @@ final class Phase0aSweepHeadlessRunner {
       numbers: numbers,
       cycleIndex: cycleIndex,
     );
-    return _run(mapping);
+    return _run(
+      mapping,
+      expectedParticipantId: player.characterId,
+      participantName: player.name,
+    );
   }
 
   Future<Phase0aSweepRunResult> runTower({
@@ -125,7 +162,11 @@ final class Phase0aSweepHeadlessRunner {
     return _run(mapping);
   }
 
-  Future<Phase0aSweepRunResult> _run(Phase0aStageMapping mapping) async {
+  Future<Phase0aSweepRunResult> _run(
+    Phase0aStageMapping mapping, {
+    int? expectedParticipantId,
+    String? participantName,
+  }) async {
     final flow = Phase0aProductionFlowAssembler.assemble(
       initialState: mapping.initialState,
       waves: mapping.waves,
@@ -148,7 +189,10 @@ final class Phase0aSweepHeadlessRunner {
       yieldEveryTicks: _uiYieldEveryTicks,
     );
     if (result.timedOut) {
-      return const Phase0aSweepRunResult.timeout();
+      return Phase0aSweepRunResult.timeout(
+        expectedParticipantId: expectedParticipantId,
+        participantName: participantName,
+      );
     }
     return Phase0aSweepRunResult.terminal(
       Phase0aSettlementAdapter.fromMapping(
@@ -157,7 +201,52 @@ final class Phase0aSweepHeadlessRunner {
         finalState: result.finalState,
         events: result.events,
       ),
+      expectedParticipantId: expectedParticipantId,
+      participantName: participantName,
     );
+  }
+
+  Future<CombatantSnapshot> _loadMainlinePlayerSnapshot({
+    required String stageId,
+    required ActivityEntryKind entryKind,
+  }) async {
+    final save = await isar.saveDatas.get(0);
+    final progress = save == null
+        ? null
+        : await isar.mainlineProgress
+              .filter()
+              .saveDataIdEqualTo(save.slotId)
+              .findFirst();
+    if (progress == null || !progress.clearedStageIds.contains(stageId)) {
+      throw StateError(
+        'Phase0a mainline headless requires an already-cleared stage: $stageId',
+      );
+    }
+    final playerId = await CurrentLeaderResolver.resolve(
+      save: save,
+      characterExists: (characterId) async =>
+          await isar.characters.get(characterId) != null,
+    );
+    try {
+      final resolved = await MainlineParticipantSnapshotService(isar).resolve(
+        ActivityParticipationRequest(
+          contentId: stageId,
+          contentKind: ActivityContentKind.mainline,
+          characterId: playerId,
+          loadoutPlanId: mainlineLoadoutPlanId(
+            stageId: stageId,
+            characterId: playerId,
+          ),
+          participation: ActivityParticipationMode.direct,
+          controller: ActivityController.playerBot,
+          clock: ActivityClock.headless,
+          entryKind: entryKind,
+        ),
+      );
+      return resolved.snapshot;
+    } on MainlineParticipationRefusedError catch (error) {
+      throw StateError('Phase0a mainline headless refused: ${error.message}');
+    }
   }
 
   Future<CombatantSnapshot> _loadPlayerSnapshot() async {

@@ -34,6 +34,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
+    this.botCommandBuilder,
   }) : assert(feedbackHoldSeconds > 0);
 
   final Phase0aBattleController controller;
@@ -45,6 +46,11 @@ final class Phase0aBattleScreen extends StatefulWidget {
   final Future<Phase0aBattleFlow> Function()? retryFlowBuilder;
 
   final Phase0aNumericSkillBindings numericSkillBindings;
+
+  /// Foreground bot input. Commands still enter the same controller/reducer
+  /// once per fixed tick; null keeps the existing human input path.
+  final Phase0aPlayerCommand Function(Phase0aArenaState state)?
+  botCommandBuilder;
 
   @override
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
@@ -111,7 +117,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   bool get _acceptsBattleInput =>
-      !_paused && widget.controller.outcome == Phase0aBattleOutcome.ongoing;
+      widget.botCommandBuilder == null &&
+      !_paused &&
+      widget.controller.outcome == Phase0aBattleOutcome.ongoing;
 
   ArenaVector _pointerAim(Offset localPosition, Phase0aStage stage) {
     final player = widget.controller.state.player;
@@ -388,8 +396,13 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         steps < Phase0aPresentationTokens.maxCatchUpTicksPerFrame) {
       // Held input is sampled once per fixed simulation tick. It does not
       // depend on OS key-repeat cadence and therefore stays deterministic.
-      _enqueueHeldInput();
-      widget.controller.step();
+      final botCommandBuilder = widget.botCommandBuilder;
+      if (botCommandBuilder == null) {
+        _enqueueHeldInput();
+        widget.controller.step();
+      } else {
+        widget.controller.step(botCommandBuilder(widget.controller.state));
+      }
       _accumulatorSeconds -= widget.controller.fixedDeltaSeconds;
       steps++;
       if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) break;
