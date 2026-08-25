@@ -4823,3 +4823,52 @@ tasks:
       - preserve mass battle route unlock cycle retry formation and reward semantics
       - do not change reducer session headless combat rules schema save version YAML tuning rewards economy unlocks narrative or main
       - do not claim complete M6 or overall Phase 2 completion
+
+  - id: P2-M6-TOWER-PARTICIPANT-SETTLEMENT-REPORT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-tower-participant-settlement-report-20260825
+    worktree: /Users/a10506/.codex/worktrees/7d4a/挂机武侠
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: 81feab07bd0d79ec6ee7c4f568dc7b50644810cd
+    code_candidate_commit: e261a14d
+    reviewed_candidate_commit: e261a14d
+    ready_marker: "[READY][CODEX][P2-M6-TOWER-PARTICIPANT-SETTLEMENT-REPORT] 接通九霄塔实际参与者胜利报告闭环"
+    completion_scope: connect_existing_tower_shared_settlement_exact_participant_to_the_production_victory_identity_report
+    verification:
+      focused_tests: 8
+      adjacent_activity_and_entry_tests: 328
+      double_viewport_tests: 0
+      initial_red_failures: 1
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      default_workspace_analyze_blocked_by: tools/phase0minus_probe_missing_package_dependencies
+      full_tests_passed: 5550
+      full_suite_elapsed: "4:46"
+      integration_failures_found_and_closed: 0
+      semantic_review_p0_p1_p2: 0
+    dependencies:
+      - P2-M6-TOWER-PARTICIPANT-SELECTION
+      - P2-M6-GAUNTLET-LIVE-SETTLEMENT-REPORT
+      - P2-M6-LIGHT-FOOT-PARTICIPANT-SETTLEMENT-REPORT
+    owned_files:
+      - lib/features/tower/presentation/tower_entry_flow.dart
+      - test/features/tower/presentation/apply_tower_victory_resolution_test.dart
+      - test/features/tower/presentation/tower_victory_content_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-tower-participant-settlement-report.md
+      - docs/audit/phase2_m6_tower_participant_settlement_report_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - tower victory identity is read from the existing shared resolution result after exact single-participant settlement validation
+      - each tower challenge continues to use the selected exact participant and the real Phase0aTowerBattleHost
+      - existing formation semantics tower progress cycle reward retry leaderboard and ceremony remain unchanged
+      - invalid identity occupancy death healing no-main-technique dangling equipment or technique and wrong-participant settlement continue to fail closed without leader fallback
+      - no new reducer session provider headless or settlement truth source is introduced
+      - do not change schema save version YAML tuning rewards economy unlocks narrative combat rules or main
+      - per-character tower best remains a separate schema-blocked gate and is not claimed
+      - do not claim complete M6 or overall Phase 2 completion
