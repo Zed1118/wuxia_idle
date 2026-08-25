@@ -122,11 +122,12 @@ Future<void> runStageFlow({
   bossDefeatPenaltyForTest,
 }) async {
   if (directParticipantSnapshot != null) {
-    if (stage.stageType != StageType.lightFoot) {
+    if (stage.stageType != StageType.lightFoot &&
+        stage.stageType != StageType.massBattle) {
       throw ArgumentError.value(
         directParticipantSnapshot.characterId,
         'directParticipantSnapshot',
-        'is supported only for light foot challenge',
+        'is supported only for direct light foot or mass battle challenge',
       );
     }
     if (visibleReplayParticipantId != null || continueFirstClearRun) {
@@ -720,13 +721,14 @@ Future<void> _runSingleStageFlow({
   }
   final automaticallyPresentsNarratives =
       shouldAutomaticallyPresentStageNarratives(stage);
-  // 本切片只收紧轻功逐次选人的结算身份；主线/守城既有语义保持不变。
-  final expectedParticipantId = stage.stageType == StageType.lightFoot
+  // 轻功与守城均使用逐次选择的 exact participant；主线连续 run 仍走原掌门锁定。
+  final usesExactParticipant =
+      stage.stageType == StageType.lightFoot ||
+      stage.stageType == StageType.massBattle;
+  final expectedParticipantId = usesExactParticipant
       ? playerSnapshot?.characterId
       : null;
-  final participantName = stage.stageType == StageType.lightFoot
-      ? playerSnapshot?.name
-      : null;
+  final participantName = usesExactParticipant ? playerSnapshot?.name : null;
 
   // ── opening ──
   if (automaticallyPresentsNarratives && stage.narrativeOpeningId != null) {
@@ -817,8 +819,7 @@ Future<void> _runSingleStageFlow({
                   )
                 : false);
       if (retry) continue;
-      if (stage.stageType == StageType.lightFoot &&
-          expectedParticipantId != null) {
+      if (usesExactParticipant && expectedParticipantId != null) {
         await applyParticipantDefeatResolution(
           ref: ref,
           stage: stage,

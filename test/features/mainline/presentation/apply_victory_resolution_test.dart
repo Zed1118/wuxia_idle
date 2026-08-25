@@ -94,10 +94,11 @@ void main() {
   StageDef normalStage({
     List<DropEntry> dropTable = const [],
     int baseExpReward = 0,
+    StageType stageType = StageType.mainline,
   }) => StageDef(
     id: 'stage_avr_normal',
     name: '测试普通关',
-    stageType: StageType.mainline,
+    stageType: stageType,
     requiredRealm: RealmTier.xueTu,
     enemyTeam: const [],
     isBossStage: false,
@@ -492,7 +493,7 @@ void main() {
     expect(outcome, isNull, reason: 'ids 空 → 早返 null');
   });
 
-  testWidgets('轻功 exact participant 可结算非 active 当代门人且掌门零污染', (tester) async {
+  testWidgets('守城 exact participant 可结算非 active 当代门人且掌门零污染', (tester) async {
     final (founderId, participantId) = (await tester.runAsync(() async {
       final founder = await insertCharacter(name: '掌门');
       final participant = await insertCharacter(name: '轻功门人');
@@ -504,7 +505,7 @@ void main() {
       tester,
       (ref) => applyVictoryResolution(
         ref: ref,
-        stage: normalStage(baseExpReward: 23),
+        stage: normalStage(baseExpReward: 23, stageType: StageType.massBattle),
         settlementSnapshot: finishedSettlement([participantId]),
         expectedParticipantId: participantId,
       ),

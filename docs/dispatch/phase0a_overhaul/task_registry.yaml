@@ -4761,3 +4761,63 @@ tasks:
       - preserve light foot route unlock cycle retry surrender narrative and reward semantics
       - do not change guard battle dispatch headless schema save version YAML tuning rewards economy unlocks narrative combat or main
       - do not claim complete M6 or overall Phase 2 completion
+
+  - id: P2-M6-MASS-BATTLE-PARTICIPANT-SETTLEMENT-REPORT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-mass-battle-participant-settlement-report-20260825
+    worktree: /Users/a10506/.codex/worktrees/65c5/挂机武侠
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: 2bf020b004aeb8f6f2d0c6e28a92c4f1bcdf2847
+    completion_scope: connect_exact_mass_battle_participant_to_existing_formation_host_shared_settlement_and_identity_reports
+    ready_marker: "[READY][CODEX][P2-M6-MASS-BATTLE-PARTICIPANT-SETTLEMENT-REPORT] 接通守城逐次选人结算报告闭环"
+    verification:
+      focused_tests: 48
+      adjacent_activity_and_entry_tests: 71
+      double_viewport_tests: 2
+      initial_red_failures: 4
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      default_workspace_analyze_blocked_by: tools/phase0minus_probe_missing_package_dependencies
+      full_tests_passed: 5549
+      full_suite_elapsed: "5:01"
+      integration_failures_found_and_closed: 1
+      semantic_review_p0_p1_p2: 0
+    dependencies:
+      - P2-M6-LIGHT-FOOT-PARTICIPANT-SETTLEMENT-REPORT
+      - P2-M6-U06-MASS-BATTLE-LOCATION-DETAIL
+      - MAINLINE-REPLAY-PARTICIPANT-01
+      - MENTOR-INSIGHT-OCCUPANCY-01
+    owned_files:
+      - lib/features/mass_battle/application/mass_battle_participant_service.dart
+      - lib/features/mass_battle/presentation/mass_battle_participant_picker.dart
+      - lib/features/mass_battle/presentation/mass_battle_screen.dart
+      - lib/features/jianghu_map/domain/mass_battle_location_detail.dart
+      - lib/features/jianghu_map/application/mass_battle_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/mass_battle_location_detail_screen.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/shared/strings.dart
+      - test/features/mass_battle/application/mass_battle_participant_service_test.dart
+      - test/features/mass_battle/presentation/mass_battle_participant_picker_test.dart
+      - test/features/mass_battle/presentation/mass_battle_screen_test.dart
+      - test/features/jianghu_map/application/mass_battle_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/mass_battle_location_detail_screen_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_test.dart
+      - test/features/mainline/presentation/apply_victory_resolution_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-mass-battle-participant-settlement-report.md
+      - docs/audit/phase2_m6_mass_battle_participant_settlement_report_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - each mass battle challenge chooses one eligible current leader or contemporary disciple at the activity entry
+      - the selected exact character snapshot enters the existing Phase0aMainlineBattleHost and keeps the existing formation picker and mapper semantics
+      - victory and final defeat settlement side effects belong to the actual participant through the existing CombatResolutionService path
+      - occupied healing dead no-main-technique historical-founder dangling duplicate-occupancy or invalid equipment/technique references fail closed without leader fallback
+      - victory and defeat reports name the actual participant without adding forced narrative text
+      - preserve mass battle route unlock cycle retry formation and reward semantics
+      - do not change reducer session headless combat rules schema save version YAML tuning rewards economy unlocks narrative or main
+      - do not claim complete M6 or overall Phase 2 completion

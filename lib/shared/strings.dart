@@ -1696,7 +1696,9 @@ class UiStrings {
   static const String massBattleLocationBattlePlanLabel = '守城态势';
   static const String massBattleLocationEnemyEcologyLabel = '敌方生态';
   static const String massBattleLocationCoreRewardLabel = '核心收获';
-  static const String massBattleLocationParticipantLabel = '当前参与者';
+  static const String massBattleLocationParticipantLabel = '实际参与者';
+  static String massBattleLocationEligibleParticipants(int count) =>
+      '进入关卡后逐次选择 · 可用 $count 人';
   static const String massBattleLocationEntryModeLabel = '进入方式';
   static const String massBattleLocationOccupancyLabel = '预计占用';
   static const String massBattleLocationEntryModeDirect = '当前仅开放亲战，不可派遣';
@@ -1705,6 +1707,14 @@ class UiStrings {
   static const String massBattleLocationEnter = '进入守城试炼';
   static const String massBattleLocationEnterHint = '查看关卡并挑战当前可用守城战';
   static const String massBattleLocationEnterReplayHint = '查看关卡并重打已通守城战';
+  static const String massBattleParticipantTitle = '选择守城者';
+  static const String massBattleParticipantBody = '每次挑战单独选择一名空闲掌门或门人。';
+  static const String massBattleParticipantAvailable = '可亲战';
+  static const String massBattleParticipantOccupied = '活动中';
+  static const String massBattleParticipantHealing = '重伤疗养中';
+  static const String massBattleParticipantNoMainTechnique = '未修主修';
+  static const String massBattleParticipantNoneEligible = '当前没有可参加守城试炼的角色。';
+  static const String massBattleParticipantUnavailable = '守城者状态暂不可用，请稍后重试。';
   static const String gauntletLocationDetailTitle = '断魂庄 · 地点详情';
   static const String gauntletLocationUnavailable = '庄中情报暂不可核实，暂不能进入';
   static const String gauntletLocationProgressLabel = '当前进度';

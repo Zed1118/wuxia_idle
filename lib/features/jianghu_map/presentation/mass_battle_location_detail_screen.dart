@@ -128,7 +128,9 @@ class _DetailContent extends ConsumerWidget {
               ),
               _DetailRow(
                 label: UiStrings.massBattleLocationParticipantLabel,
-                value: detail.participantName,
+                value: UiStrings.massBattleLocationEligibleParticipants(
+                  detail.eligibleParticipantCount,
+                ),
               ),
               const _DetailRow(
                 label: UiStrings.massBattleLocationEntryModeLabel,
@@ -150,13 +152,16 @@ class _DetailContent extends ConsumerWidget {
               ? UiStrings.massBattleLocationEnterReplayHint
               : UiStrings.massBattleLocationEnterHint,
           icon: Icons.groups_2_outlined,
-          onTap: () => guardBattleEntry(
-            context: context,
-            ref: ref,
-            onAllowed: () => Navigator.of(context).push<void>(
-              MaterialPageRoute(builder: (_) => const MassBattleScreen()),
-            ),
-          ),
+          disabled: !detail.hasEligibleParticipant,
+          onTap: detail.hasEligibleParticipant
+              ? () => guardBattleEntry(
+                  context: context,
+                  ref: ref,
+                  onAllowed: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const MassBattleScreen()),
+                  ),
+                )
+              : null,
         ),
       ],
     );

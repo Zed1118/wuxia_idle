@@ -7,11 +7,15 @@ import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/isar_setup.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
+import '../application/mass_battle_participant_service.dart';
 import '../application/mass_battle_service.dart';
+import 'mass_battle_participant_picker.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
 /// 群战守城 stage list 屏(1.0 P3.2 §12.3,Batch 2.4 reactive 三态)。
@@ -30,8 +34,28 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 /// **额外信息**(与 LightFoot 关键差异):每关显 wave / 敌数 + 默认阵型,玩家可
 /// 一眼看清「守 N 波 × M 敌 / 阵型 X」(stage list 紧凑视图;阵型选择 dialog
 /// 留 Batch 2.4 末段 + 2.5 wiring)。
+typedef MassBattleStageRunner =
+    Future<void> Function({
+      required BuildContext context,
+      required WidgetRef ref,
+      required StageDef stage,
+      required int targetCycle,
+      required CombatantSnapshot participantSnapshot,
+    });
+
+typedef MassBattleParticipantSnapshotResolver =
+    Future<CombatantSnapshot> Function(int requestedParticipantId);
+
 class MassBattleScreen extends ConsumerWidget {
-  const MassBattleScreen({super.key});
+  const MassBattleScreen({
+    super.key,
+    this.stageRunnerForTest,
+    this.participantSnapshotResolverForTest,
+  });
+
+  final MassBattleStageRunner? stageRunnerForTest;
+  final MassBattleParticipantSnapshotResolver?
+  participantSnapshotResolverForTest;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,11 +132,14 @@ class MassBattleScreen extends ConsumerWidget {
                           formation: formation,
                           onTap: status == MassBattleStageStatus.locked
                               ? null
-                              : () => runStageFlow(
+                              : () => runMassBattleChallenge(
                                   context: context,
                                   ref: ref,
                                   stage: s,
                                   targetCycle: cycleFor(),
+                                  stageRunner: stageRunnerForTest,
+                                  participantSnapshotResolver:
+                                      participantSnapshotResolverForTest,
                                 ),
                         ),
                       );
@@ -127,6 +154,63 @@ class MassBattleScreen extends ConsumerWidget {
     );
   }
 }
+
+/// 每次守城挑战都先选一名 eligible 角色，再以 exact snapshot 进入共享生产流程。
+Future<void> runMassBattleChallenge({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  MassBattleStageRunner? stageRunner,
+  MassBattleParticipantSnapshotResolver? participantSnapshotResolver,
+}) async {
+  final participantId = await selectMassBattleParticipant(
+    context: context,
+    ref: ref,
+  );
+  if (participantId == null || !context.mounted) return;
+
+  late final CombatantSnapshot participantSnapshot;
+  try {
+    participantSnapshot = participantSnapshotResolver == null
+        ? await resolveMassBattleParticipantSnapshot(
+            isar: IsarSetup.instance,
+            requestedParticipantId: participantId,
+          )
+        : await participantSnapshotResolver(participantId);
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.massBattleParticipantUnavailable),
+        ),
+      );
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  await (stageRunner ?? runMassBattleStageFlow)(
+    context: context,
+    ref: ref,
+    stage: stage,
+    targetCycle: targetCycle,
+    participantSnapshot: participantSnapshot,
+  );
+}
+
+Future<void> runMassBattleStageFlow({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required int targetCycle,
+  required CombatantSnapshot participantSnapshot,
+}) => runStageFlow(
+  context: context,
+  ref: ref,
+  stage: stage,
+  targetCycle: targetCycle,
+  directParticipantSnapshot: participantSnapshot,
+);
 
 class _MassBattleRow extends StatelessWidget {
   const _MassBattleRow({

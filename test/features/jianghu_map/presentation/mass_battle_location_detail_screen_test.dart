@@ -52,8 +52,7 @@ void main() {
               gating: FirstClearGating.wholeChannel,
             ),
       baseExpReward: complete ? null : stage.baseExpReward,
-      participantId: 7,
-      participantName: '沈掌门',
+      eligibleParticipantCount: 1,
     );
   }
 
@@ -106,7 +105,14 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('沈掌门'), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.massBattleLocationEligibleParticipants(
+          value.eligibleParticipantCount,
+        ),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text(UiStrings.massBattleLocationEntryModeDirect),
       findsOneWidget,

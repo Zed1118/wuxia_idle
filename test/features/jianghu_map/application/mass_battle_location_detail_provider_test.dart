@@ -40,6 +40,7 @@ void main() {
   Character leader(int id, String name) => Character()
     ..id = id
     ..name = name
+    ..isFounder = true
     ..realmTier = RealmTier.sanLiu
     ..realmLayer = RealmLayer.qiMeng
     ..attributes = Attributes()
@@ -107,8 +108,7 @@ void main() {
     );
     expect(detail.rewardRumor, isNotNull);
     expect(detail.baseExpReward, nextStage.baseExpReward);
-    expect(detail.participantId, 7);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 0);
   });
 
   test('五关全通时无下一关情报但保留真实参与者', () async {
@@ -130,7 +130,7 @@ void main() {
     expect(detail.enemyTotal, isNull);
     expect(detail.enemies, isEmpty);
     expect(detail.rewardRumor, isNull);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 0);
   });
 
   test('掌门指针缺失或悬空时 fail closed', () async {
