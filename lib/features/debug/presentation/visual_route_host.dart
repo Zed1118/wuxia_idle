@@ -1459,6 +1459,8 @@ Widget _buildExpeditionRecapVisual() {
   return ExpeditionRecapScreen(
     result: ExpeditionReturnResult(
       returned: true,
+      participantCharacterId: 1,
+      participantName: '沈砚',
       deepestNode: 14,
       grantedRewards: [
         r('exp', 1200),

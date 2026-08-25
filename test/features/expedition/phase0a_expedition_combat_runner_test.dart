@@ -4,16 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/equipment.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_combat_selector.dart';
 import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_combat_runner.dart';
+import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -53,12 +58,17 @@ void main() {
   });
 
   test('路线 C selector 只允许单成员 Phase 0A', () {
+    final member = ActivityMemberSnapshot()..characterId = 1;
     expect(
-      expeditionCombatFor(IsarSetup.instance, memberCount: 1),
+      expeditionCombatFor(IsarSetup.instance, memberCount: 1, member: member),
       isA<Phase0aExpeditionCombatRunner>(),
     );
     expect(
-      () => expeditionCombatFor(IsarSetup.instance, memberCount: 2),
+      () => expeditionCombatFor(
+        IsarSetup.instance,
+        memberCount: 2,
+        member: member,
+      ),
       throwsStateError,
     );
   });
@@ -96,12 +106,87 @@ void main() {
     expect(first.survivorQi.keys, [1]);
     expect(first.survivorHp[1], inInclusiveRange(0, caps.maxHp));
     expect(first.survivorQi[1], inInclusiveRange(0, caps.maxQi));
+    expect(first.combatSettlement, isNotNull);
+    expect(first.combatSettlement!.participantCharacterIds, contains(1));
+    expect(
+      first.combatSettlement!.participantFor(1)!.currentHp,
+      first.survivorHp[1],
+      reason: '真实 headless 终局须以实际参与者进入共享 settlement snapshot',
+    );
   });
 
   test('runner 拒绝多成员误入 Phase 0A 路径', () async {
     final runner = Phase0aExpeditionCombatRunner(IsarSetup.instance);
 
     await expectLater(runner.memberCaps([1, 2]), throwsA(isA<StateError>()));
+  });
+
+  test('真实自动节点把实际参与者终局写入共享战斗账本', () async {
+    final departed = DateTime(2026, 8, 25, 10);
+    await IsarSetup.instance.writeTxn(() async {
+      final equipmentId = await IsarSetup.instance.equipments.put(
+        Equipment.create(
+          defId: 'equipment_expedition_ledger_test',
+          tier: EquipmentTier.xunChang,
+          slot: EquipmentSlot.weapon,
+          obtainedAt: departed,
+          obtainedFrom: 'test',
+          ownerCharacterId: 1,
+          baseAttack: 10,
+        ),
+      );
+      final character = (await IsarSetup.instance.characters.get(1))!
+        ..isFounder = true
+        ..lineageRole = LineageRole.founder
+        ..currentRetreatSessionId = null
+        ..equippedWeaponId = equipmentId;
+      await IsarSetup.instance.characters.put(character);
+      final save = (await IsarSetup.instance.saveDatas.get(0))!
+        ..founderCharacterId = 1;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+    final equipmentBefore = {
+      for (final equipment
+          in await IsarSetup.instance.equipments
+              .filter()
+              .ownerCharacterIdEqualTo(1)
+              .findAll())
+        equipment.id: equipment.battleCount,
+    };
+    final service = ExpeditionService(IsarSetup.instance);
+    final runId = await service.dispatchRequest(
+      request: ExpeditionService.dispatchRequestFor(characterId: 1),
+      policy: ExpeditionPolicy.yiZhanLiXing,
+      now: departed,
+    );
+    final run = (await IsarSetup.instance.expeditionRuns.get(runId))!;
+
+    final result = await service.settle(
+      combat: Phase0aExpeditionCombatRunner(
+        IsarSetup.instance,
+        expectedMember: run.members.single,
+      ),
+      config: GameRepository.instance.expeditionConfig!,
+      now: departed.add(
+        Duration(
+          minutes: GameRepository.instance.expeditionConfig!.normalNodeMinutes,
+        ),
+      ),
+    );
+
+    expect(result.nodesSettled, 1);
+    final equipmentAfter = await IsarSetup.instance.equipments
+        .filter()
+        .ownerCharacterIdEqualTo(1)
+        .findAll();
+    expect(
+      equipmentAfter.any(
+        (equipment) =>
+            equipment.battleCount > (equipmentBefore[equipment.id] ?? -1),
+      ),
+      isTrue,
+      reason: '实际参与者装备 battleCount 必须由共享 CombatResolutionService 递增',
+    );
   });
 
   test('headless 超时 ongoing 沿旧 draw 口径映射为败停', () {

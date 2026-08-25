@@ -78,6 +78,8 @@ void main() {
     character: character(id, '门人$id'),
     occupied: occupied,
     hasMainTechnique: hasMainTechnique,
+    healing: false,
+    hasValidLoadout: true,
   );
 
   Future<ExpeditionLocationDetail> readDetail({

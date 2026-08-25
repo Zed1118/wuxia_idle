@@ -22,6 +22,13 @@ class ExpeditionRecapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final participantName = result.participantName;
+    if (!result.returned ||
+        result.participantCharacterId == null ||
+        participantName == null ||
+        participantName.trim().isEmpty) {
+      throw StateError('Expedition recap requires an actual participant');
+    }
     final rewards = result.grantedRewards;
     final exp = rewards.quantityOf('exp');
     final tickets = rewards.quantityOf('item_duanhuntie');
@@ -60,6 +67,10 @@ class ExpeditionRecapScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     const SectionHeader(UiStrings.expeditionRecapResultSection),
                     const SizedBox(height: 8),
+                    _RecapRow(
+                      icon: Icons.person_outline,
+                      label: UiStrings.stageReportParticipant(participantName),
+                    ),
                     _RecapRow(
                       icon: Icons.terrain,
                       label: UiStrings.expeditionRecapDeepest(

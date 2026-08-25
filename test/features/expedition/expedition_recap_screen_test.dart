@@ -27,6 +27,8 @@ void main() {
   testWidgets('主动召回：最深/奖获/断魂帖/全员安然，1280×720 无溢出', (tester) async {
     final result = ExpeditionReturnResult(
       returned: true,
+      participantCharacterId: 7,
+      participantName: '沈砚',
       deepestNode: 12,
       grantedRewards: [
         _r('exp', 800),
@@ -55,6 +57,8 @@ void main() {
   testWidgets('战败返程：败走标题 + 无奖获 + 重伤伤势，1440×900 无溢出', (tester) async {
     const result = ExpeditionReturnResult(
       returned: true,
+      participantCharacterId: 7,
+      participantName: '沈砚',
       deepestNode: 7,
       grantedRewards: [],
       downedCount: 2,
@@ -74,6 +78,8 @@ void main() {
   testWidgets('主动召回但有人负伤：显负伤调息文案', (tester) async {
     final result = ExpeditionReturnResult(
       returned: true,
+      participantCharacterId: 7,
+      participantName: '沈砚',
       deepestNode: 9,
       grantedRewards: [_r('item_silver', 120)],
       downedCount: 1,

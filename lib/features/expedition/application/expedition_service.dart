@@ -4,24 +4,34 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/attribute_effect_policy.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../shared/battle_shared/battle_result.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
+import '../../../shared/utils/rng.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
+import '../../combat_shared/application/combat_resolution_service.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
+import '../../equipment/application/drop_service.dart';
 import '../../injury/application/injury_service.dart';
+import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_seed.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_combat.dart';
+import 'phase0a_expedition_combat_runner.dart';
 
 /// 百草岭远征应用服务（§4.1/§9.1）。
 ///
@@ -31,6 +41,39 @@ class ExpeditionService {
   const ExpeditionService(this._isar);
 
   final Isar _isar;
+
+  static const String contentId = 'baicao_expedition';
+
+  static ActivityParticipationRequest dispatchRequestFor({
+    required int characterId,
+  }) => ActivityParticipationRequest(
+    contentId: contentId,
+    contentKind: ActivityContentKind.expedition,
+    characterId: characterId,
+    loadoutPlanId: 'expedition:baicao:character:$characterId',
+    participation: ActivityParticipationMode.dispatch,
+    controller: ActivityController.playerBot,
+    clock: ActivityClock.headless,
+    entryKind: ActivityEntryKind.firstClear,
+  );
+
+  /// 生产差遣入口。typed request 是选人、控制器与时钟语义的唯一入场合同；
+  /// durable participant snapshot 仍由既有 [ActivityMemberSnapshot] 持有。
+  Future<int> dispatchRequest({
+    required ActivityParticipationRequest request,
+    required ExpeditionPolicy policy,
+    int cycleIndex = 1,
+    DateTime? now,
+  }) async {
+    _assertDispatchRequest(request);
+    return _dispatch(
+      characterIds: [request.characterId],
+      policy: policy,
+      cycleIndex: cycleIndex,
+      now: now,
+      strictRequest: request,
+    );
+  }
 
   /// 派遣入场：单 `writeTxn` 校验占用 → 建 [ExpeditionRun] 快照 → `serial++` → put。
   /// 返回落库的 run id；任一校验不过抛 [StateError]，事务回滚。
@@ -47,6 +90,19 @@ class ExpeditionService {
     required ExpeditionPolicy policy,
     int cycleIndex = 1,
     DateTime? now,
+  }) => _dispatch(
+    characterIds: characterIds,
+    policy: policy,
+    cycleIndex: cycleIndex,
+    now: now,
+  );
+
+  Future<int> _dispatch({
+    required List<int> characterIds,
+    required ExpeditionPolicy policy,
+    int cycleIndex = 1,
+    DateTime? now,
+    ActivityParticipationRequest? strictRequest,
   }) async {
     if (characterIds.length != 1) {
       throw StateError('远征派遣：路线 C 只允许单人，got ${characterIds.length}');
@@ -68,6 +124,9 @@ class ExpeditionService {
       }
 
       final occupancy = await CharacterOccupancyService(_isar).snapshot();
+      final scheduling = strictRequest == null
+          ? null
+          : await loadDiscipleSchedulingSummary(_isar);
       final members = <ActivityMemberSnapshot>[];
       var entryMaxTier = RealmTier.xueTu;
       for (final cid in characterIds) {
@@ -75,6 +134,19 @@ class ExpeditionService {
         if (c == null) throw StateError('远征派遣：角色 $cid 不存在');
         if (!c.isAlive) {
           throw StateError('expedition_dispatch_character_dead:$cid');
+        }
+        if (strictRequest != null) {
+          final scheduled = scheduling!.members
+              .where((member) => member.characterId == cid)
+              .toList();
+          if (scheduled.length != 1) {
+            throw StateError(
+              'expedition_dispatch_character_not_current_generation:$cid',
+            );
+          }
+          if (c.injuryHoursRemaining > 0) {
+            throw StateError('expedition_dispatch_character_healing:$cid');
+          }
         }
         if (c.isFounder) {
           final currentLeaderId = await CurrentLeaderResolver.resolve(
@@ -95,17 +167,19 @@ class ExpeditionService {
           throw StateError('远征派遣：角色 $cid 未修主修，不可派遣');
         }
         members.add(
-          ActivityMemberSnapshot()
-            ..characterId = cid
-            ..reservedEquipmentIds = [
-              ?c.equippedWeaponId,
-              ?c.equippedArmorId,
-              ?c.equippedAccessoryId,
-            ]
-            ..reservedTechniqueIds = [mainTechId, ...c.assistTechniqueIds]
-            ..currentHp = 0
-            ..currentQi = 0
-            ..isDowned = false,
+          strictRequest == null
+              ? (ActivityMemberSnapshot()
+                  ..characterId = cid
+                  ..reservedEquipmentIds = [
+                    ?c.equippedWeaponId,
+                    ?c.equippedArmorId,
+                    ?c.equippedAccessoryId,
+                  ]
+                  ..reservedTechniqueIds = [mainTechId, ...c.assistTechniqueIds]
+                  ..currentHp = 0
+                  ..currentQi = 0
+                  ..isDowned = false)
+              : await _validatedMemberSnapshot(c),
         );
       }
 
@@ -152,6 +226,146 @@ class ExpeditionService {
       return _isar.expeditionRuns.put(run);
     });
   }
+
+  static void _assertDispatchRequest(ActivityParticipationRequest request) {
+    final expected = dispatchRequestFor(characterId: request.characterId);
+    if (request != expected) {
+      throw StateError('Expedition dispatch request semantics mismatch');
+    }
+  }
+
+  Future<ActivityMemberSnapshot> _validatedMemberSnapshot(
+    Character character,
+  ) async {
+    final equipmentIds = <int>[
+      ?character.equippedWeaponId,
+      ?character.equippedArmorId,
+      ?character.equippedAccessoryId,
+    ];
+    if (equipmentIds.toSet().length != equipmentIds.length) {
+      throw StateError(
+        'Expedition participant has duplicate equipped references',
+      );
+    }
+    for (final equipmentId in equipmentIds) {
+      final equipment = await _isar.equipments.get(equipmentId);
+      if (equipment == null || equipment.ownerCharacterId != character.id) {
+        throw StateError(
+          'Expedition participant equipment is missing or mismatched',
+        );
+      }
+    }
+
+    final mainTechniqueId = character.mainTechniqueId;
+    if (mainTechniqueId == null) {
+      throw StateError('Expedition participant has no main technique');
+    }
+    final techniqueIds = [mainTechniqueId, ...character.assistTechniqueIds];
+    if (techniqueIds.toSet().length != techniqueIds.length) {
+      throw StateError('Expedition participant has duplicate techniques');
+    }
+    for (final techniqueId in techniqueIds) {
+      final technique = await _isar.techniques.get(techniqueId);
+      if (technique == null || technique.ownerCharacterId != character.id) {
+        throw StateError(
+          'Expedition participant technique is missing or mismatched',
+        );
+      }
+    }
+
+    return ActivityMemberSnapshot()
+      ..characterId = character.id
+      ..reservedEquipmentIds = equipmentIds
+      ..reservedTechniqueIds = techniqueIds
+      ..currentHp = 0
+      ..currentQi = 0
+      ..isDowned = false;
+  }
+
+  static void _assertCombatSettlementMatches({
+    required ActivityMemberSnapshot member,
+    required ExpeditionNodeOutcome outcome,
+    required CombatSettlementSnapshot settlement,
+  }) {
+    final participant = settlement.participantFor(member.characterId);
+    final playerIds = settlement.participantCharacterIds
+        .where((id) => id > 0)
+        .toSet();
+    final snapshotWon = settlement.result == BattleResult.leftWin;
+    if (!settlement.isFinished ||
+        snapshotWon != outcome.leftWin ||
+        playerIds.length != 1 ||
+        !playerIds.contains(member.characterId) ||
+        participant == null ||
+        participant.currentHp != outcome.survivorHp[member.characterId]) {
+      throw StateError(
+        'Expedition combat settlement does not match reserved participant',
+      );
+    }
+  }
+
+  Future<void> _applySharedCombatLedger({
+    required ActivityMemberSnapshot member,
+    required CombatSettlementSnapshot settlement,
+  }) async {
+    final character = await _isar.characters.get(member.characterId);
+    if (character == null || !character.isAlive) {
+      throw StateError('Expedition settlement participant is missing or dead');
+    }
+    final currentSnapshot = await _validatedMemberSnapshot(character);
+    if (!_sameIdSet(
+          currentSnapshot.reservedEquipmentIds,
+          member.reservedEquipmentIds,
+        ) ||
+        !_sameIdSet(
+          currentSnapshot.reservedTechniqueIds,
+          member.reservedTechniqueIds,
+        )) {
+      throw StateError('Expedition settlement participant snapshot is stale');
+    }
+
+    final equipments = <Equipment>[];
+    for (final id in member.reservedEquipmentIds) {
+      final equipment = await _isar.equipments.get(id);
+      if (equipment == null || equipment.ownerCharacterId != character.id) {
+        throw StateError('Expedition settlement equipment is dangling');
+      }
+      equipments.add(equipment);
+    }
+    final techniques = <Technique>[];
+    for (final id in member.reservedTechniqueIds) {
+      final technique = await _isar.techniques.get(id);
+      if (technique == null || technique.ownerCharacterId != character.id) {
+        throw StateError('Expedition settlement technique is dangling');
+      }
+      technique.skillUsageCount = List.of(technique.skillUsageCount);
+      techniques.add(technique);
+    }
+
+    final repository = GameRepository.instance;
+    final numbers = repository.numbers;
+    CombatResolutionService.resolveSnapshot(
+      settlement: settlement,
+      participatingCharacters: [character],
+      equipmentsByCharacter: {character.id: equipments},
+      techniquesByCharacter: {character.id: techniques},
+      rng: DefaultRng(),
+      progressToNextMap: numbers.cultivationProgressToNext,
+      techniqueDefLookup: repository.getTechnique,
+      dropService: DropService(equipmentDefLookup: repository.getEquipment),
+      numbersConfig: numbers,
+      applyInjuries: false,
+    );
+
+    await _isar.characters.put(character);
+    if (equipments.isNotEmpty) await _isar.equipments.putAll(equipments);
+    if (techniques.isNotEmpty) await _isar.techniques.putAll(techniques);
+  }
+
+  static bool _sameIdSet(List<int> left, List<int> right) =>
+      left.length == right.length &&
+      left.toSet().containsAll(right) &&
+      right.toSet().containsAll(left);
 
   /// 单批离线结算允许的最大节点数（禁数十节点一事务，§4.4）。
   // TODO(batch3-probe): 探针定案后可下沉 expeditions.yaml。
@@ -259,6 +473,7 @@ class ExpeditionService {
 
     // txn 外逐节点跑规则 + 战斗，攒本批增量。
     final newRewards = <RewardEntry>[];
+    final combatSettlements = <CombatSettlementSnapshot>[];
     var node = startNode;
     var defeated = false;
     while (node < batchEnd) {
@@ -286,6 +501,21 @@ class ExpeditionService {
           ),
           cycleIndex: run.cycleIndex,
         );
+        final sharedSettlement = outcome.combatSettlement;
+        if (combat is Phase0aExpeditionCombatRunner &&
+            sharedSettlement == null) {
+          throw StateError(
+            'Production expedition combat omitted shared settlement',
+          );
+        }
+        if (sharedSettlement != null) {
+          _assertCombatSettlementMatches(
+            member: run.members.single,
+            outcome: outcome,
+            settlement: sharedSettlement,
+          );
+          combatSettlements.add(sharedSettlement);
+        }
         outcome.survivorHp.forEach((id, hp) {
           vitals[id] = ExpeditionMemberVital(
             hp: hp,
@@ -329,6 +559,20 @@ class ExpeditionService {
       if (row.currentNode != startNode ||
           row.lastSettledAt != run.lastSettledAt) {
         return;
+      }
+      if (combatSettlements.isNotEmpty) {
+        final member = row.members.length == 1 ? row.members.single : null;
+        if (member == null) {
+          throw StateError(
+            'Expedition shared settlement requires one participant',
+          );
+        }
+        for (final settlement in combatSettlements) {
+          await _applySharedCombatLedger(
+            member: member,
+            settlement: settlement,
+          );
+        }
       }
       row.currentNode = node;
       row.lastSettledAt = clampedNow;
@@ -442,6 +686,12 @@ class ExpeditionService {
     // 跨启动召回不再依赖调用方记得传参）。
     final isDefeated = defeated || run.defeated;
     final memberIds = run.members.map((m) => m.characterId).toList();
+    // 生产路线 C 恒为单人；历史 2–3 人会话只允许 startup retirement 调用本
+    // 方法兑现已落库状态并释放占用，不生成返程行记，因此身份保持 null。
+    final participantCharacterId = memberIds.length == 1
+        ? memberIds.single
+        : null;
+    String? participantName;
     final downedIds = run.members
         .where((m) => m.isDowned)
         .map((m) => m.characterId)
@@ -483,7 +733,13 @@ class ExpeditionService {
       final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
       for (final id in memberIds) {
         final ch = await _isar.characters.get(id);
-        if (ch == null) continue; // §10：找不到角色仍安全结算，不悬挂会话
+        if (ch == null) {
+          if (participantCharacterId != null) {
+            throw StateError('Expedition return participant is missing: $id');
+          }
+          continue;
+        }
+        if (id == participantCharacterId) participantName = ch.name;
         if (stagedExp > 0) {
           CharacterAdvancementService.applyExperience(
             ch,
@@ -564,6 +820,8 @@ class ExpeditionService {
 
     return ExpeditionReturnResult(
       returned: true,
+      participantCharacterId: participantCharacterId,
+      participantName: participantName,
       deepestNode: deepest,
       grantedRewards: granted,
       downedCount: downedIds.length,
@@ -676,6 +934,8 @@ class ExpeditionSettlementResult {
 class ExpeditionReturnResult {
   const ExpeditionReturnResult({
     required this.returned,
+    this.participantCharacterId,
+    this.participantName,
     required this.deepestNode,
     required this.grantedRewards,
     required this.downedCount,
@@ -684,6 +944,10 @@ class ExpeditionReturnResult {
 
   /// 有 active 远征被返程关闭；false = 无远征、无操作。
   final bool returned;
+
+  /// 实际参与者。无 active/并发放弃时为 null；真实返程必须同时非空。
+  final int? participantCharacterId;
+  final String? participantName;
 
   /// 最深完成节点（= 返程时 `currentNode`）。
   final int deepestNode;

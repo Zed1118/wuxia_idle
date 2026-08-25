@@ -14,6 +14,7 @@ import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../application/expedition_combat_selector.dart';
 import '../application/expedition_providers.dart';
+import '../application/expedition_service.dart';
 import '../application/expedition_startup.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_run.dart';
@@ -80,8 +81,10 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
     try {
-      await service.dispatch(
-        characterIds: _selected.toList(),
+      await service.dispatchRequest(
+        request: ExpeditionService.dispatchRequestFor(
+          characterId: _selected.single,
+        ),
         policy: _policy,
         cycleIndex: cycleIndex,
       );
@@ -467,7 +470,11 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       if (isar != null && config != null && run.members.length == 1) {
         final settle = await settleActiveExpeditionOnOpen(
           service: service,
-          combat: expeditionCombatFor(isar, memberCount: run.members.length),
+          combat: expeditionCombatFor(
+            isar,
+            memberCount: run.members.length,
+            member: run.members.single,
+          ),
           config: config,
           now: ref.read(systemClockProvider).now(),
         );

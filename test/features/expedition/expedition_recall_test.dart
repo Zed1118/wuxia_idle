@@ -99,6 +99,11 @@ void main() {
     final result = await svc.recall(defeated: false);
 
     expect(result.returned, isTrue);
+    expect(result.participantCharacterId, 1);
+    expect(
+      result.participantName,
+      (await IsarSetup.instance.characters.get(1))!.name,
+    );
     expect(result.deepestNode, 4);
     expect(result.defeated, isFalse);
 

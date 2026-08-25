@@ -1,13 +1,13 @@
-import 'package:isar_community/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/domain/character.dart';
+import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/technique.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_provider.dart';
-import '../../../shared/battle_shared/current_leader_resolver.dart';
-import '../../activity/application/character_occupancy_service.dart';
 import '../../../data/defs/expedition_config.dart';
+import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_service.dart';
 
@@ -57,6 +57,8 @@ class ExpeditionCandidate {
     required this.character,
     required this.occupied,
     required this.hasMainTechnique,
+    required this.healing,
+    required this.hasValidLoadout,
   });
 
   final Character character;
@@ -66,9 +68,12 @@ class ExpeditionCandidate {
 
   /// 已修主修 → 可派遣前置（§4.1）。未修 UI 标灰引导研习（§5.7）。
   final bool hasMainTechnique;
+  final bool healing;
+  final bool hasValidLoadout;
 
   /// 满足派遣前置：未被占用且已修主修。
-  bool get dispatchable => !occupied && hasMainTechnique;
+  bool get dispatchable =>
+      !occupied && !healing && hasMainTechnique && hasValidLoadout;
 }
 
 /// 派遣候选池（总览派遣态）：当前掌门 + 全部存活门人（覆盖 active 门人与 inactive
@@ -80,21 +85,50 @@ class ExpeditionCandidate {
 Future<List<ExpeditionCandidate>> expeditionCandidates(Ref ref) async {
   final isar = ref.watch(isarProvider);
   if (isar == null) return const [];
-  final save = await isar.saveDatas.get(0);
-  final leaderId = await CurrentLeaderResolver.resolve(
-    save: save,
-    characterExists: (characterId) async =>
-        await isar.characters.get(characterId) != null,
-  );
-  final chars = await isar.characters.filter().isAliveEqualTo(true).findAll();
-  final occ = await CharacterOccupancyService(isar).snapshot();
-  return [
-    for (final c in chars)
-      if (!c.isFounder || c.id == leaderId)
-        ExpeditionCandidate(
-          character: c,
-          occupied: occ.isCharacterOccupied(c.id),
-          hasMainTechnique: c.mainTechniqueId != null,
-        ),
-  ];
+  final scheduling = await loadDiscipleSchedulingSummary(isar);
+  final candidates = <ExpeditionCandidate>[];
+  for (final member in scheduling.members) {
+    if (!member.isAlive) continue;
+    final character = await isar.characters.get(member.characterId);
+    if (character == null) {
+      throw StateError(
+        'Expedition candidate references missing character: '
+        '${member.characterId}',
+      );
+    }
+    var validLoadout = character.mainTechniqueId != null;
+    for (final equipmentId in [
+      character.equippedWeaponId,
+      character.equippedArmorId,
+      character.equippedAccessoryId,
+    ]) {
+      if (equipmentId == null) continue;
+      final equipment = await isar.equipments.get(equipmentId);
+      validLoadout =
+          validLoadout &&
+          equipment != null &&
+          equipment.ownerCharacterId == character.id;
+    }
+    for (final techniqueId in [
+      character.mainTechniqueId,
+      ...character.assistTechniqueIds,
+    ]) {
+      if (techniqueId == null) continue;
+      final technique = await isar.techniques.get(techniqueId);
+      validLoadout =
+          validLoadout &&
+          technique != null &&
+          technique.ownerCharacterId == character.id;
+    }
+    candidates.add(
+      ExpeditionCandidate(
+        character: character,
+        occupied: member.activity != null,
+        hasMainTechnique: character.mainTechniqueId != null,
+        healing: character.injuryHoursRemaining > 0,
+        hasValidLoadout: validLoadout,
+      ),
+    );
+  }
+  return candidates;
 }

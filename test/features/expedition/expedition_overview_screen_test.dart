@@ -13,6 +13,7 @@ import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_recap_screen.dart';
@@ -28,6 +29,24 @@ class _FixedClock extends SystemClock {
   final DateTime _now;
   @override
   DateTime now() => _now;
+}
+
+final class _RecordingExpeditionService implements ExpeditionService {
+  ActivityParticipationRequest? request;
+
+  @override
+  Future<int> dispatchRequest({
+    required ActivityParticipationRequest request,
+    required ExpeditionPolicy policy,
+    int cycleIndex = 1,
+    DateTime? now,
+  }) async {
+    this.request = request;
+    return 1;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Character _char(
@@ -57,6 +76,8 @@ ExpeditionCandidate _cand(
   character: c,
   occupied: occupied,
   hasMainTechnique: hasMain,
+  healing: false,
+  hasValidLoadout: true,
 );
 
 const _config = ExpeditionConfig(
@@ -202,6 +223,36 @@ void main() {
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('派遣按钮只向 service 提交实际选人的 typed dispatch request', (tester) async {
+    final service = _RecordingExpeditionService();
+    final leader = _cand(_char(9, '当代掌门', mainTechniqueId: 9, isFounder: true));
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      ProviderScope(
+        overrides: [
+          activeExpeditionProvider.overrideWith((ref) async => null),
+          expeditionCandidatesProvider.overrideWith((ref) async => [leader]),
+          expeditionServiceProvider.overrideWithValue(service),
+        ],
+        child: const MaterialApp(home: ExpeditionOverviewScreen()),
+      ),
+    );
+
+    await tester.tap(find.text('当代掌门'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.expeditionDispatchButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      service.request,
+      ExpeditionService.dispatchRequestFor(characterId: 9),
+    );
+    expect(service.request!.participation, ActivityParticipationMode.dispatch);
+    expect(service.request!.controller, ActivityController.playerBot);
+    expect(service.request!.clock, ActivityClock.headless);
   });
 
   testWidgets('路线 C 派遣只允许选一人', (tester) async {

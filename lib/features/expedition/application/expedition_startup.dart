@@ -63,7 +63,11 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
   }
   await settleActiveExpeditionOnOpen(
     service: service,
-    combat: expeditionCombatFor(isar, memberCount: active.members.length),
+    combat: expeditionCombatFor(
+      isar,
+      memberCount: active.members.length,
+      member: active.members.single,
+    ),
     config: config,
     now: now ?? clock.now(),
   );

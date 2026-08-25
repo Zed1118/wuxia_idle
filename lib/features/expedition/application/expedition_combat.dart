@@ -1,4 +1,5 @@
 import '../domain/expedition_node.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 
 /// 远征战斗协作者（B2.2 注入 seam，§4.5/§9.1）。
 ///
@@ -47,6 +48,7 @@ class ExpeditionNodeOutcome {
     required this.leftWin,
     required this.survivorHp,
     required this.survivorQi,
+    this.combatSettlement,
   });
 
   /// 玩家方是否取胜；false → 结算侧「战败即停」。
@@ -57,4 +59,7 @@ class ExpeditionNodeOutcome {
 
   /// characterId → 战后当前真气。
   final Map<int, int> survivorQi;
+
+  /// 真实 Phase 0A 终局；由既有共享结算服务消费。
+  final CombatSettlementSnapshot? combatSettlement;
 }

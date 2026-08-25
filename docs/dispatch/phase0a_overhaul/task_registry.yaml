@@ -4872,3 +4872,49 @@ tasks:
       - do not change schema save version YAML tuning rewards economy unlocks narrative combat rules or main
       - per-character tower best remains a separate schema-blocked gate and is not claimed
       - do not claim complete M6 or overall Phase 2 completion
+
+  - id: P2-M6-E2E-MANUAL-DISPATCH-REPORT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-e2e-manual-dispatch-report-closeout-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 47b2d4a706ed38c13181c0250866fc3f775e0604
+    completion_scope: connect_real_baicao_manual_dispatch_exact_participant_snapshot_headless_shared_settlement_and_return_identity_report
+    dependencies:
+      - P2-M6-TOWER-PARTICIPANT-SETTLEMENT-REPORT
+      - MAINLINE-REPLAY-PARTICIPANT-01
+      - MENTOR-INSIGHT-OCCUPANCY-01
+    owned_files:
+      - lib/features/expedition/application/expedition_combat.dart
+      - lib/features/expedition/application/expedition_combat_selector.dart
+      - lib/features/expedition/application/expedition_providers.dart
+      - lib/features/expedition/application/expedition_service.dart
+      - lib/features/expedition/application/expedition_startup.dart
+      - lib/features/expedition/application/phase0a_expedition_combat_runner.dart
+      - lib/features/expedition/presentation/expedition_overview_screen.dart
+      - lib/features/expedition/presentation/expedition_recap_screen.dart
+      - lib/features/debug/presentation/visual_route_host.dart
+      - test/features/expedition/expedition_manual_dispatch_contract_test.dart
+      - test/features/expedition/expedition_providers_test.dart
+      - test/features/expedition/expedition_recap_screen_test.dart
+      - test/features/expedition/expedition_startup_core_test.dart
+      - test/features/expedition/phase0a_expedition_combat_runner_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-e2e-manual-dispatch-report.md
+      - docs/audit/phase2_m6_e2e_manual_dispatch_report_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - sect hub and jianghu map converge on the real expedition dispatch screen
+      - typed participation request exact durable participant snapshot unified occupancy and current leader resolver stay in one production chain
+      - invalid dangling historical dead healing no-main duplicate-occupied stale-loadout provider-error and wrong-settlement states fail closed
+      - actual participant alone enters Phase0a headless production and shared CombatResolutionService ledger
+      - expedition session rewards experience injuries and unlock semantics remain owned by the existing expedition service without duplicate settlement
+      - existing expedition recap reports the exact participant and dangling identity cannot produce a false report
+      - do not add reducer session headless provider or settlement truth sources
+      - do not change schema save version YAML tuning rewards economy unlocks narrative combat rules or main
+      - do not claim complete M6 or overall Phase 2 completion

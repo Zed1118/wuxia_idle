@@ -17,6 +17,7 @@ Character _char({
   bool isFounder = false,
   bool isActive = false,
   int? mainTechniqueId,
+  int? masterId,
 }) => Character()
   ..name = name
   ..realmTier = RealmTier.sanLiu
@@ -27,6 +28,7 @@ Character _char({
   ..createdAt = DateTime(2026, 7, 16)
   ..isFounder = isFounder
   ..isActive = isActive
+  ..masterId = masterId
   ..mainTechniqueId = mainTechniqueId;
 
 void main() {
@@ -104,12 +106,19 @@ void main() {
         _char(name: '前代祖师', isFounder: true, mainTechniqueId: 2),
       );
       aId = await IsarSetup.instance.characters.put(
-        _char(name: '甲', isActive: true, mainTechniqueId: 5),
+        _char(
+          name: '甲',
+          isActive: true,
+          mainTechniqueId: 5,
+          masterId: founderId,
+        ),
       );
       bId = await IsarSetup.instance.characters.put(
-        _char(name: '乙', mainTechniqueId: 6),
+        _char(name: '乙', mainTechniqueId: 6, masterId: founderId),
       );
-      cId = await IsarSetup.instance.characters.put(_char(name: '丙'));
+      cId = await IsarSetup.instance.characters.put(
+        _char(name: '丙', masterId: founderId),
+      );
       final save = await IsarSetup.instance.saveDatas.get(0);
       save!.founderCharacterId = founderId;
       save.activeCharacterIds = [founderId, aId];
