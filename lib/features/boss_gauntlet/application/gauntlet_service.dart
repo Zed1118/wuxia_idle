@@ -9,12 +9,14 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/skill_unlock_entry.dart';
+import '../../../core/domain/technique.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
@@ -24,7 +26,9 @@ import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../combat_shared/application/combat_resolution_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
+import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
@@ -430,6 +434,7 @@ class GauntletService {
       admission: admission,
       result: result.settlement,
       config: config,
+      numbers: numbers,
     );
     return result;
   }
@@ -466,6 +471,7 @@ class GauntletService {
     required GauntletAutomationAdmission admission,
     required GauntletStageSettlement result,
     required BossGauntletConfig config,
+    required NumbersConfig numbers,
   }) async {
     await _isar.writeTxn(() async {
       final save = await _isar.saveDatas.get(0);
@@ -485,6 +491,11 @@ class GauntletService {
       if (run.currentStage < 1 || run.currentStage > config.stages.length) {
         throw StateError('Gauntlet automation stage is out of range');
       }
+      await _applySharedCombatLedger(
+        run: run,
+        result: result,
+        numbers: numbers,
+      );
       final isBoss = config.stages[run.currentStage - 1].role == 'boss';
       GauntletController.advancePhase0a(
         run: run,
@@ -653,6 +664,11 @@ class GauntletService {
           fresh.currentStage > config.stages.length) {
         return;
       }
+      await _applySharedCombatLedger(
+        run: fresh,
+        result: result,
+        numbers: GameRepository.instance.numbers,
+      );
       final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
       GauntletController.advancePhase0a(
         run: fresh,
@@ -667,6 +683,86 @@ class GauntletService {
       );
       await _isar.bossGauntletRuns.put(fresh);
     });
+  }
+
+  /// 将单关终局写入全模式共享战斗账本。断魂庄的经验、领悟、奖励与伤势仍在
+  /// 会话末由 [chooseReward]/[settleDefeat] 统一结算，因此此处显式关闭逐关伤势，
+  /// 只消费装备战斗次数、招式使用、主修修炼度与通用调息副作用。
+  Future<void> _applySharedCombatLedger({
+    required BossGauntletRun run,
+    required GauntletStageSettlement result,
+    required NumbersConfig numbers,
+  }) async {
+    final member = run.members.length == 1 ? run.members.single : null;
+    final settlement = result.combatSettlement;
+    final participantIds = settlement.participantCharacterIds;
+    final playerCharacterIds = participantIds.where((id) => id > 0).toSet();
+    final participant = member == null
+        ? null
+        : settlement.participantFor(member.characterId);
+    final snapshotWon = settlement.result == BattleResult.leftWin;
+    if (member == null ||
+        !settlement.isFinished ||
+        snapshotWon != result.leftWin ||
+        playerCharacterIds.length != 1 ||
+        !playerCharacterIds.contains(member.characterId) ||
+        participant == null ||
+        participant.currentHp != result.checkpoint.currentHp ||
+        participant.maxHp != result.checkpoint.maxHp ||
+        result.checkpoint.characterId != member.characterId) {
+      throw StateError(
+        'Gauntlet combat settlement does not match active member',
+      );
+    }
+
+    final character = await _isar.characters.get(member.characterId);
+    if (character == null) {
+      throw StateError('Gauntlet combat participant is missing');
+    }
+
+    final equipments = <Equipment>[];
+    for (final equipmentId in [
+      character.equippedWeaponId,
+      character.equippedArmorId,
+      character.equippedAccessoryId,
+    ]) {
+      if (equipmentId == null) continue;
+      final equipment = await _isar.equipments.get(equipmentId);
+      if (equipment == null || equipment.ownerCharacterId != character.id) {
+        throw StateError(
+          'Gauntlet participant equipment is missing or mismatched',
+        );
+      }
+      equipments.add(equipment);
+    }
+
+    final techniques = await _isar.techniques
+        .where()
+        .filter()
+        .ownerCharacterIdEqualTo(character.id)
+        .findAll();
+    for (final technique in techniques) {
+      technique.skillUsageCount = List.of(technique.skillUsageCount);
+    }
+
+    final repository = GameRepository.instance;
+    CombatResolutionService.resolveSnapshot(
+      settlement: settlement,
+      participatingCharacters: [character],
+      equipmentsByCharacter: {character.id: equipments},
+      techniquesByCharacter: {character.id: techniques},
+      // 断魂庄逐关不投放共享掉落；stageDef=null 时该随机源不被消费。
+      rng: DefaultRng(seed: run.seed * 31 + run.currentStage),
+      progressToNextMap: numbers.cultivationProgressToNext,
+      techniqueDefLookup: repository.getTechnique,
+      dropService: DropService(equipmentDefLookup: repository.getEquipment),
+      numbersConfig: numbers,
+      applyInjuries: false,
+    );
+
+    await _isar.characters.put(character);
+    if (equipments.isNotEmpty) await _isar.equipments.putAll(equipments);
+    if (techniques.isNotEmpty) await _isar.techniques.putAll(techniques);
   }
 
   /// 整备页「继续闯关」：单 `writeTxn` 把 interlude 翻回 inBattle 开打下一关（§7.2）。

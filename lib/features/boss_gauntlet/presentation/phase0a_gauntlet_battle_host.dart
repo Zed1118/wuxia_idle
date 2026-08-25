@@ -99,6 +99,7 @@ final class _Phase0aGauntletBattleHostState
         outcome: controller.outcome,
         finalState: controller.state,
         mapping: mapping,
+        events: controller.events,
       ),
     );
   }

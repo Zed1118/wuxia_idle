@@ -166,6 +166,15 @@ class _Body extends ConsumerWidget {
                   fontSize: 12,
                 ),
               ),
+              const SizedBox(height: 6),
+              Text(
+                UiStrings.gauntletRewardParticipant(view.participantName),
+                style: const TextStyle(
+                  color: WuxiaColors.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
               const SizedBox(height: 16),
               LayoutBuilder(
                 builder: (context, constraints) {

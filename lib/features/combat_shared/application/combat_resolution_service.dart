@@ -101,6 +101,7 @@ class CombatResolutionService {
     StageDef? stageDef,
     NumbersConfig? numbersConfig,
     bool isHardFight = false,
+    bool applyInjuries = true,
     List<EquipmentDef> Function(EquipmentTier)? equipmentPoolByTier,
     EquipmentTier Function(RealmTier)? equipmentTierForRealm,
     int cycle = 1,
@@ -265,7 +266,8 @@ class CombatResolutionService {
     // 与其他战斗继续沿用统一伤势结算。
     final isInnerDemonFailure =
         !resolvedVictory && stageDef?.stageType == StageType.innerDemon;
-    if (numbersConfig != null &&
+    if (applyInjuries &&
+        numbersConfig != null &&
         participatingCharacters.isNotEmpty &&
         !isInnerDemonFailure) {
       InjuryService.applySettlementInjuries(

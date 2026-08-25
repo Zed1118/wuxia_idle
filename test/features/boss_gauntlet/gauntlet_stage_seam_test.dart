@@ -16,6 +16,8 @@ import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart'
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/equipment/application/equipment_factory.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -181,7 +183,9 @@ void main() {
       cycleIndex: plan.cycleIndex,
     );
     expect(
-      result.settlement.combatSettlement.participantCharacterIds,
+      result.settlement.combatSettlement.participantCharacterIds
+          .where((id) => id > 0)
+          .toSet(),
       {1},
       reason: 'headless 与 live 必须从真实 mapping/events 产出实际参与者共享结算快照',
     );
@@ -192,6 +196,13 @@ void main() {
 
     final equipment = (await IsarSetup.instance.equipments.get(equipmentId))!;
     expect(equipment.battleCount, 1, reason: '逐关终局必须进入共享战斗账本');
+    final characterAfterStage = (await IsarSetup.instance.characters.get(1))!;
+    expect(characterAfterStage.injuryHoursRemaining, 0);
+    expect(
+      characterAfterStage.lightInjuryStacks,
+      0,
+      reason: '断魂庄逐关共享结算不得抢跑会话末伤势',
+    );
     final techniques = await IsarSetup.instance.techniques.where().findAll();
     expect(
       techniques
@@ -212,12 +223,56 @@ void main() {
     }
   });
 
+  test('settlePhase0aStageResult 错人快照 → fail closed 且不推进会话', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final runId = await putRun(
+      phase: GauntletPhase.inBattle,
+      currentStage: 1,
+      members: [snap(1)],
+    );
+    final config = GameRepository.instance.bossGauntletConfig!;
+
+    await expectLater(
+      GauntletService(IsarSetup.instance).settlePhase0aStageResult(
+        result: GauntletStageSettlement(
+          leftWin: true,
+          checkpoint: const GauntletMemberCheckpoint(
+            characterId: 1,
+            currentHp: 1,
+            currentQi: 0,
+            maxHp: 1,
+            maxQi: 1,
+          ),
+          combatSettlement: CombatSettlementSnapshot(
+            result: BattleResult.leftWin,
+            totalTicks: 1,
+            hadActions: true,
+            participants: const [
+              CombatParticipantSnapshot(characterId: 2, currentHp: 1, maxHp: 1),
+            ],
+            skillCasts: const [],
+            totalDamage: 1,
+            criticalCount: 0,
+            damageByCharacterId: const {2: 1},
+          ),
+        ),
+        config: config,
+      ),
+      throwsStateError,
+    );
+
+    final run = (await IsarSetup.instance.bossGauntletRuns.get(runId))!;
+    expect(run.currentStage, 1);
+    expect(run.sessionPhase, GauntletPhase.inBattle);
+    expect(run.members.single.maxHp, 0, reason: '事务回滚不得写入错人检查点');
+  });
+
   test('settlePhase0aStageResult 会话已关闭 → 防御 no-op（不抛）', () async {
     await seedSave();
     // 无 active run → fresh 为 null → settlement 内防御返回。
     final config = GameRepository.instance.bossGauntletConfig!;
     await GauntletService(IsarSetup.instance).settlePhase0aStageResult(
-      result: const GauntletStageSettlement(
+      result: GauntletStageSettlement(
         leftWin: false,
         checkpoint: GauntletMemberCheckpoint(
           characterId: 1,
@@ -226,7 +281,18 @@ void main() {
           maxHp: 1,
           maxQi: 1,
         ),
-        combatSettlement: null,
+        combatSettlement: CombatSettlementSnapshot(
+          result: BattleResult.rightWin,
+          totalTicks: 1,
+          hadActions: false,
+          participants: const [
+            CombatParticipantSnapshot(characterId: 1, currentHp: 0, maxHp: 1),
+          ],
+          skillCasts: const [],
+          totalDamage: 0,
+          criticalCount: 0,
+          damageByCharacterId: const {1: 0},
+        ),
       ),
       config: config,
     );

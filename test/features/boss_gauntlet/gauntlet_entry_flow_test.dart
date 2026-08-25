@@ -20,6 +20,8 @@ import 'package:wuxia_idle/features/boss_gauntlet/presentation/phase0a_gauntlet_
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -190,6 +192,22 @@ void main() {
           currentQi: 0,
           maxHp: 1,
           maxQi: 1,
+        ),
+        combatSettlement: CombatSettlementSnapshot(
+          result: leftWin ? BattleResult.leftWin : BattleResult.rightWin,
+          totalTicks: 1,
+          hadActions: true,
+          participants: [
+            CombatParticipantSnapshot(
+              characterId: 1,
+              currentHp: leftWin ? 1 : 0,
+              maxHp: 1,
+            ),
+          ],
+          skillCasts: const [],
+          totalDamage: leftWin ? 1 : 0,
+          criticalCount: 0,
+          damageByCharacterId: {1: leftWin ? 1 : 0},
         ),
       );
 

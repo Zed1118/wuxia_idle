@@ -4355,6 +4355,8 @@ class UiStrings {
   // 通关三选一奖励（§6.2 · #1 wiring Task 2）
   static const String gauntletRewardTitle = '断魂庄 · 论功行赏';
   static const String gauntletRewardSection = '通庄战利 · 三选一';
+  static String gauntletRewardParticipant(String name) => '此战由 $name 亲历';
+  static String gauntletLegacyMember(int characterId) => '旧档门人#$characterId';
   static const String gauntletRewardFirstClearBadge = '首通 · 全奖';
   static const String gauntletRewardRepeatBadge = '再通 · 减半';
   static const String gauntletRewardFirstClearHint =

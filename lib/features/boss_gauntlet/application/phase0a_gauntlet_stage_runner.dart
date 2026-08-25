@@ -1,11 +1,14 @@
 import '../../../data/defs/stage_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
+import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/phase0a_headless_runner.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
+import '../../battle/domain/phase0a/phase0a_combat_events.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import 'gauntlet_controller.dart';
@@ -18,10 +21,12 @@ final class GauntletStageSettlement {
   const GauntletStageSettlement({
     required this.leftWin,
     required this.checkpoint,
+    required this.combatSettlement,
   });
 
   final bool leftWin;
   final GauntletMemberCheckpoint checkpoint;
+  final CombatSettlementSnapshot combatSettlement;
 }
 
 final class Phase0aGauntletStageResult {
@@ -29,11 +34,13 @@ final class Phase0aGauntletStageResult {
     required this.outcome,
     required this.finalState,
     required this.mapping,
+    required this.events,
   });
 
   final Phase0aBattleOutcome outcome;
   final Phase0aArenaState finalState;
   final Phase0aStageMapping mapping;
+  final List<Phase0aEvent> events;
 
   bool get leftWin => outcome == Phase0aBattleOutcome.victory;
 
@@ -50,8 +57,16 @@ final class Phase0aGauntletStageResult {
     );
   }
 
-  GauntletStageSettlement get settlement =>
-      GauntletStageSettlement(leftWin: leftWin, checkpoint: checkpoint);
+  GauntletStageSettlement get settlement => GauntletStageSettlement(
+    leftWin: leftWin,
+    checkpoint: checkpoint,
+    combatSettlement: Phase0aSettlementAdapter.fromMapping(
+      mapping: mapping,
+      outcome: outcome,
+      finalState: finalState,
+      events: events,
+    ),
+  );
 }
 
 /// 断魂庄 Phase 0A 单关 headless runner；会话与奖励事务仍归 GauntletService。
@@ -96,6 +111,7 @@ final class Phase0aGauntletStageRunner {
       outcome: result.outcome,
       finalState: result.finalState,
       mapping: mapping,
+      events: result.events,
     );
   }
 }

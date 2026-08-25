@@ -311,10 +311,12 @@ class GauntletRewardCandidate {
 /// 空态）。
 class GauntletRewardView {
   const GauntletRewardView({
+    required this.participantName,
     required this.isFirstClear,
     required this.candidates,
   });
 
+  final String participantName;
   final bool isFirstClear;
   final List<GauntletRewardCandidate> candidates;
 }
@@ -326,14 +328,30 @@ class GauntletRewardView {
 /// `ref.invalidate(gauntletRewardViewProvider)` 统一失效。
 @riverpod
 Future<GauntletRewardView?> gauntletRewardView(Ref ref) async {
+  final isar = ref.watch(isarProvider);
   final service = ref.watch(gauntletServiceProvider);
-  if (service == null) return null;
+  if (isar == null || service == null) return null;
   final run = await service.activeRun();
   if (run == null || run.sessionPhase != GauntletPhase.awaitingRewardChoice) {
     return null;
   }
   final repo = GameRepository.instanceOrNull;
   if (repo == null) return null; // 无装备 def 无法展示卡（生产恒 loaded）
+  if (run.members.isEmpty) return null;
+  final memberIds = run.members.map((member) => member.characterId).toList();
+  if (memberIds.toSet().length != memberIds.length) return null;
+  final participantNames = <String>[];
+  for (final memberId in memberIds) {
+    final participant = await isar.characters.get(memberId);
+    if (participant == null) {
+      // 当前单人生产会话身份悬空时 fail closed；仅保留历史多人待领奖会话的
+      // 既有恢复能力，明确显示旧档占位而不猜测/回退掌门。
+      if (memberIds.length == 1) return null;
+      participantNames.add(UiStrings.gauntletLegacyMember(memberId));
+    } else {
+      participantNames.add(participant.name);
+    }
+  }
   final candidates = <GauntletRewardCandidate>[];
   for (final defId in run.rewardCandidateDefIds) {
     final def = repo.equipmentDefs[defId];
@@ -354,6 +372,7 @@ Future<GauntletRewardView?> gauntletRewardView(Ref ref) async {
     );
   }
   return GauntletRewardView(
+    participantName: participantNames.join('、'),
     isFirstClear: run.isFirstClearPending,
     candidates: candidates,
   );
