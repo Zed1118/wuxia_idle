@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.84**
+> **版本:v1.85**
+>
+> v1.85 变更摘要(2026-08-25 二阶段 M6 轻功实际参与者结算报告生产纵切):轻功每次挑战现从当前掌门与当代存活门人逐次选择 eligible 空闲角色，选定 ID 复核后经 exact snapshot 进入真实 `Phase0aMainlineBattleHost`；胜利与最终未重试战败均严格核验该单一参与者并走共享 `CombatResolutionService`，经验、伤势、装备战斗次数与心法使用归实际角色，胜负报告显示该人。占用、疗养、无主修、身份/资源悬空或错人结算 fail closed，不回退掌门；掌门闭关时空闲门人仍可挑战。该纵切只关闭轻功逐次选人/共享账本/身份报告子门，不晋升 M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事、战斗规则或 main。
 >
 > v1.84 变更摘要(2026-08-25 二阶段 M6 断魂庄亲战结算报告生产纵切):断魂庄 live controller 与 headless runner 现从同一 Phase 0A 终态生成共享 settlement，`GauntletService` 在推进关次的同一事务内复核实际单人、HP 检查点、装备和心法并调用 `CombatResolutionService`；装备战斗次数与招式使用归实际参与者。逐关不重复伤势/经验/领悟/奖励/补给，胜利页显示真实亲历者，悬空或错人 fail closed，随机源由 `rngProvider` 注入。旧多人待选奖存档保持恢复路径。该纵切只关闭断魂庄共享账本/参与者报告子门，不晋升 M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗规则。
 >
