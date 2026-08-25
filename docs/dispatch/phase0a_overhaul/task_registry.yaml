@@ -4534,3 +4534,40 @@ tasks:
       - keep legacy TeamLineupScreen and LineupService only for compatibility and debug inspection in this slice
       - do not change schema save version tuning YAML rewards economy combat or main
       - do not claim U08 M6 or overall Phase 2 completion
+
+  - id: P2-M6-LEADER-SIDE-ACTIVITY-ADMISSION
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-leader-side-activity-admission-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-leader-side-activity-admission
+    status: in_progress
+    base_commit: 8d63c62105b9bf35f111259673edaf8fea3fdcd3
+    completion_scope: allow_idle_current_leader_and_reject_occupied_current_leader_in_expedition_and_gauntlet_production_entries
+    dependencies:
+      - P2-M6-U08-DISCIPLE-SCHEDULING-STATUS
+    owned_files:
+      - lib/features/expedition/application/expedition_providers.dart
+      - lib/features/expedition/application/expedition_service.dart
+      - lib/features/boss_gauntlet/application/gauntlet_providers.dart
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - test/features/expedition/expedition_dispatch_test.dart
+      - test/features/expedition/expedition_providers_test.dart
+      - test/features/expedition/expedition_overview_screen_test.dart
+      - test/features/boss_gauntlet/gauntlet_enter_test.dart
+      - test/features/boss_gauntlet/gauntlet_providers_test.dart
+      - test/features/boss_gauntlet/gauntlet_loadout_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-leader-side-activity-admission.md
+      - docs/audit/phase2_m6_leader_side_activity_admission_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - the real current leader may be selected by expedition and gauntlet only while alive idle and equipped with a main technique
+      - retreat expedition and gauntlet occupancy remain mutually exclusive and are rechecked by each service inside its write transaction
+      - candidate providers and write services agree on the same founder eligibility without bypassing CharacterOccupancyService
+      - selecting a founder requires the valid current leader identity and never falls back to another character
+      - existing single participant supply cycle recovery combat settlement recall reward and return behavior remains unchanged
+      - do not change schema save version tuning YAML rewards economy unlocks narrative combat or main
+      - do not claim complete U08 M6 or overall Phase 2 completion
