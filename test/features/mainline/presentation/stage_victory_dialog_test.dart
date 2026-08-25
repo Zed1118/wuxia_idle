@@ -161,6 +161,24 @@ void main() {
   });
 
   group('StageVictoryContent', () {
+    testWidgets('实际参与者身份在胜利报告中明确可见', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StageVictoryContent(
+              participantName: '空闲门人',
+              drops: _emptyDrops(),
+              advancements: const [],
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.text(UiStrings.stageReportParticipant('空闲门人')),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('empty drops + 无升层 → 显「本战无固定掉落」 + 不显 banner', (tester) async {
       await _pumpContent(tester, _emptyDrops(), const []);
       expect(find.text(UiStrings.stageVictoryDropLabel), findsOneWidget);

@@ -25,6 +25,15 @@ void main() {
     }
   });
 
+  testWidgets('失败报告正文明确显示实际参与者身份', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: StageRetryDialogBody(participantName: '空闲门人')),
+      ),
+    );
+    expect(find.text(UiStrings.stageReportParticipant('空闲门人')), findsOneWidget);
+  });
+
   // ── fixtures ─────────────────────────────────────────────────────────────
 
   StageDef normalStage({

@@ -453,6 +453,74 @@ void main() {
     expect(outcome, isNull, reason: 'ids 空 → 早返 null');
   });
 
+  testWidgets('轻功 exact participant 可结算非 active 当代门人且掌门零污染', (tester) async {
+    final (founderId, participantId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '掌门');
+      final participant = await insertCharacter(name: '轻功门人');
+      await writeSaveData(activeIds: [founder], founderId: founder);
+      return (founder, participant);
+    }))!;
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(baseExpReward: 23),
+        settlementSnapshot: finishedSettlement([participantId]),
+        expectedParticipantId: participantId,
+      ),
+    );
+
+    expect(outcome, isNotNull);
+    expect(outcome!.characters.map((character) => character.id), [
+      participantId,
+    ]);
+    await tester.runAsync(() async {
+      expect(
+        (await IsarSetup.instance.characters.get(founderId))!.experience,
+        0,
+      );
+      expect(
+        (await IsarSetup.instance.characters.get(participantId))!.experience,
+        23,
+      );
+    });
+  });
+
+  testWidgets('轻功结算快照身份与 exact participant 不一致时 fail closed 且零写入', (
+    tester,
+  ) async {
+    final (founderId, participantId) = (await tester.runAsync(() async {
+      final founder = await insertCharacter(name: '掌门');
+      final participant = await insertCharacter(name: '轻功门人');
+      await writeSaveData(activeIds: [founder], founderId: founder);
+      return (founder, participant);
+    }))!;
+
+    await expectLater(
+      runWithRef(
+        tester,
+        (ref) => applyVictoryResolution(
+          ref: ref,
+          stage: normalStage(baseExpReward: 23),
+          settlementSnapshot: finishedSettlement([founderId]),
+          expectedParticipantId: participantId,
+        ),
+      ),
+      throwsStateError,
+    );
+    await tester.runAsync(() async {
+      expect(
+        (await IsarSetup.instance.characters.get(founderId))!.experience,
+        0,
+      );
+      expect(
+        (await IsarSetup.instance.characters.get(participantId))!.experience,
+        0,
+      );
+    });
+  });
+
   testWidgets('activeIds 全部指向不存在角色 → characters 空 → null(L787/815)', (
     tester,
   ) async {
