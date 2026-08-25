@@ -101,6 +101,28 @@ void main() {
     );
   });
 
+  test('声望 service 不可用时 fail closed', () async {
+    final container = ProviderContainer(
+      overrides: [
+        mainlineProgressProvider.overrideWith(
+          (ref) async =>
+              MainlineProgress()
+                ..clearedStageIds = const [kFirstChapterFinalStageId],
+        ),
+        reputationServiceProvider.overrideWithValue(null),
+        reputationsForCurrentPlayerProvider.overrideWith(
+          (ref) async => const <Reputation>[],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(reputationLocationDetailProvider.future),
+      throwsA(isA<StateError>()),
+    );
+  });
+
   test('未知门派持久声望 fail closed', () async {
     await expectLater(
       readDetail(reputations: [reputation(1, 'missing_faction', 10)]),

@@ -76,10 +76,13 @@ void main() {
     await tester.pump();
 
     expect(find.text(UiStrings.reputationLocationDetailTitle), findsOneWidget);
-    expect(find.text('少林寺'), findsOneWidget);
-    expect(find.text('武当派'), findsOneWidget);
+    expect(find.textContaining('少林寺'), findsOneWidget);
+    expect(find.textContaining('武当派'), findsOneWidget);
     expect(find.textContaining('声振江湖'), findsOneWidget);
-    expect(find.text(UiStrings.reputationLocationUnrecorded), findsOneWidget);
+    expect(
+      find.textContaining(UiStrings.reputationLocationUnrecorded),
+      findsOneWidget,
+    );
     expect(find.textContaining('声名狼藉'), findsOneWidget);
     expect(find.textContaining('天下闻名'), findsOneWidget);
     expect(

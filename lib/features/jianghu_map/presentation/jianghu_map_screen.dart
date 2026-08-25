@@ -12,7 +12,6 @@ import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../../expedition/application/expedition_providers.dart';
 import '../../expedition/domain/expedition_run.dart';
-import '../../jianghu/presentation/reputation_panel_screen.dart';
 import '../../light_foot/application/light_foot_service.dart';
 import '../../main_menu/application/main_menu_status_summary_provider.dart';
 import '../../mainline/application/mainline_providers.dart';
@@ -28,6 +27,7 @@ import 'gauntlet_location_detail_screen.dart';
 import 'expedition_location_detail_screen.dart';
 import 'light_foot_location_detail_screen.dart';
 import 'mass_battle_location_detail_screen.dart';
+import 'reputation_location_detail_screen.dart';
 import 'tower_location_detail_screen.dart';
 
 String jianghuMapTowerStatus(TowerProgress progress) {
@@ -296,7 +296,8 @@ class JianghuMapScreen extends ConsumerWidget {
                   onTap: reputationLocked == false
                       ? () => Navigator.of(context).push<void>(
                           MaterialPageRoute(
-                            builder: (_) => const ReputationPanelScreen(),
+                            builder: (_) =>
+                                const ReputationLocationDetailScreen(),
                           ),
                         )
                       : null,

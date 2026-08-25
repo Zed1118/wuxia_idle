@@ -692,6 +692,47 @@ class UiStrings {
   static const String reputationPanelTitle = '江湖声望';
   static const String reputationPanelEmpty = '暂无声望记录';
   static const String reputationPanelLoadError = '加载失败';
+  static const String reputationLocationDetailTitle = '江湖恩怨';
+  static const String reputationLocationUnavailable = '江湖消息未明，暂不可查。';
+  static const String reputationLocationOverviewLabel = '当前声望';
+  static const String reputationLocationFactionLabel = '六方门派';
+  static const String reputationLocationTierLabel = '声望七阶';
+  static const String reputationLocationSourceLabel = '声望来处';
+  static const String reputationLocationEnmityLabel = 'NPC 恩怨';
+  static const String reputationLocationUnrecorded = '尚无记录';
+  static const String reputationLocationEnmityBoundary =
+      'NPC 恩怨按实际角色与对象独立结算；本页不猜测当前角色或仇敌数量。';
+  static const String reputationLocationEnter = '查看江湖声望';
+  static const String reputationLocationEnterHint = '进入原声望面板，查看已记录门派声望';
+  static String reputationLocationOverview(int tracked, int total) =>
+      '已与 $tracked / $total 个门派留下声望记录';
+  static String reputationLocationFaction(
+    String name,
+    String alignment,
+    String relation,
+  ) => '$name · $alignment · $relation';
+  static String reputationLocationRecorded(String label, int value) =>
+      '$label · $value';
+  static String reputationLocationTierRange(String label, int min, int max) =>
+      '$label $min～$max';
+  static String reputationLocationSources(
+    int bossLoss,
+    int rivalGain,
+    int encounterMin,
+    int encounterMax,
+  ) {
+    String signed(int value) => value > 0 ? '+$value' : '$value';
+    return '击败有派别首领：所属派 -$bossLoss、对立派 +$rivalGain；'
+        '互动选择：${signed(encounterMin)}～${signed(encounterMax)}';
+  }
+
+  static String reputationLocationAlignment(String alignment) =>
+      switch (alignment) {
+        'orthodox' => '正道',
+        'neutral' => '中立',
+        'evil' => '邪道',
+        _ => '未知',
+      };
   static const String reputationTierXueTu = '声名狼藉';
   static const String reputationTierSanLiu = '恶名';
   static const String reputationTierErLiu = '默默无闻';
