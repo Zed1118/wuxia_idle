@@ -5172,6 +5172,43 @@ tasks:
       - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim tower automation M5 U14 M6 or overall Phase 2 completion
 
+  - id: P2-M6-U14-ZERO-ELIGIBLE-ROUTES
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-u14-zero-eligible-routes-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 948def3598e742483484fdeb7f4ae2d202cdb4ac
+    completion_scope: fail_closed_zero_eligible_routes_for_all_five_jianghu_activity_locations_while_preserving_active_resume
+    acceptance_baseline: 0_of_1_five_location_zero_eligible_route_gate
+    acceptance_target: 1_of_1_five_location_zero_eligible_route_gate
+    behavior_baseline: 3_of_5_locations
+    explicit_widget_coverage_baseline: 1_of_5_locations
+    dependencies:
+      - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
+    owned_files:
+      - lib/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart
+      - lib/features/jianghu_map/presentation/expedition_location_detail_screen.dart
+      - test/features/jianghu_map/presentation/tower_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/light_foot_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/mass_battle_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/gauntlet_location_detail_screen_test.dart
+      - test/features/jianghu_map/presentation/expedition_location_detail_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-u14-zero-eligible-routes.md
+      - docs/audit/phase2_u14_zero_eligible_routes_2026-08-25.md
+      - docs/audit/phase2_u14_special_mode_matrix_blocked_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - active gauntlet and expedition sessions remain resumable even when the current idle candidate count is zero
+      - provider and identity errors remain fail closed without false CTA
+      - no automation matrix runner admission provider schema save version YAML tuning reward economy unlock narrative combat or main change
+      - do not claim U14 M6 or overall Phase 2 completion
+
   - id: P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_root
