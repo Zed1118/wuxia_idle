@@ -23,3 +23,7 @@
 ## 精确白名单
 
 - registry 中本任务 `owned_files` 列表；没有证据需要时不扩展。
+
+## 完成记录
+
+- `2026-08-25 15:13 +08:00`：验收门 `WIP 0/1 → READY 1/1`；候选 `444d0b2d`，最终全量 `5532/5532 PASS`，根应用 analyze 0，详见 `docs/audit/phase2_m6_gauntlet_live_settlement_report_2026-08-25.md`。

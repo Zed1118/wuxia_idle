@@ -4653,19 +4653,22 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-gauntlet-live-settlement-report-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-gauntlet-live-settlement-report
-    status: in_progress
+    status: ready_reviewed
     base_commit: 8671f8920a9e2ef3cd7bf869a047808d0fd742b1
+    code_candidate_commit: 444d0b2dcf0b79e6e0db2f1678f4c3175d2176ac
+    reviewed_candidate_commit: 444d0b2dcf0b79e6e0db2f1678f4c3175d2176ac
     ready_marker: "[READY][CODEX][P2-M6-GAUNTLET-LIVE-SETTLEMENT-REPORT] 接通断魂庄亲战结算报告闭环"
     completion_scope: connect_exact_gauntlet_participant_live_and_headless_stage_results_to_shared_combat_ledger_and_victory_report
     verification:
-      focused_tests: pending
-      adjacent_activity_and_entry_tests: pending
-      double_viewport_tests: pending
-      initial_red_failures: pending
-      scoped_analyze_issues: pending
-      root_app_analyze_issues: pending
-      full_tests: pending
-      semantic_review_p0_p1_p2: pending
+      focused_tests: 25
+      adjacent_activity_and_entry_tests: 219
+      double_viewport_tests: 2
+      initial_red_failures: 3
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      full_tests_passed: 5532
+      integration_failures_found_and_closed: 3
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-TOWER-PARTICIPANT-SELECTION
     owned_files:
@@ -4674,11 +4677,16 @@ tasks:
       - lib/features/boss_gauntlet/application/gauntlet_providers.dart
       - lib/features/boss_gauntlet/presentation/phase0a_gauntlet_battle_host.dart
       - lib/features/boss_gauntlet/presentation/gauntlet_reward_screen.dart
+      - lib/features/combat_shared/application/combat_resolution_service.dart
       - lib/shared/strings.dart
-      - lib/features/debug/presentation/visual_route_host.dart
+      - test/features/battle/application/combat_progression_settlement_wiring_contract_test.dart
       - test/features/boss_gauntlet/gauntlet_stage_seam_test.dart
+      - test/features/boss_gauntlet/gauntlet_entry_flow_test.dart
       - test/features/boss_gauntlet/gauntlet_providers_test.dart
+      - test/features/boss_gauntlet/gauntlet_resume_test.dart
       - test/features/boss_gauntlet/gauntlet_reward_screen_test.dart
+      - test/features/cultivation/application/experience_source_consistency_test.dart
+      - test/shared/utils/rng_provider_wiring_contract_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m6-gauntlet-live-settlement-report.md
       - docs/audit/phase2_m6_gauntlet_live_settlement_report_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
