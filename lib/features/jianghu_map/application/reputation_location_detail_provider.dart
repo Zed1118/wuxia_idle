@@ -56,14 +56,14 @@ void _validateTriggers(JianghuTriggers triggers) {
   }
 }
 
-List<ReputationLocationFactionSummary> _validatedFactions({
+List<ReputationLocationFactionSummary> validatedReputationLocationFactions({
   required Map<String, FactionDef> definitions,
   required List<Reputation> reputations,
   required List<ReputationLocationTierSummary> tiers,
   required String Function(int value) tierOf,
 }) {
-  if (definitions.isEmpty) {
-    throw StateError('Reputation location detail has no factions');
+  if (definitions.length != 6) {
+    throw StateError('Reputation location detail requires six factions');
   }
   const alignments = {'orthodox', 'neutral', 'evil'};
   final definitionIds = <String>{};
@@ -151,7 +151,7 @@ final reputationLocationDetailProvider =
         final reputations = await ref.watch(
           reputationsForCurrentPlayerProvider.future,
         );
-        final factions = _validatedFactions(
+        final factions = validatedReputationLocationFactions(
           definitions: repository.factionDefs,
           reputations: reputations,
           tiers: tiers,
