@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_providers.dart';
-import 'package:wuxia_idle/features/jianghu/presentation/reputation_panel_screen.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/jianghu_map_screen.dart';
+import 'package:wuxia_idle/features/jianghu_map/presentation/reputation_location_detail_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -98,7 +98,7 @@ void main() {
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
   });
 
-  testWidgets('地图声望地点进入既有江湖声望面板', (tester) async {
+  testWidgets('地图声望地点先进入统一地点详情', (tester) async {
     await tester.pumpWidget(mapWith(const [kFirstChapterFinalStageId]));
     await tester.pump();
     await tester.pump();
@@ -108,6 +108,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(ReputationPanelScreen), findsOneWidget);
+    expect(find.byType(ReputationLocationDetailScreen), findsOneWidget);
   });
 }
