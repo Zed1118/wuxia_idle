@@ -154,23 +154,30 @@ void main() {
       expect(entries.first.layersRolledBack, 0);
     });
 
-    test('injuryHoursRemaining>0 → injuryApplied=true;0 → false', () {
+    test('只报本次新增伤势，入场前既有伤势不冒充后果', () {
       final injured = makeCharacter(
         name: '伤者',
         id: 1,
         injuryHoursRemaining: 4.5,
       );
       final intact = makeCharacter(name: '无恙', id: 2);
+      intact.lightInjuryStacks = 1;
 
       final entries = buildDefeatLossEntries(
         characters: [injured, intact],
         techsByCh: const {},
         result: bossDefeatResult(defeatPenalty: {1: penalty(), 2: penalty()}),
+        injuryBeforeByCharacterId: const {
+          1: (heavyHours: 4.5, lightStacks: 0),
+          2: (heavyHours: 0.0, lightStacks: 0),
+        },
       );
 
       expect(entries, hasLength(2));
-      expect(entries[0].injuryApplied, isTrue, reason: '有伤势剩余小时 → 重伤标记');
-      expect(entries[1].injuryApplied, isFalse);
+      expect(entries[0].injuryApplied, isFalse, reason: '入场前既有重伤不得冒充本次后果');
+      expect(entries[1].injuryApplied, isTrue);
+      expect(entries[1].lightInjuryStacksAdded, 1);
+      expect(entries[1].heavyInjuryHoursAdded, 0);
     });
 
     test('同一角色散功+心魔双惩罚 → 生成两条 entry(散功在前,心魔在后)', () {

@@ -91,6 +91,7 @@ void main() {
     expect(find.text(UiStrings.stageRetryTitle), findsOneWidget);
     expect(find.text(UiStrings.stageRetryAction), findsOneWidget);
     expect(find.text(UiStrings.stageRetryBackAction), findsOneWidget);
+    expect(find.textContaining('换装备'), findsNothing);
 
     await tester.tap(find.text(UiStrings.stageRetryAction));
     await tester.pumpAndSettle();

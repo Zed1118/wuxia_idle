@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,6 +69,12 @@ typedef TowerBattleExit = ({
   CombatSettlementSnapshot? settlement,
 });
 
+typedef TowerDefeatFacts = ({
+  String participantName,
+  int lightInjuryStacksAdded,
+  double heavyInjuryHoursAdded,
+});
+
 /// Phase 3 T43 爬塔进入流程串联。
 ///
 /// 状态机（async 串联）：
@@ -96,6 +103,8 @@ Future<void> runTowerFlow({
   Future<TowerClearResult> Function(int floorIndex, int elapsedMs)?
   clearRecorderForTest,
   @visibleForTesting Future<void> Function()? defeatRecorderForTest,
+  @visibleForTesting
+  Future<void> Function(TowerDefeatFacts facts)? defeatFactPresenterForTest,
 }) async {
   // ── opening（仅 Boss 层）──
   if (floor.isBoss && floor.narrativeOpeningId != null) {
@@ -159,7 +168,7 @@ Future<void> runTowerFlow({
     // 但不发塔经验、掉落或首通事件。必须在记录塔败绩前同步落地，避免实际
     // 参战门人的装备/心法/伤势被旧提前 return 丢弃。
     if (settlement != null) {
-      await applyTowerCombatResolution(
+      final resolution = await applyTowerCombatResolution(
         ref: ref,
         floor: floor,
         grantsFirstClearExperience: false,
@@ -167,6 +176,21 @@ Future<void> runTowerFlow({
         settlementSnapshot: settlement,
       );
       invalidateAfterCombatSettlement(ref.invalidate);
+      final participantName = resolution.participantName;
+      if (participantName == null || participantName.trim().isEmpty) {
+        throw StateError('Tower defeat report participant is unavailable');
+      }
+      final facts = (
+        participantName: participantName,
+        lightInjuryStacksAdded: resolution.lightInjuryStacksAdded,
+        heavyInjuryHoursAdded: resolution.heavyInjuryHoursAdded,
+      );
+      if (defeatFactPresenterForTest != null) {
+        await defeatFactPresenterForTest(facts);
+      } else {
+        if (!context.mounted) return;
+        await _showTowerDefeatFacts(context, facts);
+      }
     }
     // 不退层，只增统计；unawaited 不阻 UI
     if (defeatRecorderForTest != null) {
@@ -483,6 +507,8 @@ Future<
     CombatStatsSummary stats,
     HeroCameraData? heroCamera,
     String? participantName,
+    int lightInjuryStacksAdded,
+    double heavyInjuryHoursAdded,
   })
 >
 applyTowerCombatResolution({
@@ -496,8 +522,10 @@ applyTowerCombatResolution({
     advancements: <AdvancementEntry>[],
     resonanceUpgrades: <ResonanceUpgradeNotice>[],
     stats: CombatStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
-    heroCamera: null,
-    participantName: null,
+    heroCamera: null as HeroCameraData?,
+    participantName: null as String?,
+    lightInjuryStacksAdded: 0,
+    heavyInjuryHoursAdded: 0.0,
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
@@ -552,6 +580,10 @@ applyTowerCombatResolution({
     techsByCh[c.id] = ts;
   }
   if (characters.isEmpty) return empty;
+
+  final participant = characters.single;
+  final lightInjuryStacksBefore = participant.lightInjuryStacks;
+  final heavyInjuryHoursBefore = participant.injuryHoursRemaining;
 
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
@@ -639,7 +671,59 @@ applyTowerCombatResolution({
     stats: stats,
     heroCamera: heroCamera,
     participantName: characters.single.name,
+    lightInjuryStacksAdded: math.max(
+      0,
+      participant.lightInjuryStacks - lightInjuryStacksBefore,
+    ),
+    heavyInjuryHoursAdded: math.max(
+      0.0,
+      participant.injuryHoursRemaining - heavyInjuryHoursBefore,
+    ),
   );
+}
+
+Future<void> _showTowerDefeatFacts(
+  BuildContext context,
+  TowerDefeatFacts facts,
+) async {
+  await PaperDialog.show<void>(
+    context,
+    title: UiStrings.defeatFactTitle,
+    showSeal: false,
+    barrierDismissible: false,
+    body: TowerDefeatFactBody(facts: facts),
+    actions: [
+      Builder(
+        builder: (dialogContext) => TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text(UiStrings.mainlineDefeatLossAcknowledge),
+        ),
+      ),
+    ],
+  );
+}
+
+class TowerDefeatFactBody extends StatelessWidget {
+  const TowerDefeatFactBody({super.key, required this.facts});
+
+  final TowerDefeatFacts facts;
+
+  @override
+  Widget build(BuildContext context) {
+    final injury = UiStrings.defeatInjuryFacts(
+      lightStacks: facts.lightInjuryStacksAdded,
+      heavyHours: facts.heavyInjuryHoursAdded,
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(UiStrings.stageReportParticipant(facts.participantName)),
+        const SizedBox(height: 8),
+        Text(injury),
+      ],
+    );
+  }
 }
 
 /// Isar 持久化爬塔掉落（W6 nullable propagation：isarProvider 为 null 时短路，测试安全）。

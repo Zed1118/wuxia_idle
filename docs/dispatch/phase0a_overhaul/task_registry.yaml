@@ -5043,3 +5043,41 @@ tasks:
       - no memory only guard may be presented as durable duplicate prevention
       - no schema save version reward values tuning economy unlock or main change without authorization
       - do not claim U09 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U10-FACTUAL-FAILURE-INJURY-DISPLAY
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-u10-factual-failure-injury-display-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 38a61a0b
+    completion_scope: show_fact_only_failure_participant_and_new_injury_outcomes_across_all_seven_content_kinds_without_advice
+    acceptance_baseline: 4_of_7_content_kinds
+    acceptance_target: 7_of_7_content_kinds
+    dependencies:
+      - REOPEN-FAILURE-DIAGNOSIS-01
+      - FAILURE-POLICY-CORE-01
+      - P2-M2-M6-U01-ALL-MODE-CONSISTENCY
+    owned_files:
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/tower/presentation/tower_entry_flow.dart
+      - lib/shared/strings.dart
+      - test/features/mainline/presentation/stage_retry_dialog_body_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_pure_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_branches_test.dart
+      - test/features/tower/presentation/apply_tower_victory_resolution_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-u10-factual-failure-injury-display.md
+      - docs/audit/phase2_u10_factual_failure_injury_display_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - only factual failure return participant and newly applied injury outcomes are displayed
+      - preexisting injury is never reported as caused by the current failure
+      - prescriptive diagnosis loadout advice and recovery-item explanation remain forbidden
+      - mainline light foot mass battle tower inner demon gauntlet and expedition keep their existing settlement owners
+      - no failure policy weights reward economy unlock tuning schema save version YAML or main change
+      - do not claim U10 M6 or overall Phase 2 completion before seven of seven

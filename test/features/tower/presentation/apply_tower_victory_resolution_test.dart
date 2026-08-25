@@ -227,6 +227,7 @@ void main() {
       damageByCharacterId: const {},
     );
     var defeatRecorded = false;
+    int? reportedLightInjuryAdded;
     BuildContext? capturedContext;
     WidgetRef? capturedRef;
 
@@ -254,10 +255,14 @@ void main() {
         clearRecorderForTest: (_, _) async =>
             (isFirstClear: false, highestAfter: 0),
         defeatRecorderForTest: () async => defeatRecorded = true,
+        defeatFactPresenterForTest: (facts) async {
+          reportedLightInjuryAdded = facts.lightInjuryStacksAdded;
+        },
       ),
     );
 
     expect(defeatRecorded, isTrue);
+    expect(reportedLightInjuryAdded, 1);
     await tester.runAsync(() async {
       final founder = await IsarSetup.instance.characters.get(ids.$1);
       final disciple = await IsarSetup.instance.characters.get(ids.$2);

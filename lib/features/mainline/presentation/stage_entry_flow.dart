@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -852,13 +853,17 @@ Future<void> _runSingleStageFlow({
                 : false);
       if (retry) continue;
       if (usesExactParticipant && expectedParticipantId != null) {
-        await applyParticipantDefeatResolution(
+        final summary = await applyParticipantDefeatResolution(
           ref: ref,
           stage: stage,
           settlementSnapshot: battleExit.settlement,
           expectedParticipantId: expectedParticipantId,
         );
         invalidateAfterCombatSettlement(ref.invalidate);
+        if (summary.isNotEmpty && context.mounted) {
+          await _showMainlineDefeatLossDialog(context, summary);
+          if (!context.mounted) return;
+        }
       }
     }
 
@@ -1565,7 +1570,7 @@ Future<void> _showMainlineDefeatLossDialog(
 ) async {
   await PaperDialog.show<void>(
     context,
-    title: UiStrings.defeatLossTitle,
+    title: _defeatSummaryTitle(entries),
     showSeal: false,
     barrierDismissible: false,
     body: _DefeatLossBanner(
@@ -1608,6 +1613,13 @@ class DefeatLossEntry {
   /// 用于 [_DefeatLossBanner] 汇总显示受伤弟子数量。
   final bool injuryApplied;
 
+  /// 只记本次结算相对入场前新增的伤势，避免把既有伤势冒充战败后果。
+  final int lightInjuryStacksAdded;
+  final double heavyInjuryHoursAdded;
+
+  /// false 表示该行只是参与者/伤势事实，不得渲染散功文案。
+  final bool hasDefeatPenalty;
+
   const DefeatLossEntry({
     required this.characterName,
     required this.internalForceBefore,
@@ -1618,8 +1630,13 @@ class DefeatLossEntry {
     this.layersRolledBack = 0,
     this.residueApplied = false,
     this.injuryApplied = false,
+    this.lightInjuryStacksAdded = 0,
+    this.heavyInjuryHoursAdded = 0,
+    this.hasDefeatPenalty = true,
   });
 }
+
+typedef InjuryBeforeSnapshot = ({double heavyHours, int lightStacks});
 
 /// 从 [BattleResolutionResult] 构造损失摘要 entry 列表（纯函数，不访问 Isar）。
 ///
@@ -1636,13 +1653,30 @@ List<DefeatLossEntry> buildDefeatLossEntries({
   required List<Character> characters,
   required Map<int, List<Technique>> techsByCh,
   required BattleResolutionResult result,
+  Map<int, InjuryBeforeSnapshot> injuryBeforeByCharacterId = const {},
 }) {
   final entries = <DefeatLossEntry>[];
+  final representedCharacterIds = <int>{};
+
+  ({double heavyHoursAdded, int lightStacksAdded}) injuryDelta(Character ch) {
+    final before = injuryBeforeByCharacterId[ch.id];
+    if (before == null) {
+      return (heavyHoursAdded: 0, lightStacksAdded: 0);
+    }
+    return (
+      heavyHoursAdded: math.max(
+        0.0,
+        ch.injuryHoursRemaining - before.heavyHours,
+      ),
+      lightStacksAdded: math.max(0, ch.lightInjuryStacks - before.lightStacks),
+    );
+  }
 
   // Boss 散功 entries
   for (final ch in characters) {
     final p = result.defeatPenaltyByCharacter[ch.id];
     if (p == null) continue;
+    final injury = injuryDelta(ch);
     final techName = _resolveTechName(ch, techsByCh);
     entries.add(
       DefeatLossEntry(
@@ -1658,9 +1692,13 @@ List<DefeatLossEntry> buildDefeatLossEntries({
             : null,
         layersRolledBack: p.layersRolledBack,
         residueApplied: false,
-        injuryApplied: ch.injuryHoursRemaining > 0,
+        injuryApplied:
+            injury.heavyHoursAdded > 0 || injury.lightStacksAdded > 0,
+        heavyInjuryHoursAdded: injury.heavyHoursAdded,
+        lightInjuryStacksAdded: injury.lightStacksAdded,
       ),
     );
+    representedCharacterIds.add(ch.id);
   }
 
   // 心魔惩罚 entries（不掉层，仅陈述本次新增的内息紊乱）
@@ -1683,6 +1721,28 @@ List<DefeatLossEntry> buildDefeatLossEntries({
         injuryApplied: false,
       ),
     );
+    representedCharacterIds.add(ch.id);
+  }
+
+  // 无散功/心魔惩罚的普通败北仍返回一条事实行，用于轻功、
+  // 守城与普通主线在放弃重试后显示实际参与者和本次新增伤势。
+  if (injuryBeforeByCharacterId.isNotEmpty) {
+    for (final ch in characters) {
+      if (representedCharacterIds.contains(ch.id)) continue;
+      final injury = injuryDelta(ch);
+      entries.add(
+        DefeatLossEntry(
+          characterName: ch.name,
+          internalForceBefore: ch.internalForce,
+          internalForceAfter: ch.internalForce,
+          injuryApplied:
+              injury.heavyHoursAdded > 0 || injury.lightStacksAdded > 0,
+          heavyInjuryHoursAdded: injury.heavyHoursAdded,
+          lightInjuryStacksAdded: injury.lightStacksAdded,
+          hasDefeatPenalty: false,
+        ),
+      );
+    }
   }
 
   return entries;
@@ -2240,6 +2300,13 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
 
   final numbers = ref.read(numbersConfigProvider);
   final dropSvc = ref.read(dropServiceProvider);
+  final injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
+    for (final character in characters)
+      character.id: (
+        heavyHours: character.injuryHoursRemaining,
+        lightStacks: character.lightInjuryStacks,
+      ),
+  };
 
   final result = CombatResolutionService.resolveSnapshot(
     settlement: combatSettlement,
@@ -2274,6 +2341,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     characters: characters,
     techsByCh: techsByCh,
     result: result,
+    injuryBeforeByCharacterId: injuryBeforeByCharacterId,
   );
 }
 
@@ -2298,9 +2366,7 @@ class _DefeatLossBanner extends StatelessWidget {
     if (entries.isEmpty) return const SizedBox.shrink();
     // 上下文感知标题：心魔关余毒 entry 与 Boss 散功 entry 按关卡互斥，
     // 全为余毒 → 心魔反噬标题；否则（Boss 散功）→ 散功代价标题。
-    final title = entries.every((e) => e.residueApplied)
-        ? UiStrings.defeatLossTitleInnerDemon
-        : UiStrings.defeatLossTitle;
+    final title = _defeatSummaryTitle(entries);
     final primaryColor = paperSurface ? WuxiaUi.ink : WuxiaColors.textPrimary;
     final accentColor = paperSurface ? WuxiaUi.jiang : WuxiaColors.hpLow;
     return Container(
@@ -2366,6 +2432,20 @@ class _DefeatLossBanner extends StatelessWidget {
       );
     }
 
+    final injurySegment = UiStrings.defeatInjuryFacts(
+      lightStacks: e.lightInjuryStacksAdded,
+      heavyHours: e.heavyInjuryHoursAdded,
+    );
+    if (!e.hasDefeatPenalty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Text(
+          UiStrings.defeatFactLine(e.characterName, injurySegment),
+          style: TextStyle(color: primaryColor, fontSize: 12.5, height: 1.4),
+        ),
+      );
+    }
+
     final ifSegment = UiStrings.defeatInternalForceSegment(
       e.internalForceBefore,
       e.internalForceAfter,
@@ -2382,7 +2462,11 @@ class _DefeatLossBanner extends StatelessWidget {
       techSegment = UiStrings.defeatTechniqueProgressSegment(e.techniqueName!);
     }
     // 拼接完整行文本
-    final parts = ['${e.characterName}  $ifSegment', ?techSegment];
+    final parts = [
+      '${e.characterName}  $ifSegment',
+      ?techSegment,
+      if (e.injuryApplied) injurySegment,
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
@@ -2391,6 +2475,16 @@ class _DefeatLossBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+String _defeatSummaryTitle(List<DefeatLossEntry> entries) {
+  if (entries.every((entry) => entry.residueApplied)) {
+    return UiStrings.defeatLossTitleInnerDemon;
+  }
+  if (entries.every((entry) => !entry.hasDefeatPenalty)) {
+    return UiStrings.defeatFactTitle;
+  }
+  return UiStrings.defeatLossTitle;
 }
 
 Future<void> _applyBossKillReputation({
@@ -2510,11 +2604,6 @@ class StageRetryDialogBody extends StatelessWidget {
           const SizedBox(height: 8),
         ],
         const Text(UiStrings.stageRetryPrompt),
-        const SizedBox(height: 8),
-        const Text(
-          UiStrings.stageRetryHintLine,
-          style: TextStyle(color: WuxiaUi.muted, fontSize: 13),
-        ),
       ],
     );
   }
