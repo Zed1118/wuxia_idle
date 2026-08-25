@@ -7,7 +7,7 @@
 - 本地分支：187；其中 100 个 tip 已是当前候选祖先，属于已进入统一候选链。
 - 历史分叉：87；它们尚未逐项完成“已替代 / 补丁已吸收 / 仍待评”语义判断，不能直接报告为 87 项孤立集成债。
 - 2026-08-25 新增分叉只有 `codex/phase2-governance-integration-20260825 @ 503d1ad3`；其规则语义已由本稳定化 Gate 吸收，原分支保持不动。
-- worktree：初次盘点 154 clean / 0 dirty。首次 full suite 意外删除当前 b679 worktree 后降至 153；已从 clean branch 精确重建同路径，恢复为 154。其余 worktree 未被本任务修改。
+- worktree：初次盘点 154 clean / 0 dirty。首次 full suite 期间当前 b679 worktree 意外消失后降至 153；从 clean branch 精确恢复后迁至稳定专用路径，登记恢复为 154。其余 worktree 未被本任务修改。
 
 ## 债务口径
 

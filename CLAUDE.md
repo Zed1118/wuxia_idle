@@ -6,7 +6,7 @@
 >
 > **版本:v1.95**
 >
-> v1.95 变更摘要(2026-08-26 二阶段候选稳定化):吸收结果驱动交付门禁，固定“一个权威 Gate + 受控集成态 + 真实墙钟成本”口径；纠正将测试 reporter 的 `5:00` 误读为约 5 小时的历史错误，当前整仓并发全量基线约为 4–7 分钟。M0–M9 仍只按未加权 `1/10` 报告，不因 READY、局部绿测或文档数量晋升；本次不改 schema/saveVersion、玩法、数值、YAML 或 main。
+> v1.95 变更摘要(2026-08-26 二阶段候选稳定化):吸收结果驱动交付门禁，固定“一个权威 Gate + 受控集成态 + 真实墙钟成本”口径；纠正将测试 reporter 的 `5:00` 误读为约 5 小时的历史错误。历史热缓存全量约 4–7 分钟；当前 6,294-test 冷隔离候选实测 `14:06.91`，合理施工预算按约 5–15 分钟而非小时。M0–M9 仍只按未加权 `1/10` 报告，不因 READY、局部绿测或文档数量晋升；本次不改 schema/saveVersion、玩法、数值、YAML 或 main。
 >
 > v1.94 变更摘要(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):玩家可达的既有塔扫荡链 `_TowerSweepButton → SweepScreen → TowerSweepUnit → Phase0aSweepHeadlessRunner` 现只在对应塔层已首通后接收 `direct + playerBot + headless + sweep` typed request；当前掌门、exact snapshot、角色/装备/心法占用、精确装配与进度在开战前准入并在共享 settlement 前重验，扫荡回顾显示实际参与者。无效/悬空/跨代掌门、死亡、疗养、无主修、重复占用、provider/进度异常、悬空/错主装备心法、stale admission 或错人 settlement 均在写入前 fail closed。定向 `18/18`、塔+sweep `177/177`、相邻占用/主线/结算 `22/22`、truth guard `9/9`、analyze 0 issue。本纵切只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增 reducer/session/headless 内核/provider/settlement 真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事、战斗规则或 main。
 >
@@ -394,6 +394,7 @@ Demo 必交付内容量（已全部达标）：
 - 在形成有意义、可验证、可恢复的检查点时 commit，并同步更新计划文件的恢复点；不按文件数或固定分钟数制造机械小提交。被迫中断且尚未达验收时，明确使用 `[WIP]` / `[PARKED]`，不得伪装为 READY。
 - 接近中断、测试失败、依赖未满足或需要人类拍板时,先更新恢复点再停。
 - **测试节奏(v1.29·别无脑全量)**:自包含改动(纯资产/文案/单 feature 表现层)只跑 targeted + `flutter analyze`,不跑全量;跨切面改动(numbers/结算/schema/saveVer/公式/全仓 sed/迁移)或批末合并才跑全量。全量默认用**并发** `flutter test --no-pub`(10 核实测 2m34s / 3587 pass 0 fail·2026-07-03),`-j1` 慢 3.8×,仅排查隔离型 flaky 时临时用。大范围视觉验收由主窗口在合并前统一安排。
+- **fresh/moved worktree 生成前置**:若 analyze/test 报 `Target of URI hasn't been generated`、缺 `*.g.dart` 或 Isar schema getter 级联错误,先运行 `dart run build_runner build`;生成文件被 gitignore,缺失是环境前置未满足,不得冒充代码回归。生成后再执行正式验证并只记录有效结果。
 - **交接/开局不无脑全量**:session 开始若 `HEAD=origin/main` + 工作树干净 + 上会话已验绿并 push(PROGRESS/session 文档记录在案)→ 只 `flutter analyze` 即可,跳过全量(绿状态已是记录事实);仅当树脏、或要在此基础上做跨切面大改时才开局全量。
 - 依赖型任务不提前空转,不复制前置分支尚未稳定的 API;等待主窗口唤醒。
 
@@ -483,7 +484,7 @@ choices:
 - **一个权威 Gate**：同时只保留一个主 WIP。必要子门可在同一受控集成链内串行关闭，但子门 READY 不等于上级 Gate 关闭，也不得转去堆积无关小切片。
 - **四项验收证据**：生产路径已连接、风险匹配验证通过、进入统一候选/集成态、工作树 clean；四项缺一，不得晋升完成状态。
 - **两类债务分开报**：孤立集成债是“已实现但尚未进入当前统一候选链”的交付；main 发布债是“已关闭权威 Gate 但尚未进入 main”的交付。历史分支先分类再结论，不把数量直接等同于欠债。
-- **成本按真实墙钟**：先查日志起止与命令退出状态，不从测试 reporter 的 `mm:ss` 直接推断小时。当前并发 `flutter test --no-pub` 实测基线约 4–7 分钟；跨切面最终候选必须跑一次完整套件，局部开发期仍用 targeted + analyze。
+- **成本按真实墙钟**：先查日志起止与命令退出状态，不从测试 reporter 的 `mm:ss` 直接推断小时。并发 `flutter test --no-pub` 的历史热缓存基线约 4–7 分钟，当前冷隔离候选实测约 14 分钟，预算按约 5–15 分钟；跨切面最终候选必须跑一次完整套件，局部开发期仍用 targeted + analyze。
 - **预算停线**：约 90 分钟没有权威 Gate 变化时，暂停当前路线并重评；前置调研、架构和基础设施必须写明解锁哪个 Gate 及其上限，不得冒充完成。
 - **无人值守施工**：只派一个有确定 RED、生产路径、回退边界和停止条件的主任务；不建立“计划/文档/微任务流水线”。
 - **集成纪律**：每关闭一个权威 Gate 就进入受控候选态、跑风险相匹配的回归并刷新 PROGRESS；未经用户另行授权，不合并或推送 main，不删除历史分支/worktree。

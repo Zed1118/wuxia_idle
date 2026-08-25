@@ -5445,19 +5445,22 @@ tasks:
     milestone: governance
     owner: codex_root
     branch: codex/phase2-candidate-stabilization-20260826
-    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-candidate-stabilization-20260826
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 4226a9c2e6b8e6be240299b51101361ce7c38e8d
     governance_source_commit: 503d1ad3f2c1f845027b48fb9cdc940d9147b3ff
+    code_candidate_commit: 2ff18b610c2708c6d1e905e83e3a6d2fdb8d25c9
+    reviewed_candidate_commit: 2ff18b610c2708c6d1e905e83e3a6d2fdb8d25c9
+    ready_marker: "[READY][CODEX][P2-CANDIDATE-STABILIZATION] 收口二阶段统一候选治理与回归"
     completion_scope: stabilize_the_unified_phase2_candidate_with_governance_cost_truth_branch_classification_and_final_regression
     acceptance_baseline: 0_of_1_unified_candidate_stabilization_gate
     acceptance_target: 1_of_1_unified_candidate_stabilization_gate
-    acceptance_result: 0_of_1_blocked_by_full_suite_isolation_failure
-    blocker:
-      type: full_suite_deleted_running_worktree
-      summary: default_parallel_flutter_test_removed_the_entire_candidate_worktree_then_lost_cwd_and_hung
-      required_precondition: reproduce_in_disposable_worktree_and_constrain_recursive_cleanup_before_final_full_suite
+    acceptance_result: 1_of_1_unified_candidate_stabilization_gate
+    resolved_risk:
+      type: managed_worktree_lifecycle_race_high_confidence_inference
+      evidence: same_committed_candidate_passed_complete_default_parallel_suite_in_disposable_clone_and_no_repo_root_delete_path_was_found
+      mitigation: candidate_moved_to_stable_project_worktree_and_destructive_reproduction_forbidden_on_uncommitted_candidate
     evidence:
       local_branches: 187
       candidate_ancestor_branch_tips: 100
@@ -5473,9 +5476,20 @@ tasks:
       first_full_suite_reporter_before_cwd_loss: at_least_1151_pass_28_fail
       first_full_suite_exit: 130_manual_interrupt_after_cwd_loss
       first_full_suite_wall_clock: 3m44.14s
-      final_full_suite_result: pending_isolation_fix
-      diff_check_issues: pending
-      registry_parse: pending
+      isolated_full_suite_commit: 2ff18b610c2708c6d1e905e83e3a6d2fdb8d25c9
+      isolated_full_suite_non_loading_tests: 6294
+      isolated_full_suite_failures: 0
+      isolated_full_suite_skips: 0
+      isolated_full_suite_errors: 0
+      isolated_full_suite_exit: 0
+      isolated_full_suite_wall_clock: 14m06.91s
+      isolated_full_suite_json_sha256: f41dac22f5528a351ec394b7e176b573cf9b4a43f20cf2dbbe2fc7da2018cecf
+      generated_outputs_precondition_count: 128
+      final_scoped_analyze_issues: 0
+      final_scoped_analyze_wall_clock: 22.10s
+      diff_check_issues: 0
+      registry_parse: pass
+      owned_file_bidirectional_whitelist: pass
     owned_files:
       - CLAUDE.md
       - PROGRESS.md

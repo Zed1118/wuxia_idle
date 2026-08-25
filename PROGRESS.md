@@ -5,18 +5,18 @@
 ## 当前阶段
 ### 二阶段结果仪表盘（2026-08-26）
 - **正式里程碑**：当前统一候选按未加权 M0–M9 记录为 `1/10`；main 仍 `0/10`。权重未获批准，不报告成熟度百分比。
-- **当前权威 Gate**：`P2-CANDIDATE-STABILIZATION`，`0/1 WIP`；目标是让治理、成本口径、统一候选回归和 clean 证据进入同一条受控集成链。
+- **当前权威 Gate**：`P2-CANDIDATE-STABILIZATION` 已 `1/1 READY`；当前无权威 WIP，下一门须由人类先选择 schema 授权或调整 automation 固定分母。
 - **候选基线**：`codex/phase2-candidate-stabilization-20260826` 基于 `4226a9c2`；main 为 `e292d3a0`，本任务不合并、不推送 main。
 - **已连接能力**：G2 生产目录/运行时绑定记录为 `8/8`；九霄塔首通后 typed automation 子门 `1/1`；U14 权威门仍 `0/1 BLOCKED`，不得以上述子门替代。
-- **候选验证**：scoped analyze 首轮 0 issue（约 5.7 秒）。首次并发 full suite 在约 `1:27` 已累计至少 28 项失败并发生运行 worktree 被递归删除，进程失去 cwd 后于墙钟 `3:44` 人工终止；该结果是 FAIL，不冒称全绿。
-- **测试成本订正**：历史 reporter `5:00` 表示约 5 分钟，不是 5 小时；本次新暴露的是测试隔离/清理高风险，不是成本超限。
-- **恢复事实**：被删 worktree 无未提交备份，已从 clean branch `4226a9c2` 重建；其余工作树与 main 未受影响。治理改动正在重做并将先形成可恢复 commit。
+- **候选验证**：已提交 `2ff18b61` 在独立诊断 clone 默认并发 full suite 为 6,294/6,294 非 loading test events、0 skip、0 error、exit 0，墙钟 `14:06.91`；稳定 worktree 生成 128 个 ignored outputs 后，最终 scoped analyze 0 issue（墙钟 `22.10s`）；diff check 0，registry YAML 可解析。
+- **测试成本订正**：历史 reporter `5:00` 表示约 5 分钟，不是 5 小时；当前冷隔离候选约 14 分钟，施工预算按约 5–15 分钟，不按小时。
+- **恢复事实**：首次测试期间应用托管 b679 worktree 整体消失；同一 commit 在 disposable clone 越过原时间点并完整全绿，仓内未找到删除 repo root 的路径。最符合证据的推断是外部 worktree 生命周期竞态；候选已迁至稳定专用 worktree，main 与其他工作树未受影响。
 - **分支分类**：187 个本地分支中 100 个 tip 已在候选祖先链，87 个历史分叉待逐项归类；其中 2026-08-25 新增治理分支 `503d1ad3` 正在本 Gate 语义吸收。不得把 87 直接等同于 87 项集成债。
-- **worktree**：恢复后仍为 154 个；本任务不删除、移动或复用他人 worktree。
-- **孤立集成债**：历史分叉尚未完成“已吸收 / 已替代 / 仍待评”语义分类；当前只确认治理规则是待吸收的新债。
-- **main 发布债**：0 个已关闭权威产品 Gate 待发 main；当前候选仍在稳定化，不能冒称发布债已形成。
-- **预算**：主成本读数为墙钟；约 90 分钟无 Gate 变化即停线。完整套件再次执行前必须先定位并隔离递归删除风险。
-- **前三阻塞**：full-suite 测试隔离/清理缺陷；轻功 durable session/occupancy/返程 owner 未授权；守城 durable formation snapshot/occupancy 未授权。
+- **worktree**：仍为 154 个；当前候选已迁至 `/Users/a10506/Desktop/Projects/挂机武侠-phase2-candidate-stabilization-20260826`，不再复用应用托管 b679 路径；未删除或复用他人 worktree。
+- **孤立集成债**：治理分支 `503d1ad3` 已语义吸收；其余 86 个历史分叉尚未完成“已吸收 / 已替代 / 仍待评”分类，不直接计债。
+- **main 发布债**：0 个已关闭权威产品 Gate 待发 main；候选稳定化是治理 Gate，不晋升产品里程碑，也不自动授权合 main。
+- **预算**：主成本读数为墙钟；约 90 分钟无 Gate 变化即停线。本 Gate 的有效完整套件已结束，不重复执行。
+- **前三阻塞**：轻功 durable session/occupancy/返程 owner 未授权；守城 durable formation snapshot/occupancy 未授权；M0–M9 权重未批准。
 - **待人类决策**：授权 light-foot / mass-battle schema+saveVersion+共享占用扩展，或明确从固定 automation Gate 分母移除 dispatch；本任务不代替拍板。
 - **详细证据**：候选稳定化计划、分支/worktree 分类审计和最终验证记录位于 `docs/superpowers/plans/`、`docs/audit/`；历史 READY 全文由 git 保留，不再堆叠在本页顶栏。
 
