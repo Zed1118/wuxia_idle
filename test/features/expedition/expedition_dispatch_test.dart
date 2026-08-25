@@ -67,6 +67,14 @@ void main() {
     return id;
   }
 
+  Future<void> setCurrentLeader(int characterId) async {
+    await IsarSetup.instance.writeTxn(() async {
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      save.founderCharacterId = characterId;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+  }
+
   test(
     '成功派遣：ExpeditionRun 落库 + 保留 id 快照 + serial++ + departedAt + seed',
     () async {
@@ -172,25 +180,46 @@ void main() {
     expect(save!.expeditionRunSerial, 42);
   });
 
-  test('祖师入队 → 抛错', () async {
+  test('空闲当前掌门可派遣，真实 run 成员指向掌门', () async {
     final founder = await putDisciple(isFounder: true, mainTech: 5);
-    final svc = ExpeditionService(IsarSetup.instance);
+    await setCurrentLeader(founder);
+
+    final runId = await ExpeditionService(
+      IsarSetup.instance,
+    ).dispatch(characterIds: [founder], policy: ExpeditionPolicy.yanJingCaiYao);
+
+    final run = await IsarSetup.instance.expeditionRuns.get(runId);
+    expect(run, isNotNull);
+    expect(run!.members.single.characterId, founder);
+  });
+
+  test('非当前的历史祖师不可派遣', () async {
+    final current = await putDisciple(isFounder: true, mainTech: 5);
+    final historical = await putDisciple(isFounder: true, mainTech: 6);
+    await setCurrentLeader(current);
+
     await expectLater(
-      svc.dispatch(
-        characterIds: [founder],
+      ExpeditionService(IsarSetup.instance).dispatch(
+        characterIds: [historical],
         policy: ExpeditionPolicy.yanJingCaiYao,
       ),
       throwsStateError,
     );
   });
 
-  test('已被占用角色（闭关中）入队 → 抛错', () async {
-    final cid = await putDisciple(mainTech: 5, retreatSessionId: 9);
+  test('闭关中的当前掌门不可派遣且零副作用', () async {
+    final cid = await putDisciple(
+      isFounder: true,
+      mainTech: 5,
+      retreatSessionId: 9,
+    );
+    await setCurrentLeader(cid);
     final svc = ExpeditionService(IsarSetup.instance);
     await expectLater(
       svc.dispatch(characterIds: [cid], policy: ExpeditionPolicy.yanJingCaiYao),
       throwsStateError,
     );
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
   });
 
   test('每存档最多一条 active：二次派遣 → 抛错', () async {

@@ -21,6 +21,7 @@ Character _char(
   String name, {
   TechniqueSchool? school,
   int? mainTechniqueId,
+  bool isFounder = false,
 }) => Character()
   ..id = id
   ..name = name
@@ -28,10 +29,10 @@ Character _char(
   ..realmLayer = RealmLayer.jingTong
   ..attributes = Attributes()
   ..rarity = RarityTier.biaoZhun
-  ..lineageRole = LineageRole.disciple
+  ..lineageRole = isFounder ? LineageRole.founder : LineageRole.disciple
   ..school = school
   ..createdAt = DateTime(2026, 7, 17)
-  ..isFounder = false
+  ..isFounder = isFounder
   ..mainTechniqueId = mainTechniqueId;
 
 GauntletCandidate _cand(
@@ -150,6 +151,16 @@ void main() {
     expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
 
     await tester.tap(find.text('楚河')); // 占用者
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('装载屏：空闲当前掌门候选可被真实择一交互选中', (tester) async {
+    final leader = _cand(_char(9, '当代掌门', mainTechniqueId: 9, isFounder: true));
+    await _pump(tester, const Size(1280, 720), candidates: [leader]);
+
+    await tester.tap(find.text('当代掌门'));
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
     expect(tester.takeException(), isNull);

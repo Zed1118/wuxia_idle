@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_provider.dart';
@@ -23,7 +24,7 @@ import '../../support/test_data.dart';
 /// 真 Isar + 真 GameRepository + 真 `GauntletService.enter` 生产入口建会话,钉:
 ///   - service/activeGauntlet/config 三读
 ///   - loadoutInfo:断魂帖计数 + 补给筛(gauntlet*Pct>0)按 defId 排序
-///   - candidates:非祖师存活池 + 主修/占用标注
+///   - candidates:当前掌门与存活门人池 + 主修/占用标注
 ///   - interludeView:成员名查表 + 托管剩余 + 疗伤标
 ///   - rewardView:候选装备 def 解析成卡
 void main() {
@@ -200,20 +201,32 @@ void main() {
     expect(pill.name, isNotEmpty);
   });
 
-  test('candidates:非祖师存活池 + 主修/阵亡标注', () async {
+  test('candidates:当前掌门+存活门人池，排除历史祖师并标主修/阵亡', () async {
     final isar = IsarSetup.instance;
-    late int withTechId, noTechId;
+    late int leaderId, historicalFounderId, withTechId, noTechId;
     await isar.writeTxn(() async {
-      await isar.characters.put(makeChar(name: '祖师', isFounder: true));
+      leaderId = await isar.characters.put(
+        makeChar(name: '当代掌门', isFounder: true),
+      );
+      historicalFounderId = await isar.characters.put(
+        makeChar(name: '前代祖师', isFounder: true),
+      );
       withTechId = await isar.characters.put(makeChar(name: '有主修'));
       noTechId = await isar.characters.put(makeChar(name: '无主修'));
       await isar.characters.put(makeChar(name: '亡者', isAlive: false));
+      final existing = await isar.saveDatas.get(0);
+      await isar.saveDatas.put(
+        (existing ?? SaveData())..founderCharacterId = leaderId,
+      );
     });
+    final leaderTechId = await seedTechnique(leaderId);
     final techId = await seedTechnique(withTechId);
     await isar.writeTxn(() async {
+      final leader = (await isar.characters.get(leaderId))!
+        ..mainTechniqueId = leaderTechId;
       final c = (await isar.characters.get(withTechId))!
         ..mainTechniqueId = techId;
-      await isar.characters.put(c);
+      await isar.characters.putAll([leader, c]);
     });
     final container = makeContainer();
 
@@ -221,14 +234,14 @@ void main() {
 
     final ids = candidates.map((c) => c.character.id).toSet();
     expect(
-      ids.containsAll([withTechId, noTechId]),
+      ids.containsAll([leaderId, withTechId, noTechId]),
       isTrue,
-      reason: '非祖师存活弟子都入池',
+      reason: '当前掌门与存活门人都入池',
     );
     expect(
-      candidates.any((c) => c.character.isFounder),
+      ids.contains(historicalFounderId),
       isFalse,
-      reason: '祖师坐镇不入场',
+      reason: '非当前的历史祖师不得混入候选池',
     );
     expect(
       candidates.any((c) => !c.character.isAlive),
@@ -242,6 +255,8 @@ void main() {
     final noTech = candidates.firstWhere((c) => c.character.id == noTechId);
     expect(noTech.hasMainTechnique, isFalse);
     expect(noTech.selectable, isFalse, reason: '未修主修 UI 标灰');
+    final leader = candidates.firstWhere((c) => c.character.id == leaderId);
+    expect(leader.selectable, isTrue, reason: '空闲当前掌门可亲战支线');
   });
 
   test('candidates:已在 active 会话的弟子 → occupied=true 不可再选(占用标注)', () async {

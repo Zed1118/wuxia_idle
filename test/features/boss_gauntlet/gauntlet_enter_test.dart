@@ -66,6 +66,14 @@ void main() {
     return id;
   }
 
+  Future<void> setCurrentLeader(int characterId) async {
+    await IsarSetup.instance.writeTxn(() async {
+      final save = (await IsarSetup.instance.saveDatas.get(0))!;
+      save.founderCharacterId = characterId;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
+  }
+
   Future<void> putInventory(String defId, ItemType type, int qty) async {
     await IsarSetup.instance.writeTxn(() async {
       await IsarSetup.instance.inventoryItems.put(
@@ -180,24 +188,50 @@ void main() {
     );
   });
 
-  test('祖师入队 → 抛错', () async {
+  test('空闲当前掌门可入庄，真实会话成员指向掌门', () async {
     final founder = await putDisciple(isFounder: true, mainTech: 5);
+    await setCurrentLeader(founder);
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
-    final svc = GauntletService(IsarSetup.instance);
-    await expectLater(
-      svc.enter(characterIds: [founder], supplyCap: 3),
-      throwsStateError,
-    );
+    final runId = await GauntletService(
+      IsarSetup.instance,
+    ).enter(characterIds: [founder], supplyCap: 3);
+
+    final run = await IsarSetup.instance.bossGauntletRuns.get(runId);
+    expect(run, isNotNull);
+    expect(run!.members.single.characterId, founder);
   });
 
-  test('已被占用角色（闭关中）→ 抛错', () async {
-    final cid = await putDisciple(mainTech: 5, retreatSessionId: 9);
+  test('非当前的历史祖师不可入庄且不扣帖', () async {
+    final current = await putDisciple(isFounder: true, mainTech: 5);
+    final historical = await putDisciple(isFounder: true, mainTech: 6);
+    await setCurrentLeader(current);
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+
+    await expectLater(
+      GauntletService(
+        IsarSetup.instance,
+      ).enter(characterIds: [historical], supplyCap: 3),
+      throwsStateError,
+    );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+  });
+
+  test('闭关中的当前掌门不可入庄且不扣帖', () async {
+    final cid = await putDisciple(
+      isFounder: true,
+      mainTech: 5,
+      retreatSessionId: 9,
+    );
+    await setCurrentLeader(cid);
     await putInventory('item_duanhuntie', ItemType.ticket, 1);
     final svc = GauntletService(IsarSetup.instance);
     await expectLater(
       svc.enter(characterIds: [cid], supplyCap: 3),
       throwsStateError,
     );
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
 
   test('未修主修 → 抛错', () async {
