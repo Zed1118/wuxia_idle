@@ -10,7 +10,7 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/character_panel_screen.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
-import 'package:wuxia_idle/features/lineup/presentation/team_lineup_screen.dart';
+import 'package:wuxia_idle/features/lineup/presentation/disciple_scheduling_screen.dart';
 import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summary_provider.dart';
 import 'package:wuxia_idle/features/main_menu/presentation/main_menu.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_map_list_screen.dart';
@@ -132,13 +132,13 @@ void main() {
     expect((routes.last as CharacterPanelScreen).characterId, 41);
   });
 
-  testWidgets('门人调度进入既有 TeamLineupScreen', (tester) async {
+  testWidgets('门人调度进入逐活动当前态调度页', (tester) async {
     final routes = <Widget>[];
     await tester.pumpWidget(hubApp(routeObserverForTest: routes.add));
     await tester.pump();
 
     await tapVisibleLabel(tester, UiStrings.sectHubLineup);
-    expect(routes.single, isA<TeamLineupScreen>());
+    expect(routes.single, isA<DiscipleSchedulingScreen>());
   });
 
   testWidgets('闭关把同一 active 角色 ID 与境界传入既有地图屏', (tester) async {

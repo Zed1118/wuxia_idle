@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/features/character_panel/application/lineage_codex_provider.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/lineage_character_detail_screen.dart';
 import 'package:wuxia_idle/features/character_panel/presentation/lineage_panel_screen.dart';
+import 'package:wuxia_idle/features/lineup/presentation/disciple_scheduling_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_archive_chrome.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_title_bar.dart';
@@ -100,6 +101,25 @@ void main() {
     expect(find.byType(WuxiaTitleBar), findsOneWidget);
     expect(find.byType(InkListCard), findsWidgets);
     expect(find.byType(InkSectionLabel), findsWidgets);
+  });
+
+  testWidgets('顶部门人调度进入逐活动当前态页而非旧三席编成', (tester) async {
+    final gen = LineageGeneration(
+      founder: mkCharacter(
+        id: 1,
+        name: '林青崖',
+        lineageRole: LineageRole.founder,
+        isFounder: true,
+      ),
+      disciples: const [],
+      heritageEquipments: const [],
+      isCurrent: true,
+    );
+    await pumpScreen(tester, [gen]);
+
+    await tester.tap(find.text(UiStrings.discipleSchedulingTitle));
+    await tester.pump();
+    expect(find.byType(DiscipleSchedulingScreen), findsOneWidget);
   });
 
   testWidgets('点祖师卡 push 角色详情屏', (tester) async {
