@@ -39,8 +39,8 @@
 
 ## 当前恢复点
 
-- 状态：生产实现、相邻域与两层 analyze 已绿，待冻结代码候选并独立语义复审。
-- 最后完成：新增只读 DTO/provider/详情屏并将地图百草岭路由改为先进详情；生产最高基础境界确认为“三流”，idle/active CTA 均续接原 `ExpeditionOverviewScreen`，异常态无 CTA；旧周目零、旧多人、负周目与悬空参与者均有 fail-closed 反例。
-- 下一步：提交实现候选，交独立审查核对完整地点对比、远征生产语义、白名单与越界风险；关闭全部有效发现后再跑最终全量。
-- 已跑验证：真实红测 `0/3`；聚焦 provider/详情屏/地图 `19/19 PASS`，其中双视口 `2/2`；地图、远征和宗门入口相邻域 `211/211 PASS`；scoped/root analyze 均 0 issue。转绿中仅修正测试把生产“三流”误写成“二流”的预期，未改 YAML/数值。
+- 状态：代码候选 `bf6dcfc3` 已冻结，独立语义复审 P0/P1/P2=0，最终全量已通过；权威文档、audit 与 registry 已同步，待 READY 前终检和标记。
+- 最后完成：独立复审重跑聚焦 `19/19`、远征生产域 `59/59` 与 scoped analyze 0；最终全量仅运行一次并以 `5490/5490 PASS` 结束；registry YAML、精确白名单 `15/15`、truth-source guard `9/9` 与 `git diff --check` 均通过。
+- 下一步：提交证据文档，复核 base..HEAD 精确白名单、primary main 干净且未变，创建 `[READY][CODEX][P2-M6-U06-EXPEDITION-LOCATION-DETAIL]` 空标记 commit 并确认 worktree clean。
+- 已跑验证：真实红测 `0/3`；聚焦 provider/详情屏/地图 `19/19 PASS`，其中双视口 `2/2`；地图、远征和宗门入口相邻域 `211/211 PASS`；scoped/root analyze 均 0 issue；独立远征生产域 `59/59`；最终全量 `5490/5490`。转绿中仅修正测试把生产“三流”误写成“二流”的预期，未改 YAML/数值。
 - 阻塞项：无；任何渐进解锁或新参与方式需求必须保持不做。

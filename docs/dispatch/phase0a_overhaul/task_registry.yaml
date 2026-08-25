@@ -4286,9 +4286,23 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-expedition-location-detail-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-expedition-location-detail
-    status: in_progress
+    status: ready_reviewed
     base_commit: c6c9e7a9eef846a2125c4d33cccf33499352c4b2
+    code_candidate_commit: bf6dcfc3a6e11b1adf83678d051cd0170a3c794e
+    reviewed_candidate_commit: bf6dcfc3a6e11b1adf83678d051cd0170a3c794e
+    ready_marker: "[READY][CODEX][P2-M6-U06-EXPEDITION-LOCATION-DETAIL] 接入百草岭统一地点详情"
     completion_scope: add_production_expedition_location_detail_before_overview
+    verification:
+      red_compile_targets: 3
+      focused_tests: 19
+      adjacent_tests: 211
+      independent_focused_tests: 19
+      independent_expedition_tests: 59
+      double_viewport_tests: 2
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5490
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-GAUNTLET-LOCATION-DETAIL
     owned_files:
