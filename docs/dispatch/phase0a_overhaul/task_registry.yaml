@@ -4703,3 +4703,48 @@ tasks:
       - preserve gauntlet entry occupancy three-stage checkpoints supplies reward choice defeat and recovery semantics
       - do not change schema save version YAML tuning rewards economy unlocks narrative combat or main
       - do not claim complete M6 or overall Phase 2 completion
+
+  - id: P2-M6-LIGHT-FOOT-PARTICIPANT-SETTLEMENT-REPORT
+    milestone: M6
+    owner: codex_root
+    branch: codex/phase2-m6-light-foot-participant-settlement-report-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-light-foot-participant-settlement-report
+    status: in_progress
+    base_commit: 84199646978851297a9b3981335b48f6b9dfbc8e
+    ready_marker: "[READY][CODEX][P2-M6-LIGHT-FOOT-PARTICIPANT-SETTLEMENT-REPORT] 接通轻功逐次选人结算报告闭环"
+    completion_scope: connect_exact_light_foot_participant_to_live_phase0a_host_shared_settlement_and_identity_reports
+    dependencies:
+      - P2-M6-GAUNTLET-LIVE-SETTLEMENT-REPORT
+    owned_files:
+      - lib/features/light_foot/application/light_foot_participant_service.dart
+      - lib/features/light_foot/presentation/light_foot_participant_picker.dart
+      - lib/features/light_foot/presentation/light_foot_screen.dart
+      - lib/features/jianghu_map/domain/light_foot_location_detail.dart
+      - lib/features/jianghu_map/application/light_foot_location_detail_provider.dart
+      - lib/features/jianghu_map/presentation/light_foot_location_detail_screen.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/mainline/presentation/stage_victory_dialog.dart
+      - lib/shared/strings.dart
+      - test/features/light_foot/application/light_foot_participant_service_test.dart
+      - test/features/light_foot/presentation/light_foot_participant_picker_test.dart
+      - test/features/light_foot/presentation/light_foot_screen_test.dart
+      - test/features/jianghu_map/application/light_foot_location_detail_provider_test.dart
+      - test/features/jianghu_map/presentation/light_foot_location_detail_screen_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_test.dart
+      - test/features/mainline/presentation/stage_victory_dialog_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m6-light-foot-participant-settlement-report.md
+      - docs/audit/phase2_m6_light_foot_participant_settlement_report_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - each light foot challenge chooses one eligible current leader or disciple at the activity entry
+      - the selected exact character snapshot enters the real Phase0aMainlineBattleHost without leader fallback
+      - victory and final defeat settlement side effects belong to the actual participant only
+      - occupied healing dead no-main-technique historical-founder dangling or invalid selections fail closed
+      - victory and defeat reports name the actual participant without adding forced narrative text
+      - preserve light foot route unlock cycle retry surrender narrative and reward semantics
+      - do not change guard battle dispatch headless schema save version YAML tuning rewards economy unlocks narrative combat or main
+      - do not claim complete M6 or overall Phase 2 completion
