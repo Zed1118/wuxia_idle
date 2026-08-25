@@ -19,6 +19,26 @@ void main() {
 
   const emptyDrops = DropResult(equipments: [], items: []);
 
+  testWidgets('exact participant name appears in the tower victory report', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: TowerVictoryContent(
+            floor: floor,
+            isFirstClear: false,
+            drops: emptyDrops,
+            advancements: [],
+            participantName: '当代门人',
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text(UiStrings.stageReportParticipant('当代门人')), findsOneWidget);
+  });
+
   testWidgets('skillFragmentLine 非空(重打)→ 渲染残页轻提示行', (tester) async {
     final line = UiStrings.skillFragmentGainedLine('神龙一式', 3, 5);
     await tester.pumpWidget(

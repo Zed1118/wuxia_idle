@@ -253,6 +253,7 @@ Future<void> runTowerFlow({
   final advancements = victoryRes.advancements;
   final resonanceUpgrades = victoryRes.resonanceUpgrades;
   final heroCamera = victoryRes.heroCamera;
+  final participantName = victoryRes.participantName;
   // W13-v3 fix: invalidate character/equipment/technique family,否则下次进
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
   // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
@@ -360,6 +361,7 @@ Future<void> runTowerFlow({
       resonanceUpgrades: resonanceUpgrades,
       stats: victoryRes.stats,
       heroCamera: heroCamera,
+      participantName: participantName,
       extraDisplayTiers: extraDisplayTiers,
       skillDrop: skillDrop,
     );
@@ -480,6 +482,7 @@ Future<
     List<ResonanceUpgradeNotice> resonanceUpgrades,
     CombatStatsSummary stats,
     HeroCameraData? heroCamera,
+    String? participantName,
   })
 >
 applyTowerCombatResolution({
@@ -494,6 +497,7 @@ applyTowerCombatResolution({
     resonanceUpgrades: <ResonanceUpgradeNotice>[],
     stats: CombatStatsSummary(totalDamage: 0, critCount: 0, totalTicks: 0),
     heroCamera: null,
+    participantName: null,
   );
   final isar = ref.read(isarProvider);
   if (isar == null) return empty;
@@ -634,6 +638,7 @@ applyTowerCombatResolution({
     resonanceUpgrades: resonanceUpgrades,
     stats: stats,
     heroCamera: heroCamera,
+    participantName: characters.single.name,
   );
 }
 
@@ -714,6 +719,7 @@ Future<void> _showVictoryDialog({
   List<ResonanceUpgradeNotice> resonanceUpgrades = const [],
   CombatStatsSummary? stats,
   HeroCameraData? heroCamera,
+  String? participantName,
   Set<EquipmentTier> extraDisplayTiers = const {},
   SkillDropResult skillDrop = SkillDropResult.none,
 }) async {
@@ -758,6 +764,7 @@ Future<void> _showVictoryDialog({
         advancements: advancements,
         resonanceUpgrades: resonanceUpgrades,
         stats: stats,
+        participantName: participantName,
         skillFragmentLine: skillFragmentLineFor(skillDrop),
       ),
       actions: [
@@ -786,6 +793,7 @@ class TowerVictoryContent extends StatelessWidget {
     required this.advancements,
     this.resonanceUpgrades = const [],
     this.stats,
+    this.participantName,
     this.skillFragmentLine,
   });
 
@@ -796,6 +804,10 @@ class TowerVictoryContent extends StatelessWidget {
   final List<ResonanceUpgradeNotice> resonanceUpgrades;
   final CombatStatsSummary? stats;
 
+  /// Exact participant resolved by the shared tower settlement. This is an
+  /// identity report, not the optional highest-output hero camera.
+  final String? participantName;
+
   /// 残页轻提示行(掉残页未集齐 → 小字一行);null=本场未掉残页或已走重仪式。
   final String? skillFragmentLine;
 
@@ -805,6 +817,16 @@ class TowerVictoryContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (participantName != null) ...[
+          Text(
+            UiStrings.stageReportParticipant(participantName!),
+            style: const TextStyle(
+              color: WuxiaUi.ink,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         isFirstClear
             ? _FirstClearContent(
                 floor: floor,

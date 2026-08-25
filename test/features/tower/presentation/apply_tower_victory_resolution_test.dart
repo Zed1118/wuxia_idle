@@ -117,7 +117,7 @@ void main() {
         ),
       ),
     );
-    await tester.runAsync(
+    final result = await tester.runAsync(
       () => applyTowerCombatResolution(
         ref: capturedRef!,
         floor: floor,
@@ -125,6 +125,8 @@ void main() {
         settlementSnapshot: settlement,
       ),
     );
+
+    expect(result!.participantName, '门人');
 
     await tester.runAsync(() async {
       final founder = await IsarSetup.instance.characters.get(ids.$1);
@@ -184,6 +186,7 @@ void main() {
     );
 
     expect(result!.stats.totalDamage, 456);
+    expect(result.participantName, '祖师');
     expect(result.stats.critCount, 3);
     expect(result.stats.totalTicks, 37);
     await tester.runAsync(() async {
