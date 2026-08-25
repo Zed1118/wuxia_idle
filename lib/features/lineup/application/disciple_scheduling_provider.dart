@@ -21,6 +21,14 @@ final discipleSchedulingProvider = FutureProvider<DiscipleSchedulingSummary>((
     throw StateError('Disciple scheduling unavailable: Isar not initialized');
   }
 
+  return loadDiscipleSchedulingSummary(isar);
+});
+
+/// U08 的可复用只读真相源。活动入口不得自行扫描“所有非祖师”来猜测当代门人，
+/// 统一从当前掌门引用、当代关系与 [CharacterOccupancyService] 收敛候选。
+Future<DiscipleSchedulingSummary> loadDiscipleSchedulingSummary(
+  Isar isar,
+) async {
   final save = await isar.saveDatas.get(0);
   final leaderId = await CurrentLeaderResolver.resolve(
     save: save,
@@ -141,4 +149,4 @@ final discipleSchedulingProvider = FutureProvider<DiscipleSchedulingSummary>((
         ),
     ]),
   );
-});
+}

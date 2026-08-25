@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/experimental/scope.dart';
 
-import '../../../core/application/character_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
@@ -77,9 +76,18 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     });
   }
 
-  void _onChallenge(BuildContext context, TowerFloorDef def) {
-    // ignore: discarded_futures - fire-and-forget 导航模式，与 runStageFlow 一致
-    runTowerFlow(context: context, ref: ref, floor: def);
+  Future<void> _onChallenge(BuildContext context, TowerFloorDef def) async {
+    final participantId = await selectTowerParticipant(
+      context: context,
+      ref: ref,
+    );
+    if (participantId == null || !context.mounted) return;
+    await runTowerFlow(
+      context: context,
+      ref: ref,
+      floor: def,
+      participantId: participantId,
+    );
   }
 
   /// P1 周目进化 E2：推进到下一轮回（TowerProgressService.advanceCycle）。
@@ -144,18 +152,14 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
               final canAdvance =
                   progress.maxClearedCycle >= progress.currentCycleIndex &&
                   progress.currentCycleIndex < maxCycleTower;
-              // 主战角色当前境界（用于掉落传闻弹窗 above-realm 提示）。
+              // 当前掌门境界仅用于掉落传闻 above-realm 提示；来源与逐次选人
+              // 共用当代成员真相源，不再读取旧 active 三席的首位。
               final currentRealm = ref
-                  .watch(activeCharacterIdsProvider)
+                  .watch(towerParticipantCandidatesProvider)
                   .maybeWhen(
-                    data: (ids) => ids.isEmpty
+                    data: (candidates) => candidates.isEmpty
                         ? null
-                        : ref
-                              .watch(characterByIdProvider(ids.first))
-                              .maybeWhen(
-                                data: (c) => c?.realmTier,
-                                orElse: () => null,
-                              ),
+                        : candidates.first.character.realmTier,
                     orElse: () => null,
                   );
               return LayoutBuilder(
@@ -244,6 +248,84 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
     );
   }
 }
+
+Future<int?> selectTowerParticipant({
+  required BuildContext context,
+  required WidgetRef ref,
+}) async {
+  late final List<TowerParticipantCandidate> candidates;
+  try {
+    ref.invalidate(towerParticipantCandidatesProvider);
+    candidates = await ref.read(towerParticipantCandidatesProvider.future);
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.towerParticipantUnavailable)),
+      );
+    }
+    return null;
+  }
+  if (!context.mounted) return null;
+  if (!candidates.any((candidate) => candidate.selectable)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(UiStrings.towerParticipantNoneEligible)),
+    );
+    return null;
+  }
+  return showTowerParticipantPicker(context: context, candidates: candidates);
+}
+
+Future<int?> showTowerParticipantPicker({
+  required BuildContext context,
+  required List<TowerParticipantCandidate> candidates,
+}) => PaperDialog.show<int>(
+  context,
+  title: UiStrings.towerParticipantTitle,
+  body: Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const Text(UiStrings.towerParticipantBody),
+      const SizedBox(height: 12),
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 320),
+        child: ListView.separated(
+          shrinkWrap: true,
+          itemCount: candidates.length,
+          separatorBuilder: (_, _) => const SizedBox(height: 6),
+          itemBuilder: (_, index) {
+            final candidate = candidates[index];
+            final status = candidate.occupied
+                ? UiStrings.towerParticipantOccupied
+                : candidate.healing
+                ? UiStrings.towerParticipantHealing
+                : candidate.hasMainTechnique
+                ? UiStrings.towerParticipantAvailable
+                : UiStrings.towerParticipantNoMainTechnique;
+            return OutlinedButton(
+              key: ValueKey('tower_participant_${candidate.character.id}'),
+              onPressed: candidate.selectable
+                  ? () => Navigator.of(context).pop(candidate.character.id)
+                  : null,
+              child: Row(
+                children: [
+                  Expanded(child: Text(candidate.character.name)),
+                  Text(status),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    ],
+  ),
+  actions: [
+    TextButton(
+      onPressed: () => Navigator.of(context).pop(),
+      child: const Text(UiStrings.commonCancel),
+    ),
+  ],
+);
 
 class _TowerSpineOverview extends StatefulWidget {
   const _TowerSpineOverview({required this.entries, required this.summary});

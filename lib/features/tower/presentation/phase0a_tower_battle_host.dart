@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/domain/character.dart';
-import '../../../core/domain/save_data.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
-import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
-import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
@@ -28,6 +24,7 @@ class Phase0aTowerBattleHost extends ConsumerStatefulWidget {
   const Phase0aTowerBattleHost({
     super.key,
     required this.floor,
+    required this.participantId,
     required this.onVictory,
     required this.onDefeat,
     this.playerSnapshotForTest,
@@ -36,6 +33,7 @@ class Phase0aTowerBattleHost extends ConsumerStatefulWidget {
   });
 
   final TowerFloorDef floor;
+  final int participantId;
   final ValueChanged<CombatSettlementSnapshot> onVictory;
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
 
@@ -114,22 +112,11 @@ class _Phase0aTowerBattleHostState
     });
   }
 
-  Future<CombatantSnapshot> _buildPlayerSnapshot() async {
-    final isar = IsarSetup.instance;
-    final save = await isar.saveDatas.get(0);
-    final playerId = await CurrentLeaderResolver.resolve(
-      save: save,
-      characterExists: (characterId) async =>
-          await isar.characters.get(characterId) != null,
-    );
-    final team = await PlayerCombatantSnapshotAssembler(
-      isar: isar,
-    ).loadExactRoster([playerId]);
-    if (team.isEmpty) {
-      throw StateError('Phase0a 塔宿主: 玩家队伍装配为空');
-    }
-    return team.first;
-  }
+  Future<CombatantSnapshot> _buildPlayerSnapshot() =>
+      resolveTowerParticipantSnapshot(
+        isar: IsarSetup.instance,
+        requestedParticipantId: widget.participantId,
+      );
 
   void _onControllerChanged() {
     final controller = _controller;

@@ -76,7 +76,8 @@ typedef TowerBattleExit = ({
 ///   3a. victory → recordClear(isFirstClear) → invalidate provider
 ///       → T44 接入：isFirstClear true 才发奖
 ///       → Boss + victoryNarrative → NarrativeReaderScreen
-///   3b. defeat → recordDefeat（unawaited）→ pop 回层列表
+///   3b. defeat → settle exact participant → recordDefeat（unawaited）
+///       → pop 回层列表
 ///
 /// [battleRunnerForTest] / [clearRecorderForTest] / [defeatRecorderForTest]
 /// 仅供 widget test 注入，生产端勿传（[@visibleForTesting]）。
@@ -85,6 +86,7 @@ Future<void> runTowerFlow({
   required BuildContext context,
   required WidgetRef ref,
   required TowerFloorDef floor,
+  required int participantId,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -132,6 +134,7 @@ Future<void> runTowerFlow({
     battleExit = await _runTowerBattle(
       context: context,
       floor: floor,
+      participantId: participantId,
       phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
     );
   }
@@ -143,9 +146,28 @@ Future<void> runTowerFlow({
     return;
   }
   final won = battleExit.won;
+  final settlement = battleExit.settlement;
+  if (settlement != null &&
+      (settlement.participantCharacterIds.length != 1 ||
+          !settlement.participantCharacterIds.contains(participantId))) {
+    throw StateError('Tower settlement participant mismatch');
+  }
 
   // ── defeat ──
   if (!won) {
+    // Phase0A Host 已形成终局快照；塔败北与主线共享战斗账本/伤势真相源，
+    // 但不发塔经验、掉落或首通事件。必须在记录塔败绩前同步落地，避免实际
+    // 参战门人的装备/心法/伤势被旧提前 return 丢弃。
+    if (settlement != null) {
+      await applyTowerCombatResolution(
+        ref: ref,
+        floor: floor,
+        grantsFirstClearExperience: false,
+        expectedParticipantId: participantId,
+        settlementSnapshot: settlement,
+      );
+      invalidateAfterCombatSettlement(ref.invalidate);
+    }
     // 不退层，只增统计；unawaited 不阻 UI
     if (defeatRecorderForTest != null) {
       // 审查批E(2026-07-18):test hook 路径原裸吞错误,补与下方生产路径同款日志,
@@ -221,10 +243,11 @@ Future<void> runTowerFlow({
   // 防刷塔无脑刷 EXP)。
   // W15 #30 P3 后续 A:收 advancements 暂存供 victory dialog banner。
   // P1.1 候选 3-a:同段收 resonanceUpgrades 供 dialog 显共鸣度晋阶 sub-row。
-  final victoryRes = await applyTowerVictoryResolution(
+  final victoryRes = await applyTowerCombatResolution(
     ref: ref,
     floor: floor,
-    isFirstClear: clearResult.isFirstClear,
+    grantsFirstClearExperience: clearResult.isFirstClear,
+    expectedParticipantId: participantId,
     settlementSnapshot: battleExit.settlement,
   );
   final advancements = victoryRes.advancements;
@@ -382,17 +405,23 @@ Future<void> runTowerFlow({
 Future<TowerBattleExit> _runTowerBattle({
   required BuildContext context,
   required TowerFloorDef floor,
+  required int participantId,
   Future<TowerBattleExit> Function()? phase0aBattleOutcomeForTest,
 }) async {
   if (phase0aBattleOutcomeForTest != null) {
     return phase0aBattleOutcomeForTest();
   }
-  return _runPhase0aTowerBattle(context: context, floor: floor);
+  return _runPhase0aTowerBattle(
+    context: context,
+    floor: floor,
+    participantId: participantId,
+  );
 }
 
 Future<TowerBattleExit> _runPhase0aTowerBattle({
   required BuildContext context,
   required TowerFloorDef floor,
+  required int participantId,
 }) async {
   final completer = Completer<TowerBattleExit>();
   Navigator.of(context)
@@ -400,6 +429,7 @@ Future<TowerBattleExit> _runPhase0aTowerBattle({
         MaterialPageRoute(
           builder: (_) => Phase0aTowerBattleHost(
             floor: floor,
+            participantId: participantId,
             onVictory: (settlement) {
               if (!completer.isCompleted) {
                 completer.complete((
@@ -429,15 +459,14 @@ Future<TowerBattleExit> _runPhase0aTowerBattle({
   return completer.future;
 }
 
-/// Phase 4 W11 #32 销账：爬塔 victory 战斗结算（in-place 副作用 + 写回 Isar）。
+/// 九霄塔单人战斗结算（in-place 副作用 + 写回 Isar）。
 ///
 /// 与主线 `_applyVictoryResolution` 体例对齐，但传 `stageDef: null` 让
 /// [BattleResolutionService.resolve] 不内部 roll drops（爬塔走 rollTowerRewards
-/// + isFirstClear 首通发奖控制，落地在 _persistDrops；此函数仅取
+/// + 首通发奖控制，落地在 _persistDrops；此函数只消费真实参战者的
 /// battleCount / skillUsage / cultivationEvents 副作用）。
 ///
-/// W15 #30 P3:[isFirstClear] 时 active 3 character 每人 += floor.baseExpReward
-/// + 升层(沿 drops 首通发奖体例,防刷塔无脑刷 EXP)。
+/// [grantsFirstClearExperience] 只在首通胜利为 true；重打与败北均不发经验。
 ///
 /// **错误兜底**：Isar 未 ready / 角色为空 / finalState 异常 → 返回空 list，
 /// caller dialog 仅显 drop 部分不显升层 banner（不阻塞 victory dialog / narrative）。
@@ -453,10 +482,11 @@ Future<
     HeroCameraData? heroCamera,
   })
 >
-applyTowerVictoryResolution({
+applyTowerCombatResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
-  required bool isFirstClear,
+  required bool grantsFirstClearExperience,
+  int? expectedParticipantId,
   CombatSettlementSnapshot? settlementSnapshot,
 }) async {
   const empty = (
@@ -472,12 +502,17 @@ applyTowerVictoryResolution({
   if (!combatSettlement.isFinished) return empty;
   final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
-  final save = await isar.saveDatas.get(0);
   final participantIds = combatSettlement.participantCharacterIds;
-  final ids = (save?.activeCharacterIds ?? const <int>[])
-      .where(participantIds.contains)
-      .toList(growable: false);
-  if (ids.isEmpty) return empty;
+  final resolvedParticipantId =
+      expectedParticipantId ??
+      (participantIds.length == 1 ? participantIds.single : null);
+  if (resolvedParticipantId == null ||
+      participantIds.length != 1 ||
+      !participantIds.contains(resolvedParticipantId)) {
+    return empty;
+  }
+  final ids = [resolvedParticipantId];
+  final save = await isar.saveDatas.get(0);
 
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
@@ -546,7 +581,7 @@ applyTowerVictoryResolution({
   // 爬塔经验只在首通发放，重打保持零经验。
   final advancements = settlement.applyExperience(
     characters: characters,
-    experienceReward: isFirstClear ? floor.baseExpReward : 0,
+    experienceReward: grantsFirstClearExperience ? floor.baseExpReward : 0,
     clearedStageIds: progress?.clearedStageIds.toSet() ?? <String>{},
   );
 
@@ -569,7 +604,7 @@ applyTowerVictoryResolution({
       resonanceUpgradedEquipmentIds: battleResult.resonanceUpgradedEquipmentIds,
       advancements: advancements,
       founderId: founderId,
-      bossVictory: floor.isBoss && isFirstClear
+      bossVictory: floor.isBoss && grantsFirstClearExperience
           ? BossVictoryEventContext(
               stageId: 'tower_floor_${floor.floorIndex}',
               stageName: UiStrings.towerFloorLabel(floor.floorIndex),

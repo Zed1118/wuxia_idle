@@ -20,8 +20,7 @@ class TowerLocationDetail {
     required this.enemies,
     required this.rewardRumor,
     required this.baseExpReward,
-    required this.participantId,
-    required this.participantName,
+    required this.eligibleParticipantCount,
   });
 
   final int highestClearedFloor;
@@ -31,8 +30,7 @@ class TowerLocationDetail {
   final List<TowerLocationEnemySummary> enemies;
   final DropRumorTable? rewardRumor;
   final int? baseExpReward;
-  final int participantId;
-  final String participantName;
+  final int eligibleParticipantCount;
 
   bool get isComplete => nextFloorIndex == null;
 }

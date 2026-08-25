@@ -16,7 +16,7 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../tower/presentation/tower_entry_flow.dart'
-    show applyTowerVictoryResolution;
+    show applyTowerCombatResolution;
 import '../../tutorial/application/tutorial_providers.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_readiness_providers.dart';
@@ -27,7 +27,7 @@ import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 ///
 /// 设计：扫荡恒为「本周目已首通」的重打 → 走重打掉落规则（主线秘籍不补、
 /// 爬塔装备/银两/经验不发只掉残页，守 §5.1 防刷）。这些 gate 由复用的
-/// [applyVictoryResolution] / [applyTowerVictoryResolution] 内部维持，本层不另设。
+/// [applyVictoryResolution] / [applyTowerCombatResolution] 内部维持，本层不另设。
 
 /// 主线一关扫荡结算。失败兜底返回 null（caller 视为该关结算异常）。
 Future<SweepBattleOutcome?> settleMainlineSweepVictory({
@@ -125,10 +125,10 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
   );
 
   // 战斗结算（battleCount/skillUsage in-place；drops 不在此 roll，下方 gate 控）。
-  await applyTowerVictoryResolution(
+  await applyTowerCombatResolution(
     ref: ref,
     floor: floor,
-    isFirstClear: clearResult.isFirstClear,
+    grantsFirstClearExperience: clearResult.isFirstClear,
     settlementSnapshot: settlementSnapshot,
   );
   // 体检批3 P1-6:塔扫荡同样累 battleCount / skillUsage,失效角色 family + 门控。

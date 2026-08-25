@@ -118,10 +118,10 @@ void main() {
       ),
     );
     await tester.runAsync(
-      () => applyTowerVictoryResolution(
+      () => applyTowerCombatResolution(
         ref: capturedRef!,
         floor: floor,
-        isFirstClear: true,
+        grantsFirstClearExperience: true,
         settlementSnapshot: settlement,
       ),
     );
@@ -175,10 +175,10 @@ void main() {
       ),
     );
     final result = await tester.runAsync(
-      () => applyTowerVictoryResolution(
+      () => applyTowerCombatResolution(
         ref: capturedRef!,
         floor: floor,
-        isFirstClear: true,
+        grantsFirstClearExperience: true,
         settlementSnapshot: settlement,
       ),
     );
@@ -193,6 +193,75 @@ void main() {
       expect(reserve!.experience, 0, reason: '未参战替补不得获得塔首通经验');
       expect(founder.lightInjuryStacks, 1);
       expect(reserve.lightInjuryStacks, 0, reason: '未参战替补不得累积连战伤势');
+    });
+  });
+
+  testWidgets('0A 败北由真实参战门人承接伤势且未参战掌门零污染', (tester) async {
+    final ids = (await tester.runAsync(() async {
+      final founderId = await insertCharacter('掌门');
+      final discipleId = await insertCharacter(
+        '门人',
+        lineageRole: LineageRole.disciple,
+      );
+      await writeSave(founderId, founderId);
+      return (founderId, discipleId);
+    }))!;
+    final floor = GameRepository.instance.getTowerFloor(1);
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.rightWin,
+      totalTicks: 37,
+      hadActions: true,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: ids.$2,
+          currentHp: 0,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 0,
+      criticalCount: 0,
+      damageByCharacterId: const {},
+    );
+    var defeatRecorded = false;
+    BuildContext? capturedContext;
+    WidgetRef? capturedRef;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Consumer(
+            builder: (context, ref, _) {
+              capturedContext = context;
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.runAsync(
+      () => runTowerFlow(
+        context: capturedContext!,
+        ref: capturedRef!,
+        floor: floor,
+        participantId: ids.$2,
+        phase0aBattleOutcomeForTest: () async =>
+            (won: false, surrendered: false, settlement: settlement),
+        clearRecorderForTest: (_, _) async =>
+            (isFirstClear: false, highestAfter: 0),
+        defeatRecorderForTest: () async => defeatRecorded = true,
+      ),
+    );
+
+    expect(defeatRecorded, isTrue);
+    await tester.runAsync(() async {
+      final founder = await IsarSetup.instance.characters.get(ids.$1);
+      final disciple = await IsarSetup.instance.characters.get(ids.$2);
+      expect(founder!.lightInjuryStacks, 0);
+      expect(disciple!.lightInjuryStacks, 1);
+      expect(founder.experience, 0);
+      expect(disciple.experience, 0, reason: '塔败北不得发放首通经验');
     });
   });
 }

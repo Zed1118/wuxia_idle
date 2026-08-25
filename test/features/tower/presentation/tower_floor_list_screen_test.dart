@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
@@ -50,10 +53,32 @@ void main() {
     );
   }
 
+  TowerParticipantCandidate candidate({
+    required int id,
+    required String name,
+    bool occupied = false,
+    bool healing = false,
+    bool hasMainTechnique = true,
+  }) => TowerParticipantCandidate(
+    character: Character.create(
+      name: name,
+      realmTier: RealmTier.xueTu,
+      realmLayer: RealmLayer.qiMeng,
+      attributes: Attributes(),
+      rarity: RarityTier.biaoZhun,
+      lineageRole: id == 1 ? LineageRole.founder : LineageRole.disciple,
+      createdAt: DateTime.utc(2026, 8, 25),
+    )..id = id,
+    occupied: occupied,
+    healing: healing,
+    hasMainTechnique: hasMainTechnique,
+  );
+
   Future<void> pumpScreen(
     WidgetTester tester, {
     required TowerProgress progress,
     Size surfaceSize = const Size(1024, 720),
+    List<TowerParticipantCandidate>? candidates,
   }) async {
     await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -63,6 +88,9 @@ void main() {
         overrides: [
           towerProgressProvider.overrideWith((ref) async => progress),
           towerFloorListProvider.overrideWith((ref) async => entries),
+          towerParticipantCandidatesProvider.overrideWith(
+            (ref) async => candidates ?? [candidate(id: 1, name: '测试掌门')],
+          ),
         ],
         child: const MaterialApp(home: TowerFloorListScreen()),
       ),
@@ -192,13 +220,44 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('点 available 层 → 进入战斗准备（Isar 未初始化显示准备失败）', (tester) async {
+  testWidgets('点 available 层 → 逐次选人后进入真实 Host 准备', (tester) async {
     final progress = mkProgress();
     await pumpScreen(tester, progress: progress);
 
     await tester.tap(find.text(UiStrings.towerFloorLabel(1)));
     await tester.pumpAndSettle();
 
+    expect(find.text(UiStrings.towerParticipantTitle), findsOneWidget);
+    await tester.tap(find.text('测试掌门'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('战斗准备失败'), findsOneWidget);
+  });
+
+  testWidgets('闭关掌门禁用但空闲门人仍可被生产层列表选择', (tester) async {
+    final progress = mkProgress();
+    await pumpScreen(
+      tester,
+      progress: progress,
+      candidates: [
+        candidate(id: 1, name: '闭关掌门', occupied: true),
+        candidate(id: 2, name: '空闲门人'),
+      ],
+    );
+
+    await tester.tap(find.text(UiStrings.towerFloorLabel(1)));
+    await tester.pumpAndSettle();
+    expect(find.text(UiStrings.towerParticipantOccupied), findsOneWidget);
+    expect(
+      tester
+          .widget<OutlinedButton>(
+            find.byKey(const ValueKey('tower_participant_1')),
+          )
+          .onPressed,
+      isNull,
+    );
+    await tester.tap(find.text('空闲门人'));
+    await tester.pumpAndSettle();
     expect(find.textContaining('战斗准备失败'), findsOneWidget);
   });
 
@@ -261,6 +320,10 @@ void main() {
     expect(find.text(UiStrings.towerReplayBody), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.towerReplayConfirm));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.towerParticipantTitle), findsOneWidget);
+    await tester.tap(find.text('测试掌门'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('战斗准备失败'), findsOneWidget);

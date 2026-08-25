@@ -62,6 +62,7 @@ void main() {
           child: MaterialApp(
             home: Phase0aTowerBattleHost(
               floor: repo.getTowerFloor(10),
+              participantId: 1,
               playerSnapshotForTest: _player(repo.numbers),
               cycleIndexForTest: 1,
               seedForTest: 20260822,
@@ -84,6 +85,7 @@ void main() {
         child: MaterialApp(
           home: Phase0aTowerBattleHost(
             floor: repo.getTowerFloor(1),
+            participantId: 1,
             playerSnapshotForTest: _player(repo.numbers),
             cycleIndexForTest: 1,
             seedForTest: 20260822,

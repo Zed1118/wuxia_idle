@@ -8,6 +8,8 @@ import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/data/defs/tower_floor_def.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/paper_dialog.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/plaque_button.dart';
@@ -129,6 +131,48 @@ void main() {
     expect(clearCalled, isFalse);
     expect(defeatCalled, isFalse);
     expect(find.text('done'), findsOneWidget);
+  });
+
+  testWidgets('0A 败北结算身份错配 → clear/defeat 均零消费并 fail closed', (tester) async {
+    var clearCalled = false;
+    var defeatCalled = false;
+    await tester.pumpWidget(
+      harness(
+        floor: normalFloor,
+        phase0aBattleOutcome: () async => (
+          won: false,
+          surrendered: false,
+          settlement: CombatSettlementSnapshot(
+            result: BattleResult.rightWin,
+            totalTicks: 1,
+            hadActions: true,
+            participants: [
+              const CombatParticipantSnapshot(
+                characterId: 2,
+                currentHp: 0,
+                maxHp: 100,
+              ),
+            ],
+            skillCasts: [],
+            totalDamage: 0,
+            criticalCount: 0,
+            damageByCharacterId: {},
+          ),
+        ),
+        clearRecorder: (_, _) async {
+          clearCalled = true;
+          return (isFirstClear: false, highestAfter: 0);
+        },
+        defeatRecorder: () async => defeatCalled = true,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('start'));
+    await tester.pumpAndSettle();
+
+    expect(clearCalled, isFalse);
+    expect(defeatCalled, isFalse);
+    expect(find.textContaining('participant mismatch'), findsOneWidget);
   });
 
   testWidgets('普通层胜利 → clearRecorder 以正确 floorIndex 被调用', (tester) async {
@@ -321,6 +365,7 @@ class _HarnessPageState extends ConsumerState<_HarnessPage> {
                   context: context,
                   ref: ref,
                   floor: widget.floor,
+                  participantId: 1,
                   battleRunnerForTest: widget.battleRunner,
                   battleOutcomeForTest: widget.battleOutcome,
                   phase0aBattleOutcomeForTest: widget.phase0aBattleOutcome,

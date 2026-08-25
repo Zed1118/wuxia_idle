@@ -42,6 +42,8 @@ void main() {
     ..attributes = Attributes()
     ..rarity = RarityTier.biaoZhun
     ..lineageRole = LineageRole.founder
+    ..isFounder = true
+    ..mainTechniqueId = 1
     ..createdAt = DateTime(2026, 8, 25);
 
   SaveData save({int? leaderId = 7}) => SaveData()
@@ -90,8 +92,7 @@ void main() {
     );
     expect(detail.rewardRumor, isNotNull);
     expect(detail.baseExpReward, nextFloor.baseExpReward);
-    expect(detail.participantId, 7);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 1);
   });
 
   test('登顶态无下一层情报但保留真实参与者', () async {
@@ -106,7 +107,7 @@ void main() {
     expect(detail.enemies, isEmpty);
     expect(detail.rewardRumor, isNull);
     expect(detail.baseExpReward, isNull);
-    expect(detail.participantName, '沈掌门');
+    expect(detail.eligibleParticipantCount, 1);
   });
 
   test('领队指针缺失或悬空时 fail closed', () async {

@@ -7,7 +7,6 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ink_button.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../loot_preview/domain/drop_name_resolver.dart';
-import '../../seclusion/presentation/seclusion_gate.dart';
 import '../../tower/presentation/tower_floor_list_screen.dart';
 import '../application/tower_location_detail_provider.dart';
 import '../domain/tower_location_detail.dart';
@@ -115,7 +114,9 @@ class _DetailContent extends ConsumerWidget {
               ),
               _DetailRow(
                 label: UiStrings.towerLocationParticipantLabel,
-                value: detail.participantName,
+                value: UiStrings.towerLocationEligibleParticipants(
+                  detail.eligibleParticipantCount,
+                ),
               ),
               const _DetailRow(
                 label: UiStrings.towerLocationEntryModeLabel,
@@ -137,13 +138,14 @@ class _DetailContent extends ConsumerWidget {
               ? UiStrings.towerLocationEnterReplayHint
               : UiStrings.towerLocationEnterHint,
           icon: Icons.filter_hdr_outlined,
-          onTap: () => guardBattleEntry(
-            context: context,
-            ref: ref,
-            onAllowed: () => Navigator.of(context).push<void>(
-              MaterialPageRoute(builder: (_) => const TowerFloorListScreen()),
-            ),
-          ),
+          disabled: detail.eligibleParticipantCount == 0,
+          onTap: detail.eligibleParticipantCount == 0
+              ? null
+              : () => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => const TowerFloorListScreen(),
+                  ),
+                ),
         ),
       ],
     );

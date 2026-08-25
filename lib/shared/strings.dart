@@ -1644,10 +1644,20 @@ class UiStrings {
   static const String towerLocationEnemyEcologyLabel = '敌方生态';
   static const String towerLocationCoreRewardLabel = '核心收获';
   static const String towerLocationParticipantLabel = '实际参与者';
+  static String towerLocationEligibleParticipants(int count) =>
+      '进入塔层后逐次选择 · 可用 $count 人';
   static const String towerLocationEntryModeLabel = '进入方式';
   static const String towerLocationOccupancyLabel = '预计占用';
   static const String towerLocationEntryModeDirect = '亲自挑战，不可派遣';
   static const String towerLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String towerParticipantTitle = '选择挑战者';
+  static const String towerParticipantBody = '每次挑战单独选择一名空闲掌门或门人。';
+  static const String towerParticipantAvailable = '可亲战';
+  static const String towerParticipantOccupied = '活动中';
+  static const String towerParticipantHealing = '重伤疗养中';
+  static const String towerParticipantNoMainTechnique = '未修主修';
+  static const String towerParticipantNoneEligible = '当前没有可参加九霄塔的角色。';
+  static const String towerParticipantUnavailable = '挑战者状态暂不可用，请稍后重试。';
   static const String towerLocationNoNextFloor = '已登顶，无下一层情报';
   static const String towerLocationEnter = '进入九霄塔';
   static const String towerLocationEnterHint = '查看塔层并选择可挑战层';
