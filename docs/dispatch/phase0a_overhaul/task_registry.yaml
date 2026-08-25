@@ -5228,3 +5228,40 @@ tasks:
       - no isolated policy or test only runner may be presented as production wiring
       - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim mass battle automation M5 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M5-INNER-DEMON-MANUAL-ONLY-ADMISSION
+    milestone: M5
+    owner: codex_root
+    branch: codex/phase2-inner-demon-manual-only-admission-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 3fa0655c0b0c88500946aba55dc4f0069cd8e504
+    completion_scope: connect_character_panel_target_to_typed_self_only_direct_human_realtime_inner_demon_admission_and_exact_live_settlement
+    acceptance_baseline: 0_of_1_typed_production_inner_demon_manual_only_path
+    acceptance_target: 1_of_1_typed_production_inner_demon_manual_only_path
+    dependencies:
+      - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
+    owned_files:
+      - lib/features/inner_demon/domain/inner_demon_participation_policy.dart
+      - lib/features/inner_demon/application/inner_demon_participant_service.dart
+      - lib/features/inner_demon/presentation/inner_demon_screen.dart
+      - lib/features/character_panel/presentation/character_panel_screen.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - test/features/inner_demon/domain/inner_demon_participation_policy_test.dart
+      - test/features/inner_demon/application/inner_demon_participant_service_test.dart
+      - test/features/inner_demon/presentation/inner_demon_screen_test.dart
+      - docs/superpowers/plans/2026-08-25-p2-m5-inner-demon-manual-only-admission.md
+      - docs/audit/phase2_m5_inner_demon_manual_only_admission_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+      - docs/_archive/GDD_CHANGELOG.md
+    protected_behavior:
+      - inner demon remains reachable only from the viewed character breakthrough panel and outside jianghu map
+      - only the exact target character may enter direct human realtime first_clear_or_replay
+      - dispatch player bot headless sweep offline resume and substitute character requests fail closed
+      - existing inner demon live stage flow failure settlement disorder and personal breakthrough owners remain unchanged
+      - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - do not claim M5 U14 M6 or overall Phase 2 completion
