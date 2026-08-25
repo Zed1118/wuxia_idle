@@ -5164,3 +5164,35 @@ tasks:
       - no isolated policy or test side runner assembly may be presented as production wiring
       - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim tower automation M5 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
+    milestone: M5
+    owner: codex_root
+    branch: codex/phase2-light-foot-automation-admission-blocked-audit-20260825
+    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
+    status: blocked
+    current_authoritative_wip: false
+    base_commit: fe35c991884e449c128c47dfd571f15194172200
+    completion_scope: connect_post_first_clear_typed_light_foot_bot_headless_and_dispatch_admission_to_a_real_production_runner
+    acceptance_baseline: 0_of_1_typed_production_light_foot_automation_path
+    acceptance_target: 1_of_1_typed_production_light_foot_automation_path
+    acceptance_result: 0_of_1_blocked
+    blocker:
+      type: missing_production_runner
+      summary: light_foot_has_only_realtime_manual_run_stage_flow_and_no_player_reachable_bot_headless_or_dispatch_runner
+      required_precondition: establish_an_authoritative_light_foot_automation_runner_consumer_before_typed_admission
+    evidence:
+      light_foot_feature_tests: 12
+      activity_participation_request_consumers_in_light_foot_lib: 0
+      phase0a_headless_runner_consumers_in_light_foot_lib: 0
+      schema_or_shared_truth_source_changes_made: 0
+    owned_files:
+      - docs/superpowers/plans/2026-08-25-p2-m5-light-foot-automation-admission.md
+      - docs/audit/phase2_m5_light_foot_automation_admission_blocked_2026-08-25.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - manual light foot entry keeps per_attempt exact participant selection and shared live stage flow
+      - existing progress participant settlement injury and report owners remain unchanged
+      - no isolated policy or test only runner may be presented as production wiring
+      - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - do not claim light foot automation M5 U14 M6 or overall Phase 2 completion
