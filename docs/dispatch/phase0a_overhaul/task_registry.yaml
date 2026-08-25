@@ -4489,9 +4489,21 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u08-disciple-scheduling-status-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u08-disciple-scheduling-status
-    status: in_progress
+    status: ready_reviewed
     base_commit: 9354ff9521ee469c238226bd29a1702bec7631cb
+    code_candidate_commit: 1e12d0f155b19d72b01979b02eef3f2d00a02ca8
+    reviewed_candidate_commit: 1e12d0f155b19d72b01979b02eef3f2d00a02ca8
+    ready_marker: "[READY][CODEX][P2-M6-U08-DISCIPLE-SCHEDULING-STATUS] 切换门人调度为只读当前态"
     completion_scope: replace_legacy_global_lineup_production_routes_with_read_only_disciple_activity_status
+    verification:
+      focused_tests: 29
+      adjacent_lineup_occupancy_itinerary_tests: 49
+      double_viewport_tests: 2
+      review_red_tests: 1
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      full_tests: 5516
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-REPUTATION-LOCATION-DETAIL
     owned_files:

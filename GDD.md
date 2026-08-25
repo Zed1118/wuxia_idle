@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.62
+> **版本**:v1.63
+> **v1.63 变更**(2026-08-25 二阶段门人调度当前态纵切):宗门 Hub 与门派谱的门人调度入口不再进入旧全局三席编成，改为只读当代掌门/门人的存活与闭关、百草岭、断魂庄去向。掌门身份、当代归属和占用均消费既有生产真相源；无效掌门、悬空/跨代当代引用、重复占用或 provider 异常 fail closed。调度页不写 `activeCharacterIds` / `isActive`，亲战、重打与差遣仍由各玩法入口逐次选人；旧编成只留兼容/debug。该纵切只关闭 U08 必要生产子门，不新增差遣策略，不晋升 U08/M6/二阶段，不改 schema、YAML、调优、奖励、经济、解锁或战斗。
 > **v1.62 变更**(2026-08-25 二阶段江湖恩怨统一地点详情纵切):江湖恩怨地点先展示第一章生产解锁、六门派定义、稀疏持久声望、七阶连续区间与现有 Boss/互动声望来源；未产生记录的门派保持未记录，不补写零值。缺少 production repository/service、门派数不是六个、门派/七阶/trigger/持久行异常或 provider 错误均 fail closed 且无 CTA；CTA 仍进入原 `ReputationPanelScreen`，声望写入、clamp、阶位、Boss/encounter 触发、NPC 关系战斗语义与原面板不变。该纵切不猜测当前角色或 NPC 仇敌数量，不新增关系面板、参与者 policy 或 U14 规则，只关闭当前六地点统一详情首轮覆盖；U06/U14/M6/二阶段仍开放，不改 schema、YAML、调优、奖励、经济或战斗。
-> **v1.61 变更**(2026-08-25 二阶段百草岭统一地点详情纵切):百草岭地点先展示生产解锁、历史/进行中深度、战败、方针、周目、基础推荐境界、敌方生态、节点时长、实际奖励类别、候选人与 active 真实参与者，并明确当前仅支持单名非祖师门人差遣。隐藏门、配置/奖励、进度、候选、参与者或 provider 异常 fail closed 且无 CTA，legacy 周目 0 按第一周目展示；idle/active CTA 均进入原 `ExpeditionOverviewScreen`，原选人、方针、周目、离线推进、召回、结算和返程不变。该纵切不新增亲战、前台 bot、多人、新自动化、参与者 policy、渐进解锁或 U14 规则，只关闭百草岭地点详情首缺口；声望详情、U06/U14/M5/M6/二阶段仍开放，不改 schema、YAML、调优、奖励、经济或战斗。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)

@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.80**
+> **版本:v1.81**
+>
+> v1.81 变更摘要(2026-08-25 二阶段 M6 U08 门人调度当前态纵切):宗门 Hub 与门派谱两个生产入口已从旧 `TeamLineupScreen` 切到只读 `DiscipleSchedulingScreen`，不再暴露全局三席编成写路。当前掌门经 `CurrentLeaderResolver` 核实，当代门人沿既有门派谱口径组合直系列表、`masterId` 及 active/recruited 兼容引用，闭关/百草岭/断魂庄仅读 `CharacterOccupancyService`。无效掌门、悬空当代成员、掌门直系列表跨代、重复占用或 provider 异常均 fail closed。新页不写 `activeCharacterIds` / `isActive`，参与者仍由各活动入口逐次选择；旧屏与 `LineupService` 只留兼容/debug。本纵切只关闭 U08 的必要生产子门，不新增差遣策略，不晋升 U08/M6/二阶段；零业务写入、schema/saveVersion、YAML、调优、奖励、经济、解锁或战斗变更。
 >
 > v1.80 变更摘要(2026-08-25 二阶段 M6 U06 江湖恩怨统一地点详情纵切):江湖地图“江湖恩怨”现先进入统一地点详情，只读第一章生产解锁门、六门派定义、稀疏持久声望、七阶连续区间与现有 Boss/互动声望来源；未产生记录的门派明确保持未记录，不补零。缺少生产 repository/service、门派数不是六个、门派/七阶/trigger/持久行异常或 provider 错误均 fail closed 且无 CTA；详情 CTA 仍进入原 `ReputationPanelScreen`，声望写入、clamp、阶位、Boss/encounter 触发、NPC 关系战斗语义与原面板不变。本纵切不猜测当前角色或 NPC 仇敌数量，不新增关系面板或参与者 policy，只关闭当前六地点统一详情首轮覆盖；U06/U14/M6/二阶段仍开放；零 schema/saveVersion、YAML、调优、奖励、经济或战斗变更。
 >
