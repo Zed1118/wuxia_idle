@@ -19,7 +19,8 @@
 
 ## 恢复点
 
-- 状态：整合中
-- 最后完成：项目规则与仪表盘草案
-- 下一步：验证、登记 task registry、提交 READY
+- 状态：`ready_reviewed`
+- 最后完成：全局规则、Skill、项目规则、仪表盘与桌面整合执行版已落地
+- 已跑验证：Skill `quick_validate` PASS；项目 `git diff --check` PASS；YAML 可解析；路径/链接存在性检查 PASS
+- 下一步：等待用户批准 Gate 分母/权重与塔个人成绩迁移决策
 - 阻塞：Gate 权重与塔个人成绩迁移仍待用户决策，不阻塞本治理补丁

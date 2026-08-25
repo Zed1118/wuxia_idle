@@ -4647,3 +4647,32 @@ tasks:
       - tower floor progress cycle first-clear rewards replay leaderboard and victory ceremony remain unchanged
       - do not change sweep headless duty training schema save version YAML tuning rewards economy unlocks narrative combat or main
       - do not claim M6 or overall Phase 2 completion
+
+  - id: P2-GOVERNANCE-INTEGRATION
+    milestone: M0
+    owner: codex_root
+    branch: codex/phase2-governance-integration-20260825
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-governance-integration
+    status: ready_reviewed
+    base_commit: 8671f8920a9e2ef3cd7bf869a047808d0fd742b1
+    code_candidate_commit: 92444546cab414c2d0f4602ac99d2a1a3f6a6700
+    reviewed_candidate_commit: 92444546cab414c2d0f4602ac99d2a1a3f6a6700
+    ready_marker: "[READY][CODEX][P2-GOVERNANCE-INTEGRATION] 整合二阶段结果驱动规则"
+    completion_scope: consolidate_gate_serialization_debt_merge_measurement_unattended_and_reporting_rules_without_second_truth_source
+    verification:
+      skill_quick_validate: pass
+      markdown_diff_check: pass
+      yaml_parse: pass
+      referenced_paths_exist: pass
+      production_code_changed: false
+    owned_files:
+      - CLAUDE.md
+      - PROGRESS.md
+      - docs/superpowers/plans/2026-08-25-phase2-governance-integration.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - keep M0-M9 gate weights pending explicit user approval
+      - do not promote READY subgates to M6 or overall Phase 2 completion
+      - keep primary main unchanged and require separate authorization for every merge
+      - keep GDD production code schema save version YAML tuning rewards economy and combat unchanged
+      - do not create a second operational truth source outside CLAUDE.md
