@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.82**
+> **版本:v1.83**
+>
+> v1.83 变更摘要(2026-08-25 二阶段 M6 九霄塔实际参与者生产纵切):九霄塔每次挑战现从当前掌门与当代存活门人逐次选一名 eligible 空闲角色，同一角色 ID 经真实 `Phase0aTowerBattleHost` exact snapshot 进入战斗；胜负 settlement 均校验单一实际参与者，成长、伤势、装备 battleCount 与心法使用写回该角色。身份/代际、死亡、疗养、无主修、闭关/远征/断魂庄占用、悬空装备或错人 settlement 均 fail closed，不回退掌门；塔层、周目、首通奖励、重打、排行榜与仪式不变。该纵切只关闭塔逐次选人和既有个人战斗账本归属子门；每角色塔层最好成绩仍因缺持久模型保持 BLOCKED，不晋升 M6/二阶段，不改 schema/saveVersion、YAML、调优、奖励、经济、解锁或叙事。
 >
 > v1.82 变更摘要(2026-08-25 二阶段 M6 掌门支线准入生产纵切):百草岭与断魂庄的真实候选页、地点详情和写事务现允许存活、空闲且有主修的当前掌门参与；掌门身份经 `CurrentLeaderResolver` 核实，占用经 `CharacterOccupancyService` 在 provider 与 service 两层复核。无效/悬空掌门、历史祖师、死亡、无主修、闭关或活动重复占用均 fail closed，不回退其他角色。原单人、方针、周目、补给、恢复、战斗、离线推进、结算、召回、奖励和返程不变。本纵切只关闭掌门参加两项支线的 M6 必要子门，不晋升 U08/M6/二阶段；零 schema/saveVersion、YAML、调优、奖励、经济、解锁、叙事或战斗变更。
 >

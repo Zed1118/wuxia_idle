@@ -4592,9 +4592,25 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-tower-participant-selection-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-tower-participant-selection
-    status: in_progress
+    status: ready_reviewed
     base_commit: c6c0a6696e68d64efb084f96b9d35cf063d2a711
+    code_candidate_commit: e00181257966ffac51fc9c2747b0b50e096f22e4
+    reviewed_candidate_commit: e00181257966ffac51fc9c2747b0b50e096f22e4
+    ready_marker: "[READY][CODEX][P2-M6-TOWER-PARTICIPANT-SELECTION] 接通九霄塔实际参与者闭环"
     completion_scope: select_any_idle_eligible_character_for_tower_live_host_and_actual_participant_settlement
+    verification:
+      focused_tests: 40
+      tower_domain_tests: 116
+      adjacent_activity_and_entry_tests: 156
+      double_viewport_tests: 2
+      initial_red_failures: 2
+      semantic_red_failures: 2
+      scoped_analyze_issues: 0
+      root_app_analyze_issues: 0
+      full_tests_passed: 5527
+      full_tests_failed_concurrently: 2
+      failed_files_serial_rerun_passed: 6
+      semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-LEADER-SIDE-ACTIVITY-ADMISSION
     owned_files:
@@ -4602,6 +4618,8 @@ tasks:
       - lib/features/tower/presentation/tower_floor_list_screen.dart
       - lib/features/tower/presentation/tower_entry_flow.dart
       - lib/features/tower/presentation/phase0a_tower_battle_host.dart
+      - lib/features/lineup/application/disciple_scheduling_provider.dart
+      - lib/features/sweep/application/sweep_settlement.dart
       - lib/features/jianghu_map/domain/tower_location_detail.dart
       - lib/features/jianghu_map/application/tower_location_detail_provider.dart
       - lib/features/jianghu_map/presentation/tower_location_detail_screen.dart
@@ -4623,8 +4641,9 @@ tasks:
     protected_behavior:
       - each tower challenge chooses one eligible current leader or disciple at the activity entry
       - the selected exact character snapshot enters the real Phase0aTowerBattleHost and settlement
-      - growth injury equipment technique and personal record side effects belong to the actual participant
-      - occupied dead no-main-technique historical-founder dangling or invalid selections fail closed without leader fallback
+      - growth injury equipment battle count and technique usage side effects belong to the actual participant
+      - occupied healing dead no-main-technique historical-founder dangling or invalid selections fail closed without leader fallback
+      - per-character tower best remains a separate schema-blocked gate and is not claimed by this slice
       - tower floor progress cycle first-clear rewards replay leaderboard and victory ceremony remain unchanged
       - do not change sweep headless duty training schema save version YAML tuning rewards economy unlocks narrative combat or main
       - do not claim M6 or overall Phase 2 completion
