@@ -4286,9 +4286,24 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m6-u06-reputation-location-detail-20260825
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-m6-u06-reputation-location-detail
-    status: in_progress
+    status: ready_reviewed
     base_commit: 5966e2348987a87bf1e61b237bc209f17ee85716
+    code_candidate_commit: a358571228460c8719144987753bc7e350e33abb
+    reviewed_candidate_commit: a358571228460c8719144987753bc7e350e33abb
+    ready_marker: "[READY][CODEX][P2-M6-U06-REPUTATION-LOCATION-DETAIL] 接入江湖恩怨统一地点详情"
     completion_scope: add_production_reputation_location_detail_before_panel
+    verification:
+      red_compile_targets: 3
+      review_red_compile_targets: 1
+      focused_tests: 19
+      adjacent_tests: 268
+      independent_focused_tests: 19
+      independent_adjacent_tests: 42
+      double_viewport_tests: 2
+      scoped_analyze_issues: 0
+      root_analyze_issues: 0
+      full_tests: 5505
+      independent_semantic_review_p0_p1_p2: 0
     dependencies:
       - P2-M6-U06-EXPEDITION-LOCATION-DETAIL
     owned_files:
