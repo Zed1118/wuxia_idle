@@ -184,7 +184,8 @@ combat:
     stagger_defense_down: 0.3     # 踉跄期间防御率乘 (1 - 此值)
     interrupt_power_cap: 0.5      # 波A:减防 × (1+interrupt_power_pct) 有效值上限(红线)
 
-  # 姿态统一(二阶段优化方案 §5.3)。TUNE-POSTURE-01 用户拍板 B(2026-08-26)冻结值,
+  # 姿态统一(二阶段优化方案 §5.3)。TUNE-POSTURE-01 用户选择候选 B(2026-08-26),
+  # 当前状态仍为 TUNING,待生产路径真人试玩后才能冻结,
   # 依据 docs/spec/phase2_combat_core_tuning_candidates_20260826.md,
   # 决议登记见 docs/dispatch/phase0a_overhaul/decision_registry.yaml。
   # 解析与消费方在同一分支的后续 commit 落地(numbers_config + reducer),

@@ -1,6 +1,7 @@
 # Production Ch1 Black Wind Ridge vertical slice.
 # Spawn counts and timing remain TUNING candidates for G2.
-# token_budgets 已由 TUNE-ATTACK-TOKEN-01 用户拍板 B 冻结(2026-08-26),
+# token_budgets 已由 TUNE-ATTACK-TOKEN-01 选择候选 A(2026-08-26),
+# 当前状态仍为 TUNING,待生产路径真人试玩后才能冻结,
 # 依据 docs/spec/phase2_combat_core_tuning_candidates_20260826.md,
 # 决议登记见 docs/dispatch/phase0a_overhaul/decision_registry.yaml。
 encounters:
