@@ -184,6 +184,18 @@ combat:
     stagger_defense_down: 0.3     # 踉跄期间防御率乘 (1 - 此值)
     interrupt_power_cap: 0.5      # 波A:减防 × (1+interrupt_power_pct) 有效值上限(红线)
 
+  # 姿态统一(二阶段优化方案 §5.3)。TUNE-POSTURE-01 用户拍板 B(2026-08-26)冻结值,
+  # 依据 docs/spec/phase2_combat_core_tuning_candidates_20260826.md,
+  # 决议登记见 docs/dispatch/phase0a_overhaul/decision_registry.yaml。
+  # 解析与消费方在同一分支的后续 commit 落地(numbers_config + reducer),
+  # 本块不得单独合入 main。
+  posture:
+    capacity: 14                       # 破势阈值:累计姿态伤害达此值开破绽窗
+    vulnerability_ticks: 4             # 破绽窗口时长(tick)
+    recovery_policy: recover           # 窗口结束后 recover(回落)而非 reset(归零)
+    post_vulnerability_accumulated: 4  # recover 后保留的累计姿态值
+    boss_conversion_factor: 3          # Boss 强控制效果折算为姿态伤害的倍率
+
   defense_break:            # 第六阶段:破防开窗(破招外的第二开窗来源)
     window_ticks: 3         # 破绽窗口时长(踉跄 default_stagger_ticks=2,破防略长)
     # 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,此处不设全局值
