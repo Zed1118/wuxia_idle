@@ -1,5 +1,6 @@
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
+import '../../domain/phase0a/posture.dart';
 
 /// Pre-resolved enemy skill behavior for the Phase 0A arena.
 ///
@@ -14,9 +15,10 @@ final class Phase0aEnemySkillBinding {
     required this.effectRadius,
     required this.cooldownSeconds,
     this.allowQiDrain = false,
+    this.consumesDefenseBreakAsPostureDamage = false,
   }) {
     if (skill.canInterrupt ||
-        skill.defenseBreakPct != 0 ||
+        (skill.defenseBreakPct != 0 && !consumesDefenseBreakAsPostureDamage) ||
         (skill.qiDrainPct != 0 && !allowQiDrain)) {
       throw StateError(
         'Phase0a enemy skill ${skill.id}: '
@@ -45,7 +47,19 @@ final class Phase0aEnemySkillBinding {
   final double effectRadius;
   final double cooldownSeconds;
   final bool allowQiDrain;
+  final bool consumesDefenseBreakAsPostureDamage;
 
   bool get isAutoSkill =>
       skill.type == SkillType.powerSkill || skill.type == SkillType.ultimate;
+
+  double postureDamageFor({required int basicPowerMultiplier}) {
+    final baseDamage = powerMultiplierToPostureDamage(
+      skill.powerMultiplier,
+      basicPowerMultiplier: basicPowerMultiplier,
+    );
+    return addDefenseBreakPostureDamage(
+      baseDamage,
+      defenseBreakPct: skill.defenseBreakPct,
+    );
+  }
 }

@@ -958,9 +958,12 @@ final class Phase0aStageContentMapper {
     effectRadius: arena.enemyAttackRange,
     cooldownSeconds: _requiredEnemyCooldownSeconds(skill),
     actionCooldownSeconds: arena.enemyAttackCooldownSeconds,
-    postureDamage: powerMultiplierToPostureDamage(
-      skill.powerMultiplier,
-      basicPowerMultiplier: arena.basicPowerMultiplier,
+    postureDamage: addDefenseBreakPostureDamage(
+      powerMultiplierToPostureDamage(
+        skill.powerMultiplier,
+        basicPowerMultiplier: arena.basicPowerMultiplier,
+      ),
+      defenseBreakPct: skill.defenseBreakPct,
     ),
     postureHitKind: PostureHitKind.heavy,
     defenseFlags: defenseFlags,
@@ -1000,6 +1003,7 @@ final class Phase0aStageContentMapper {
           halfArcRadians: arena.enemyAttackHalfArcRadians,
           effectRadius: arena.enemyAttackRange,
           cooldownSeconds: _requiredEnemyCooldownSeconds(byId[id]!),
+          consumesDefenseBreakAsPostureDamage: true,
           allowQiDrain:
               snapshot.chargeSkillId == id && byId[id]!.qiDrainPct > 0,
         ),
@@ -1100,6 +1104,7 @@ final class Phase0aStageContentMapper {
         halfArc: arena.playerAttackHalfArcRadians,
         effectRadius: arena.clearEffectRadius,
         cooldownSeconds: _requiredPlayerCooldownSeconds(skill),
+        consumesDefenseBreakAsPostureDamage: true,
       );
     }
 

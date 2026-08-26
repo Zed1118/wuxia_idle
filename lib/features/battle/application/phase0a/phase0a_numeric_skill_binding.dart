@@ -2,6 +2,7 @@ import '../../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
+import '../../domain/phase0a/posture.dart';
 
 class Phase0aNumericSkillBinding {
   Phase0aNumericSkillBinding({
@@ -13,6 +14,7 @@ class Phase0aNumericSkillBinding {
     required this.halfArc,
     required this.effectRadius,
     required this.cooldownSeconds,
+    this.consumesDefenseBreakAsPostureDamage = false,
   }) {
     if (hotkey < 1 || hotkey > 6) {
       throw ArgumentError.value(hotkey, 'hotkey', 'must be in 1..6');
@@ -34,7 +36,8 @@ class Phase0aNumericSkillBinding {
         'phase0aBehavior.break typed 契约，禁止静默丢失',
       );
     }
-    if (skill.defenseBreakPct != 0 || skill.qiDrainPct != 0) {
+    if ((skill.defenseBreakPct != 0 && !consumesDefenseBreakAsPostureDamage) ||
+        skill.qiDrainPct != 0) {
       throw StateError(
         'Phase0a numeric skill ${skill.id}: defenseBreak/qiDrain '
         '尚无 reducer 状态消费方，禁止静默丢失',
@@ -64,6 +67,7 @@ class Phase0aNumericSkillBinding {
   final double halfArc;
   final double effectRadius;
   final double cooldownSeconds;
+  final bool consumesDefenseBreakAsPostureDamage;
 
   int get qiDelta => skill.qiDelta;
   TargetType get targetType => skill.targetType;
@@ -74,6 +78,17 @@ class Phase0aNumericSkillBinding {
           ?.effectOf(Phase0aSkillEffectType.breakPower)
           ?.points ??
       0;
+
+  double postureDamageFor({required int basicPowerMultiplier}) {
+    final baseDamage = powerMultiplierToPostureDamage(
+      skill.powerMultiplier,
+      basicPowerMultiplier: basicPowerMultiplier,
+    );
+    return addDefenseBreakPostureDamage(
+      baseDamage,
+      defenseBreakPct: skill.defenseBreakPct,
+    );
+  }
 }
 
 class Phase0aNumericSkillBindings {
