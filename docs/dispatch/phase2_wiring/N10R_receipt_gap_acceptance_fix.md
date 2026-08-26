@@ -20,7 +20,7 @@
 |---|---|---|---|
 | 1 | `b98b363c..2c8015d9`(worktree `挂机武侠-p2-posture`) | **FAIL** | 旧红仍红;失败项须含 `full_test` |
 | 2 | `0378df73..0ec0280a`(worktree `挂机武侠-p2-spec-audit`)加 `--skip-full` | **PASS** | 审计单不因缺 `break_red` 误杀。**协调者已自行复跑确认当前实现此条已通过**,你只需复现并贴输出 |
-| 3 | `aa9d8155..1db64d0d` 所在 range `aa9d8105..1db64d0d`,**不提供 receipt** | **FAIL**,且失败项**恰为** `receipt_crosscheck` | 这就是「代码单缺 receipt 必红」的证红样例 |
+| 3 | `aa9d8105..1db64d0d`(worktree `挂机武侠-p2-posture`),**不提供 receipt** | **FAIL**,且失败项**恰为** `receipt_crosscheck` | 这就是「代码单缺 receipt 必红」的证红样例 |
 | 4 | 同一 range,**配一份如实 receipt** | **PASS** | 证明新门不是一刀切拒绝代码单 |
 
 第 4 条的 receipt 必须**如实测**,不得编造:
