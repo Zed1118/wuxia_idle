@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -50,6 +51,7 @@ void main() {
     List<String> clearedStageIds = const [],
     bool journeyUnlocked = false,
     BossGauntletRun? activeGauntlet,
+    ExpeditionRun? activeExpedition,
     _ProviderFixtureState towerState = _ProviderFixtureState.data,
     _ProviderFixtureState mainlineState = _ProviderFixtureState.data,
     _ProviderFixtureState gauntletState = _ProviderFixtureState.data,
@@ -74,7 +76,8 @@ void main() {
             providerFuture<BossGauntletRun?>(gauntletState, activeGauntlet),
       ),
       activeExpeditionProvider.overrideWith(
-        (ref) => providerFuture<ExpeditionRun?>(expeditionState, null),
+        (ref) =>
+            providerFuture<ExpeditionRun?>(expeditionState, activeExpedition),
       ),
     ],
     child: const MaterialApp(home: JianghuMapScreen()),
@@ -159,6 +162,61 @@ void main() {
     expect(find.text(UiStrings.mainMenuLateGameLockedHint), findsNWidgets(2));
     expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
     expect(find.text(UiStrings.mainMenuJianghu), findsOneWidget);
+  });
+
+  testWidgets('1280 宽度下最长入口状态文案不触发单行截断', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final run = ExpeditionRun()
+      ..saveDataId = 0
+      ..seed = 7
+      ..departedAt = DateTime(2026)
+      ..defeated = true;
+
+    await tester.pumpWidget(app(journeyUnlocked: true, activeExpedition: run));
+    await tester.pump();
+    await tester.pump();
+
+    final location = find.byKey(
+      const ValueKey('jianghu-map-expedition-location'),
+    );
+    await tester.scrollUntilVisible(
+      location,
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
+
+    expect(tester.getSize(location).width, 872);
+    final status = find.text(UiStrings.expeditionDefeatedBanner);
+    final text = tester.widget<Text>(status);
+    final statusContext = tester.element(status);
+    final natural = TextPainter(
+      text: TextSpan(
+        text: UiStrings.expeditionDefeatedBanner,
+        style: DefaultTextStyle.of(statusContext).style.merge(text.style),
+      ),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(statusContext),
+      maxLines: 1,
+    )..layout();
+    final paragraph = tester.renderObject<RenderParagraph>(status);
+    final chip = statusContext.findAncestorWidgetOfExactType<ConstrainedBox>();
+    final requiredChipWidth = natural.width + 16 + 2;
+
+    expect(natural.width, closeTo(215.25, 0.01));
+    expect(requiredChipWidth, lessThan(tester.getSize(location).width));
+    expect(chip, isNotNull);
+    expect(
+      chip!.constraints.maxWidth,
+      greaterThanOrEqualTo(requiredChipWidth.ceilToDouble()),
+    );
+    expect(paragraph.didExceedMaxLines, isFalse);
+    expect(paragraph.size.width, closeTo(natural.width, 0.01));
+    expect(
+      tester.getSize(find.byWidget(chip)).width,
+      closeTo(requiredChipWidth, 0.01),
+    );
   });
 
   test('轻功地点锁定和进度从生产链派生', () {
