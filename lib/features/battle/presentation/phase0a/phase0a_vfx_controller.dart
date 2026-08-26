@@ -1,6 +1,7 @@
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
+import '../../domain/phase0a/posture.dart';
 import 'phase0a_presentation_tokens.dart';
 
 /// Phase 0A VFX entry 语义档:一次消费产出的表现指令类型。
@@ -272,16 +273,18 @@ final class Phase0aVfxController {
               anchor: _actors[event.actor]?.position,
             ),
           );
-        case Phase0aBossChargeInterrupted():
-          push(
-            Phase0aVfxEntry(
-              kind: Phase0aVfxKind.bossChargeInterrupted,
-              actorId: event.actor,
-              targetId: event.target,
-              statusTicks: event.staggerTicks,
-              anchor: _actors[event.target]?.position,
-            ),
-          );
+        case Phase0aPostureChanged():
+          if (event.eventType == PostureEventType.vulnerabilityEntered) {
+            push(
+              Phase0aVfxEntry(
+                kind: Phase0aVfxKind.bossChargeInterrupted,
+                actorId: event.actor,
+                targetId: event.target,
+                statusTicks: event.vulnerabilityTicksRemaining,
+                anchor: event.targetPosition ?? _actors[event.target]?.position,
+              ),
+            );
+          }
         case Phase0aGuardIntercepted():
           push(
             Phase0aVfxEntry(

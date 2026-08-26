@@ -5,6 +5,7 @@ import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'phase0a_enemy_skill_binding.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
+import '../../domain/phase0a/posture.dart';
 
 /// 敌方 AI 适配器:从同一只读 state 产生与玩家同型的 intent,
 /// 供同一 reducer 结算(在线=离线:手动与无头共用同一模拟核)。
@@ -18,6 +19,9 @@ final class Phase0aEnemyAiAdapter {
     required this.attackCooldownSeconds,
     this.skillBindingsByActor = const {},
     this.basicQiDeltaByActor = const {},
+    this.basicPowerMultiplierByActor = const {},
+    required this.postureBasicPowerMultiplier,
+    this.uniformBasicPowerMultiplier,
     this.behaviorProfilesByActor = const {},
     this.defenseTuning,
   });
@@ -27,6 +31,9 @@ final class Phase0aEnemyAiAdapter {
   final double attackCooldownSeconds;
   final Map<String, List<Phase0aEnemySkillBinding>> skillBindingsByActor;
   final Map<String, int> basicQiDeltaByActor;
+  final Map<String, int> basicPowerMultiplierByActor;
+  final int postureBasicPowerMultiplier;
+  final int? uniformBasicPowerMultiplier;
   final Map<String, Phase0aEnemyBehaviorProfile> behaviorProfilesByActor;
   final Phase0aDefenseTuning? defenseTuning;
 
@@ -76,6 +83,11 @@ final class Phase0aEnemyAiAdapter {
             effectRadius: skill.effectRadius,
             cooldownSeconds: skill.cooldownSeconds,
             actionCooldownSeconds: attackCooldownSeconds,
+            postureDamage: powerMultiplierToPostureDamage(
+              skill.skill.powerMultiplier,
+              basicPowerMultiplier: _requirePostureBasicPower(),
+            ),
+            postureHitKind: PostureHitKind.heavy,
             defenseFlags: defenseTuning?.skillAttackFlags,
             behaviorProfile: behaviorProfile,
           ),
@@ -93,6 +105,11 @@ final class Phase0aEnemyAiAdapter {
               ? delta.normalized()
               : ArenaVector.zero,
           qiDelta: basicQiDeltaByActor[enemy.id] ?? 0,
+          postureDamage: powerMultiplierToPostureDamage(
+            _requireBasicPower(enemy.id),
+            basicPowerMultiplier: _requirePostureBasicPower(),
+          ),
+          postureHitKind: PostureHitKind.light,
           defenseFlags: defenseTuning?.basicAttackFlags,
           behaviorProfile: behaviorProfile,
         ),
@@ -159,5 +176,20 @@ final class Phase0aEnemyAiAdapter {
       }
     }
     return best;
+  }
+
+  int _requirePostureBasicPower() {
+    return postureBasicPowerMultiplier;
+  }
+
+  int _requireBasicPower(String actorId) {
+    final value =
+        basicPowerMultiplierByActor[actorId] ?? uniformBasicPowerMultiplier;
+    if (value == null) {
+      throw StateError(
+        'basicPowerMultiplierByActor[$actorId] is required for basic attacks',
+      );
+    }
+    return value;
   }
 }

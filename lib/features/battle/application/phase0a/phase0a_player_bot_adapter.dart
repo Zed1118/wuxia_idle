@@ -81,6 +81,13 @@ final class Phase0aPlayerBotAdapter {
       final tuning = playerAdapter.defenseTuning;
       if (tuning != null &&
           player.defenseCooldownRemaining <= 0 &&
+          target.chargingCast != null) {
+        return const _TacticalCommands(
+          defenseAction: Phase0aDefenseAction.dodge,
+        );
+      }
+      if (tuning != null &&
+          player.defenseCooldownRemaining <= 0 &&
           player.shieldRemaining <= 0 &&
           tuning.shieldAbsorption > 0) {
         return const _TacticalCommands(
@@ -160,7 +167,7 @@ final class Phase0aPlayerBotAdapter {
   }
 
   bool _isBurstWindow(Phase0aActor enemy) =>
-      enemy.chargingCast != null || enemy.staggerTicksRemaining > 0;
+      enemy.posture?.isVulnerable ?? false;
 
   Phase0aActor _nearestEnemy(
     Phase0aArenaState state, {

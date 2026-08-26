@@ -938,6 +938,7 @@ class _ActorStandee extends StatelessWidget {
             actor.vulnerabilityMult != null ||
             actor.chargingCast != null ||
             actor.staggerTicksRemaining > 0 ||
+            actor.posture != null ||
             guardianWardActive ||
             guardianLabelOffsetX != 0);
     return Stack(
@@ -1093,7 +1094,7 @@ class _ActorStandee extends StatelessWidget {
               ),
             ),
           ),
-        if (enemy && actor.vulnerabilityMult != null)
+        if (enemy && actor.posture != null)
           Positioned(
             left: 0,
             right: 0,
@@ -1104,18 +1105,20 @@ class _ActorStandee extends StatelessWidget {
             child: Center(
               child: _BossStatusTag(
                 key: ValueKey(
-                  actor.chargingCast != null || actor.staggerTicksRemaining > 0
+                  actor.posture!.isVulnerable
                       ? 'phase0a_vulnerability_open_${actor.id}'
-                      : 'phase0a_vulnerability_guarded_${actor.id}',
+                      : actor.vulnerabilityMult != null
+                      ? 'phase0a_vulnerability_guarded_${actor.id}'
+                      : 'phase0a_posture_remaining_${actor.id}',
                 ),
-                label:
-                    actor.chargingCast != null ||
-                        actor.staggerTicksRemaining > 0
+                label: actor.posture!.isVulnerable
                     ? UiStrings.phase0aVulnerabilityOpen
-                    : UiStrings.phase0aVulnerabilityGuarded,
-                accent:
-                    actor.chargingCast != null ||
-                        actor.staggerTicksRemaining > 0
+                    : actor.vulnerabilityMult != null
+                    ? '${UiStrings.phase0aVulnerabilityGuarded} '
+                          '${(actor.posture!.config.capacity - actor.posture!.accumulated).ceil()}'
+                    : '${(actor.posture!.config.capacity - actor.posture!.accumulated).ceil()}'
+                          '/${actor.posture!.config.capacity.ceil()}',
+                accent: actor.posture!.isVulnerable
                     ? WuxiaUi.gold
                     : WuxiaUi.qingOnDark,
               ),

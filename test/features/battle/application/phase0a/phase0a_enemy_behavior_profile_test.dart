@@ -90,6 +90,8 @@ void main() {
       attackRange: 82,
       attackHalfArcRadians: 0.9,
       attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
       behaviorProfilesByActor: profiles,
     );
 
@@ -115,6 +117,8 @@ void main() {
       attackRange: 82,
       attackHalfArcRadians: 0.9,
       attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
       behaviorProfilesByActor: profiles,
     );
     final intents = adapter.intentsFor(state: state(flankInRange: true));
@@ -139,6 +143,8 @@ void main() {
         attackRange: 82,
         attackHalfArcRadians: 0.9,
         attackCooldownSeconds: 1,
+        postureBasicPowerMultiplier: 1,
+        uniformBasicPowerMultiplier: 1,
         behaviorProfilesByActor: profiles,
       );
       final initial = state(holdCooldown: 1);
@@ -170,7 +176,7 @@ final class _NoDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   }) => const Phase0aResolvedHit(isHit: false, isCritical: false, damage: 0);
 }

@@ -162,7 +162,10 @@ void main() {
         find.byKey(const ValueKey('phase0a_vulnerability_guarded_$bossId')),
         findsOneWidget,
       );
-      expect(find.text(UiStrings.phase0aVulnerabilityGuarded), findsOneWidget);
+      expect(
+        find.textContaining(UiStrings.phase0aVulnerabilityGuarded),
+        findsOneWidget,
+      );
 
       var chargeStarted = false;
       for (var i = 0; i < 80 && !chargeStarted; i++) {
@@ -180,34 +183,32 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('phase0a_vulnerability_open_$bossId')),
+        find.byKey(const ValueKey('phase0a_vulnerability_guarded_$bossId')),
         findsOneWidget,
       );
-      expect(find.text(UiStrings.phase0aVulnerabilityOpen), findsOneWidget);
+      expect(find.text(UiStrings.phase0aVulnerabilityOpen), findsNothing);
 
-      final interruptEvents = bossController.step(
-        const Phase0aPlayerCommand(clear: true),
-      );
+      bossController.step(const Phase0aPlayerCommand(clear: true));
       await tester.pump();
       expect(
-        interruptEvents.whereType<Phase0aBossChargeInterrupted>(),
-        hasLength(1),
-      );
-      expect(
         find.byKey(const ValueKey('phase0a_boss_interrupt_banner')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
         find.byKey(const ValueKey('phase0a_staggered_$bossId')),
-        findsOneWidget,
+        findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('phase0a_vulnerability_open_$bossId')),
+        find.byKey(const ValueKey('phase0a_vulnerability_guarded_$bossId')),
         findsOneWidget,
       );
-      expect(find.text(UiStrings.phase0aBossChargeInterrupted), findsOneWidget);
+      expect(find.text(UiStrings.phase0aBossChargeInterrupted), findsNothing);
       expect(find.text(UiStrings.phase0aStaggered), findsNothing);
-      expect(find.textContaining(UiStrings.phase0aStaggered), findsOneWidget);
+      expect(find.textContaining(UiStrings.phase0aStaggered), findsNothing);
+      expect(
+        bossController.state.enemies.single.posture!.accumulated,
+        greaterThan(0),
+      );
     });
   }
 }

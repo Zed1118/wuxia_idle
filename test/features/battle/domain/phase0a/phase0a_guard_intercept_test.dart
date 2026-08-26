@@ -8,6 +8,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 
 const _chargeSkill = SkillDef(
   id: 'tower42_charge',
@@ -32,7 +33,7 @@ final class _FixedResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) => Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
 }
@@ -64,6 +65,7 @@ Phase0aActor _actor({
   defeatKind: side == Phase0aSide.enemy
       ? Phase0aDefeatKind.elite
       : Phase0aDefeatKind.normal,
+  isBoss: id == 'boss',
   chargeCast: chargingCast,
   chargingCast: chargingCast,
   chargeTicksRemaining: chargeTicksRemaining,
@@ -71,6 +73,17 @@ Phase0aActor _actor({
   guardianDefIds: guardianDefIds,
   guardianWardMult: guardianWardMult,
   guardInterceptsInterrupt: guardInterceptsInterrupt,
+  posture: side == Phase0aSide.enemy
+      ? PostureState.initial(
+          PostureConfig(
+            capacity: 3,
+            vulnerabilityTicks: 2,
+            recoveryPolicy: PostureRecoveryPolicy.reset,
+            postVulnerabilityAccumulated: 0,
+            bossControlConversionFactor: 3,
+          ),
+        )
+      : null,
 );
 
 Phase0aArenaState _state({
@@ -109,6 +122,10 @@ Phase0aSkillIntent _singleSkill({required int breakPower}) =>
       effectRadius: 10,
       qiDelta: -10,
       cooldownSeconds: 1,
+      postureDamage: 1,
+      postureHitKind: breakPower > 0
+          ? PostureHitKind.bossControl
+          : PostureHitKind.heavy,
       breakPower: breakPower,
     );
 
@@ -124,6 +141,10 @@ Phase0aSkillIntent _aoeSkill({required int breakPower}) => Phase0aSkillIntent(
   effectRadius: 10,
   qiDelta: -10,
   cooldownSeconds: 1,
+  postureDamage: 1,
+  postureHitKind: breakPower > 0
+      ? PostureHitKind.bossControl
+      : PostureHitKind.heavy,
   breakPower: breakPower,
 );
 
@@ -133,6 +154,10 @@ Phase0aClearIntent _rangeSkill({required int breakPower}) => Phase0aClearIntent(
   effectRadius: 10,
   qiCost: 10,
   cooldownSeconds: 1,
+  postureDamage: 1,
+  postureHitKind: breakPower > 0
+      ? PostureHitKind.bossControl
+      : PostureHitKind.heavy,
   skillId: 'tower42_range',
   breakPower: breakPower,
 );
@@ -151,6 +176,8 @@ void main() {
         effectRadius: 10,
         cooldownSeconds: 3,
         actionCooldownSeconds: 1,
+        postureDamage: 0,
+        postureHitKind: PostureHitKind.heavy,
       ),
       chargeTicksRemaining: 2,
       guardianDefIds: const ['guard'],
@@ -232,11 +259,9 @@ void main() {
     expect(afterBoss.chargingCast, isNotNull);
     expect(afterBoss.chargeTicksRemaining, 1, reason: '蓄力继续按既有拍前倒计时推进');
     expect(afterGuard.currentHealth, 70);
-    expect(afterGuard.staggerTicksRemaining, 2);
-    expect(
-      intercepted.events.whereType<Phase0aBossChargeInterrupted>(),
-      isEmpty,
-    );
+    expect(afterGuard.staggerTicksRemaining, 0);
+    expect(afterGuard.posture!.accumulated, 1);
+    expect(afterBoss.posture!.isVulnerable, isFalse);
     final guardEvents = intercepted.events
         .whereType<Phase0aGuardIntercepted>()
         .toList();
@@ -288,6 +313,8 @@ void main() {
         effectRadius: 10,
         cooldownSeconds: 3,
         actionCooldownSeconds: 1,
+        postureDamage: 0,
+        postureHitKind: PostureHitKind.heavy,
       ),
       chargeTicksRemaining: 2,
       guardianDefIds: const ['guard'],
@@ -305,7 +332,9 @@ void main() {
     expect(after.chargingCast, isNull);
     expect(after.staggerTicksRemaining, 2);
     expect(
-      result.events.whereType<Phase0aBossChargeInterrupted>(),
+      result.events.whereType<Phase0aPostureChanged>().where(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      ),
       hasLength(1),
     );
   });

@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/defense_resolution.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_defense_tuning.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 
 const _burstSkill = SkillDef(
@@ -47,6 +48,10 @@ Phase0aPlayerInputAdapter _adapter({
   attackHalfArcRadians: math.pi / 4,
   attackCooldownSeconds: 1,
   attackQiDelta: 0,
+  postureBasicPowerMultiplier: 1,
+  attackPowerMultiplier: 1,
+  gatherPowerMultiplier: 1,
+  clearPowerMultiplier: 1,
   gatherSlot: 'gather',
   gatherRingRadius: 90,
   gatherEffectRadius: 500,
@@ -103,6 +108,21 @@ Phase0aActor _actor({
   qiMax: 100,
   attackCooldownRemaining: 0,
   defeatKind: Phase0aDefeatKind.normal,
+  posture: side == Phase0aSide.enemy ? _posture() : null,
+);
+
+PostureState _posture() => PostureState.initial(
+  PostureConfig(
+    capacity: 1,
+    vulnerabilityTicks: 2,
+    recoveryPolicy: PostureRecoveryPolicy.reset,
+    postVulnerabilityAccumulated: 0,
+    bossControlConversionFactor: 1,
+  ),
+);
+
+Phase0aActor _openPosture(Phase0aActor actor) => actor.copyWith(
+  posture: actor.posture!.apply(actor.posture!.config.capacity).state,
 );
 
 Phase0aArenaState _state({bool window = false, bool withBurst = false}) =>
@@ -111,10 +131,11 @@ Phase0aArenaState _state({bool window = false, bool withBurst = false}) =>
       nextSeq: 8,
       player: _actor(side: Phase0aSide.player, id: 'player'),
       enemies: [
-        _actor(
-          side: Phase0aSide.enemy,
-          id: 'enemy',
-        ).copyWith(staggerTicksRemaining: window ? 1 : 0),
+        _actor(side: Phase0aSide.enemy, id: 'enemy').copyWith(
+          posture: window
+              ? _posture().apply(_posture().config.capacity).state
+              : _posture(),
+        ),
       ],
       skillSlots: [
         const Phase0aSkillSlot(
@@ -220,6 +241,8 @@ void main() {
     effectRadius: 120,
     cooldownSeconds: 1,
     actionCooldownSeconds: 1,
+    postureDamage: 0,
+    postureHitKind: PostureHitKind.heavy,
   );
 
   test('seek gap holds resources outside a visible stagger window', () {
@@ -250,7 +273,7 @@ void main() {
         tick: 4,
         nextSeq: 8,
         player: _actor(side: Phase0aSide.player, id: 'player'),
-        enemies: [enemy.copyWith(staggerTicksRemaining: 1)],
+        enemies: [_openPosture(enemy)],
         skillSlots: _state().skillSlots,
       ),
     );
@@ -302,13 +325,13 @@ void main() {
         side: Phase0aSide.enemy,
         id: 'window',
         position: const ArenaVector(200, 0),
-      ).copyWith(staggerTicksRemaining: 1);
+      );
       final command = bot.commandFor(
         Phase0aArenaState(
           tick: 4,
           nextSeq: 8,
           player: _actor(side: Phase0aSide.player, id: 'player'),
-          enemies: [normal, window],
+          enemies: [normal, _openPosture(window)],
           skillSlots: _state(withBurst: true).skillSlots,
         ),
       );

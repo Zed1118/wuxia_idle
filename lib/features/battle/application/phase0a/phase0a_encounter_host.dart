@@ -40,6 +40,7 @@ final class Phase0aEncounterActorRuntimeBinding {
     required this.token,
     required this.enemySkillBindings,
     required this.basicQiDelta,
+    required this.basicPowerMultiplier,
     required this.entrance,
     required this.behaviorAiProfile,
     this.behaviorProfile,
@@ -53,6 +54,7 @@ final class Phase0aEncounterActorRuntimeBinding {
   final Phase0aEncounterTokenBinding token;
   final List<Phase0aEnemySkillBinding> enemySkillBindings;
   final int basicQiDelta;
+  final int basicPowerMultiplier;
   final String entrance;
   final String behaviorAiProfile;
   final Phase0aEnemyBehaviorProfile? behaviorProfile;

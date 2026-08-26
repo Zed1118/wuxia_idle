@@ -13,6 +13,7 @@ void main() {
             vulnerabilityTicks: 2,
             recoveryPolicy: PostureRecoveryPolicy.reset,
             postVulnerabilityAccumulated: 0,
+            bossControlConversionFactor: 1,
           ),
           throwsArgumentError,
         );
@@ -22,6 +23,7 @@ void main() {
             vulnerabilityTicks: 0,
             recoveryPolicy: PostureRecoveryPolicy.reset,
             postVulnerabilityAccumulated: 0,
+            bossControlConversionFactor: 1,
           ),
           throwsArgumentError,
         );
@@ -35,6 +37,7 @@ void main() {
           vulnerabilityTicks: 2,
           recoveryPolicy: PostureRecoveryPolicy.recover,
           postVulnerabilityAccumulated: 11,
+          bossControlConversionFactor: 1,
         ),
         throwsArgumentError,
       );
@@ -47,6 +50,7 @@ void main() {
       vulnerabilityTicks: 2,
       recoveryPolicy: PostureRecoveryPolicy.reset,
       postVulnerabilityAccumulated: 0,
+      bossControlConversionFactor: 1,
     );
 
     test(
@@ -145,6 +149,7 @@ void main() {
         vulnerabilityTicks: 3,
         recoveryPolicy: PostureRecoveryPolicy.recover,
         postVulnerabilityAccumulated: 5,
+        bossControlConversionFactor: 1,
       );
       final transition = PostureState.initial(
         config,
@@ -178,6 +183,7 @@ void main() {
       vulnerabilityTicks: 4,
       recoveryPolicy: PostureRecoveryPolicy.reset,
       postVulnerabilityAccumulated: 0,
+      bossControlConversionFactor: 1,
     );
     final first = PostureState.initial(config());
     final second = PostureState.initial(config());

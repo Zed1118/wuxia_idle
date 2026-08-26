@@ -22,6 +22,7 @@ final class PostureConfig {
     required this.vulnerabilityTicks,
     required this.recoveryPolicy,
     required this.postVulnerabilityAccumulated,
+    required this.bossControlConversionFactor,
   }) {
     _requireFiniteNonNegative(capacity, 'capacity');
     if (capacity <= 0) {
@@ -53,12 +54,24 @@ final class PostureConfig {
         'reset policy requires zero accumulated posture',
       );
     }
+    _requireFiniteNonNegative(
+      bossControlConversionFactor,
+      'bossControlConversionFactor',
+    );
+    if (bossControlConversionFactor == 0) {
+      throw ArgumentError.value(
+        bossControlConversionFactor,
+        'bossControlConversionFactor',
+        'must be positive',
+      );
+    }
   }
 
   final double capacity;
   final int vulnerabilityTicks;
   final PostureRecoveryPolicy recoveryPolicy;
   final double postVulnerabilityAccumulated;
+  final double bossControlConversionFactor;
 
   @override
   bool operator ==(Object other) =>
@@ -66,7 +79,8 @@ final class PostureConfig {
       other.capacity == capacity &&
       other.vulnerabilityTicks == vulnerabilityTicks &&
       other.recoveryPolicy == recoveryPolicy &&
-      other.postVulnerabilityAccumulated == postVulnerabilityAccumulated;
+      other.postVulnerabilityAccumulated == postVulnerabilityAccumulated &&
+      other.bossControlConversionFactor == bossControlConversionFactor;
 
   @override
   int get hashCode => Object.hash(
@@ -74,6 +88,7 @@ final class PostureConfig {
     vulnerabilityTicks,
     recoveryPolicy,
     postVulnerabilityAccumulated,
+    bossControlConversionFactor,
   );
 }
 
@@ -240,6 +255,27 @@ double bossControlToPostureDamage(
   _requireFiniteNonNegative(controlStrength, 'controlStrength');
   _requireFiniteNonNegative(conversionFactor, 'conversionFactor');
   return controlStrength * conversionFactor;
+}
+
+double powerMultiplierToPostureDamage(
+  int powerMultiplier, {
+  required int basicPowerMultiplier,
+}) {
+  if (powerMultiplier < 0) {
+    throw ArgumentError.value(
+      powerMultiplier,
+      'powerMultiplier',
+      'must be non-negative',
+    );
+  }
+  if (basicPowerMultiplier <= 0) {
+    throw ArgumentError.value(
+      basicPowerMultiplier,
+      'basicPowerMultiplier',
+      'must be positive',
+    );
+  }
+  return powerMultiplier / basicPowerMultiplier;
 }
 
 void _requireFiniteNonNegative(double value, String name) {

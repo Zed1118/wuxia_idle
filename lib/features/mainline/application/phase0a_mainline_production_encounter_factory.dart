@@ -99,6 +99,7 @@ Phase0aEncounterHost _assemble({
   final runtimeIds = <String, String>{};
   final skillsByActor = <String, List<Phase0aEnemySkillBinding>>{};
   final basicQiByActor = <String, int>{};
+  final basicPowerByActor = <String, int>{};
   final behaviorProfilesByActor = <String, Phase0aEnemyBehaviorProfile>{};
   final tokensByActor = <String, Phase0aEncounterTokenBinding>{};
   final visualAssetPathByActorId = <String, String>{};
@@ -142,6 +143,7 @@ Phase0aEncounterHost _assemble({
     );
     skillsByActor[runtimeId] = binding.enemySkillBindings;
     basicQiByActor[runtimeId] = binding.basicQiDelta;
+    basicPowerByActor[runtimeId] = binding.basicPowerMultiplier;
     final behaviorProfile = binding.behaviorProfile;
     if (behaviorProfile != null) {
       behaviorProfilesByActor[runtimeId] = behaviorProfile;
@@ -156,6 +158,8 @@ Phase0aEncounterHost _assemble({
         request.numbers.phase0aArena.enemyAttackCooldownSeconds,
     skillBindingsByActor: skillsByActor,
     basicQiDeltaByActor: basicQiByActor,
+    basicPowerMultiplierByActor: basicPowerByActor,
+    postureBasicPowerMultiplier: arena.basicPowerMultiplier,
     behaviorProfilesByActor: behaviorProfilesByActor,
     defenseTuning: player.defenseTuning,
   );
