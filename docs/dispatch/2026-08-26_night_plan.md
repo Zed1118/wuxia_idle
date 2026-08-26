@@ -151,3 +151,55 @@ N5 `05:05`、N6 `08:19`、N11 `07:45`,三者 `error_block_count` 均为 0。
 
 **工具自己的退出码必须是唯一判据,不得用输出内容反推失败项。**
 「退出码非零但输出为空」正是崩溃的典型形态,而这恰恰是最该拦下的情况。
+
+---
+
+## ✅ 03:50 Gate 假绿已闭环(实测)
+
+### 1. `gate.sh` 全量模式修复已验证
+
+N10-R `0566f29` 后,**首次跑通完整全量链路**并打出终审行。实测(对 N12 分支 `f1e645f0`):
+
+```
+[PASS] full_test: error_block_count=0 last=05:06 +5611: All tests passed!
+[PASS] analyze:   No issues found! (ran in 14.9s)
+[PASS] format:    Formatted 1619 files (0 changed)
+[SKIP] receipt_crosscheck: audit task has 0 lib/ changes
+PASS
+gate_exit=0
+```
+
+此前两次崩溃(N5 `line 343`、N6/N11 `line 480` python 漏进 bash)都发生在 `[PASS] full_test` **之后**,
+导致 `analyze` / `format` / `receipt_crosscheck` 从未执行、终审行从未打印。现在三项全部执行且终审行存在,
+**`bash -n` 之外的运行期路径也已证明可用**。
+
+### 2. N12 已真 Gate
+
+runner 在 ~03:15 记的 N12 `PASS` 是那个坏 gate.sh 给的,已作废。
+本次用修好的 gate.sh **全量模式**重跑 → `PASS` / `gate_exit=0`(证据同上)。
+全量 5611/5611 与 main 基线一致,N12 未引入回归。
+
+### 3. N5 / N6 / N11 复合 Gate 无缺口(量测结论)
+
+崩溃点在 `receipt_crosscheck`,故这三单唯一没跑到的就是该项。实测三者的 `lib/` 改动数:
+
+| 单 | worktree | head | `lib/` 改动 | 总文件 | 判定 |
+|---|---|---|---|---|---|
+| N5 | `挂机武侠-p2-n5-ci` | `fa6e7ad0` | **0** | 1 | audit → receipt_crosscheck 本就 SKIP |
+| N6 | `挂机武侠-p2-n6-deadfield` | `76654911` | **0** | 1 | 同上 |
+| N11 | `挂机武侠-p2-mutation` | `e9a3aa8a` | **0** | 4(`docs/` + `tools/mutation/`) | 同上 |
+
+三者均为纯审计型交付,`receipt_crosscheck` 对其不适用,**不需要重跑全量 Gate**。
+它们已有的证据链完整:`--skip-full` 复检(forbidden_files / test_deletions / commit_msg /
+worktree_clean / analyze 0 issue / format 0 changed)+ 崩溃前抢救的 `[PASS] full_test`
+(N5 `05:05`、N6 `08:19`、N11 `07:45`,均 `error_block_count=0` + `All tests passed!`)。
+
+### 4. 仍未修(留到队列排空后)
+
+- **`runner.sh` 吞退出码**(`:165` `GATE_LINE="$(tail -1 ...)"` 在 gate 崩溃时取到空串 → `:175`
+  `FAILURE_ITEMS=""` → `:182` 不触发 `stop_runner` → `:186` 照记 `PASS`)。
+  gate.sh 不崩之后此 bug 不会再被触发,但**放大器还在**,必须修。
+  **禁止现在改**:bash 逐段读取正在运行的脚本,改动是未定义行为。
+- **`gate.sh` / `runner.sh` 未纳入 git 跟踪**——这是「崩了没有回滚版本」的根因。
+  应纳管并加 `bash -n` 自检。
+- **`gate.sh` 缺方案 §21.6 的两项**:常规视口 visual smoke、生产路线 smoke。
