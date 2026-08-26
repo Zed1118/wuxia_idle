@@ -16,6 +16,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 
 import '../../../../support/combatant_snapshot_fixture.dart';
@@ -23,7 +24,8 @@ import '../../../../support/test_data.dart';
 
 /// Phase 0A charge/破招纵切生产接线测:真实 stage_02_05(顶层 chargeSkillId
 /// + 阶段 chargeCounter 双入口)与 tower_7(纯阶段入口)经 mapper → flow →
-/// headless → settlement 全链,蓄力/破招事件携带真实 skill id,同 seed 可回放。
+/// headless → settlement 全链,蓄力携带真实 skill id,破招统一投影为姿态事件,
+/// 同 seed 可回放。
 
 /// 强档探针:快速压穿阈值(塔层口径)。
 CombatantSnapshot makeChargeProbePlayer(NumbersConfig numbers) =>
@@ -150,7 +152,7 @@ void main() {
       boss.staggerTicksTotal,
       numbers.combat.bossCharge.defaultStaggerTicks,
     );
-    // 当前 stage_01_05 只证明蓄力/破招/踉跄/CD，不宣称存在易伤倍率。
+    // 当前 stage_01_05 只证明蓄力/姿态破势/踉跄/CD,不宣称存在易伤倍率。
     expect(boss.vulnerabilityMult, isNull);
     expect(
       mapping.enemyAiAdapter.skillBindingsByActor[boss.id]!.map(
@@ -294,12 +296,12 @@ void main() {
     );
   });
 
-  test('stage_02_05 e2e:真实 skills.yaml→绑定→输入→reducer 产生破招并阻断招牌', () {
+  test('stage_02_05 e2e:真实姿态来源累计到阈值后阻断招牌', () {
     // 端到端链路(非 getter 断言):真实技能数据经
     // `SkillDef.fromYaml → Phase0aTacticalSkillBinding →
     // Phase0aPlayerInputAdapter(breakPower)` 进入同一生产 reducer,
     // 由生产 `Phase0aDamageCalculatorAdapter`(唯一 DamageCalculator)结算,
-    // 必须实际产出 `Phase0aBossChargeInterrupted` 并阻断该次招牌释放。
+    // 必须实际产出姿态破势事件并阻断该次招牌释放。
     // 不依赖随机 bot 时序:玩家指令驱动,固定 seed 完全可重放。
     final numbers = repo.numbers;
     final mapping = Phase0aStageContentMapper.map(
@@ -313,9 +315,26 @@ void main() {
 
     // 预置蓄力运行态 + 把玩家前移至清场作用半径内(几何预置,非玩法语义),
     // 首蓄力循环即破招目标,避免依赖走位/随机时序。
+    final clearIntent = mapping.playerAdapter
+        .intentsFor(
+          state: mapping.initialState,
+          command: const Phase0aPlayerCommand(clear: true),
+        )
+        .whereType<Phase0aClearIntent>()
+        .single;
+    final totalPostureDamage =
+        clearIntent.postureDamage +
+        bossControlToPostureDamage(
+          clearIntent.breakPower.toDouble(),
+          conversionFactor: boss.posture!.config.bossControlConversionFactor,
+        );
+    final primedPosture = boss.posture!
+        .apply(boss.posture!.config.capacity - totalPostureDamage)
+        .state;
     final chargingBoss = boss.copyWith(
       chargingCast: boss.chargeCast,
       chargeTicksRemaining: boss.chargeCast!.chargeTicks,
+      posture: primedPosture,
     );
     final chargingState = Phase0aArenaState(
       tick: 0,
@@ -365,7 +384,9 @@ void main() {
         command: Phase0aPlayerCommand(clear: bossCharging && clearReady),
       );
       ticks++;
-      if (events.whereType<Phase0aBossChargeInterrupted>().isNotEmpty) {
+      if (events.whereType<Phase0aPostureChanged>().any(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      )) {
         interruptTickEvents = events;
         stateAtInterrupt = flow.state;
       }
@@ -374,11 +395,13 @@ void main() {
     expect(stateAtInterrupt, isNotNull, reason: '生产链路应在 $maxTicks 拍内实际产生破招');
     // 破招事件携带被打断的真实招牌技 id。
     final interrupted = interruptTickEvents
-        .whereType<Phase0aBossChargeInterrupted>()
+        .whereType<Phase0aPostureChanged>()
+        .where(
+          (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+        )
         .toList();
     expect(interrupted, hasLength(1));
     expect(interrupted.single.target, boss.id);
-    expect(interrupted.single.skillId, 'skill_qingshan_qingfeng');
     // 该次招牌释放被阻断:破招当拍无招牌技 EnemySkillStarted。
     expect(
       interruptTickEvents.whereType<Phase0aEnemySkillStarted>().where(
@@ -402,6 +425,22 @@ void main() {
     );
     final boss = mapping.waves.last.enemies.single;
     final chargeCast = boss.chargeCast!;
+    final clearIntent = mapping.playerAdapter
+        .intentsFor(
+          state: mapping.initialState,
+          command: const Phase0aPlayerCommand(clear: true),
+        )
+        .whereType<Phase0aClearIntent>()
+        .single;
+    final totalPostureDamage =
+        clearIntent.postureDamage +
+        bossControlToPostureDamage(
+          clearIntent.breakPower.toDouble(),
+          conversionFactor: boss.posture!.config.bossControlConversionFactor,
+        );
+    final primedPosture = boss.posture!
+        .apply(boss.posture!.config.capacity - totalPostureDamage)
+        .state;
 
     Phase0aWaveBattleFlow buildFlow() {
       final chargingBoss = Phase0aActor(
@@ -416,6 +455,7 @@ void main() {
         qiMax: boss.qiMax,
         attackCooldownRemaining: 0,
         defeatKind: boss.defeatKind,
+        isBoss: boss.isBoss,
         autoUltimate: boss.autoUltimate,
         bossPhases: boss.bossPhases,
         bossPhaseIndex: boss.bossPhaseIndex,
@@ -427,6 +467,7 @@ void main() {
         guardianWardMult: boss.guardianWardMult,
         guardInterceptsInterrupt: boss.guardInterceptsInterrupt,
         vulnerabilityMult: boss.vulnerabilityMult,
+        posture: primedPosture,
         // 只保留本项要验证的真实招牌技，避免普通技能优先级遮蔽
         // stage_01_05 的 chargeSkillId；技能本体和绑定仍来自生产 YAML。
         unlockedEnemySkillIds: const ['skill_xie_yu_chuan_lian'],
@@ -516,7 +557,9 @@ void main() {
         deltaSeconds: delta,
         command: const Phase0aPlayerCommand(clear: true),
       );
-      if (events.whereType<Phase0aBossChargeInterrupted>().isNotEmpty) {
+      if (events.whereType<Phase0aPostureChanged>().any(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      )) {
         interruptEvents = events;
         interruptedState = interruptFlow.state;
       }
@@ -524,9 +567,11 @@ void main() {
 
     expect(interruptedState, isNotNull);
     final interrupted = interruptEvents
-        .whereType<Phase0aBossChargeInterrupted>()
-        .single;
-    expect(interrupted.skillId, 'skill_xie_yu_chuan_lian');
+        .whereType<Phase0aPostureChanged>()
+        .singleWhere(
+          (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+        );
+    expect(interrupted.target, boss.id);
     expect(interruptEvents.whereType<Phase0aEnemySkillStarted>(), isEmpty);
     final bossAfter = interruptedState!.enemies.single;
     expect(bossAfter.chargingCast, isNull);

@@ -5,6 +5,7 @@ import 'phase0a_damage_kind.dart';
 import 'phase0a_combat_model.dart';
 import 'defense_resolution.dart';
 import 'phase0a_enemy_behavior_profile.dart';
+export 'posture.dart' show PostureHitKind;
 
 const _noBreakPower = 0;
 
@@ -75,6 +76,8 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.moveKind,
     required this.aimDirection,
     required this.qiDelta,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.defenseFlags,
     this.behaviorProfile,
   });
@@ -88,6 +91,8 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   /// Pre-resolved qi delta for this basic attack. Zero preserves existing
   /// fixtures; production mapping supplies the bound basic skill value.
   final int qiDelta;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
   final AttackDefenseFlags? defenseFlags;
   final Phase0aEnemyBehaviorProfile? behaviorProfile;
 }
@@ -105,6 +110,8 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.cooldownSeconds,
     required this.actionCooldownSeconds,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.defenseFlags,
     this.behaviorProfile,
   });
@@ -116,6 +123,8 @@ final class Phase0aEnemySkillIntent extends Phase0aIntent {
   final double effectRadius;
   final double cooldownSeconds;
   final double actionCooldownSeconds;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
   final AttackDefenseFlags? defenseFlags;
   final Phase0aEnemyBehaviorProfile? behaviorProfile;
 }
@@ -135,6 +144,8 @@ final class Phase0aGatherIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.skillId = '',
   });
 
@@ -149,6 +160,8 @@ final class Phase0aGatherIntent extends Phase0aIntent {
 
   final int qiCost;
   final double cooldownSeconds;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
 }
 
 /// R 清场请求:作用半径内存活敌方单位逐目标稳定顺序结算。
@@ -161,6 +174,8 @@ final class Phase0aClearIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.skillId = '',
     this.breakPower = _noBreakPower,
   });
@@ -175,9 +190,11 @@ final class Phase0aClearIntent extends Phase0aIntent {
 
   final int qiCost;
   final double cooldownSeconds;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
 
-  /// typed break 契约载荷(skill behavior `break.points`):>0 时命中蓄力中
-  /// 敌人触发破招状态迁移;0 = 无破招语义(legacy fixture 口径不变)。
+  /// typed break 契约载荷(skill behavior `break.points`):>0 时仅对
+  /// 正在蓄力的 Boss 追加姿态折算;0 = 无额外破招效力。
   final int breakPower;
 }
 
@@ -196,6 +213,8 @@ final class Phase0aSkillIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiDelta,
     required this.cooldownSeconds,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.defenseFlags,
     this.breakPower = _noBreakPower,
   });
@@ -210,6 +229,8 @@ final class Phase0aSkillIntent extends Phase0aIntent {
   final double effectRadius;
   final int qiDelta;
   final double cooldownSeconds;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
   final AttackDefenseFlags? defenseFlags;
 
   /// typed break 契约载荷(数字技能 binding 的 `break.points`):语义同

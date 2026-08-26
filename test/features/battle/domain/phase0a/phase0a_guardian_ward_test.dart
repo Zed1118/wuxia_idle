@@ -13,7 +13,7 @@ final class _RecordingResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     wardMultipliers.add(defenderWardMult);
@@ -31,7 +31,7 @@ final class _SequencedResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     targetIds.add(targetId);
@@ -77,6 +77,8 @@ const _attack = Phase0aAttackIntent(
   moveKind: Phase0aMoveKind.light,
   aimDirection: ArenaVector(1, 0),
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
 );
 
 const _breakAoe = Phase0aClearIntent(
@@ -85,6 +87,8 @@ const _breakAoe = Phase0aClearIntent(
   effectRadius: 300,
   qiCost: 0,
   cooldownSeconds: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.heavy,
   skillId: 'break_aoe',
   breakPower: 1,
 );

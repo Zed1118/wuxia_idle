@@ -53,6 +53,10 @@ const _playerAdapter = Phase0aPlayerInputAdapter(
   attackHalfArcRadians: math.pi / 4,
   attackCooldownSeconds: 0.5,
   attackQiDelta: 0,
+  postureBasicPowerMultiplier: 1,
+  attackPowerMultiplier: 1,
+  gatherPowerMultiplier: 1,
+  clearPowerMultiplier: 1,
   gatherSlot: 'gather',
   gatherRingRadius: 10,
   gatherEffectRadius: 20,
@@ -68,6 +72,8 @@ const _enemyAdapter = Phase0aEnemyAiAdapter(
   attackRange: 70,
   attackHalfArcRadians: math.pi / 3,
   attackCooldownSeconds: 0.5,
+  postureBasicPowerMultiplier: 1,
+  uniformBasicPowerMultiplier: 1,
 );
 
 final class _RecordingLeaseGate implements Phase0aAttackTokenLeaseBatchGate {

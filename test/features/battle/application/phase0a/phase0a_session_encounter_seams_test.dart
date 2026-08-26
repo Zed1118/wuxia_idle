@@ -36,7 +36,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
       String targetId,
       Phase0aDamageKind kind,
       bool defenderStaggered,
-      bool defenderCharging,
+      bool defenderVulnerable,
       double defenderWardMult,
     })
   >
@@ -48,7 +48,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls++;
@@ -57,7 +57,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
       targetId: targetId,
       kind: kind,
       defenderStaggered: defenderStaggered,
-      defenderCharging: defenderCharging,
+      defenderVulnerable: defenderVulnerable,
       defenderWardMult: defenderWardMult,
     ));
     return Phase0aResolvedHit(isHit: true, isCritical: false, damage: damage);
@@ -115,6 +115,8 @@ const attackE1 = Phase0aAttackIntent(
   moveKind: Phase0aMoveKind.light,
   aimDirection: ArenaVector(-1, 0),
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
 );
 
 const moveE2 = Phase0aMoveIntent(actorId: 'e2', direction: ArenaVector(-1, 0));
@@ -127,6 +129,8 @@ const attackE2 = Phase0aAttackIntent(
   moveKind: Phase0aMoveKind.light,
   aimDirection: ArenaVector(-1, 0),
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
 );
 
 const enemySkillE2 = Phase0aEnemySkillIntent(
@@ -138,6 +142,8 @@ const enemySkillE2 = Phase0aEnemySkillIntent(
   effectRadius: 60,
   cooldownSeconds: 2,
   actionCooldownSeconds: 1.2,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.heavy,
 );
 
 Phase0aActor makePlayer({int currentHealth = 100}) {
@@ -206,6 +212,10 @@ Phase0aPlayerInputAdapter makePlayerAdapter() {
     attackHalfArcRadians: math.pi / 4,
     attackCooldownSeconds: 1,
     attackQiDelta: 0,
+    postureBasicPowerMultiplier: 1,
+    attackPowerMultiplier: 1,
+    gatherPowerMultiplier: 1,
+    clearPowerMultiplier: 1,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
     gatherEffectRadius: 500,
@@ -223,6 +233,8 @@ Phase0aEnemyAiAdapter makeEnemyAdapter() {
     attackRange: 70,
     attackHalfArcRadians: math.pi / 3,
     attackCooldownSeconds: 1.2,
+    postureBasicPowerMultiplier: 1,
+    uniformBasicPowerMultiplier: 1,
   );
 }
 

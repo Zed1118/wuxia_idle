@@ -33,6 +33,10 @@ const _playerAdapter = Phase0aPlayerInputAdapter(
   attackHalfArcRadians: 3.14,
   attackCooldownSeconds: 0,
   attackQiDelta: 0,
+  postureBasicPowerMultiplier: 1,
+  attackPowerMultiplier: 1,
+  gatherPowerMultiplier: 1,
+  clearPowerMultiplier: 1,
   gatherSlot: 'gather',
   gatherRingRadius: 1,
   gatherEffectRadius: 1,
@@ -48,6 +52,8 @@ const _enemyAdapter = Phase0aEnemyAiAdapter(
   attackRange: 100,
   attackHalfArcRadians: 3.14,
   attackCooldownSeconds: 0,
+  postureBasicPowerMultiplier: 1,
+  uniformBasicPowerMultiplier: 1,
 );
 
 Phase0aActor _actor(String id, Phase0aSide side, double x) => Phase0aActor(
@@ -80,7 +86,7 @@ final class _RandomRecordingResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   }) {
     calls++;

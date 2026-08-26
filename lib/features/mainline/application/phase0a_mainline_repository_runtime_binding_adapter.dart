@@ -3,6 +3,7 @@ import '../../../data/defs/combat_enemy_archetype_def.dart';
 import '../../../data/defs/combat_runtime_binding_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/numbers_config.dart';
 import '../../../shared/battle_shared/combatant_skill_loadout.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
@@ -12,6 +13,7 @@ import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
+import '../../battle/domain/phase0a/posture.dart';
 import 'phase0a_mainline_encounter_host.dart';
 
 Phase0aMainlineEncounterRuntimeBindingBundle
@@ -151,6 +153,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
         defeatKind: snapshot.isBoss
             ? Phase0aDefeatKind.elite
             : Phase0aDefeatKind.normal,
+        isBoss: snapshot.isBoss,
         autoUltimate: snapshot.autoUltimate,
         bossPhases: snapshot.bossPhases,
         unlockedEnemySkillIds: unlockedSkillIds,
@@ -162,11 +165,27 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
         guardianWardMult: snapshot.guardianWardMult,
         guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
         vulnerabilityMult: snapshot.vulnerabilityMult,
+        posture: PostureState.initial(
+          PostureConfig(
+            capacity: repo.numbers.combat.posture.capacity,
+            vulnerabilityTicks: repo.numbers.combat.posture.vulnerabilityTicks,
+            recoveryPolicy:
+                repo.numbers.combat.posture.recoveryPolicy ==
+                    PostureRecoveryPolicyConfig.reset
+                ? PostureRecoveryPolicy.reset
+                : PostureRecoveryPolicy.recover,
+            postVulnerabilityAccumulated:
+                repo.numbers.combat.posture.postVulnerabilityAccumulated,
+            bossControlConversionFactor:
+                repo.numbers.combat.posture.bossConversionFactor,
+          ),
+        ),
       ),
       combatant: snapshot,
       token: token,
       enemySkillBindings: enemySkills,
       basicQiDelta: basicSkill.qiDelta,
+      basicPowerMultiplier: basicSkill.powerMultiplier,
       entrance: binding.entranceId,
       behaviorAiProfile: binding.behavior.aiProfile.id,
       behaviorProfile: _behaviorProfile(binding.behavior.aiProfile),

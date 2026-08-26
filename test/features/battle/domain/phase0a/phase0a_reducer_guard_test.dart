@@ -35,7 +35,7 @@ class GuardDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     final damage = switch (kind) {
@@ -130,6 +130,8 @@ Phase0aAttackIntent attackIntent({
     halfArcRadians: halfArcRadians,
     cooldownSeconds: cooldownSeconds,
     qiDelta: 0,
+    postureDamage: 0,
+    postureHitKind: PostureHitKind.light,
     moveKind: Phase0aMoveKind.light,
     aimDirection: const ArenaVector(1, 0),
   );
@@ -150,6 +152,8 @@ Phase0aGatherIntent gatherIntent({
     effectRadius: effectRadius,
     qiCost: qiCost,
     cooldownSeconds: cooldownSeconds,
+    postureDamage: 0,
+    postureHitKind: PostureHitKind.heavy,
   );
 }
 
@@ -166,6 +170,8 @@ Phase0aClearIntent clearIntent({
     effectRadius: effectRadius,
     qiCost: qiCost,
     cooldownSeconds: cooldownSeconds,
+    postureDamage: 0,
+    postureHitKind: PostureHitKind.heavy,
   );
 }
 

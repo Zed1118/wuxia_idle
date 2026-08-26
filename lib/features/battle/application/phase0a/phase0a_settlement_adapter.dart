@@ -179,6 +179,8 @@ final class Phase0aSettlementAdapter {
           );
         case Phase0aGuardIntercepted():
           hadActions = true;
+        case Phase0aPostureChanged():
+          hadActions = true;
         case Phase0aDefenseStarted():
           hadActions = true;
         case Phase0aDefenseResolved(:final target, :final counterDamage):
@@ -237,7 +239,6 @@ final class Phase0aSettlementAdapter {
           hadActions = true;
         case Phase0aEnemyDefeated() ||
             Phase0aBossPhaseChanged() ||
-            Phase0aBossChargeInterrupted() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||
             Phase0aWaveCleared() ||

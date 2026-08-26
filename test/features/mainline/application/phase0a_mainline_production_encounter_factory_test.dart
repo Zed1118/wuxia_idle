@@ -499,6 +499,7 @@ final class _ProductionRuntimeSource
         token: token,
         enemySkillBindings: const [],
         basicQiDelta: skill.qiDelta,
+        basicPowerMultiplier: skill.powerMultiplier,
         entrance: entry.entranceId,
         behaviorAiProfile: entry.behaviorId,
         attackSet: variant.attackSetId,

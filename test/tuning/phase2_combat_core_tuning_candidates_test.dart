@@ -32,11 +32,7 @@ typedef SkillSample = ({
   double cooldownSeconds,
 });
 
-typedef PostureCandidate = ({
-  String id,
-  PostureConfig config,
-  double bossConversion,
-});
+typedef PostureCandidate = ({String id, PostureConfig config});
 
 typedef PostureMetrics = ({
   double firstBreakSeconds,
@@ -384,8 +380,8 @@ List<PostureCandidate> _postureCandidates() => [
       vulnerabilityTicks: 3,
       recoveryPolicy: PostureRecoveryPolicy.reset,
       postVulnerabilityAccumulated: 0,
+      bossControlConversionFactor: 2,
     ),
-    bossConversion: 2,
   ),
   (
     id: 'B',
@@ -394,8 +390,8 @@ List<PostureCandidate> _postureCandidates() => [
       vulnerabilityTicks: 4,
       recoveryPolicy: PostureRecoveryPolicy.recover,
       postVulnerabilityAccumulated: 4,
+      bossControlConversionFactor: 3,
     ),
-    bossConversion: 3,
   ),
   (
     id: 'C',
@@ -404,8 +400,8 @@ List<PostureCandidate> _postureCandidates() => [
       vulnerabilityTicks: 5,
       recoveryPolicy: PostureRecoveryPolicy.recover,
       postVulnerabilityAccumulated: 9,
+      bossControlConversionFactor: 4,
     ),
-    bossConversion: 4,
   ),
 ];
 
@@ -464,7 +460,7 @@ PostureMetrics _simulatePosture(
         final control = stage.hasCharge
             ? bossControlToPostureDamage(
                 1,
-                conversionFactor: candidate.bossConversion,
+                conversionFactor: candidate.config.bossControlConversionFactor,
               )
             : 0.0;
         damages.add((
@@ -723,6 +719,8 @@ TokenMetrics _simulateTokens(
           moveKind: Phase0aMoveKind.light,
           aimDirection: const ArenaVector(-1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
     ];
     observer.observe(
@@ -960,7 +958,7 @@ String _postureParams(PostureCandidate candidate) =>
     '${candidate.config.vulnerabilityTicks}/'
     '${candidate.config.recoveryPolicy.name}/'
     '${candidate.config.postVulnerabilityAccumulated.toStringAsFixed(0)}/'
-    '${candidate.bossConversion.toStringAsFixed(0)}';
+    '${candidate.config.bossControlConversionFactor.toStringAsFixed(0)}';
 
 String _timelineParams(TimelineCandidate candidate) => WeaponType.values
     .map((weapon) {

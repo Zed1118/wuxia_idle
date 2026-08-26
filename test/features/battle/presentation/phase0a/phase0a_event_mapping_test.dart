@@ -4,6 +4,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_event_sequencer.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_vfx_controller.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 
 Phase0aActor _actor(
   String id,
@@ -162,7 +163,7 @@ void main() {
       expect(entries.single.anchor, bossPosition);
     });
 
-    test('破招映射为带踉跄拍数与目标锚点的反馈', () {
+    test('姿态破势映射为复用既有破招反馈', () {
       const bossPosition = ArenaVector(80, 40);
       final controller = Phase0aVfxController()
         ..syncActors(
@@ -174,13 +175,18 @@ void main() {
         );
 
       final entries = controller.consume(const [
-        Phase0aBossChargeInterrupted(
+        Phase0aPostureChanged(
           seq: 2,
           tick: 4,
           actor: 'player',
           target: 'boss',
-          skillId: 'boss_signature',
-          staggerTicks: 3,
+          eventType: PostureEventType.vulnerabilityEntered,
+          amount: 3,
+          accumulated: 14,
+          capacity: 14,
+          vulnerabilityTicksRemaining: 3,
+          hitKind: PostureHitKind.bossControl,
+          targetPosition: bossPosition,
         ),
       ]);
 

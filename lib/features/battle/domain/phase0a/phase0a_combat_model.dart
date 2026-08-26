@@ -2,6 +2,9 @@ import 'arena_vector.dart';
 import 'defense_resolution.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
+import 'posture.dart';
+
+export 'posture.dart' show PostureHitKind;
 
 const _initialBossPhaseIndex = 0;
 const _noChargeTicks = 0;
@@ -37,6 +40,8 @@ final class Phase0aChargeCast {
     required this.effectRadius,
     required this.cooldownSeconds,
     required this.actionCooldownSeconds,
+    required this.postureDamage,
+    required this.postureHitKind,
     this.defenseFlags,
   }) {
     if (skill.id.isEmpty) {
@@ -51,6 +56,7 @@ final class Phase0aChargeCast {
       'effectRadius': effectRadius,
       'cooldownSeconds': cooldownSeconds,
       'actionCooldownSeconds': actionCooldownSeconds,
+      'postureDamage': postureDamage,
     }.entries) {
       final value = entry.value;
       if (!(value.isFinite && value >= 0)) {
@@ -79,6 +85,8 @@ final class Phase0aChargeCast {
 
   /// 释放命中后的行动锁(秒,对齐敌方技能 intent 分支口径)。
   final double actionCooldownSeconds;
+  final double postureDamage;
+  final PostureHitKind postureHitKind;
 
   /// Explicit attack flags carried with the pre-resolved charge cast.
   /// Null is retained by fixtures that do not opt into the defense slice.
@@ -94,6 +102,8 @@ final class Phase0aChargeCast {
       other.effectRadius == effectRadius &&
       other.cooldownSeconds == cooldownSeconds &&
       other.actionCooldownSeconds == actionCooldownSeconds &&
+      other.postureDamage == postureDamage &&
+      other.postureHitKind == postureHitKind &&
       other.defenseFlags == defenseFlags;
 
   @override
@@ -106,6 +116,8 @@ final class Phase0aChargeCast {
       effectRadius,
       cooldownSeconds,
       actionCooldownSeconds,
+      postureDamage,
+      postureHitKind,
       defenseFlags,
     ),
   );
@@ -139,6 +151,7 @@ final class Phase0aActor {
     required this.qiMax,
     required this.attackCooldownRemaining,
     required this.defeatKind,
+    this.isBoss = false,
     this.autoUltimate = false,
     this.bossPhases,
     this.bossPhaseIndex = _initialBossPhaseIndex,
@@ -156,6 +169,7 @@ final class Phase0aActor {
     this.chargingDefenseFlags,
     this.chargeTicksRemaining = _noChargeTicks,
     this.staggerTicksRemaining = _noStaggerTicks,
+    this.posture,
     this.shieldRemaining = _noDefenseScalar,
     this.shieldTicksRemaining = _noDefenseTicks,
     this.parryTicksRemaining = _noDefenseTicks,
@@ -181,6 +195,7 @@ final class Phase0aActor {
 
   /// 该单位被击败时的语义档(事件 payload)。
   final Phase0aDefeatKind defeatKind;
+  final bool isBoss;
 
   /// Enemy-only pre-resolved Boss phase runtime. Player/non-phase actors keep
   /// the neutral defaults; the reducer never queries repositories.
@@ -222,10 +237,8 @@ final class Phase0aActor {
   ///
   /// **权威结算乘子在伤害快照** `Phase0aDamageSnapshot.vulnerabilityOutMult`
   /// (快照工厂自同一 `CombatantSnapshot` 源透传);**reducer 从不读取本字段
-  /// 数值**,只向 resolver 传蓄招/踉跄运行态事实——结算数值单源快照,
-  /// 防 actor/快照双源漂移。窗口开合语义 = [chargingCast] != null(蓄招中)
-  /// 或 [staggerTicksRemaining] > 0(破招踉跄),与旧引擎
-  /// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义。
+  /// 数值**,只向 resolver 传 [posture] 的统一破绽窗口事实——结算数值单源
+  /// 快照,防 actor/快照双源漂移。
   final double? vulnerabilityMult;
 
   /// 运行态:正在蓄力的施放(null = 未蓄力)。不可变可回放。
@@ -240,6 +253,7 @@ final class Phase0aActor {
 
   /// 运行态:踉跄剩余拍数(>0 = 跳过行动且承伤减防,reducer 每拍递减)。
   final int staggerTicksRemaining;
+  final PostureState? posture;
   final double shieldRemaining;
   final int shieldTicksRemaining;
   final int parryTicksRemaining;
@@ -265,6 +279,7 @@ final class Phase0aActor {
     bool clearChargingCast = false,
     int? chargeTicksRemaining,
     int? staggerTicksRemaining,
+    PostureState? posture,
     double? shieldRemaining,
     int? shieldTicksRemaining,
     int? parryTicksRemaining,
@@ -286,6 +301,7 @@ final class Phase0aActor {
       attackCooldownRemaining:
           attackCooldownRemaining ?? this.attackCooldownRemaining,
       defeatKind: defeatKind,
+      isBoss: isBoss,
       autoUltimate: autoUltimate,
       bossPhases: bossPhases,
       bossPhaseIndex: bossPhaseIndex ?? this.bossPhaseIndex,
@@ -310,6 +326,7 @@ final class Phase0aActor {
       chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
       staggerTicksRemaining:
           staggerTicksRemaining ?? this.staggerTicksRemaining,
+      posture: posture ?? this.posture,
       shieldRemaining: shieldRemaining ?? this.shieldRemaining,
       shieldTicksRemaining: shieldTicksRemaining ?? this.shieldTicksRemaining,
       parryTicksRemaining: parryTicksRemaining ?? this.parryTicksRemaining,
@@ -336,6 +353,7 @@ final class Phase0aActor {
       other.qiMax == qiMax &&
       other.attackCooldownRemaining == attackCooldownRemaining &&
       other.defeatKind == defeatKind &&
+      other.isBoss == isBoss &&
       other.autoUltimate == autoUltimate &&
       _bossPhasesEqual(other.bossPhases, bossPhases) &&
       other.bossPhaseIndex == bossPhaseIndex &&
@@ -353,6 +371,7 @@ final class Phase0aActor {
       other.chargingDefenseFlags == chargingDefenseFlags &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
       other.staggerTicksRemaining == staggerTicksRemaining &&
+      other.posture == posture &&
       other.shieldRemaining == shieldRemaining &&
       other.shieldTicksRemaining == shieldTicksRemaining &&
       other.parryTicksRemaining == parryTicksRemaining &&
@@ -374,6 +393,7 @@ final class Phase0aActor {
     qiMax,
     attackCooldownRemaining,
     defeatKind,
+    isBoss,
     autoUltimate,
     _bossPhasesHash(bossPhases),
     bossPhaseIndex,
@@ -392,6 +412,7 @@ final class Phase0aActor {
       chargingDefenseFlags,
       chargeTicksRemaining,
       staggerTicksRemaining,
+      posture,
       shieldRemaining,
       shieldTicksRemaining,
       parryTicksRemaining,

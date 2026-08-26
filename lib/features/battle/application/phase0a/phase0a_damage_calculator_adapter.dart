@@ -80,8 +80,8 @@ final class Phase0aDamageSnapshot {
   final double wardMult;
 
   /// 脆弱窗口外承伤乘子(调用方已解析;null = 无机制)。窗口开合是战中
-  /// 运行态事实(守方蓄招中或破招踉跄中),由 adapter 在结算时按 reducer
-  /// 传入的 `defenderStaggered`/`defenderCharging` 折入 `defenderWardMult`,
+  /// 运行态事实只由统一姿态窗给出,由 adapter 在结算时按 reducer
+  /// 传入的 `defenderVulnerable` 折入 `defenderWardMult`,
   /// 与旧引擎 `DefaultGroundStrategy.vulnerabilityMultOf` 同语义。
   final double? vulnerabilityOutMult;
 
@@ -133,7 +133,7 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double? defenderWardMult,
   }) {
     if (!_moveBindings.containsKey(kind)) {
@@ -144,7 +144,7 @@ final class Phase0aDamageCalculatorAdapter
       targetId: targetId,
       skill: _moveBindings[kind],
       defenderStaggered: defenderStaggered,
-      defenderCharging: defenderCharging,
+      defenderVulnerable: defenderVulnerable,
       defenderWardMult: defenderWardMult ?? 1.0,
     );
   }
@@ -168,7 +168,7 @@ final class Phase0aDamageCalculatorAdapter
     required String targetId,
     required SkillDef? skill,
     required bool defenderStaggered,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   }) {
     final attacker = _combatants[attackerId];
@@ -202,13 +202,12 @@ final class Phase0aDamageCalculatorAdapter
               (1 - _numbers.combat.bossCharge.staggerDefenseDown)
         : target.defenseRate;
 
-    // 脆弱窗口(与旧引擎 DefaultGroundStrategy.vulnerabilityMultOf 同语义):
-    // 守方带机制且当前不脆弱(未蓄招且未踉跄)→ 乘窗口外承伤乘子(减伤);
-    // 蓄招中/踉跄中(窗口开)或无机制(null)→ 1.0 全额。乘子折入现有
+    // 脆弱窗口:守方带机制且统一姿态状态未进入破绽 → 乘窗口外承伤乘子;
+    // 姿态破绽窗口打开或无机制(null)→ 1.0 全额。乘子折入现有
     // defenderWardMult,不给 DamageCalculator 加参数。
     final vulnerabilityOutMult = target.vulnerabilityOutMult;
     final vulnerabilityWindowMult =
-        (vulnerabilityOutMult == null || defenderStaggered || defenderCharging)
+        (vulnerabilityOutMult == null || defenderVulnerable)
         ? 1.0
         : vulnerabilityOutMult;
 

@@ -70,6 +70,7 @@ Phase0aActor _snapshotActor(Phase0aActor actor) => Phase0aActor(
   qiMax: actor.qiMax,
   attackCooldownRemaining: actor.attackCooldownRemaining,
   defeatKind: actor.defeatKind,
+  isBoss: actor.isBoss,
   autoUltimate: actor.autoUltimate,
   bossPhases: _snapshotBossPhases(actor.bossPhases),
   bossPhaseIndex: actor.bossPhaseIndex,
@@ -90,6 +91,7 @@ Phase0aActor _snapshotActor(Phase0aActor actor) => Phase0aActor(
   chargingCast: actor.chargingCast,
   chargeTicksRemaining: actor.chargeTicksRemaining,
   staggerTicksRemaining: actor.staggerTicksRemaining,
+  posture: actor.posture,
 );
 
 List<BossPhaseDef>? _snapshotBossPhases(List<BossPhaseDef>? phases) =>

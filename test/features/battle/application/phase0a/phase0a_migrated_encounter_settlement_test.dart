@@ -82,6 +82,10 @@ const _playerAdapter = Phase0aPlayerInputAdapter(
   attackHalfArcRadians: 1,
   attackCooldownSeconds: 1,
   attackQiDelta: 0,
+  postureBasicPowerMultiplier: 1,
+  attackPowerMultiplier: 1,
+  gatherPowerMultiplier: 1,
+  clearPowerMultiplier: 1,
   gatherSlot: 'gather',
   gatherRingRadius: 1,
   gatherEffectRadius: 1,
@@ -97,6 +101,8 @@ const _enemyAdapter = Phase0aEnemyAiAdapter(
   attackRange: 1,
   attackHalfArcRadians: 1,
   attackCooldownSeconds: 1,
+  postureBasicPowerMultiplier: 1,
+  uniformBasicPowerMultiplier: 1,
 );
 
 Phase0aActor _actor({

@@ -15,7 +15,7 @@ final class _Resolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls.add((attacker: attackerId, target: targetId, kind: kind));
@@ -88,6 +88,8 @@ Phase0aSkillIntent _skill({
   targetType: targetType,
   qiDelta: qiDelta,
   cooldownSeconds: cooldownSeconds,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.heavy,
   range: range,
   halfArcRadians: 0.7853981633974483,
   effectRadius: effectRadius,

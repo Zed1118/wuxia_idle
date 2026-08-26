@@ -2,6 +2,7 @@ import 'arena_vector.dart';
 import 'defense_resolution.dart';
 import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
+import 'posture.dart';
 
 /// Phase 0A 语义事件基类(对齐冻结反馈契约公共 payload)。
 ///
@@ -329,38 +330,62 @@ final class Phase0aGuardIntercepted extends Phase0aEvent {
   );
 }
 
-/// 玩家破招命中蓄力中敌人:清蓄力 + 进入踉跄窗口 + 招牌技上冷却。
-///
-/// [actor] = 破招发起者(玩家),[target] = 被破招敌人,[skillId] = 被打断的
-/// 招牌技 id,[staggerTicks] = 本次踉跄窗口拍数(numbers.combat.bossCharge)。
-final class Phase0aBossChargeInterrupted extends Phase0aEvent {
-  const Phase0aBossChargeInterrupted({
+/// Projection of a transition from the single authoritative posture state.
+/// UI and VFX consume this payload but never maintain a second posture value.
+final class Phase0aPostureChanged extends Phase0aEvent {
+  const Phase0aPostureChanged({
     required super.seq,
     required super.tick,
     required this.actor,
     required this.target,
-    required this.skillId,
-    required this.staggerTicks,
+    required this.eventType,
+    required this.amount,
+    required this.accumulated,
+    required this.capacity,
+    required this.vulnerabilityTicksRemaining,
+    this.hitKind,
+    this.targetPosition,
   });
 
   final String actor;
   final String target;
-  final String skillId;
-  final int staggerTicks;
+  final PostureEventType eventType;
+  final double amount;
+  final double accumulated;
+  final double capacity;
+  final int vulnerabilityTicksRemaining;
+  final PostureHitKind? hitKind;
+  final ArenaVector? targetPosition;
 
   @override
   bool operator ==(Object other) =>
-      other is Phase0aBossChargeInterrupted &&
+      other is Phase0aPostureChanged &&
       other.seq == seq &&
       other.tick == tick &&
       other.actor == actor &&
       other.target == target &&
-      other.skillId == skillId &&
-      other.staggerTicks == staggerTicks;
+      other.eventType == eventType &&
+      other.amount == amount &&
+      other.accumulated == accumulated &&
+      other.capacity == capacity &&
+      other.vulnerabilityTicksRemaining == vulnerabilityTicksRemaining &&
+      other.hitKind == hitKind &&
+      other.targetPosition == targetPosition;
 
   @override
-  int get hashCode =>
-      Object.hash(seq, tick, actor, target, skillId, staggerTicks);
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    target,
+    eventType,
+    amount,
+    accumulated,
+    capacity,
+    vulnerabilityTicksRemaining,
+    hitKind,
+    targetPosition,
+  );
 }
 
 /// Enemy successfully started a phase-unlocked skill. Damage continues through

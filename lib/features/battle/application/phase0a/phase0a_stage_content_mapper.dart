@@ -18,6 +18,7 @@ import '../../domain/phase0a/defense_resolution.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
+import '../../domain/phase0a/posture.dart';
 import '../../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_enemy_ai_adapter.dart';
@@ -127,6 +128,7 @@ final class Phase0aStageContentMapper {
         numericSkillBindings: numeric,
         tacticalSkillBindings: tactical,
         attackQiDelta: playerBasicSkill.qiDelta,
+        attackPowerMultiplier: playerBasicSkill.powerMultiplier,
         defenseTuning: defenseTuning,
       ),
     );
@@ -658,6 +660,7 @@ final class Phase0aStageContentMapper {
     // SkillDef 与 numbers.combat.bossCharge ——
     final chargeTicks = numbers.combat.bossCharge.defaultChargeTicks;
     final staggerTicksTotal = numbers.combat.bossCharge.defaultStaggerTicks;
+    final postureConfig = _postureConfig(numbers.combat.posture);
     final topLevelChargeCasts = <Phase0aChargeCast?>[
       for (final snapshot in enemySnapshots)
         _topLevelChargeCast(
@@ -697,6 +700,7 @@ final class Phase0aStageContentMapper {
           chargeCast: topLevelChargeCasts[flatIndex],
           phaseChargeCasts: phaseChargeCastsByEnemy[flatIndex],
           staggerTicksTotal: staggerTicksTotal,
+          postureConfig: postureConfig,
           guardianDefIds: snapshot.guardianDefIds,
           guardianWardMult: snapshot.guardianWardMult,
           guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
@@ -725,6 +729,13 @@ final class Phase0aStageContentMapper {
           enemySnapshots[i],
           actorId: waveEnemies[i].id,
         ).qiDelta,
+    };
+    final enemyBasicPowerMultiplierByActor = <String, int>{
+      for (var i = 0; i < enemySnapshots.length; i++)
+        waveEnemies[i].id: _requiredBasicSkillOf(
+          enemySnapshots[i],
+          actorId: waveEnemies[i].id,
+        ).powerMultiplier,
     };
 
     final combatants = <Phase0aCombatantInput>[
@@ -755,6 +766,10 @@ final class Phase0aStageContentMapper {
         attackCooldownSeconds: arena.enemyAttackCooldownSeconds,
         skillBindingsByActor: Map.unmodifiable(enemySkillBindingsByActor),
         basicQiDeltaByActor: Map.unmodifiable(enemyBasicQiDeltaByActor),
+        basicPowerMultiplierByActor: Map.unmodifiable(
+          enemyBasicPowerMultiplierByActor,
+        ),
+        postureBasicPowerMultiplier: arena.basicPowerMultiplier,
         defenseTuning: defenseTuning,
       ),
       waveTransitionPolicy: waveTransitionPolicy,
@@ -792,6 +807,7 @@ final class Phase0aStageContentMapper {
     required Phase0aChargeCast? chargeCast,
     required List<Phase0aChargeCast?> phaseChargeCasts,
     required int staggerTicksTotal,
+    required PostureConfig postureConfig,
     required List<String> guardianDefIds,
     required double? guardianWardMult,
     required bool guardInterceptsInterrupt,
@@ -825,6 +841,7 @@ final class Phase0aStageContentMapper {
       defeatKind: snapshot.isBoss
           ? Phase0aDefeatKind.elite
           : Phase0aDefeatKind.normal,
+      isBoss: snapshot.isBoss,
       autoUltimate: snapshot.autoUltimate,
       bossPhases: phases,
       unlockedEnemySkillIds: initialUnlocks,
@@ -838,6 +855,7 @@ final class Phase0aStageContentMapper {
       guardianWardMult: guardianWardMult,
       guardInterceptsInterrupt: guardInterceptsInterrupt,
       vulnerabilityMult: vulnerabilityMult,
+      posture: PostureState.initial(postureConfig),
     );
   }
 
@@ -940,6 +958,11 @@ final class Phase0aStageContentMapper {
     effectRadius: arena.enemyAttackRange,
     cooldownSeconds: _requiredEnemyCooldownSeconds(skill),
     actionCooldownSeconds: arena.enemyAttackCooldownSeconds,
+    postureDamage: powerMultiplierToPostureDamage(
+      skill.powerMultiplier,
+      basicPowerMultiplier: arena.basicPowerMultiplier,
+    ),
+    postureHitKind: PostureHitKind.heavy,
     defenseFlags: defenseFlags,
   );
 
@@ -1152,6 +1175,7 @@ final class Phase0aStageContentMapper {
     required Phase0aNumericSkillBindings numericSkillBindings,
     required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
+    required int attackPowerMultiplier,
     Phase0aDefenseTuning? defenseTuning,
   }) {
     final gather = tacticalSkillBindings.gather;
@@ -1162,6 +1186,10 @@ final class Phase0aStageContentMapper {
       attackHalfArcRadians: arena.playerAttackHalfArcRadians,
       attackCooldownSeconds: arena.playerAttackCooldownSeconds,
       attackQiDelta: attackQiDelta,
+      postureBasicPowerMultiplier: arena.basicPowerMultiplier,
+      attackPowerMultiplier: attackPowerMultiplier,
+      gatherPowerMultiplier: gather.skill.powerMultiplier,
+      clearPowerMultiplier: clear.skill.powerMultiplier,
       gatherSlot: gather.slot,
       gatherRingRadius: gather.destinationRadius!,
       gatherEffectRadius: gather.effectRadius,
@@ -1177,6 +1205,18 @@ final class Phase0aStageContentMapper {
       defenseTuning: defenseTuning,
     );
   }
+
+  static PostureConfig _postureConfig(PostureNumbersConfig config) =>
+      PostureConfig(
+        capacity: config.capacity,
+        vulnerabilityTicks: config.vulnerabilityTicks,
+        recoveryPolicy:
+            config.recoveryPolicy == PostureRecoveryPolicyConfig.reset
+            ? PostureRecoveryPolicy.reset
+            : PostureRecoveryPolicy.recover,
+        postVulnerabilityAccumulated: config.postVulnerabilityAccumulated,
+        bossControlConversionFactor: config.bossConversionFactor,
+      );
 }
 
 final class _Phase0aTacticalSkillBindings {

@@ -9,12 +9,12 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 
 /// Phase 0A Boss 蓄力 / 玩家破招纵切 focused 契约测(spec 2026-08-22)。
 ///
-/// 语义基准 = 旧引擎 default_ground_strategy 的蓄力/破招层:蓄力倒计时归零
-/// 释放招牌技、破招清蓄力+踉跄+招牌技上 CD、踉跄/蓄力中跳过行动;数值全部
-/// 由 fixture 显式传入(对齐 numbers.combat.boss_charge 的预解析口径)。
+/// 语义基准:蓄力倒计时归零释放招牌技;破招先转姿态伤害,累计达到阈值才
+/// 清蓄力、进踉跄并给招牌技上 CD。数值全部由 fixture 显式传入。
 
 const _signatureSkill = SkillDef(
   id: 'charge_signature',
@@ -62,6 +62,8 @@ Phase0aChargeCast _cast({SkillDef skill = _signatureSkill}) =>
       effectRadius: 10,
       cooldownSeconds: 4,
       actionCooldownSeconds: 1,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.heavy,
     );
 
 final class _Resolver
@@ -79,11 +81,11 @@ final class _Resolver
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     if (defenderStaggered) staggeredTargets.add(targetId);
-    if (defenderCharging) chargingTargets.add(targetId);
+    if (defenderVulnerable) chargingTargets.add(targetId);
     return Phase0aResolvedHit(
       isHit: hit,
       isCritical: false,
@@ -135,6 +137,7 @@ Phase0aActor _charger({
   qiMax: 100,
   attackCooldownRemaining: 0,
   defeatKind: Phase0aDefeatKind.elite,
+  isBoss: true,
   chargeCast: _cast(),
   staggerTicksTotal: 2,
   chargeTicksRemaining: chargeTicksRemaining,
@@ -143,6 +146,15 @@ Phase0aActor _charger({
   enemySkillCooldowns: enemySkillCooldowns,
   bossPhases: bossPhases,
   phaseChargeCasts: phaseChargeCasts,
+  posture: PostureState.initial(
+    PostureConfig(
+      capacity: 3,
+      vulnerabilityTicks: 4,
+      recoveryPolicy: PostureRecoveryPolicy.reset,
+      postVulnerabilityAccumulated: 0,
+      bossControlConversionFactor: 3,
+    ),
+  ),
 );
 
 Phase0aArenaState _state(
@@ -166,6 +178,8 @@ Phase0aEnemySkillIntent _chargeSkillIntent() => const Phase0aEnemySkillIntent(
   effectRadius: 10,
   cooldownSeconds: 4,
   actionCooldownSeconds: 1,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.heavy,
 );
 
 Phase0aClearIntent _clearIntent({int breakPower = 0}) => Phase0aClearIntent(
@@ -174,6 +188,10 @@ Phase0aClearIntent _clearIntent({int breakPower = 0}) => Phase0aClearIntent(
   effectRadius: 500,
   qiCost: 20,
   cooldownSeconds: 8,
+  postureDamage: 0,
+  postureHitKind: breakPower > 0
+      ? PostureHitKind.bossControl
+      : PostureHitKind.heavy,
   skillId: 'skill_phase0a_clear',
   breakPower: breakPower,
 );
@@ -317,6 +335,8 @@ void main() {
             moveKind: Phase0aMoveKind.light,
             aimDirection: ArenaVector(-1, 0),
             qiDelta: 0,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.light,
           ),
           _chargeSkillIntent(),
         ],
@@ -347,12 +367,13 @@ void main() {
       damageResolver: _Resolver(basicDamage: 10),
     );
 
-    final interrupted = result.events.whereType<Phase0aBossChargeInterrupted>();
+    final interrupted = result.events.whereType<Phase0aPostureChanged>().where(
+      (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+    );
     expect(interrupted, hasLength(1));
     expect(interrupted.single.actor, 'player');
     expect(interrupted.single.target, 'boss');
-    expect(interrupted.single.skillId, 'charge_signature');
-    expect(interrupted.single.staggerTicks, 2);
+    expect(interrupted.single.accumulated, 3);
 
     final boss = result.state.enemies.single;
     expect(boss.chargeTicksRemaining, 0);
@@ -389,11 +410,11 @@ void main() {
     expect(boss.enemySkillCooldowns['charge_signature'], 4);
 
     // 中断事件存在且指向被打断的招牌技。
-    final interrupted = result.events.whereType<Phase0aBossChargeInterrupted>();
+    final interrupted = result.events.whereType<Phase0aPostureChanged>().where(
+      (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+    );
     expect(interrupted, hasLength(1));
     expect(interrupted.single.target, 'boss');
-    expect(interrupted.single.skillId, 'charge_signature');
-    expect(interrupted.single.staggerTicks, 2);
   });
 
   test('破招对非蓄力敌人 no-op;breakPower=0 与未命中不破招', () {
@@ -404,7 +425,12 @@ void main() {
       deltaSeconds: 0.1,
       damageResolver: _Resolver(basicDamage: 10),
     );
-    expect(plain.events.whereType<Phase0aBossChargeInterrupted>(), isEmpty);
+    expect(
+      plain.events.whereType<Phase0aPostureChanged>().where(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      ),
+      isEmpty,
+    );
     expect(plain.state.enemies.single.staggerTicksRemaining, 0);
     expect(plain.state.enemies.single.currentHealth, 90);
 
@@ -418,7 +444,12 @@ void main() {
       deltaSeconds: 0.1,
       damageResolver: _Resolver(basicDamage: 10),
     );
-    expect(noPower.events.whereType<Phase0aBossChargeInterrupted>(), isEmpty);
+    expect(
+      noPower.events.whereType<Phase0aPostureChanged>().where(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      ),
+      isEmpty,
+    );
     final stillCharging = noPower.state.enemies.single;
     expect(stillCharging.chargingCast, isNotNull);
     // 本拍 intent 阶段蓄力未被打断;拍前扣减已在 clear 之前完成 → 剩 1。
@@ -434,7 +465,12 @@ void main() {
       deltaSeconds: 0.1,
       damageResolver: _Resolver(basicDamage: 10, hit: false),
     );
-    expect(dodged.events.whereType<Phase0aBossChargeInterrupted>(), isEmpty);
+    expect(
+      dodged.events.whereType<Phase0aPostureChanged>().where(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      ),
+      isEmpty,
+    );
     expect(dodged.state.enemies.single.chargingCast, isNotNull);
   });
 
@@ -464,6 +500,8 @@ void main() {
           moveKind: Phase0aMoveKind.light,
           aimDirection: ArenaVector(1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
       ],
       deltaSeconds: 0.1,
@@ -486,6 +524,8 @@ void main() {
           moveKind: Phase0aMoveKind.light,
           aimDirection: ArenaVector(1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
       ],
       deltaSeconds: 0.1,
@@ -508,6 +548,8 @@ void main() {
           moveKind: Phase0aMoveKind.light,
           aimDirection: ArenaVector(1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
       ],
       deltaSeconds: 0.1,
@@ -563,6 +605,8 @@ void main() {
           moveKind: Phase0aMoveKind.light,
           aimDirection: ArenaVector(1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
       ],
       deltaSeconds: 0.1,
@@ -620,6 +664,8 @@ void main() {
           moveKind: Phase0aMoveKind.light,
           aimDirection: ArenaVector(1, 0),
           qiDelta: 0,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.light,
         ),
       ],
       deltaSeconds: 0.1,
@@ -656,15 +702,18 @@ void main() {
           effectRadius: 0,
           qiDelta: -30,
           cooldownSeconds: 3,
+          postureDamage: 0,
+          postureHitKind: PostureHitKind.bossControl,
           breakPower: 2,
         ),
       ],
       deltaSeconds: 0.1,
       damageResolver: _Resolver(basicDamage: 8),
     );
-    final interrupted = result.events.whereType<Phase0aBossChargeInterrupted>();
+    final interrupted = result.events.whereType<Phase0aPostureChanged>().where(
+      (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+    );
     expect(interrupted, hasLength(1));
-    expect(interrupted.single.skillId, 'charge_signature');
     expect(result.state.enemies.single.staggerTicksRemaining, 2);
     expect(
       result.state.enemies.single.enemySkillCooldowns['charge_signature'],
@@ -713,7 +762,12 @@ void main() {
     expect(b.events, a.events);
     expect(b.state, a.state);
     // 序列本身语义自检:破招发生且其后重新蓄力。
-    expect(a.events.whereType<Phase0aBossChargeInterrupted>(), hasLength(1));
+    expect(
+      a.events.whereType<Phase0aPostureChanged>().where(
+        (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+      ),
+      hasLength(1),
+    );
     expect(a.events.whereType<Phase0aBossChargeStarted>(), hasLength(1));
     expect(a.state.enemies.single.chargeTicksRemaining, 3);
   });
@@ -723,6 +777,9 @@ void main() {
       attackRange: 10,
       attackHalfArcRadians: 1,
       attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: _signatureSkill.powerMultiplier,
+      uniformBasicPowerMultiplier: 1,
+      basicPowerMultiplierByActor: {'boss': _signatureSkill.powerMultiplier},
       skillBindingsByActor: {
         'boss': [
           Phase0aEnemySkillBinding(

@@ -85,7 +85,7 @@ void main() {
   });
 
   test(
-    'Boss fixture exposes chargeCast/vulnerability and breaks into stagger',
+    'Boss fixture exposes chargeCast and accumulates posture without instant stagger',
     () async {
       final bossFixture = await Phase0aDebugBattleFixture.load(
         assetLoader: loadTestAsset,
@@ -113,17 +113,19 @@ void main() {
       );
       expect(controller.state.enemies.single.chargingCast, isNotNull);
 
+      final beforePosture =
+          controller.state.enemies.single.posture!.accumulated;
       controller.step(const Phase0aPlayerCommand(clear: true));
       expect(
-        controller.lastEvents.whereType<Phase0aBossChargeInterrupted>(),
-        hasLength(1),
-      );
-      expect(
         controller.feedback.map((entry) => entry.kind),
-        contains(Phase0aVfxKind.bossChargeInterrupted),
+        isNot(contains(Phase0aVfxKind.bossChargeInterrupted)),
       );
-      expect(controller.state.enemies.single.chargingCast, isNull);
-      expect(controller.state.enemies.single.staggerTicksRemaining, 3);
+      expect(controller.state.enemies.single.chargingCast, isNotNull);
+      expect(controller.state.enemies.single.staggerTicksRemaining, 0);
+      expect(
+        controller.state.enemies.single.posture!.accumulated,
+        greaterThan(beforePosture),
+      );
     },
   );
 
