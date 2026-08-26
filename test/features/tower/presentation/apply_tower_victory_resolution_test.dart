@@ -91,6 +91,7 @@ void main() {
       result: BattleResult.leftWin,
       totalTicks: 37,
       hadActions: true,
+      playerCharacterId: ids.$2,
       participants: [
         CombatParticipantSnapshot(
           characterId: ids.$2,
@@ -150,6 +151,7 @@ void main() {
       result: BattleResult.leftWin,
       totalTicks: 37,
       hadActions: true,
+      playerCharacterId: ids.$1,
       participants: [
         CombatParticipantSnapshot(
           characterId: ids.$1,
@@ -214,6 +216,7 @@ void main() {
       result: BattleResult.rightWin,
       totalTicks: 37,
       hadActions: true,
+      playerCharacterId: ids.$2,
       participants: [
         CombatParticipantSnapshot(
           characterId: ids.$2,

@@ -90,10 +90,7 @@ void _validateExpectedMainlineSettlement({
   if (settlementSnapshot == null) return;
   if (expectedParticipantId == null ||
       !settlementSnapshot.isFinished ||
-      settlementSnapshot.participantCharacterIds.toSet().length != 1 ||
-      !settlementSnapshot.participantCharacterIds.contains(
-        expectedParticipantId,
-      )) {
+      settlementSnapshot.playerCharacterId != expectedParticipantId) {
     throw StateError(
       'Mainline headless settlement participant does not match the request',
     );
@@ -185,12 +182,9 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
     await TowerAutomationAdmissionService(
       IsarSetup.instance,
     ).revalidate(admission);
-    final participantIds = settlementSnapshot.participantCharacterIds
-        .where((id) => id > 0)
-        .toSet();
     if (!settlementSnapshot.isFinished ||
-        participantIds.length != 1 ||
-        !participantIds.contains(admission.participantCharacterId)) {
+        settlementSnapshot.playerCharacterId !=
+            admission.participantCharacterId) {
       throw StateError(
         'Tower headless settlement participant does not match the request',
       );

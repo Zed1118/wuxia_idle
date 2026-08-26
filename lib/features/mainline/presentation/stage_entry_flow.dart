@@ -1791,11 +1791,10 @@ String? _resolveTechName(Character ch, Map<int, List<Technique>> techsByCh) {
 /// [showStageVictoryDialog] 显 drop + 升层 banner。
 /// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
 List<int> _requireExactSettlementParticipant({
-  required Iterable<int> participantIds,
+  required int playerCharacterId,
   required int expectedParticipantId,
 }) {
-  final exactIds = participantIds.toSet();
-  if (exactIds.length != 1 || !exactIds.contains(expectedParticipantId)) {
+  if (playerCharacterId != expectedParticipantId) {
     throw StateError(
       'Combat settlement participant does not match the selected character',
     );
@@ -1846,7 +1845,7 @@ applyVictoryResolution({
             .where(participantIds.contains)
             .toList(growable: false)
       : _requireExactSettlementParticipant(
-          participantIds: participantIds,
+          playerCharacterId: combatSettlement.playerCharacterId,
           expectedParticipantId: expectedParticipantId,
         );
   if (ids.isEmpty) return null;
@@ -2252,7 +2251,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
             .where(participantIds.contains)
             .toList(growable: false)
       : _requireExactSettlementParticipant(
-          participantIds: participantIds,
+          playerCharacterId: combatSettlement.playerCharacterId,
           expectedParticipantId: expectedParticipantId,
         );
   if (ids.isEmpty) return const [];

@@ -197,6 +197,7 @@ void main() {
           result: leftWin ? BattleResult.leftWin : BattleResult.rightWin,
           totalTicks: 1,
           hadActions: true,
+          playerCharacterId: 1,
           participants: [
             CombatParticipantSnapshot(
               characterId: 1,

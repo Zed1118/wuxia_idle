@@ -123,6 +123,7 @@ void main() {
         result: BattleResult.leftWin,
         totalTicks: 1,
         hadActions: true,
+        playerCharacterId: participantIds.first,
         participants: [
           for (final id in participantIds)
             CombatParticipantSnapshot(
@@ -142,6 +143,7 @@ void main() {
         result: BattleResult.rightWin,
         totalTicks: 9,
         hadActions: true,
+        playerCharacterId: participantId,
         participants: [
           CombatParticipantSnapshot(
             characterId: participantId,
@@ -308,6 +310,7 @@ void main() {
       result: BattleResult.leftWin,
       totalTicks: 12,
       hadActions: true,
+      playerCharacterId: founderId,
       participants: [
         CombatParticipantSnapshot(
           characterId: founderId,

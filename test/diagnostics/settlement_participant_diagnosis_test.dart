@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-    '纯净新档真打 stage_01_05 后主线与 headless 结算都命中参与者守卫',
+    '纯净新档真打 stage_01_05 后主线与 headless 结算都接受显式玩家参与者',
     (tester) async {
       final repository = GameRepository.instance;
       final stage = repository.getStage('stage_01_05');
@@ -169,6 +169,7 @@ void main() {
       final settlement = terminalSettlement!;
       expect(settlement.result, BattleResult.leftWin);
       expect(settlement.isFinished, isTrue);
+      expect(settlement.playerCharacterId, run.participantId);
       expect(settlement.participantCharacterIds, {
         -20004,
         -20003,
@@ -179,51 +180,26 @@ void main() {
         1,
       });
       expect(settlement.participantCharacterIds, hasLength(7));
+      expect(settlement.participants, hasLength(7));
       expect(settlement.participantCharacterIds.where((id) => id > 0).toSet(), {
         run.participantId,
       });
 
-      Object? visibleSettlementError;
-      Object? headlessSettlementError;
       await tester.runAsync(() async {
-        try {
-          await applyVictoryResolution(
-            ref: ref!,
-            stage: stage,
-            settlementSnapshot: settlement,
-            expectedParticipantId: run.participantId,
-          );
-        } catch (error) {
-          visibleSettlementError = error;
-        }
-        try {
-          await settleMainlineHeadlessReplayVictory(
-            ref: ref!,
-            stage: stage,
-            cycle: 1,
-            settlementSnapshot: settlement,
-            expectedParticipantId: run.participantId,
-          );
-        } catch (error) {
-          headlessSettlementError = error;
-        }
+        await applyVictoryResolution(
+          ref: ref!,
+          stage: stage,
+          settlementSnapshot: settlement,
+          expectedParticipantId: run.participantId,
+        );
+        await settleMainlineHeadlessReplayVictory(
+          ref: ref!,
+          stage: stage,
+          cycle: 1,
+          settlementSnapshot: settlement,
+          expectedParticipantId: run.participantId,
+        );
       });
-      expect(
-        visibleSettlementError,
-        isA<StateError>().having(
-          (error) => error.message,
-          'message',
-          'Combat settlement participant does not match the selected character',
-        ),
-      );
-      expect(
-        headlessSettlementError,
-        isA<StateError>().having(
-          (error) => error.message,
-          'message',
-          'Mainline headless settlement participant does not match the request',
-        ),
-      );
 
       await tester.runAsync(() async {
         final progress = await MainlineProgressService(
@@ -231,8 +207,8 @@ void main() {
         ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
         expect(
           progress.clearedStageIds,
-          isNot(contains(stage.id)),
-          reason: '守卫在进度写入前抛错，胜利弹窗不可达',
+          contains(stage.id),
+          reason: '显式玩家参与者应允许主线胜利结算写入通关进度',
         );
       });
     },

@@ -157,11 +157,7 @@ Future<void> runTowerFlow({
   final won = battleExit.won;
   final settlement = battleExit.settlement;
   if (settlement != null) {
-    final playerParticipantIds = settlement.participantCharacterIds
-        .where((id) => id > 0)
-        .toSet();
-    if (playerParticipantIds.length != 1 ||
-        !playerParticipantIds.contains(participantId)) {
+    if (settlement.playerCharacterId != participantId) {
       throw StateError('Tower settlement participant mismatch');
     }
   }
@@ -538,15 +534,9 @@ applyTowerCombatResolution({
   if (!combatSettlement.isFinished) return empty;
   final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
-  final participantIds = combatSettlement.participantCharacterIds
-      .where((id) => id > 0)
-      .toSet();
   final resolvedParticipantId =
-      expectedParticipantId ??
-      (participantIds.length == 1 ? participantIds.single : null);
-  if (resolvedParticipantId == null ||
-      participantIds.length != 1 ||
-      !participantIds.contains(resolvedParticipantId)) {
+      expectedParticipantId ?? combatSettlement.playerCharacterId;
+  if (combatSettlement.playerCharacterId != resolvedParticipantId) {
     return empty;
   }
   final ids = [resolvedParticipantId];

@@ -39,6 +39,7 @@ final class _WrongParticipantCombat implements ExpeditionCombat {
       result: BattleResult.leftWin,
       totalTicks: 1,
       hadActions: true,
+      playerCharacterId: 999,
       participants: const [
         CombatParticipantSnapshot(characterId: 999, currentHp: 80, maxHp: 100),
       ],

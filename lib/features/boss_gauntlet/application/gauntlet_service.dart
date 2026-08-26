@@ -699,8 +699,6 @@ class GauntletService {
   }) async {
     final member = run.members.length == 1 ? run.members.single : null;
     final settlement = result.combatSettlement;
-    final participantIds = settlement.participantCharacterIds;
-    final playerCharacterIds = participantIds.where((id) => id > 0).toSet();
     final participant = member == null
         ? null
         : settlement.participantFor(member.characterId);
@@ -708,8 +706,7 @@ class GauntletService {
     if (member == null ||
         !settlement.isFinished ||
         snapshotWon != result.leftWin ||
-        playerCharacterIds.length != 1 ||
-        !playerCharacterIds.contains(member.characterId) ||
+        settlement.playerCharacterId != member.characterId ||
         participant == null ||
         participant.currentHp != result.checkpoint.currentHp ||
         participant.maxHp != result.checkpoint.maxHp ||

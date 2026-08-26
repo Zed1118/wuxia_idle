@@ -121,6 +121,7 @@ void main() {
       result: BattleResult.leftWin,
       totalTicks: 12,
       hadActions: true,
+      playerCharacterId: founderId,
       participants: [
         CombatParticipantSnapshot(
           characterId: founderId,
@@ -178,6 +179,7 @@ void main() {
       result: BattleResult.leftWin,
       totalTicks: 12,
       hadActions: true,
+      playerCharacterId: 999999,
       participants: const [
         CombatParticipantSnapshot(characterId: 999999, currentHp: 1, maxHp: 1),
       ],
