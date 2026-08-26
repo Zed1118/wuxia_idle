@@ -62,3 +62,28 @@
 
 - **N3 worktree 清理**:虽已授权,但此刻有 8 个活跃 worktree 在跑单,破坏性操作撞在途分支的风险 > 收益。明早收账后盘面静态时再做。
 - 任何合并 / push / 真人试玩。
+
+---
+
+## 夜间事件记录(02:44–03:00 巡检追加)
+
+**① 执行端被挂起 3.5 小时,已恢复。** runner + N10 + N11 全部 `T`(stopped)态,日志停在 23:18/23:47/23:48。
+根因:另一 agent/会话在 01:58 建 `codex/p2-g2-human-ready-20260827`,其 plan 明写「原 N6/N10/N11 与挂机 runner 进程保持 `SIGSTOP`」。
+已 `SIGCONT` 恢复,进程回 `SN`、日志 02:47 重新推进。
+
+**② 待用户拍(🔴,未动)** — `codex/p2-g2-human-ready-20260827` @ `6e74ed2f [BLOCKED]`,90 文件:
+- 改了 `data/numbers.yaml`(执行端禁区),新增 `combat.posture` 块,`defense_break` 降级为兼容段
+- 其 plan 声称「用户已选择姿态 B / 破防 A / 攻击令牌 A(1/1/1/1)」;**攻击令牌 A 的签字出处协调者查过为「查无实据」**,不能替用户认
+- tip 是 `[BLOCKED]`,按 §8.3 本就是等拍板,未合未 push
+
+**③ N10 交付 `f492c05 [BLOCKED]`,判定:执行端正确,派单方错。**
+原 N10 验收标准第 2/4 条自相矛盾——固定绿 `aa9d8105..1db64d0d` 本身是「1 个 `lib/` 改动且无 receipt」的代码单,
+不可能既「仍 PASS」又满足「代码单缺 receipt 必 FAIL」。执行端拒绝加 SHA 特判/伪造 receipt 而停下,处置正确。
+已写 `N10R_receipt_gap_acceptance_fix.md` 改判并重派(固定绿语义改为「缺 receipt 必红,补如实 receipt 后必绿」)。
+
+**④ 新 gate.sh 已由协调者独立验证。** N10 重写的 688 行 gate.sh 已 commit 且队列正在用它。
+协调者用审计单样例 `0378df73..0ec0280a --skip-full` 复跑:正确判 `task kind: audit (lib/ changes: 0)` → **PASS**。
+队列剩余 N12/N7/N9/N8 皆审计单,尺子安全。
+
+**⑤ `~/.claude` 两处范围外污点**(`M automation-playbook/executors.json` 格式化 + `?? skills/afk/scripts/runner.sh`)
+为先前会话遗留,已在 N10-R 里明令执行端不碰,由协调者收口。
