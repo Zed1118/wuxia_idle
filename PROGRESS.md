@@ -3,22 +3,19 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-### 二阶段结果仪表盘（2026-08-26）
-- **正式里程碑**：当前统一候选按未加权 M0–M9 记录为 `1/10`；main 仍 `0/10`。权重未获批准，不报告成熟度百分比。
-- **当前权威 Gate**：`P2-CANDIDATE-STABILIZATION` 已 `1/1 READY`；当前无权威 WIP，下一门须由人类先选择 schema 授权或调整 automation 固定分母。
-- **候选基线**：`codex/phase2-candidate-stabilization-20260826` 基于 `4226a9c2`；main 为 `e292d3a0`，本任务不合并、不推送 main。
-- **已连接能力**：G2 生产目录/运行时绑定记录为 `8/8`；九霄塔首通后 typed automation 子门 `1/1`；U14 权威门仍 `0/1 BLOCKED`，不得以上述子门替代。
-- **候选验证**：已提交 `2ff18b61` 在独立诊断 clone 默认并发 full suite 为 6,294/6,294 非 loading test events、0 skip、0 error、exit 0，墙钟 `14:06.91`；稳定 worktree 生成 128 个 ignored outputs 后，最终 scoped analyze 0 issue（墙钟 `22.10s`）；diff check 0，registry YAML 可解析。
-- **测试成本订正**：历史 reporter `5:00` 表示约 5 分钟，不是 5 小时；当前冷隔离候选约 14 分钟，施工预算按约 5–15 分钟，不按小时。
-- **恢复事实**：首次测试期间应用托管 b679 worktree 整体消失；同一 commit 在 disposable clone 越过原时间点并完整全绿，仓内未找到删除 repo root 的路径。最符合证据的推断是外部 worktree 生命周期竞态；候选已迁至稳定专用 worktree，main 与其他工作树未受影响。
-- **分支分类**：187 个本地分支中 100 个 tip 已在候选祖先链，87 个历史分叉待逐项归类；其中 2026-08-25 新增治理分支 `503d1ad3` 正在本 Gate 语义吸收。不得把 87 直接等同于 87 项集成债。
-- **worktree**：仍为 154 个；当前候选已迁至 `/Users/a10506/Desktop/Projects/挂机武侠-phase2-candidate-stabilization-20260826`，不再复用应用托管 b679 路径；未删除或复用他人 worktree。
-- **孤立集成债**：治理分支 `503d1ad3` 已语义吸收；其余 86 个历史分叉尚未完成“已吸收 / 已替代 / 仍待评”分类，不直接计债。
-- **main 发布债**：0 个已关闭权威产品 Gate 待发 main；候选稳定化是治理 Gate，不晋升产品里程碑，也不自动授权合 main。
-- **预算**：主成本读数为墙钟；约 90 分钟无 Gate 变化即停线。本 Gate 的有效完整套件已结束，不重复执行。
-- **前三阻塞**：轻功 durable session/occupancy/返程 owner 未授权；守城 durable formation snapshot/occupancy 未授权；M0–M9 权重未批准。
-- **待人类决策**：授权 light-foot / mass-battle schema+saveVersion+共享占用扩展，或明确从固定 automation Gate 分母移除 dispatch；本任务不代替拍板。
-- **详细证据**：候选稳定化计划、分支/worktree 分类审计和最终验证记录位于 `docs/superpowers/plans/`、`docs/audit/`；历史 READY 全文由 git 保留，不再堆叠在本页顶栏。
+### 二阶段结果仪表盘（2026-08-26 夜批收账后）
+- **正式里程碑**：未加权 M0–M9 记录为 `1/10`，候选链已入 main。权重未获批准，不报告成熟度百分比。
+- **当前权威 Gate**：`P2-CANDIDATE-STABILIZATION` `1/1 READY` 已发 main；当前无权威 WIP，下一门须人类先选 schema 授权或调整 automation 固定分母。
+- **main 基线**：`6a0c2945`，领先 `origin/main` 697 commit，**未 push**（本批 push 未授权）。合并前后全量各一次均 5611/5611、analyze 0、format 0 changed。
+- **本批合入（9 分支，零冲突）**：候选稳定化基线 + B 仅测试引用分档 + 入口徽章截断修复 + 战斗核心四条调优候选与决策登记 + 结算参与者身份修复 + 双视口视觉验收记录 + 夜批交接 + 攻击令牌接线。
+- **决策出队**：`TUNE-POSTURE-01`/`TUNE-WEAPON-TIMELINE-01`/`TUNE-ATTACK-TOKEN-01` 拍 B、`TUNE-WEAPON-QI-01` 拍 C，registry `tuning 21 → 17`。仅 TOKEN 已接生产（`black_wind_ridge.yaml` 2/2/1/1，经 enforcing gate 真消费）。
+- **已连接能力**：G2 生产目录/运行时绑定 `8/8`；九霄塔首通后 typed automation 子门 `1/1`；U14 权威门仍 `0/1 BLOCKED`，不得以子门替代。
+- **测试成本**：热缓存并发全量墙钟约 5 分钟（本批两次实测 5:10 / 5:02），冷隔离约 14 分钟；reporter 的 `mm:ss` 是分秒不是小时。
+- **前三阻塞**：POSTURE/TIMELINE/QI 三条冻结值的 parked 合同在 lib 内零消费者，接线等于替换生产战斗子系统，须人类重新授权范围；轻功 durable session/occupancy 未授权；守城 durable formation snapshot/occupancy 未授权。
+- **待人类决策**：① 三条战斗子系统接线的范围与 v1.50 门槛（YAML+红线+模拟+双平台 Profile+真人试玩）② light-foot / mass-battle schema+saveVersion+共享占用扩展 ③ M0–M9 权重 ④ 是否 push main。
+- **已知偏差**：候选目录守卫 `_enforceStage0103CandidateBounds` 限令牌总和 ∈[2,4]，而冻结值总和 6；该守卫仅作用于候选源、不适用生产，两边口径待统一。视觉验收 46 行鼠标判定已改 N/A（截图不含光标），返回 12 / 键盘 22 / semantics 20 三列 FAIL 未证伪，另立 triage。
+- **worktree**：160+ 个，多数分支已入 main，清理债未授权未动。
+- **详细证据**：计划、分支/worktree 分类审计与验证记录位于 `docs/superpowers/plans/`、`docs/audit/`；历史 READY 全文由 git 保留，不堆叠顶栏。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。
