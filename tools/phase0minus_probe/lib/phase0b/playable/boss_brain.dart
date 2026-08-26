@@ -49,10 +49,7 @@ final class DraftBossDangerZone {
     final aim = direction;
     if (aim == null) return false;
     if (delta.length2 == 0) return true;
-    final dot = aim
-        .normalized()
-        .dot(delta.normalized())
-        .clamp(-1.0, 1.0);
+    final dot = aim.normalized().dot(delta.normalized()).clamp(-1.0, 1.0);
     return math.acos(dot) <= halfArcRadians;
   }
 }
@@ -85,10 +82,9 @@ final class DraftBossBrain {
 
   bool get defeated => state == DraftBossState.defeated;
 
-  double get incomingDamageMultiplier =>
-      state == DraftBossState.exhausted
-          ? PlayableDraftTuning.bossExhaustedDamageMultiplier
-          : 1.0;
+  double get incomingDamageMultiplier => state == DraftBossState.exhausted
+      ? PlayableDraftTuning.bossExhaustedDamageMultiplier
+      : 1.0;
 
   List<DraftBossEvent> advance(double dt, Vector2 playerPosition) {
     final events = <DraftBossEvent>[];
@@ -114,8 +110,7 @@ final class DraftBossBrain {
         stateRemaining -= dt;
         if (stateRemaining <= 0) {
           state = DraftBossState.advancing;
-          attackCooldown =
-              PlayableDraftTuning.bossAttackCooldownPhaseTwo * 0.5;
+          attackCooldown = PlayableDraftTuning.bossAttackCooldownPhaseTwo * 0.5;
         }
       case DraftBossState.telegraphSlam:
         stateRemaining -= dt;
@@ -209,7 +204,10 @@ final class DraftBossBrain {
     }
   }
 
-  DraftBossEvent _resolveStrike(Vector2 playerPosition, {required bool isSlam}) {
+  DraftBossEvent _resolveStrike(
+    Vector2 playerPosition, {
+    required bool isSlam,
+  }) {
     final zone = activeZone;
     final hit = zone != null && zone.contains(playerPosition);
     return DraftBossEvent(

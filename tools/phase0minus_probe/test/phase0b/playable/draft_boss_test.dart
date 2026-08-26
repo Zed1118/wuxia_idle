@@ -19,29 +19,32 @@ List<DraftBossEvent> _advanceUntil(
 }
 
 void main() {
-  test('phase one only uses the readable slam, hitting only inside the zone', () {
-    final boss = DraftBossBrain(spawn: Vector2(2000, 500));
-    // Close enough to be inside slam radius once the boss holds range.
-    final player = Vector2(2120, 500);
-    final events = <DraftBossEvent>[];
-    var t = 0.0;
-    while (t < 20 && events.length < 3) {
-      events.addAll(boss.advance(1 / 60, player));
-      t += 1 / 60;
-    }
-    final resolved = events
-        .where((event) => event.kind != DraftBossEventKind.phaseChanged)
-        .toList();
-    expect(resolved, isNotEmpty);
-    for (final event in resolved) {
-      expect(event.kind, DraftBossEventKind.slamResolved);
-    }
-    expect(resolved.any((event) => event.hitPlayer), isTrue);
-    expect(
-      resolved.firstWhere((event) => event.hitPlayer).damage,
-      PlayableDraftTuning.bossSlamDamage,
-    );
-  });
+  test(
+    'phase one only uses the readable slam, hitting only inside the zone',
+    () {
+      final boss = DraftBossBrain(spawn: Vector2(2000, 500));
+      // Close enough to be inside slam radius once the boss holds range.
+      final player = Vector2(2120, 500);
+      final events = <DraftBossEvent>[];
+      var t = 0.0;
+      while (t < 20 && events.length < 3) {
+        events.addAll(boss.advance(1 / 60, player));
+        t += 1 / 60;
+      }
+      final resolved = events
+          .where((event) => event.kind != DraftBossEventKind.phaseChanged)
+          .toList();
+      expect(resolved, isNotEmpty);
+      for (final event in resolved) {
+        expect(event.kind, DraftBossEventKind.slamResolved);
+      }
+      expect(resolved.any((event) => event.hitPlayer), isTrue);
+      expect(
+        resolved.firstWhere((event) => event.hitPlayer).damage,
+        PlayableDraftTuning.bossSlamDamage,
+      );
+    },
+  );
 
   test('a player holding just outside slam range is never hit', () {
     final boss = DraftBossBrain(spawn: Vector2(2000, 500));
@@ -83,7 +86,9 @@ void main() {
     expect(boss.phase, DraftBossPhase.two);
     final moreEvents = boss.advance(1 / 60, Vector2(2200, 500));
     expect(
-      moreEvents.where((event) => event.kind == DraftBossEventKind.phaseChanged),
+      moreEvents.where(
+        (event) => event.kind == DraftBossEventKind.phaseChanged,
+      ),
       isEmpty,
     );
   });

@@ -15,6 +15,8 @@ import 'posture.dart';
 
 export 'phase0a_damage_kind.dart';
 
+const _noBreakPower = 0;
+
 /// 一次结算的运行时结果:命中与否、暴击与否、伤害值全部由
 /// resolver(未来生产接 DamageCalculator)给出,reducer 不写第二套公式。
 final class Phase0aResolvedHit {
@@ -322,7 +324,7 @@ Phase0aStepResult reducePhase0aTick({
     required bool isUltimate,
     required double postureDamage,
     required PostureHitKind postureHitKind,
-    int breakPower = 0,
+    required int breakPower,
   }) {
     if (!resolved.isHit) return;
     DefenseResult? defense;
@@ -637,6 +639,7 @@ Phase0aStepResult reducePhase0aTick({
               postureDamage:
                   mainIntent.postureDamage + partnerIntent.postureDamage,
               postureHitKind: PostureHitKind.light,
+              breakPower: _noBreakPower,
             );
             totalDamage = healthBeforeDefense - player.currentHealth;
           } else {
@@ -728,6 +731,7 @@ Phase0aStepResult reducePhase0aTick({
             isUltimate: false,
             postureDamage: intent.postureDamage,
             postureHitKind: intent.postureHitKind,
+            breakPower: _noBreakPower,
           );
         }
         final aimDirection = intent.aimDirection.lengthSquared > 0
@@ -853,6 +857,7 @@ Phase0aStepResult reducePhase0aTick({
             isUltimate: intent.skill.type == SkillType.ultimate,
             postureDamage: intent.postureDamage,
             postureHitKind: intent.postureHitKind,
+            breakPower: _noBreakPower,
           );
         }
         final currentAttacker = enemiesById[actorId];
@@ -1405,6 +1410,7 @@ Phase0aStepResult reducePhase0aTick({
         isUltimate: cast.skill.type == SkillType.ultimate,
         postureDamage: cast.postureDamage,
         postureHitKind: cast.postureHitKind,
+        breakPower: _noBreakPower,
       );
     }
     // 断魂庄锁脉针：蓄力完整结束且未被破招即夺取玩家最大真气的一定比例。
