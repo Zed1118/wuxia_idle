@@ -31,7 +31,8 @@ final class NonWaveFakeFlow implements Phase0aBattleFlow {
   Phase0aArenaState _state;
   final int victoryAfterTicks;
   Phase0aBattleOutcome _outcome = Phase0aBattleOutcome.ongoing;
-  List<CombatEventRecord> _lastOrderedEventRecords = const <CombatEventRecord>[];
+  List<CombatEventRecord> _lastOrderedEventRecords =
+      const <CombatEventRecord>[];
 
   @override
   Phase0aArenaState get state => _state;
@@ -63,9 +64,7 @@ final class NonWaveFakeFlow implements Phase0aBattleFlow {
     final events = <Phase0aEvent>[];
     if (nextTick >= victoryAfterTicks) {
       _outcome = Phase0aBattleOutcome.victory;
-      events.add(
-        Phase0aBattleVictory(seq: _state.nextSeq - 1, tick: nextTick),
-      );
+      events.add(Phase0aBattleVictory(seq: _state.nextSeq - 1, tick: nextTick));
     }
     _lastOrderedEventRecords = Phase0aEventOrderAdapter.project(events);
     return List.unmodifiable(events);
@@ -156,10 +155,7 @@ void main() {
 
     test('headless runToEnd 可消费 non-wave fake 快进到终局', () {
       final result = Phase0aHeadlessRunner.runToEnd(
-        flow: NonWaveFakeFlow(
-          initialState: _fakeState(),
-          victoryAfterTicks: 3,
-        ),
+        flow: NonWaveFakeFlow(initialState: _fakeState(), victoryAfterTicks: 3),
         bot: _makeBot(),
         deltaSeconds: _deltaSeconds,
         maxTicks: 100,
@@ -169,18 +165,12 @@ void main() {
       expect(result.timedOut, isFalse);
       expect(result.finalState.tick, 3);
       expect(result.eventRecords, isNotEmpty);
-      expect(
-        result.events.any((e) => e is Phase0aBattleVictory),
-        isTrue,
-      );
+      expect(result.events.any((e) => e is Phase0aBattleVictory), isTrue);
     });
 
     test('headless runToEndAsync 可消费 non-wave fake 快进到终局', () async {
       final result = await Phase0aHeadlessRunner.runToEndAsync(
-        flow: NonWaveFakeFlow(
-          initialState: _fakeState(),
-          victoryAfterTicks: 3,
-        ),
+        flow: NonWaveFakeFlow(initialState: _fakeState(), victoryAfterTicks: 3),
         bot: _makeBot(),
         deltaSeconds: _deltaSeconds,
         maxTicks: 100,
@@ -233,10 +223,7 @@ void main() {
         code.contains('List<CombatEventRecord> get lastOrderedEventRecords'),
         isTrue,
       );
-      expect(
-        code.contains('List<Phase0aEvent> advance'),
-        isTrue,
-      );
+      expect(code.contains('List<Phase0aEvent> advance'), isTrue);
     });
 
     test('生产 wave flow 实现接口(编译期契约由 implements 保证)', () {

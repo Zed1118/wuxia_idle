@@ -186,162 +186,157 @@ void main() {
     },
   );
 
-  test(
-    'default provider consumes the real repository runtime closure',
-    () async {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      final source = container.read(
-        phase0aMainlineEncounterRuntimeBindingSourceProvider,
-      );
-      final bundle = await source.load(
-        stageId: 'stage_01_03',
-        encounterId: 'ch1_encounter_03_ambush',
+  test('default provider consumes the real repository runtime closure', () async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final source = container.read(
+      phase0aMainlineEncounterRuntimeBindingSourceProvider,
+    );
+    final bundle = await source.load(
+      stageId: 'stage_01_03',
+      encounterId: 'ch1_encounter_03_ambush',
+      cycleIndex: 1,
+    );
+
+    expect(bundle.tickDuration, const Duration(milliseconds: 100));
+    expect(bundle.actorBindingsByEntryId, hasLength(40));
+    final blade = bundle.actorBindingsByEntryId['ch1_s03_blade_01']!;
+    final crossbow = bundle.actorBindingsByEntryId['ch1_s03_crossbow_01']!;
+    final rope = bundle.actorBindingsByEntryId['ch1_s03_rope_01']!;
+    final leader = bundle.actorBindingsByEntryId['ch1_s03_leader_01']!;
+
+    expect(blade.combatant.maxHp, 2900);
+    expect(crossbow.combatant.maxHp, 2320);
+    expect(rope.combatant.maxHp, 3190);
+    expect(leader.combatant.maxHp, 3770);
+    expect(blade.combatant.speed, 110);
+    expect(crossbow.combatant.speed, 110);
+    expect(rope.combatant.speed, 121);
+    expect(leader.combatant.speed, 99);
+    expect(
+      leader.combatant.defenseRate,
+      closeTo(
+        (blade.combatant.defenseRate * 1.2).clamp(
+          0.0,
+          repository.numbers.cycleEvolution.defenseRateCap,
+        ),
+        0.000001,
+      ),
+    );
+    expect(
+      leader.combatant.skillLoadout.basicAttack!.id,
+      'skill_gangmeng_jichu_basic',
+    );
+    expect(
+      leader.enemySkillBindings.single.skill.id,
+      'skill_gangmeng_jichu_skill',
+    );
+    expect(blade.token.kind, AttackTokenKind.melee);
+    expect(crossbow.token.kind, AttackTokenKind.ranged);
+    expect(rope.token.kind, AttackTokenKind.charge);
+    expect(leader.token.kind, AttackTokenKind.support);
+    expect(
+      blade.behaviorProfile,
+      const Phase0aEnemyBehaviorProfile(
+        id: 'ai_bandit_press',
+        movementPolicy: Phase0aEnemyMovementPolicy.directAdvance,
+        attackPolicy: Phase0aEnemyAttackPolicy.closeRange,
+      ),
+    );
+    expect(
+      crossbow.behaviorProfile,
+      const Phase0aEnemyBehaviorProfile(
+        id: 'ai_crossbow_offset',
+        movementPolicy: Phase0aEnemyMovementPolicy.holdDistance,
+        attackPolicy: Phase0aEnemyAttackPolicy.rangedPressure,
+      ),
+    );
+    expect(
+      rope.behaviorProfile,
+      const Phase0aEnemyBehaviorProfile(
+        id: 'ai_rope_flank',
+        movementPolicy: Phase0aEnemyMovementPolicy.lateralFlank,
+        attackPolicy: Phase0aEnemyAttackPolicy.chargeAndReposition,
+      ),
+    );
+    expect(
+      leader.behaviorProfile,
+      const Phase0aEnemyBehaviorProfile(
+        id: 'ai_gong_command',
+        movementPolicy: Phase0aEnemyMovementPolicy.guardedPosition,
+        attackPolicy: Phase0aEnemyAttackPolicy.supportPulse,
+      ),
+    );
+    expect(leader.token.priority, 3);
+    expect(leader.visualAssetPath, startsWith('assets/enemies/'));
+    final ropeActor = rope.createActor('runtime-rope');
+    expect(ropeActor.id, 'runtime-rope');
+    expect(ropeActor.position, const ArenaVector(120, 120));
+    expect(ropeActor.moveSpeed, 121);
+
+    final host = await createFreshPhase0aMainlineEncounter(
+      Phase0aMainlineEncounterHostBuildRequest(
+        stage: repository.getStage('stage_01_03'),
+        playerMapping: playerMapping,
+        numbers: repository.numbers,
         cycleIndex: 1,
+        rng: Random(17),
+        runtimeBindingSource: source,
+      ),
+    );
+    expect(host, isNotNull);
+    final mapping = host!.mapping!;
+    expect(mapping.combatants, hasLength(41));
+    expect(mapping.enemyAiAdapter.behaviorProfilesByActor, hasLength(40));
+    final encounter = catalog.encounterForStage('stage_01_03')!;
+    String runtimeIdFor(String entryId) {
+      final ordinal = encounter.spawnEntries.indexWhere(
+        (entry) => entry.entryId == entryId,
       );
+      return 'stage_01_03/${encounter.id}/actor-${ordinal.toString().padLeft(3, '0')}';
+    }
 
-      expect(bundle.tickDuration, const Duration(milliseconds: 100));
-      expect(bundle.actorBindingsByEntryId, hasLength(40));
-      final blade = bundle.actorBindingsByEntryId['ch1_s03_blade_01']!;
-      final crossbow = bundle.actorBindingsByEntryId['ch1_s03_crossbow_01']!;
-      final rope = bundle.actorBindingsByEntryId['ch1_s03_rope_01']!;
-      final leader = bundle.actorBindingsByEntryId['ch1_s03_leader_01']!;
-
-      expect(blade.combatant.maxHp, 2900);
-      expect(crossbow.combatant.maxHp, 2320);
-      expect(rope.combatant.maxHp, 3190);
-      expect(leader.combatant.maxHp, 3770);
-      expect(blade.combatant.speed, 110);
-      expect(crossbow.combatant.speed, 110);
-      expect(rope.combatant.speed, 121);
-      expect(leader.combatant.speed, 99);
-      expect(
-        leader.combatant.defenseRate,
-        closeTo(
-          (blade.combatant.defenseRate * 1.2).clamp(
-            0.0,
-            repository.numbers.cycleEvolution.defenseRateCap,
+    final intentState = Phase0aArenaState(
+      tick: 0,
+      nextSeq: 1,
+      player: mapping.initialState.player,
+      enemies: [
+        for (final entryId in const [
+          'ch1_s03_blade_01',
+          'ch1_s03_crossbow_01',
+          'ch1_s03_rope_01',
+          'ch1_s03_leader_01',
+        ])
+          bundle.actorBindingsByEntryId[entryId]!.createActor(
+            runtimeIdFor(entryId),
           ),
-          0.000001,
-        ),
-      );
-      expect(
-        leader.combatant.skillLoadout.basicAttack!.id,
-        'skill_gangmeng_jichu_basic',
-      );
-      expect(
-        leader.enemySkillBindings.single.skill.id,
-        'skill_gangmeng_jichu_skill',
-      );
-      expect(blade.token.kind, AttackTokenKind.melee);
-      expect(crossbow.token.kind, AttackTokenKind.ranged);
-      expect(rope.token.kind, AttackTokenKind.charge);
-      expect(leader.token.kind, AttackTokenKind.support);
-      expect(
-        blade.behaviorProfile,
-        const Phase0aEnemyBehaviorProfile(
-          id: 'ai_bandit_press',
-          movementPolicy: Phase0aEnemyMovementPolicy.directAdvance,
-          attackPolicy: Phase0aEnemyAttackPolicy.closeRange,
-        ),
-      );
-      expect(
-        crossbow.behaviorProfile,
-        const Phase0aEnemyBehaviorProfile(
-          id: 'ai_crossbow_offset',
-          movementPolicy: Phase0aEnemyMovementPolicy.holdDistance,
-          attackPolicy: Phase0aEnemyAttackPolicy.rangedPressure,
-        ),
-      );
-      expect(
-        rope.behaviorProfile,
-        const Phase0aEnemyBehaviorProfile(
-          id: 'ai_rope_flank',
-          movementPolicy: Phase0aEnemyMovementPolicy.lateralFlank,
-          attackPolicy: Phase0aEnemyAttackPolicy.chargeAndReposition,
-        ),
-      );
-      expect(
-        leader.behaviorProfile,
-        const Phase0aEnemyBehaviorProfile(
-          id: 'ai_gong_command',
-          movementPolicy: Phase0aEnemyMovementPolicy.guardedPosition,
-          attackPolicy: Phase0aEnemyAttackPolicy.supportPulse,
-        ),
-      );
-      expect(leader.token.priority, 3);
-      expect(leader.visualAssetPath, startsWith('assets/enemies/'));
-      final ropeActor = rope.createActor('runtime-rope');
-      expect(ropeActor.id, 'runtime-rope');
-      expect(ropeActor.position, const ArenaVector(120, 120));
-      expect(ropeActor.moveSpeed, 121);
-
-      final host = await createFreshPhase0aMainlineEncounter(
-        Phase0aMainlineEncounterHostBuildRequest(
-          stage: repository.getStage('stage_01_03'),
-          playerMapping: playerMapping,
-          numbers: repository.numbers,
-          cycleIndex: 1,
-          rng: Random(17),
-          runtimeBindingSource: source,
-        ),
-      );
-      expect(host, isNotNull);
-      final mapping = host!.mapping!;
-      expect(mapping.combatants, hasLength(41));
-      expect(mapping.enemyAiAdapter.behaviorProfilesByActor, hasLength(40));
-      final encounter = catalog.encounterForStage('stage_01_03')!;
-      String runtimeIdFor(String entryId) {
-        final ordinal = encounter.spawnEntries.indexWhere(
-          (entry) => entry.entryId == entryId,
-        );
-        return 'stage_01_03/${encounter.id}/actor-${ordinal.toString().padLeft(3, '0')}';
-      }
-
-      final intentState = Phase0aArenaState(
-        tick: 0,
-        nextSeq: 1,
-        player: mapping.initialState.player,
-        enemies: [
-          for (final entryId in const [
-            'ch1_s03_blade_01',
-            'ch1_s03_crossbow_01',
-            'ch1_s03_rope_01',
-            'ch1_s03_leader_01',
-          ])
-            bundle.actorBindingsByEntryId[entryId]!.createActor(
-              runtimeIdFor(entryId),
-            ),
-        ],
-        skillSlots: mapping.initialState.skillSlots,
-      );
-      final profileIds = {
-        for (final intent in mapping.enemyAiAdapter.intentsFor(
-          state: intentState,
-        ))
-          switch (intent) {
-            Phase0aMoveIntent(:final behaviorProfile) =>
-              behaviorProfile?.id,
-            Phase0aAttackIntent(:final behaviorProfile) =>
-              behaviorProfile?.id,
-            Phase0aEnemySkillIntent(:final behaviorProfile) =>
-              behaviorProfile?.id,
-            _ => null,
-          },
-      };
-      expect(profileIds, {
-        'ai_bandit_press',
-        'ai_crossbow_offset',
-        'ai_rope_flank',
-        'ai_gong_command',
-      });
-      host.advanceManual(
-        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
-        command: const Phase0aPlayerCommand(),
-      );
-      expect(host.flow.state.tick, 1);
-    },
-  );
+      ],
+      skillSlots: mapping.initialState.skillSlots,
+    );
+    final profileIds = {
+      for (final intent in mapping.enemyAiAdapter.intentsFor(
+        state: intentState,
+      ))
+        switch (intent) {
+          Phase0aMoveIntent(:final behaviorProfile) => behaviorProfile?.id,
+          Phase0aAttackIntent(:final behaviorProfile) => behaviorProfile?.id,
+          Phase0aEnemySkillIntent(:final behaviorProfile) =>
+            behaviorProfile?.id,
+          _ => null,
+        },
+    };
+    expect(profileIds, {
+      'ai_bandit_press',
+      'ai_crossbow_offset',
+      'ai_rope_flank',
+      'ai_gong_command',
+    });
+    host.advanceManual(
+      deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+      command: const Phase0aPlayerCommand(),
+    );
+    expect(host.flow.state.tick, 1);
+  });
 
   test('migrated binding failure never falls back to legacy', () async {
     await expectLater(

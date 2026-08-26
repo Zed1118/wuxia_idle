@@ -183,8 +183,9 @@ void main() {
     expect(encounter.spawnConfig.reinforcementThreshold, 3);
     expect(encounter.spawnConfig.entryWarningTicks, 30);
     expect(encounter.spawnConfig.attackGraceTicks, 15);
-    expect(encounter.tokenBudgets.melee, 1);
-    expect(encounter.tokenBudgets.ranged, 1);
+    // TUNE-ATTACK-TOKEN-01 用户拍板 B(2026-08-26)冻结值,经生产 YAML 加载。
+    expect(encounter.tokenBudgets.melee, 2);
+    expect(encounter.tokenBudgets.ranged, 2);
     expect(encounter.tokenBudgets.charge, 1);
     expect(encounter.tokenBudgets.support, 1);
 
