@@ -17,7 +17,6 @@ import re
 import signal
 import subprocess
 import sys
-import tempfile
 import time
 from collections import defaultdict, deque
 from pathlib import Path
@@ -405,33 +404,61 @@ def _test_command(target: str, timeout_seconds: int) -> str:
     )
 
 
+def _run_command(
+    command: Sequence[str], root: Path, timeout_seconds: int
+) -> Tuple[str, str, int, bool]:
+    """Run a command and terminate its whole POSIX process group on timeout."""
+
+    process = subprocess.Popen(
+        list(command),
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        errors="replace",
+        start_new_session=os.name == "posix",
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+        return stdout, stderr, int(process.returncode or 0), False
+    except subprocess.TimeoutExpired as error:
+        partial_stdout = error.stdout or ""
+        partial_stderr = error.stderr or ""
+        if isinstance(partial_stdout, bytes):
+            partial_stdout = partial_stdout.decode("utf-8", "replace")
+        if isinstance(partial_stderr, bytes):
+            partial_stderr = partial_stderr.decode("utf-8", "replace")
+        if os.name == "posix":
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        else:
+            process.kill()
+        try:
+            final_stdout, final_stderr = process.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            if os.name == "posix":
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            else:
+                process.kill()
+            final_stdout, final_stderr = process.communicate()
+        # TimeoutExpired may already contain the same captured prefix that the
+        # final communicate returns. Prefer the complete final buffers.
+        stdout = final_stdout if final_stdout else partial_stdout
+        stderr = final_stderr if final_stderr else partial_stderr
+        return stdout, stderr, 124, True
+
+
 def run_test_subset(root: Path, tests: Sequence[str], timeout_seconds: int) -> Dict[str, object]:
     command = ["flutter", "test", "--no-pub", "-r", "json"] + list(tests)
     started = time.monotonic()
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=str(root),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            errors="replace",
-            timeout=timeout_seconds,
-            check=False,
-        )
-        timed_out = False
-        stdout = completed.stdout
-        stderr = completed.stderr
-        return_code = completed.returncode
-    except subprocess.TimeoutExpired as error:
-        timed_out = True
-        stdout = error.stdout or ""
-        stderr = error.stderr or ""
-        if isinstance(stdout, bytes):
-            stdout = stdout.decode("utf-8", "replace")
-        if isinstance(stderr, bytes):
-            stderr = stderr.decode("utf-8", "replace")
-        return_code = 124
+    stdout, stderr, return_code, timed_out = _run_command(
+        command, root, timeout_seconds
+    )
 
     suites: Dict[int, str] = {}
     tests_by_id: Dict[int, Tuple[str, Optional[int]]] = {}

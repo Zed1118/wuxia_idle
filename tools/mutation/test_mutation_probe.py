@@ -1,4 +1,6 @@
 import tempfile
+import sys
+import time
 import unittest
 from pathlib import Path
 
@@ -160,6 +162,29 @@ class ClassificationTest(unittest.TestCase):
             mutation_probe.classify_test_result(result, {"test/a_test.dart"}),
             "killed_by_non_target",
         )
+
+
+class ProcessTimeoutTest(unittest.TestCase):
+    @unittest.skipUnless(mutation_probe.os.name == "posix", "POSIX process-group behavior")
+    def test_timeout_terminates_child_process_holding_output_pipes(self):
+        command = [
+            sys.executable,
+            "-c",
+            (
+                "import subprocess, sys, time; "
+                "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+                "print('ready', flush=True); time.sleep(60)"
+            ),
+        ]
+        started = time.monotonic()
+        stdout, _stderr, return_code, timed_out = mutation_probe._run_command(
+            command, Path.cwd(), 1
+        )
+        elapsed = time.monotonic() - started
+        self.assertTrue(timed_out)
+        self.assertEqual(return_code, 124)
+        self.assertIn("ready", stdout)
+        self.assertLess(elapsed, 7)
 
 
 if __name__ == "__main__":

@@ -63,6 +63,8 @@ Compile/load failures and test errors never count as killed.
 
 ## Interruption recovery
 
+Each test command starts in its own POSIX process group; a timeout terminates
+the Flutter parent and compiler/test descendants before the next mutant.
 `SIGINT` and `SIGTERM` trigger byte-for-byte restoration. After any forced
 interruption, verify and restore before doing anything else:
 
