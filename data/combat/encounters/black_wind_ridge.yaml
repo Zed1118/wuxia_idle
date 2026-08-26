@@ -11,8 +11,8 @@ encounters:
       entry_warning_ticks: 30
       attack_grace_ticks: 15
     token_budgets:
-      melee: 2
-      ranged: 2
+      melee: 1
+      ranged: 1
       charge: 1
       support: 1
     spawn_entries:

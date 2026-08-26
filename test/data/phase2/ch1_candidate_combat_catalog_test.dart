@@ -213,19 +213,9 @@ void _enforceStage0103CandidateBounds({
   }
 }
 
-/// 令牌总预算的 [2,4] 区间是**候选目录专用**边界,只作用于
-/// `data/combat/candidate/` 下的探索性配置,用来防止候选数据在未拍板前
-/// 漂到极端值。它**不治理生产**:
-///
-/// - 生产值由 `TUNE-ATTACK-TOKEN-01` 用户 2026-08-26 拍板 B 冻结为
-///   melee 2 / ranged 2 / charge 1 / support 1,总和 6,写在
-///   `data/combat/encounters/black_wind_ridge.yaml`;
-/// - 生产 loader (`combat_encounter_catalog_loader.dart`) 对 token_budgets
-///   只校验非负、无上限,总和 6 不越任何生产红线;
-/// - 本文件全部用例走 `_loadCandidateCatalog()` 读候选源,不读生产 YAML,
-///   因此两套口径**有意分离**、不需要统一(2026-08-26 用户拍板维持两套口径)。
-///
-/// 若将来要用同一区间治理生产,须先重新评估冻结值,不得反向把生产值压回候选区间。
+/// 令牌总预算区间 [2,4] 来自二阶段方案 §「第 1 章范围」(方案 :1025)。
+/// 候选源与生产源共用同一区间;生产侧的专项守卫见
+/// `test/data/phase2/ch1_production_catalog_test.dart`。
 int _totalTokenBudget(CombatEncounterDef encounter) {
   final budget = encounter.tokenBudgets;
   return budget.melee + budget.ranged + budget.charge + budget.support;

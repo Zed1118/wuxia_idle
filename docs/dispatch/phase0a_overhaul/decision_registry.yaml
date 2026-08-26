@@ -355,28 +355,32 @@ decisions:
     atomic_vectors: [wall_blocking_policy, arena_clamp_policy]
 
   - id: TUNE-WEAPON-TIMELINE-01
-    status: frozen
+    status: tuning
     summary: 五武器前摇、命中与收招候选生成
     atomic_vectors: [sword, heavy, flexible, dual, hidden]
     user_choice: B
     decided_on: 2026-08-26
-    frozen_values: {sword: 1/2/3/1/1/4/3/2/4, heavy: 2/3/3/2/2/5/4/3/5, flexible: 1/4/2/1/1/4/3/2/4, dual: 0/4/2/0/0/4/2/1/3, hidden: 0/2/3/0/0/3/2/1/3}
+    selected_candidate: B
+    production_wiring: pending
+    playtest: pending
+    selected_values: {sword: 1/2/3/1/1/4/3/2/4, heavy: 2/3/3/2/2/5/4/3/5, flexible: 1/4/2/1/1/4/3/2/4, dual: 0/4/2/0/0/4/2/1/3, hidden: 0/2/3/0/0/3/2/1/3}
     chosen_because: 首效密度仅降 1.75% 即拉开五武器承诺感差异
     candidate_evidence: docs/spec/phase2_combat_core_tuning_candidates_20260826.md
     parked_contract: lib/features/battle/domain/phase0a/action_timeline.dart
-    batch_action: awaiting_production_wiring
 
   - id: TUNE-WEAPON-QI-01
-    status: frozen
+    status: tuning
     summary: 五武器与招式真气收支候选生成
     atomic_vectors: [weapon_basic_gain, technique_cost, recovery_policy]
     user_choice: C
     decided_on: 2026-08-26
-    frozen_values: {recovery_policy: basicAndCappedKill, kill_gain: 5, kill_window_cap: 15, sword: 100/40/20/28/52, heavy: 100/40/24/34/60, flexible: 100/40/22/30/54, dual: 100/40/18/24/46, hidden: 100/40/18/26/48}
+    selected_candidate: C
+    production_wiring: pending
+    playtest: pending
+    selected_values: {recovery_policy: basicAndCappedKill, kill_gain: 5, kill_window_cap: 15, sword: 100/40/20/28/52, heavy: 100/40/24/34/60, flexible: 100/40/22/30/54, dual: 100/40/18/24/46, hidden: 100/40/18/26/48}
     chosen_because: 招式频率最高、真气不足拒绝压到 7.59%；代价是节奏绑定击杀，Boss 单体段收益收窄
     candidate_evidence: docs/spec/phase2_combat_core_tuning_candidates_20260826.md
     parked_contract: lib/features/battle/domain/phase0a/qi_resource.dart
-    batch_action: awaiting_production_wiring
 
   - id: TUNE-WEAPON-MULTIPLIER-01
     status: tuning
@@ -394,16 +398,18 @@ decisions:
     atomic_vectors: [shield_absorption, parry_window, counter_cap]
 
   - id: TUNE-POSTURE-01
-    status: frozen
+    status: tuning
     summary: 姿态容量、恢复与 Boss 折算候选生成
     atomic_vectors: [capacity, recovery, boss_conversion]
     user_choice: B
     decided_on: 2026-08-26
-    frozen_values: {capacity: 14, vulnerability_ticks: 4, recovery_policy: recover, post_vulnerability_accumulated: 4, boss_conversion_factor: 3}
+    selected_candidate: B
+    production_wiring: ready_unmerged
+    playtest: pending
+    selected_values: {capacity: 14, vulnerability_ticks: 4, recovery_policy: recover, post_vulnerability_accumulated: 4, boss_conversion_factor: 3}
     chosen_because: 破防窗占比约 15%，可重复攻防循环且不过控
     candidate_evidence: docs/spec/phase2_combat_core_tuning_candidates_20260826.md
     parked_contract: lib/features/battle/domain/phase0a/posture.dart
-    batch_action: awaiting_production_wiring
 
   - id: TUNE-ACTIVE-LIMIT-01
     status: tuning
@@ -416,16 +422,19 @@ decisions:
     atomic_vectors: [threshold, delay, batch_size]
 
   - id: TUNE-ATTACK-TOKEN-01
-    status: frozen
+    status: tuning
     summary: 近战、远程、冲锋与支援令牌预算候选生成
     atomic_vectors: [melee, ranged, charge, support]
     user_choice: B
+    superseded_by: "2026-08-26 方案一致性复核(与方案 :1025 的攻击令牌 2–4 冲突)"
     decided_on: 2026-08-26
-    frozen_values: {melee: 2, ranged: 2, charge: 1, support: 1}
+    selected_candidate: A
+    production_wiring: complete
+    playtest: pending
+    selected_values: {melee: 1, ranged: 1, charge: 1, support: 1}
     chosen_because: 群敌参与率 +9.75 个百分点且压力不集中到冲锋
     candidate_evidence: docs/spec/phase2_combat_core_tuning_candidates_20260826.md
     parked_contract: lib/features/battle/application/phase0a/attack_token_observe_only_observer.dart
-    batch_action: awaiting_production_wiring
 
   - id: TUNE-STAGE-COUNT-01
     status: tuning
