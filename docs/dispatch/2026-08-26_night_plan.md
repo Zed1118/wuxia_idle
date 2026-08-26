@@ -87,3 +87,67 @@
 
 **⑤ `~/.claude` 两处范围外污点**(`M automation-playbook/executors.json` 格式化 + `?? skills/afk/scripts/runner.sh`)
 为先前会话遗留,已在 N10-R 里明令执行端不碰,由协调者收口。
+
+---
+
+## ⚠️ 03:20 重大发现:Gate 机制自身产生假绿(已止血)
+
+**这是今晚最重要的一条,明早优先读。**
+
+### 现象
+
+`gate.sh` 在 `full_test` 之后崩溃,`analyze` / `format` / `receipt_crosscheck` 三项**从未执行**,
+但 runner 把这些单记成了 `PASS`。
+
+- N5:崩在 `line 343: syntax error near unexpected token 'else'`(23:1x,**早于 N10 改写**)
+- N6 / N11:崩在 `line 480: syntax error near unexpected token '('`(python 代码漏进 bash 上下文)
+- 两次崩溃 `gate.sh` **都正确返回了 `gate_exit=2`**
+
+### 根因(两层,缺一不成灾)
+
+1. **`gate.sh` 本身有语法错**,且**从未被提交过**——`git -C ~/.claude log -- skills/afk/scripts/gate.sh`
+   只有 N10 的 `f492c05` 一个 commit,N0 产出时是 untracked。**没有旧版可回退。**
+2. **`runner.sh` 的 PASS 判定把非零退出吞掉了**(真正的放大器):
+
+```bash
+GATE_LINE="$(tail -1 "$GATE_STDOUT")"      # 崩溃时 stdout 末行为空
+if [[ "$GATE_RC" -ne 0 ]]; then
+  GATE_ITEMS="${GATE_LINE#FAIL: }"          # → 空字符串
+  FAILURE_ITEMS="$GATE_ITEMS"               # → 空字符串
+fi
+if [[ -n "$FAILURE_ITEMS" ]]; then          # → 假,不触发 stop_runner
+  stop_runner ...
+fi
+write_status "PASS: $PACKAGE_BASENAME"      # → 记 PASS
+```
+
+**它检查了退出码,却用 stdout 末行推导失败项;崩溃时末行为空,于是失败被静默吞掉。**
+
+### 影响面(逐单实测,非推断)
+
+| 单 | 原 runner 判定 | 实况 | 补验后 |
+|---|---|---|---|
+| N4 | PASS | gate 完整跑完 | ✅ 有效,无需补 |
+| N2 | PASS | `--skip-full` 完整跑完 | ✅ 有效 |
+| N5 | PASS | **崩溃,gate_exit=2** | ✅ 已补验 PASS |
+| N6 | PASS | **崩溃,gate_exit=2** | ✅ 已补验 PASS |
+| N11 | — | **崩溃,gate_exit=2** | ✅ 已补验 PASS |
+| N12 | 待定 | 预期同样崩 | ⏳ 需补验 |
+| N7 / N9 / N8 | 待定 | 预期同样崩 | ⏳ 需补验 |
+
+**补验方法**:`gate.sh --skip-full`(该路径未受影响,N2 已验证走得通)覆盖
+scope / commit_msg / worktree_clean / analyze / format / receipt;
+全量证据复用崩溃前已打出的 `[PASS] full_test: error_block_count=0 last=... All tests passed!`(那是真实测量)。
+N5 `05:05`、N6 `08:19`、N11 `07:45`,三者 `error_block_count` 均为 0。
+
+### 仍未修复(明早处置)
+
+1. **`gate.sh` 全量模式仍坏**。N10-R 已在改 gate.sh,但它的验收标准没覆盖「全量模式不崩」,**需补一条**。
+2. **`runner.sh` 的吞错逻辑没改**。**不要在 runner 运行期间编辑它**——bash 是增量读脚本的,改运行中的脚本会导致未定义行为。
+   等队列跑完再改,或另起新版。
+3. **`gate.sh` / `runner.sh` 长期 untracked** 是这次没有回退路径的根因;应纳入版本管理并加 `bash -n` 语法自检。
+
+### 判据沉淀
+
+**工具自己的退出码必须是唯一判据,不得用输出内容反推失败项。**
+「退出码非零但输出为空」正是崩溃的典型形态,而这恰恰是最该拦下的情况。
