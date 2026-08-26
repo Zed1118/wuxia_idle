@@ -93,6 +93,11 @@ void main() {
         isTrue,
       );
       expect(
+        hostSource.contains('Phase0aBossMechanicsRouteDriver'),
+        isTrue,
+        reason: 'Boss 验收路由必须走可执行驱动器并冻结真实破绽态',
+      );
+      expect(
         hostSource.contains('VisualRoute.phase0aBattleGuardianMechanics'),
         isTrue,
       );

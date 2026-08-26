@@ -32,8 +32,8 @@
 
 ## 当前恢复点
 
-- 状态:`WIP`。
-- 最后完成:已新建干净 worktree,运行 `flutter pub get` 和 `dart run build_runner build --delete-conflicting-outputs`;已串行 cherry-pick P1/N1/T1 七个实质提交,T2 未接入。
-- 已跑验证:姿态 10、姿态生产接线 5、破防 3、防御纵切 5、战斗屏 28、生产 G2 纵切 2、令牌/目录/候选/调参 28,均通过。
-- 下一步:跑攻击令牌生产值 break-red,接着进行真实入口、双视口与 profile 验证。
-- 阻塞项:用户的 G2 八项主观签字只能在人类试玩后完成;本批只能交付 `G2-HUMAN-READY`。
+- 状态:`BLOCKED / G2-HUMAN-READY`。
+- 最后完成:已在干净候选串行接入 P1/N1/T1 七个实质提交,T2 未接入;已完成令牌 break-red、G0 只读对账、真实黑风岭入口、双视口视觉/物理 Profile、format/analyze/全量回归与八项机器预检。独立复核发现的 Boss 验收路由漂移已经红绿循环修复:一次 R 只累积架势,随后真实普攻进入统一破绽态并冻结。
+- 已跑验证:直接 targeted 全绿;6 轮 Profile 共 21,598 帧,p99 `4.541–5.808ms`;12 张 battle suite 与黑风岭双视口图无异常;format 0 改动,analyze 0 issue,全量 `5621 passed / 0 failed`(276s,exit 0)。详见 `docs/audit/phase2_g2_human_ready_candidate_20260827.md`。
+- 下一步:用户在本候选上真人试玩 `stage_01_03` / `stage_01_05`,对 G2 八项逐项填 `PASS / REWORK / BLOCKED`;未收到签字不合并 main。
+- 阻塞项:用户的 G2 八项主观签字;额外目检注意 guardian 贴身时 HUD 叠压。Boss visual driver 现已能自动达到并冻结真实破绽态,但仍不能代替用户判断“可学且可利用”。

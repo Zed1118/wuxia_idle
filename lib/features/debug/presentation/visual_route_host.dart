@@ -83,6 +83,7 @@ import '../../mainline/application/phase0a_mainline_production_encounter_factory
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../application/phase0a_debug_battle_fixture.dart';
+import 'phase0a_boss_mechanics_route_driver.dart';
 import '../../encounter/presentation/encounter_dialog.dart';
 import '../../battle_record/domain/boss_memory.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
@@ -1217,8 +1218,8 @@ class _Phase0aBlackRidgeProfilePreviewState
       Phase0aBattleScreen(controller: _controller, autoStep: false);
 }
 
-/// Boss fixture driver:先让真实敌方 AI 起蓄力,观察到 charging 后立即发
-/// typed R 破招,并冻结在 stagger/vulnerability 窗口供目检。
+/// Boss fixture driver:先让真实敌方 AI 起蓄力,发出一次 typed R
+/// 展示架势累积,再经真实普攻结算进入统一破绽态后冻结供目检。
 class _Phase0aBossMechanicsPreview extends StatefulWidget {
   const _Phase0aBossMechanicsPreview({
     required this.controller,
@@ -1236,12 +1237,14 @@ class _Phase0aBossMechanicsPreview extends StatefulWidget {
 class _Phase0aBossMechanicsPreviewState
     extends State<_Phase0aBossMechanicsPreview> {
   Timer? _timer;
-  int _guardedHoldTicks = 0;
-  int _chargeHoldTicks = 0;
+  late final Phase0aBossMechanicsRouteDriver _driver;
 
   @override
   void initState() {
     super.initState();
+    _driver = Phase0aBossMechanicsRouteDriver(
+      fixedDeltaSeconds: widget.fixedDeltaSeconds,
+    );
     _timer = Timer.periodic(
       Duration(
         milliseconds:
@@ -1252,34 +1255,12 @@ class _Phase0aBossMechanicsPreviewState
   }
 
   void _advanceBossFixture() {
-    if (!mounted || widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+    if (!mounted) {
       _timer?.cancel();
       return;
     }
-    final boss = widget.controller.state.enemies.first;
-    if (boss.staggerTicksRemaining > 0) {
-      _timer?.cancel();
-      return;
-    }
-    if (widget.controller.events.isEmpty) {
-      final requiredGuardedTicks =
-          (Phase0aPresentationTokens.bossFixtureGuardedHoldSeconds /
-                  widget.fixedDeltaSeconds)
-              .ceil();
-      if (_guardedHoldTicks++ < requiredGuardedTicks) return;
-    }
-    if (boss.chargingCast != null) {
-      final requiredHoldTicks =
-          (Phase0aPresentationTokens.bossFixtureChargeHoldSeconds /
-                  widget.fixedDeltaSeconds)
-              .ceil();
-      if (_chargeHoldTicks++ < requiredHoldTicks) return;
-    }
-    widget.controller.step(
-      boss.chargingCast == null
-          ? null
-          : const Phase0aPlayerCommand(clear: true),
-    );
+    _driver.advance(widget.controller);
+    if (_driver.completed) _timer?.cancel();
   }
 
   @override

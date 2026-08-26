@@ -1636,8 +1636,10 @@ class BossChargeConfig {
   );
 }
 
-/// 第六阶段三人协同:破防开窗参数。fixture 不带该段时回落默认(沿 BossChargeConfig 体例)。
-/// 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,全局不再持 defense_down_pct。
+/// 旧破防开窗 schema 的解析兼容段。fixture 不带时仍回落默认。
+///
+/// 当前 Phase0A 生产 reducer 不消费 [windowTicks];per-skill
+/// SkillDef.defenseBreakPct 已由 typed binding 折算进同一架势伤害。
 class DefenseBreakConfig {
   final int windowTicks;
   const DefenseBreakConfig({this.windowTicks = 3});

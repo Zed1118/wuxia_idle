@@ -197,9 +197,9 @@ combat:
     post_vulnerability_accumulated: 4  # recover 后保留的累计姿态值
     boss_conversion_factor: 3          # Boss 强控制效果折算为姿态伤害的倍率
 
-  defense_break:            # 第六阶段:破防开窗(破招外的第二开窗来源)
-    window_ticks: 3         # 破绽窗口时长(踉跄 default_stagger_ticks=2,破防略长)
-    # 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,此处不设全局值
+  defense_break:            # 旧 schema 兼容段;Phase0A 统一架势不创建第二开窗状态
+    window_ticks: 3         # 保留解析默认;当前 Phase0A 生产 reducer 不消费该值
+    # per-skill SkillDef.defenseBreakPct 在 Phase0A 折算为同一笔额外架势伤害
 
   weakness:                 # 第七阶段批二②:Boss 按攻方流派的弱点/抗性受伤乘子值域
     min_mult: 0.5          # 抗性下限(受伤最多减半)

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
+import 'package:wuxia_idle/features/debug/presentation/phase0a_boss_mechanics_route_driver.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../../support/test_data.dart';
@@ -124,6 +127,43 @@ void main() {
         ),
         findsOneWidget,
       );
+    },
+  );
+
+  test(
+    'boss visual route reaches and freezes unified posture vulnerability',
+    () async {
+      final fixture = await Phase0aDebugBattleFixture.load(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_boss_battle.yaml',
+      );
+      final controller = Phase0aBattleController(
+        flow: fixture.flow,
+        roster: fixture.roster,
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+      addTearDown(controller.dispose);
+      final driver = Phase0aBossMechanicsRouteDriver(
+        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+      );
+
+      for (var tick = 0; tick < 1000 && !driver.completed; tick++) {
+        driver.advance(controller);
+      }
+
+      expect(driver.completed, isTrue);
+      expect(controller.outcome, Phase0aBattleOutcome.ongoing);
+      expect(controller.state.enemies.single.posture!.isVulnerable, isTrue);
+      expect(
+        controller.events.whereType<Phase0aPostureChanged>().any(
+          (event) => event.eventType == PostureEventType.vulnerabilityEntered,
+        ),
+        isTrue,
+      );
+      final frozenState = controller.state;
+      driver.advance(controller);
+      expect(controller.state, same(frozenState));
     },
   );
 
