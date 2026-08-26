@@ -580,13 +580,15 @@ Future<Widget> buildVisualTarget(
         numbers: GameRepository.instance.numbers,
         assetPath: 'data/phase0a_debug_boss_battle.yaml',
       );
-      return _Phase0aBossMechanicsPreview(
+      return Phase0aBossMechanicsPreview(
         controller: Phase0aBattleController(
           flow: fixture.flow,
           roster: fixture.roster,
           fixedDeltaSeconds: fixture.fixedDeltaSeconds,
         ),
         fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+        seed: fixture.seed,
+        onReady: onTargetReady,
       );
     case VisualRoute.phase0aBattleGuardianMechanics:
       final fixture = await Phase0aDebugBattleFixture.load(
@@ -1220,24 +1222,30 @@ class _Phase0aBlackRidgeProfilePreviewState
 
 /// Boss fixture driver:先让真实敌方 AI 起蓄力,发出一次 typed R
 /// 展示架势累积,再经真实普攻结算进入统一破绽态后冻结供目检。
-class _Phase0aBossMechanicsPreview extends StatefulWidget {
-  const _Phase0aBossMechanicsPreview({
+class Phase0aBossMechanicsPreview extends StatefulWidget {
+  const Phase0aBossMechanicsPreview({
+    super.key,
     required this.controller,
     required this.fixedDeltaSeconds,
+    required this.seed,
+    this.onReady,
   });
 
   final Phase0aBattleController controller;
   final double fixedDeltaSeconds;
+  final int seed;
+  final ValueChanged<String>? onReady;
 
   @override
-  State<_Phase0aBossMechanicsPreview> createState() =>
+  State<Phase0aBossMechanicsPreview> createState() =>
       _Phase0aBossMechanicsPreviewState();
 }
 
 class _Phase0aBossMechanicsPreviewState
-    extends State<_Phase0aBossMechanicsPreview> {
+    extends State<Phase0aBossMechanicsPreview> {
   Timer? _timer;
   late final Phase0aBossMechanicsRouteDriver _driver;
+  bool _readyEmitted = false;
 
   @override
   void initState() {
@@ -1260,7 +1268,19 @@ class _Phase0aBossMechanicsPreviewState
       return;
     }
     _driver.advance(widget.controller);
-    if (_driver.completed) _timer?.cancel();
+    if (!_driver.completed) return;
+    _timer?.cancel();
+
+    final state = widget.controller.state;
+    if (!_readyEmitted &&
+        widget.controller.outcome == Phase0aBattleOutcome.ongoing &&
+        state.enemies.isNotEmpty &&
+        (state.enemies.first.posture?.isVulnerable ?? false)) {
+      _readyEmitted = true;
+      widget.onReady?.call(
+        'seed=${widget.seed} tick=${state.tick} state=posture_vulnerable',
+      );
+    }
   }
 
   @override

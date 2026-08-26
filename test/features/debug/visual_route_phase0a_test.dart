@@ -30,6 +30,7 @@ void main() {
         parseVisualRoute('phase0a_battle_boss_mechanics'),
         VisualRoute.phase0aBattleBossMechanics,
       );
+      expect(VisualRoute.phase0aBattleBossMechanics.controlsReadiness, isTrue);
     });
 
     test('guardian 机制实机 route id 可解析', () {
@@ -92,6 +93,21 @@ void main() {
         hostSource.contains('data/phase0a_debug_boss_battle.yaml'),
         isTrue,
       );
+      final bossCaseStart = hostSource.indexOf(
+        'case VisualRoute.phase0aBattleBossMechanics:',
+      );
+      final guardianCaseStart = hostSource.indexOf(
+        'case VisualRoute.phase0aBattleGuardianMechanics:',
+      );
+      expect(bossCaseStart, greaterThanOrEqualTo(0));
+      expect(guardianCaseStart, greaterThan(bossCaseStart));
+      final bossCaseSource = hostSource.substring(
+        bossCaseStart,
+        guardianCaseStart,
+      );
+      expect(bossCaseSource.contains('Phase0aBossMechanicsPreview'), isTrue);
+      expect(bossCaseSource.contains('seed: fixture.seed'), isTrue);
+      expect(bossCaseSource.contains('onReady: onTargetReady'), isTrue);
       expect(
         hostSource.contains('Phase0aBossMechanicsRouteDriver'),
         isTrue,

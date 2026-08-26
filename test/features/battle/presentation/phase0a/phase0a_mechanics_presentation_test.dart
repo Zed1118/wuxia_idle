@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_s
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import 'package:wuxia_idle/features/debug/presentation/phase0a_boss_mechanics_route_driver.dart';
+import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../../support/test_data.dart';
@@ -166,6 +167,49 @@ void main() {
       expect(controller.state, same(frozenState));
     },
   );
+
+  testWidgets('boss visual route emits READY only after vulnerability', (
+    tester,
+  ) async {
+    final fixture = (await tester.runAsync(
+      () => Phase0aDebugBattleFixture.load(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_boss_battle.yaml',
+      ),
+    ))!;
+    final controller = Phase0aBattleController(
+      flow: fixture.flow,
+      roster: fixture.roster,
+      fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+    );
+    addTearDown(controller.dispose);
+    final summaries = <String>[];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Phase0aBossMechanicsPreview(
+          controller: controller,
+          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+          seed: fixture.seed,
+          onReady: summaries.add,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 12));
+    expect(summaries, isEmpty);
+
+    await tester.pump(const Duration(seconds: 24));
+    expect(summaries, hasLength(1));
+    expect(
+      summaries.single,
+      allOf(
+        startsWith('seed=${fixture.seed} tick='),
+        endsWith('state=posture_vulnerable'),
+      ),
+    );
+    expect(controller.state.enemies.single.posture!.isVulnerable, isTrue);
+  });
 
   for (final viewport in viewports) {
     testWidgets('boss feedback chain stays readable at '
