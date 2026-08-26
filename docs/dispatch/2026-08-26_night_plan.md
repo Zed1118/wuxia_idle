@@ -34,10 +34,29 @@
 ## 唤醒后 SOP(照做,不要重新规划)
 
 1. 读本文件 + `git -C /Users/a10506/Desktop/Projects/挂机武侠 worktree list` 核在途
-2. 看 `runner.status` 与 `/Users/a10506/.claude/jobs/799898d4/tmp/runner.log` 判队列走到哪
+2. 看 `$CLAUDE_JOB_DIR/runner.status`(**注意:不在 scripts/ 下**)与 `/Users/a10506/.claude/jobs/799898d4/tmp/runner.log` 判队列走到哪
 3. 对每张已交付未 Gate 的分支跑 `gate.sh`,**不采信执行端自报**
 4. FAIL → 停下记根因,**不自行返修、不自行合并**
 5. 全部 PASS 且队列跑空 → 等用户;**不要自己补新活**(/afk:池空即安全收官)
+
+## 补单(2026-08-26 23:xx 用户追问「2:00 跑空怎么办」后追加)
+
+池空是实测事实:`BACKLOG.md` 的「二·已解锁可派」与「四·方向级候选」**两栏都是空的**。
+补单判据不是「有没有活」,是「明早要协调者花多少额度 Gate」——故**全部零 `lib/` 写入**。
+
+| 单 | 内容 | 载体 |
+|---|---|---|
+| N12 | 把 N2 的 236 组非一致断言转成可派任务池条目 | 队列(基线=N2 tip `0ec0280a`) |
+| N7 | M0–M9 权威门事实底座(判据/已接线/缺口,**不定权重**) | 队列 |
+| N9 | BACKLOG 补给扫描(PROGRESS/audit/spec/TODO 四源) | 队列 |
+| N8 | CLAUDE.md 自称 vs 代码实况 drift 审计 | 队列 |
+| N11 | 变异测试探针建设 + 对战斗核心首轮跑批(🟡 不合并) | 并行,worktree `挂机武侠-p2-mutation` |
+| N10 | receipt.yaml 交叉核对缺口补齐(工作目录 `~/.claude`) | 并行 |
+
+**并发数 3**(runner + N11 + N10),超 /afk 的 `RUNNING ≤ 2`。理由:N10 域在 `~/.claude` 与仓库不相交,
+且两者 Gate 成本 ≈ 读一个小 diff。**这是协调者的判断,用户可否决。**
+
+派单已显式钉 `-m gpt-5.6-sol -c model_reasoning_effort=xhigh`,不再继承 `~/.codex/config.toml`。
 
 ## 今晚明确不做
 
