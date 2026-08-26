@@ -16,8 +16,8 @@
 - [ ] 格 1–3：同 seed/关卡/角色快照，唯一差异为高/低特效，计数/令牌/稳定摘要全等。
 - [ ] 格 4：从独立生产配置读密度目标，与生产运行实体计数比对。
 - [x] 同一 targeted 命令连跑两次结果一致。
-- [ ] `gate.sh` 全量模式通过；检查 diff/禁区/skip/报告行数。
-- [ ] 工作树 clean，tip 为 `[READY]` 或 `[BLOCKED]` 中文动宾提交。
+- [x] `gate.sh` 全量模式通过；检查 diff/禁区/skip/报告行数。
+- [x] 工作树 clean，tip 为 `[READY]` 或 `[BLOCKED]` 中文动宾提交。
 
 ## 生产路径与红线
 
@@ -28,7 +28,7 @@
 ## 当前恢复点
 
 - 状态：`[BLOCKED]`，固定分母 0/4 PASS。
-- 最后完成：增加 2 条可重放阻塞事实测试；格 1–4 各有 1 条显式 `skip:` 且与报告 FAIL 一一对应。
-- 下一步：冻结 `[BLOCKED]` 提交，运行 `gate.sh` 全量模式，回写最终验证与 commit。
-- 已跑验证：targeted 连跑两次均 `2 PASS / 4 SKIP / 0 FAIL`；完整日志 `cmp` 退出 0，SHA-256 均为 `7ff3fc9d4416f90f91aa2007f66f47734bc354928c7c215f9d5ccc3b5d485b21`；`git diff --check` 通过。
+- 最后完成：发布 `[BLOCKED]` 候选；2 条可重放阻塞事实测试通过，格 1–4 各有 1 条显式 `skip:` 且与报告 FAIL 一一对应。
+- 下一步：交由协调者评审；本分支不再扩展、不合并、不推送。
+- 已跑验证：targeted 连跑两次均 `2 PASS / 4 SKIP / 0 FAIL`；完整日志 `cmp` 退出 0，SHA-256 均为 `7ff3fc9d4416f90f91aa2007f66f47734bc354928c7c215f9d5ccc3b5d485b21`；单文件 analyze 0；`git diff --check` 通过；全量 gate PASS（`5613 PASS / 4 SKIP`，analyze 0，format 0 changed）。
 - 阻塞项：必须新增并接线生产特效密度设置，且必须新增/冻结 14/18/24 密度生产配置；均需改 `lib/`/配置，超出 N15 权限。

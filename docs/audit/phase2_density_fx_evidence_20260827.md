@@ -41,7 +41,8 @@
 - Targeted：`flutter test --no-pub test/features/battle/application/phase0a/phase2_density_fx_evidence_test.dart --reporter expanded`连跑两次，均 `2 PASS / 4 SKIP / 0 FAIL`。
 - 确定性：两份完整日志 `cmp` 退出 0，SHA-256 均为 `7ff3fc9d4416f90f91aa2007f66f47734bc354928c7c215f9d5ccc3b5d485b21`。
 - Skip 审查：共4个 `skip:`，与上表 4 个 `FAIL` 一一对应。
-- 最终 Gate：`~/.claude/skills/afk/scripts/gate.sh <worktree> 5440f931 HEAD`全量模式。
+- 最终 Gate：`~/.claude/skills/afk/scripts/gate.sh <worktree> 5440f931 HEAD --whitelist <3 files>` 全量模式 PASS；`5613 PASS / 4 SKIP`，analyze `0 issue`，format `1620 files / 0 changed`。
+- Gate PASS 只证明阻塞包可集成且无额外回归，不改变格 1–4 `0/4 PASS` 与 `[BLOCKED]` 结论。
 
 ## 本证据不覆盖什么
 
