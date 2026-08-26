@@ -83,8 +83,7 @@ final class Phase0aEnemyAiAdapter {
             effectRadius: skill.effectRadius,
             cooldownSeconds: skill.cooldownSeconds,
             actionCooldownSeconds: attackCooldownSeconds,
-            postureDamage: powerMultiplierToPostureDamage(
-              skill.skill.powerMultiplier,
+            postureDamage: skill.postureDamageFor(
               basicPowerMultiplier: _requirePostureBasicPower(),
             ),
             postureHitKind: PostureHitKind.heavy,

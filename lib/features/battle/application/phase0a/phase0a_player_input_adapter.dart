@@ -174,10 +174,18 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? gatherEffectRadius,
           qiCost: binding?.qiCost ?? gatherQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? gatherCooldownSeconds,
-          postureDamage: powerMultiplierToPostureDamage(
-            binding?.skill.powerMultiplier ?? gatherPowerMultiplier,
-            basicPowerMultiplier: postureBasicPowerMultiplier,
-          ),
+          postureDamage: binding == null
+              ? powerMultiplierToPostureDamage(
+                  gatherPowerMultiplier,
+                  basicPowerMultiplier: postureBasicPowerMultiplier,
+                )
+              : addDefenseBreakPostureDamage(
+                  powerMultiplierToPostureDamage(
+                    binding.skill.powerMultiplier,
+                    basicPowerMultiplier: postureBasicPowerMultiplier,
+                  ),
+                  defenseBreakPct: binding.skill.defenseBreakPct,
+                ),
           postureHitKind: PostureHitKind.heavy,
         ),
       );
@@ -192,10 +200,18 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? clearEffectRadius,
           qiCost: binding?.qiCost ?? clearQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? clearCooldownSeconds,
-          postureDamage: powerMultiplierToPostureDamage(
-            binding?.skill.powerMultiplier ?? clearPowerMultiplier,
-            basicPowerMultiplier: postureBasicPowerMultiplier,
-          ),
+          postureDamage: binding == null
+              ? powerMultiplierToPostureDamage(
+                  clearPowerMultiplier,
+                  basicPowerMultiplier: postureBasicPowerMultiplier,
+                )
+              : addDefenseBreakPostureDamage(
+                  powerMultiplierToPostureDamage(
+                    binding.skill.powerMultiplier,
+                    basicPowerMultiplier: postureBasicPowerMultiplier,
+                  ),
+                  defenseBreakPct: binding.skill.defenseBreakPct,
+                ),
           postureHitKind: (binding?.breakPower ?? _noBreakPower) > 0
               ? PostureHitKind.bossControl
               : PostureHitKind.heavy,
@@ -220,8 +236,7 @@ final class Phase0aPlayerInputAdapter {
             effectRadius: binding.effectRadius,
             qiDelta: binding.qiDelta,
             cooldownSeconds: binding.cooldownSeconds,
-            postureDamage: powerMultiplierToPostureDamage(
-              binding.skill.powerMultiplier,
+            postureDamage: binding.postureDamageFor(
               basicPowerMultiplier: postureBasicPowerMultiplier,
             ),
             postureHitKind: binding.breakPower > 0

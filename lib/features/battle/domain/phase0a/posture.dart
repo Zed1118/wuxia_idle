@@ -278,6 +278,18 @@ double powerMultiplierToPostureDamage(
   return powerMultiplier / basicPowerMultiplier;
 }
 
+/// 将招式自身的破防比例折算为同一笔姿态伤害。
+///
+/// 额外量只按该招已有姿态伤害等比计算，不引入独立破绽窗口或第二份状态。
+double addDefenseBreakPostureDamage(
+  double postureDamage, {
+  required double defenseBreakPct,
+}) {
+  _requireFiniteNonNegative(postureDamage, 'postureDamage');
+  _requireFiniteNonNegative(defenseBreakPct, 'defenseBreakPct');
+  return postureDamage + postureDamage * defenseBreakPct;
+}
+
 void _requireFiniteNonNegative(double value, String name) {
   if (!value.isFinite || value < 0) {
     throw ArgumentError.value(value, name, 'must be finite and non-negative');
