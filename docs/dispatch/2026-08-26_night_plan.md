@@ -381,3 +381,63 @@ tip 打 `[BLOCKED]`。验收时我会 `grep -n 'skip:'` 逐个核对是否有对
 但这是我的解释,不是用户的明示授权。**早上请用户明确一句**:
 协调者的纯文档盘面/派单包合 main 是否照旧允许。若不允许,改为只留在
 `coordinator/p2-handoff-20260826b` 分支上,执行端改按分支取包。
+
+---
+
+## 05:30 N14 验收(四条判据全过)+ 一个弱支点发现
+
+### 交付
+
+`codex/p2-same-core-evidence-20260827` @ `85ee8483 [READY]`,worktree 0 脏,0 个 `lib/` 改动。
+Gate `gate_exit=0`,全量 `5611 → 5618`(+7 测试),`analyze` 0 issue,`format` 0 changed。
+7 组全部 PASS。
+
+### 四条判据(全部本会话实测)
+
+| 判据 | 方法 | 结果 |
+|---|---|---|
+| 组数溯源 | 自己 `sed -n '56p'` 现取 N2 | ✅ 确为 7 组,断言原文与报告逐条一致 |
+| 确定性自证 | 同一命令连跑两次 | ✅ 两次均 `+7 All tests passed` |
+| 破坏证红 | 改 `phase0a_player_bot_adapter.dart:55` `attack: true→false` | ✅ **第7组转红**;还原后 sha256 `964fb9dca217f89d` 与备份一致、工作树 0 脏 |
+| skip 审查 | `grep -cn 'skip:'` | ✅ **0 个**,与 7/7 全绿自洽 |
+
+破坏/跑测/还原写进同一个带 `trap restore EXIT INT TERM` 的脚本,
+避免重演早先「超时把变异体留在工作树」的事故。
+
+### 报告本身的三个正确处(值得记下)
+
+1. 用 `stage_01_01` 而非黑风岭 `stage_01_03` —— 主动避开池条目警告的「单关外推全模式」陷阱
+2. 走 `rngProvider.overrideWithValue(DefaultRng(seed:))`,不新接 `Random` 签名 service(守 CLAUDE.md §9.1)
+3. 明说 hash 用测试内 FNV-1a 而非 Dart `hashCode`(后者进程随机化,会让「确定性」变成假的)
+
+### ⚠️ 弱支点:第2组的 `commandSummaries` 断言构造上恒真
+
+破坏 bot 后**第2组没红**,追进去发现原因:
+
+```dart
+// 测试 :298-303  bot 产命令
+final command = bot.commandFor(botController.state);
+commands.add(command);
+botController.step(command);
+// 测试 :318-333  manual 回放同一批命令
+for (final command in commands) { manualController.step(command); }
+```
+
+第2组断言 `traces[bot].commandSummaries == traces[manual].commandSummaries`,
+而 manual 逐条 step 的**正是 bot 刚发出的那批命令** —— bot 怎么变两边都一样,**该行断言不可能红**。
+
+**但这不算假绿**,判定理由:
+- N2 的原始断言是「同一命令流经不同执行路径必须得到相同状态 hash」,回放是测这件事的正确做法
+- 真正承重的是每组都调的 `_expectFourModeTraceParity`(比四条轨迹逐 tick 状态 hash),那条是实的
+- 系统里不存在独立的「人类手动输入源」,除了回放没有别的做法
+
+**问题在于组名和结论文案 oversell**:「前台 bot 产生与手动回放相同 command」听起来像验证了 bot 决策,
+实际只验证了回放器没截断。建议后续把该行改成断言 **manual 回放未提前 break**(它唯一可能失败的方式),
+或直接删掉该行、只留 parity。
+
+### 这类测试的结构性上限(不是缺陷,是边界)
+
+四模式 parity 套件**天然无法发现「四种模式被同等地改坏」的缺陷** ——
+我的破坏之所以能被第7组抓到,是因为掉落 profile 有独立于 bot 的比较基准。
+凡是共用 reducer 的改动,四边一起变、hash 照样相等。
+**这条边界应当写进报告的「本证据不覆盖什么」**,否则 7/7 PASS 会被读成「同核已完全证明」。
