@@ -185,6 +185,18 @@ void main() {
           expect(find.byKey(groundMarkKey(enemy.id)), findsOneWidget);
         }
 
+        for (final enemy in state.enemies.where(
+          (enemy) => !fixture.roster.visualFor(enemy.id).isElite,
+        )) {
+          expect(enemy.posture, isNotNull);
+          expect(enemy.posture!.accumulated, 0);
+          expect(
+            find.byKey(ValueKey('phase0a_posture_remaining_${enemy.id}')),
+            findsNothing,
+            reason: '普通满姿态敌人 ${enemy.id} 不常驻剩余架势标签',
+          );
+        }
+
         expect(find.byKey(playerHudKey), findsOneWidget);
         expect(find.byKey(groundMarkKey(state.player.id)), findsOneWidget);
         final playerHp = tester.widget<HpBar>(find.byKey(hpKey('player')));
@@ -195,6 +207,50 @@ void main() {
         expect(find.byKey(clearSealKey), findsOneWidget);
       });
     }
+
+    testWidgets('普通敌人实际承受姿态伤害后显示剩余架势标签', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+
+      final normalEnemies = controller.state.enemies.where(
+        (enemy) => !fixture.roster.visualFor(enemy.id).isElite,
+      );
+      final enemyId = normalEnemies
+          .reduce(
+            (current, candidate) =>
+                current.maxHealth >= candidate.maxHealth ? current : candidate,
+          )
+          .id;
+      expect(
+        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        findsNothing,
+      );
+
+      var guard = 0;
+      while (controller.outcome == Phase0aBattleOutcome.ongoing && guard < 80) {
+        await stepAndPump(tester, attackTowardNearest(controller.state));
+        final matchingEnemy = controller.state.enemies.where(
+          (enemy) => enemy.id == enemyId,
+        );
+        if (matchingEnemy.isNotEmpty &&
+            matchingEnemy.single.posture!.accumulated > 0) {
+          break;
+        }
+        guard++;
+      }
+
+      final damagedEnemy = controller.state.enemies.singleWhere(
+        (enemy) => enemy.id == enemyId,
+      );
+      expect(
+        damagedEnemy.posture!.accumulated,
+        greaterThan(0),
+        reason: '必须经生产普攻路径对同一敌人产生姿态伤害',
+      );
+      expect(
+        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        findsOneWidget,
+      );
+    });
 
     testWidgets('第二波精英使用更宽金色落地墨印，与普通敌人分层', (tester) async {
       await pumpScreen(tester, autoStep: false);

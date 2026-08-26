@@ -1093,7 +1093,11 @@ class _ActorStandee extends StatelessWidget {
               ),
             ),
           ),
-        if (enemy && actor.posture != null)
+        if (enemy &&
+            actor.posture != null &&
+            (actor.vulnerabilityMult != null ||
+                actor.posture!.isVulnerable ||
+                actor.posture!.accumulated > 0))
           Positioned(
             left: 0,
             right: 0,
