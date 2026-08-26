@@ -938,7 +938,6 @@ class _ActorStandee extends StatelessWidget {
             actor.vulnerabilityMult != null ||
             actor.chargingCast != null ||
             actor.staggerTicksRemaining > 0 ||
-            actor.posture != null ||
             guardianWardActive ||
             guardianLabelOffsetX != 0);
     return Stack(
