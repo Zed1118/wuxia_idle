@@ -167,7 +167,10 @@ void main() {
 
     expect(result.verdict, 'INCONCLUSIVE');
     final errors = result.summary['schema_errors'] as List;
-    expect(errors.any((e) => (e as String).contains('missing linked raw report')), isTrue);
+    expect(
+      errors.any((e) => (e as String).contains('missing linked raw report')),
+      isTrue,
+    );
   });
 
   test('rejects mixed package and frozen schedule violation', () {

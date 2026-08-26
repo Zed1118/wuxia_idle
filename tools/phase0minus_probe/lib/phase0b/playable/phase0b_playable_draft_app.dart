@@ -32,9 +32,14 @@ final class Phase0bPlayableDraftApp extends StatefulWidget {
 class Phase0bPlayableDraftAppState extends State<Phase0bPlayableDraftApp> {
   static const double _dt = 1 / 30;
 
-  late DraftEnemyGroupSim _groupA = DraftEnemyGroupSim(count: 6, seed: 20260814);
-  late DraftEnemyGroupSim _groupB =
-      DraftEnemyGroupSim(count: 10, seed: 20260815);
+  late DraftEnemyGroupSim _groupA = DraftEnemyGroupSim(
+    count: 6,
+    seed: 20260814,
+  );
+  late DraftEnemyGroupSim _groupB = DraftEnemyGroupSim(
+    count: 10,
+    seed: 20260815,
+  );
   late DraftBossBrain _boss = DraftBossBrain(spawn: Vector2(3150, 505));
   DraftStyleKind _styleKind = DraftStyleKind.surgeCurrent;
   double _heroX = 420;
@@ -169,10 +174,7 @@ class Phase0bPlayableDraftAppState extends State<Phase0bPlayableDraftApp> {
   void _advanceHero(double delta) {
     if (_runOver) return;
     setState(() {
-      _heroX = (_heroX + delta).clamp(
-        80,
-        PlayableDraftTuning.worldWidth - 80,
-      );
+      _heroX = (_heroX + delta).clamp(80, PlayableDraftTuning.worldWidth - 80);
     });
   }
 
@@ -288,11 +290,7 @@ class Phase0bPlayableDraftAppState extends State<Phase0bPlayableDraftApp> {
 }
 
 final class _Bar extends StatelessWidget {
-  const _Bar({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _Bar({required this.label, required this.value, required this.color});
 
   final String label;
   final double value;

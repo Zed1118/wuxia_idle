@@ -162,10 +162,7 @@ final class DraftEnemyGroupSim {
             final away = enemy.position - playerPosition;
             enemy.retreatDirection = away.length2 > 0.01
                 ? away.normalized()
-                : Vector2(
-                    math.cos(enemy.slotAngle),
-                    math.sin(enemy.slotAngle),
-                  );
+                : Vector2(math.cos(enemy.slotAngle), math.sin(enemy.slotAngle));
             tokensInUse = math.max(0, tokensInUse - 1);
           }
         case DraftEnemyState.retreating:
