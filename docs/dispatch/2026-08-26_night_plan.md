@@ -441,3 +441,95 @@ for (final command in commands) { manualController.step(command); }
 我的破坏之所以能被第7组抓到,是因为掉落 profile 有独立于 bot 的比较基准。
 凡是共用 reducer 的改动,四边一起变、hash 照样相等。
 **这条边界应当写进报告的「本证据不覆盖什么」**,否则 7/7 PASS 会被读成「同核已完全证明」。
+
+---
+
+## 06:05 N15 验收 · 夜批收官
+
+### N15 `[BLOCKED]` —— 这是本夜最有价值的一单
+
+`codex/p2-density-fx-evidence-20260827` @ `94a93293 [BLOCKED]`,0 个 `lib/` 改动,
+全量 `5613 PASS / 4 SKIP`,Gate `gate_exit=0`。格 1-4 **`0/4 PASS`**。
+
+它没有交出漂亮的全绿,而是查出**两个真问题**:
+
+#### 发现一:方案写的「低特效设置」在生产里根本不存在
+
+方案 `L801` 写:「设置允许降低特效密度、背景人群、震屏和闪光,但不能减少真实敌人数、改变攻击令牌或降低难度。」
+
+实况:`GameplaySettings` 只有 `autoPlayDefault` / `battlePlaybackSpeed` / `textDensity` / `reduceFlashing`,
+而 `reduceFlashing` **只出现在 `lib/features/settings/` 三个文件里,战斗/主线/塔/群战零消费**。
+
+**我独立复核过**(按 `feedback_negative_grep_not_proof_of_absence`,否定式 grep 不是存在性证明,
+必须搜中文/领域词):`git grep -niE '特效|粒子|剪影|震屏|闪光|背景人群'` 与
+`effectDensity|vfxDensity|lowEffect|particleDensity|silhouette` 在 `lib/` 的命中**全部是误报** ——
+`enums.dart:142` 是「剑鸣特效」注释、`numbers_config.dart:1138` 是「克制特效字符串」文档注释、
+`visual_acceptance_plan.dart:240` 是奇遇录「剪影态」、`portrait_frame.dart` 是头像「身份剪影」。
+
+**结论:这不是「缺证据」,是「缺功能」。** 属 🔴(玩家可见设置 + 新增生产消费点),需用户拍板。
+
+#### 发现二:「群战 18/24」把总量当成了同时活跃数
+
+`data/stages.yaml` 注释原文(我现取复核):`stage_mass_battle_04 · wave=4[5,6,6,7]`。
+**24 是四波之和,同时活跃最多 7。** 五关波形实测 `[5,5]/[5,6,6]/[6,6,7]/[5,6,6,7]/[6,6,7,7]`,
+active 只有 `{5,6,7}`。塔 14 层 `enemyTeam=3`、映射也是 3。
+
+也就是说,**不存在 24 单位同屏的时刻**,方案 `L1420-1428` 的「8、16、24 活跃单位下 HUD 不被遮挡」
+这条判据在当前内容下**测不出来**。这是口径错误,不是实现缺陷。
+
+### 七条判据核对
+
+| 判据 | 结果 |
+|---|---|
+| 锚点溯源 | ✅ 我自己 `sed -n '55p'` 现取 N2,格数与断言原文一致 |
+| 确定性自证 | ✅ 报告贴两份日志 `cmp` 退出 0 + SHA-256 一致;我复跑亦稳定 |
+| **破坏证红** | ✅ 见下 |
+| 配置耦合验证 | ⚠️ 见下 |
+| skip 审查 | ✅ 4 个 `skip:`(`:133/137/141/145`)与 4 个 FAIL 格一一对应,skip 理由字符串逐条指向报告 |
+| 边界节 | ✅ 有「本证据不覆盖什么」,且多写一句「不等于 N15 通过」 |
+| Gate | ✅ `gate_exit=0` |
+
+**破坏证红实录(含我自己的一次选错)**:
+
+1. 第一次我改 `phase0a_stage_content_mapper.dart:202`(`slot < count` → `count - 1`),**没证红**。
+   查因是**我选错了破坏点** —— 那段走 `_asMainlineMob`(主线怪构造),而断言比的是群战映射。
+   不是测试的问题。
+2. 改对路径后:`enemy_combatant_snapshot_assembler.dart:61`(`j < count` → `count - 1`)
+   → 测试 **`-1` 转红**,失败点正是 `:112` 的 `expect(mappedMassWaves, configuredMassWaves)`。
+   还原后 sha256 `2b8d1efda54e932a` 一致、工作树 0 脏。
+
+**配置耦合验证的诚实说明**:我原计划「改配置目标值看测试是否跟红」,但分析后发现
+`configuredMassWaves` 与 `mappedMassWaves` **同源于 stages.yaml**,改配置两边一起变、不会红。
+这不是缺陷 —— 该断言测的是 **mapper 是否忠实还原配置**,mapper 才是正确的破坏点(见上)。
+但这意味着**该断言无法发现「配置本身写错」**,只能发现「mapper 与配置不一致」。
+
+### 夜批总账
+
+| 批次 | 单数 | 结果 |
+|---|---:|---|
+| 队列一 | 8 | 全部 Gate PASS;N8 `[BLOCKED]` |
+| 队列二 | 1 | N14 `[READY]`,7/7 PASS,四条判据全过 |
+| 队列三 | 1 | N15 `[BLOCKED]`,查出两个真问题 |
+
+**零合并、零 push、零碰执行端分支** —— 全部 10 个交付分支原样留在各自 worktree 等用户处置。
+协调者只合了自己的纯文档盘面(0 行 `lib/`,全 fast-forward)。
+
+### 为什么在 06:05 停,而不是填满到 08:00
+
+做「工作量无关」自检后仍然停,理由是**可派的活真的用完了**,不是省力:
+
+- 池里 🟢 剩下的 4 条是「校准方案现状」,但方案文件在用户桌面且**只读**,派不出去
+- 池 #37「补齐性能矩阵证据」含 **Windows** 格,本机做不了
+- N16(视觉格 5-7)需要 CGEvent 驱动 macOS app 截图,**会接管鼠标**。
+  按 `feedback_user_mouse_handoff` 借鼠标必须先告知用户时长,用户在睡觉无法授权 —— **不能无人值守派**
+
+### 早上待办(按优先级)
+
+1. **N15 发现一** 🔴 —— 「低特效设置」要不要做?方案写了但生产没有。做=新增设置+provider+VFX 消费点
+2. **N15 发现二** —— 群战密度口径:24 是总量,方案的「24 活跃」判据当前测不出来,需修方案还是修内容?
+3. **N8 `[BLOCKED]`** 🔴 —— CLAUDE.md 与代码的矛盾,最硬一处是 `:565` 与 v1.23/v1.24 头部自相矛盾
+4. **拍板菜单** `docs/dispatch/pool/phase2_decision_menu.md` —— 11 问,前三解锁 20/13/12 组
+5. **main 合并口径** —— 协调者纯文档盘面合 main 是否照旧允许(今夜 13 次)
+6. **N14 第2组弱支点** —— 建议改成断言「manual 回放未提前 break」或删该行
+7. **`runner.sh` 吞退出码** + **`gate.sh`/`runner.sh` 未纳入 git** —— 队列已空,现在可以修了
+8. **N3 worktree 清理**(169 条,授权 3A,需三验)
