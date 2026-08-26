@@ -1,67 +1,96 @@
 # 新会话开局清单
 
-> 更新时间：2026-08-23 · Route C 双平台 Gate 收口后
-> 当前主线：Route C 已收口；2026-08-23 低消四批正在完成最终整合验收，准确 SHA 以 `git rev-parse main` 为准。
+> 交接时间：2026-08-26 20:34 · 工作收口于 HEAD `b0644ce5` · 领先 `origin/main` 703 commit、**未 push**；主 checkout 工作树干净
+> 本清单自身的落盘 commit 排在 `b0644ce5` 之后，故实际 HEAD 会比它新 1 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
 
-## 当前结论
+## 【本会话契约】（置顶，最高优先级）
 
-- Phase 1 Ch1 内容/live/headless/真实结算链、neutral snapshot 与正式桌面控制均已成立。
-- 正式输入：鼠标左键 click/hold 普攻，J 兼容；数字/小键盘 1–6 对应真实装配技能，第七 key 破招槽独立。
-- D1-A / D2-A / D3-A / D4-A 已按用户推荐组合拍板；决策单见 `docs/spec/2026-08-21-phase0a-founder-skill-qr-decision-sheet.md`。
-- D1 已实现：三本创建页入门心法以显式 `skillUnlockLayers` 只将第 2 招 powerSkill 提前至初窥；祖师修炼层、大招门槛、全局 threshold、敌人与伤害均不动。
-- 修复校准逮到的接线问题：autoFill 的 normalAttack 不再同时进入鼠标 basic 与数字 1，旧 3v3 autoFill 语义不改。
-- 08-21 表现层三批已在 main：演员位移插值/局部重绘、分类 VFX 生命期、飘字居民上限、命中/出手微动作、落地墨印与敌/我/精英可读性均成立。
-- 08-21 debug fixture 与敌方生产装配器已改为直接构造 `CombatantSnapshot`，不再内部绕旧 `BattleCharacter`；旧消费接口保持不变。
-- 生产预检 manifest 已覆盖 Ch2–Ch21 主线 100 关与塔 49 层；Boss phase/charge、vulnerability、guardian 与 survive condition 补齐后达到 **149/149 eligible、0 skipped**，全部进入同核 headless。
-- 玩家生产装配已直接使用 `PlayerCombatantSnapshotBuilder`；最后一处 `BattleCharacter.fromCharacter → toSnapshot` 内部中转及 neutral roster 的 3-slot 泄漏已清除，旧消费接口保持兼容。
-- 1280×720/1440×900 实窗口截图与 W/D/J/Q/R 动态 smoke 通过；无布局溢出、运行异常或缺图。
-- 正式替换、旧 3v3 原子删除与双平台 Gate 均已完成并合入 `main`；六人主观 Gate 已取消，Windows 结果不代表产品最低配置。
+- **模式：只读**
+- **只读模式**：完成【开局动作】并提交【先报告】后，等用户指令才可动代码。
+- **范围围栏**：只做用户选定的任务。过程中发现的其他问题分两类处置——
+  - **非阻塞型** → 记入 `BACKLOG.md`，附 `file:line` 与复现步骤，**不动代码**；
+  - **阻塞型** → **停下报告**，不要记了账继续干。
+- **拍板点**（设计取舍、多方案选型、观感判断）：只读模式下停下列选项等用户，**禁代拍**。当前已有两条挂起待拍（见【下波候选】#2/#3），不得替用户决定。
+- **角色**：本会话是协调者，**不干具体的活**——实装下放 codex，我只做派单、复核、Gate、合并。
 
-## 画像结论
+项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-- timeout 0/1500；最大单击 2446，红线安全。
-- 08-21 刷新画像：timeout 0/1500，最大单击 2446；三流派 main1 均为真实 powerSkill，ultimate 仍空。
-- numeric 1–6 总出手 500 次且仅刚猛触发，命中伤害为 0；灵巧/阴柔仍未出手，说明 D1 解决可见性但未解决固定 Q/R 的资源/策略循环。
-- 当前最低点为灵巧 `stage_01_05` bot 胜率 4%；基线已包含后续 Boss phase 能力，禁止把与 08-20 的差值全部归因于 D1 或据此调敌。
-- Q gather 每场一次且零伤，R clear 0 次；现有资源循环不支持长期固定 Q/R 战术印。
+二阶段战斗核心接线：W0 差异分析已合 main，P1 统一姿态接线复核不过待返修，D 破防技崩溃待用户拍处置方案。
 
-## 最新验证
+## 【开局动作】
 
-- 经济/熟练度证据：残页 10 万固定 seed、丹房 66 场景、全内容 2310 局均已生成可复现 CSV/Markdown；丹房分段差值 ≤1e-9，全内容 0 timeout/maxDamage 3535。三份证据只用于决策，不自动调值，BACKLOG #4/#5/#6 继续待真人判断。
-- 资质视觉：共享谱牒印鉴已接入创建、招募、门人档案，六档结构签名与真实出生点数接线回归通过；三路×1280×720/1440×900 后台窗口 ID 截图均 READY、DPR 2.0、无 overflow/异常，创建页另有双视口滚动可见性测试。全量门禁补抓 UI 中文散写与一条旧 synthetic fixture 缺 basic，修正后最终 **4244/4244 PASS**、analyze 0、diff check 通过；BACKLOG #19 销账。
-- 断魂庄槽位稳定 seed：新建会话由错误的单例 `SaveData.id=0` 改为不可变 `slotId`，同槽重开稳定、跨槽不同；旧 run（含 seed=0）在恢复/三关准备链保持原值，stage seed 仍为 1/2/3。断魂庄全族 **163/163** 覆盖续传、失败/认输、恢复、奖励选择、门票与补给事务；analyze 0、diff check 通过。无 schema bump，BACKLOG #21 销账。
-- 普攻真气单一来源：用户拍板选 A 后，删除 production `phase0a_arena.moves.basic_qi_delta` 镜像；玩家与所有敌人的普攻 intent 统一读取各自快照真实 `SkillDef.qiDelta`，敌人缺真实 basic 时 fail-closed。红测先命中实际 0 后转绿；联合 targeted **38/38**、生产预检 **149/149 eligible、447 runs、0 timeout、maxDamage 3535**、analyze 0、diff check 通过。BACKLOG #20 销账；未改 `skills.yaml` 任何数值。
-- CI 可复现性：主 CI/Windows release 均强制 `--enforce-lockfile`，主 CI analyze 覆盖根应用 `lib/test/tool`；独立归档子包 `tools/phase0minus_probe` 不借用根应用依赖分析。新增契约先红后绿，workflow + macOS release 契约 **5/5**、YAML 解析通过、根应用 analyze 0 issue。
-- CI 同口径：`flutter test --coverage --no-pub` **4230/4230 PASS**；line coverage **83.66%（32921/39351）≥81.25%**，coverage ratchet 通过。
-- macOS release 门禁：增量构建曾复现外层签名陈旧、deep verify 失败；`tool/verify_macos_release.sh` 强制 clean tree/锁文件依赖/代码生成/clean build/deep codesign/双架构/哈希，并在构建后复核 tracked tree。最终 clean `main` commit `451bc883` 完整 PASS：生成 126 outputs、x86_64+arm64、169M、launcher `2a4ed520…46ac9`、AOT `722f39ee…16f35`；工作区仍 clean，不启动 GUI、不发布。
-- mapping 防回流：Route C 类体级源码门禁禁止重新声明 `winCondition` / `numericSkillBindings` 镜像，并要求 `initialState` / `playerAdapter` 单一来源存在；临时回添字段精确 1 红，还原复绿。Route C 契约 **8/8**、Phase 0A application **139/139**、无参数 analyze 0 issue；父提交全量 **4228/4228**。
-- analyzer 边界：Route C 删除旧 runner 后，唯一一次性历史 `.dart` 探针使无参数 analyze 报 12 个旧符号错误；现仅精确排除该附件，不扩大目录豁免。`flutter analyze --no-pub` 与 `flutter analyze --no-pub lib test tool` 均 0 issue。
-- 数字技能绑定单一来源：删除 `Phase0aStageMapping.numericSkillBindings` 镜像，主线/塔/断魂庄宿主与测试统一从 `playerAdapter.numericSkillBindings` 读取；对象实例与行为不变。目标独立文件 **36/36**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
-- 胜负条件单一来源：删除生产零读取且与初始状态必然同值的 `Phase0aStageMapping.winCondition` 镜像，survive-ticks 与主线接线回归统一读取 `initialState.winCondition`。目标三文件 **24/24**、Phase 0A application **139/139**、`flutter analyze --no-pub lib test` 0 issue、format/diff check 通过。
-- 敌方行动有效战斗兼容：`EnemySkillStarted` / `BossChargeStarted` 现与旧 runner 任一单位 actionLog 语义一致，玩家只移动/闪避且敌方 skill-only 时不再漏掉战后内息调息。其余 19 类事件的伤害、AOE、截招、多波、数字技已逐类证伪无迁移漏计。targeted **156/156**、analyze 0、format/diff check 通过。
-0. 护法合击战后统计兼容：旧 runner 的总伤害既定为双方完整 actionLog，普通敌伤计入不是 bug；Phase 0A 合击无伴随 HitLanded 才是唯一漏项。事件现保存主护法单次 damage/critical，settlement 按历史 `attackResult=r1` 精确恢复统计；双护法合计仍只供实际扣血/VFX。targeted **186/186**、analyze 0、diff check 通过；父提交全量 **4226/4226**、macOS release 174.1MB 构建成功。
-1. 结算玩家身份守卫：终态玩家 id/side 必须与映射一致，映射恰有一个玩家 combatant；玩家缺失不再静默回填 HP=0 后误加伤势。结算全消费面 **59/59**、两条守卫直测所在文件 **4/4**、analyze 0、diff check 通过。断魂庄恒定 seed 差异登记 BACKLOG #21，未改随机性口径。
-2. Q/R adapter 构造收口：production mapper 的 slot/radius/qi/cooldown 必填镜像改由真实 typed binding 派生，不再读取 legacy player Q/R 数值；`numbers.yaml` 与低层 fixture 均未改。mapper + preflight + Route C 契约 **28/28**，preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，analyze 0、diff check 通过。
-3. production basic 收口：五消费面 assembler 保证真实 basic，mapper 缺 basic fail-closed；9 个 mapper fixture 已迁仓库真实技能，最后一个 synthetic `_moveSkill` 删除。production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**；mapper 全消费面 **82/82**、装配器/Route C 契约 **8/8**、analyze 0、最终全量 **4224/4224**、diff check 通过。真实 basic `qiDelta=20` 与 Phase 0A adapter 配置 0 的差异登记 BACKLOG #20，未改值。
-4. Q/R typed binding 收口：loader 拒绝 Q/R 任一缺失或空白；legacy interrupt/qi-drain fail-closed 分支已有直接回归。随后 DeepSeek 与主 agent 双重可达性审计证明 mapper 双空逃生口及 synthetic clear 分支对 production、测试与 debug fixture 全部不可达，已删除并把 mapper 内 Q/R 类型收紧为非空；低层隔离 Adapter fixture 兼容不变。前批 targeted **42/42**、最终全量 **4223/4223**；删除批 production preflight **149/149 eligible、447 runs、0 timeout、maxDamage 2044**，联合 targeted/route contract **43/43**、analyze 0、diff check 通过。
-5. Route C 后加固批：Boss 双视口反馈链与 cycle-2 vulnerability 真实伤害覆盖 targeted **15/15**；全量 **4221/4221**、`flutter analyze --no-pub lib test tool` 0 issue、diff check 通过。Route C Gate commit `597a243b` 的 Mac/Windows 矩阵仍各 **6/6 PASS**；新 commit 不沿用该二进制 Gate 冒签。
+1. 读 PROGRESS.md 顶段「二阶段结果仪表盘（2026-08-26 夜批收账后）」
+2. 读 `docs/sessions/2026-08-26_203415_姿态接线_p2-handoff-20260826b.md`
+3. `git worktree list` + `git branch --list 'codex/p2-*'`：确认在途分支。**当前 worktree 共 169 条**（历史债），二阶段在途的只有下列两条，别在不知情下重做。
+4. **只 `git fetch`，不自动 rebase/autostash**。按下列顺序判定：
 
-6. 08-21 起手 powerSkill：旧行为红测命中；focused **23/23**、`flutter analyze` 0 issue；1500 局 evidence 全部完成；最终全量 **5278/0**。
-7. 08-21 玩家 neutral builder：逐字段/roster/主线真实 Isar/远征/断魂庄 targeted **83/83**；最终全量 **5265/0**。
-8. 08-21 生产预检：10-seed **3420 runs** = 555 胜/2865 负/0 timeout，最大单击 2056；最终全量 **5261/0**。
-9. 视觉证据：`build/visual_acceptance/phase0a_0821_closeout/`（gitignored）含双视口 PNG/log/manifest，两路均为原生 window-id 截图。
+   ```bash
+   git status -sb | head -1
+   git fetch origin
+   git rev-list --left-right --count origin/main...HEAD
+   git merge-base --is-ancestor b0644ce5 HEAD && echo ANCESTOR_OK
+   ```
 
-## 下一步任务（需人类判断优先）
+   - 工作树 dirty / 存在分叉 / 有其他活跃写者 → **停下报告**，不自行更新
+   - 本项目 `origin/main` 落后本地 703 commit 且 **push 未获授权**，故**不要** `merge --ff-only origin/main`，也不要 push
+   - `ANCESTOR_OK` 成立 → 快照有效，继续；不成立 → 快照作废，停下报告并重测基线
+5. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_multi_anchor_test_actual_attribution`、`feedback_flutter_test_batch_silent_skip`、`feedback_premature_completion_report`、`feedback_dispatch_first_orchestrator`
 
-### P0 · 已拍方案继续落地
+## 【环境快照】（2026-08-26 本会话实测，禁转抄）
 
-1. D1-A 与 Q/R typed behavior 纵切及 D2-A/D3-A/D4-A 审计已完成；production mapper 的 legacy fixed clear fallback 已删除。低层隔离 Adapter fixture 仍保留兼容，不得误当 production 路径。
-2. Boss 蓄力预警、破招/踉跄与脆弱窗口已有双视口动态 Gate，并已补真实 fixture widget 回归；后续只处理新的可复现缺口。
-3. 高周目 `cycleVulnerability` 生产链与 cycle-2 实际伤害回归均已覆盖，禁止重复实现。
-4. 禁止据 bot 单点全局削弱敌人；任何玩法数值调整仍需用户明确授权。
+- HEAD `b0644ce5`（本会话 main 新增 3 commit，全部纯文档，**0 行 `lib/`**；未 push）
+- **main 全量基线沿用 `6a0c2945` 的 `5611/5611`**（2026-08-26 夜批实测）——本会话实测 `git diff 6a0c2945..b0644ce5` 为：`PROGRESS.md` + 3 份派单包 + 1 份 spec + 1 个测试文件的**纯 `///` 注释块**（`test/data/phase2/ch1_candidate_combat_catalog_test.dart`，13 行全是注释），`lib/` 改动 0 文件，故基线仍成立，未重跑全量（属 handoff 0a「纯文档 session」情形）
+- **分支 `codex/p2-posture-wiring-20260826` @ `2c8015d9` 本会话实测**：`flutter analyze --no-pub lib test` **0 issue**；`dart format` 1523 文件 **0 changed**；全量 `flutter test --no-pub` **`5612 +/ 4 -`，耗时 5m41s，退出码 0（掩盖了失败）**
+  - 4 条失败（本会话从 `[E]` 块定位，非猜测）：
+    1. `test/features/battle/domain/phase0a/phase0a_source_contract_test.dart:89` 「不得出现数值参数默认值」——`phase0a_combat_reducer.dart` 出现 `"= 0,"`
+    2/3. `test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart:175` 「首屏威胁去噪 HUD(双视口)」1280×720 与 1440×900 均红——普通满血敌人 `wave1_blade` 常驻姓名「山贼刀客」被渲染
+    4. 同文件「键盘 J 普攻…目标血条强调保持后自动消退」——血条 key `phase0a_hp_wave1_archer` 未消退
+  - 根因：2/3/4 同源，新增 `_BossStatusTag` 姿态计数把普通敌人姓名/血条一并拉出；1 是红线契约违规
+- 在途 PR / 分支：
+  - `codex/p2-posture-wiring-20260826` @ `2c8015d9` `[READY]` — **复核不过，不可合**（worktree `挂机武侠-p2-posture`）
+  - `codex/p2-defense-break-reachability-20260826` @ `39ae8f83` `[BLOCKED]` — 仅审计+复现测，零 `lib/`；我复跑 1/1 通过；待用户拍处置（worktree `挂机武侠-p2-dbrk-diag`）
+  - `codex/p2-w0-wiring-delta-20260826` @ `130a57c6` — **已合 main**，可清
+  - 协调 worktree：`挂机武侠-coord-handoff2`（本次交接落盘用）、`挂机武侠-coord-decisions`、`挂机武侠-p2-break`（scratch，破坏证红待用）
+- 子系统状态：二阶段战斗核心三条接线（POSTURE / TIMELINE / QI）中，POSTURE 是第一条动工的，语义正确但 UI 回归未过；TIMELINE、QI 尚未开工。M0–M9 仍 `1/10`。
 
-### 后续工程
+## 【下波候选】
 
-1. `tower_49` guardian、`tower_42` 协同、`stage_21_05` survive condition、远征/断魂庄续传与扫荡 headless 均已完成，禁止按旧 TODO 重做。
-2. 当前无“已解锁可派”工程项；下一步由用户在 BACKLOG #4/#5/#6 的真人体感证据中拍是否调值，未拍前不得凭 bot 画像自动改数值。
-3. 依赖维护仍受 isar/analyzer/Flutter 条件锁死；Phase 0B MANUAL_RIG 保持独立历史口径，不得用于签署新的生产 Gate。
+| # | 任务 | 模型 | 预估时长 | 备注 |
+|---|------|------|----------|------|
+| 1 | 把 P1 连同 4 条失败清单返 codex 返修（推荐） | opus 调度 + codex 执行 | 派单 10min / 执行 40-60min | 根因已定位到 `file:line`，返修范围小、不需重设计；返修后须由我复跑**全量**才谈合并 |
+| 2 | 用户拍 #4 真人试玩门槛 | — | — | A 合 main 前须过试玩（我的立场）/ B 豁免 / C 连已合的 TOKEN 一并回滚。方案 §0.1 要求 TUNING 值须经真人试玩定标，我生成候选时只跑了模拟 |
+| 3 | 用户拍 #5 破防技崩溃处置 | — | — | A 并入 POSTURE 批按姿态伤害处理（合 §5.3/§5.4）/ B 独立止血批 / C 砍字段 |
+| 4 | 定义 M0–M9 权重 | opus | 60-90min | 结构性问题：整条 TUNE-* 接线不推动 `1/10` 这个权威分母，不定义权重就无法回答「二阶段做到哪了」 |
+| 5 | worktree 债清理（169 条） | sonnet | 30-45min | 已续传第 2 轮，按 handoff 0c 本轮须强制处置；清理前三验（`is-ancestor` / `main..branch` 计数 0 / `branch --merged`） |
+
+## 【硬约束沿用】
+
+- `flutter test` 退出码 0 不代表全绿，reporter 的 `-N` 打在刚跑完那条旁边而非失败那条 → memory `feedback_multi_anchor_test_actual_attribution`
+- 多路径批跑会静默漏跑文件，验收须逐文件数「All tests passed」出现次数 → memory `feedback_flutter_test_batch_silent_skip`
+- launch ≠ 成功，报「完成/全绿」前必跑验证并贴输出 → memory `feedback_premature_completion_report`
+- 能派就派，协调者只留 Gate 与终审，不承接实装 → memory `feedback_dispatch_first_orchestrator`
+- 执行端禁区逐个列进派单包：`data/numbers.yaml` / `GDD.md` / `PROGRESS.md` / `lib/shared/strings.dart` / `pubspec.yaml`；禁 push / 禁 merge / 禁碰 main / 禁 revert → memory `feedback_night_batch_dispatch_protocol`
+- commit message 中文动宾，合并 Gate ⓓ 明查 → memory `feedback_wuxia_commit_message_chinese_gate`
+- fresh worktree 必预热：`cp libisar.dylib` + `pub get` + `build_runner` → memory `feedback_fresh_worktree_libisar_dylib` / `feedback_wuxia_pen_build_runner`
+- 测试绕开生产路径是假绿最高发入口，自检「破坏那行，这条断言必然红吗」 → memory `feedback_test_bypasses_production_path`
+- 推荐不得为省工作量缩水范围 → memory `feedback_no_effort_saving_in_recommendations`
+- 开工与收尾各查一次在途 worktree/分支，PROGRESS 只反映 main → memory `feedback_phase0_check_inflight_worktrees`
+
+## 【防幻觉守则】
+
+- 本清单【环境快照】的数字是 2026-08-26 实测快照；改动代码后**必须重测**，禁转抄。
+- 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功。
+- 引用代码现 grep/codegraph 查带 `file:line`；不确定写「不知道」，不凭记忆硬答。
+- 完整守则见 memory `reference_anti_hallucination`。
+
+## 【先报告】（与置顶契约呼应）
+
+读完上述清单后先提交一份报告，**不动代码**：
+
+1. **防装读要求**：须引用本清单里**不存在**的原文——PROGRESS.md 顶段条目的**原文标题行与日期**，以及 session 记录「下一步建议」小节的**原文首条**。只复述本清单已有的信息不算完成。
+2. 报告【开局动作】第 3、4 步结果：在途分支情况 + HEAD 校验判定（有效 / 作废）。
+3. 等指令。
+
+## 【收尾】
+
+会话结束前跑 `/handoff`（Step 0-4 为 canonical 流程，此处不复述）。
