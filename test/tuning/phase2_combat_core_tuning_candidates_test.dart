@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/attack_token_enforcing_batch_gate.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/attack_token_observe_only_observer.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_intent_observer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/action_timeline.dart';
@@ -345,6 +346,90 @@ void main() {
     );
   });
 
+  test('TUNE-ATTACK-TOKEN-01 exhausts every non-negative budget in [2, 4]', () {
+    final candidates = _tokenCandidatesLe4();
+    final results = {
+      for (final candidate in candidates)
+        candidate.id: _simulateTokens(corpus, candidate),
+    };
+
+    for (final candidate in candidates) {
+      final metrics = results[candidate.id]!;
+      debugPrint(
+        'TOKEN_LE4 ${candidate.id} '
+        'params=${_tokenParams(candidate)} '
+        'grantsPerBatch=${metrics.grantsPerBatch.toStringAsFixed(2)} '
+        'grant=${metrics.grantPercent.toStringAsFixed(2)}% '
+        'meanDeniedStreak=${metrics.meanDeniedStreakBatches.toStringAsFixed(2)} '
+        'byKind=${_kindMetrics(metrics.grantPercentByKind)}',
+      );
+    }
+
+    expect(candidates, hasLength(65));
+    expect(candidates.map(_tokenParams).toSet(), hasLength(65));
+    expect(
+      candidates.where((candidate) => _tokenBudgetTotal(candidate) == 2),
+      hasLength(10),
+    );
+    expect(
+      candidates.where((candidate) => _tokenBudgetTotal(candidate) == 3),
+      hasLength(20),
+    );
+    expect(
+      candidates.where((candidate) => _tokenBudgetTotal(candidate) == 4),
+      hasLength(35),
+    );
+    expect(
+      candidates.singleWhere(
+        (candidate) => _tokenParams(candidate) == '1/1/1/1',
+      ),
+      isNotNull,
+    );
+  });
+
+  test(
+    'zero budget keeps movement but filters that kind attack in production gate',
+    () {
+      for (final kind in AttackTokenKind.values) {
+        final actorId = '${kind.name}_actor';
+        final movement = Phase0aMoveIntent(
+          actorId: actorId,
+          direction: const ArenaVector(-1, 0),
+        );
+        final attack = Phase0aAttackIntent(
+          actorId: actorId,
+          range: corpus.playerAttackRange,
+          halfArcRadians: corpus.playerAttackHalfArcRadians,
+          cooldownSeconds: corpus.enemyAttackCooldownSeconds,
+          moveKind: Phase0aMoveKind.light,
+          aimDirection: const ArenaVector(-1, 0),
+          qiDelta: 0,
+        );
+        final gate = AttackTokenEnforcingBatchGate(
+          director: const AttackTokenDirector(),
+          budgets: _tokenBudgetsWithZero(kind),
+          requestMapper: (intent) => intent is Phase0aMoveIntent
+              ? null
+              : AttackTokenRequest(
+                  actorId: intent.actorId,
+                  kind: kind,
+                  priority: 0,
+                  isOffscreen: false,
+                  isHighImpact: false,
+                  isUnblockableArea: false,
+                  spawnGraceTicksRemaining: 0,
+                  telegraphReady: true,
+                ),
+        );
+
+        final gated = gate.gateEnemyIntents(enemyIntents: [movement, attack]);
+
+        expect(gated, hasLength(1), reason: kind.name);
+        expect(gated.single, same(movement), reason: kind.name);
+      }
+    },
+  );
+
   test('TUNE-WEAPON-QI-01 replays production stage and skill cadence', () {
     final candidates = _qiCandidates(corpus);
     final results = {
@@ -666,6 +751,43 @@ List<TokenCandidate> _tokenCandidates() => [
     budgets: AttackTokenBudgets(melee: 3, ranged: 1, charge: 2, support: 1),
   ),
 ];
+
+List<TokenCandidate> _tokenCandidatesLe4() {
+  final candidates = <TokenCandidate>[];
+  for (var total = 2; total <= 4; total++) {
+    for (var melee = 0; melee <= total; melee++) {
+      for (var ranged = 0; ranged <= total - melee; ranged++) {
+        for (var charge = 0; charge <= total - melee - ranged; charge++) {
+          final support = total - melee - ranged - charge;
+          candidates.add((
+            id: 'LE4-${(candidates.length + 1).toString().padLeft(2, '0')}',
+            budgets: AttackTokenBudgets(
+              melee: melee,
+              ranged: ranged,
+              charge: charge,
+              support: support,
+            ),
+          ));
+        }
+      }
+    }
+  }
+  return candidates;
+}
+
+int _tokenBudgetTotal(TokenCandidate candidate) =>
+    candidate.budgets.melee +
+    candidate.budgets.ranged +
+    candidate.budgets.charge +
+    candidate.budgets.support;
+
+AttackTokenBudgets _tokenBudgetsWithZero(AttackTokenKind zeroKind) =>
+    AttackTokenBudgets(
+      melee: zeroKind == AttackTokenKind.melee ? 0 : 1,
+      ranged: zeroKind == AttackTokenKind.ranged ? 0 : 1,
+      charge: zeroKind == AttackTokenKind.charge ? 0 : 1,
+      support: zeroKind == AttackTokenKind.support ? 0 : 1,
+    );
 
 TokenMetrics _simulateTokens(
   ProductionCorpus corpus,
