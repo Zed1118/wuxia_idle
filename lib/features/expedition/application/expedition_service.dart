@@ -289,14 +289,10 @@ class ExpeditionService {
     required CombatSettlementSnapshot settlement,
   }) {
     final participant = settlement.participantFor(member.characterId);
-    final playerIds = settlement.participantCharacterIds
-        .where((id) => id > 0)
-        .toSet();
     final snapshotWon = settlement.result == BattleResult.leftWin;
     if (!settlement.isFinished ||
         snapshotWon != outcome.leftWin ||
-        playerIds.length != 1 ||
-        !playerIds.contains(member.characterId) ||
+        settlement.playerCharacterId != member.characterId ||
         participant == null ||
         participant.currentHp != outcome.survivorHp[member.characterId]) {
       throw StateError(

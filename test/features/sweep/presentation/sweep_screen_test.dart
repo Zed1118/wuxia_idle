@@ -17,6 +17,7 @@ final _victory = CombatSettlementSnapshot(
   result: BattleResult.leftWin,
   totalTicks: 1,
   hadActions: true,
+  playerCharacterId: 1,
   participants: const [
     CombatParticipantSnapshot(characterId: 1, currentHp: 10, maxHp: 10),
   ],
@@ -30,6 +31,7 @@ final _defeat = CombatSettlementSnapshot(
   result: BattleResult.rightWin,
   totalTicks: 1,
   hadActions: true,
+  playerCharacterId: 1,
   participants: const [
     CombatParticipantSnapshot(characterId: 1, currentHp: 0, maxHp: 10),
   ],

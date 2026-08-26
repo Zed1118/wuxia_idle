@@ -144,6 +144,7 @@ void main() {
         result: BattleResult.leftWin,
         totalTicks: 12,
         hadActions: true,
+        playerCharacterId: character.id,
         participants: [
           CombatParticipantSnapshot(
             characterId: character.id,

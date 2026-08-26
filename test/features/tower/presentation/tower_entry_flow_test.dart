@@ -146,6 +146,7 @@ void main() {
             result: BattleResult.rightWin,
             totalTicks: 1,
             hadActions: true,
+            playerCharacterId: 2,
             participants: [
               const CombatParticipantSnapshot(
                 characterId: 2,

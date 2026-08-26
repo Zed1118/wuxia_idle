@@ -52,6 +52,7 @@ void main() {
     result: BattleResult.rightWin,
     totalTicks: 1,
     hadActions: false,
+    playerCharacterId: 1,
     participants: const [
       CombatParticipantSnapshot(characterId: 1, currentHp: 0, maxHp: 1000),
     ],

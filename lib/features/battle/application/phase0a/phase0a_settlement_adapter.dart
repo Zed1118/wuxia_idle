@@ -258,6 +258,7 @@ final class Phase0aSettlementAdapter {
       },
       totalTicks: finalState.tick,
       hadActions: hadActions,
+      playerCharacterId: characterIdByActor[playerActorId]!,
       participants: participants,
       skillCasts: skillCasts,
       totalDamage: totalDamage,

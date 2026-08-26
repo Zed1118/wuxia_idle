@@ -247,6 +247,7 @@ void main() {
             result: BattleResult.leftWin,
             totalTicks: 1,
             hadActions: true,
+            playerCharacterId: 2,
             participants: const [
               CombatParticipantSnapshot(characterId: 2, currentHp: 1, maxHp: 1),
             ],
@@ -285,6 +286,7 @@ void main() {
           result: BattleResult.rightWin,
           totalTicks: 1,
           hadActions: false,
+          playerCharacterId: 1,
           participants: const [
             CombatParticipantSnapshot(characterId: 1, currentHp: 0, maxHp: 1),
           ],

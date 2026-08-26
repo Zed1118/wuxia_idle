@@ -37,6 +37,7 @@ final class CombatSettlementSnapshot {
     required this.result,
     required this.totalTicks,
     required this.hadActions,
+    required this.playerCharacterId,
     required List<CombatParticipantSnapshot> participants,
     required List<CombatSkillCastSnapshot> skillCasts,
     required this.totalDamage,
@@ -49,6 +50,7 @@ final class CombatSettlementSnapshot {
   final BattleResult? result;
   final int totalTicks;
   final bool hadActions;
+  final int playerCharacterId;
   final List<CombatParticipantSnapshot> participants;
   final List<CombatSkillCastSnapshot> skillCasts;
   final int totalDamage;
