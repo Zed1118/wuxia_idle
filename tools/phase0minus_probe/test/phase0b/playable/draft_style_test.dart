@@ -175,17 +175,8 @@ void main() {
   });
 
   test('gather arts differ: pull vs slowing fog', () {
-    expect(
-      DraftStyleProfile.surgeCurrent.gatherKind,
-      DraftGatherKind.pull,
-    );
-    expect(
-      DraftStyleProfile.sinisterDraft.gatherKind,
-      DraftGatherKind.slowFog,
-    );
-    expect(
-      DraftStyleProfile.sinisterDraft.slowFieldDuration,
-      greaterThan(0),
-    );
+    expect(DraftStyleProfile.surgeCurrent.gatherKind, DraftGatherKind.pull);
+    expect(DraftStyleProfile.sinisterDraft.gatherKind, DraftGatherKind.slowFog);
+    expect(DraftStyleProfile.sinisterDraft.slowFieldDuration, greaterThan(0));
   });
 }
