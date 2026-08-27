@@ -29,8 +29,36 @@
 
 ## 当前恢复点
 
-- 状态：A1 WIP。
-- 最后完成：在真实 `Phase0aBattleScreen` 的既有近战/掌风、Q、R、击败流程中，从生产 `CustomPaint.painter` 取得五类 painter，以 `PictureRecorder → toImage → rawRgba` 断言至少一个非透明像素；未直接实例化私有 painter，既有 key/尺寸/坐标合同保留。
-- 下一步：提交 A1 实现 checkpoint；随后按固定顺序执行两向破坏证红并精确还原。
-- 已跑验证：`flutter test --no-pub test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart --reporter compact` → `00:07 +28: All tests passed!`，`[E]=0`。
+- 状态：A1 READY，等待 Claude 独立 S5 复核；A2 将从本 tip 串行开分支。
+- 最后完成：在真实 `Phase0aBattleScreen` 的既有近战/掌风、Q、R、击败流程中，从生产 `CustomPaint.painter` 取得五类 painter，以 `PictureRecorder → toImage → rawRgba` 断言至少一个非透明像素；未直接实例化私有 painter，既有 key/尺寸/坐标合同保留。两向破坏均红且已精确还原，正式 targeted/analyze/format/full/diff check 均通过。
+- 下一步：冻结 A1 `[READY]` tip 与外置机器 receipt；从该 tip 创建 `codex/p2-b3-painter-mutation-sweep-20260827` 执行 A2。
+- 已跑验证：见下方 A1 八步原始命令与结果。
 - 阻塞项：无。
+
+## A1 八步原始命令与结果
+
+1. 实现并提交
+   - `git commit -m '补全五类墨效像素守卫'`
+   - checkpoint：`3eed30e8fa642a60a93e653f7409c0756a1e5f27`
+2. 提交后两向破坏证红
+   - `remove_implementation`：在 `_InkEffectPainter.paint` 首行临时加入 `return;`；运行 `flutter test --no-pub test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart --reporter compact`。
+   - 结果：exit 1；末行 `00:04 +24 -4: Some tests failed.`；`[E]=4`；实测失败测试数 4。
+   - 精确反向补丁删除 `return;` 后：HEAD=`3eed30e8fa642a60a93e653f7409c0756a1e5f27`，`git diff --quiet` exit 0，`git status --short` 空。
+   - `force_degenerate_value`：在同一方法首行临时加入 `canvas.clipRect(Rect.zero);`；复跑同一 targeted 命令。
+   - 结果：exit 1；末行 `00:04 +24 -4: Some tests failed.`；`[E]=4`；实测失败测试数 4。
+   - 精确反向补丁删除退化 clip 后：HEAD=`3eed30e8fa642a60a93e653f7409c0756a1e5f27`，`git diff --quiet` exit 0，`git status --short` 空。
+3. Targeted（逐文件）
+   - `flutter test --no-pub test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart --reporter compact` → exit 0；末行 `00:04 +28: All tests passed!`；`[E]=0`。
+   - `flutter test --no-pub test/features/battle/presentation/phase0a/phase0a_ink_vfx_test.dart --reporter compact` → exit 0；末行 `00:00 +3: All tests passed!`；`[E]=0`。
+4. Analyze
+   - `flutter analyze --no-pub lib test` → exit 0；末行 `No issues found! (ran in 15.3s)`。
+5. 整仓 format
+   - `dart format --output=none --set-exit-if-changed .` → exit 0；末行 `Formatted 1624 files (0 changed) in 4.28 seconds.`。
+6. 全量锁内测试
+   - 锁：`/Users/a10506/.claude/locks/wuxia_full_test.lock`；测试前确认 absent，原子创建；测试结束以 `unlink` 删除，结束后确认 absent。
+   - `flutter test --no-pub --reporter compact` → exit 0；末行 `05:05 +5633: All tests passed!`；`[E]=0`。
+7. Diff check
+   - `git diff --check 6d59c895dd5922adde1b64c50b3895c52d7926e9..HEAD` → exit 0。
+8. Receipt / tip
+   - 本任务为零 `lib/` 的审计单；`break_red` 在 receipt 留空，两向证红仅记录于本计划。
+   - receipt 以最终 A1 tip 重新计算 `changed_files` 与 patch SHA-256 后生成；tip 使用 `[READY]` 中文动宾标记并保持 clean。
