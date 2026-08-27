@@ -57,6 +57,13 @@ void main() {
     expect(workflow, contains('dart run build_runner build'));
     expect(workflow, contains('flutter analyze --no-pub'));
     expect(workflow, contains('run: flutter analyze --no-pub lib test tool'));
+    expect(
+      RegExp(
+        r'^\s*run: flutter analyze --no-pub lib test tool\s*$',
+        multiLine: true,
+      ).allMatches(workflow).length,
+      1,
+    );
     expect(workflow, isNot(contains('run: flutter analyze --no-pub\n')));
     expect(workflow, contains('flutter build windows --release --no-pub'));
     expect(workflow, contains('actions/upload-artifact@v4'));
