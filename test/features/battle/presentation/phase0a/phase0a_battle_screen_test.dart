@@ -203,6 +203,15 @@ void main() {
           '(${viewport.width}x${viewport.height})', (tester) async {
         await pumpScreen(tester, viewport: viewport);
 
+        await expectPainterDrawsPixels(
+          tester,
+          find.descendant(
+            of: find.byKey(const ValueKey('phase0a_static_background')),
+            matching: find.byType(CustomPaint),
+          ),
+          label: '战场静态水墨罩染 ${viewport.width}x${viewport.height}',
+        );
+
         final state = controller.state;
         expect(state.enemies, isNotEmpty, reason: 'fixture 首波必须有敌人');
         for (final enemy in state.enemies) {
@@ -833,6 +842,11 @@ void main() {
           (screenSource.dy + screenTarget.dy) / 2,
         );
         expect(find.byKey(gatherPullKey(outcome.target)), findsOneWidget);
+        await expectPainterDrawsPixels(
+          tester,
+          find.byKey(gatherPullKey(outcome.target)),
+          label: '聚怪拉拢轨迹 ${outcome.target}',
+        );
         expect(
           (tester.getCenter(find.byKey(gatherPullKey(outcome.target))) -
                   expectedMidpoint)
@@ -950,6 +964,14 @@ void main() {
             findsOneWidget,
             reason: '第 ${started.waveIndex} 波 banner 必须上屏',
           );
+          await expectPainterDrawsPixels(
+            tester,
+            find.descendant(
+              of: find.byKey(waveBannerKey),
+              matching: find.byType(CustomPaint),
+            ),
+            label: '第 ${started.waveIndex} 波纸幅横幅',
+          );
         }
         guard++;
       }
@@ -963,6 +985,11 @@ void main() {
 
       // 全场唯一终局封签。
       expect(find.byKey(outcomeSealKey), findsOneWidget);
+      await expectPainterDrawsPixels(
+        tester,
+        find.byKey(outcomeSealKey),
+        label: '终局封签',
+      );
 
       // 终局后:键盘/鼠标输入 + step 均零事件、零新反馈,封签仍唯一。
       final feedbackAtEnd = List<Phase0aVfxEntry>.of(controller.feedback);

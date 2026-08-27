@@ -26,6 +26,44 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
+  Future<void> expectPainterDrawsPixels(
+    WidgetTester tester,
+    Finder paintFinder, {
+    required String label,
+  }) async {
+    expect(
+      paintFinder,
+      findsOneWidget,
+      reason: '$label 必须进入真实 CustomPaint 渲染分支',
+    );
+    final size = tester.getSize(paintFinder);
+    expect(size.width, greaterThan(0), reason: '$label 画布宽度必须非零');
+    expect(size.height, greaterThan(0), reason: '$label 画布高度必须非零');
+
+    final painter = tester.widget<CustomPaint>(paintFinder).painter;
+    expect(painter, isNotNull, reason: '$label 必须携带生产 painter');
+    final recorder = ui.PictureRecorder();
+    painter!.paint(ui.Canvas(recorder), size);
+    final picture = recorder.endRecording();
+    final bytes = await tester.runAsync(() async {
+      final image = await picture.toImage(
+        size.width.ceil(),
+        size.height.ceil(),
+      );
+      picture.dispose();
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return data;
+    });
+    expect(bytes, isNotNull, reason: '$label 必须可编码为 raw RGBA');
+
+    var paintedPixels = 0;
+    for (var offset = 3; offset < bytes!.lengthInBytes; offset += 4) {
+      if (bytes.getUint8(offset) != 0) paintedPixels++;
+    }
+    expect(paintedPixels, greaterThan(0), reason: '$label painter 不得退化为空画布');
+  }
+
   testWidgets(
     'guardian fixture renders a non-3v3 Phase0A ward and both VFX states',
     (tester) async {
@@ -62,6 +100,11 @@ void main() {
       expect(
         find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
         findsOneWidget,
+      );
+      await expectPainterDrawsPixels(
+        tester,
+        find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
+        label: '守护阵环',
       );
       expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
       expect(
@@ -105,30 +148,48 @@ void main() {
         sawCoop =
             sawCoop || events.whereType<Phase0aGuardianCoopStrike>().isNotEmpty;
         if (events.whereType<Phase0aGuardIntercepted>().isNotEmpty) {
+          final interceptFinder = find.byWidgetPredicate(
+            (widget) =>
+                widget.key is ValueKey &&
+                (widget.key! as ValueKey).value.toString().startsWith(
+                  'phase0a_guard_intercept_',
+                ),
+          );
           expect(
-            find.byWidgetPredicate(
-              (widget) =>
-                  widget.key is ValueKey &&
-                  (widget.key! as ValueKey).value.toString().startsWith(
-                    'phase0a_guard_intercept_',
-                  ),
-            ),
+            interceptFinder,
             findsOneWidget,
+          );
+          await expectPainterDrawsPixels(
+            tester,
+            find.descendant(
+              of: interceptFinder,
+              matching: find.byType(CustomPaint),
+            ),
+            label: '守护截击轨迹',
           );
         }
         if (sawIntercept && sawCoop) break;
       }
       expect(sawIntercept, isTrue);
       expect(sawCoop, isTrue);
+      final coopFinder = find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey &&
+            (widget.key! as ValueKey).value.toString().startsWith(
+              'phase0a_guardian_coop_',
+            ),
+      );
       expect(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget.key is ValueKey &&
-              (widget.key! as ValueKey).value.toString().startsWith(
-                'phase0a_guardian_coop_',
-              ),
-        ),
+        coopFinder,
         findsOneWidget,
+      );
+      await expectPainterDrawsPixels(
+        tester,
+        find.descendant(
+          of: coopFinder,
+          matching: find.byType(CustomPaint),
+        ),
+        label: '守护协击轨迹',
       );
     },
   );

@@ -10,9 +10,9 @@
 
 ## 固定验收清单
 
-- [ ] 生产接线：经真实 `Phase0aBattleScreen` 定位生产 `CustomPaint`，只从公共 `painter` 属性复绘，不直接实例化私有 painter。
-- [ ] A1 覆盖 melee / palm / gather / clear / defeat 五类，每类至少一帧 `PictureRecorder → toImage → rawRgba` 非透明像素。
-- [ ] A2 对 `_GatherPullPainter`、`_GuardianWardRingPainter`、`_GuardianMechanicPainter`、`_StageWashPainter`、`_PaperBannerPainter`、`_OutcomeSealPainter` 逐类 mutation；只给实测假绿的类别补守卫。
+- [x] 生产接线：经真实 `Phase0aBattleScreen` 定位生产 `CustomPaint`，只从公共 `painter` 属性复绘，不直接实例化私有 painter。
+- [x] A1 覆盖 melee / palm / gather / clear / defeat 五类，每类至少一帧 `PictureRecorder → toImage → rawRgba` 非透明像素。
+- [x] A2 对 `_GatherPullPainter`、`_GuardianWardRingPainter`、`_GuardianMechanicPainter`、`_StageWashPainter`、`_PaperBannerPainter`、`_OutcomeSealPainter` 逐类 mutation；六类原有测试均实测假绿，故六类全部补守卫。
 - [ ] 每个子门实现 commit 后依序完成 `remove_implementation` 与 `force_degenerate_value` 两向破坏证红，记录原始命令、reporter 末行、`[E]` 数与失败数，再用精确反向补丁还原。
 - [ ] 每个子门依序通过 targeted、`flutter analyze --no-pub lib test`、整仓 format、带全量锁的 `flutter test --no-pub`、`git diff --check`。
 - [ ] 每个子门写审计型 `receipt.yaml`：`break_red` 留空、唯一 `audit_verification`、changed files 字节序升序、原文 last line、patch SHA-256。
@@ -29,10 +29,10 @@
 
 ## 当前恢复点
 
-- 状态：A1 READY，等待 Claude 独立 S5 复核；A2 将从本 tip 串行开分支。
-- 最后完成：在真实 `Phase0aBattleScreen` 的既有近战/掌风、Q、R、击败流程中，从生产 `CustomPaint.painter` 取得五类 painter，以 `PictureRecorder → toImage → rawRgba` 断言至少一个非透明像素；未直接实例化私有 painter，既有 key/尺寸/坐标合同保留。两向破坏均红且已精确还原，正式 targeted/analyze/format/full/diff check 均通过。
-- 下一步：冻结 A1 `[READY]` tip 与外置机器 receipt；从该 tip 创建 `codex/p2-b3-painter-mutation-sweep-20260827` 执行 A2。
-- 已跑验证：见下方 A1 八步原始命令与结果。
+- 状态：A1 已冻结 `[READY]`；A2 位于 `codex/p2-b3-painter-mutation-sweep-20260827`，六类假绿已实测并补齐生产 painter 像素守卫，准备实现 commit 后两向证红。
+- 最后完成：六个目标类逐一在 `paint()` 首行临时加入 `return;`，原有直接相关测试全部仍绿；每次均以精确反向补丁还原并核 HEAD=`2c84404bf081bb56038fd7cf86c16f8066fd8ac1`、diff quiet、status clean。守卫均经真实 `Phase0aBattleScreen` 定位生产 `CustomPaint.painter`，未直接实例化私有 painter。
+- 下一步：提交 A2 实现 checkpoint，完成两向整体破坏证红与八步收工。
+- 已跑验证：A2 补守卫后的 battle targeted `00:04 +28: All tests passed!`、mechanics targeted `00:02 +6: All tests passed!`，均 `[E]=0`；其余见下方证据。
 - 阻塞项：无。
 
 ## A1 八步原始命令与结果
@@ -62,3 +62,16 @@
 8. Receipt / tip
    - 本任务为零 `lib/` 的审计单；`break_red` 在 receipt 留空，两向证红仅记录于本计划。
    - receipt 以最终 A1 tip 重新计算 `changed_files` 与 patch SHA-256 后生成；tip 使用 `[READY]` 中文动宾标记并保持 clean。
+
+## A2 逐类 mutation 结果
+
+每项均在目标类 `paint()` 首行临时加入 `return;`，运行表中原始命令，随后用精确反向补丁删除该行；六次还原后均为 HEAD=`2c84404bf081bb56038fd7cf86c16f8066fd8ac1`、`git diff --quiet` exit 0、`git status --short` 空。
+
+| 目标 painter | 原始测试命令 | exit / reporter 末行 / `[E]` / 失败数 | 结论 |
+| --- | --- | --- | --- |
+| `_GatherPullPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart` | `0` / `00:04 +28: All tests passed!` / `0` / `0` | 假绿，补守卫 |
+| `_GuardianWardRingPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_mechanics_presentation_test.dart` | `0` / `00:01 +6: All tests passed!` / `0` / `0` | 假绿，补守卫 |
+| `_GuardianMechanicPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_mechanics_presentation_test.dart` | `0` / `00:01 +6: All tests passed!` / `0` / `0` | 假绿，补守卫 |
+| `_StageWashPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart` | `0` / `00:03 +28: All tests passed!` / `0` / `0` | 假绿，补守卫 |
+| `_PaperBannerPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart` | `0` / `00:04 +28: All tests passed!` / `0` / `0` | 假绿，补守卫 |
+| `_OutcomeSealPainter` | `flutter test test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart` | `0` / `00:03 +28: All tests passed!` / `0` / `0` | 假绿，补守卫 |
