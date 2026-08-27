@@ -102,5 +102,11 @@
   `[READY]` commit 作为新的最终 tip，外置 receipt 按新 tip 重算。
 - 实现、两向破坏证红和原始命令/末行/失败数保持上文原样；新 tip
   只增加本条合规证据，`lib/` 仍零改动。
-- 新 tip 需重跑 targeted、analyze、整仓 format、带锁全量、diff/patch 审计；
-  实测末行和新 receipt SHA 以本节之后的外置 receipt 为准。
+- 在本证据 commit 之前，已于非空校正 head
+  `bc4107a8abd569823325ff08bd459bdb809b71ae` 重跑 tip-bound 门：两份 targeted 末行
+  为 `00:02 +6: All tests passed!` / `00:01 +2: All tests passed!`；analyze
+  `No issues found! (ran in 5.2s)`；整仓 format
+  `Formatted 1624 files (0 changed) in 2.80 seconds.`；带锁全量 exit 0、
+  末行 `04:52 +5634: All tests passed!`、`[E]` 0；diff check exit 0。
+- 本 commit 只把上述实测证据固化进 plan，并作为最终非空 `[READY]` tip；
+  外置 receipt 按本 tip 重算，09:00 由 Claude 在本最终 tip 独立复跑 S5。
