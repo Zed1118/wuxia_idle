@@ -56,6 +56,36 @@ final class Phase0aBattleScreen extends StatefulWidget {
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
 }
 
+final class _ActorRenderMotion {
+  _ActorRenderMotion(ArenaVector position)
+    : current = position,
+      _from = position,
+      _target = position;
+
+  ArenaVector current;
+  ArenaVector _from;
+  ArenaVector _target;
+  double _elapsedSeconds = 0;
+
+  void retarget(ArenaVector target) {
+    if (target == _target) return;
+    _from = current;
+    _target = target;
+    _elapsedSeconds = 0;
+  }
+
+  bool advance(double deltaSeconds, double durationSeconds) {
+    if (current == _target) return false;
+    _elapsedSeconds = (_elapsedSeconds + deltaSeconds).clamp(
+      0,
+      durationSeconds,
+    );
+    final progress = _elapsedSeconds / durationSeconds;
+    current = _from + (_target - _from) * progress;
+    return true;
+  }
+}
+
 class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
@@ -68,6 +98,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   final Map<String, double> _actionPulseRemaining = <String, double>{};
+  final Map<String, _ActorRenderMotion> _actorRenderMotions =
+      <String, _ActorRenderMotion>{};
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
   bool _primaryAttackKeyHeld = false;
@@ -83,6 +115,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     super.initState();
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     _feedbackFrame = ValueNotifier<int>(0);
+    _syncActorRenderTargets();
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
   }
@@ -100,6 +133,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
     _actionPulseRemaining.clear();
+    _actorRenderMotions.clear();
+    _syncActorRenderTargets();
     _paused = false;
     _primaryAttackHeld = false;
     _primaryAttackKeyHeld = false;
@@ -165,6 +200,37 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _stopPointerAttack();
   }
 
+  List<Phase0aActor> _currentActors() => <Phase0aActor>[
+    widget.controller.state.player,
+    ...widget.controller.state.enemies,
+  ];
+
+  void _syncActorRenderTargets() {
+    final actors = _currentActors();
+    final actorIds = actors.map((actor) => actor.id).toSet();
+    _actorRenderMotions.removeWhere((id, _) => !actorIds.contains(id));
+    for (final actor in actors) {
+      final motion = _actorRenderMotions.putIfAbsent(
+        actor.id,
+        () => _ActorRenderMotion(actor.position),
+      );
+      motion.retarget(actor.position);
+    }
+  }
+
+  bool _advanceActorRenderMotions(double deltaSeconds) {
+    var changed = false;
+    for (final motion in _actorRenderMotions.values) {
+      changed =
+          motion.advance(deltaSeconds, widget.controller.fixedDeltaSeconds) ||
+          changed;
+    }
+    return changed;
+  }
+
+  ArenaVector _actorRenderPosition(Phase0aActor actor) =>
+      _actorRenderMotions[actor.id]?.current ?? actor.position;
+
   bool _isMovementKey(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.keyA ||
       key == LogicalKeyboardKey.keyD ||
@@ -193,6 +259,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _refresh() {
+    _syncActorRenderTargets();
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
       _clearHeldInput();
     }
@@ -372,6 +439,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (previous == null) return;
     final deltaSeconds =
         (elapsed - previous).inMicroseconds / Duration.microsecondsPerSecond;
+    final actorRenderingChanged = _advanceActorRenderMotions(deltaSeconds);
     for (final held in _heldFeedback) {
       held.remainingSeconds -= deltaSeconds;
     }
@@ -382,7 +450,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
         _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds) |
         _advanceActorTimers(_actionPulseRemaining, deltaSeconds);
-    if ((previousFeedbackCount != _heldFeedback.length || transientChanged) &&
+    if ((previousFeedbackCount != _heldFeedback.length ||
+            transientChanged ||
+            actorRenderingChanged) &&
         mounted) {
       setState(() {});
     }
@@ -676,12 +746,17 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aBattleController controller,
     Phase0aStage stage,
   ) {
-    final actors = stage.sortActors([
-      controller.state.player,
-      ...controller.state.enemies,
-    ]);
+    final renderPositions = <String, ArenaVector>{
+      for (final actor in _currentActors())
+        actor.id: _actorRenderPosition(actor),
+    };
+    final actors = stage.sortActors(
+      _currentActors(),
+      positionOf: (actor) => renderPositions[actor.id]!,
+    );
     return [
-      for (final actor in actors) _positionedActor(controller, stage, actor),
+      for (final actor in actors)
+        _positionedActor(controller, stage, actor, renderPositions[actor.id]!),
     ];
   }
 
@@ -689,9 +764,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aBattleController controller,
     Phase0aStage stage,
     Phase0aActor actor,
+    ArenaVector renderPosition,
   ) {
-    final foot = stage.worldToScreen(actor.position);
-    final scale = stage.depthScale(actor.position.y);
+    final foot = stage.worldToScreen(renderPosition);
+    final scale = stage.depthScale(renderPosition.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
     final guardianLabelOffsetX = _guardianLabelOffsetX(
@@ -709,14 +785,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
               ),
         );
-    return AnimatedPositioned(
+    return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
-      duration: Duration(
-        microseconds:
-            (controller.fixedDeltaSeconds * Duration.microsecondsPerSecond)
-                .round(),
-      ),
-      curve: Curves.linear,
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,

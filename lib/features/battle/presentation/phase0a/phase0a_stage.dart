@@ -72,10 +72,15 @@ final class Phase0aStage {
 
   /// 绘制排序:y 升序(近处先画、远处后画由调用方按序覆盖),
   /// y 相同按语义 id 字典序,保证逐帧确定。
-  List<Phase0aActor> sortActors(List<Phase0aActor> actors) {
+  List<Phase0aActor> sortActors(
+    List<Phase0aActor> actors, {
+    ArenaVector Function(Phase0aActor actor)? positionOf,
+  }) {
     final sorted = List<Phase0aActor>.of(actors);
     sorted.sort((a, b) {
-      final byY = a.position.y.compareTo(b.position.y);
+      final byY = (positionOf?.call(a) ?? a.position).y.compareTo(
+        (positionOf?.call(b) ?? b.position).y,
+      );
       return byY != 0 ? byY : a.id.compareTo(b.id);
     });
     return sorted;
