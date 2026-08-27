@@ -87,12 +87,4 @@ void main() {
       reason: '典故 tab ListView 必渲染(equipmentDefs 启动期校验 7 阶非空)',
     );
   });
-
-  testWidgets('典故 tab Repository 未加载显占位', (tester) async {
-    // 临时清掉 repo 单例 — 但 setUpAll 已加载,这里跳过实现(占位 case 留存)。
-    // 实际生产路径 GameRepository.isLoaded 必 true(main.dart 启动 loadAllDefs),
-    // 测试 fixture setUpAll 一致。
-    // 见 `_LoreTab` source:`if (!GameRepository.isLoaded) return 占位`。
-    expect(GameRepository.isLoaded, isTrue);
-  });
 }
