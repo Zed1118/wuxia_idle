@@ -1513,8 +1513,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.defenseStarted:
           children.add(
-            _guardianMechanicVfx(
-              held,
+            _bossMechanicBanner(
               key: ValueKey('phase0a_defense_start_${held.id}'),
               label: UiStrings.phase0aDefenseStarted,
               accent: WuxiaUi.qingOnDark,
@@ -1522,8 +1521,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.defenseResolved:
           children.add(
-            _guardianMechanicVfx(
-              held,
+            _bossMechanicBanner(
               key: ValueKey('phase0a_defense_resolved_${held.id}'),
               label: UiStrings.phase0aDefenseResolved,
               accent: WuxiaUi.gold,
