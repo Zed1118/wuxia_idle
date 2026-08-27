@@ -57,9 +57,46 @@ U05 共 2 个子门：
 
 ## 当前恢复点
 
-- 状态：WIP
-- 最后完成：诊断模型与 21 格测试落地，定向测试 `+5, All tests passed!`。
-- 下一步：提交实现，执行闭关贡献/桃花岛产出两向破坏证红并精确还原。
-- 已跑验证：`flutter test --no-pub test/tools/phase2_long_horizon_economy_test.dart`
-  通过；首轮编译曾因漏导入 `BuildingConfig` 失败，补齐类型导入后通过。
+- 状态：`[READY]`
+- 最后完成：21/21 格诊断模型、6 类资源来源、三组 sink 锚点、
+  两向破坏证红和全部收工门。
+- 下一步：09:00 交 Claude 持外置 receipt 独立复核；本会话不自签 S5。
 - 阻塞项：无。
+
+## 收工原始证据
+
+### 两向破坏证红
+
+1. `remove_implementation`：把 `_seclusionCapacity` 的返回值临时改为空向量，
+   执行 `flutter test --no-pub test/tools/phase2_long_horizon_economy_test.dart`。
+   实测 1 个失败，关键原文 `seclusion must be consumed for xueTu`，
+   reporter 末行 `00:00 +4 -1: Some tests failed.`，退出码 1。
+2. `force_degenerate_value`：把 `_islandRecipeCapacity` 的产出临时强制为空向量，
+   复跑同一命令。实测 1 个失败，资源覆盖从 6 类退化为 5 类、
+   缺 `item_liaoshangdan`，reporter 末行
+   `00:00 +4 -1: Some tests failed.`，退出码 1。
+
+两向都用精确反向补丁还原；每次还原后
+`HEAD=9987418b29a7ac6f8573029270739fe23be87be1`、`git status --short` 为空。
+
+### 正向验证
+
+- `flutter test --no-pub test/tools/phase2_long_horizon_economy_test.dart`
+  → `00:00 +5: All tests passed!`。
+- `flutter test --no-pub test/features/mainline/application/phase2_same_core_reward_evidence_test.dart`
+  → `00:01 +7: All tests passed!`；`N14_EVIDENCE battle=3898e0822cd4fc59`、
+  `ticks=76`、`reward=3f5cec5f1b4acbbb`。
+- `flutter test --no-pub test/features/sweep/application/sweep_settlement_test.dart`
+  → `00:01 +4: All tests passed!`；包含爬塔重打零装备/零物品/零经验真实结算。
+- 三组 targeted 共 3 条 `All tests passed!`，`[E]` 块计数 0。
+- `flutter analyze --no-pub lib test tool`
+  → `No issues found! (ran in 5.9s)`。
+- `dart format --output=none --set-exit-if-changed .`
+  → `Formatted 1622 files (0 changed) in 2.85 seconds.`。
+- 原子创建 `/Users/a10506/.claude/locks/wuxia_full_test.lock` 后执行
+  `flutter test --no-pub 2>&1 | tee build/phase2_wiring_receipts/U05/full_test.log`；
+  退出码 0，reporter 末行 `04:38 +5623: All tests passed!`，`[E]` 块计数 0，
+  锁已释放。
+
+首轮编译曾因漏导入 `BuildingConfig` 失败；补齐类型导入后才进入上述
+收工门，未把该次失败伪装成绿测。
