@@ -71,23 +71,25 @@
 
 ## 八步收工记录
 
-1. 实现并 commit：`8a989c5d 替换主线入口假绿测试`；失败清理保证 `d748b35a`；mutation 安全收尾 `92c2ebbc`。
+1. 实现并 commit：`8a989c5d 替换主线入口假绿测试`；失败清理保证 `d748b35a`；mutation 安全收尾 `92c2ebbc`；破坏证据记录 `6fc0c5b9`。
 2. 两向破坏证红：
    - `remove_implementation` 临时补丁：`playerSnapshot: launch.playerSnapshot` → `playerSnapshot: null`。原始测试命令：`flutter test --no-pub test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart` 与 `flutter test --no-pub test/features/mainline/presentation/mainline_all_mode_consistency_test.dart`。连续 run：exit 1，末行 `00:01 +1 -1: Some tests failed.`，`[E]` 1，实测失败 1；全模式：exit 0，末行 `00:02 +6: All tests passed!`，`[E]` 0，失败 0。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD `92c2ebbcf80eb765d47e19c8523267c17db7369c`。
    - `force_degenerate_value` 临时补丁：`visibleReplayController` 三元选择 → 恒 `ActivityController.human`。原始测试命令同上。连续 run：exit 0，末行 `00:01 +2: All tests passed!`，`[E]` 0，失败 0；全模式：exit 1，末行 `00:02 +5 -1: Some tests failed.`，`[E]` 1，实测失败 1。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD 同上。
-3. targeted：待填，两文件逐文件运行。
-4. analyze：待填。
-5. format：待填。
-6. 带锁全量：待填。
-7. diff check：待填。
-8. receipt + tip：待填。
+3. targeted（逐文件）：
+   - `flutter test --no-pub test/features/mainline/presentation/mainline_all_mode_consistency_test.dart` → exit 0，末行 `00:02 +6: All tests passed!`，`[E]` 0，失败 0。
+   - `flutter test --no-pub test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart` → exit 0，末行 `00:01 +2: All tests passed!`，`[E]` 0，失败 0。
+4. analyze：`flutter analyze --no-pub lib test` → exit 0，末行 `No issues found! (ran in 15.1s)`。
+5. format：`dart format --output=none --set-exit-if-changed .` → exit 0，末行 `Formatted 1624 files (0 changed) in 3.04 seconds.`。
+6. 带锁全量：成功独占 `/Users/a10506/.claude/locks/wuxia_full_test.lock`；`flutter test --no-pub` → exit 0，末行 `05:34 +5634: All tests passed!`，`[E]` 0，失败 0；命令退出时精确 `unlink` 锁文件并确认不存在。
+7. diff check：`git diff --check 6d59c895dd5922adde1b64c50b3895c52d7926e9 HEAD` → exit 0；最终审计 head 提交后再生成固定 patch SHA-256。
+8. receipt + tip：待审计 head commit 后写 `receipt.yaml`，再以 `[READY]` commit 冻结；S5 由 Claude 独立复核，本会话不自签验收。
 
 ## 当前恢复点
 
-- 状态：WIP；实现已提交，两向破坏证红均按预期各红 1 项且已精确恢复；尚未执行正式 targeted/analyze/整仓 format/全量/diff/receipt/tip。
-- 最后完成：确认无需修改生产入口；三条路径均从 `StageListScreen` 点击进入并消费真实 host/unit/snapshot；两向 mutation 都命中新增测试。
-- 下一步：提交本次 mutation 审计记录，然后按固定顺序执行正式 targeted、analyze、format、带锁全量、diff check、receipt 与 tip。
-- 已跑验证：开发期 `flutter test --no-pub test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart` → `+2`；`flutter test --no-pub test/features/mainline/presentation/mainline_all_mode_consistency_test.dart` → `+6`。
+- 状态：READY 待回执 commit；实现、两向破坏证红、正式 targeted/analyze/整仓 format/带锁全量/diff check 均完成且通过。
+- 最后完成：带锁全量 `+5634`，末行 `05:34 +5634: All tests passed!`，`[E]` 0；锁已删除，工作树在记录本段前 clean。
+- 下一步：提交正式验证记录，生成审计 patch SHA-256 与 `receipt.yaml`，冻结 `[READY]` tip；随后从该 tip 创建 B2 分支。
+- 已跑验证：三项正式 Gate 末行及两份 targeted 末行见上方八步记录；失败数均为 0。
 - 红线影响：只改测试/计划；不触及数值、三系、在线=离线、反主流项、UI 文案、schema/saveVersion。
-- 残留风险：正式 analyze、整仓 format、全量、receipt 尚未执行。
+- 残留风险：仅待 S5 独立复核；本会话不自签验收、不合并。
 - 阻塞项：无。
