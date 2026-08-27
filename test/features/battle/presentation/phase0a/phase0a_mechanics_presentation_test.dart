@@ -155,10 +155,7 @@ void main() {
                   'phase0a_guard_intercept_',
                 ),
           );
-          expect(
-            interceptFinder,
-            findsOneWidget,
-          );
+          expect(interceptFinder, findsOneWidget);
           await expectPainterDrawsPixels(
             tester,
             find.descendant(
@@ -179,16 +176,10 @@ void main() {
               'phase0a_guardian_coop_',
             ),
       );
-      expect(
-        coopFinder,
-        findsOneWidget,
-      );
+      expect(coopFinder, findsOneWidget);
       await expectPainterDrawsPixels(
         tester,
-        find.descendant(
-          of: coopFinder,
-          matching: find.byType(CustomPaint),
-        ),
+        find.descendant(of: coopFinder, matching: find.byType(CustomPaint)),
         label: '守护协击轨迹',
       );
     },
