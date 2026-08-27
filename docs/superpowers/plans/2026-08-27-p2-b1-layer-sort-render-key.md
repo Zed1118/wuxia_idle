@@ -25,12 +25,12 @@
 - [x] 建立统一角色渲染位置状态。
 - [x] 让定位与排序消费同一位置快照。
 - [x] 补移动中实际绘制顺序测试。
-- [ ] targeted、破坏证红、analyze、format、禁区与 clean 核查。
+- [x] targeted、破坏证红、analyze、format、禁区与 clean 核查。
 
 ## 当前恢复点
 
-- 状态：实现与常规验证完成，待 commit 后破坏证红。
-- 最后完成：统一渲染位置已同时驱动定位和排序；新增测试覆盖脚底交叉前后 Stack 顺序。
-- 下一步：复核 diff、提交，再用可自动还原的 mutant 证明新测试会红并复绿。
-- 已跑验证：新增测试 1/1、stage transform 7/7、battle screen 27/27、focus nav 8/8、mechanics presentation 3/3 全绿；`flutter analyze --no-pub lib test` 0 issue；format 0 changed。
+- 状态：READY，等待协调者后续集成。
+- 最后完成：统一渲染位置已同时驱动定位和排序；新增测试覆盖脚底交叉前后 Stack 顺序，并完成破坏证红。
+- 下一步：无；保持分支 clean，不在本任务内集成。
+- 已跑验证：新增测试 1/1、stage transform 7/7、battle screen 27/27、focus nav 8/8、mechanics presentation 3/3 全绿；`flutter analyze --no-pub lib test` 0 issue；format 0 changed；临时把排序键退回逻辑目标坐标后，新测试按预期 0/1 失败（第 141 行 actor 顺序不符），自动还原后同一测试 1/1 复绿；禁区 diff 为空。
 - 阻塞项：无。
