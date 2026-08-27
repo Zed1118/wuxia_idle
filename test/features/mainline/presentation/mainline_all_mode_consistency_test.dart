@@ -246,25 +246,32 @@ void main() {
     await tester.tap(participantFinder);
     await pumpUntilFound(tester, find.byType(Phase0aMainlineBattleHost));
 
-    final host = tester.widget<Phase0aMainlineBattleHost>(
-      find.byType(Phase0aMainlineBattleHost),
-    );
-    expect(host.controller, ActivityController.playerBot);
-    expect(host.playerSnapshot?.characterId, disciple.id);
-    await pumpUntilFound(tester, find.byType(Phase0aBattleScreen));
-    final screen = tester.widget<Phase0aBattleScreen>(
-      find.byType(Phase0aBattleScreen),
-    );
-    expect(
-      screen.controller.roster.nameOf(screen.controller.state.player.id),
-      disciple.name,
-    );
-    expect(screen.botCommandBuilder, isNotNull);
-    Navigator.of(tester.element(find.byType(Phase0aMainlineBattleHost))).pop();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 1)),
-    );
-    await tester.pumpAndSettle();
+    try {
+      final host = tester.widget<Phase0aMainlineBattleHost>(
+        find.byType(Phase0aMainlineBattleHost),
+      );
+      expect(host.controller, ActivityController.playerBot);
+      expect(host.playerSnapshot?.characterId, disciple.id);
+      await pumpUntilFound(tester, find.byType(Phase0aBattleScreen));
+      final screen = tester.widget<Phase0aBattleScreen>(
+        find.byType(Phase0aBattleScreen),
+      );
+      expect(
+        screen.controller.roster.nameOf(screen.controller.state.player.id),
+        disciple.name,
+      );
+      expect(screen.botCommandBuilder, isNotNull);
+    } finally {
+      if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
+        Navigator.of(
+          tester.element(find.byType(Phase0aMainlineBattleHost)),
+        ).pop();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 1)),
+        );
+        await tester.pumpAndSettle();
+      }
+    }
   });
 
   testWidgets('StageListScreen 快速重演消费 headless 当前掌门快照', (tester) async {

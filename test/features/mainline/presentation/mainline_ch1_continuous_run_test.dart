@@ -200,38 +200,45 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 10));
     }
-    expect(find.byType(Phase0aMainlineBattleHost), findsOneWidget);
-    final host = tester.widget<Phase0aMainlineBattleHost>(
-      find.byType(Phase0aMainlineBattleHost),
-    );
-    expect(host.controller, ActivityController.human);
-    expect(host.playerSnapshot?.characterId, participant.id);
-    expect(host.playerSnapshot?.name, participant.name);
-
-    for (
-      var i = 0;
-      i < 120 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
-      i++
-    ) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 1)),
+    try {
+      expect(find.byType(Phase0aMainlineBattleHost), findsOneWidget);
+      final host = tester.widget<Phase0aMainlineBattleHost>(
+        find.byType(Phase0aMainlineBattleHost),
       );
-      await tester.pump(const Duration(milliseconds: 10));
+      expect(host.controller, ActivityController.human);
+      expect(host.playerSnapshot?.characterId, participant.id);
+      expect(host.playerSnapshot?.name, participant.name);
+
+      for (
+        var i = 0;
+        i < 120 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 1)),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+      final battleScreen = tester.widget<Phase0aBattleScreen>(
+        find.byType(Phase0aBattleScreen),
+      );
+      expect(
+        battleScreen.controller.roster.nameOf(
+          battleScreen.controller.state.player.id,
+        ),
+        participant.name,
+      );
+    } finally {
+      if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
+        Navigator.of(
+          tester.element(find.byType(Phase0aMainlineBattleHost)),
+        ).pop();
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 1)),
+        );
+        await tester.pumpAndSettle();
+      }
     }
-    expect(find.byType(Phase0aBattleScreen), findsOneWidget);
-    final battleScreen = tester.widget<Phase0aBattleScreen>(
-      find.byType(Phase0aBattleScreen),
-    );
-    expect(
-      battleScreen.controller.roster.nameOf(
-        battleScreen.controller.state.player.id,
-      ),
-      participant.name,
-    );
-    Navigator.of(tester.element(find.byType(Phase0aMainlineBattleHost))).pop();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 1)),
-    );
-    await tester.pumpAndSettle();
   });
 }
