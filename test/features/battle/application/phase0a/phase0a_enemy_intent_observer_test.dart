@@ -27,7 +27,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
       String targetId,
       Phase0aDamageKind kind,
       bool defenderStaggered,
-      bool defenderCharging,
+      bool defenderVulnerable,
       double defenderWardMult,
     })
   >
@@ -39,7 +39,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls++;
@@ -48,7 +48,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
       targetId: targetId,
       kind: kind,
       defenderStaggered: defenderStaggered,
-      defenderCharging: defenderCharging,
+      defenderVulnerable: defenderVulnerable,
       defenderWardMult: defenderWardMult,
     ));
     return const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 15);
@@ -132,6 +132,10 @@ Phase0aCombatSession makeSession({
       attackHalfArcRadians: math.pi / 4,
       attackCooldownSeconds: 1,
       attackQiDelta: 0,
+      postureBasicPowerMultiplier: 1,
+      attackPowerMultiplier: 1,
+      gatherPowerMultiplier: 1,
+      clearPowerMultiplier: 1,
       gatherSlot: 'gather',
       gatherRingRadius: 90,
       gatherEffectRadius: 500,
@@ -146,6 +150,8 @@ Phase0aCombatSession makeSession({
       attackRange: 70,
       attackHalfArcRadians: math.pi / 3,
       attackCooldownSeconds: 1.2,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
     ),
     damageResolver: resolver ?? CountingDamageResolver(),
     enemyIntentObserver: observer,

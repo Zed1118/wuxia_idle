@@ -111,7 +111,7 @@ final class _FixedResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   }) {
     final resolvedDamage = playerOnly && attackerId != 'player' ? 0 : damage;
@@ -223,6 +223,10 @@ final class _Fixture {
         attackHalfArcRadians: 3.14,
         attackCooldownSeconds: 0,
         attackQiDelta: 0,
+        postureBasicPowerMultiplier: 1,
+        attackPowerMultiplier: 1,
+        gatherPowerMultiplier: 1,
+        clearPowerMultiplier: 1,
         gatherSlot: 'gather',
         gatherRingRadius: 1,
         gatherEffectRadius: 1,
@@ -237,6 +241,8 @@ final class _Fixture {
         attackRange: 100,
         attackHalfArcRadians: 3.14,
         attackCooldownSeconds: 0,
+        postureBasicPowerMultiplier: 1,
+        uniformBasicPowerMultiplier: 1,
       ),
       damageResolver: _FixedResolver(damage: damage, playerOnly: playerOnly),
     );

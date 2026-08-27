@@ -35,7 +35,7 @@ class FixedDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     switch (kind) {
@@ -161,6 +161,8 @@ Phase0aAttackIntent playerAttack({
     halfArcRadians: halfArcRadians,
     cooldownSeconds: cooldownSeconds,
     qiDelta: 0,
+    postureDamage: 0,
+    postureHitKind: PostureHitKind.light,
     moveKind: Phase0aMoveKind.light,
     aimDirection: aimDirection,
   );
@@ -198,6 +200,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         [
@@ -207,6 +211,8 @@ void main() {
             effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
       ];
@@ -302,6 +308,8 @@ void main() {
             halfArcRadians: 1.0,
             cooldownSeconds: 1,
             qiDelta: 0,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.light,
             moveKind: Phase0aMoveKind.light,
             aimDirection: ArenaVector(-1, 0),
           ),
@@ -542,6 +550,8 @@ void main() {
         effectRadius: effectRadius,
         qiCost: qiCost,
         cooldownSeconds: cooldownSeconds,
+        postureDamage: 0,
+        postureHitKind: PostureHitKind.heavy,
       );
     }
 
@@ -680,6 +690,8 @@ void main() {
             effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -701,7 +713,7 @@ void main() {
         40,
       ]);
       expect(applied.outcomes.map((o) => o.statusApplied).toSet(), {
-        Phase0aSkillStatus.staggered,
+        Phase0aSkillStatus.none,
       });
       expect(result.state.player.qiCurrent, 70);
       expect(result.state.skillSlots.single.cooldownRemaining, 4);
@@ -721,6 +733,8 @@ void main() {
             effectRadius: 500,
             qiCost: 30,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -820,6 +834,8 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -853,6 +869,8 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -880,6 +898,8 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -908,6 +928,8 @@ void main() {
             effectRadius: 150,
             qiCost: 30,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -937,6 +959,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -984,7 +1008,7 @@ class _GatherDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     if (kind != Phase0aDamageKind.gather) {
@@ -993,7 +1017,7 @@ class _GatherDamageResolver implements Phase0aDamageResolver {
         targetId: targetId,
         kind: kind,
         defenderStaggered: defenderStaggered,
-        defenderCharging: defenderCharging,
+        defenderVulnerable: defenderVulnerable,
         defenderWardMult: defenderWardMult,
       );
     }

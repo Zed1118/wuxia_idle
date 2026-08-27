@@ -25,7 +25,7 @@ class _FixedDamage implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1,
   }) => const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 100);
 }
@@ -93,6 +93,8 @@ const _enemyAttack = Phase0aAttackIntent(
   moveKind: Phase0aMoveKind.light,
   aimDirection: ArenaVector(-1, 0),
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
   defenseFlags: _flags,
 );
 
@@ -200,6 +202,8 @@ void main() {
             moveKind: Phase0aMoveKind.light,
             aimDirection: ArenaVector(1, 0),
             qiDelta: 0,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.light,
           ),
         ],
         deltaSeconds: 0.1,

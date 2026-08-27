@@ -23,7 +23,7 @@ final class _CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls++;
@@ -66,6 +66,8 @@ Phase0aAttackIntent _attack(String actorId) => Phase0aAttackIntent(
   moveKind: Phase0aMoveKind.light,
   aimDirection: const ArenaVector(-1, 0),
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
 );
 
 Phase0aMoveIntent _move(String actorId) =>
@@ -136,6 +138,10 @@ Phase0aCombatSession _session({
     attackHalfArcRadians: math.pi / 4,
     attackCooldownSeconds: 1,
     attackQiDelta: 0,
+    postureBasicPowerMultiplier: 1,
+    attackPowerMultiplier: 1,
+    gatherPowerMultiplier: 1,
+    clearPowerMultiplier: 1,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
     gatherEffectRadius: 500,
@@ -150,6 +156,8 @@ Phase0aCombatSession _session({
     attackRange: 70,
     attackHalfArcRadians: math.pi / 3,
     attackCooldownSeconds: 1.2,
+    postureBasicPowerMultiplier: 1,
+    uniformBasicPowerMultiplier: 1,
   ),
   damageResolver: resolver,
   enemyIntentGate: perIntentGate,

@@ -98,10 +98,8 @@ class SkillDef {
   /// production 至少存在一个 aoe 招(防整体回填丢失)。
   final TargetType targetType;
 
-  /// 第六阶段三人协同:>0 = 命中存活敌人即开「破绽窗口」(不要求蓄力),
-  /// 施加该幅度减防,与破招踉跄共用 staggerTicksRemaining/staggerDefenseDownOverride
-  /// 字段,刷新不叠加。减防幅度经 boss_charge.interrupt_power_cap 上限 clamp
-  /// （封顶减防 = 有效防御有地板，红线 §5.4）。
+  /// 破防标签的 per-skill 比例。Phase0A 中 >0 会按该招已有架势伤害
+  /// 等比增加同一笔架势累积,不直接开窗,也不创建第二份减防状态。
   final double defenseBreakPct;
 
   /// C1.3.1 断魂庄:此招蓄力完成且未破招时,对存活对方队每人扣

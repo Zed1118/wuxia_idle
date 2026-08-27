@@ -258,7 +258,10 @@ enum VisualRoute {
 
   /// 需要由目标战斗状态控制 READY 的 V2 验收路由。
   bool get controlsReadiness => switch (this) {
-    settingsPanel || settingsPanelBottom || settingsPanelDisabled => true,
+    settingsPanel ||
+    settingsPanelBottom ||
+    settingsPanelDisabled ||
+    phase0aBattleBossMechanics => true,
     _ => false,
   };
 

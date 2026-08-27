@@ -57,7 +57,7 @@ final class Phase0aBattleSnapshotBundle {
 /// - 活跃踉跄(减防 override 是战中运行时状态)。
 ///
 /// 脆弱窗口(2026-08-22 纵切)不再 fail-fast:窗口外承伤乘子冻结进快照
-/// `vulnerabilityOutMult`,窗口开合的运行态事实(蓄招/踉跄)由 reducer 传
+/// `vulnerabilityOutMult`,窗口开合的运行态事实(统一姿态破绽)由 reducer 传
 /// 状态、adapter 结算时折入 `defenderWardMult`(与旧引擎
 /// `DefaultGroundStrategy.vulnerabilityMultOf` 同语义),静态快照承载安全。
 final class Phase0aBattleSnapshotFactory {

@@ -4,6 +4,7 @@ import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_damage_kind.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
 import '../../domain/phase0a/realtime_combat_rules.dart';
+import '../../domain/phase0a/posture.dart';
 import 'phase0a_numeric_skill_binding.dart';
 import 'phase0a_tactical_skill_binding.dart';
 
@@ -63,6 +64,10 @@ final class Phase0aPlayerInputAdapter {
     required this.attackHalfArcRadians,
     required this.attackCooldownSeconds,
     required this.attackQiDelta,
+    required this.postureBasicPowerMultiplier,
+    required this.attackPowerMultiplier,
+    required this.gatherPowerMultiplier,
+    required this.clearPowerMultiplier,
     required this.gatherSlot,
     required this.gatherRingRadius,
     required this.gatherEffectRadius,
@@ -83,6 +88,10 @@ final class Phase0aPlayerInputAdapter {
   final double attackHalfArcRadians;
   final double attackCooldownSeconds;
   final int attackQiDelta;
+  final int postureBasicPowerMultiplier;
+  final int attackPowerMultiplier;
+  final int gatherPowerMultiplier;
+  final int clearPowerMultiplier;
   final String gatherSlot;
   final double gatherRingRadius;
 
@@ -145,6 +154,11 @@ final class Phase0aPlayerInputAdapter {
           moveKind: Phase0aMoveKind.light,
           aimDirection: command.attackAimDirection ?? state.player.facing,
           qiDelta: attackQiDelta,
+          postureDamage: powerMultiplierToPostureDamage(
+            attackPowerMultiplier,
+            basicPowerMultiplier: postureBasicPowerMultiplier,
+          ),
+          postureHitKind: PostureHitKind.light,
           defenseFlags: defenseTuning?.basicAttackFlags,
         ),
       );
@@ -160,6 +174,19 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? gatherEffectRadius,
           qiCost: binding?.qiCost ?? gatherQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? gatherCooldownSeconds,
+          postureDamage: binding == null
+              ? powerMultiplierToPostureDamage(
+                  gatherPowerMultiplier,
+                  basicPowerMultiplier: postureBasicPowerMultiplier,
+                )
+              : addDefenseBreakPostureDamage(
+                  powerMultiplierToPostureDamage(
+                    binding.skill.powerMultiplier,
+                    basicPowerMultiplier: postureBasicPowerMultiplier,
+                  ),
+                  defenseBreakPct: binding.skill.defenseBreakPct,
+                ),
+          postureHitKind: PostureHitKind.heavy,
         ),
       );
     }
@@ -173,6 +200,21 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? clearEffectRadius,
           qiCost: binding?.qiCost ?? clearQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? clearCooldownSeconds,
+          postureDamage: binding == null
+              ? powerMultiplierToPostureDamage(
+                  clearPowerMultiplier,
+                  basicPowerMultiplier: postureBasicPowerMultiplier,
+                )
+              : addDefenseBreakPostureDamage(
+                  powerMultiplierToPostureDamage(
+                    binding.skill.powerMultiplier,
+                    basicPowerMultiplier: postureBasicPowerMultiplier,
+                  ),
+                  defenseBreakPct: binding.skill.defenseBreakPct,
+                ),
+          postureHitKind: (binding?.breakPower ?? _noBreakPower) > 0
+              ? PostureHitKind.bossControl
+              : PostureHitKind.heavy,
           breakPower: binding?.breakPower ?? _noBreakPower,
         ),
       );
@@ -194,6 +236,12 @@ final class Phase0aPlayerInputAdapter {
             effectRadius: binding.effectRadius,
             qiDelta: binding.qiDelta,
             cooldownSeconds: binding.cooldownSeconds,
+            postureDamage: binding.postureDamageFor(
+              basicPowerMultiplier: postureBasicPowerMultiplier,
+            ),
+            postureHitKind: binding.breakPower > 0
+                ? PostureHitKind.bossControl
+                : PostureHitKind.heavy,
             breakPower: binding.breakPower,
             defenseFlags: defenseTuning?.skillAttackFlags,
           ),

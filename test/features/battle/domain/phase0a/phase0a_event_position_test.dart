@@ -33,7 +33,7 @@ class _Resolver
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     final damage = switch (kind) {
@@ -117,6 +117,8 @@ Phase0aAttackIntent _attack(String actorId, {double range = 120}) =>
       halfArcRadians: math.pi / 4,
       cooldownSeconds: 1,
       qiDelta: 0,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.light,
       moveKind: Phase0aMoveKind.light,
       aimDirection: const ArenaVector(1, 0),
     );
@@ -153,6 +155,8 @@ Phase0aChargeCast _cast() => Phase0aChargeCast(
   effectRadius: 10,
   cooldownSeconds: 4,
   actionCooldownSeconds: 1,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.heavy,
 );
 
 const _gatherSlot = Phase0aSkillSlot(
@@ -250,6 +254,8 @@ void main() {
             effectRadius: 0,
             cooldownSeconds: 4,
             actionCooldownSeconds: 1,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -300,6 +306,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -330,6 +338,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -362,6 +372,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -388,6 +400,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -428,6 +442,8 @@ void main() {
             effectRadius: 500,
             qiDelta: 0,
             cooldownSeconds: 2,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         deltaSeconds: 0.1,
@@ -608,6 +624,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
         [
@@ -617,6 +635,8 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 4,
+            postureDamage: 0,
+            postureHitKind: PostureHitKind.heavy,
           ),
         ],
       ];
