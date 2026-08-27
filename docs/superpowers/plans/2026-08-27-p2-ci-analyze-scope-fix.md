@@ -41,3 +41,17 @@
 - 状态：READY 待证据/状态 commit；workflow exact scope 已提交，首次 mutation 假绿已补强合同并从新 commit 重新完成两向证红；正式 targeted/analyze/整仓 format/带锁全量/diff check 全部通过。
 - 下一步：提交本收工记录，创建合规 `[READY]` 最终 tip，并按该 tip 生成 B3 外置 receipt。
 - 阻塞项：无；未碰 `tools/`、exclude、`analysis_options.yaml` 或 `lib/`。
+
+## 总控 tip 结构纠偏（2026-08-28）
+
+- 原 `[READY]` `be670476d807cea7fc5be6cabd7289659241c238` 是证据 commit 之后的
+  空提交，与后续冻结的“plan 证据 commit 本身即最终 tip”不一致。
+- 按纠偏禁止 reset/revert 的要求，不改写旧历史；本节所在非空
+  `[READY]` commit 作为新的最终 tip，外置 receipt 按新 tip 重算。
+- B3 实现在当时的 B2 交付 tip `2d690d60f250460b6e63254eef0e7fb6bbf1d855`
+  上串行建立。B2 后续追加合规证据 tip 不反向改写 B3 已有祖先；
+  本记录如实披露，不 merge/rebase。
+- 实现、最终两向破坏证红和首次退化假绿的原始命令/末行/失败数
+  保持上文原样；新 tip 只增加本条合规证据，`lib/` 仍零改动。
+- 新 tip 重跑 targeted、analyze、整仓 format、带锁全量、diff/patch 审计；
+  实测末行和新 receipt SHA 以本节之后的外置 receipt 为准。
