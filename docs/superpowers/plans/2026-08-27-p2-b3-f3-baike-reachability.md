@@ -38,17 +38,21 @@
 
 ## 收工记录
 
-1. 实现 commit：待填。
-2. 两向破坏证红：待填。
-3. targeted：待填。
-4. analyze：待填。
-5. format：待填。
-6. 带锁全量：待填。
-7. diff/patch：待填。
-8. 外置 receipt + `[READY]` tip：待填。
+1. 实现 commit：`2b3161235c129bff48d8de3ab6215d1efdbab2c1 校正百科启动可达性合同`。
+2. 两向破坏证红（均在实现 commit 后执行）：
+   - `remove_implementation`：临时删除 `await tester.runAsync(loadTestGameRepository);`，运行 `flutter test --no-pub test/features/baike/presentation/baike_startup_reachability_test.dart` → exit 1，末行 `00:00 +0 -1: Some tests failed.`，`[E]` 1，失败 1；目的页 builder 与测试体的 loaded 断言同时捕获退化。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD 仍为 `2b3161235c129bff48d8de3ab6215d1efdbab2c1`。
+   - `force_degenerate_value`：临时把 `_buildLoreScreen` 的 `BaikeScreen(initialTab: 1)` 退化为 `initialTab: 0`，运行同一 targeted → exit 1，末行 `00:00 +0 -1: Some tests failed.`，`[E]` 1，失败 1；典故 `ListView` 断言捕获退化。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD 不变。
+3. targeted（逐文件）：
+   - `flutter test --no-pub test/features/baike/presentation/baike_screen_test.dart` → exit 0，末行 `00:00 +4: All tests passed!`，`[E]` 0，失败 0。
+   - `flutter test --no-pub test/features/baike/presentation/baike_startup_reachability_test.dart` → exit 0，末行 `00:00 +1: All tests passed!`，`[E]` 0，失败 0。
+4. analyze：`flutter analyze --no-pub lib test` → exit 0，末行 `No issues found! (ran in 3.1s)`。
+5. format：`dart format --output=none --set-exit-if-changed .` → exit 0，末行 `Formatted 1625 files (0 changed) in 2.79 seconds.`。
+6. 带锁全量：独占 `/Users/a10506/.claude/locks/wuxia_full_test.lock`；`flutter test --no-pub` → exit 0，末行 `05:26 +5634: All tests passed!`，`[E]` 0，失败 0；命令退出时精确 `unlink` 并确认锁不存在。
+7. diff/patch：`git diff --check 686379a33635616161d38a91eadd12c0ec60e3fd..HEAD` → exit 0；最终 `[READY]` tip 的固定 patch SHA-256 写入外置 receipt。
+8. 外置 receipt + `[READY]` tip：本记录提交后创建空 `[READY]` tip，再生成不提交的 `build/phase2_wiring_receipts/B2/receipt.yaml`；receipt 的 head/changed_files/patch 对最终 tip，S5 由 Claude 独立复核。
 
 ## 当前恢复点
 
-- 状态：WIP；可达性只读判定完成，选择不可达方案 B，测试与计划已落地但未提交。
-- 下一步：先运行开发期 targeted，修正测试后提交，再按八步完成 mutation 与正式门禁。
+- 状态：READY 待证据/状态 commit；不可达方案 B 已提交，两向破坏证红、targeted、analyze、整仓 format、带锁全量与 diff check 全部完成。
+- 下一步：提交本收工记录，创建合规 `[READY]` 最终 tip，并按该 tip 生成 B2 外置 receipt；随后从 B2 tip 串行创建 B3 分支。
 - 阻塞项：无；无需改 `lib/` 或注入单例。
