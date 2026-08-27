@@ -23,17 +23,21 @@
 
 ## 收工记录
 
-1. 实现 commit：待填。
-2. 两向破坏证红：待填。
-3. targeted：待填。
-4. analyze：待填。
-5. format：待填。
-6. 带锁全量：待填。
-7. diff/patch：待填。
-8. 外置 receipt + `[READY]` tip：待填。
+1. 实现 commit：`474bbad658db2f0559c243aa227912a8ed2fb950 收窄发布分析目录口径`；精确合同补强 commit：`30b1b10128dcc31b861a78eeee16649037e9e72f 强化发布分析精确合同`。
+2. 两向破坏证红：
+   - 首轮在 `474bbad6` 后，`remove_implementation`（scope 恢复为裸命令）→ exit 1，末行 `00:00 +3 -1: Some tests failed.`，`[E]` 1，失败 1；但首次 `force_degenerate_value`（`tool` → `tools`）→ exit 0，末行 `00:00 +4: All tests passed!`，`[E]` 0，失败 0。原因是 `contains(... tool)` 把 `tools` 前缀误判为命中；该次不作为证红通过，完整保留为发现的测试漏洞。
+   - 修复：追加按整行锚定且要求恰好一次命中的 RegExp 合同，提交 `30b1b101`；没有改 workflow、`tools/`、exclude、analysis options 或产品代码。
+   - 从新 commit 重新开始完整两向流程。最终 `remove_implementation`：scope 精确恢复为裸命令，运行 `flutter test --no-pub test/tools/ci_workflow_contract_test.dart` → exit 1，末行 `00:00 +3 -1: Some tests failed.`，`[E]` 1，失败 1。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD `30b1b10128dcc31b861a78eeee16649037e9e72f`。
+   - 最终 `force_degenerate_value`：scope 精确退化为 `lib test tools`，运行同一 targeted → exit 1，末行 `00:00 +3 -1: Some tests failed.`，`[E]` 1，失败 1。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD 不变。
+3. targeted：`flutter test --no-pub test/tools/ci_workflow_contract_test.dart` → exit 0，末行 `00:00 +4: All tests passed!`，`[E]` 0，失败 0。
+4. analyze：`flutter analyze --no-pub lib test` → exit 0，末行 `No issues found! (ran in 2.1s)`。
+5. format：`dart format --output=none --set-exit-if-changed .` → exit 0，末行 `Formatted 1625 files (0 changed) in 2.75 seconds.`。
+6. 带锁全量：独占 `/Users/a10506/.claude/locks/wuxia_full_test.lock`；`flutter test --no-pub` → exit 0，末行 `05:15 +5634: All tests passed!`，`[E]` 0，失败 0；命令退出时精确 `unlink` 并确认锁不存在。
+7. diff/patch：`git diff --check 2d690d60f250460b6e63254eef0e7fb6bbf1d855..HEAD` → exit 0；最终 `[READY]` tip 的固定 patch SHA-256 写入外置 receipt。
+8. 外置 receipt + `[READY]` tip：本记录提交后创建空 `[READY]` 最终 tip，再生成不提交的 `build/phase2_wiring_receipts/B3/receipt.yaml`；receipt 的 head/changed_files/patch 对最终 tip，S5 由 Claude 独立复核。
 
 ## 当前恢复点
 
-- 状态：WIP；workflow exact scope、直接合同与计划已落地但未提交。
-- 下一步：开发期 targeted 通过后提交，再按八步完成 mutation 与正式门禁。
+- 状态：READY 待证据/状态 commit；workflow exact scope 已提交，首次 mutation 假绿已补强合同并从新 commit 重新完成两向证红；正式 targeted/analyze/整仓 format/带锁全量/diff check 全部通过。
+- 下一步：提交本收工记录，创建合规 `[READY]` 最终 tip，并按该 tip 生成 B3 外置 receipt。
 - 阻塞项：无；未碰 `tools/`、exclude、`analysis_options.yaml` 或 `lib/`。
