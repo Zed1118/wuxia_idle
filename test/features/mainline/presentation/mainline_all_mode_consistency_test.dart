@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
+import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -10,10 +12,21 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_narrative_manifest.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_participant_snapshot_service.dart';
+import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_participation_policy.dart';
+import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/presentation/phase0a_mainline_battle_host.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/features/mainline/presentation/stage_list_screen.dart';
+import 'package:wuxia_idle/features/settings/application/gameplay_settings_provider.dart';
+import 'package:wuxia_idle/features/settings/domain/gameplay_settings.dart';
+import 'package:wuxia_idle/features/sweep/application/sweep_unit.dart';
+import 'package:wuxia_idle/features/sweep/presentation/sweep_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
@@ -21,10 +34,14 @@ import '../../../support/test_data.dart';
 
 void main() {
   late Directory tempDir;
+  late MainlineNarrativeManifest narrativeManifest;
 
   setUpAll(() async {
     await initializeTestIsarCore();
     if (!GameRepository.isLoaded) await loadTestGameRepository();
+    narrativeManifest = await MainlineNarrativeManifest.load(
+      loader: (path) => File(path).readAsString(),
+    );
   });
 
   setUp(() async {
@@ -88,6 +105,76 @@ void main() {
     return (leader, disciple);
   }
 
+  Future<MainlineProgress> seedClearedProgress(String stageId) async {
+    final progress = MainlineProgress()
+      ..saveDataId = IsarSetup.currentSlotId
+      ..currentChapterIndex = 1
+      ..clearedStageIds = [stageId]
+      ..clearedAt = [DateTime.utc(2026, 8, 25)]
+      ..clearedStageCycleKeys = ['$stageId#1'];
+    await IsarSetup.instance.writeTxn(
+      () => IsarSetup.instance.mainlineProgress.put(progress),
+    );
+    return progress;
+  }
+
+  Future<WidgetRef> pumpStageList(
+    WidgetTester tester, {
+    required MainlineProgress progress,
+    required List<Character> activeCharacters,
+    required bool autoPlayDefault,
+  }) async {
+    await tester.binding.setSurfaceSize(const Size(1024, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    late WidgetRef capturedRef;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainlineProgressProvider.overrideWith((ref) async => progress),
+          mainlineNarrativeManifestProvider.overrideWith(
+            (ref) async => narrativeManifest,
+          ),
+          activeCharacterIdsProvider.overrideWith(
+            (ref) async => [
+              for (final character in activeCharacters) character.id,
+            ],
+          ),
+          for (final character in activeCharacters)
+            characterByIdProvider(
+              character.id,
+            ).overrideWith((ref) async => character),
+          gameplaySettingsProvider.overrideWith(
+            (ref) async => GameplaySettings(autoPlayDefault: autoPlayDefault),
+          ),
+        ],
+        child: Consumer(
+          builder: (context, ref, _) {
+            capturedRef = ref;
+            return const MaterialApp(home: StageListScreen(chapterIndex: 1));
+          },
+        ),
+      ),
+    );
+    for (var i = 0; i < 5; i++) {
+      await tester.pump();
+    }
+    return capturedRef;
+  }
+
+  Future<void> pumpUntilFound(
+    WidgetTester tester,
+    Finder finder, {
+    int maxPumps = 120,
+  }) async {
+    for (var i = 0; i < maxPumps && finder.evaluate().isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 1)),
+      );
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    expect(finder, findsOneWidget);
+  }
+
   ActivityParticipationRequest request({
     required int characterId,
     required ActivityController controller,
@@ -133,24 +220,95 @@ void main() {
     expect(selected, MainlineReplayMode.headless);
   });
 
-  test('生产入口把全局自动设置、前台 bot 与快速重演接到既有同核组件', () {
-    final stageList = File(
-      'lib/features/mainline/presentation/stage_list_screen.dart',
-    ).readAsStringSync();
-    final host = File(
-      'lib/features/mainline/presentation/phase0a_mainline_battle_host.dart',
-    ).readAsStringSync();
-    final runner = File(
-      'lib/features/sweep/application/phase0a_sweep_headless_runner.dart',
-    ).readAsStringSync();
+  testWidgets('StageListScreen 可见重打消费 bot/realtime 与同一门人快照', (tester) async {
+    final seeded = await tester.runAsync(() async {
+      final (leader, disciple) = await seedRoster();
+      final progress = await seedClearedProgress('stage_01_01');
+      return (leader: leader, disciple: disciple, progress: progress);
+    });
+    final leader = seeded!.leader;
+    final disciple = seeded.disciple;
+    final progress = seeded.progress;
+    await pumpStageList(
+      tester,
+      progress: progress,
+      activeCharacters: [leader, disciple],
+      autoPlayDefault: true,
+    );
 
-    expect(stageList, contains('gameplaySettingsProvider.future'));
-    expect(stageList, contains('ActivityController.playerBot'));
-    expect(stageList, contains('MainlineHeadlessReplayUnit'));
-    expect(host, contains('Phase0aPlayerBotAdapter'));
-    expect(host, contains('botCommandBuilder:'));
-    expect(runner, contains('ActivityClock.headless'));
-    expect(runner, contains('MainlineParticipantSnapshotService'));
+    await tester.tap(find.text('山门之外'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('mainline_visible_replay_mode')));
+    final participantFinder = find.byKey(
+      Key('mainline_replay_participant_${disciple.id}'),
+    );
+    await pumpUntilFound(tester, participantFinder);
+    await tester.tap(participantFinder);
+    await pumpUntilFound(tester, find.byType(Phase0aMainlineBattleHost));
+
+    final host = tester.widget<Phase0aMainlineBattleHost>(
+      find.byType(Phase0aMainlineBattleHost),
+    );
+    expect(host.controller, ActivityController.playerBot);
+    expect(host.playerSnapshot?.characterId, disciple.id);
+    await pumpUntilFound(tester, find.byType(Phase0aBattleScreen));
+    final screen = tester.widget<Phase0aBattleScreen>(
+      find.byType(Phase0aBattleScreen),
+    );
+    expect(
+      screen.controller.roster.nameOf(screen.controller.state.player.id),
+      disciple.name,
+    );
+    expect(screen.botCommandBuilder, isNotNull);
+    Navigator.of(tester.element(find.byType(Phase0aMainlineBattleHost))).pop();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 1)),
+    );
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('StageListScreen 快速重演消费 headless 当前掌门快照', (tester) async {
+    final seeded = await tester.runAsync(() async {
+      final (leader, disciple) = await seedRoster();
+      final progress = await seedClearedProgress('stage_01_01');
+      return (leader: leader, disciple: disciple, progress: progress);
+    });
+    final leader = seeded!.leader;
+    final disciple = seeded.disciple;
+    final progress = seeded.progress;
+    final ref = await pumpStageList(
+      tester,
+      progress: progress,
+      activeCharacters: [leader, disciple],
+      autoPlayDefault: false,
+    );
+
+    await tester.tap(find.text('山门之外'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('mainline_headless_replay_mode')));
+    await tester.pumpAndSettle();
+
+    final sweepScreen = tester.widget<SweepScreen>(find.byType(SweepScreen));
+    expect(
+      sweepScreen.presentationMode,
+      HeadlessRunPresentationMode.mainlineReplay,
+    );
+    final unit = sweepScreen.units.single as MainlineHeadlessReplayUnit;
+    expect(unit.stage.id, 'stage_01_01');
+    expect(unit.cycle, 1);
+    final result = await tester.runAsync(
+      () => unit.runPhase0aHeadless(
+        ref,
+        policy: const Phase0aBotTacticPolicy.assault(),
+      ),
+    );
+    expect(result, isNotNull);
+    expect(result!.timedOut, isFalse);
+    expect(result.expectedParticipantId, leader.id);
+    expect(result.participantName, leader.name);
+    expect(result.settlement?.participantCharacterIds.where((id) => id > 0), {
+      leader.id,
+    });
   });
 
   test('可见真人与前台 bot 都锁定玩家选择的 eligible 空闲门人', () async {
