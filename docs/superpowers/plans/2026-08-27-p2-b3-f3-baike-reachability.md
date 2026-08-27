@@ -68,5 +68,11 @@
   本记录如实披露，不 merge/rebase。
 - 实现、两向破坏证红和原始命令/末行/失败数保持上文原样；新 tip
   只增加本条合规证据，`lib/` 仍零改动。
-- 新 tip 重跑 targeted、analyze、整仓 format、带锁全量、diff/patch 审计；
-  实测末行和新 receipt SHA 以本节之后的外置 receipt 为准。
+- 在本证据 commit 之前，已于非空校正 head
+  `2bb5ac40f81c3a021ed3b13a8ab9d123db993c40` 重跑 tip-bound 门：两份 targeted 末行
+  为 `00:00 +4: All tests passed!` / `00:00 +1: All tests passed!`；analyze
+  `No issues found! (ran in 2.9s)`；整仓 format
+  `Formatted 1625 files (0 changed) in 2.79 seconds.`；带锁全量 exit 0、
+  末行 `05:15 +5634: All tests passed!`、`[E]` 0；diff check exit 0。
+- 本 commit 只把上述实测证据固化进 plan，并作为最终非空 `[READY]` tip；
+  外置 receipt 按本 tip 重算，09:00 由 Claude 在本最终 tip 独立复跑 S5。
