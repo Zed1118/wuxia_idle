@@ -56,3 +56,17 @@
 - 状态：READY 待证据/状态 commit；不可达方案 B 已提交，两向破坏证红、targeted、analyze、整仓 format、带锁全量与 diff check 全部完成。
 - 下一步：提交本收工记录，创建合规 `[READY]` 最终 tip，并按该 tip 生成 B2 外置 receipt；随后从 B2 tip 串行创建 B3 分支。
 - 阻塞项：无；无需改 `lib/` 或注入单例。
+
+## 总控 tip 结构纠偏（2026-08-28）
+
+- 原 `[READY]` `2d690d60f250460b6e63254eef0e7fb6bbf1d855` 是证据 commit 之后的
+  空提交，与后续冻结的“plan 证据 commit 本身即最终 tip”不一致。
+- 按纠偏禁止 reset/revert 的要求，不改写旧历史；本节所在非空
+  `[READY]` commit 作为新的最终 tip，外置 receipt 按新 tip 重算。
+- B2 实现在当时的 B1 交付 tip `686379a33635616161d38a91eadd12c0ec60e3fd`
+  上串行建立。B1 后续追加合规证据 tip 不反向改写 B2 已有祖先；
+  本记录如实披露，不 merge/rebase。
+- 实现、两向破坏证红和原始命令/末行/失败数保持上文原样；新 tip
+  只增加本条合规证据，`lib/` 仍零改动。
+- 新 tip 重跑 targeted、analyze、整仓 format、带锁全量、diff/patch 审计；
+  实测末行和新 receipt SHA 以本节之后的外置 receipt 为准。
