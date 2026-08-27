@@ -78,12 +78,19 @@ void main() {
     expect(matrix.manualIntentTypes.every((types) => types.isNotEmpty), isTrue);
   });
 
-  test('第2组 前台 bot 产生与手动回放相同 command，四模式逐 tick 同 hash', () {
-    _expectFourModeTraceParity(matrix);
+  test('第2组 前台 bot 命令全部被手动回放，四模式逐 tick 同 hash', () {
+    expect(matrix.botCommandCount, greaterThan(0));
     expect(
-      matrix.traces[_Mode.bot]!.commandSummaries,
-      matrix.traces[_Mode.manual]!.commandSummaries,
+      matrix.manualReplayCommandCount,
+      matrix.botCommandCount,
+      reason: 'manual controller 不得提前进入终局并跳出命令回放',
     );
+    expect(
+      matrix.traces[_Mode.manual]!.ticks,
+      matrix.manualReplayCommandCount,
+      reason: '记录到的 manual tick 数必须等于实际回放命令数',
+    );
+    _expectFourModeTraceParity(matrix);
   });
 
   test('第3组 headless 与 sweep 按同一 fixed tick 推进，四模式 tick 数/hash 一致', () {
@@ -263,11 +270,15 @@ final class _BattleMatrix {
   const _BattleMatrix({
     required this.traces,
     required this.manualIntentTypes,
+    required this.botCommandCount,
+    required this.manualReplayCommandCount,
     required this.actualSweep,
   });
 
   final Map<_Mode, _Trace> traces;
   final List<List<String>> manualIntentTypes;
+  final int botCommandCount;
+  final int manualReplayCommandCount;
   final Phase0aSweepRunResult actualSweep;
 
   String get digest => _stableDigest(
@@ -316,6 +327,7 @@ Future<_BattleMatrix> _buildBattleMatrix({
     fixedDeltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
   );
   final manualIntentTypes = <List<String>>[];
+  var manualReplayCommandCount = 0;
   for (final command in commands) {
     if (manualController.outcome != Phase0aBattleOutcome.ongoing) break;
     manualIntentTypes.add([
@@ -326,6 +338,7 @@ Future<_BattleMatrix> _buildBattleMatrix({
         intent.runtimeType.toString(),
     ]);
     manualController.step(command);
+    manualReplayCommandCount += 1;
   }
   final manualTrace = _finishTrace(manualFixture, manualController.outcome);
   manualController.dispose();
@@ -378,6 +391,8 @@ Future<_BattleMatrix> _buildBattleMatrix({
       _Mode.sweep: sweepTrace,
     },
     manualIntentTypes: manualIntentTypes,
+    botCommandCount: commands.length,
+    manualReplayCommandCount: manualReplayCommandCount,
     actualSweep: actualSweep,
   );
 }
