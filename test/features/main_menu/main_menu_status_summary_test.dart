@@ -131,6 +131,68 @@ void main() {
   });
 
   test(
+    'provider omits injury summary for battle-eligible minor statuses',
+    () async {
+      final lightlyInjured = character(
+        id: 18,
+        name: '轻伤者',
+        lightInjuryStacks: 2,
+      );
+      final disordered = character(id: 19, name: '内息紊乱者', residueHours: 4);
+      final container = ProviderContainer(
+        overrides: [
+          activeRetreatSessionProvider.overrideWith((ref) async => null),
+          mainMenuSaveSnapshotProvider.overrideWith(
+            (ref) async => islandSave(0),
+          ),
+          activeCharacterIdsProvider.overrideWith((ref) async => [18, 19]),
+          characterByIdProvider(18).overrideWith((ref) async => lightlyInjured),
+          characterByIdProvider(19).overrideWith((ref) async => disordered),
+          mainlineProgressProvider.overrideWith((ref) async => progress([])),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final items = await container.read(mainMenuStatusSummaryProvider.future);
+
+      expect(
+        items.where((item) => item.kind == MainMenuStatusKind.injury),
+        isEmpty,
+      );
+    },
+  );
+
+  test('provider counts only battle-blocking heavy injuries', () async {
+    final lightlyInjured = character(id: 20, name: '轻伤者', lightInjuryStacks: 2);
+    final disordered = character(id: 21, name: '内息紊乱者', residueHours: 4);
+    final heavilyInjured = character(
+      id: 22,
+      name: '重伤者',
+      injuryHoursRemaining: 3.5,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeRetreatSessionProvider.overrideWith((ref) async => null),
+        mainMenuSaveSnapshotProvider.overrideWith((ref) async => islandSave(0)),
+        activeCharacterIdsProvider.overrideWith((ref) async => [20, 21, 22]),
+        characterByIdProvider(20).overrideWith((ref) async => lightlyInjured),
+        characterByIdProvider(21).overrideWith((ref) async => disordered),
+        characterByIdProvider(22).overrideWith((ref) async => heavilyInjured),
+        mainlineProgressProvider.overrideWith((ref) async => progress([])),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final items = await container.read(mainMenuStatusSummaryProvider.future);
+    final injury = items.singleWhere(
+      (item) => item.kind == MainMenuStatusKind.injury,
+    );
+
+    expect(injury.detail, UiStrings.mainMenuStatusInjuryDetail(1, 3.5));
+    expect(injury.targetCharacterId, 22);
+  });
+
+  test(
     'provider omits a retreat item with no unique active character',
     () async {
       final founder = character(id: 8, name: '祖师');
@@ -292,7 +354,7 @@ void main() {
   testWidgets('production provider routes an injury to its exact character', (
     tester,
   ) async {
-    final injured = character(id: 64, name: '真实伤者', lightInjuryStacks: 1);
+    final injured = character(id: 64, name: '真实伤者', injuryHoursRemaining: 1);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

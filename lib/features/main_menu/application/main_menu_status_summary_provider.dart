@@ -134,11 +134,7 @@ MainMenuStatusSummaryItem? _injuryItem(List<Character> characters) {
   Character? firstInjured;
   for (final character in characters) {
     final hours = character.injuryHoursRemaining;
-    final injured =
-        hours > 0 ||
-        character.lightInjuryStacks > 0 ||
-        character.innerBreathDisorderHoursRemaining > 0;
-    if (!injured) continue;
+    if (hours <= 0) continue;
     firstInjured ??= character;
     count += 1;
     if (hours > maxHours) maxHours = hours;
