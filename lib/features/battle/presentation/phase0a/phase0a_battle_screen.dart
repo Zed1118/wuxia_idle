@@ -101,6 +101,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _actionPulseRemaining = <String, double>{};
   final Map<String, _ActorRenderMotion> _actorRenderMotions =
       <String, _ActorRenderMotion>{};
+  final List<String> _actorPaintOrder = <String>[];
+  int? _lastActorLayerTick;
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
   bool _primaryAttackKeyHeld = false;
@@ -135,6 +137,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hpEmphasisRemaining.clear();
     _actionPulseRemaining.clear();
     _actorRenderMotions.clear();
+    _actorPaintOrder.clear();
+    _lastActorLayerTick = null;
     _syncActorRenderTargets();
     _paused = false;
     _primaryAttackHeld = false;
@@ -231,6 +235,65 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   ArenaVector _actorRenderPosition(Phase0aActor actor) =>
       _actorRenderMotions[actor.id]?.current ?? actor.position;
+
+  List<Phase0aActor> _stableActorPaintOrder(
+    List<Phase0aActor> actors,
+    Phase0aStage stage,
+    Map<String, ArenaVector> renderPositions,
+  ) {
+    final tick = widget.controller.state.tick;
+    final previousTick = _lastActorLayerTick;
+    if (previousTick != null && tick < previousTick) {
+      _actorPaintOrder.clear();
+    }
+    _lastActorLayerTick = tick;
+
+    final actorById = <String, Phase0aActor>{
+      for (final actor in actors) actor.id: actor,
+    };
+    _actorPaintOrder.removeWhere((id) => !actorById.containsKey(id));
+
+    final footYById = <String, double>{
+      for (final actor in actors)
+        actor.id: stage.worldToScreen(renderPositions[actor.id]!).dy,
+    };
+    final initialOrder = stage.sortActors(
+      actors,
+      positionOf: (actor) => renderPositions[actor.id]!,
+    );
+    for (final actor in initialOrder) {
+      if (_actorPaintOrder.contains(actor.id)) continue;
+      final insertAt = _actorPaintOrder.indexWhere((otherId) {
+        final byY = footYById[actor.id]!.compareTo(footYById[otherId]!);
+        return byY < 0 || (byY == 0 && actor.id.compareTo(otherId) < 0);
+      });
+      _actorPaintOrder.insert(
+        insertAt < 0 ? _actorPaintOrder.length : insertAt,
+        actor.id,
+      );
+    }
+
+    // 既有前后关系只有在实际渲染脚底越过滞回带后才交换。相邻交换
+    // 循环同时覆盖正反两个方向，也不会引入玩家或阵营优先级。
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var index = 0; index < _actorPaintOrder.length - 1; index++) {
+        final backId = _actorPaintOrder[index];
+        final frontId = _actorPaintOrder[index + 1];
+        if (footYById[backId]! <=
+            footYById[frontId]! +
+                Phase0aPresentationTokens.actorLayerHysteresisPixels) {
+          continue;
+        }
+        _actorPaintOrder[index] = frontId;
+        _actorPaintOrder[index + 1] = backId;
+        changed = true;
+      }
+    }
+
+    return <Phase0aActor>[for (final id in _actorPaintOrder) actorById[id]!];
+  }
 
   bool _isMovementKey(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.keyA ||
@@ -761,13 +824,14 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aBattleController controller,
     Phase0aStage stage,
   ) {
+    final currentActors = _currentActors();
     final renderPositions = <String, ArenaVector>{
-      for (final actor in _currentActors())
-        actor.id: _actorRenderPosition(actor),
+      for (final actor in currentActors) actor.id: _actorRenderPosition(actor),
     };
-    final actors = stage.sortActors(
-      _currentActors(),
-      positionOf: (actor) => renderPositions[actor.id]!,
+    final actors = _stableActorPaintOrder(
+      currentActors,
+      stage,
+      renderPositions,
     );
     return [
       for (final actor in actors)

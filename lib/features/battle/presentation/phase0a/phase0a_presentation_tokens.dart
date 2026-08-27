@@ -35,6 +35,9 @@ abstract final class Phase0aPresentationTokens {
 
   /// 仅表现层的受击压缩 / 出手前倾；不写回领域坐标。
   static const double actorMotionTweenSeconds = 0.08;
+
+  /// 角色脚底在该屏幕像素带内交叉时保持既有绘制顺序，避免近身缠斗抖层。
+  static const double actorLayerHysteresisPixels = 10;
   static const double actorActionPulseSeconds = 0.16;
   static const double actorHitScale = 0.94;
   static const double actorActionScale = 1.035;

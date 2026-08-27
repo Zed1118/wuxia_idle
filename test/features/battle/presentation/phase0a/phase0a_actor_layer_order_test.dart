@@ -58,7 +58,7 @@ final class _CrossingActorFlow implements Phase0aBattleFlow {
       ),
     ],
   );
-  bool _moved = false;
+  int _moveCount = 0;
 
   @override
   Phase0aArenaState get state => _state;
@@ -75,12 +75,17 @@ final class _CrossingActorFlow implements Phase0aBattleFlow {
     required double deltaSeconds,
     required Phase0aPlayerCommand command,
   }) {
-    if (_moved) return const <Phase0aEvent>[];
-    _moved = true;
+    final targetY = switch (_moveCount) {
+      0 => 200.0,
+      1 => 100.0,
+      _ => null,
+    };
+    if (targetY == null) return const <Phase0aEvent>[];
+    _moveCount += 1;
     _state = Phase0aArenaState(
-      tick: 1,
+      tick: _moveCount,
       nextSeq: _state.nextSeq,
-      player: _state.player.copyWith(position: const ArenaVector(0, 200)),
+      player: _state.player.copyWith(position: ArenaVector(0, targetY)),
       enemies: _state.enemies,
       skillSlots: _state.skillSlots,
     );
@@ -111,7 +116,7 @@ void main() {
   double actorFootY(WidgetTester tester, String actorId) =>
       tester.getBottomLeft(find.byKey(ValueKey('$actorKeyPrefix$actorId'))).dy;
 
-  testWidgets('Stack 顺序只在插值后的实际脚底越过敌人后翻转', (tester) async {
+  testWidgets('Stack 顺序在实际脚底双向越过滞回带后才翻转', (tester) async {
     final controller = Phase0aBattleController(
       flow: _CrossingActorFlow(),
       roster: Phase0aVisualRoster.debugBattle(),
@@ -143,7 +148,7 @@ void main() {
       containsAllInOrder(['player', 'wave1_blade']),
     );
 
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 740));
     expect(
       actorFootY(tester, 'player'),
       lessThan(actorFootY(tester, 'wave1_blade')),
@@ -153,14 +158,40 @@ void main() {
       containsAllInOrder(['player', 'wave1_blade']),
     );
 
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 20));
     expect(
       actorFootY(tester, 'player'),
       greaterThan(actorFootY(tester, 'wave1_blade')),
     );
     expect(
       actorPaintOrder(tester),
+      containsAllInOrder(['player', 'wave1_blade']),
+      reason: '脚底刚交叉但未越过滞回带时应保持既有层级',
+    );
+
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(
+      actorPaintOrder(tester),
       containsAllInOrder(['wave1_blade', 'player']),
+    );
+
+    controller.step();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(
+      actorFootY(tester, 'player'),
+      lessThan(actorFootY(tester, 'wave1_blade')),
+    );
+    expect(
+      actorPaintOrder(tester),
+      containsAllInOrder(['wave1_blade', 'player']),
+      reason: '反向刚交叉但未越过滞回带时也应保持既有层级',
+    );
+
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(
+      actorPaintOrder(tester),
+      containsAllInOrder(['player', 'wave1_blade']),
     );
   });
 }
