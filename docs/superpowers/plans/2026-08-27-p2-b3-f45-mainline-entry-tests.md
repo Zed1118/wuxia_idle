@@ -24,7 +24,7 @@
 
 ## test_deletions 明示例外表
 
-以下 37 条是本任务必要删除的原始测试行。它们全部属于“读取生产源码文本并匹配符号”的错误断言；删除是为了换成真实入口驱动，不为 Gate 伪装纯追加。空白分隔行也单列，保证与 `git diff --unified=0` 的 `^-` 行逐条对应。
+以下 38 条是本任务必要删除的原始测试行。它们全部属于“读取生产源码文本并匹配符号”的错误断言；删除是为了换成真实入口驱动，不为 Gate 伪装纯追加。空白分隔行也单列，保证与 `git diff --unified=0` 的 `^-` 记录逐条对应。
 
 | # | 被删原行 | 删除原因 |
 |---:|---|---|
@@ -61,17 +61,20 @@
 | 31 | `expect(stageListSource, contains('StageStatus.available'));` | 字符串存在不证明 available 状态进入 host。 |
 | 32 | `expect(flowSource, contains('playerSnapshot: launch.playerSnapshot'));` | 字符串存在不证明锁定 snapshot 到达真实 host。 |
 | 33 | `expect(flowSource, contains('loadExactRoster([participantId])'));` | 字符串存在不证明同一 participant roster 被 controller 消费。 |
-| 34 | `hostSource,` | 删除跨行源码字符串断言参数。 |
-| 35 | `contains(` | 删除跨行源码字符串 matcher。 |
-| 36 | `'widget.playerSnapshot ??\n'` | 字符串存在不证明 production snapshot 优先级实际执行。 |
-| 37 | `'            widget.playerSnapshotForTest ??',` | 同上；真实 host property 与 roster 断言取代。 |
+| 34 | `expect(` | 删除跨行源码字符串断言起始。 |
+| 35 | `hostSource,` | 删除跨行源码字符串断言参数。 |
+| 36 | `contains(` | 删除跨行源码字符串 matcher。 |
+| 37 | `'widget.playerSnapshot ??\n'` | 字符串存在不证明 production snapshot 优先级实际执行。 |
+| 38 | `'            widget.playerSnapshotForTest ??',` | 同上；真实 host property 与 roster 断言取代。 |
 
-> 注：冻结派单预告“必要删除行”，实际 `git diff --unified=0` 得到 37 条非 header 删除记录（其中 1 条为空白），故以实测 37 条为准，不伪报 32。
+> 注：冻结派单预告“必要删除行”，当前 base..tip 的 `git diff --unified=0` 得到 38 条非 header `^-` 记录（其中 1 条为空白）；`git diff --numstat` 为 37 条有效删除行。表按最严格的 38 条 diff 记录逐条列出。
 
 ## 八步收工记录
 
-1. 实现并 commit：待填。
-2. 两向破坏证红：待填原始命令、reporter 末行、`[E]` 与失败数。
+1. 实现并 commit：`8a989c5d 替换主线入口假绿测试`；失败清理保证 `d748b35a`；mutation 安全收尾 `92c2ebbc`。
+2. 两向破坏证红：
+   - `remove_implementation` 临时补丁：`playerSnapshot: launch.playerSnapshot` → `playerSnapshot: null`。原始测试命令：`flutter test --no-pub test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart` 与 `flutter test --no-pub test/features/mainline/presentation/mainline_all_mode_consistency_test.dart`。连续 run：exit 1，末行 `00:01 +1 -1: Some tests failed.`，`[E]` 1，实测失败 1；全模式：exit 0，末行 `00:02 +6: All tests passed!`，`[E]` 0，失败 0。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD `92c2ebbcf80eb765d47e19c8523267c17db7369c`。
+   - `force_degenerate_value` 临时补丁：`visibleReplayController` 三元选择 → 恒 `ActivityController.human`。原始测试命令同上。连续 run：exit 0，末行 `00:01 +2: All tests passed!`，`[E]` 0，失败 0；全模式：exit 1，末行 `00:02 +5 -1: Some tests failed.`，`[E]` 1，实测失败 1。精确反向补丁恢复后 `git diff --quiet` exit 0，HEAD 同上。
 3. targeted：待填，两文件逐文件运行。
 4. analyze：待填。
 5. format：待填。
@@ -81,10 +84,10 @@
 
 ## 当前恢复点
 
-- 状态：WIP；真实入口测试已落地，开发期逐文件结果为连续 run `+2`、全模式 `+6`，均 `All tests passed!`，尚未 commit，尚未执行正式两向破坏证红与八步 Gate。
-- 最后完成：确认无需修改生产入口；三条路径均从 `StageListScreen` 点击进入并消费真实 host/unit/snapshot。
-- 下一步：复核 diff 与明示删除表，提交中文动宾实现 commit，然后按固定顺序执行两向破坏证红。
+- 状态：WIP；实现已提交，两向破坏证红均按预期各红 1 项且已精确恢复；尚未执行正式 targeted/analyze/整仓 format/全量/diff/receipt/tip。
+- 最后完成：确认无需修改生产入口；三条路径均从 `StageListScreen` 点击进入并消费真实 host/unit/snapshot；两向 mutation 都命中新增测试。
+- 下一步：提交本次 mutation 审计记录，然后按固定顺序执行正式 targeted、analyze、format、带锁全量、diff check、receipt 与 tip。
 - 已跑验证：开发期 `flutter test --no-pub test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart` → `+2`；`flutter test --no-pub test/features/mainline/presentation/mainline_all_mode_consistency_test.dart` → `+6`。
 - 红线影响：只改测试/计划；不触及数值、三系、在线=离线、反主流项、UI 文案、schema/saveVersion。
-- 残留风险：正式 mutation、analyze、整仓 format、全量、receipt 尚未执行。
+- 残留风险：正式 analyze、整仓 format、全量、receipt 尚未执行。
 - 阻塞项：无。
