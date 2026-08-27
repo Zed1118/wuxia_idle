@@ -586,3 +586,35 @@ T1/T2 两分支 tip 均为 `并入探针工具格式化基线`(22:19 共享格�
 - 集成分支 `integration/p2-g2-candidate-20260827`,worktree `挂机武侠-p2-integration`,基线 `8ad8ffa0`(当前 main)
 - `--no-ff` 合入 `codex/p2-g2-human-ready-20260827` → 合并提交 `b82f6753`,**零冲突**
 - Gate 全量执行中,结果与 tip-bound 标记见下节
+
+### 2D Gate 全量结果(2026-08-27 11:04–11:10,墙钟 5m51s)
+
+`gate.sh <集成worktree> 8ad8ffa0 b82f6753`,90 个改动文件、27 个 `lib/` 改动,判为 code 任务。
+
+**PASS 四项(实测输出)**:
+
+```
+[PASS] full_test: error_block_count=0 last=04:51 +5623: All tests passed!
+[PASS] analyze:   No issues found! (ran in 21.9s)
+[PASS] format:    Formatted 1622 files (0 changed) in 2.90 seconds.
+[PASS] worktree_clean
+```
+
+**FAIL 四项及定性**(我不自行豁免任何一条):
+
+| 项 | 内容 | 定性 | 处置 |
+|---|---|---|---|
+| `forbidden_files` | `data/numbers.yaml` | **已核为纯注释**,零数值改动;注释内容是把「拍板B冻结」下调为「选择候选B待试玩」,即更准确 | **待用户裁决**:接受 / 用 `--whitelist data/numbers.yaml` 重跑 / 回退注释(会退回不准确的表述) |
+| `test_deletions` | 185 行 | **已核为语义重写**:区间 `+1451/-185`,删行>30 的文件仅 1 个且净增(`+65/-33`),无文件被掏空;用例数 +12、skip 数不变 | 同上,待裁决 |
+| `commit_msg` | tip 无标记 | Gate 跑在补标记之前;**已按 3C 补** `870f9832 [BLOCKED]`,树哈希 `fd2a9ed3` 与受验树**完全相同** | 已解决,重跑即 PASS |
+| `receipt_crosscheck` | 无 `receipt.yaml` | 集成合并不是派单任务,**没有自身收据**;候选分支上也从无 `receipt.yaml` | Gate 语义与集成态不匹配,非候选缺陷 |
+
+**tip-bound 标记(3C 执行)**:`870f9832 [BLOCKED] G2候选集成态待8项真人试玩`
+(空 commit,`HEAD^{tree}` 前后均为 `fd2a9ed3130cbcf5e15e62b1603159b0748959ca`,Gate 结论仍绑定)
+
+**4A′ 围栏已机械化**:`~/.claude/skills/afk/scripts/main_fence.sh`(commit `418b31c`)。
+硬判据 = 越出 `docs/dispatch|audit` 或命中 `lib/ test/ data/ GDD/PROGRESS/CLAUDE.md` 即 FAIL;
+另强制 base 必须是 head 的祖先(端点选错会给出反向树差,正是我此前犯的错)。
+产品决策围栏只列候选行供人核,**明示不构成证明**。三用例实测:
+纯文档区间 PASS / 含 `lib/` 区间 FAIL forbidden_paths / 非祖先端点 FAIL base_not_ancestor。
+自本条起,协调者每次写 main 前先过此脚本。
