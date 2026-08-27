@@ -9,6 +9,7 @@ class Phase0aNumericSkillBinding {
     required this.hotkey,
     required this.loadoutSlot,
     required this.skill,
+    required this.visualSchool,
     required this.slotId,
     required this.attackRange,
     required this.halfArc,
@@ -62,6 +63,10 @@ class Phase0aNumericSkillBinding {
   final int hotkey;
   final CombatantSkillSlot loadoutSlot;
   final SkillDef skill;
+
+  /// 仅供表现层分派三系墨势；正式映射取 `skill.style ?? player.school`，
+  /// 不允许渲染层按 skill id 或文案猜流派。
+  final TechniqueSchool visualSchool;
   final String slotId;
   final double attackRange;
   final double halfArc;

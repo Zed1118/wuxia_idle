@@ -1099,6 +1099,7 @@ final class Phase0aStageContentMapper {
         hotkey: hotkey,
         loadoutSlot: loadoutSlot,
         skill: skill,
+        visualSchool: skill.style ?? player.school,
         slotId: 'phase0a_skill_$hotkey',
         attackRange: arena.playerAttackRange,
         halfArc: arena.playerAttackHalfArcRadians,

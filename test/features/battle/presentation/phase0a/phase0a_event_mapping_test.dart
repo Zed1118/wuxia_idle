@@ -1028,11 +1028,18 @@ void main() {
       );
     });
 
-    test('数字技能飘字锚点取 outcome.targetPosition', () {
+    test('数字技能起手与逐目标命中均映射 typed entry，零伤命中仍有表现', () {
       final controller = Phase0aVfxController()..syncActors(_state());
       final entries = controller.consume([
-        const Phase0aSkillApplied(
+        const Phase0aSkillStarted(
           seq: 1,
+          tick: 1,
+          actor: 'player',
+          hotkey: 1,
+          skillId: 'skill_a',
+        ),
+        const Phase0aSkillApplied(
+          seq: 2,
           tick: 1,
           actor: 'player',
           hotkey: 1,
@@ -1057,6 +1064,25 @@ void main() {
           ],
         ),
       ]);
+      final casts = entries
+          .where((entry) => entry.kind == Phase0aVfxKind.skillCast)
+          .toList();
+      expect(casts, hasLength(1));
+      expect(casts.single.actorId, 'player');
+      expect(casts.single.hotkey, 1);
+      expect(casts.single.skillId, 'skill_a');
+      expect(casts.single.anchor, ArenaVector.zero);
+
+      final impacts = entries
+          .where((entry) => entry.kind == Phase0aVfxKind.skillImpact)
+          .toList();
+      expect(impacts, hasLength(2));
+      expect(impacts.map((entry) => entry.targetId), ['e1', 'e2']);
+      expect(impacts.map((entry) => entry.hotkey), everyElement(1));
+      expect(impacts.map((entry) => entry.skillId), everyElement('skill_a'));
+      expect(impacts[0].anchor, const ArenaVector(30, 10));
+      expect(impacts[1].anchor, const ArenaVector(-20, -40));
+
       final popups = _popups(entries);
       expect(popups, hasLength(1));
       expect(popups.single.anchor, const ArenaVector(30, 10));

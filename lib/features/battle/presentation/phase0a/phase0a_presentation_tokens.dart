@@ -110,6 +110,9 @@ abstract final class Phase0aPresentationTokens {
   static const double stageShadeOpacity = 0.22;
   static const double vfxCenterSize = 250;
   static const double vfxMeleeSize = 148;
+  static const double skillCastVfxSize = 176;
+  static const double skillImpactVfxSize = 208;
+  static const double skillUltimateVfxScale = 1.18;
   static const double palmTrailPadding = 20;
   static const double palmTrailHeight = 84;
   static const double vfxEliteDefeatSize = 292;
@@ -131,6 +134,8 @@ abstract final class Phase0aPresentationTokens {
   static const double damagePopupSeconds = 0.42;
   static const double meleeVfxSeconds = 0.18;
   static const double palmTrailSeconds = 0.24;
+  static const double skillCastVfxSeconds = 0.34;
+  static const double skillImpactVfxSeconds = 0.42;
   static const double gatherVfxSeconds = 0.36;
   static const double clearVfxSeconds = 0.30;
   static const double defeatVfxSeconds = 0.45;

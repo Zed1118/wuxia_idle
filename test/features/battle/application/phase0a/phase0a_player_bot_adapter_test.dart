@@ -32,6 +32,7 @@ Phase0aNumericSkillBinding _burstBinding() => Phase0aNumericSkillBinding(
   hotkey: 1,
   loadoutSlot: CombatantSkillLoadout.numericSlots[0],
   skill: _burstSkill,
+  visualSchool: TechniqueSchool.gangMeng,
   slotId: 'burst',
   attackRange: 100,
   halfArc: math.pi / 4,

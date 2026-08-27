@@ -15,6 +15,12 @@ enum Phase0aVfxKind {
   /// 玩家远距普攻命中的掌风轨迹。
   palmTrail,
 
+  /// 数字技能成功释放时，按装备技能的 typed 流派绘制起手墨势。
+  skillCast,
+
+  /// 数字技能逐目标结算时，按装备技能的 typed 流派绘制命中墨势。
+  skillImpact,
+
   /// Q 聚怪力场涡旋。
   gatherVortex,
 
@@ -67,6 +73,8 @@ final class Phase0aVfxEntry {
     this.waveTotal,
     this.isVictory,
     this.statusTicks,
+    this.hotkey,
+    this.skillId,
     this.anchor,
     this.source,
     this.vfxTarget,
@@ -82,8 +90,10 @@ final class Phase0aVfxEntry {
   final int? waveTotal;
   final bool? isVictory;
   final int? statusTicks;
+  final int? hotkey;
+  final String? skillId;
 
-  /// 单点 VFX 的世界坐标锚点(近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散)。
+  /// 单点 VFX 的世界坐标锚点(技能两段 / 近战墨痕 / Q 涡旋 / R 墨爆 / 死亡墨散)。
   final ArenaVector? anchor;
 
   /// 掌风轨迹:出手者世界坐标。
@@ -246,6 +256,17 @@ final class Phase0aVfxController {
               outcome.isCritical,
               anchor: outcome.targetPosition,
             );
+            push(
+              Phase0aVfxEntry(
+                kind: Phase0aVfxKind.skillImpact,
+                actorId: event.actor,
+                targetId: outcome.target,
+                hotkey: event.hotkey,
+                skillId: event.skillId,
+                anchor:
+                    outcome.targetPosition ?? _actors[outcome.target]?.position,
+              ),
+            );
           }
         case Phase0aEnemyDefeated():
           push(
@@ -346,8 +367,17 @@ final class Phase0aVfxController {
             ),
           );
           _sealed = true;
-        case Phase0aAttackStarted():
         case Phase0aSkillStarted():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.skillCast,
+              actorId: event.actor,
+              hotkey: event.hotkey,
+              skillId: event.skillId,
+              anchor: _actors[event.actor]?.position,
+            ),
+          );
+        case Phase0aAttackStarted():
         case Phase0aBossPhaseChanged():
         case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():

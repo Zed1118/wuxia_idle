@@ -61,6 +61,10 @@ void main() {
     expect(bindings.one?.skill.id, 'skill_gangmeng_jichu_skill');
     expect(bindings.three?.skill.id, 'skill_gangmeng_jichu_skill');
     expect(bindings.five?.skill.id, 'skill_gangmeng_jichu_ult');
+    expect(
+      bindings.equipped.map((binding) => binding.visualSchool),
+      everyElement(TechniqueSchool.gangMeng),
+    );
     expect(bindings.two, isNull);
     expect(bindings.four, isNull);
     expect(bindings.six, isNull);

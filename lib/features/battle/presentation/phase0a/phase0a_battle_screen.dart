@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/domain/enums.dart';
 import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
@@ -282,6 +283,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           _hpEmphasisRemaining[entry.targetId!] =
               Phase0aPresentationTokens.hpEmphasisSeconds;
         }
+        if (entry.kind == Phase0aVfxKind.skillCast && entry.actorId != null) {
+          _actionPulseRemaining[entry.actorId!] =
+              Phase0aPresentationTokens.actorActionPulseSeconds;
+        }
         if (_isAttackFeedback(entry.kind)) {
           if (entry.actorId != null) {
             _actionPulseRemaining[entry.actorId!] =
@@ -364,11 +369,13 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.guardianCoop ||
     Phase0aVfxKind.defenseStarted ||
     Phase0aVfxKind.defenseResolved ||
+    Phase0aVfxKind.skillCast ||
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
     Phase0aVfxKind.gatherPull ||
-    Phase0aVfxKind.defeatInk => false,
+    Phase0aVfxKind.defeatInk ||
+    Phase0aVfxKind.skillImpact => false,
   };
 
   static bool _isAttackFeedback(Phase0aVfxKind kind) =>
@@ -393,6 +400,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.damagePopupSeconds,
       Phase0aVfxKind.meleeSlash => Phase0aPresentationTokens.meleeVfxSeconds,
       Phase0aVfxKind.palmTrail => Phase0aPresentationTokens.palmTrailSeconds,
+      Phase0aVfxKind.skillCast => Phase0aPresentationTokens.skillCastVfxSeconds,
+      Phase0aVfxKind.skillImpact =>
+        Phase0aPresentationTokens.skillImpactVfxSeconds,
       Phase0aVfxKind.gatherVortex ||
       Phase0aVfxKind.gatherPull => Phase0aPresentationTokens.gatherVfxSeconds,
       Phase0aVfxKind.clearBurst => Phase0aPresentationTokens.clearVfxSeconds,
@@ -637,6 +647,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                           stage: stage,
                           entries: _heldFeedback,
                           feedbackFrame: _feedbackFrame,
+                          numericSkillBindings: widget.numericSkillBindings,
                         ),
                       ],
                     ),
@@ -1486,12 +1497,14 @@ class _FeedbackLayer extends StatefulWidget {
     required this.stage,
     required this.entries,
     required this.feedbackFrame,
+    required this.numericSkillBindings,
   });
 
   final Phase0aBattleController controller;
   final Phase0aStage stage;
   final List<_HeldFeedback> entries;
   final ValueListenable<int> feedbackFrame;
+  final Phase0aNumericSkillBindings numericSkillBindings;
 
   @override
   State<_FeedbackLayer> createState() => _FeedbackLayerState();
@@ -1524,6 +1537,10 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.palmTrail:
           children.add(_palmTrail(held));
+        case Phase0aVfxKind.skillCast:
+          children.add(_skillVfx(held, _SkillVfxPhase.cast));
+        case Phase0aVfxKind.skillImpact:
+          children.add(_skillVfx(held, _SkillVfxPhase.impact));
         case Phase0aVfxKind.gatherVortex:
           children.add(
             _inkVfx(
@@ -1803,6 +1820,58 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
     );
   }
 
+  /// 数字技能两段墨势。流派只取正式 binding 的 typed 语义，且同时核对
+  /// hotkey / skillId，避免槽位换装后把旧事件画成另一招。
+  Widget _skillVfx(_HeldFeedback held, _SkillVfxPhase phase) {
+    final entry = held.entry;
+    final hotkey = entry.hotkey;
+    final skillId = entry.skillId;
+    final anchor = entry.anchor;
+    if (hotkey == null || skillId == null || anchor == null) {
+      return const SizedBox.shrink();
+    }
+    final binding = widget.numericSkillBindings.bindingFor(hotkey);
+    if (binding == null || binding.skill.id != skillId) {
+      return const SizedBox.shrink();
+    }
+    final isUltimate = binding.skill.type == SkillType.ultimate;
+    final baseSize = phase == _SkillVfxPhase.cast
+        ? Phase0aPresentationTokens.skillCastVfxSize
+        : Phase0aPresentationTokens.skillImpactVfxSize;
+    final size =
+        baseSize *
+        (isUltimate ? Phase0aPresentationTokens.skillUltimateVfxScale : 1);
+    final screen = widget.stage.worldToScreen(anchor);
+    final keyStem = 'phase0a_skill_${phase.name}_${binding.visualSchool.name}';
+    return Positioned(
+      key: ValueKey('${keyStem}_${held.id}'),
+      left: screen.dx - size / 2,
+      top: screen.dy - size / 2,
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.scale(
+          scale: 0.74 + 0.26 * Curves.easeOut.transform(held.progress),
+          child: SizedBox.square(
+            dimension: size,
+            child: CustomPaint(
+              key: ValueKey('${keyStem}_paint_${held.id}'),
+              size: Size.square(size),
+              painter: _SkillVfxPainter(
+                school: binding.visualSchool,
+                phase: phase,
+                progress: held.progress,
+                isUltimate: isUltimate,
+                isAoe: binding.targetType == TargetType.aoe,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Q 拉拢轨迹:以事件发生时的目标→玩家快照绘制弯曲墨线。
   Widget _gatherPull(_HeldFeedback held) {
     final entry = held.entry;
@@ -1992,6 +2061,228 @@ final class _SurviveConditionBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+enum _SkillVfxPhase { cast, impact }
+
+/// 三系共享同一程序化 painter，但几何语言严格分离：
+/// 刚猛 = 方折/震裂，灵巧 = 弧影/掠痕，阴柔 = 回旋/涟漪。
+class _SkillVfxPainter extends CustomPainter {
+  const _SkillVfxPainter({
+    required this.school,
+    required this.phase,
+    required this.progress,
+    required this.isUltimate,
+    required this.isAoe,
+  });
+
+  final TechniqueSchool school;
+  final _SkillVfxPhase phase;
+  final double progress;
+  final bool isUltimate;
+  final bool isAoe;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final reveal = Curves.easeOutCubic.transform(
+      Phase0aPresentationTokens.vfxReveal(progress),
+    );
+    final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final radius = size.shortestSide * 0.42;
+    final accent = switch (school) {
+      TechniqueSchool.gangMeng => WuxiaUi.jiang,
+      TechniqueSchool.lingQiao => WuxiaUi.gold,
+      TechniqueSchool.yinRou => WuxiaUi.qingOnDark,
+    };
+    final widthScale = isUltimate ? 1.34 : 1.0;
+    final ink = Paint()
+      ..color = WuxiaUi.ink.withValues(alpha: 0.78 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * widthScale;
+    final wash = Paint()
+      ..color = accent.withValues(alpha: 0.68 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth * widthScale;
+
+    if (phase == _SkillVfxPhase.cast) {
+      _paintCast(canvas, center, radius, reveal, ink, wash);
+    } else {
+      _paintImpact(canvas, center, radius, reveal, ink, wash);
+    }
+
+    if (isAoe) {
+      canvas.drawCircle(
+        center,
+        radius * (0.62 + 0.34 * reveal),
+        Paint()
+          ..color = accent.withValues(alpha: 0.28 * fade)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth,
+      );
+    }
+  }
+
+  void _paintCast(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double reveal,
+    Paint ink,
+    Paint wash,
+  ) {
+    switch (school) {
+      case TechniqueSchool.gangMeng:
+        final half = radius * (0.30 + 0.58 * reveal);
+        final diamond = Path()
+          ..moveTo(center.dx, center.dy - half)
+          ..lineTo(center.dx + half, center.dy)
+          ..lineTo(center.dx, center.dy + half)
+          ..lineTo(center.dx - half, center.dy)
+          ..close();
+        canvas.drawPath(diamond, ink);
+        canvas.drawLine(
+          Offset(center.dx - half * 0.72, center.dy),
+          Offset(center.dx + half * 0.72, center.dy),
+          wash,
+        );
+        canvas.drawLine(
+          Offset(center.dx, center.dy - half * 0.72),
+          Offset(center.dx, center.dy + half * 0.72),
+          wash,
+        );
+      case TechniqueSchool.lingQiao:
+        final rect = Rect.fromCircle(center: center, radius: radius * 0.82);
+        canvas.drawArc(
+          rect,
+          math.pi * 0.82,
+          math.pi * 1.18 * reveal,
+          false,
+          ink,
+        );
+        canvas.drawArc(
+          rect.deflate(radius * 0.18),
+          -math.pi * 0.18,
+          math.pi * 1.08 * reveal,
+          false,
+          wash,
+        );
+        final tip =
+            center +
+            Offset(
+                  math.cos(math.pi * 0.82 + math.pi * 1.18 * reveal),
+                  math.sin(math.pi * 0.82 + math.pi * 1.18 * reveal),
+                ) *
+                radius *
+                0.82;
+        canvas.drawLine(center, tip, wash);
+      case TechniqueSchool.yinRou:
+        final spiral = Path();
+        const points = 28;
+        for (var i = 0; i <= points; i++) {
+          final t = i / points * reveal;
+          final angle = math.pi * 4.2 * t;
+          final distance = radius * (0.10 + 0.78 * t);
+          final point =
+              center + Offset(math.cos(angle), math.sin(angle)) * distance;
+          if (i == 0) {
+            spiral.moveTo(point.dx, point.dy);
+          } else {
+            spiral.lineTo(point.dx, point.dy);
+          }
+        }
+        canvas.drawPath(spiral, ink);
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius * 0.56),
+          math.pi * 0.2,
+          math.pi * 1.35 * reveal,
+          false,
+          wash,
+        );
+    }
+  }
+
+  void _paintImpact(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double reveal,
+    Paint ink,
+    Paint wash,
+  ) {
+    switch (school) {
+      case TechniqueSchool.gangMeng:
+        const rays = 8;
+        for (var i = 0; i < rays; i++) {
+          final angle = math.pi * 2 * i / rays;
+          final inner =
+              center + Offset(math.cos(angle), math.sin(angle)) * radius * 0.14;
+          final outer =
+              center +
+              Offset(math.cos(angle), math.sin(angle)) *
+                  radius *
+                  (i.isEven ? 0.96 : 0.72) *
+                  reveal;
+          canvas.drawLine(inner, outer, i.isEven ? ink : wash);
+        }
+        final strike = Path()
+          ..moveTo(center.dx - radius * 0.34, center.dy - radius * 0.70)
+          ..lineTo(center.dx + radius * 0.12, center.dy - radius * 0.08)
+          ..lineTo(center.dx - radius * 0.02, center.dy + radius * 0.70);
+        canvas.drawPath(strike, ink);
+      case TechniqueSchool.lingQiao:
+        for (var i = 0; i < 3; i++) {
+          final inset = radius * (0.12 + i * 0.13);
+          final rect = Rect.fromCircle(
+            center: center + Offset((i - 1) * radius * 0.12, 0),
+            radius: radius - inset,
+          );
+          canvas.drawArc(
+            rect,
+            -math.pi * (0.42 + i * 0.08),
+            math.pi * (0.86 + i * 0.10) * reveal,
+            false,
+            i == 1 ? ink : wash,
+          );
+        }
+        canvas.drawLine(
+          center - Offset(radius * 0.86 * reveal, radius * 0.18),
+          center + Offset(radius * 0.92 * reveal, radius * 0.10),
+          ink,
+        );
+      case TechniqueSchool.yinRou:
+        for (var i = 0; i < 3; i++) {
+          canvas.drawCircle(
+            center,
+            radius * (0.22 + i * 0.27) * reveal,
+            i == 1 ? ink : wash,
+          );
+        }
+        final wave = Path()
+          ..moveTo(center.dx - radius * reveal, center.dy)
+          ..cubicTo(
+            center.dx - radius * 0.45,
+            center.dy - radius * 0.42 * reveal,
+            center.dx + radius * 0.30,
+            center.dy + radius * 0.38 * reveal,
+            center.dx + radius * reveal,
+            center.dy,
+          );
+        canvas.drawPath(wave, ink);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SkillVfxPainter oldDelegate) =>
+      oldDelegate.school != school ||
+      oldDelegate.phase != phase ||
+      oldDelegate.progress != progress ||
+      oldDelegate.isUltimate != isUltimate ||
+      oldDelegate.isAoe != isAoe;
 }
 
 enum _InkEffect { melee, palm, gather, clear, defeat }
