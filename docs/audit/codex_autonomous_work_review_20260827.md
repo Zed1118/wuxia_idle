@@ -121,3 +121,27 @@ T1 的**技术理由是站得住的**:方案 `:1025` 写「攻击令牌 2–4」
 **真正需要修的在协调者一侧**:两份协调者文档(registry vs T1)对同一个用户决策
 给出互相矛盾的记载,且**双方都拿不出用户侧原始证据**。
 这不是 codex 的问题,是我们的决策留痕机制有洞。
+
+## 附:`g2-human-ready` 完整 Gate 结果(本会话实测)
+
+```
+[FAIL] forbidden_files: data/numbers.yaml          ← 仅注释,零数值(§2)
+[FAIL] test_deletions: 185 deleted test lines
+[PASS] commit_msg
+[PASS] worktree_clean
+[PASS] full_test: error_block_count=0 last=05:14 +5623: All tests passed!
+[PASS] analyze: No issues found! (ran in 22.1s)
+[PASS] format: Formatted 1622 files (0 changed)
+[FAIL] receipt_crosscheck: code task has 27 lib/ changes but receipt.yaml was not found
+FAIL: forbidden_files,test_deletions,receipt_crosscheck
+gate_exit=1
+```
+
+**`receipt_crosscheck` 这条 FAIL 不能算在执行端头上**:外置收据机制是昨夜 N10/N10-R
+才建起来的(`~/.claude` commit `0566f29`,08-27 03:35),而本分支最后一个 commit 是
+08-27 01:58 —— **要求晚于交付**,属追溯性判罚。同理 `forbidden_files` 与 `test_deletions`
+这两道检查也是 N0/N10 之后才有的自动化,此前只写在派单包正文里。
+
+因此对本分支的公允判读是:**技术面三项全绿(full_test / analyze / format),
+程序面三项 FAIL 中有一项(receipt)不适用、一项(forbidden_files)只涉注释、
+一项(test_deletions)需逐条核实而非一票否决。**
