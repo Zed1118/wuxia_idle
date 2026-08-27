@@ -604,10 +604,33 @@ T1/T2 两分支 tip 均为 `并入探针工具格式化基线`(22:19 共享格�
 
 | 项 | 内容 | 定性 | 处置 |
 |---|---|---|---|
-| `forbidden_files` | `data/numbers.yaml` | **已核为纯注释**,零数值改动;注释内容是把「拍板B冻结」下调为「选择候选B待试玩」,即更准确 | **待用户裁决**:接受 / 用 `--whitelist data/numbers.yaml` 重跑 / 回退注释(会退回不准确的表述) |
+| `forbidden_files` | `data/numbers.yaml` | 见下方【订正】,**不是纯注释** | **待用户裁决**,选项见下 |
 | `test_deletions` | 185 行 | **已核为语义重写**:区间 `+1451/-185`,删行>30 的文件仅 1 个且净增(`+65/-33`),无文件被掏空;用例数 +12、skip 数不变 | 同上,待裁决 |
 | `commit_msg` | tip 无标记 | Gate 跑在补标记之前;**已按 3C 补** `870f9832 [BLOCKED]`,树哈希 `fd2a9ed3` 与受验树**完全相同** | 已解决,重跑即 PASS |
 | `receipt_crosscheck` | 无 `receipt.yaml` | 集成合并不是派单任务,**没有自身收据**;候选分支上也从无 `receipt.yaml` | Gate 语义与集成态不匹配,非候选缺陷 |
+
+**【订正】`data/numbers.yaml` 我先前的定性错了**(2026-08-27 复核后当场改)
+
+我在上一条里写「已核为纯注释,零数值改动」。**该结论对本区间不成立,现予撤回。**
+错因:我量的是**候选相对自己基线 `1cf7df37`** 的区间——那个区间里执行端确实只动注释;
+但集成区间的基线是 **main**,而 main 上从来没有 `combat.posture` 块。实测:
+
+| 事实 | 实测值 |
+|---|---|
+| 相对 main 的实质(非注释)增删行 | **10 行,不是 0** |
+| 新增内容 | 整个 `combat.posture` 块,5 个实值:`capacity: 14` / `vulnerability_ticks: 4` / `recovery_policy: recover` / `post_vulnerability_accumulated: 4` / `boss_conversion_factor: 3` |
+| 引入者 | `1cf7df37 冻结姿态统一配置块`(08-26 17:47),**协调者自己的提交**,不是执行端越界 |
+| 值的状态 | 块内注释自称仍为 `TUNING`,「待生产路径真人试玩后才能冻结」 |
+| 守卫强度 | `phase0a_posture_production_wiring_test.dart:61-73` 断言的是**解析保真**(`expect(posture.capacity, rawPosture['capacity'])`,拿解析结果比原始 map),**不钉具体数值**——把 14 改成 999 这条断言照样绿;另有缺块 fail-closed 测(`:79`)是真守卫 |
+
+**教训**:同一份 diff 换基线会得出相反定性,引用「纯注释/零改动」这类结论**必须同时写明基线**。
+这与本盘面上一节记的「口径不同致误判 codex 算错」是同一类错误,本会话内已犯两次。
+
+**因此 `forbidden_files` 的裁决选项修正为**:
+
+- **A**:接受并 `--whitelist data/numbers.yaml` 重跑 Gate。理由:值是协调者自己冻的,禁区规则的本意(执行端不得改数值)未被违反,且这 5 个值正是 8 项真人试玩要验的对象
+- **B**:维持 FAIL 不豁免,把 posture 块从候选里摘出、由协调者单独走一次数值变更流程后再合
+- **C**:先做真人试玩,试玩通过再决定豁免与否
 
 **tip-bound 标记(3C 执行)**:`870f9832 [BLOCKED] G2候选集成态待8项真人试玩`
 (空 commit,`HEAD^{tree}` 前后均为 `fd2a9ed3130cbcf5e15e62b1603159b0748959ca`,Gate 结论仍绑定)
