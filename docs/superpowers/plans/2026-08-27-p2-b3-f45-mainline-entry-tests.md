@@ -93,3 +93,14 @@
 - 红线影响：只改测试/计划；不触及数值、三系、在线=离线、反主流项、UI 文案、schema/saveVersion。
 - 残留风险：仅待 S5 独立复核；本会话不自签验收、不合并。
 - 阻塞项：无。
+
+## 总控 tip 结构纠偏（2026-08-28）
+
+- 原 `[READY]` `686379a33635616161d38a91eadd12c0ec60e3fd` 是证据 commit 之后的
+  空提交，与后续冻结的“plan 证据 commit 本身即最终 tip”不一致。
+- 按纠偏禁止 reset/revert 的要求，不改写旧历史；本节所在非空
+  `[READY]` commit 作为新的最终 tip，外置 receipt 按新 tip 重算。
+- 实现、两向破坏证红和原始命令/末行/失败数保持上文原样；新 tip
+  只增加本条合规证据，`lib/` 仍零改动。
+- 新 tip 需重跑 targeted、analyze、整仓 format、带锁全量、diff/patch 审计；
+  实测末行和新 receipt SHA 以本节之后的外置 receipt 为准。
