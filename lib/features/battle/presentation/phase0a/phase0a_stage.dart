@@ -70,7 +70,7 @@ final class Phase0aStage {
     return min + t.clamp(0.0, 1.0) * (max - min);
   }
 
-  /// 绘制排序:y 升序(近处先画、远处后画由调用方按序覆盖),
+  /// 绘制排序:y 升序(远处先画、近处后画并覆盖),
   /// y 相同按语义 id 字典序,保证逐帧确定。
   List<Phase0aActor> sortActors(
     List<Phase0aActor> actors, {
