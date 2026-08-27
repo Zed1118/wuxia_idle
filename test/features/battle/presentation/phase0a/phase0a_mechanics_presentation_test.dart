@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -209,6 +211,119 @@ void main() {
       ),
     );
     expect(controller.state.enemies.single.posture!.isVulnerable, isTrue);
+  });
+
+  testWidgets('破势开窗同时渲染蓄条、本体失衡与独立非透明墨裂', (tester) async {
+    final fixture = (await tester.runAsync(
+      () => Phase0aDebugBattleFixture.load(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+        assetPath: 'data/phase0a_debug_boss_battle.yaml',
+      ),
+    ))!;
+    final controller = Phase0aBattleController(
+      flow: fixture.flow,
+      roster: fixture.roster,
+      fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+    );
+    addTearDown(controller.dispose);
+    final driver = Phase0aBossMechanicsRouteDriver(
+      fixedDeltaSeconds: fixture.fixedDeltaSeconds,
+    );
+
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Phase0aBattleScreen(
+          controller: controller,
+          autoStep: false,
+          feedbackHoldSeconds: 5,
+        ),
+      ),
+    );
+
+    for (var tick = 0; tick < 1000 && !driver.completed; tick++) {
+      driver.advance(controller);
+    }
+    expect(driver.completed, isTrue);
+    expect(controller.state.enemies.single.posture!.isVulnerable, isTrue);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 180));
+
+    const bossId = 'wave2_elite';
+    expect(
+      find.byKey(const ValueKey('phase0a_vulnerability_open_$bossId')),
+      findsOneWidget,
+    );
+    final fill = tester.widget<FractionallySizedBox>(
+      find.byKey(const ValueKey('phase0a_posture_fill_$bossId')),
+    );
+    expect(fill.widthFactor, 1);
+    expect(
+      find.byKey(const ValueKey('phase0a_posture_unbalanced_$bossId')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('phase0a_posture_wash_$bossId')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('phase0a_posture_break_$bossId')),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.phase0aPostureBroken), findsOneWidget);
+    expect(find.text(UiStrings.phase0aBossChargeInterrupted), findsNothing);
+    expect(
+      UiStrings.phase0aPostureBroken,
+      isNot(UiStrings.phase0aBossChargeInterrupted),
+    );
+
+    final paintFinder = find.byKey(
+      const ValueKey('phase0a_posture_break_paint_$bossId'),
+    );
+    expect(paintFinder, findsOneWidget);
+    final size = tester.getSize(paintFinder);
+    expect(size.width, greaterThan(0));
+    expect(size.height, greaterThan(0));
+    final painter = tester.widget<CustomPaint>(paintFinder).painter;
+    expect(painter, isNotNull);
+    final recorder = ui.PictureRecorder();
+    painter!.paint(ui.Canvas(recorder), size);
+    final picture = recorder.endRecording();
+    final bytes = await tester.runAsync(() async {
+      final image = await picture.toImage(
+        size.width.ceil(),
+        size.height.ceil(),
+      );
+      picture.dispose();
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return data;
+    });
+    expect(bytes, isNotNull);
+    var paintedPixels = 0;
+    for (var offset = 3; offset < bytes!.lengthInBytes; offset += 4) {
+      if (bytes.getUint8(offset) != 0) paintedPixels++;
+    }
+    expect(paintedPixels, greaterThan(0), reason: '破势 painter 不得为空画布');
+
+    final windowTicks =
+        controller.state.enemies.single.posture!.vulnerabilityTicksRemaining;
+    for (var tick = 0; tick < windowTicks; tick++) {
+      controller.step();
+    }
+    await tester.pump();
+    expect(controller.state.enemies.single.posture!.isVulnerable, isFalse);
+    expect(
+      find.byKey(const ValueKey('phase0a_posture_unbalanced_$bossId')),
+      findsNothing,
+      reason: '窗口结束后本体必须随权威 posture 状态恢复',
+    );
+    expect(
+      find.byKey(const ValueKey('phase0a_posture_wash_$bossId')),
+      findsNothing,
+    );
   });
 
   for (final viewport in viewports) {

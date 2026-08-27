@@ -205,7 +205,14 @@ class UiStrings {
   static const String phase0aDefeatSeal = '败退';
   static const String phase0aRetryLabel = '再战';
   static const String phase0aBossChargeWarning = '蓄力可破';
-  static const String phase0aBossChargeInterrupted = '破！';
+  static const String phase0aBossChargeInterrupted = '破招！';
+  static const String phase0aPostureBroken = '破势！';
+  static const String phase0aPostureLabel = '势';
+  static String phase0aPostureSemantics(
+    int accumulated,
+    int capacity, {
+    required bool isVulnerable,
+  }) => isVulnerable ? '破势，破绽已开' : '架势累积 $accumulated/$capacity';
   static const String phase0aDefenseStarted = '守势';
   static const String phase0aDefenseResolved = '化解';
   static const String phase0aDefenseSemantics = '防御动作：E 护盾，F 化解，Z 闪避';

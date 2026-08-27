@@ -163,7 +163,7 @@ void main() {
       expect(entries.single.anchor, bossPosition);
     });
 
-    test('姿态破势映射为复用既有破招反馈', () {
+    test('姿态破势映射为独立开窗反馈，不复用破招', () {
       const bossPosition = ArenaVector(80, 40);
       final controller = Phase0aVfxController()
         ..syncActors(
@@ -191,10 +191,14 @@ void main() {
       ]);
 
       expect(entries, hasLength(1));
-      expect(entries.single.kind, Phase0aVfxKind.bossChargeInterrupted);
+      expect(entries.single.kind, Phase0aVfxKind.postureBroken);
       expect(entries.single.targetId, 'boss');
       expect(entries.single.statusTicks, 3);
       expect(entries.single.anchor, bossPosition);
+      expect(
+        entries.map((entry) => entry.kind),
+        isNot(contains(Phase0aVfxKind.bossChargeInterrupted)),
+      );
     });
   });
 

@@ -365,6 +365,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.clearBurst ||
     Phase0aVfxKind.bossChargeWarning ||
     Phase0aVfxKind.bossChargeInterrupted ||
+    Phase0aVfxKind.postureBroken ||
     Phase0aVfxKind.guardIntercepted ||
     Phase0aVfxKind.guardianCoop ||
     Phase0aVfxKind.defenseStarted ||
@@ -384,6 +385,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   static bool _isBossMechanicFeedback(Phase0aVfxKind kind) =>
       kind == Phase0aVfxKind.bossChargeWarning ||
       kind == Phase0aVfxKind.bossChargeInterrupted ||
+      kind == Phase0aVfxKind.postureBroken ||
       kind == Phase0aVfxKind.guardIntercepted ||
       kind == Phase0aVfxKind.guardianCoop ||
       kind == Phase0aVfxKind.defenseStarted ||
@@ -411,6 +413,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.bossChargeFeedbackSeconds,
       Phase0aVfxKind.bossChargeInterrupted =>
         Phase0aPresentationTokens.bossInterruptFeedbackSeconds,
+      Phase0aVfxKind.postureBroken =>
+        Phase0aPresentationTokens.postureBreakFeedbackSeconds,
       Phase0aVfxKind.guardIntercepted =>
         Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
       Phase0aVfxKind.guardianCoop =>
@@ -990,6 +994,7 @@ class _ActorStandee extends StatelessWidget {
         : enemy
         ? WuxiaUi.jiang
         : WuxiaUi.qingOnDark;
+    final postureOpen = enemy && (actor.posture?.isVulnerable ?? false);
     final motionOffset = isHitFlashing
         ? Offset(
             -actor.facing.x * Phase0aPresentationTokens.actorHitSlideFraction,
@@ -1095,22 +1100,38 @@ class _ActorStandee extends StatelessWidget {
                   scale: motionScale,
                   duration: motionDuration,
                   curve: Curves.easeOutBack,
-                  child: ColorFiltered(
-                    key: isHitFlashing
-                        ? ValueKey('phase0a_hit_flash_${actor.id}')
+                  child: AnimatedRotation(
+                    key: postureOpen
+                        ? ValueKey('phase0a_posture_unbalanced_${actor.id}')
                         : null,
-                    colorFilter: ColorFilter.mode(
-                      WuxiaUi.paper.withValues(
-                        alpha: isHitFlashing
-                            ? Phase0aPresentationTokens.hitFlashOpacity
-                            : 0,
+                    turns: postureOpen
+                        ? Phase0aPresentationTokens.postureUnbalancedTurns
+                        : 0,
+                    duration: motionDuration,
+                    curve: Curves.easeOutBack,
+                    alignment: Alignment.bottomCenter,
+                    child: ColorFiltered(
+                      key: isHitFlashing
+                          ? ValueKey('phase0a_hit_flash_${actor.id}')
+                          : postureOpen
+                          ? ValueKey('phase0a_posture_wash_${actor.id}')
+                          : null,
+                      colorFilter: ColorFilter.mode(
+                        (postureOpen ? WuxiaUi.gold : WuxiaUi.paper).withValues(
+                          alpha: isHitFlashing
+                              ? Phase0aPresentationTokens.hitFlashOpacity
+                              : postureOpen
+                              ? Phase0aPresentationTokens
+                                    .postureUnbalancedWashOpacity
+                              : 0,
+                        ),
+                        BlendMode.srcATop,
                       ),
-                      BlendMode.srcATop,
-                    ),
-                    child: Image.asset(
-                      visual.assetPath,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.medium,
+                      child: Image.asset(
+                        visual.assetPath,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.medium,
+                      ),
                     ),
                   ),
                 ),
@@ -1187,24 +1208,19 @@ class _ActorStandee extends StatelessWidget {
                 Phase0aPresentationTokens.actorNameFontSize +
                 Phase0aPresentationTokens.bossStatusGap * 2,
             child: Center(
-              child: _BossStatusTag(
+              child: _PostureBar(
                 key: ValueKey(
                   actor.posture!.isVulnerable
                       ? 'phase0a_vulnerability_open_${actor.id}'
                       : actor.vulnerabilityMult != null
                       ? 'phase0a_vulnerability_guarded_${actor.id}'
-                      : 'phase0a_posture_remaining_${actor.id}',
+                      : 'phase0a_posture_bar_${actor.id}',
                 ),
-                label: actor.posture!.isVulnerable
-                    ? UiStrings.phase0aVulnerabilityOpen
-                    : actor.vulnerabilityMult != null
-                    ? '${UiStrings.phase0aVulnerabilityGuarded} '
-                          '${(actor.posture!.config.capacity - actor.posture!.accumulated).ceil()}'
-                    : '${(actor.posture!.config.capacity - actor.posture!.accumulated).ceil()}'
-                          '/${actor.posture!.config.capacity.ceil()}',
-                accent: actor.posture!.isVulnerable
-                    ? WuxiaUi.gold
-                    : WuxiaUi.qingOnDark,
+                actorId: actor.id,
+                accumulated: actor.posture!.accumulated,
+                capacity: actor.posture!.config.capacity,
+                isVulnerable: actor.posture!.isVulnerable,
+                guarded: actor.vulnerabilityMult != null,
               ),
             ),
           ),
@@ -1259,6 +1275,99 @@ class _ActorStandee extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _PostureBar extends StatelessWidget {
+  const _PostureBar({
+    super.key,
+    required this.actorId,
+    required this.accumulated,
+    required this.capacity,
+    required this.isVulnerable,
+    required this.guarded,
+  });
+
+  final String actorId;
+  final double accumulated;
+  final double capacity;
+  final bool isVulnerable;
+  final bool guarded;
+
+  @override
+  Widget build(BuildContext context) {
+    final fraction = capacity <= 0
+        ? 0.0
+        : (accumulated / capacity).clamp(0.0, 1.0);
+    final accent = isVulnerable
+        ? WuxiaUi.gold
+        : guarded
+        ? WuxiaUi.qingOnDark
+        : WuxiaUi.jiang;
+    final label = isVulnerable
+        ? UiStrings.phase0aVulnerabilityOpen
+        : guarded
+        ? UiStrings.phase0aVulnerabilityGuarded
+        : UiStrings.phase0aPostureLabel;
+    return Semantics(
+      container: true,
+      label: UiStrings.phase0aPostureSemantics(
+        accumulated.ceil(),
+        capacity.ceil(),
+        isVulnerable: isVulnerable,
+      ),
+      child: SizedBox(
+        width: Phase0aPresentationTokens.postureBarWidth,
+        height: Phase0aPresentationTokens.postureBarHeight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: WuxiaUi.ink.withValues(
+              alpha: Phase0aPresentationTokens.postureBarTrackOpacity,
+            ),
+            border: Border.all(
+              color: accent,
+              width: Phase0aPresentationTokens.postureBarBorderWidth,
+            ),
+            borderRadius: BorderRadius.circular(
+              Phase0aPresentationTokens.postureBarHeight,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(
+              Phase0aPresentationTokens.postureBarHeight,
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  key: ValueKey('phase0a_posture_fill_$actorId'),
+                  alignment: Alignment.centerLeft,
+                  widthFactor: fraction,
+                  child: ColoredBox(
+                    color: accent.withValues(
+                      alpha: Phase0aPresentationTokens.postureBarFillOpacity,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: WuxiaUi.paper,
+                      fontSize:
+                          Phase0aPresentationTokens.postureBarLabelFontSize,
+                      fontWeight: FontWeight.w800,
+                      shadows: [Shadow(color: WuxiaUi.ink, blurRadius: 2)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1586,6 +1695,8 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
               accent: WuxiaUi.gold,
             ),
           );
+        case Phase0aVfxKind.postureBroken:
+          children.add(_postureBreakVfx(held));
         case Phase0aVfxKind.guardIntercepted:
           children.add(
             _guardianMechanicVfx(
@@ -1632,6 +1743,47 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: RepaintBoundary(
           key: const ValueKey('phase0a_feedback_layer'),
           child: Stack(children: children),
+        ),
+      ),
+    );
+  }
+
+  Widget _postureBreakVfx(_HeldFeedback held) {
+    final entry = held.entry;
+    final anchor = entry.anchor;
+    if (anchor == null) return const SizedBox.shrink();
+    final screen = widget.stage.worldToScreen(anchor);
+    const size = Phase0aPresentationTokens.postureBreakVfxSize;
+    final targetKey = entry.targetId ?? '${held.id}';
+    return Positioned(
+      key: ValueKey('phase0a_posture_break_$targetKey'),
+      left: screen.dx - size / 2,
+      top: screen.dy - size / 2,
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.scale(
+          scale: 0.72 + 0.28 * Curves.easeOutBack.transform(held.progress),
+          child: CustomPaint(
+            key: ValueKey('phase0a_posture_break_paint_$targetKey'),
+            size: const Size.square(size),
+            painter: _PostureBreakPainter(progress: held.progress),
+            child: const Center(
+              child: Text(
+                UiStrings.phase0aPostureBroken,
+                style: TextStyle(
+                  color: WuxiaUi.gold,
+                  fontSize: Phase0aPresentationTokens.vfxOutcomeFontSize,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(color: WuxiaUi.ink, blurRadius: 5),
+                    Shadow(color: WuxiaUi.paper, blurRadius: 2),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -2061,6 +2213,68 @@ final class _SurviveConditionBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PostureBreakPainter extends CustomPainter {
+  const _PostureBreakPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final reveal = Curves.easeOutCubic.transform(
+      Phase0aPresentationTokens.vfxReveal(progress),
+    );
+    final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final radius = size.shortestSide * 0.39 * reveal;
+    final ink = Paint()
+      ..color = WuxiaUi.ink.withValues(alpha: 0.82 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth;
+    final gold = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.72 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
+    final ring = Rect.fromCircle(center: center, radius: radius);
+    const segments = 6;
+    for (var i = 0; i < segments; i++) {
+      final start = math.pi * 2 * i / segments + 0.08;
+      canvas.drawArc(ring, start, math.pi * 0.23, false, i.isEven ? ink : gold);
+    }
+    const cracks = 8;
+    for (var i = 0; i < cracks; i++) {
+      final angle = math.pi * 2 * i / cracks;
+      final inner =
+          center + Offset(math.cos(angle), math.sin(angle)) * radius * 0.18;
+      final elbow =
+          center +
+          Offset(
+                math.cos(angle + (i.isEven ? 0.13 : -0.13)),
+                math.sin(angle + (i.isEven ? 0.13 : -0.13)),
+              ) *
+              radius *
+              0.58;
+      final outer =
+          center +
+          Offset(math.cos(angle), math.sin(angle)) *
+              radius *
+              (i.isEven ? 1.08 : 0.88);
+      canvas.drawPath(
+        Path()
+          ..moveTo(inner.dx, inner.dy)
+          ..lineTo(elbow.dx, elbow.dy)
+          ..lineTo(outer.dx, outer.dy),
+        i.isEven ? ink : gold,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PostureBreakPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 enum _SkillVfxPhase { cast, impact }

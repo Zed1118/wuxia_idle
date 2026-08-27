@@ -41,6 +41,8 @@ abstract final class Phase0aPresentationTokens {
   static const double actorHitSlideFraction = 0.018;
   static const double actorActionSlideFraction = 0.024;
   static const double defenseFeedbackSeconds = 0.72;
+  static const double postureUnbalancedTurns = -0.012;
+  static const double postureUnbalancedWashOpacity = 0.24;
 
   /// 血条强调墨边宽度。
   static const double hpEmphasisBorderWidth = 2;
@@ -113,6 +115,13 @@ abstract final class Phase0aPresentationTokens {
   static const double skillCastVfxSize = 176;
   static const double skillImpactVfxSize = 208;
   static const double skillUltimateVfxScale = 1.18;
+  static const double postureBreakVfxSize = 220;
+  static const double postureBarWidth = 104;
+  static const double postureBarHeight = 16;
+  static const double postureBarBorderWidth = 1.4;
+  static const double postureBarLabelFontSize = 10.5;
+  static const double postureBarTrackOpacity = 0.84;
+  static const double postureBarFillOpacity = 0.72;
   static const double palmTrailPadding = 20;
   static const double palmTrailHeight = 84;
   static const double vfxEliteDefeatSize = 292;
@@ -162,6 +171,7 @@ abstract final class Phase0aPresentationTokens {
   static const double bossStatusRadius = 3;
   static const double bossChargeFeedbackSeconds = 1.1;
   static const double bossInterruptFeedbackSeconds = 0.9;
+  static const double postureBreakFeedbackSeconds = 0.9;
   static const double guardMechanicFeedbackSeconds = 1.0;
   static const double bossMechanicBannerTopGap = 12;
   static const double guardianWardRingStrokeWidth = 2.4;

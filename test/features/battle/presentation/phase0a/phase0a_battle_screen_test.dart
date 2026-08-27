@@ -191,9 +191,9 @@ void main() {
           expect(enemy.posture, isNotNull);
           expect(enemy.posture!.accumulated, 0);
           expect(
-            find.byKey(ValueKey('phase0a_posture_remaining_${enemy.id}')),
+            find.byKey(ValueKey('phase0a_posture_bar_${enemy.id}')),
             findsNothing,
-            reason: '普通满姿态敌人 ${enemy.id} 不常驻剩余架势标签',
+            reason: '普通零累积敌人 ${enemy.id} 不常驻架势条',
           );
         }
 
@@ -208,7 +208,7 @@ void main() {
       });
     }
 
-    testWidgets('普通敌人实际承受姿态伤害后显示剩余架势标签', (tester) async {
+    testWidgets('普通敌人实际承受姿态伤害后显示权威累积架势条', (tester) async {
       await pumpScreen(tester, autoStep: false);
 
       final normalEnemies = controller.state.enemies.where(
@@ -221,7 +221,7 @@ void main() {
           )
           .id;
       expect(
-        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        find.byKey(ValueKey('phase0a_posture_bar_$enemyId')),
         findsNothing,
       );
 
@@ -247,8 +247,24 @@ void main() {
         reason: '必须经生产普攻路径对同一敌人产生姿态伤害',
       );
       expect(
-        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        find.byKey(ValueKey('phase0a_posture_bar_$enemyId')),
         findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        findsNothing,
+        reason: '蓄条已替代旧纯数字标签',
+      );
+      final fill = tester.widget<FractionallySizedBox>(
+        find.byKey(ValueKey('phase0a_posture_fill_$enemyId')),
+      );
+      expect(
+        fill.widthFactor,
+        closeTo(
+          damagedEnemy.posture!.accumulated /
+              damagedEnemy.posture!.config.capacity,
+          0.0001,
+        ),
       );
     });
 

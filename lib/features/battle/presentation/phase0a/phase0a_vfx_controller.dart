@@ -42,6 +42,9 @@ enum Phase0aVfxKind {
   /// 玩家成功破招反馈。
   bossChargeInterrupted,
 
+  /// 敌方姿态累积到阈值、进入破绽窗口的独立破势反馈。
+  postureBroken,
+
   /// 破招被护法截走：Boss 不受破招，伤害落到护法。
   guardIntercepted,
 
@@ -298,7 +301,7 @@ final class Phase0aVfxController {
           if (event.eventType == PostureEventType.vulnerabilityEntered) {
             push(
               Phase0aVfxEntry(
-                kind: Phase0aVfxKind.bossChargeInterrupted,
+                kind: Phase0aVfxKind.postureBroken,
                 actorId: event.actor,
                 targetId: event.target,
                 statusTicks: event.vulnerabilityTicksRemaining,
