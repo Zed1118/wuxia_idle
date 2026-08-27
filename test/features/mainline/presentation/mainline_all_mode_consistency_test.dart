@@ -250,12 +250,12 @@ void main() {
       final host = tester.widget<Phase0aMainlineBattleHost>(
         find.byType(Phase0aMainlineBattleHost),
       );
-      expect(host.controller, ActivityController.playerBot);
-      expect(host.playerSnapshot?.characterId, disciple.id);
       await pumpUntilFound(tester, find.byType(Phase0aBattleScreen));
       final screen = tester.widget<Phase0aBattleScreen>(
         find.byType(Phase0aBattleScreen),
       );
+      expect(host.controller, ActivityController.playerBot);
+      expect(host.playerSnapshot?.characterId, disciple.id);
       expect(
         screen.controller.roster.nameOf(screen.controller.state.player.id),
         disciple.name,

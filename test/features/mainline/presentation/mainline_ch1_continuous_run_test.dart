@@ -205,10 +205,6 @@ void main() {
       final host = tester.widget<Phase0aMainlineBattleHost>(
         find.byType(Phase0aMainlineBattleHost),
       );
-      expect(host.controller, ActivityController.human);
-      expect(host.playerSnapshot?.characterId, participant.id);
-      expect(host.playerSnapshot?.name, participant.name);
-
       for (
         var i = 0;
         i < 120 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
@@ -223,6 +219,9 @@ void main() {
       final battleScreen = tester.widget<Phase0aBattleScreen>(
         find.byType(Phase0aBattleScreen),
       );
+      expect(host.controller, ActivityController.human);
+      expect(host.playerSnapshot?.characterId, participant.id);
+      expect(host.playerSnapshot?.name, participant.name);
       expect(
         battleScreen.controller.roster.nameOf(
           battleScreen.controller.state.player.id,
