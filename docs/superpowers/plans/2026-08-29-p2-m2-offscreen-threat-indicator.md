@@ -56,36 +56,33 @@
 该偏差命中宪法 §10“方案范围与现有架构存在不可调和冲突”，执行端不得自行
 选择新的 camera 语义、运行态合同或数据配置。
 
-## 待用户拍板的架构路线
+## 已拍板的架构路线
 
-推荐 **A（忠实语义）**：先把本单扩成一个受控纵切——新增 camera-aware
+用户于 2026-08-29 回答“按推荐执行”，批准 **A（忠实语义）**：先把本单
+扩成一个受控纵切——新增 camera-aware
 未 clamp 投影/动态可见性，并把已有 typed token kind 与真实 windup 状态通过
 只读 presentation snapshot 暴露给 `Phase0aBattleScreen`；不改伤害、AI、
-token 分配、schema 或存档。camera 的世界跨度/跟随规则仍需用户明确批准，
-否则数值与玩家视野均属执行端代拍。
+token 分配、schema 或存档。camera 采用已批准的固定规则：可见世界宽高均为
+现有 arena 的 75%，中心逐帧跟随玩家并在 arena 边界 clamp，不做缓动；屏外
+由未 clamp 脚点投影动态判定。charge/support/Boss 离屏即提示，ranged 仅在
+真实 `chargingCast` 期间提示。
 
-- B（静态元数据近似）：直接把 runtime binding 的 `is_offscreen` / kind 透传
-  到 UI。改动小，但当前全为 false，且它不会随 actor 进出视口动态变化，不能
-  满足已冻结验收，不推荐。
-- C（顺延）：保持本单 `[BLOCKED]`，不降低判据；是否允许跳到下一优先项需用户
-  明确改动 §3 顺序。
+静态 `is_offscreen` 近似与顺延路线均未选用。
 
 ## 任务切片
 
 1. 已完成：用户拍板表现方案。
 2. 已完成：重新定位视口变换、actor 运行态和实际 Stack 消费点；确认架构缺口。
-3. 等待用户选择 A/B/C；选择 A 时还需冻结 camera 世界跨度/跟随规则。
-4. 获得授权后先写真实生产路径红测，再实现候选选择/方向聚合/边缘渲染与双视口验收。
+3. 已完成：用户批准 A 与 75% 玩家跟随 camera 规则。
+4. 先写真实生产路径红测，再实现候选选择/方向聚合/边缘渲染与双视口验收。
 5. 完成双向破坏证红、九步验收、gate、合并、push 和 CI 核验。
 
 ## 当前恢复点
 
-- 状态：`[BLOCKED]`。
-- 最后完成：表现方案已获用户批准；生产路径复核发现 stage 无 camera/offscreen
-  几何、actor 无完整威胁分类运行态、typed token metadata 未进入 presentation。
-- 下一步：用户选择 A/B/C；若选 A，同时明确批准 camera-aware 视野规则由本单
-  设计并落入 `Phase0aPresentationTokens`，或给出具体世界跨度/跟随规则。
+- 状态：`[WIP]`。
+- 最后完成：表现方案、架构路线 A 与 75% 玩家跟随 camera 规则均已获用户批准。
+- 下一步：把 typed token kind 只读透传到 presentation，先写真实
+  `Phase0aBattleScreen` 红测，再实现未 clamp camera 投影和屏外指示 painter。
 - 已跑验证：fresh worktree 已完成 `libisar.dylib` 拷贝、`flutter pub get`、
   `build_runner`（128 outputs）；未写生产代码，未伪造红测或 gate 证据。
-- 阻塞项：命中宪法 §10“方案范围与现有架构存在不可调和冲突”；继续需要新增
-  camera/visibility 与 typed presentation snapshot 的架构及玩家视野决策。
+- 阻塞项：无；后续如需改变已冻结 camera、威胁分类或视觉规则，重新触发 §10。
