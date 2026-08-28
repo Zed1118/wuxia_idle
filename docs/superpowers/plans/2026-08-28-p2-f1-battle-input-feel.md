@@ -27,8 +27,15 @@
 
 ## 当前恢复点
 
-- 状态：实现完成，准备提交后双向破坏证红。
-- 最后完成：J 最近敌人瞄准、Space/Z 同路径闪避、三项防御 HUD 状态及专门真实 screen 测试。
-- 下一步：提交实现；按固定顺序执行 `remove_implementation`、`force_degenerate_value`，每向精确还原。
-- 已跑验证：build runner exit 0；专门 targeted `+7`、最后一行 `00:00 +7: All tests passed!`。
-- 阻塞项：无。
+- 状态：`[BLOCKED]`，实现与验证完成，receipt 判据冲突待拍板。
+- 最后完成：J 最近敌人瞄准、Space/Z 同路径闪避、三项防御 HUD 状态；既有 J 旧口径测试已改为实时最近敌人期望。
+- 下一步：由协调方明确 receipt 采用派单的“tracked + 字符串数组”规范，还是当前不可修改 Gate 的“external/ignored + 结构化 break_red”规范；确定后只补 receipt 与 READY 冻结。
+- 已跑验证：
+  - `remove_implementation`：同一 targeted `+2 -5`，5 个 `[E]`，精确恢复后 `git diff --quiet` rc 0、状态空。
+  - `force_degenerate_value`：同一 targeted `+4 -3`，3 个 `[E]`，精确恢复后 `git diff --quiet` rc 0、状态空。
+  - 逐文件 targeted：input feel `+7`、defense keyboard `+3`、battle screen `+28`，三行均为 `All tests passed!`，`[E]=0`。
+  - analyze：`No issues found! (ran in 54.4s)`。
+  - format：`Formatted 1627 files (0 changed) in 11.94 seconds.`。
+  - 锁定全量：`08:27 +5650: All tests passed!`，`[E]=0`；锁已释放。
+  - `git diff --check 1ba913a633beb0fd8f9b47764161f47c54260707..HEAD` rc 0；5 个禁区文件零 diff。
+- 阻塞项：派单要求 commit `receipt.yaml` 且 `break_red` 为字符串数组；当前 `gate.sh` 只接受 external/ignored receipt 与包含 `direction/mutation/failed_count/conclusion` 的结构化数组，并强校验 receipt `head_sha` 等于被评估 HEAD。执行端被禁止修改 Gate，无法同时满足两套规范。
