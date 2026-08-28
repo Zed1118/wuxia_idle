@@ -947,6 +947,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
             children: [
               Positioned.fill(
                 child: _ActorStandee(
+                  key: ValueKey('phase0a_actor_visual_${actor.id}'),
                   actor: actor,
                   visual: controller.roster.visualFor(actor.id),
                   guardianWardActive: guardianWardActive,
