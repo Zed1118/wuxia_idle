@@ -20,6 +20,7 @@ import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
+import 'phase0a_offscreen_indicator.dart';
 import 'phase0a_presentation_tokens.dart';
 import 'phase0a_sfx.dart';
 import 'phase0a_skill_seals.dart';
@@ -61,22 +62,31 @@ final class _ActorRenderMotion {
   _ActorRenderMotion(ArenaVector position)
     : current = position,
       _from = position,
-      _target = position;
+      _target = position,
+      _visualStride = const ArenaVector(0, 0);
 
   ArenaVector current;
   ArenaVector _from;
   ArenaVector _target;
+  ArenaVector _visualStride;
   double _elapsedSeconds = 0;
+
+  ArenaVector get visualStride => _visualStride;
 
   void retarget(ArenaVector target) {
     if (target == _target) return;
+    _visualStride = target - _target;
     _from = current;
     _target = target;
     _elapsedSeconds = 0;
   }
 
   bool advance(double deltaSeconds, double durationSeconds) {
-    if (current == _target) return false;
+    if (current == _target) {
+      if (_visualStride == const ArenaVector(0, 0)) return false;
+      _visualStride = const ArenaVector(0, 0);
+      return true;
+    }
     _elapsedSeconds = (_elapsedSeconds + deltaSeconds).clamp(
       0,
       durationSeconds,
@@ -92,6 +102,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   late final FocusNode _focusNode;
   late final Ticker _ticker;
   late final ValueNotifier<int> _feedbackFrame;
+  late final ValueNotifier<int> _indicatorFrame;
   Duration? _lastElapsed;
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
@@ -118,6 +129,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     super.initState();
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     _feedbackFrame = ValueNotifier<int>(0);
+    _indicatorFrame = ValueNotifier<int>(0);
     _syncActorRenderTargets();
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
@@ -152,6 +164,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     widget.controller.removeListener(_refresh);
     _ticker.dispose();
     _feedbackFrame.dispose();
+    _indicatorFrame.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -547,6 +560,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final previousFeedbackCount = _heldFeedback.length;
     _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
     if (_heldFeedback.isNotEmpty) _feedbackFrame.value++;
+    _indicatorFrame.value++;
     final transientChanged =
         _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
         _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds) |
@@ -699,7 +713,16 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         body: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
-            final stage = Phase0aStage(viewport: size);
+            final stage = Phase0aStage(
+              viewport: size,
+              cameraCenter: _actorRenderPosition(controller.state.player),
+            );
+            final offscreenIndicators = selectPhase0aOffscreenIndicators(
+              state: controller.state,
+              stage: stage,
+              roster: controller.roster,
+              positionOf: _actorRenderPosition,
+            );
             return Stack(
               key: const ValueKey('phase0a_battle_screen'),
               fit: StackFit.expand,
@@ -738,6 +761,20 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                           feedbackFrame: _feedbackFrame,
                           numericSkillBindings: widget.numericSkillBindings,
                         ),
+                        if (offscreenIndicators.isNotEmpty)
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: CustomPaint(
+                                key: const ValueKey(
+                                  'phase0a_offscreen_indicators',
+                                ),
+                                painter: Phase0aOffscreenIndicatorPainter(
+                                  indicators: offscreenIndicators,
+                                  frame: _indicatorFrame,
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -886,23 +923,50 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
               ),
         );
+    final stride = actor.side == Phase0aSide.player
+        ? _actorRenderMotions[actor.id]?.visualStride
+        : null;
+    final strideOffset = stride == null
+        ? Offset.zero
+        : Offset(
+            stride.x.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
+            stride.y.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
+          );
     return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,
       height: height,
-      child: RepaintBoundary(
-        key: ValueKey('phase0a_actor_${actor.id}'),
-        child: _ActorStandee(
-          key: ValueKey('phase0a_standee_${actor.id}'),
-          actor: actor,
-          visual: controller.roster.visualFor(actor.id),
-          guardianWardActive: guardianWardActive,
-          isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
-          isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
-          isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
-          guardianLabelOffsetX: guardianLabelOffsetX,
+      child: Transform.translate(
+        offset: strideOffset,
+        child: RepaintBoundary(
+          key: ValueKey('phase0a_actor_${actor.id}'),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: _ActorStandee(
+                  key: ValueKey('phase0a_actor_visual_${actor.id}'),
+                  actor: actor,
+                  visual: controller.roster.visualFor(actor.id),
+                  guardianWardActive: guardianWardActive,
+                  isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+                  isHealthEmphasized: _hpEmphasisRemaining.containsKey(
+                    actor.id,
+                  ),
+                  isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+                  guardianLabelOffsetX: guardianLabelOffsetX,
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox.shrink(
+                  key: ValueKey('phase0a_standee_${actor.id}'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2014,7 +2078,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
       child: Opacity(
         opacity: _feedbackOpacity(held.progress),
         child: Transform.translate(
-          offset: Offset(-12, -held.progress * 34),
+          offset: Offset(-12, -held.progress * 64),
           child: Transform.scale(
             scale:
                 0.84 +

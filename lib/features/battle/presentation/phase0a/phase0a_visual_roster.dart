@@ -2,17 +2,30 @@ import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../application/phase0a/phase0a_battle_snapshot_factory.dart';
 import '../../application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../domain/phase0a/attack_token_director.dart';
+
+final class Phase0aActorThreatVisual {
+  const Phase0aActorThreatVisual({
+    required this.kind,
+    required this.isHighImpact,
+  });
+
+  final AttackTokenKind kind;
+  final bool isHighImpact;
+}
 
 final class Phase0aActorVisual {
   const Phase0aActorVisual({
     required this.name,
     required this.assetPath,
     required this.isElite,
+    this.threat,
   });
 
   final String name;
   final String assetPath;
   final bool isElite;
+  final Phase0aActorThreatVisual? threat;
 }
 
 final class Phase0aVisualRoster {
@@ -73,6 +86,7 @@ final class Phase0aVisualRoster {
     required String playerId,
     required List<Phase0aCombatantInput> combatants,
     Map<String, String>? assetPathByActorId,
+    Map<String, Phase0aActorThreatVisual>? threatsByActorId,
   }) {
     if (playerId.trim().isEmpty) {
       throw StateError('Phase0a roster requires a non-empty player id');
@@ -107,10 +121,21 @@ final class Phase0aVisualRoster {
         name: combatant.snapshot.name,
         assetPath: assetPath,
         isElite: combatant.snapshot.isBoss,
+        threat: threatsByActorId?[actorId],
       );
     }
     if (!playerFound) {
       throw StateError('Phase0a roster is missing the player: $playerId');
+    }
+    final unknownThreatIds = threatsByActorId?.keys
+        .where((actorId) => !seen.contains(actorId))
+        .toList();
+    if (unknownThreatIds != null && unknownThreatIds.isNotEmpty) {
+      unknownThreatIds.sort();
+      throw StateError(
+        'Phase0a roster received threat metadata for unknown actors: '
+        '${unknownThreatIds.join(',')}',
+      );
     }
     return Phase0aVisualRoster(visuals: visuals);
   }

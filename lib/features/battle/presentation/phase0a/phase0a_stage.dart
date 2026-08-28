@@ -9,10 +9,23 @@ import 'phase0a_presentation_tokens.dart';
 /// 纯几何映射,不做任何战斗结算;世界范围与边距全部取自
 /// [Phase0aPresentationTokens]。
 final class Phase0aStage {
-  Phase0aStage({required this.viewport});
+  Phase0aStage({required this.viewport, ArenaVector? cameraCenter})
+    : _cameraCenter = cameraCenter;
 
   /// 当前视口尺寸(像素)。
   final Size viewport;
+
+  /// null 保持完整 arena 投影；生产 battle screen 传玩家脚点，启用 75%
+  /// camera-aware 视野。camera 只改变表现投影，不改变 domain arena。
+  ArenaVector? _cameraCenter;
+
+  ArenaVector? get cameraCenter => _cameraCenter;
+
+  /// 同一帧几何见证可在战斗状态推进后更新玩家脚点，避免重建 viewport
+  /// 相关对象；生产 build 仍通过构造参数逐帧提供同一权威中心。
+  void updateCameraCenter(ArenaVector center) {
+    _cameraCenter = center;
+  }
 
   /// 世界可活动范围(token 直引,视口无关)。
   ArenaVector get worldMin => Phase0aPresentationTokens.worldMin;
@@ -27,37 +40,76 @@ final class Phase0aStage {
     viewport.height - Phase0aPresentationTokens.safeMarginVertical,
   );
 
-  /// 世界点线性映射到 safeRect 内;右/下边界按 token 内缩,
-  /// 保证世界四角均落在 safeRect 半开区间内。
+  /// 当前可见的世界矩形。跟随中心在 arena 边缘会被 clamp，保证视野不越界。
+  Rect get cameraWorldRect {
+    final fullWidth = worldMax.x - worldMin.x;
+    final fullHeight = worldMax.y - worldMin.y;
+    final fraction = cameraCenter == null
+        ? 1.0
+        : Phase0aPresentationTokens.cameraWorldFraction;
+    final width = fullWidth * fraction;
+    final height = fullHeight * fraction;
+    final halfWidth = width / 2;
+    final halfHeight = height / 2;
+    final requested =
+        cameraCenter ??
+        ArenaVector(
+          (worldMin.x + worldMax.x) / 2,
+          (worldMin.y + worldMax.y) / 2,
+        );
+    final centerX = requested.x.clamp(
+      worldMin.x + halfWidth,
+      worldMax.x - halfWidth,
+    );
+    final centerY = requested.y.clamp(
+      worldMin.y + halfHeight,
+      worldMax.y - halfHeight,
+    );
+    return Rect.fromCenter(
+      center: Offset(centerX, centerY),
+      width: width,
+      height: height,
+    );
+  }
+
+  double get cameraWorldDiagonal {
+    final rect = cameraWorldRect;
+    return Offset(rect.width, rect.height).distance;
+  }
+
+  /// 世界点相对当前 camera 线性投影。故意不 clamp：camera 外脚点必须保留
+  /// 真实方向，供屏外提示与被 Stack 裁切的 actor/VFX 共用。
   Offset worldToScreen(ArenaVector world) {
     final rect = safeRect;
-    final spanX = worldMax.x - worldMin.x;
-    final spanY = worldMax.y - worldMin.y;
-    final tx = spanX == 0 ? 0.0 : (world.x - worldMin.x) / spanX;
-    final ty = spanY == 0 ? 0.0 : (world.y - worldMin.y) / spanY;
+    final camera = cameraWorldRect;
+    final tx = camera.width == 0 ? 0.0 : (world.x - camera.left) / camera.width;
+    final ty = camera.height == 0
+        ? 0.0
+        : (world.y - camera.top) / camera.height;
     final inset = Phase0aPresentationTokens.screenEdgeInset;
-    final dx = (rect.left + tx * rect.width).clamp(
-      rect.left,
-      rect.right - inset,
-    );
-    final dy = (rect.top + ty * rect.height).clamp(
-      rect.top,
-      rect.bottom - inset,
-    );
+    final dx = rect.left + tx * (rect.width - inset);
+    final dy = rect.top + ty * (rect.height - inset);
     return Offset(dx, dy);
   }
+
+  bool isWorldPointVisible(ArenaVector world) =>
+      safeRect.contains(worldToScreen(world));
 
   /// 屏幕点击位置 → 世界坐标。safeRect 外输入先 clamp，保证窗口边缘点击
   /// 仍产生有限、可复现的世界方向；与 [worldToScreen] 使用同一线性变换。
   ArenaVector screenToWorld(Offset screen) {
     final rect = safeRect;
-    final dx = screen.dx.clamp(rect.left, rect.right);
-    final dy = screen.dy.clamp(rect.top, rect.bottom);
-    final tx = rect.width == 0 ? 0.0 : (dx - rect.left) / rect.width;
-    final ty = rect.height == 0 ? 0.0 : (dy - rect.top) / rect.height;
+    final inset = Phase0aPresentationTokens.screenEdgeInset;
+    final projectionWidth = rect.width - inset;
+    final projectionHeight = rect.height - inset;
+    final dx = screen.dx.clamp(rect.left, rect.right - inset);
+    final dy = screen.dy.clamp(rect.top, rect.bottom - inset);
+    final tx = projectionWidth == 0 ? 0.0 : (dx - rect.left) / projectionWidth;
+    final ty = projectionHeight == 0 ? 0.0 : (dy - rect.top) / projectionHeight;
+    final camera = cameraWorldRect;
     return ArenaVector(
-      worldMin.x + tx * (worldMax.x - worldMin.x),
-      worldMin.y + ty * (worldMax.y - worldMin.y),
+      camera.left + tx * camera.width,
+      camera.top + ty * camera.height,
     );
   }
 

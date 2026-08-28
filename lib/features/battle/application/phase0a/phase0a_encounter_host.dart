@@ -131,7 +131,12 @@ final class Phase0aEncounterHost {
     required this.flow,
     this.mapping,
     this.visualAssetPathByActorId,
-  });
+    Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
+  }) : tokenBindingsByActorId = tokenBindingsByActorId == null
+           ? null
+           : Map<String, Phase0aEncounterTokenBinding>.unmodifiable(
+               tokenBindingsByActorId,
+             );
 
   factory Phase0aEncounterHost.fromRuntimeBindings({
     required MigratedCombatStageEncounterRoute route,
@@ -171,6 +176,7 @@ final class Phase0aEncounterHost {
     required Phase0aAttackTokenEnforcementRequestMapper tokenRequestMapper,
     required Phase0aEncounterObjectiveEventSource objectiveEventSource,
     Map<String, String>? visualAssetPathByActorId,
+    Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
   }) {
     final flow = Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
       plan: plan,
@@ -185,6 +191,7 @@ final class Phase0aEncounterHost {
       flow: flow,
       mapping: plan.mapping,
       visualAssetPathByActorId: visualAssetPathByActorId,
+      tokenBindingsByActorId: tokenBindingsByActorId,
     );
   }
 
@@ -196,12 +203,14 @@ final class Phase0aEncounterHost {
     required Phase0aBattleFlow flow,
     Phase0aEncounterMapping? mapping,
     Map<String, String>? visualAssetPathByActorId,
+    Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
   }) => Phase0aEncounterHost._(
     stageId: stageId,
     nextStageId: nextStageId,
     flow: flow,
     mapping: mapping,
     visualAssetPathByActorId: visualAssetPathByActorId,
+    tokenBindingsByActorId: tokenBindingsByActorId,
   );
 
   final String stageId;
@@ -209,6 +218,7 @@ final class Phase0aEncounterHost {
   final Phase0aBattleFlow flow;
   final Phase0aEncounterMapping? mapping;
   final Map<String, String>? visualAssetPathByActorId;
+  final Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId;
 
   List<Phase0aEvent> advanceManual({
     required double deltaSeconds,

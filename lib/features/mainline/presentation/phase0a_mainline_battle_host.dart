@@ -164,6 +164,15 @@ class _Phase0aMainlineBattleHostState
                 playerId: selectedMapping!.initialState.player.id,
                 combatants: selectedMapping.combatants,
                 assetPathByActorId: encounterHost.visualAssetPathByActorId,
+                threatsByActorId: encounterHost.tokenBindingsByActorId?.map(
+                  (actorId, token) => MapEntry(
+                    actorId,
+                    Phase0aActorThreatVisual(
+                      kind: token.kind,
+                      isHighImpact: token.isHighImpact,
+                    ),
+                  ),
+                ),
               );
         final selectedPlayerAdapter =
             selectedMapping?.playerAdapter ?? mapping!.playerAdapter;

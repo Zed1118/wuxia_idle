@@ -837,6 +837,7 @@ void main() {
         label: '聚怪涡旋',
       );
       final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(before.player.position);
       for (final outcome in pulled) {
         final pull = controller.feedback.singleWhere(
           (entry) =>
@@ -1025,6 +1026,7 @@ void main() {
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
         final stage = Phase0aStage(viewport: const Size(1280, 720));
+        stage.updateCameraCenter(controller.state.player.position);
         final safeCenter = stage.safeRect.center;
 
         var trailSeen = false;
@@ -1048,7 +1050,6 @@ void main() {
             trailSeen = true;
           }
         }
-
         expect(trailSeen, isTrue, reason: 'fixture 必须产生掌风');
         final palmEntry = controller.feedback.firstWhere(
           (e) => e.kind == Phase0aVfxKind.palmTrail,
@@ -1166,6 +1167,7 @@ void main() {
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
         final stage = Phase0aStage(viewport: const Size(1280, 720));
+        stage.updateCameraCenter(controller.state.player.position);
         final safeCenter = stage.safeRect.center;
 
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
@@ -1198,6 +1200,7 @@ void main() {
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
         final stage = Phase0aStage(viewport: const Size(1280, 720));
+        stage.updateCameraCenter(controller.state.player.position);
         final safeCenter = stage.safeRect.center;
 
         await tester.tap(find.byKey(clearSealKey));
@@ -1228,6 +1231,7 @@ void main() {
     testWidgets('VFX 坐标在 1440x900 视口下不裁切,且不在 safeRect.center', (tester) async {
       await pumpScreen(tester, viewport: const Size(1440, 900));
       final stage = Phase0aStage(viewport: const Size(1440, 900));
+      stage.updateCameraCenter(controller.state.player.position);
       final safeCenter = stage.safeRect.center;
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
@@ -1266,6 +1270,7 @@ void main() {
       const viewport = Size(1280, 720);
       await pumpScreen(tester, viewport: viewport);
       final stage = Phase0aStage(viewport: viewport);
+      stage.updateCameraCenter(controller.state.player.position);
 
       Phase0aVfxEntry? defeatEntry;
       Phase0aVfxEntry? lethalPopup;
@@ -1290,7 +1295,6 @@ void main() {
             )
             .single;
       }
-
       expect(defeatEntry, isNotNull, reason: 'fixture 必须产生一次单目标击败');
       expect(lethalPopup, isNotNull, reason: '击败同拍必须保留致死伤害数字');
       expect(
