@@ -83,9 +83,27 @@ token 分配、schema 或存档。camera 采用已批准的固定规则：可见
 - 最后完成：已实现 75% 玩家跟随 camera、未 clamp 动态可见性、主线 typed
   token metadata 只读透传、八方向聚合/三方向上限和无文字水墨 painter；真实
   `Phase0aBattleScreen` 在 1280×720 / 1440×900 与 8/16/24 actor 下通过。
-- 下一步：提交实现后执行 `remove_implementation` / `force_degenerate_value`
-  双向破坏证红，精确还原后进入逐文件 targeted、analyze、整仓 format、持锁全量。
+- 双向破坏证红：在实现 tip 上移除真实 `Phase0aBattleScreen` Stack overlay，
+  新屏外测试 11 项中 7 项失败；把三方向上限强制退化为 0，同样 7 项失败。
+  两次均已精确还原并以 `git diff --exit-code` 确认 clean，还原后新测试
+  11/11 重新转绿。
+- 下一步：在记录提交后的最终内容 tip 重做双向破坏证红，再进入逐文件
+  targeted、analyze、整仓 format、持锁全量。
 - 已跑验证：fresh worktree 已完成 `libisar.dylib` 拷贝、`flutter pub get`、
   `build_runner`（128 outputs）；新屏外测试 11/11、Stage 7/7、生产工厂 5/5、
   visual roster 12/12、主线 wiring 18/18、整屏 28/28，analyze 0 issue。
 - 阻塞项：无；后续如需改变已冻结 camera、威胁分类或视觉规则，重新触发 §10。
+
+## 2026-08-29 五小时挂机纪律
+
+- 工作窗口：自 01:03 CST 起至少 5 小时；若 M2 四项提前全部完成，则按宪法
+  停在 G2，不用等待补足时间。
+- 串行 WIP=1：屏外提示 → 聚合伤害 → 五关四模板 → 剑形态完整普攻链；
+  每一单 gate、合并、push、CI 核验完成后才开启下一单。
+- 最后 20% 窗口只做当前单收口、回归、证据和恢复点，不再开启新的实现单。
+- 合并与 push 沿用本任务宪法的明确授权；只处理工程绿色决策。任何 §9 停止
+  条件或 §10 红线立即停止，不在无人值守时自行拍板。
+- 已参考 Claude Code `/afk` 做 doctor 与 5h dry-run。官方 preflight 因仓库全局
+  历史遗留的 33 个 WIP / 203 个 READY 超过池上限而 `BLOCKED`；不绕过硬门、
+  不清理范围外历史分支、不启动嵌套 runner，由当前唯一 Codex 会话按以上等价
+  纪律持续推进。
