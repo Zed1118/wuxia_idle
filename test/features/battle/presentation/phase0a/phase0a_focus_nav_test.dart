@@ -26,7 +26,6 @@ void main() {
   const gatherSealKey = ValueKey('phase0a_seal_gather');
   const clearSealKey = ValueKey('phase0a_seal_clear');
   const retryButtonKey = ValueKey('phase0a_retry_button');
-  const playerStandeeKey = ValueKey<String>('phase0a_standee_player');
 
   /// 金边环断言:体例同 plaque_button_focus_ring_test(桌面键盘落点可见锁)。
   Finder goldRing() => find.byWidgetPredicate((w) {
@@ -219,7 +218,7 @@ void main() {
       await tester.pump();
       expect(ringInside(find.byKey(gatherSealKey)), findsOneWidget);
 
-      final before = tester.getCenter(find.byKey(playerStandeeKey));
+      final beforeWorldY = controller.state.player.position.y;
       await tester.sendKeyEvent(LogicalKeyboardKey.keyW);
       controller.step();
       await tester.pump();
@@ -230,10 +229,10 @@ void main() {
                   .round(),
         ),
       );
-      final after = tester.getCenter(find.byKey(playerStandeeKey));
+      final afterWorldY = controller.state.player.position.y;
       expect(
-        before.dy - after.dy,
-        greaterThan(0),
+        afterWorldY,
+        lessThan(beforeWorldY),
         reason: '焦点在印上时 W 必须冒泡到屏幕 handler 并驱动上移',
       );
     });
