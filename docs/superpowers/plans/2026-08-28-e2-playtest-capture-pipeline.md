@@ -33,8 +33,15 @@
 
 ## 当前恢复点
 
-- 状态：`WIP`，开工保护与只读审计已完成，实现未开始。
-- 最后完成：核对基线/分支/clean，三槽冷备与 `cmp`，录屏权限 1 秒探针，复核 17 文件静态截图管线与 D1 临时 Swift 脚本。
-- 下一步：新增工具与测试，先用注入 fixture/stub 跑定向自测，再构建真 app 校准动作。
-- 已跑验证：录屏 probe 产出 H.264 `4096x2304` / `0.853333s`；三槽备份与现场均 `cmp=0`。
-- 阻塞项：暂无；待实测 `screencapture -v -l<windowId>` 的单窗录制和 slot1 生产重打路径。
+- 状态：`READY`；实现提交 `b0ba6a04`，本记录提交后用空 `[READY]` tip 冻结，并在最终 tip 后生成 ignored 审计收据。
+- 最后完成：生产 `stage_01_03` 首用例已产出录屏、manifest 与 `entry / first_contact / skill_release / settlement` 四帧；slot1 收工 sha256 前缀仍为 `9a79f3e1`，本轮未再驱动游戏。
+- 下一步：由协调者独立复跑工具、破坏证红、首用例与 receipt/tip 绑定检查；本执行端不自签正式验收，不 push/merge/main。
+- 已跑验证：
+  - 工具正常态：`cgevent_driver_test.py` 3/3、`extract_keyframes_test.py` 2/2、`write_playtest_manifest_test.py` 2/2、`playtest_capture_test.sh` PASS。
+  - 删除实现支点：删除 manifest 的 `actions.window_sample_count` 后，`write_playtest_manifest_test.py` 实测 `errors=1`；精确反向补丁还原。
+  - 强制退化值：将 `save_protection.restored` 强制为 `false` 后，`write_playtest_manifest_test.py` 实测 `failures=1`；精确反向补丁还原，复跑 2/2 OK，`git diff --exit-code` 为 0。
+  - analyze：`No issues found! (ran in 92.4s)`。
+  - format：`Formatted 1626 files (0 changed) in 16.67 seconds.`。
+  - 带锁全量：`12:32 +5643: All tests passed!`，`[E]=0`，退出 0，锁已释放。
+  - `git diff --check 1ba913a6..HEAD` 退出 0；`lib/` 与禁区改动均为 0。
+- 阻塞项：无；候选 READY 不等于协调者独立验收或集成/main 完成。
