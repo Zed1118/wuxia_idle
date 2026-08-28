@@ -9,14 +9,23 @@ import 'phase0a_presentation_tokens.dart';
 /// 纯几何映射,不做任何战斗结算;世界范围与边距全部取自
 /// [Phase0aPresentationTokens]。
 final class Phase0aStage {
-  Phase0aStage({required this.viewport, this.cameraCenter});
+  Phase0aStage({required this.viewport, ArenaVector? cameraCenter})
+    : _cameraCenter = cameraCenter;
 
   /// 当前视口尺寸(像素)。
   final Size viewport;
 
   /// null 保持完整 arena 投影；生产 battle screen 传玩家脚点，启用 75%
   /// camera-aware 视野。camera 只改变表现投影，不改变 domain arena。
-  final ArenaVector? cameraCenter;
+  ArenaVector? _cameraCenter;
+
+  ArenaVector? get cameraCenter => _cameraCenter;
+
+  /// 同一帧几何见证可在战斗状态推进后更新玩家脚点，避免重建 viewport
+  /// 相关对象；生产 build 仍通过构造参数逐帧提供同一权威中心。
+  void updateCameraCenter(ArenaVector center) {
+    _cameraCenter = center;
+  }
 
   /// 世界可活动范围(token 直引,视口无关)。
   ArenaVector get worldMin => Phase0aPresentationTokens.worldMin;

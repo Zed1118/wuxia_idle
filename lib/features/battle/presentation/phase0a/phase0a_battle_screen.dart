@@ -62,22 +62,31 @@ final class _ActorRenderMotion {
   _ActorRenderMotion(ArenaVector position)
     : current = position,
       _from = position,
-      _target = position;
+      _target = position,
+      _visualStride = const ArenaVector(0, 0);
 
   ArenaVector current;
   ArenaVector _from;
   ArenaVector _target;
+  ArenaVector _visualStride;
   double _elapsedSeconds = 0;
+
+  ArenaVector get visualStride => _visualStride;
 
   void retarget(ArenaVector target) {
     if (target == _target) return;
+    _visualStride = target - _target;
     _from = current;
     _target = target;
     _elapsedSeconds = 0;
   }
 
   bool advance(double deltaSeconds, double durationSeconds) {
-    if (current == _target) return false;
+    if (current == _target) {
+      if (_visualStride == const ArenaVector(0, 0)) return false;
+      _visualStride = const ArenaVector(0, 0);
+      return true;
+    }
     _elapsedSeconds = (_elapsedSeconds + deltaSeconds).clamp(
       0,
       durationSeconds,
@@ -914,23 +923,49 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
               ),
         );
+    final stride = actor.side == Phase0aSide.player
+        ? _actorRenderMotions[actor.id]?.visualStride
+        : null;
+    final strideOffset = stride == null
+        ? Offset.zero
+        : Offset(
+            stride.x.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
+            stride.y.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
+          );
     return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,
       height: height,
-      child: RepaintBoundary(
-        key: ValueKey('phase0a_actor_${actor.id}'),
-        child: _ActorStandee(
-          key: ValueKey('phase0a_standee_${actor.id}'),
-          actor: actor,
-          visual: controller.roster.visualFor(actor.id),
-          guardianWardActive: guardianWardActive,
-          isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
-          isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
-          isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
-          guardianLabelOffsetX: guardianLabelOffsetX,
+      child: Transform.translate(
+        offset: strideOffset,
+        child: RepaintBoundary(
+          key: ValueKey('phase0a_actor_${actor.id}'),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: _ActorStandee(
+                  actor: actor,
+                  visual: controller.roster.visualFor(actor.id),
+                  guardianWardActive: guardianWardActive,
+                  isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+                  isHealthEmphasized: _hpEmphasisRemaining.containsKey(
+                    actor.id,
+                  ),
+                  isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+                  guardianLabelOffsetX: guardianLabelOffsetX,
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox.shrink(
+                  key: ValueKey('phase0a_standee_${actor.id}'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2042,7 +2077,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
       child: Opacity(
         opacity: _feedbackOpacity(held.progress),
         child: Transform.translate(
-          offset: Offset(-12, -held.progress * 34),
+          offset: Offset(-12, -held.progress * 64),
           child: Transform.scale(
             scale:
                 0.84 +

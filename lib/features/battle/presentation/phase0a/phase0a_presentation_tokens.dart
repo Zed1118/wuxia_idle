@@ -58,6 +58,7 @@ abstract final class Phase0aPresentationTokens {
 
   /// 角色脚底在该屏幕像素带内交叉时保持既有绘制顺序，避免近身缠斗抖层。
   static const double actorLayerHysteresisPixels = 10;
+  static const double actorStrideSwayPixels = 4;
   static const double actorActionPulseSeconds = 0.16;
   static const double actorHitScale = 0.94;
   static const double actorActionScale = 1.035;
