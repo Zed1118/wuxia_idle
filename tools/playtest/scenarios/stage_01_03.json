@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "stage_01_03_production_replay",
+  "stage_id": "stage_01_03",
+  "production_entry": true,
+  "entry_path": [
+    "save_select_slot1",
+    "main_menu_settings_auto_play",
+    "main_menu_current_objective",
+    "chapter_list",
+    "chapter_1",
+    "stage_01_03_visible_replay"
+  ],
+  "recording_max_seconds": 125,
+  "actions": [
+    {"id": "wait_save_select", "type": "wait", "duration_ms": 5000},
+    {"id": "select_slot1", "type": "click", "x": 0.50, "y": 0.35, "delay_after_ms": 5000},
+    {"id": "dismiss_offline_recap", "type": "click", "x": 0.60, "y": 0.74, "delay_after_ms": 2500},
+    {"id": "open_settings", "type": "click", "x": 0.945, "y": 0.065, "delay_after_ms": 2000},
+    {"id": "enable_auto_play", "type": "click", "x": 0.595, "y": 0.52, "delay_after_ms": 1000},
+    {"id": "close_settings", "type": "click", "x": 0.60, "y": 0.88, "delay_after_ms": 2000},
+    {"id": "open_mainline_chapters", "type": "click", "x": 0.52, "y": 0.32, "delay_after_ms": 3000},
+    {"id": "open_chapter1", "type": "click", "x": 0.32, "y": 0.59, "delay_after_ms": 3500},
+    {"id": "scroll_to_stage3", "type": "scroll", "delta_y": -12, "delay_after_ms": 2500},
+    {"id": "open_stage3", "type": "click", "x": 0.52, "y": 0.79, "delay_after_ms": 3000},
+    {"id": "select_visible_replay", "type": "click", "x": 0.51, "y": 0.52, "delay_after_ms": 3000},
+    {"id": "select_participant", "type": "click", "x": 0.50, "y": 0.54, "delay_after_ms": 2500},
+
+    {"id": "mark_entry", "type": "checkpoint", "label": "entry"},
+    {"id": "wait_for_contact", "type": "wait", "duration_ms": 2000},
+    {"id": "mark_first_contact", "type": "checkpoint", "label": "first_contact"},
+    {"id": "wait_for_bot_skill", "type": "wait", "duration_ms": 3000},
+    {"id": "skill_probe", "type": "key", "key": "2", "hold_ms": 80, "delay_after_ms": 250},
+    {"id": "mark_skill_release", "type": "checkpoint", "label": "skill_release"},
+    {"id": "wait_for_settlement", "type": "wait", "duration_ms": 70000},
+    {"id": "mark_settlement", "type": "checkpoint", "label": "settlement"}
+  ]
+}
