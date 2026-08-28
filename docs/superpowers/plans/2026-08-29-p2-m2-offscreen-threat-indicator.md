@@ -14,32 +14,78 @@
 - `§21.4` (`:1420-1428`) 规定 1280×720 / 1440×900、8/16/24 活跃单位、最多三方向、无高饱和 Material 矩形感的视觉验收。
 - 不改数值、schema、存档、战斗机制、文案或键位语义；不触碰禁区文件。
 
-## 待用户拍板的表现方案
+## 已拍板的表现方案
 
-推荐一次性批准以下整套规则：
+用户于 2026-08-29 回答“按推荐方案执行”，以下整套规则已获授权：
 
 1. 边缘形态：使用无文字、非矩形的水墨尖标，尖端指向威胁；Boss 用克制绛红，其他类型用墨/青。
 2. 类型与临近：在尖标内用简单几何纹样区分冲锋/远程蓄力/支援/Boss，不新增玩家文案；临近程度用三档透明度与脉冲强度表达。
 3. 三方向取舍：固定优先级 Boss → 已进入蓄力/冲锋的高影响威胁 → 支援 → 其他远程蓄力；同级按临近程度、稳定 actor id 排序，同一方向聚合为一个提示。
 
-## 验收标准（拍板后执行）
+## 验收标准
 
 - 生产接线：只从真实 battle state/actor 运行态派生，在 `Phase0aBattleScreen` 实际 Stack 渲染；不使用手设屏外布尔值的孤立假组件代替。
 - 真实双视口和 8/16/24 活跃单位下最多三方向，HUD 不遮挡、无 overflow，威胁进入/离开屏幕时提示正确出现/消失。
 - 实现 commit 后两向破坏证红，逐文件 targeted、analyze、整仓 format、持锁全量、diff check、receipt 与持锁 gate 通过；合并/push 后核 CI `conclusion` 与 `headSha`。
 - 残留风险：最终视觉手感仍属 G2 用户真人验收，自动测试不替代主观签字。
 
+## 开工后发现的架构实况偏差
+
+视觉方案获批后按宪法 §2.2 / §2.6 重新定位生产路径，发现当前代码无法表达已冻结验收语义：
+
+1. `Phase0aStage.worldToScreen` 在
+   `lib/features/battle/presentation/phase0a/phase0a_stage.dart:30-48`
+   把所有世界锚点 clamp 到 `safeRect`；`Phase0aBattleScreen` 在
+   `phase0a_battle_screen.dart:848-894` 直接使用该结果摆放 actor。当前战场
+   没有 camera/window，合法 arena actor 不会按几何意义离开视口。
+2. `Phase0aActor` 在
+   `lib/features/battle/domain/phase0a/phase0a_combat_model.dart:141-245`
+   只有 `isBoss` 与 Boss `chargingCast` 等状态；没有统一的“远程蓄力中”、
+   “支援角色”或当前 `AttackTokenKind` 运行态，不能从 battle state 诚实区分
+   四种提示纹样。
+3. typed token 元数据只存于
+   `lib/features/mainline/application/phase0a_mainline_production_encounter_factory.dart:99-152`
+   的局部 map，并在 `:200-217` 的 intent mapper 闭包消费，没有进入
+   `Phase0aBattleController` / presentation。当前生产
+   `data/combat/runtime_bindings.yaml:42-78` 四类行为的 `is_offscreen` 还全部为
+   `false`，也不能作为现成的真实可见性来源。
+4. 因而现在直接施工只能采用手设 `isOffscreen`、按 actor id 猜角色，或把
+   “靠近 arena 边缘”冒充“离开 viewport”；三者均违反本计划“真实 battle
+   state/actor 运行态派生”和双向破坏证红的判定。
+
+该偏差命中宪法 §10“方案范围与现有架构存在不可调和冲突”，执行端不得自行
+选择新的 camera 语义、运行态合同或数据配置。
+
+## 待用户拍板的架构路线
+
+推荐 **A（忠实语义）**：先把本单扩成一个受控纵切——新增 camera-aware
+未 clamp 投影/动态可见性，并把已有 typed token kind 与真实 windup 状态通过
+只读 presentation snapshot 暴露给 `Phase0aBattleScreen`；不改伤害、AI、
+token 分配、schema 或存档。camera 的世界跨度/跟随规则仍需用户明确批准，
+否则数值与玩家视野均属执行端代拍。
+
+- B（静态元数据近似）：直接把 runtime binding 的 `is_offscreen` / kind 透传
+  到 UI。改动小，但当前全为 false，且它不会随 actor 进出视口动态变化，不能
+  满足已冻结验收，不推荐。
+- C（顺延）：保持本单 `[BLOCKED]`，不降低判据；是否允许跳到下一优先项需用户
+  明确改动 §3 顺序。
+
 ## 任务切片
 
-1. 等待用户拍板上述表现方案。
-2. 重新定位视口变换、actor 运行态和实际 Stack 消费点，先写生产路径红测。
-3. 实现候选选择/方向聚合/边缘渲染与双视口验收。
-4. 完成双向破坏证红、九步验收、gate、合并、push 和 CI 核验。
+1. 已完成：用户拍板表现方案。
+2. 已完成：重新定位视口变换、actor 运行态和实际 Stack 消费点；确认架构缺口。
+3. 等待用户选择 A/B/C；选择 A 时还需冻结 camera 世界跨度/跟随规则。
+4. 获得授权后先写真实生产路径红测，再实现候选选择/方向聚合/边缘渲染与双视口验收。
+5. 完成双向破坏证红、九步验收、gate、合并、push 和 CI 核验。
 
 ## 当前恢复点
 
 - 状态：`[BLOCKED]`。
-- 最后完成：已重读权威方案 `§16.5` / `§21.4`，范围与数量上限已冻结，worktree 预热已完成。
-- 下一步：用户对“待用户拍板的表现方案”回答是/否；“是”则直接恢复实现，“否”则按用户给出的替代外观/优先级执行。
-- 已跑验证：fresh worktree 已完成 `libisar.dylib` 拷贝、`flutter pub get`、`build_runner`（128 outputs）；未写生产代码，未跑功能验证。
-- 阻塞项：屏外提示是玩家可见 UI 表现变更，触发宪法 `§10`；权威方案冻结了功能语义，但未冻结具体外观与取舍表现，不得由执行端代拍。
+- 最后完成：表现方案已获用户批准；生产路径复核发现 stage 无 camera/offscreen
+  几何、actor 无完整威胁分类运行态、typed token metadata 未进入 presentation。
+- 下一步：用户选择 A/B/C；若选 A，同时明确批准 camera-aware 视野规则由本单
+  设计并落入 `Phase0aPresentationTokens`，或给出具体世界跨度/跟随规则。
+- 已跑验证：fresh worktree 已完成 `libisar.dylib` 拷贝、`flutter pub get`、
+  `build_runner`（128 outputs）；未写生产代码，未伪造红测或 gate 证据。
+- 阻塞项：命中宪法 §10“方案范围与现有架构存在不可调和冲突”；继续需要新增
+  camera/visibility 与 typed presentation snapshot 的架构及玩家视野决策。
