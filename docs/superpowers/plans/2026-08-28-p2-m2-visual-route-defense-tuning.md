@@ -27,8 +27,15 @@
 
 ## 当前恢复点
 
-- 状态：WIP，实现已完成，待提交后双向破坏证红。
+- 状态：WIP，实现与首轮完整验证已通过，待冻结最终 READY tip、重跑 tip-bound 双向破坏证红和 gate。
 - 最后完成：同一 `Phase0aDefenseTuningMapper` 结果已传入玩家与敌人 debug adapter；真实键盘入口和护盾结算测试已新增。
-- 下一步：提交实现，依次执行 `remove_implementation` 与 `force_degenerate_value` 破坏证红并精确还原。
-- 已跑验证：`flutter test --no-pub test/features/debug/presentation/visual_route_defense_tuning_test.dart` 尾行 `00:00 +3: All tests passed!`，`[E]=0`。
+- 下一步：提交本证据更新、打 `[READY]` 空 commit，在该最终 tip 再做两向破坏证红，写 external receipt 并持锁跑 gate。
+- 已跑验证：
+  - `remove_implementation`：完整移除玩家/敌人 tuning 传递后，同一 targeted 尾行 `00:00 +0 -3: Some tests failed.`，3 个 `[E]`；精确还原后 `git diff --quiet` rc=0、状态空。
+  - `force_degenerate_value`：强制 mapper 结果为 null 后，同一 targeted 尾行 `00:00 +0 -3: Some tests failed.`，3 个 `[E]`；精确还原后 `git diff --quiet` rc=0、状态空。
+  - 逐文件 targeted：visual route `00:00 +3: All tests passed!`；debug fixture `00:01 +8: All tests passed!`；defense keyboard `00:00 +3: All tests passed!`；三者 `[E]=0`。
+  - analyze：`No issues found! (ran in 16.4s)`。
+  - format：`Formatted 1628 files (0 changed) in 3.73 seconds.`。
+  - 持锁全量：`06:06 +5653: All tests passed!`，`[E]=0`，锁已释放。
+  - `git diff --check 274a3b2ec32871bfd3c735fd75bdffa528bdb2e6..b923244d64469969de6e9d30daeec3a783597329` rc=0，工作树 clean。
 - 阻塞项：无。
