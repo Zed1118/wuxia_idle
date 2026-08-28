@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -407,41 +408,41 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
     });
 
-    testWidgets('D/A/S/W 各一步,玩家立绘屏幕脚点按对应方向移动', (tester) async {
+    testWidgets('D/A/S/W 各一步,世界坐标按方向移动且玩家保持在 camera 视野内', (tester) async {
       await pumpScreen(tester);
 
       final cases =
           <
             (
               LogicalKeyboardKey,
-              double Function(Offset before, Offset after),
+              double Function(ArenaVector before, ArenaVector after),
               String,
             )
           >[
             (
               LogicalKeyboardKey.keyD,
-              (before, after) => after.dx - before.dx,
+              (before, after) => after.x - before.x,
               'D 右移',
             ),
             (
               LogicalKeyboardKey.keyA,
-              (before, after) => before.dx - after.dx,
+              (before, after) => before.x - after.x,
               'A 左移',
             ),
             (
               LogicalKeyboardKey.keyS,
-              (before, after) => after.dy - before.dy,
+              (before, after) => after.y - before.y,
               'S 下移(y 越大越靠前)',
             ),
             (
               LogicalKeyboardKey.keyW,
-              (before, after) => before.dy - after.dy,
+              (before, after) => before.y - after.y,
               'W 上移',
             ),
           ];
 
       for (final (key, delta, label) in cases) {
-        final before = tester.getCenter(find.byKey(standeeKey('player')));
+        final before = controller.state.player.position;
         await tester.sendKeyEvent(key);
         final expectedDuration = Duration(
           microseconds:
@@ -451,19 +452,16 @@ void main() {
         step(tester);
         await tester.pump();
         await tester.pump(expectedDuration ~/ 2);
-        final middle = tester.getCenter(find.byKey(standeeKey('player')));
-        expect(
-          delta(before, middle),
-          greaterThan(0),
-          reason: '$label:隐式动画中间帧必须朝目标移动',
-        );
         await tester.pump(expectedDuration ~/ 2);
-        final after = tester.getCenter(find.byKey(standeeKey('player')));
+        final after = controller.state.player.position;
         expect(
           delta(before, after),
           greaterThan(0),
-          reason: '$label:屏幕脚点必须真实移动',
+          reason: '$label:domain 世界坐标必须真实移动',
         );
+        final screenCenter = tester.getCenter(find.byKey(standeeKey('player')));
+        expect(screenCenter.dx, inInclusiveRange(0, 1280));
+        expect(screenCenter.dy, inInclusiveRange(0, 720));
       }
     });
   });
@@ -495,7 +493,10 @@ void main() {
 
     testWidgets('舞台 primary click 入队一次普攻并按点击方向瞄准', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final stage = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: controller.state.player.position,
+      );
       final player = stage.worldToScreen(controller.state.player.position);
       final target = player + const Offset(240, -80);
 
@@ -509,7 +510,10 @@ void main() {
 
     testWidgets('primary pointer down 持续攻击，pointer up 后停止重复攻击', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final stage = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: controller.state.player.position,
+      );
       final target =
           stage.worldToScreen(controller.state.player.position) +
           const Offset(220, 0);
@@ -540,7 +544,10 @@ void main() {
 
     testWidgets('非 primary、暂停、终局舞台点击均不产生普攻', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final stage = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: controller.state.player.position,
+      );
       final target =
           stage.worldToScreen(controller.state.player.position) +
           const Offset(180, 20);
@@ -836,7 +843,10 @@ void main() {
         find.byKey(gatherVortexKey),
         label: '聚怪涡旋',
       );
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      final stage = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: before.player.position,
+      );
       for (final outcome in pulled) {
         final pull = controller.feedback.singleWhere(
           (entry) =>
@@ -1024,7 +1034,11 @@ void main() {
       '掌风 VFX 中心 = source/vfxTarget 屏幕连线中点,且不在 safeRect.center (1280x720)',
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
-        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final cameraCenter = controller.state.player.position;
+        final stage = Phase0aStage(
+          viewport: const Size(1280, 720),
+          cameraCenter: cameraCenter,
+        );
         final safeCenter = stage.safeRect.center;
 
         var trailSeen = false;
@@ -1135,7 +1149,13 @@ void main() {
 
       final damageFinder = find.text('${hit!.resolvedDamage}').first;
       expect(damageFinder, findsOneWidget);
-      final initialCenter = tester.getCenter(damageFinder);
+      double popupLift(Finder finder) => tester
+          .widgetList<Transform>(
+            find.ancestor(of: finder, matching: find.byType(Transform)),
+          )
+          .map((transform) => transform.transform.storage[13])
+          .reduce(math.min);
+      final initialLift = popupLift(damageFinder);
       final initialOpacity = tester.widget<Opacity>(
         find.ancestor(of: damageFinder, matching: find.byType(Opacity)).first,
       );
@@ -1150,11 +1170,11 @@ void main() {
       await tester.pump(halfLife);
 
       final middleFinder = find.text('${hit.resolvedDamage}').first;
-      final middleCenter = tester.getCenter(middleFinder);
+      final middleLift = popupLift(middleFinder);
       final middleOpacity = tester.widget<Opacity>(
         find.ancestor(of: middleFinder, matching: find.byType(Opacity)).first,
       );
-      expect(middleCenter.dy, lessThan(initialCenter.dy));
+      expect(middleLift, lessThan(initialLift), reason: '伤害数字局部动画必须向上抬升');
       expect(middleOpacity.opacity, greaterThan(initialOpacity.opacity));
 
       await tester.pump(halfLife + const Duration(milliseconds: 1));
@@ -1165,7 +1185,10 @@ void main() {
       'Q 涡旋中心 = worldToScreen(anchor),且不在 safeRect.center (1280x720)',
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
-        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final stage = Phase0aStage(
+          viewport: const Size(1280, 720),
+          cameraCenter: controller.state.player.position,
+        );
         final safeCenter = stage.safeRect.center;
 
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
@@ -1197,7 +1220,10 @@ void main() {
       'R 墨爆中心 = worldToScreen(anchor),且不在 safeRect.center (1280x720)',
       (tester) async {
         await pumpScreen(tester, viewport: const Size(1280, 720));
-        final stage = Phase0aStage(viewport: const Size(1280, 720));
+        final stage = Phase0aStage(
+          viewport: const Size(1280, 720),
+          cameraCenter: controller.state.player.position,
+        );
         final safeCenter = stage.safeRect.center;
 
         await tester.tap(find.byKey(clearSealKey));
@@ -1227,7 +1253,10 @@ void main() {
 
     testWidgets('VFX 坐标在 1440x900 视口下不裁切,且不在 safeRect.center', (tester) async {
       await pumpScreen(tester, viewport: const Size(1440, 900));
-      final stage = Phase0aStage(viewport: const Size(1440, 900));
+      final stage = Phase0aStage(
+        viewport: const Size(1440, 900),
+        cameraCenter: controller.state.player.position,
+      );
       final safeCenter = stage.safeRect.center;
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
@@ -1265,7 +1294,10 @@ void main() {
     testWidgets('致死伤害数字与死亡墨散保留被移除敌人的事件位置 (1280x720)', (tester) async {
       const viewport = Size(1280, 720);
       await pumpScreen(tester, viewport: viewport);
-      final stage = Phase0aStage(viewport: viewport);
+      final stage = Phase0aStage(
+        viewport: viewport,
+        cameraCenter: controller.state.player.position,
+      );
 
       Phase0aVfxEntry? defeatEntry;
       Phase0aVfxEntry? lethalPopup;

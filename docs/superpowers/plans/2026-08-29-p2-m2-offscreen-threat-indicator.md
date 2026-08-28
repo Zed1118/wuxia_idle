@@ -80,9 +80,12 @@ token 分配、schema 或存档。camera 采用已批准的固定规则：可见
 ## 当前恢复点
 
 - 状态：`[WIP]`。
-- 最后完成：表现方案、架构路线 A 与 75% 玩家跟随 camera 规则均已获用户批准。
-- 下一步：把 typed token kind 只读透传到 presentation，先写真实
-  `Phase0aBattleScreen` 红测，再实现未 clamp camera 投影和屏外指示 painter。
+- 最后完成：已实现 75% 玩家跟随 camera、未 clamp 动态可见性、主线 typed
+  token metadata 只读透传、八方向聚合/三方向上限和无文字水墨 painter；真实
+  `Phase0aBattleScreen` 在 1280×720 / 1440×900 与 8/16/24 actor 下通过。
+- 下一步：提交实现后执行 `remove_implementation` / `force_degenerate_value`
+  双向破坏证红，精确还原后进入逐文件 targeted、analyze、整仓 format、持锁全量。
 - 已跑验证：fresh worktree 已完成 `libisar.dylib` 拷贝、`flutter pub get`、
-  `build_runner`（128 outputs）；未写生产代码，未伪造红测或 gate 证据。
+  `build_runner`（128 outputs）；新屏外测试 11/11、Stage 7/7、生产工厂 5/5、
+  visual roster 12/12、主线 wiring 18/18、整屏 28/28，analyze 0 issue。
 - 阻塞项：无；后续如需改变已冻结 camera、威胁分类或视觉规则，重新触发 §10。

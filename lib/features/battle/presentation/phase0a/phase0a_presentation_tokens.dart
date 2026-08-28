@@ -8,6 +8,10 @@ abstract final class Phase0aPresentationTokens {
   static const ArenaVector worldMin = ArenaVector(-640, -260);
   static const ArenaVector worldMax = ArenaVector(640, 260);
 
+  /// 玩家跟随 camera 的世界跨度占完整 arena 的比例。
+  /// 仅影响表现投影，不写回领域位置或战斗结算。
+  static const double cameraWorldFraction = 0.75;
+
   /// safeRect 相对视口的四向内边距(像素)。
   static const double safeMarginHorizontal = 32;
   static const double safeMarginVertical = 24;
@@ -15,6 +19,22 @@ abstract final class Phase0aPresentationTokens {
   /// 世界四角映射时距 safeRect 右/下边界的内缩像素,
   /// 保证角点落在 Rect.contains 的半开区间内。
   static const double screenEdgeInset = 1;
+
+  /// 屏外关键威胁提示：最多三方向，内缩后沿视口边缘排布。
+  static const int maxOffscreenIndicatorDirections = 3;
+  static const int offscreenDirectionSectors = 8;
+  static const double offscreenIndicatorEdgeInset = 52;
+  static const double offscreenIndicatorLength = 38;
+  static const double offscreenIndicatorHalfWidth = 18;
+  static const double offscreenIndicatorStrokeWidth = 2.4;
+  static const double offscreenIndicatorInnerStrokeWidth = 2;
+  static const double offscreenIndicatorNearRatio = 0.65;
+  static const double offscreenIndicatorMediumRatio = 1.0;
+  static const double offscreenIndicatorNearOpacity = 0.92;
+  static const double offscreenIndicatorMediumOpacity = 0.72;
+  static const double offscreenIndicatorFarOpacity = 0.54;
+  static const double offscreenIndicatorPulseRadiansPerFrame = 0.12;
+  static const double offscreenIndicatorPulseOpacity = 0.08;
 
   /// 纵深缩放范围:worldMin.y 处取 [depthScaleMin],
   /// worldMax.y 处取 [depthScaleMax],中间线性插值。

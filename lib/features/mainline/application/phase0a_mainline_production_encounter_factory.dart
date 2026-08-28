@@ -225,6 +225,7 @@ Phase0aEncounterHost _assemble({
     tokenRequestMapper: tokenMapper,
     objectiveEventSource: objectiveSource,
     visualAssetPathByActorId: visualAssetPathByActorId,
+    tokenBindingsByActorId: tokensByActor,
   );
 }
 

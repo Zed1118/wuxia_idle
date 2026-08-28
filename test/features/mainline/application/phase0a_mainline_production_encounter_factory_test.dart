@@ -173,6 +173,15 @@ void main() {
         playerId: mapping.initialState.player.id,
         combatants: mapping.combatants,
         assetPathByActorId: host.visualAssetPathByActorId,
+        threatsByActorId: host.tokenBindingsByActorId?.map(
+          (actorId, token) => MapEntry(
+            actorId,
+            Phase0aActorThreatVisual(
+              kind: token.kind,
+              isHighImpact: token.isHighImpact,
+            ),
+          ),
+        ),
       );
       for (final actorId in enemyIds) {
         expect(roster.visualFor(actorId).assetPath, startsWith('assets/'));
@@ -183,6 +192,18 @@ void main() {
         AttackTokenKind.charge,
         AttackTokenKind.support,
       });
+      expect(host.tokenBindingsByActorId, hasLength(40));
+      expect(
+        enemyIds
+            .map((actorId) => roster.visualFor(actorId).threat!.kind)
+            .toSet(),
+        {
+          AttackTokenKind.melee,
+          AttackTokenKind.ranged,
+          AttackTokenKind.charge,
+          AttackTokenKind.support,
+        },
+      );
     },
   );
 
