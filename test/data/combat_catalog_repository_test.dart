@@ -263,9 +263,9 @@ stage_assignments:
       );
       expect(contract.spawnDirector.config.activeLimit, 12);
       expect(contract.spawnDirector.state.units, hasLength(40));
-      // TUNE-ATTACK-TOKEN-01 用户拍板 B(2026-08-26)冻结值,经生产 YAML 加载。
-      expect(contract.attackTokenBudgets.melee, 2);
-      expect(contract.attackTokenBudgets.ranged, 2);
+      // stage_01_03 的当前攻击令牌预算经生产 YAML 加载。
+      expect(contract.attackTokenBudgets.melee, 1);
+      expect(contract.attackTokenBudgets.ranged, 1);
       expect(contract.attackTokenBudgets.charge, 1);
       expect(contract.attackTokenBudgets.support, 1);
     },

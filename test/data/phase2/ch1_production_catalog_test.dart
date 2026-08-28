@@ -183,9 +183,9 @@ void main() {
     expect(encounter.spawnConfig.reinforcementThreshold, 3);
     expect(encounter.spawnConfig.entryWarningTicks, 30);
     expect(encounter.spawnConfig.attackGraceTicks, 15);
-    // TUNE-ATTACK-TOKEN-01 用户拍板 B(2026-08-26)冻结值,经生产 YAML 加载。
-    expect(encounter.tokenBudgets.melee, 2);
-    expect(encounter.tokenBudgets.ranged, 2);
+    // stage_01_03 的当前攻击令牌预算经生产 YAML 加载。
+    expect(encounter.tokenBudgets.melee, 1);
+    expect(encounter.tokenBudgets.ranged, 1);
     expect(encounter.tokenBudgets.charge, 1);
     expect(encounter.tokenBudgets.support, 1);
 
@@ -204,6 +204,23 @@ void main() {
           .map((variant) => variant.roleId)
           .toSet(),
       _canonicalRoles,
+    );
+  });
+
+  test('stage_01_03 production token budget stays in its plan bound', () async {
+    final manifest = await _loadProductionCatalog();
+    final encounter = manifest.encounterForStage('stage_01_03')!;
+    final tokenBudgets = encounter.tokenBudgets;
+    final totalTokenBudget =
+        tokenBudgets.melee +
+        tokenBudgets.ranged +
+        tokenBudgets.charge +
+        tokenBudgets.support;
+
+    expect(
+      totalTokenBudget,
+      inInclusiveRange(2, 4),
+      reason: 'stage_01_03 攻击令牌总预算须符合二阶段优化方案 :1025 的 [2,4]',
     );
   });
 

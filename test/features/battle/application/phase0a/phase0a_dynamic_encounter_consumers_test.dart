@@ -38,7 +38,7 @@ final class _NoDamage implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   }) => const Phase0aResolvedHit(isHit: false, isCritical: false, damage: 0);
 }
@@ -76,6 +76,10 @@ _Built _buildFlow() {
     attackHalfArcRadians: 3.14,
     attackCooldownSeconds: 0,
     attackQiDelta: 0,
+    postureBasicPowerMultiplier: 1,
+    attackPowerMultiplier: 1,
+    gatherPowerMultiplier: 1,
+    clearPowerMultiplier: 1,
     gatherSlot: 'gather',
     gatherRingRadius: 1,
     gatherEffectRadius: 1,
@@ -99,6 +103,8 @@ _Built _buildFlow() {
       attackRange: 100,
       attackHalfArcRadians: 3.14,
       attackCooldownSeconds: 0,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
     ),
     damageResolver: const _NoDamage(),
   );

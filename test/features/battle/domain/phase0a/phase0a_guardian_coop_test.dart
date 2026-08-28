@@ -80,6 +80,8 @@ void main() {
       effectRadius: 100,
       cooldownSeconds: 2,
       actionCooldownSeconds: 1,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.heavy,
     );
     final boss = actor(
       id: 'boss',
@@ -122,6 +124,8 @@ void main() {
       moveKind: Phase0aMoveKind.light,
       aimDirection: ArenaVector(-1, 0),
       qiDelta: 4,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.light,
     ),
     const Phase0aAttackIntent(
       actorId: 'g_a',
@@ -131,6 +135,8 @@ void main() {
       moveKind: Phase0aMoveKind.light,
       aimDirection: ArenaVector(-1, 0),
       qiDelta: 3,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.light,
     ),
   ];
 
@@ -199,6 +205,8 @@ void main() {
       moveKind: Phase0aMoveKind.light,
       aimDirection: ArenaVector(-1, 0),
       qiDelta: 4,
+      postureDamage: 0,
+      postureHitKind: PostureHitKind.light,
     );
 
     final result = reducePhase0aTick(
@@ -276,7 +284,7 @@ final class _RecordingResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls.add('$attackerId->$targetId');

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -158,11 +159,58 @@ void main() {
     return dx * dx + dy * dy;
   }
 
+  Future<void> expectPainterDrawsPixels(
+    WidgetTester tester,
+    Finder paintFinder, {
+    required String label,
+  }) async {
+    expect(
+      paintFinder,
+      findsOneWidget,
+      reason: '$label 必须进入真实 CustomPaint 渲染分支',
+    );
+    final size = tester.getSize(paintFinder);
+    expect(size.width, greaterThan(0), reason: '$label 画布宽度必须非零');
+    expect(size.height, greaterThan(0), reason: '$label 画布高度必须非零');
+
+    final painter = tester.widget<CustomPaint>(paintFinder).painter;
+    expect(painter, isNotNull, reason: '$label 必须携带生产 painter');
+    final recorder = ui.PictureRecorder();
+    painter!.paint(ui.Canvas(recorder), size);
+    final picture = recorder.endRecording();
+    final bytes = await tester.runAsync(() async {
+      final image = await picture.toImage(
+        size.width.ceil(),
+        size.height.ceil(),
+      );
+      picture.dispose();
+      final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+      return data;
+    });
+    expect(bytes, isNotNull, reason: '$label 必须可编码为 raw RGBA');
+
+    var paintedPixels = 0;
+    for (var offset = 3; offset < bytes!.lengthInBytes; offset += 4) {
+      if (bytes.getUint8(offset) != 0) paintedPixels++;
+    }
+    expect(paintedPixels, greaterThan(0), reason: '$label painter 不得退化为空画布');
+  }
+
   group('首屏威胁去噪 HUD(双视口)', () {
     for (final viewport in viewports) {
       testWidgets('普通满血敌人隐藏姓名/血条但保留立绘/落地墨印 + 玩家 HUD '
           '(${viewport.width}x${viewport.height})', (tester) async {
         await pumpScreen(tester, viewport: viewport);
+
+        await expectPainterDrawsPixels(
+          tester,
+          find.descendant(
+            of: find.byKey(const ValueKey('phase0a_static_background')),
+            matching: find.byType(CustomPaint),
+          ),
+          label: '战场静态水墨罩染 ${viewport.width}x${viewport.height}',
+        );
 
         final state = controller.state;
         expect(state.enemies, isNotEmpty, reason: 'fixture 首波必须有敌人');
@@ -185,6 +233,18 @@ void main() {
           expect(find.byKey(groundMarkKey(enemy.id)), findsOneWidget);
         }
 
+        for (final enemy in state.enemies.where(
+          (enemy) => !fixture.roster.visualFor(enemy.id).isElite,
+        )) {
+          expect(enemy.posture, isNotNull);
+          expect(enemy.posture!.accumulated, 0);
+          expect(
+            find.byKey(ValueKey('phase0a_posture_bar_${enemy.id}')),
+            findsNothing,
+            reason: '普通零累积敌人 ${enemy.id} 不常驻架势条',
+          );
+        }
+
         expect(find.byKey(playerHudKey), findsOneWidget);
         expect(find.byKey(groundMarkKey(state.player.id)), findsOneWidget);
         final playerHp = tester.widget<HpBar>(find.byKey(hpKey('player')));
@@ -195,6 +255,66 @@ void main() {
         expect(find.byKey(clearSealKey), findsOneWidget);
       });
     }
+
+    testWidgets('普通敌人实际承受姿态伤害后显示权威累积架势条', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+
+      final normalEnemies = controller.state.enemies.where(
+        (enemy) => !fixture.roster.visualFor(enemy.id).isElite,
+      );
+      final enemyId = normalEnemies
+          .reduce(
+            (current, candidate) =>
+                current.maxHealth >= candidate.maxHealth ? current : candidate,
+          )
+          .id;
+      expect(
+        find.byKey(ValueKey('phase0a_posture_bar_$enemyId')),
+        findsNothing,
+      );
+
+      var guard = 0;
+      while (controller.outcome == Phase0aBattleOutcome.ongoing && guard < 80) {
+        await stepAndPump(tester, attackTowardNearest(controller.state));
+        final matchingEnemy = controller.state.enemies.where(
+          (enemy) => enemy.id == enemyId,
+        );
+        if (matchingEnemy.isNotEmpty &&
+            matchingEnemy.single.posture!.accumulated > 0) {
+          break;
+        }
+        guard++;
+      }
+
+      final damagedEnemy = controller.state.enemies.singleWhere(
+        (enemy) => enemy.id == enemyId,
+      );
+      expect(
+        damagedEnemy.posture!.accumulated,
+        greaterThan(0),
+        reason: '必须经生产普攻路径对同一敌人产生姿态伤害',
+      );
+      expect(
+        find.byKey(ValueKey('phase0a_posture_bar_$enemyId')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(ValueKey('phase0a_posture_remaining_$enemyId')),
+        findsNothing,
+        reason: '蓄条已替代旧纯数字标签',
+      );
+      final fill = tester.widget<FractionallySizedBox>(
+        find.byKey(ValueKey('phase0a_posture_fill_$enemyId')),
+      );
+      expect(
+        fill.widthFactor,
+        closeTo(
+          damagedEnemy.posture!.accumulated /
+              damagedEnemy.posture!.config.capacity,
+          0.0001,
+        ),
+      );
+    });
 
     testWidgets('第二波精英使用更宽金色落地墨印，与普通敌人分层', (tester) async {
       await pumpScreen(tester, autoStep: false);
@@ -607,21 +727,33 @@ void main() {
             ? const Phase0aPlayerCommand(attack: true)
             : attackTowardNearest(controller.state);
         await stepAndPump(tester, command);
-        if (controller.feedback.any(
-          (e) => e.kind == Phase0aVfxKind.palmTrail,
-        )) {
+        if (!trailSeen &&
+            controller.feedback.any(
+              (e) => e.kind == Phase0aVfxKind.palmTrail,
+            )) {
           trailSeen = true;
           expect(find.byKey(actionKey('player')), findsOneWidget);
           expect(find.byKey(palmTrailKey), findsOneWidget);
           expect(find.byKey(meleeSlashKey), findsNothing);
+          await expectPainterDrawsPixels(
+            tester,
+            find.byKey(palmTrailKey),
+            label: '远程掌风',
+          );
         }
-        if (controller.feedback.any(
-          (e) => e.kind == Phase0aVfxKind.meleeSlash,
-        )) {
+        if (!slashSeen &&
+            controller.feedback.any(
+              (e) => e.kind == Phase0aVfxKind.meleeSlash,
+            )) {
           slashSeen = true;
           expect(find.byKey(actionKey('player')), findsOneWidget);
           expect(find.byKey(meleeSlashKey), findsOneWidget);
           expect(find.byKey(palmTrailKey), findsNothing);
+          await expectPainterDrawsPixels(
+            tester,
+            find.byKey(meleeSlashKey),
+            label: '近战墨痕',
+          );
         }
       }
 
@@ -691,6 +823,11 @@ void main() {
       expect(pulled, isNotEmpty, reason: 'fixture 首拍 Q 必须至少拉到一个敌人');
 
       expect(find.byKey(gatherVortexKey), findsOneWidget);
+      await expectPainterDrawsPixels(
+        tester,
+        find.byKey(gatherVortexKey),
+        label: '聚怪涡旋',
+      );
       final stage = Phase0aStage(viewport: const Size(1280, 720));
       for (final outcome in pulled) {
         final pull = controller.feedback.singleWhere(
@@ -705,6 +842,11 @@ void main() {
           (screenSource.dy + screenTarget.dy) / 2,
         );
         expect(find.byKey(gatherPullKey(outcome.target)), findsOneWidget);
+        await expectPainterDrawsPixels(
+          tester,
+          find.byKey(gatherPullKey(outcome.target)),
+          label: '聚怪拉拢轨迹 ${outcome.target}',
+        );
         expect(
           (tester.getCenter(find.byKey(gatherPullKey(outcome.target))) -
                   expectedMidpoint)
@@ -738,6 +880,11 @@ void main() {
       expect(applied.outcomes, isNotEmpty);
 
       expect(find.byKey(clearBurstKey), findsOneWidget);
+      await expectPainterDrawsPixels(
+        tester,
+        find.byKey(clearBurstKey),
+        label: '清场墨爆',
+      );
       final nonZero = applied.outcomes
           .where((o) => o.resolvedDamage > 0)
           .toList();
@@ -777,6 +924,11 @@ void main() {
         for (final defeated in events.whereType<Phase0aEnemyDefeated>()) {
           final finder = find.byKey(defeatInkTargetKey(defeated.target));
           expect(finder, findsOneWidget);
+          await expectPainterDrawsPixels(
+            tester,
+            find.descendant(of: finder, matching: find.byKey(defeatInkKey)),
+            label: '死亡墨散 ${defeated.target}',
+          );
           final size = tester.getSize(finder);
           if (defeated.defeatKind == Phase0aDefeatKind.elite) {
             eliteSize = size;
@@ -812,6 +964,14 @@ void main() {
             findsOneWidget,
             reason: '第 ${started.waveIndex} 波 banner 必须上屏',
           );
+          await expectPainterDrawsPixels(
+            tester,
+            find.descendant(
+              of: find.byKey(waveBannerKey),
+              matching: find.byType(CustomPaint),
+            ),
+            label: '第 ${started.waveIndex} 波纸幅横幅',
+          );
         }
         guard++;
       }
@@ -825,6 +985,11 @@ void main() {
 
       // 全场唯一终局封签。
       expect(find.byKey(outcomeSealKey), findsOneWidget);
+      await expectPainterDrawsPixels(
+        tester,
+        find.byKey(outcomeSealKey),
+        label: '终局封签',
+      );
 
       // 终局后:键盘/鼠标输入 + step 均零事件、零新反馈,封签仍唯一。
       final feedbackAtEnd = List<Phase0aVfxEntry>.of(controller.feedback);

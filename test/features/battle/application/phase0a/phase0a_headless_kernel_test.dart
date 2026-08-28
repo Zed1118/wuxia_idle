@@ -33,7 +33,7 @@ class CountingDamageResolver implements Phase0aDamageResolver {
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) {
     calls++;
@@ -116,6 +116,10 @@ Phase0aPlayerInputAdapter makePlayerAdapter() {
     attackHalfArcRadians: math.pi / 4,
     attackCooldownSeconds: 1,
     attackQiDelta: 0,
+    postureBasicPowerMultiplier: 1,
+    attackPowerMultiplier: 1,
+    gatherPowerMultiplier: 1,
+    clearPowerMultiplier: 1,
     gatherSlot: 'gather',
     gatherRingRadius: 90,
     gatherEffectRadius: 500,
@@ -155,6 +159,8 @@ Phase0aWaveBattleFlow makeFlow({
         attackRange: 70,
         attackHalfArcRadians: math.pi / 3,
         attackCooldownSeconds: 1.2,
+        postureBasicPowerMultiplier: 1,
+        uniformBasicPowerMultiplier: 1,
       ),
       damageResolver: damageResolver ?? CountingDamageResolver(damage: 15),
     ),

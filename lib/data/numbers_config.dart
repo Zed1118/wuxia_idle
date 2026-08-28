@@ -1284,6 +1284,7 @@ class CombatNumbers {
   final RedLinesConfig redLines;
   final BossChargeConfig bossCharge;
   final ImpactFeedbackConfig impactFeedback;
+  final PostureNumbersConfig posture;
   final DefenseBreakConfig defenseBreak;
   final WeaknessConfig weakness;
 
@@ -1299,6 +1300,7 @@ class CombatNumbers {
     required this.redLines,
     required this.bossCharge,
     required this.impactFeedback,
+    required this.posture,
     this.defenseBreak = const DefenseBreakConfig(),
     this.weakness = const WeaknessConfig(),
   });
@@ -1334,12 +1336,109 @@ class CombatNumbers {
       impactFeedback: ImpactFeedbackConfig.fromYaml(
         y['impact_feedback'] as Map? ?? const {},
       ),
+      posture: PostureNumbersConfig.fromYaml(y['posture']),
       defenseBreak: DefenseBreakConfig.fromYaml(
         y['defense_break'] as Map? ?? const {},
       ),
       weakness: WeaknessConfig.fromYaml(y['weakness'] as Map? ?? const {}),
     );
   }
+}
+
+enum PostureRecoveryPolicyConfig { reset, recover }
+
+/// Unified posture values from `combat.posture`.
+///
+/// This block is a required production contract. Missing keys and wrong types
+/// fail closed instead of silently selecting gameplay values.
+final class PostureNumbersConfig {
+  const PostureNumbersConfig({
+    required this.capacity,
+    required this.vulnerabilityTicks,
+    required this.recoveryPolicy,
+    required this.postVulnerabilityAccumulated,
+    required this.bossConversionFactor,
+  });
+
+  final double capacity;
+  final int vulnerabilityTicks;
+  final PostureRecoveryPolicyConfig recoveryPolicy;
+  final double postVulnerabilityAccumulated;
+  final double bossConversionFactor;
+
+  factory PostureNumbersConfig.fromYaml(Object? raw) {
+    if (raw is! Map) {
+      throw StateError('combat.posture must be a map');
+    }
+    final yaml = raw.cast<Object?, Object?>();
+    final capacity = _requiredPostureNumber(yaml, 'capacity');
+    final vulnerabilityTicks = _requiredPostureInteger(
+      yaml,
+      'vulnerability_ticks',
+    );
+    final recoveryRaw = yaml['recovery_policy'];
+    final recoveryPolicy = switch (recoveryRaw) {
+      'reset' => PostureRecoveryPolicyConfig.reset,
+      'recover' => PostureRecoveryPolicyConfig.recover,
+      _ => throw StateError(
+        'combat.posture.recovery_policy must be reset or recover',
+      ),
+    };
+    final postVulnerabilityAccumulated = _requiredPostureNumber(
+      yaml,
+      'post_vulnerability_accumulated',
+    );
+    final bossConversionFactor = _requiredPostureNumber(
+      yaml,
+      'boss_conversion_factor',
+    );
+    if (capacity <= 0) {
+      throw StateError('combat.posture.capacity must be positive');
+    }
+    if (vulnerabilityTicks <= 0) {
+      throw StateError('combat.posture.vulnerability_ticks must be positive');
+    }
+    if (postVulnerabilityAccumulated < 0 ||
+        postVulnerabilityAccumulated > capacity) {
+      throw StateError(
+        'combat.posture.post_vulnerability_accumulated must be within capacity',
+      );
+    }
+    if (recoveryPolicy == PostureRecoveryPolicyConfig.reset &&
+        postVulnerabilityAccumulated != 0) {
+      throw StateError(
+        'combat.posture.post_vulnerability_accumulated must be zero for reset',
+      );
+    }
+    if (bossConversionFactor <= 0) {
+      throw StateError(
+        'combat.posture.boss_conversion_factor must be positive',
+      );
+    }
+    return PostureNumbersConfig(
+      capacity: capacity,
+      vulnerabilityTicks: vulnerabilityTicks,
+      recoveryPolicy: recoveryPolicy,
+      postVulnerabilityAccumulated: postVulnerabilityAccumulated,
+      bossConversionFactor: bossConversionFactor,
+    );
+  }
+}
+
+double _requiredPostureNumber(Map<Object?, Object?> yaml, String key) {
+  final value = yaml[key];
+  if (value is! num || !value.toDouble().isFinite) {
+    throw StateError('combat.posture.$key must be a finite number');
+  }
+  return value.toDouble();
+}
+
+int _requiredPostureInteger(Map<Object?, Object?> yaml, String key) {
+  final value = yaml[key];
+  if (value is! int) {
+    throw StateError('combat.posture.$key must be an integer');
+  }
+  return value;
 }
 
 /// Bounded per-battle qi economy (`combat.qi`).
@@ -1537,8 +1636,10 @@ class BossChargeConfig {
   );
 }
 
-/// 第六阶段三人协同:破防开窗参数。fixture 不带该段时回落默认(沿 BossChargeConfig 体例)。
-/// 减防幅度由 per-skill SkillDef.defenseBreakPct 提供,全局不再持 defense_down_pct。
+/// 旧破防开窗 schema 的解析兼容段。fixture 不带时仍回落默认。
+///
+/// 当前 Phase0A 生产 reducer 不消费 [windowTicks];per-skill
+/// SkillDef.defenseBreakPct 已由 typed binding 折算进同一架势伤害。
 class DefenseBreakConfig {
   final int windowTicks;
   const DefenseBreakConfig({this.windowTicks = 3});

@@ -11,8 +11,11 @@ import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
 import 'phase0a_damage_kind.dart';
 import 'realtime_combat_rules.dart';
+import 'posture.dart';
 
 export 'phase0a_damage_kind.dart';
+
+const _noBreakPower = 0;
 
 /// 一次结算的运行时结果:命中与否、暴击与否、伤害值全部由
 /// resolver(未来生产接 DamageCalculator)给出,reducer 不写第二套公式。
@@ -35,17 +38,15 @@ final class Phase0aResolvedHit {
 /// 减防幅度由生产 adapter 读 numbers.combat.bossCharge 应用,reducer 只传
 /// 状态不写数值;测试实现可忽略(默认 false 口径)。
 ///
-/// [defenderCharging]:守方处于蓄招状态(`chargingCast != null`,reducer
-/// 运行态事实)。与 [defenderStaggered] 同为脆弱窗口开合事实(窗口 =
-/// 蓄招中或踉跄中),由生产 adapter 折入承伤乘子,语义对齐旧引擎
-/// `DefaultGroundStrategy.vulnerabilityMultOf`;测试实现可忽略。
+/// [defenderVulnerable] comes from the authoritative posture state. The
+/// production adapter uses it to select the existing vulnerability multiplier.
 abstract interface class Phase0aDamageResolver {
   Phase0aResolvedHit resolve({
     required String attackerId,
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     required double defenderWardMult,
   });
 }
@@ -134,6 +135,108 @@ Phase0aStepResult reducePhase0aTick({
       ),
   };
 
+  void emitPostureTransition({
+    required String actorId,
+    required Phase0aActor target,
+    required PostureTransition transition,
+    PostureHitKind? hitKind,
+  }) {
+    for (final postureEvent in transition.events) {
+      events.add(
+        Phase0aPostureChanged(
+          seq: seq++,
+          tick: tick,
+          actor: actorId,
+          target: target.id,
+          eventType: postureEvent.type,
+          amount: postureEvent.amount,
+          accumulated: transition.state.accumulated,
+          capacity: transition.state.config.capacity,
+          vulnerabilityTicksRemaining:
+              transition.state.vulnerabilityTicksRemaining,
+          hitKind: hitKind,
+          targetPosition: target.position,
+        ),
+      );
+    }
+  }
+
+  ({Phase0aActor actor, bool vulnerabilityEntered}) applyPostureDamage({
+    required String actorId,
+    required Phase0aActor target,
+    required double postureDamage,
+    required PostureHitKind hitKind,
+    required int breakPower,
+    required bool isHit,
+  }) {
+    final posture = target.posture;
+    if (!isHit || !target.isAlive || posture == null) {
+      return (actor: target, vulnerabilityEntered: false);
+    }
+    var totalDamage = postureDamage;
+    if (target.isBoss &&
+        target.chargingCast != null &&
+        hitKind == PostureHitKind.bossControl &&
+        breakPower > 0) {
+      totalDamage += bossControlToPostureDamage(
+        breakPower.toDouble(),
+        conversionFactor: posture.config.bossControlConversionFactor,
+      );
+    }
+    final transition = posture.apply(totalDamage, hitKind: hitKind);
+    emitPostureTransition(
+      actorId: actorId,
+      target: target,
+      transition: transition,
+      hitKind: hitKind,
+    );
+    final vulnerabilityEntered = transition.events.any(
+      (event) => event.type == PostureEventType.vulnerabilityEntered,
+    );
+    var updated = target.copyWith(posture: transition.state);
+    if (!vulnerabilityEntered) {
+      return (actor: updated, vulnerabilityEntered: false);
+    }
+    final cast = updated.chargingCast;
+    if (cast == null) {
+      return (
+        actor: updated.copyWith(
+          staggerTicksRemaining: updated.staggerTicksTotal,
+        ),
+        vulnerabilityEntered: true,
+      );
+    }
+    final cooldowns = Map<String, double>.from(updated.enemySkillCooldowns);
+    final cooldownSeconds = cast.cooldownSeconds > 0
+        ? cast.cooldownSeconds
+        : cast.actionCooldownSeconds;
+    if (cooldownSeconds > 0) {
+      cooldowns[cast.skill.id] = cooldownSeconds;
+    }
+    updated = updated.copyWith(
+      clearChargingCast: true,
+      chargeTicksRemaining: _noChargeTicksRemaining,
+      staggerTicksRemaining: updated.staggerTicksTotal,
+      enemySkillCooldowns: Map.unmodifiable(cooldowns),
+    );
+    return (actor: updated, vulnerabilityEntered: true);
+  }
+
+  for (final enemy in state.enemies) {
+    final current = enemiesById[enemy.id]!;
+    final posture = current.posture;
+    if (posture == null) continue;
+    final transition = posture.advance(1);
+    if (transition.state != posture) {
+      enemiesById[enemy.id] = current.copyWith(posture: transition.state);
+    }
+    emitPostureTransition(
+      actorId: enemy.id,
+      target: current,
+      transition: transition,
+    );
+  }
+
   double defenderWardMultFor(
     Phase0aActor target,
     Map<String, Phase0aActor> defenderState,
@@ -219,6 +322,9 @@ Phase0aStepResult reducePhase0aTick({
     required String attackId,
     required Phase0aMoveKind moveKind,
     required bool isUltimate,
+    required double postureDamage,
+    required PostureHitKind postureHitKind,
+    required int breakPower,
   }) {
     if (!resolved.isHit) return;
     DefenseResult? defense;
@@ -314,7 +420,15 @@ Phase0aStepResult reducePhase0aTick({
         targetPosition: target.position,
       ),
     );
-    final updated = target.copyWith(currentHealth: remaining);
+    var updated = target.copyWith(currentHealth: remaining);
+    updated = applyPostureDamage(
+      actorId: attacker.id,
+      target: updated,
+      postureDamage: postureDamage,
+      hitKind: postureHitKind,
+      breakPower: breakPower,
+      isHit: resolved.isHit,
+    ).actor;
     if (target.side == Phase0aSide.enemy) {
       if (!updated.isAlive) {
         enemiesById.remove(target.id);
@@ -471,7 +585,8 @@ Phase0aStepResult reducePhase0aTick({
         // 负冷却等价无冷却。
         if (!_isUsableNumber(intent.range) ||
             !_isUsableNumber(intent.halfArcRadians) ||
-            !_isUsableNumber(intent.cooldownSeconds)) {
+            !_isUsableNumber(intent.cooldownSeconds) ||
+            !_isUsableNumber(intent.postureDamage)) {
           continue;
         }
         if (actor.attackCooldownRemaining > 0) continue;
@@ -489,14 +604,14 @@ Phase0aStepResult reducePhase0aTick({
             attackerId: actor.id,
             targetId: player.id,
             kind: Phase0aDamageKind.basic,
-            defenderCharging: player.chargingCast != null,
+            defenderVulnerable: player.posture?.isVulnerable ?? false,
             defenderWardMult: 1.0,
           );
           final partnerHit = damageResolver.resolve(
             attackerId: coop.partner.id,
             targetId: player.id,
             kind: Phase0aDamageKind.basic,
-            defenderCharging: player.chargingCast != null,
+            defenderVulnerable: player.posture?.isVulnerable ?? false,
             defenderWardMult: 1.0,
           );
           final mainDamage = mainHit.isHit ? _checkedDamage(mainHit) : 0;
@@ -521,6 +636,10 @@ Phase0aStepResult reducePhase0aTick({
               attackId: '${actor.id}:$tick:${player.id}:guardian_coop',
               moveKind: Phase0aMoveKind.light,
               isUltimate: false,
+              postureDamage:
+                  mainIntent.postureDamage + partnerIntent.postureDamage,
+              postureHitKind: PostureHitKind.light,
+              breakPower: _noBreakPower,
             );
             totalDamage = healthBeforeDefense - player.currentHealth;
           } else {
@@ -599,7 +718,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
-            defenderCharging: target.chargingCast != null,
+            defenderVulnerable: target.posture?.isVulnerable ?? false,
             defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
           settleInbound(
@@ -610,6 +729,9 @@ Phase0aStepResult reducePhase0aTick({
             attackId: '$actorId:$tick:${target.id}',
             moveKind: intent.moveKind,
             isUltimate: false,
+            postureDamage: intent.postureDamage,
+            postureHitKind: intent.postureHitKind,
+            breakPower: _noBreakPower,
           );
         }
         final aimDirection = intent.aimDirection.lengthSquared > 0
@@ -646,6 +768,7 @@ Phase0aStepResult reducePhase0aTick({
               !_isUsableNumber(intent.effectRadius) ||
               !_isUsableNumber(intent.cooldownSeconds) ||
               !_isUsableNumber(intent.actionCooldownSeconds) ||
+              !_isUsableNumber(intent.postureDamage) ||
               actor.attackCooldownRemaining > 0 ||
               (actor.enemySkillCooldowns[intent.skill.id] ?? 0) > 0 ||
               actor.qiCurrent < intent.skill.qiCost) {
@@ -674,6 +797,7 @@ Phase0aStepResult reducePhase0aTick({
             !_isUsableNumber(intent.effectRadius) ||
             !_isUsableNumber(intent.cooldownSeconds) ||
             !_isUsableNumber(intent.actionCooldownSeconds) ||
+            !_isUsableNumber(intent.postureDamage) ||
             actor.attackCooldownRemaining > 0 ||
             (actor.enemySkillCooldowns[intent.skill.id] ?? 0) > 0 ||
             actor.qiCurrent < intent.skill.qiCost) {
@@ -731,6 +855,9 @@ Phase0aStepResult reducePhase0aTick({
             attackId: '$actorId:$tick:${target.id}:${intent.skill.id}',
             moveKind: Phase0aMoveKind.heavy,
             isUltimate: intent.skill.type == SkillType.ultimate,
+            postureDamage: intent.postureDamage,
+            postureHitKind: intent.postureHitKind,
+            breakPower: _noBreakPower,
           );
         }
         final currentAttacker = enemiesById[actorId];
@@ -763,6 +890,7 @@ Phase0aStepResult reducePhase0aTick({
         if (!_isUsableNumber(intent.ringRadius) ||
             !_isUsableNumber(intent.effectRadius) ||
             !_isUsableNumber(intent.cooldownSeconds) ||
+            !_isUsableNumber(intent.postureDamage) ||
             intent.qiCost < 0 ||
             intent.ringRadius > intent.effectRadius) {
           continue;
@@ -815,15 +943,23 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(target.id) ||
                 target.staggerTicksRemaining > 0,
-            defenderCharging: target.chargingCast != null,
+            defenderVulnerable: target.posture?.isVulnerable ?? false,
             defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, target.currentHealth - damage);
-          final updated = target.copyWith(
+          var updated = target.copyWith(
             position: destination,
             currentHealth: remaining,
           );
+          updated = applyPostureDamage(
+            actorId: actorId,
+            target: updated,
+            postureDamage: intent.postureDamage,
+            hitKind: intent.postureHitKind,
+            breakPower: 0,
+            isHit: resolved.isHit,
+          ).actor;
           outcomes.add(
             Phase0aSkillOutcome(
               target: target.id,
@@ -883,6 +1019,7 @@ Phase0aStepResult reducePhase0aTick({
         if (actor.side != Phase0aSide.player) continue;
         if (!_isUsableNumber(intent.effectRadius) ||
             !_isUsableNumber(intent.cooldownSeconds) ||
+            !_isUsableNumber(intent.postureDamage) ||
             intent.qiCost < 0) {
           continue;
         }
@@ -943,17 +1080,12 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(hitTarget.id) ||
                 hitTarget.staggerTicksRemaining > 0,
-            defenderCharging: hitTarget.chargingCast != null,
+            defenderVulnerable: hitTarget.posture?.isVulnerable ?? false,
             defenderWardMult: defenderWardMultFor(hitTarget, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, hitTarget.currentHealth - damage);
           var updated = hitTarget.copyWith(currentHealth: remaining);
-          if (intercepted != null && resolved.isHit) {
-            updated = updated.copyWith(
-              staggerTicksRemaining: updated.staggerTicksTotal,
-            );
-          }
           if (intercepted != null) {
             events.add(
               Phase0aGuardIntercepted(
@@ -969,31 +1101,24 @@ Phase0aStepResult reducePhase0aTick({
               ),
             );
           }
-          final broken = _maybeApplyChargeBreak(
+          final postureResult = applyPostureDamage(
+            actorId: actorId,
             target: updated,
-            breakPower: intercepted == null ? intent.breakPower : 0,
+            postureDamage: intent.postureDamage,
+            hitKind: intent.postureHitKind,
+            breakPower: intent.breakPower,
             isHit: resolved.isHit,
           );
-          if (broken != null) {
-            updated = broken.actor;
-            events.add(
-              Phase0aBossChargeInterrupted(
-                seq: seq++,
-                tick: tick,
-                actor: actorId,
-                target: hitTarget.id,
-                skillId: broken.skillId,
-                staggerTicks: broken.staggerTicks,
-              ),
-            );
-          }
+          updated = postureResult.actor;
           outcomes.add(
             Phase0aSkillOutcome(
               target: hitTarget.id,
               resolvedDamage: damage,
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
-              statusApplied: Phase0aSkillStatus.staggered,
+              statusApplied: postureResult.vulnerabilityEntered
+                  ? Phase0aSkillStatus.staggered
+                  : Phase0aSkillStatus.none,
               sourcePosition: actor.position,
               targetPosition: hitTarget.position,
             ),
@@ -1046,7 +1171,8 @@ Phase0aStepResult reducePhase0aTick({
             !_isUsableNumber(intent.range) ||
             !_isUsableNumber(intent.halfArcRadians) ||
             !_isUsableNumber(intent.effectRadius) ||
-            !_isUsableNumber(intent.cooldownSeconds)) {
+            !_isUsableNumber(intent.cooldownSeconds) ||
+            !_isUsableNumber(intent.postureDamage)) {
           continue;
         }
         final cast = _tryCastSkill(
@@ -1119,17 +1245,12 @@ Phase0aStepResult reducePhase0aTick({
             defenderStaggered:
                 staggeredActorIds.contains(hitTarget.id) ||
                 hitTarget.staggerTicksRemaining > 0,
-            defenderCharging: hitTarget.chargingCast != null,
+            defenderVulnerable: hitTarget.posture?.isVulnerable ?? false,
             defenderWardMult: defenderWardMultFor(hitTarget, preIntentEnemies),
           );
           final damage = resolved.isHit ? _checkedDamage(resolved) : 0;
           final remaining = math.max(0, hitTarget.currentHealth - damage);
           var updated = hitTarget.copyWith(currentHealth: remaining);
-          if (intercepted != null && resolved.isHit) {
-            updated = updated.copyWith(
-              staggerTicksRemaining: updated.staggerTicksTotal,
-            );
-          }
           if (intercepted != null) {
             events.add(
               Phase0aGuardIntercepted(
@@ -1145,31 +1266,24 @@ Phase0aStepResult reducePhase0aTick({
               ),
             );
           }
-          final broken = _maybeApplyChargeBreak(
+          final postureResult = applyPostureDamage(
+            actorId: actorId,
             target: updated,
-            breakPower: intercepted == null ? intent.breakPower : 0,
+            postureDamage: intent.postureDamage,
+            hitKind: intent.postureHitKind,
+            breakPower: intent.breakPower,
             isHit: resolved.isHit,
           );
-          if (broken != null) {
-            updated = broken.actor;
-            events.add(
-              Phase0aBossChargeInterrupted(
-                seq: seq++,
-                tick: tick,
-                actor: actorId,
-                target: hitTarget.id,
-                skillId: broken.skillId,
-                staggerTicks: broken.staggerTicks,
-              ),
-            );
-          }
+          updated = postureResult.actor;
           outcomes.add(
             Phase0aSkillOutcome(
               target: hitTarget.id,
               resolvedDamage: damage,
               isCritical: resolved.isHit && resolved.isCritical,
               defeated: !updated.isAlive,
-              statusApplied: Phase0aSkillStatus.none,
+              statusApplied: postureResult.vulnerabilityEntered
+                  ? Phase0aSkillStatus.staggered
+                  : Phase0aSkillStatus.none,
               sourcePosition: actor.position,
               targetPosition: hitTarget.position,
             ),
@@ -1294,6 +1408,9 @@ Phase0aStepResult reducePhase0aTick({
         attackId: '${enemy.id}:$tick:${target.id}:${cast.skill.id}',
         moveKind: Phase0aMoveKind.heavy,
         isUltimate: cast.skill.type == SkillType.ultimate,
+        postureDamage: cast.postureDamage,
+        postureHitKind: cast.postureHitKind,
+        breakPower: _noBreakPower,
       );
     }
     // 断魂庄锁脉针：蓄力完整结束且未被破招即夺取玩家最大真气的一定比例。
@@ -1334,50 +1451,6 @@ Phase0aStepResult reducePhase0aTick({
       winCondition: state.winCondition,
     ),
     events: List.unmodifiable(events),
-  );
-}
-
-/// 破招状态迁移(唯一入口):typed `breakPower` 命中存活蓄力敌 → 清蓄力 +
-/// 招牌技上 CD + 进入踉跄窗口。不满足任一前提返 null(no-op,伤害照常)。
-///
-/// 前提(缺一即 no-op,fail-closed):
-/// - [breakPower] > 0(skill behavior `break.points`,reducer 不读名/描述);
-/// - 本次结算命中([isHit],闪避不破招,对齐旧引擎);
-/// - 目标存活且正在蓄力(`chargingCast != null`)。
-///
-/// 招牌技 CD 对齐旧引擎 `max(cooldownTurns, 1)`:cooldownSeconds 为 0 时
-/// 回落一个敌行动拍(actionCooldownSeconds)。踉跄窗口拍数取目标预解析的
-/// [Phase0aActor.staggerTicksTotal](numbers.combat.bossCharge),reducer 不写数值。
-({Phase0aActor actor, String skillId, int staggerTicks})?
-_maybeApplyChargeBreak({
-  required Phase0aActor target,
-  required int breakPower,
-  required bool isHit,
-}) {
-  if (breakPower <= 0 ||
-      !isHit ||
-      !target.isAlive ||
-      target.side != Phase0aSide.enemy) {
-    return null;
-  }
-  final cast = target.chargingCast;
-  if (cast == null) return null;
-  final cooldowns = Map<String, double>.from(target.enemySkillCooldowns);
-  final cooldownSeconds = cast.cooldownSeconds > 0
-      ? cast.cooldownSeconds
-      : cast.actionCooldownSeconds;
-  if (cooldownSeconds > 0) {
-    cooldowns[cast.skill.id] = cooldownSeconds;
-  }
-  return (
-    actor: target.copyWith(
-      clearChargingCast: true,
-      chargeTicksRemaining: _noChargeTicksRemaining,
-      staggerTicksRemaining: target.staggerTicksTotal,
-      enemySkillCooldowns: Map.unmodifiable(cooldowns),
-    ),
-    skillId: cast.skill.id,
-    staggerTicks: target.staggerTicksTotal,
   );
 }
 

@@ -48,7 +48,7 @@ final class _Resolver
     required String targetId,
     required Phase0aDamageKind kind,
     bool defenderStaggered = false,
-    bool defenderCharging = false,
+    bool defenderVulnerable = false,
     double defenderWardMult = 1.0,
   }) => Phase0aResolvedHit(isHit: true, isCritical: false, damage: basicDamage);
 
@@ -110,6 +110,8 @@ const _playerAttack = Phase0aAttackIntent(
   halfArcRadians: 1,
   cooldownSeconds: 1,
   qiDelta: 0,
+  postureDamage: 0,
+  postureHitKind: PostureHitKind.light,
   moveKind: Phase0aMoveKind.light,
   aimDirection: ArenaVector(1, 0),
 );
@@ -169,6 +171,8 @@ void main() {
         attackRange: 10,
         attackHalfArcRadians: 1,
         attackCooldownSeconds: 1,
+        postureBasicPowerMultiplier: 1,
+        uniformBasicPowerMultiplier: 1,
         skillBindingsByActor: {
           'boss': [
             Phase0aEnemySkillBinding(
@@ -220,6 +224,8 @@ void main() {
       attackRange: 10,
       attackHalfArcRadians: 1,
       attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
       skillBindingsByActor: {
         'boss': [
           Phase0aEnemySkillBinding(

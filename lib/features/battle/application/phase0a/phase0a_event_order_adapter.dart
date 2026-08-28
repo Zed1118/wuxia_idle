@@ -95,9 +95,9 @@ final class Phase0aEventOrderAdapter {
       'defense_resolved',
       CombatEventStage.defense,
     ),
-    Phase0aBossChargeInterrupted() => const _EventDescriptor(
-      'boss_charge_interrupted',
-      CombatEventStage.defense,
+    Phase0aPostureChanged() => const _EventDescriptor(
+      'posture_changed',
+      CombatEventStage.damageAndPosture,
     ),
     Phase0aEnemySkillStarted() => const _EventDescriptor(
       'enemy_skill_started',
@@ -248,12 +248,20 @@ final class Phase0aEventOrderAdapter {
           _component('nonRecursive', event.nonRecursive),
           _component('targetPosition', _vector(event.targetPosition)),
         ]);
-      case Phase0aBossChargeInterrupted():
+      case Phase0aPostureChanged():
         values.addAll([
           _component('actor', event.actor),
           _component('target', event.target),
-          _component('skill', event.skillId),
-          _component('stagger', event.staggerTicks),
+          _component('eventType', event.eventType.name),
+          _component('amount', event.amount),
+          _component('accumulated', event.accumulated),
+          _component('capacity', event.capacity),
+          _component(
+            'vulnerabilityTicksRemaining',
+            event.vulnerabilityTicksRemaining,
+          ),
+          _component('hitKind', event.hitKind?.name),
+          _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aEnemySkillStarted():
         values.addAll([

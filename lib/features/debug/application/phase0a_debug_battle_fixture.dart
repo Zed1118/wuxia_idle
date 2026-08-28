@@ -17,9 +17,14 @@ import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_combat_reducer.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
+import '../../battle/domain/phase0a/posture.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
 
 typedef Phase0aDebugAssetLoader = Future<String> Function(String path);
+
+// Legacy debug YAML without a bound Q skill carries no skill power. This is an
+// absence sentinel for the fixture adapter, not a gameplay tuning value.
+const _noSkillPowerMultiplier = 0;
 
 final class Phase0aDebugBattleFixture {
   const Phase0aDebugBattleFixture._({
@@ -79,12 +84,12 @@ final class Phase0aDebugBattleFixture {
   ) {
     final roster = Phase0aVisualRoster.debugBattle();
     final playerActor = config.playerActor();
-    final waves = config.waves();
+    final waves = config.waves(numbers);
     final combatants = config.combatants();
     for (final combatant in combatants) {
       roster.visualFor(combatant.actorId);
     }
-    final playerAdapter = config.playerAdapter();
+    final playerAdapter = config.playerAdapter(numbers);
     final flow = Phase0aProductionFlowAssembler.assemble(
       initialState: Phase0aArenaState(
         tick: config.initialTick,
@@ -100,7 +105,7 @@ final class Phase0aDebugBattleFixture {
       numbers: numbers,
       rng: Random(config.seed),
       playerAdapter: playerAdapter,
-      enemyAiAdapter: config.enemyAiAdapter(),
+      enemyAiAdapter: config.enemyAiAdapter(numbers),
     );
     return Phase0aDebugBattleFixture._(
       flow: flow,
@@ -188,11 +193,12 @@ final class _DebugBattleConfig {
     ]);
   }
 
-  List<Phase0aWave> waves() => List.unmodifiable([
+  List<Phase0aWave> waves(NumbersConfig numbers) => List.unmodifiable([
     for (final wave in waveMaps)
       Phase0aWave(
         enemies: [
-          for (final enemy in _mapList(wave, 'enemies')) _enemyActor(enemy),
+          for (final enemy in _mapList(wave, 'enemies'))
+            _enemyActor(enemy, numbers),
         ],
       ),
   ]);
@@ -232,7 +238,7 @@ final class _DebugBattleConfig {
     });
   }
 
-  Phase0aPlayerInputAdapter playerAdapter() {
+  Phase0aPlayerInputAdapter playerAdapter(NumbersConfig numbers) {
     final attack = _map(player, 'attack');
     final gather = _map(player, 'gather');
     final clear = _map(player, 'clear');
@@ -243,6 +249,11 @@ final class _DebugBattleConfig {
       attackHalfArcRadians: _number(attack, 'half_arc_radians'),
       attackCooldownSeconds: _number(attack, 'cooldown_seconds'),
       attackQiDelta: _integer(defaults, 'basic_qi_delta'),
+      postureBasicPowerMultiplier: numbers.phase0aArena.basicPowerMultiplier,
+      attackPowerMultiplier: _integer(attack, 'power_multiplier'),
+      gatherPowerMultiplier:
+          tactical?.gather.skill.powerMultiplier ?? _noSkillPowerMultiplier,
+      clearPowerMultiplier: _integer(clear, 'power_multiplier'),
       gatherSlot: _text(gather, 'slot'),
       gatherRingRadius: _number(gather, 'ring_radius'),
       gatherEffectRadius: _number(gather, 'effect_radius'),
@@ -257,27 +268,40 @@ final class _DebugBattleConfig {
     );
   }
 
-  Phase0aEnemyAiAdapter enemyAiAdapter() => Phase0aEnemyAiAdapter(
-    attackRange: _number(enemyAi, 'attack_range'),
-    attackHalfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
-    attackCooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
-    skillBindingsByActor: {
-      for (final wave in waveMaps)
-        for (final enemy in _mapList(wave, 'enemies'))
-          if (_bossSkill(enemy) case final SkillDef skill)
-            _text(enemy, 'id'): [
-              Phase0aEnemySkillBinding(
-                skill: skill,
-                attackRange: _number(enemyAi, 'attack_range'),
-                halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
-                effectRadius: _number(enemyAi, 'attack_range'),
-                cooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+  Phase0aEnemyAiAdapter enemyAiAdapter(NumbersConfig numbers) =>
+      Phase0aEnemyAiAdapter(
+        attackRange: _number(enemyAi, 'attack_range'),
+        attackHalfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+        attackCooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+        postureBasicPowerMultiplier: numbers.phase0aArena.basicPowerMultiplier,
+        basicPowerMultiplierByActor: {
+          for (final wave in waveMaps)
+            for (final enemy in _mapList(wave, 'enemies'))
+              _text(enemy, 'id'): _integer(
+                _map(player, 'attack'),
+                'power_multiplier',
               ),
-            ],
-    },
-  );
+        },
+        skillBindingsByActor: {
+          for (final wave in waveMaps)
+            for (final enemy in _mapList(wave, 'enemies'))
+              if (_bossSkill(enemy) case final SkillDef skill)
+                _text(enemy, 'id'): [
+                  Phase0aEnemySkillBinding(
+                    skill: skill,
+                    attackRange: _number(enemyAi, 'attack_range'),
+                    halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+                    effectRadius: _number(enemyAi, 'attack_range'),
+                    cooldownSeconds: _number(
+                      enemyAi,
+                      'attack_cooldown_seconds',
+                    ),
+                  ),
+                ],
+        },
+      );
 
-  Phase0aActor _enemyActor(Map<String, dynamic> enemy) {
+  Phase0aActor _enemyActor(Map<String, dynamic> enemy, NumbersConfig numbers) {
     final template = _enemyTemplate(enemy);
     final hp = _integer(enemy, 'max_health');
     final role = _text(enemy, 'role');
@@ -297,6 +321,7 @@ final class _DebugBattleConfig {
       defeatKind: role == 'elite' || role == 'boss'
           ? Phase0aDefeatKind.elite
           : Phase0aDefeatKind.normal,
+      isBoss: role == 'boss',
       chargeCast: chargeSkill == null
           ? null
           : Phase0aChargeCast(
@@ -310,6 +335,11 @@ final class _DebugBattleConfig {
                 enemyAi,
                 'attack_cooldown_seconds',
               ),
+              postureDamage: powerMultiplierToPostureDamage(
+                chargeSkill.powerMultiplier,
+                basicPowerMultiplier: numbers.phase0aArena.basicPowerMultiplier,
+              ),
+              postureHitKind: PostureHitKind.heavy,
             ),
       staggerTicksTotal: bossConfig == null
           ? 0
@@ -326,6 +356,21 @@ final class _DebugBattleConfig {
       guardInterceptsInterrupt:
           bossConfig != null &&
           _optionalBool(bossConfig, 'guard_intercepts_interrupt'),
+      posture: PostureState.initial(
+        PostureConfig(
+          capacity: numbers.combat.posture.capacity,
+          vulnerabilityTicks: numbers.combat.posture.vulnerabilityTicks,
+          recoveryPolicy:
+              numbers.combat.posture.recoveryPolicy ==
+                  PostureRecoveryPolicyConfig.reset
+              ? PostureRecoveryPolicy.reset
+              : PostureRecoveryPolicy.recover,
+          postVulnerabilityAccumulated:
+              numbers.combat.posture.postVulnerabilityAccumulated,
+          bossControlConversionFactor:
+              numbers.combat.posture.bossConversionFactor,
+        ),
+      ),
     );
   }
 

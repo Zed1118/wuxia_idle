@@ -24,6 +24,7 @@ Phase0aNumericSkillBinding _binding(int hotkey, SkillDef skill) =>
       hotkey: hotkey,
       loadoutSlot: CombatantSkillLoadout.numericSlots[hotkey - 1],
       skill: skill,
+      visualSchool: TechniqueSchool.gangMeng,
       slotId: 'skill_$hotkey',
       attackRange: 100,
       halfArc: 1,

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/domain/enums.dart';
 import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
@@ -56,6 +57,36 @@ final class Phase0aBattleScreen extends StatefulWidget {
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
 }
 
+final class _ActorRenderMotion {
+  _ActorRenderMotion(ArenaVector position)
+    : current = position,
+      _from = position,
+      _target = position;
+
+  ArenaVector current;
+  ArenaVector _from;
+  ArenaVector _target;
+  double _elapsedSeconds = 0;
+
+  void retarget(ArenaVector target) {
+    if (target == _target) return;
+    _from = current;
+    _target = target;
+    _elapsedSeconds = 0;
+  }
+
+  bool advance(double deltaSeconds, double durationSeconds) {
+    if (current == _target) return false;
+    _elapsedSeconds = (_elapsedSeconds + deltaSeconds).clamp(
+      0,
+      durationSeconds,
+    );
+    final progress = _elapsedSeconds / durationSeconds;
+    current = _from + (_target - _from) * progress;
+    return true;
+  }
+}
+
 class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
@@ -68,6 +99,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   final Map<String, double> _actionPulseRemaining = <String, double>{};
+  final Map<String, _ActorRenderMotion> _actorRenderMotions =
+      <String, _ActorRenderMotion>{};
+  final List<String> _actorPaintOrder = <String>[];
+  int? _lastActorLayerTick;
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
   bool _primaryAttackKeyHeld = false;
@@ -83,6 +118,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     super.initState();
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     _feedbackFrame = ValueNotifier<int>(0);
+    _syncActorRenderTargets();
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
   }
@@ -100,6 +136,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hitFlashRemaining.clear();
     _hpEmphasisRemaining.clear();
     _actionPulseRemaining.clear();
+    _actorRenderMotions.clear();
+    _actorPaintOrder.clear();
+    _lastActorLayerTick = null;
+    _syncActorRenderTargets();
     _paused = false;
     _primaryAttackHeld = false;
     _primaryAttackKeyHeld = false;
@@ -165,6 +205,96 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _stopPointerAttack();
   }
 
+  List<Phase0aActor> _currentActors() => <Phase0aActor>[
+    widget.controller.state.player,
+    ...widget.controller.state.enemies,
+  ];
+
+  void _syncActorRenderTargets() {
+    final actors = _currentActors();
+    final actorIds = actors.map((actor) => actor.id).toSet();
+    _actorRenderMotions.removeWhere((id, _) => !actorIds.contains(id));
+    for (final actor in actors) {
+      final motion = _actorRenderMotions.putIfAbsent(
+        actor.id,
+        () => _ActorRenderMotion(actor.position),
+      );
+      motion.retarget(actor.position);
+    }
+  }
+
+  bool _advanceActorRenderMotions(double deltaSeconds) {
+    var changed = false;
+    for (final motion in _actorRenderMotions.values) {
+      changed =
+          motion.advance(deltaSeconds, widget.controller.fixedDeltaSeconds) ||
+          changed;
+    }
+    return changed;
+  }
+
+  ArenaVector _actorRenderPosition(Phase0aActor actor) =>
+      _actorRenderMotions[actor.id]?.current ?? actor.position;
+
+  List<Phase0aActor> _stableActorPaintOrder(
+    List<Phase0aActor> actors,
+    Phase0aStage stage,
+    Map<String, ArenaVector> renderPositions,
+  ) {
+    final tick = widget.controller.state.tick;
+    final previousTick = _lastActorLayerTick;
+    if (previousTick != null && tick < previousTick) {
+      _actorPaintOrder.clear();
+    }
+    _lastActorLayerTick = tick;
+
+    final actorById = <String, Phase0aActor>{
+      for (final actor in actors) actor.id: actor,
+    };
+    _actorPaintOrder.removeWhere((id) => !actorById.containsKey(id));
+
+    final footYById = <String, double>{
+      for (final actor in actors)
+        actor.id: stage.worldToScreen(renderPositions[actor.id]!).dy,
+    };
+    final initialOrder = stage.sortActors(
+      actors,
+      positionOf: (actor) => renderPositions[actor.id]!,
+    );
+    for (final actor in initialOrder) {
+      if (_actorPaintOrder.contains(actor.id)) continue;
+      final insertAt = _actorPaintOrder.indexWhere((otherId) {
+        final byY = footYById[actor.id]!.compareTo(footYById[otherId]!);
+        return byY < 0 || (byY == 0 && actor.id.compareTo(otherId) < 0);
+      });
+      _actorPaintOrder.insert(
+        insertAt < 0 ? _actorPaintOrder.length : insertAt,
+        actor.id,
+      );
+    }
+
+    // 既有前后关系只有在实际渲染脚底越过滞回带后才交换。相邻交换
+    // 循环同时覆盖正反两个方向，也不会引入玩家或阵营优先级。
+    var changed = true;
+    while (changed) {
+      changed = false;
+      for (var index = 0; index < _actorPaintOrder.length - 1; index++) {
+        final backId = _actorPaintOrder[index];
+        final frontId = _actorPaintOrder[index + 1];
+        if (footYById[backId]! <=
+            footYById[frontId]! +
+                Phase0aPresentationTokens.actorLayerHysteresisPixels) {
+          continue;
+        }
+        _actorPaintOrder[index] = frontId;
+        _actorPaintOrder[index + 1] = backId;
+        changed = true;
+      }
+    }
+
+    return <Phase0aActor>[for (final id in _actorPaintOrder) actorById[id]!];
+  }
+
   bool _isMovementKey(LogicalKeyboardKey key) =>
       key == LogicalKeyboardKey.keyA ||
       key == LogicalKeyboardKey.keyD ||
@@ -193,6 +323,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _refresh() {
+    _syncActorRenderTargets();
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
       _clearHeldInput();
     }
@@ -214,6 +345,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               Phase0aPresentationTokens.hitFlashSeconds;
           _hpEmphasisRemaining[entry.targetId!] =
               Phase0aPresentationTokens.hpEmphasisSeconds;
+        }
+        if (entry.kind == Phase0aVfxKind.skillCast && entry.actorId != null) {
+          _actionPulseRemaining[entry.actorId!] =
+              Phase0aPresentationTokens.actorActionPulseSeconds;
         }
         if (_isAttackFeedback(entry.kind)) {
           if (entry.actorId != null) {
@@ -293,15 +428,18 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.clearBurst ||
     Phase0aVfxKind.bossChargeWarning ||
     Phase0aVfxKind.bossChargeInterrupted ||
+    Phase0aVfxKind.postureBroken ||
     Phase0aVfxKind.guardIntercepted ||
     Phase0aVfxKind.guardianCoop ||
     Phase0aVfxKind.defenseStarted ||
     Phase0aVfxKind.defenseResolved ||
+    Phase0aVfxKind.skillCast ||
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
     Phase0aVfxKind.gatherPull ||
-    Phase0aVfxKind.defeatInk => false,
+    Phase0aVfxKind.defeatInk ||
+    Phase0aVfxKind.skillImpact => false,
   };
 
   static bool _isAttackFeedback(Phase0aVfxKind kind) =>
@@ -310,6 +448,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   static bool _isBossMechanicFeedback(Phase0aVfxKind kind) =>
       kind == Phase0aVfxKind.bossChargeWarning ||
       kind == Phase0aVfxKind.bossChargeInterrupted ||
+      kind == Phase0aVfxKind.postureBroken ||
       kind == Phase0aVfxKind.guardIntercepted ||
       kind == Phase0aVfxKind.guardianCoop ||
       kind == Phase0aVfxKind.defenseStarted ||
@@ -326,6 +465,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.damagePopupSeconds,
       Phase0aVfxKind.meleeSlash => Phase0aPresentationTokens.meleeVfxSeconds,
       Phase0aVfxKind.palmTrail => Phase0aPresentationTokens.palmTrailSeconds,
+      Phase0aVfxKind.skillCast => Phase0aPresentationTokens.skillCastVfxSeconds,
+      Phase0aVfxKind.skillImpact =>
+        Phase0aPresentationTokens.skillImpactVfxSeconds,
       Phase0aVfxKind.gatherVortex ||
       Phase0aVfxKind.gatherPull => Phase0aPresentationTokens.gatherVfxSeconds,
       Phase0aVfxKind.clearBurst => Phase0aPresentationTokens.clearVfxSeconds,
@@ -334,6 +476,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.bossChargeFeedbackSeconds,
       Phase0aVfxKind.bossChargeInterrupted =>
         Phase0aPresentationTokens.bossInterruptFeedbackSeconds,
+      Phase0aVfxKind.postureBroken =>
+        Phase0aPresentationTokens.postureBreakFeedbackSeconds,
       Phase0aVfxKind.guardIntercepted =>
         Phase0aPresentationTokens.guardMechanicFeedbackSeconds,
       Phase0aVfxKind.guardianCoop =>
@@ -372,6 +516,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (previous == null) return;
     final deltaSeconds =
         (elapsed - previous).inMicroseconds / Duration.microsecondsPerSecond;
+    final actorRenderingChanged = _advanceActorRenderMotions(deltaSeconds);
     for (final held in _heldFeedback) {
       held.remainingSeconds -= deltaSeconds;
     }
@@ -382,7 +527,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         _advanceActorTimers(_hitFlashRemaining, deltaSeconds) |
         _advanceActorTimers(_hpEmphasisRemaining, deltaSeconds) |
         _advanceActorTimers(_actionPulseRemaining, deltaSeconds);
-    if ((previousFeedbackCount != _heldFeedback.length || transientChanged) &&
+    if ((previousFeedbackCount != _heldFeedback.length ||
+            transientChanged ||
+            actorRenderingChanged) &&
         mounted) {
       setState(() {});
     }
@@ -567,6 +714,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                           stage: stage,
                           entries: _heldFeedback,
                           feedbackFrame: _feedbackFrame,
+                          numericSkillBindings: widget.numericSkillBindings,
                         ),
                       ],
                     ),
@@ -676,12 +824,18 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aBattleController controller,
     Phase0aStage stage,
   ) {
-    final actors = stage.sortActors([
-      controller.state.player,
-      ...controller.state.enemies,
-    ]);
+    final currentActors = _currentActors();
+    final renderPositions = <String, ArenaVector>{
+      for (final actor in currentActors) actor.id: _actorRenderPosition(actor),
+    };
+    final actors = _stableActorPaintOrder(
+      currentActors,
+      stage,
+      renderPositions,
+    );
     return [
-      for (final actor in actors) _positionedActor(controller, stage, actor),
+      for (final actor in actors)
+        _positionedActor(controller, stage, actor, renderPositions[actor.id]!),
     ];
   }
 
@@ -689,9 +843,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aBattleController controller,
     Phase0aStage stage,
     Phase0aActor actor,
+    ArenaVector renderPosition,
   ) {
-    final foot = stage.worldToScreen(actor.position);
-    final scale = stage.depthScale(actor.position.y);
+    final foot = stage.worldToScreen(renderPosition);
+    final scale = stage.depthScale(renderPosition.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
     final guardianLabelOffsetX = _guardianLabelOffsetX(
@@ -709,14 +864,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
               ),
         );
-    return AnimatedPositioned(
+    return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
-      duration: Duration(
-        microseconds:
-            (controller.fixedDeltaSeconds * Duration.microsecondsPerSecond)
-                .round(),
-      ),
-      curve: Curves.linear,
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,
@@ -909,6 +1058,7 @@ class _ActorStandee extends StatelessWidget {
         : enemy
         ? WuxiaUi.jiang
         : WuxiaUi.qingOnDark;
+    final postureOpen = enemy && (actor.posture?.isVulnerable ?? false);
     final motionOffset = isHitFlashing
         ? Offset(
             -actor.facing.x * Phase0aPresentationTokens.actorHitSlideFraction,
@@ -1014,22 +1164,38 @@ class _ActorStandee extends StatelessWidget {
                   scale: motionScale,
                   duration: motionDuration,
                   curve: Curves.easeOutBack,
-                  child: ColorFiltered(
-                    key: isHitFlashing
-                        ? ValueKey('phase0a_hit_flash_${actor.id}')
+                  child: AnimatedRotation(
+                    key: postureOpen
+                        ? ValueKey('phase0a_posture_unbalanced_${actor.id}')
                         : null,
-                    colorFilter: ColorFilter.mode(
-                      WuxiaUi.paper.withValues(
-                        alpha: isHitFlashing
-                            ? Phase0aPresentationTokens.hitFlashOpacity
-                            : 0,
+                    turns: postureOpen
+                        ? Phase0aPresentationTokens.postureUnbalancedTurns
+                        : 0,
+                    duration: motionDuration,
+                    curve: Curves.easeOutBack,
+                    alignment: Alignment.bottomCenter,
+                    child: ColorFiltered(
+                      key: isHitFlashing
+                          ? ValueKey('phase0a_hit_flash_${actor.id}')
+                          : postureOpen
+                          ? ValueKey('phase0a_posture_wash_${actor.id}')
+                          : null,
+                      colorFilter: ColorFilter.mode(
+                        (postureOpen ? WuxiaUi.gold : WuxiaUi.paper).withValues(
+                          alpha: isHitFlashing
+                              ? Phase0aPresentationTokens.hitFlashOpacity
+                              : postureOpen
+                              ? Phase0aPresentationTokens
+                                    .postureUnbalancedWashOpacity
+                              : 0,
+                        ),
+                        BlendMode.srcATop,
                       ),
-                      BlendMode.srcATop,
-                    ),
-                    child: Image.asset(
-                      visual.assetPath,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.medium,
+                      child: Image.asset(
+                        visual.assetPath,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.medium,
+                      ),
                     ),
                   ),
                 ),
@@ -1093,7 +1259,11 @@ class _ActorStandee extends StatelessWidget {
               ),
             ),
           ),
-        if (enemy && actor.vulnerabilityMult != null)
+        if (enemy &&
+            actor.posture != null &&
+            (actor.vulnerabilityMult != null ||
+                actor.posture!.isVulnerable ||
+                actor.posture!.accumulated > 0))
           Positioned(
             left: 0,
             right: 0,
@@ -1102,22 +1272,19 @@ class _ActorStandee extends StatelessWidget {
                 Phase0aPresentationTokens.actorNameFontSize +
                 Phase0aPresentationTokens.bossStatusGap * 2,
             child: Center(
-              child: _BossStatusTag(
+              child: _PostureBar(
                 key: ValueKey(
-                  actor.chargingCast != null || actor.staggerTicksRemaining > 0
+                  actor.posture!.isVulnerable
                       ? 'phase0a_vulnerability_open_${actor.id}'
-                      : 'phase0a_vulnerability_guarded_${actor.id}',
+                      : actor.vulnerabilityMult != null
+                      ? 'phase0a_vulnerability_guarded_${actor.id}'
+                      : 'phase0a_posture_bar_${actor.id}',
                 ),
-                label:
-                    actor.chargingCast != null ||
-                        actor.staggerTicksRemaining > 0
-                    ? UiStrings.phase0aVulnerabilityOpen
-                    : UiStrings.phase0aVulnerabilityGuarded,
-                accent:
-                    actor.chargingCast != null ||
-                        actor.staggerTicksRemaining > 0
-                    ? WuxiaUi.gold
-                    : WuxiaUi.qingOnDark,
+                actorId: actor.id,
+                accumulated: actor.posture!.accumulated,
+                capacity: actor.posture!.config.capacity,
+                isVulnerable: actor.posture!.isVulnerable,
+                guarded: actor.vulnerabilityMult != null,
               ),
             ),
           ),
@@ -1172,6 +1339,99 @@ class _ActorStandee extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _PostureBar extends StatelessWidget {
+  const _PostureBar({
+    super.key,
+    required this.actorId,
+    required this.accumulated,
+    required this.capacity,
+    required this.isVulnerable,
+    required this.guarded,
+  });
+
+  final String actorId;
+  final double accumulated;
+  final double capacity;
+  final bool isVulnerable;
+  final bool guarded;
+
+  @override
+  Widget build(BuildContext context) {
+    final fraction = capacity <= 0
+        ? 0.0
+        : (accumulated / capacity).clamp(0.0, 1.0);
+    final accent = isVulnerable
+        ? WuxiaUi.gold
+        : guarded
+        ? WuxiaUi.qingOnDark
+        : WuxiaUi.jiang;
+    final label = isVulnerable
+        ? UiStrings.phase0aVulnerabilityOpen
+        : guarded
+        ? UiStrings.phase0aVulnerabilityGuarded
+        : UiStrings.phase0aPostureLabel;
+    return Semantics(
+      container: true,
+      label: UiStrings.phase0aPostureSemantics(
+        accumulated.ceil(),
+        capacity.ceil(),
+        isVulnerable: isVulnerable,
+      ),
+      child: SizedBox(
+        width: Phase0aPresentationTokens.postureBarWidth,
+        height: Phase0aPresentationTokens.postureBarHeight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: WuxiaUi.ink.withValues(
+              alpha: Phase0aPresentationTokens.postureBarTrackOpacity,
+            ),
+            border: Border.all(
+              color: accent,
+              width: Phase0aPresentationTokens.postureBarBorderWidth,
+            ),
+            borderRadius: BorderRadius.circular(
+              Phase0aPresentationTokens.postureBarHeight,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(
+              Phase0aPresentationTokens.postureBarHeight,
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                FractionallySizedBox(
+                  key: ValueKey('phase0a_posture_fill_$actorId'),
+                  alignment: Alignment.centerLeft,
+                  widthFactor: fraction,
+                  child: ColoredBox(
+                    color: accent.withValues(
+                      alpha: Phase0aPresentationTokens.postureBarFillOpacity,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: WuxiaUi.paper,
+                      fontSize:
+                          Phase0aPresentationTokens.postureBarLabelFontSize,
+                      fontWeight: FontWeight.w800,
+                      shadows: [Shadow(color: WuxiaUi.ink, blurRadius: 2)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1410,12 +1670,14 @@ class _FeedbackLayer extends StatefulWidget {
     required this.stage,
     required this.entries,
     required this.feedbackFrame,
+    required this.numericSkillBindings,
   });
 
   final Phase0aBattleController controller;
   final Phase0aStage stage;
   final List<_HeldFeedback> entries;
   final ValueListenable<int> feedbackFrame;
+  final Phase0aNumericSkillBindings numericSkillBindings;
 
   @override
   State<_FeedbackLayer> createState() => _FeedbackLayerState();
@@ -1448,6 +1710,10 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.palmTrail:
           children.add(_palmTrail(held));
+        case Phase0aVfxKind.skillCast:
+          children.add(_skillVfx(held, _SkillVfxPhase.cast));
+        case Phase0aVfxKind.skillImpact:
+          children.add(_skillVfx(held, _SkillVfxPhase.impact));
         case Phase0aVfxKind.gatherVortex:
           children.add(
             _inkVfx(
@@ -1493,6 +1759,8 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
               accent: WuxiaUi.gold,
             ),
           );
+        case Phase0aVfxKind.postureBroken:
+          children.add(_postureBreakVfx(held));
         case Phase0aVfxKind.guardIntercepted:
           children.add(
             _guardianMechanicVfx(
@@ -1513,8 +1781,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.defenseStarted:
           children.add(
-            _guardianMechanicVfx(
-              held,
+            _bossMechanicBanner(
               key: ValueKey('phase0a_defense_start_${held.id}'),
               label: UiStrings.phase0aDefenseStarted,
               accent: WuxiaUi.qingOnDark,
@@ -1522,8 +1789,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.defenseResolved:
           children.add(
-            _guardianMechanicVfx(
-              held,
+            _bossMechanicBanner(
               key: ValueKey('phase0a_defense_resolved_${held.id}'),
               label: UiStrings.phase0aDefenseResolved,
               accent: WuxiaUi.gold,
@@ -1541,6 +1807,47 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: RepaintBoundary(
           key: const ValueKey('phase0a_feedback_layer'),
           child: Stack(children: children),
+        ),
+      ),
+    );
+  }
+
+  Widget _postureBreakVfx(_HeldFeedback held) {
+    final entry = held.entry;
+    final anchor = entry.anchor;
+    if (anchor == null) return const SizedBox.shrink();
+    final screen = widget.stage.worldToScreen(anchor);
+    const size = Phase0aPresentationTokens.postureBreakVfxSize;
+    final targetKey = entry.targetId ?? '${held.id}';
+    return Positioned(
+      key: ValueKey('phase0a_posture_break_$targetKey'),
+      left: screen.dx - size / 2,
+      top: screen.dy - size / 2,
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.scale(
+          scale: 0.72 + 0.28 * Curves.easeOutBack.transform(held.progress),
+          child: CustomPaint(
+            key: ValueKey('phase0a_posture_break_paint_$targetKey'),
+            size: const Size.square(size),
+            painter: _PostureBreakPainter(progress: held.progress),
+            child: const Center(
+              child: Text(
+                UiStrings.phase0aPostureBroken,
+                style: TextStyle(
+                  color: WuxiaUi.gold,
+                  fontSize: Phase0aPresentationTokens.vfxOutcomeFontSize,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(color: WuxiaUi.ink, blurRadius: 5),
+                    Shadow(color: WuxiaUi.paper, blurRadius: 2),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1722,6 +2029,58 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
               _InkEffect.palm,
               progress: held.progress,
               isCritical: entry.isCritical,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 数字技能两段墨势。流派只取正式 binding 的 typed 语义，且同时核对
+  /// hotkey / skillId，避免槽位换装后把旧事件画成另一招。
+  Widget _skillVfx(_HeldFeedback held, _SkillVfxPhase phase) {
+    final entry = held.entry;
+    final hotkey = entry.hotkey;
+    final skillId = entry.skillId;
+    final anchor = entry.anchor;
+    if (hotkey == null || skillId == null || anchor == null) {
+      return const SizedBox.shrink();
+    }
+    final binding = widget.numericSkillBindings.bindingFor(hotkey);
+    if (binding == null || binding.skill.id != skillId) {
+      return const SizedBox.shrink();
+    }
+    final isUltimate = binding.skill.type == SkillType.ultimate;
+    final baseSize = phase == _SkillVfxPhase.cast
+        ? Phase0aPresentationTokens.skillCastVfxSize
+        : Phase0aPresentationTokens.skillImpactVfxSize;
+    final size =
+        baseSize *
+        (isUltimate ? Phase0aPresentationTokens.skillUltimateVfxScale : 1);
+    final screen = widget.stage.worldToScreen(anchor);
+    final keyStem = 'phase0a_skill_${phase.name}_${binding.visualSchool.name}';
+    return Positioned(
+      key: ValueKey('${keyStem}_${held.id}'),
+      left: screen.dx - size / 2,
+      top: screen.dy - size / 2,
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: _feedbackOpacity(held.progress),
+        child: Transform.scale(
+          scale: 0.74 + 0.26 * Curves.easeOut.transform(held.progress),
+          child: SizedBox.square(
+            dimension: size,
+            child: CustomPaint(
+              key: ValueKey('${keyStem}_paint_${held.id}'),
+              size: Size.square(size),
+              painter: _SkillVfxPainter(
+                school: binding.visualSchool,
+                phase: phase,
+                progress: held.progress,
+                isUltimate: isUltimate,
+                isAoe: binding.targetType == TargetType.aoe,
+              ),
             ),
           ),
         ),
@@ -1918,6 +2277,290 @@ final class _SurviveConditionBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PostureBreakPainter extends CustomPainter {
+  const _PostureBreakPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final reveal = Curves.easeOutCubic.transform(
+      Phase0aPresentationTokens.vfxReveal(progress),
+    );
+    final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final radius = size.shortestSide * 0.39 * reveal;
+    final ink = Paint()
+      ..color = WuxiaUi.ink.withValues(alpha: 0.82 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth;
+    final gold = Paint()
+      ..color = WuxiaUi.gold.withValues(alpha: 0.72 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
+    final ring = Rect.fromCircle(center: center, radius: radius);
+    const segments = 6;
+    for (var i = 0; i < segments; i++) {
+      final start = math.pi * 2 * i / segments + 0.08;
+      canvas.drawArc(ring, start, math.pi * 0.23, false, i.isEven ? ink : gold);
+    }
+    const cracks = 8;
+    for (var i = 0; i < cracks; i++) {
+      final angle = math.pi * 2 * i / cracks;
+      final inner =
+          center + Offset(math.cos(angle), math.sin(angle)) * radius * 0.18;
+      final elbow =
+          center +
+          Offset(
+                math.cos(angle + (i.isEven ? 0.13 : -0.13)),
+                math.sin(angle + (i.isEven ? 0.13 : -0.13)),
+              ) *
+              radius *
+              0.58;
+      final outer =
+          center +
+          Offset(math.cos(angle), math.sin(angle)) *
+              radius *
+              (i.isEven ? 1.08 : 0.88);
+      canvas.drawPath(
+        Path()
+          ..moveTo(inner.dx, inner.dy)
+          ..lineTo(elbow.dx, elbow.dy)
+          ..lineTo(outer.dx, outer.dy),
+        i.isEven ? ink : gold,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PostureBreakPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+enum _SkillVfxPhase { cast, impact }
+
+/// 三系共享同一程序化 painter，但几何语言严格分离：
+/// 刚猛 = 方折/震裂，灵巧 = 弧影/掠痕，阴柔 = 回旋/涟漪。
+class _SkillVfxPainter extends CustomPainter {
+  const _SkillVfxPainter({
+    required this.school,
+    required this.phase,
+    required this.progress,
+    required this.isUltimate,
+    required this.isAoe,
+  });
+
+  final TechniqueSchool school;
+  final _SkillVfxPhase phase;
+  final double progress;
+  final bool isUltimate;
+  final bool isAoe;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final reveal = Curves.easeOutCubic.transform(
+      Phase0aPresentationTokens.vfxReveal(progress),
+    );
+    final fade = Phase0aPresentationTokens.vfxFade(progress);
+    final radius = size.shortestSide * 0.42;
+    final accent = switch (school) {
+      TechniqueSchool.gangMeng => WuxiaUi.jiang,
+      TechniqueSchool.lingQiao => WuxiaUi.gold,
+      TechniqueSchool.yinRou => WuxiaUi.qingOnDark,
+    };
+    final widthScale = isUltimate ? 1.34 : 1.0;
+    final ink = Paint()
+      ..color = WuxiaUi.ink.withValues(alpha: 0.78 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * widthScale;
+    final wash = Paint()
+      ..color = accent.withValues(alpha: 0.68 * fade)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth * widthScale;
+
+    if (phase == _SkillVfxPhase.cast) {
+      _paintCast(canvas, center, radius, reveal, ink, wash);
+    } else {
+      _paintImpact(canvas, center, radius, reveal, ink, wash);
+    }
+
+    if (isAoe) {
+      canvas.drawCircle(
+        center,
+        radius * (0.62 + 0.34 * reveal),
+        Paint()
+          ..color = accent.withValues(alpha: 0.28 * fade)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth,
+      );
+    }
+  }
+
+  void _paintCast(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double reveal,
+    Paint ink,
+    Paint wash,
+  ) {
+    switch (school) {
+      case TechniqueSchool.gangMeng:
+        final half = radius * (0.30 + 0.58 * reveal);
+        final diamond = Path()
+          ..moveTo(center.dx, center.dy - half)
+          ..lineTo(center.dx + half, center.dy)
+          ..lineTo(center.dx, center.dy + half)
+          ..lineTo(center.dx - half, center.dy)
+          ..close();
+        canvas.drawPath(diamond, ink);
+        canvas.drawLine(
+          Offset(center.dx - half * 0.72, center.dy),
+          Offset(center.dx + half * 0.72, center.dy),
+          wash,
+        );
+        canvas.drawLine(
+          Offset(center.dx, center.dy - half * 0.72),
+          Offset(center.dx, center.dy + half * 0.72),
+          wash,
+        );
+      case TechniqueSchool.lingQiao:
+        final rect = Rect.fromCircle(center: center, radius: radius * 0.82);
+        canvas.drawArc(
+          rect,
+          math.pi * 0.82,
+          math.pi * 1.18 * reveal,
+          false,
+          ink,
+        );
+        canvas.drawArc(
+          rect.deflate(radius * 0.18),
+          -math.pi * 0.18,
+          math.pi * 1.08 * reveal,
+          false,
+          wash,
+        );
+        final tip =
+            center +
+            Offset(
+                  math.cos(math.pi * 0.82 + math.pi * 1.18 * reveal),
+                  math.sin(math.pi * 0.82 + math.pi * 1.18 * reveal),
+                ) *
+                radius *
+                0.82;
+        canvas.drawLine(center, tip, wash);
+      case TechniqueSchool.yinRou:
+        final spiral = Path();
+        const points = 28;
+        for (var i = 0; i <= points; i++) {
+          final t = i / points * reveal;
+          final angle = math.pi * 4.2 * t;
+          final distance = radius * (0.10 + 0.78 * t);
+          final point =
+              center + Offset(math.cos(angle), math.sin(angle)) * distance;
+          if (i == 0) {
+            spiral.moveTo(point.dx, point.dy);
+          } else {
+            spiral.lineTo(point.dx, point.dy);
+          }
+        }
+        canvas.drawPath(spiral, ink);
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius * 0.56),
+          math.pi * 0.2,
+          math.pi * 1.35 * reveal,
+          false,
+          wash,
+        );
+    }
+  }
+
+  void _paintImpact(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    double reveal,
+    Paint ink,
+    Paint wash,
+  ) {
+    switch (school) {
+      case TechniqueSchool.gangMeng:
+        const rays = 8;
+        for (var i = 0; i < rays; i++) {
+          final angle = math.pi * 2 * i / rays;
+          final inner =
+              center + Offset(math.cos(angle), math.sin(angle)) * radius * 0.14;
+          final outer =
+              center +
+              Offset(math.cos(angle), math.sin(angle)) *
+                  radius *
+                  (i.isEven ? 0.96 : 0.72) *
+                  reveal;
+          canvas.drawLine(inner, outer, i.isEven ? ink : wash);
+        }
+        final strike = Path()
+          ..moveTo(center.dx - radius * 0.34, center.dy - radius * 0.70)
+          ..lineTo(center.dx + radius * 0.12, center.dy - radius * 0.08)
+          ..lineTo(center.dx - radius * 0.02, center.dy + radius * 0.70);
+        canvas.drawPath(strike, ink);
+      case TechniqueSchool.lingQiao:
+        for (var i = 0; i < 3; i++) {
+          final inset = radius * (0.12 + i * 0.13);
+          final rect = Rect.fromCircle(
+            center: center + Offset((i - 1) * radius * 0.12, 0),
+            radius: radius - inset,
+          );
+          canvas.drawArc(
+            rect,
+            -math.pi * (0.42 + i * 0.08),
+            math.pi * (0.86 + i * 0.10) * reveal,
+            false,
+            i == 1 ? ink : wash,
+          );
+        }
+        canvas.drawLine(
+          center - Offset(radius * 0.86 * reveal, radius * 0.18),
+          center + Offset(radius * 0.92 * reveal, radius * 0.10),
+          ink,
+        );
+      case TechniqueSchool.yinRou:
+        for (var i = 0; i < 3; i++) {
+          canvas.drawCircle(
+            center,
+            radius * (0.22 + i * 0.27) * reveal,
+            i == 1 ? ink : wash,
+          );
+        }
+        final wave = Path()
+          ..moveTo(center.dx - radius * reveal, center.dy)
+          ..cubicTo(
+            center.dx - radius * 0.45,
+            center.dy - radius * 0.42 * reveal,
+            center.dx + radius * 0.30,
+            center.dy + radius * 0.38 * reveal,
+            center.dx + radius * reveal,
+            center.dy,
+          );
+        canvas.drawPath(wave, ink);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SkillVfxPainter oldDelegate) =>
+      oldDelegate.school != school ||
+      oldDelegate.phase != phase ||
+      oldDelegate.progress != progress ||
+      oldDelegate.isUltimate != isUltimate ||
+      oldDelegate.isAoe != isAoe;
 }
 
 enum _InkEffect { melee, palm, gather, clear, defeat }

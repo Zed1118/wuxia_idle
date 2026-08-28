@@ -35,12 +35,17 @@ abstract final class Phase0aPresentationTokens {
 
   /// 仅表现层的受击压缩 / 出手前倾；不写回领域坐标。
   static const double actorMotionTweenSeconds = 0.08;
+
+  /// 角色脚底在该屏幕像素带内交叉时保持既有绘制顺序，避免近身缠斗抖层。
+  static const double actorLayerHysteresisPixels = 10;
   static const double actorActionPulseSeconds = 0.16;
   static const double actorHitScale = 0.94;
   static const double actorActionScale = 1.035;
   static const double actorHitSlideFraction = 0.018;
   static const double actorActionSlideFraction = 0.024;
   static const double defenseFeedbackSeconds = 0.72;
+  static const double postureUnbalancedTurns = -0.012;
+  static const double postureUnbalancedWashOpacity = 0.24;
 
   /// 血条强调墨边宽度。
   static const double hpEmphasisBorderWidth = 2;
@@ -110,6 +115,16 @@ abstract final class Phase0aPresentationTokens {
   static const double stageShadeOpacity = 0.22;
   static const double vfxCenterSize = 250;
   static const double vfxMeleeSize = 148;
+  static const double skillCastVfxSize = 176;
+  static const double skillImpactVfxSize = 208;
+  static const double skillUltimateVfxScale = 1.18;
+  static const double postureBreakVfxSize = 220;
+  static const double postureBarWidth = 104;
+  static const double postureBarHeight = 16;
+  static const double postureBarBorderWidth = 1.4;
+  static const double postureBarLabelFontSize = 10.5;
+  static const double postureBarTrackOpacity = 0.84;
+  static const double postureBarFillOpacity = 0.72;
   static const double palmTrailPadding = 20;
   static const double palmTrailHeight = 84;
   static const double vfxEliteDefeatSize = 292;
@@ -131,6 +146,8 @@ abstract final class Phase0aPresentationTokens {
   static const double damagePopupSeconds = 0.42;
   static const double meleeVfxSeconds = 0.18;
   static const double palmTrailSeconds = 0.24;
+  static const double skillCastVfxSeconds = 0.34;
+  static const double skillImpactVfxSeconds = 0.42;
   static const double gatherVfxSeconds = 0.36;
   static const double clearVfxSeconds = 0.30;
   static const double defeatVfxSeconds = 0.45;
@@ -157,6 +174,7 @@ abstract final class Phase0aPresentationTokens {
   static const double bossStatusRadius = 3;
   static const double bossChargeFeedbackSeconds = 1.1;
   static const double bossInterruptFeedbackSeconds = 0.9;
+  static const double postureBreakFeedbackSeconds = 0.9;
   static const double guardMechanicFeedbackSeconds = 1.0;
   static const double bossMechanicBannerTopGap = 12;
   static const double guardianWardRingStrokeWidth = 2.4;
