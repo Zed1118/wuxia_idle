@@ -543,13 +543,17 @@ active 只有 `{5,6,7}`。塔 14 层 `enemyTeam=3`、映射也是 3。
 | 「双方查无实据」应撤回 | ✅ 成立,**已撤回** | 四条 JSONL 原始记录本会话复核,B 12:37 签、A 21:54 签 |
 | 我的 16 协调提交零代码改动 | ✅ 成立 | 全 `docs/`,`lib/test/data` 命中 0 |
 | 185 删行是语义重写非掏空 | ✅ 成立且更干净 | test/ 区间 +1451/-185,删行>30 的文件仅 1 个且净增(+65/-33) |
-| 测试文件/声明数 | 增量对、**绝对基数错** | 实测 803→805 / 5505→5517;codex 报 820→822 / 5525→5537 |
+| 测试文件/声明数 | ✅ 成立,**「绝对基数错」措辞收回** | 两边口径不同:`test/**/*.dart`=820→822(与 codex 一致)、`*_test.dart`=803→805;增量在任一口径下均 +2 文件/+12 用例 |
 | main 16 / candidate 10 无法 ff | ✅ 成立 | `rev-list --left-right --count` 实测 |
-| T2 `2/1/1/0` 排除是正确的 | ⚠️ **这是代拍** | support 归零是事实,但「是否可接受」是 🔴 用户判断,T2 自己停在 `[BLOCKED]` 等签字 |
+| T2 `2/1/1/0` 排除是正确的 | ✅ 成立,**「代拍」判定收回** | 生效授权仍是 A、T2 自身 `[BLOCKED]`,不并入即照章办事;「是否永久不可用」才是用户的问题 |
 
-**新发现(就绪标记机制的洞)**:T2 分支 tip `bae8f89b 并入探针工具格式化基线` 无前缀,
-按 §8.3 机械读作 WIP,实质是其父 commit 的 `[BLOCKED]`。
-**格式化/基线类 commit 叠在标记 commit 之上会静默清掉就绪信号。**
+**~~新发现(就绪标记机制的洞)~~ — 2026-08-27 撤回**:
+T1/T2 两分支 tip 均为 `并入探针工具格式化基线`(22:19 共享格式化 commit `db2a1e66` 并入所致),
+按 §8.3 读作 WIP。我曾把这判为「机制的洞」,**该判断错误**:
+`CLAUDE.md` §8.3 明写「就绪与否以 tip 前缀为准」,后续 commit 让旧状态失效是
+**有意的 fail-closed 设计**——旧 Gate 跑在旧树上,扫描历史标记会把旧结论套到新树。
+**正确处置(用户 2026-08-27 裁决 3C)**:保持 tip-bound;每次 merge 后**重跑 Gate**,
+再为当前 HEAD 追加新的状态标记 commit,不扫描旧标记。
 
 **已修**:
 - `docs/audit/codex_autonomous_work_review_20260827.md` §4 重写(`d1a5864c`,已合 main);记账 10 单/11 标签已订正
@@ -557,3 +561,83 @@ active 只有 `{5,6,7}`。塔 14 层 `enemyTeam=3`、映射也是 3。
   四用例破坏证红,旧版对崩溃 gate 记 `PASS`/exit 0,新版 `FAIL: gate_crash_exit_3`/exit 1
 
 **未修(需用户拍板或需派单)**:registry `selected_candidate: A` 仍顶着 B 的 `chosen_because`(在候选分支上,不属协调者微修例外)。
+
+## 用户裁决四项(2026-08-27)
+
+| # | 裁决 | 内容 |
+|---|---|---|
+| 1 | **1B** | 当前 G2 保持 A `1/1/1/1`;T2 `2/1/1/0` 保留为**独立实验候选**,不纳入当前 G2,**也不永久否决**,日后按需真人 A/B 试玩 |
+| 2 | **2D**(新拟) | 不直接进 main。从当前 main 建**受控集成分支** → `--no-ff` 合入候选 → **重跑 Gate** → 完成 8 项真人试玩 → 通过后再快进 main |
+| 3 | **3C**(新拟) | 保持 **tip-bound** 标记机制;merge 后必须**重跑 Gate**并为当前 HEAD 补新状态标记,**禁止扫描旧标记** |
+| 4 | **4A′** | 协调者仅可将 `docs/dispatch/**` 与 `docs/audit/**` 的**纯记录**提交写入 main;**双重围栏**:① 路径不得触碰 `lib/` `test/` `data/` `GDD.md` `PROGRESS.md` `CLAUDE.md` ② 不得借审计文档替用户新增产品决策。其余一律走独立分支 |
+
+**我被纠正的三处**(均已在本盘面与审计正文原地订正):
+① 「就绪标记机制的洞」→ 撤回,那是 §8.3 有意的 fail-closed 设计;
+② 「codex 绝对基数错」→ 收回,是口径不同(`test/**/*.dart` 口径下 820→822 与 codex 完全一致);
+③ 「T2 排除是代拍」→ 收回,生效授权是 A、T2 自身 `[BLOCKED]`,不并入即照章办事。
+
+**4A′ 围栏追溯核查**:main 相对 merge-base `049fce08` 的 18 个提交,
+`git diff --name-only` 全部落在 `docs/dispatch/` + `docs/audit/`,**零** `lib/test/data/GDD/PROGRESS/CLAUDE`。
+(此前我一度以候选侧 `1cf7df37` 作 diff 端点而误见 `data/numbers.yaml`——它不是 main 的祖先,
+树对比把候选自己的注释改动反向显示了出来,**是查法错误,不是围栏破口**。)
+
+## 2D 执行中
+
+- 集成分支 `integration/p2-g2-candidate-20260827`,worktree `挂机武侠-p2-integration`,基线 `8ad8ffa0`(当前 main)
+- `--no-ff` 合入 `codex/p2-g2-human-ready-20260827` → 合并提交 `b82f6753`,**零冲突**
+- Gate 全量执行中,结果与 tip-bound 标记见下节
+
+### 2D Gate 全量结果(2026-08-27 11:04–11:10,墙钟 5m51s)
+
+`gate.sh <集成worktree> 8ad8ffa0 b82f6753`,90 个改动文件、27 个 `lib/` 改动,判为 code 任务。
+
+**PASS 四项(实测输出)**:
+
+```
+[PASS] full_test: error_block_count=0 last=04:51 +5623: All tests passed!
+[PASS] analyze:   No issues found! (ran in 21.9s)
+[PASS] format:    Formatted 1622 files (0 changed) in 2.90 seconds.
+[PASS] worktree_clean
+```
+
+**FAIL 四项及定性**(我不自行豁免任何一条):
+
+| 项 | 内容 | 定性 | 处置 |
+|---|---|---|---|
+| `forbidden_files` | `data/numbers.yaml` | 见下方【订正】,**不是纯注释** | **待用户裁决**,选项见下 |
+| `test_deletions` | 185 行 | **已核为语义重写**:区间 `+1451/-185`,删行>30 的文件仅 1 个且净增(`+65/-33`),无文件被掏空;用例数 +12、skip 数不变 | 同上,待裁决 |
+| `commit_msg` | tip 无标记 | Gate 跑在补标记之前;**已按 3C 补** `870f9832 [BLOCKED]`,树哈希 `fd2a9ed3` 与受验树**完全相同** | 已解决,重跑即 PASS |
+| `receipt_crosscheck` | 无 `receipt.yaml` | 集成合并不是派单任务,**没有自身收据**;候选分支上也从无 `receipt.yaml` | Gate 语义与集成态不匹配,非候选缺陷 |
+
+**【订正】`data/numbers.yaml` 我先前的定性错了**(2026-08-27 复核后当场改)
+
+我在上一条里写「已核为纯注释,零数值改动」。**该结论对本区间不成立,现予撤回。**
+错因:我量的是**候选相对自己基线 `1cf7df37`** 的区间——那个区间里执行端确实只动注释;
+但集成区间的基线是 **main**,而 main 上从来没有 `combat.posture` 块。实测:
+
+| 事实 | 实测值 |
+|---|---|
+| 相对 main 的实质(非注释)增删行 | **10 行,不是 0** |
+| 新增内容 | 整个 `combat.posture` 块,5 个实值:`capacity: 14` / `vulnerability_ticks: 4` / `recovery_policy: recover` / `post_vulnerability_accumulated: 4` / `boss_conversion_factor: 3` |
+| 引入者 | `1cf7df37 冻结姿态统一配置块`(08-26 17:47),**协调者自己的提交**,不是执行端越界 |
+| 值的状态 | 块内注释自称仍为 `TUNING`,「待生产路径真人试玩后才能冻结」 |
+| 守卫强度 | `phase0a_posture_production_wiring_test.dart:61-73` 断言的是**解析保真**(`expect(posture.capacity, rawPosture['capacity'])`,拿解析结果比原始 map),**不钉具体数值**——把 14 改成 999 这条断言照样绿;另有缺块 fail-closed 测(`:79`)是真守卫 |
+
+**教训**:同一份 diff 换基线会得出相反定性,引用「纯注释/零改动」这类结论**必须同时写明基线**。
+这与本盘面上一节记的「口径不同致误判 codex 算错」是同一类错误,本会话内已犯两次。
+
+**因此 `forbidden_files` 的裁决选项修正为**:
+
+- **A**:接受并 `--whitelist data/numbers.yaml` 重跑 Gate。理由:值是协调者自己冻的,禁区规则的本意(执行端不得改数值)未被违反,且这 5 个值正是 8 项真人试玩要验的对象
+- **B**:维持 FAIL 不豁免,把 posture 块从候选里摘出、由协调者单独走一次数值变更流程后再合
+- **C**:先做真人试玩,试玩通过再决定豁免与否
+
+**tip-bound 标记(3C 执行)**:`870f9832 [BLOCKED] G2候选集成态待8项真人试玩`
+(空 commit,`HEAD^{tree}` 前后均为 `fd2a9ed3130cbcf5e15e62b1603159b0748959ca`,Gate 结论仍绑定)
+
+**4A′ 围栏已机械化**:`~/.claude/skills/afk/scripts/main_fence.sh`(commit `418b31c`)。
+硬判据 = 越出 `docs/dispatch|audit` 或命中 `lib/ test/ data/ GDD/PROGRESS/CLAUDE.md` 即 FAIL;
+另强制 base 必须是 head 的祖先(端点选错会给出反向树差,正是我此前犯的错)。
+产品决策围栏只列候选行供人核,**明示不构成证明**。三用例实测:
+纯文档区间 PASS / 含 `lib/` 区间 FAIL forbidden_paths / 非祖先端点 FAIL base_not_ancestor。
+自本条起,协调者每次写 main 前先过此脚本。
