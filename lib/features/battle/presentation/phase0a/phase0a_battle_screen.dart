@@ -167,6 +167,30 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     return delta.lengthSquared > 0 ? delta.normalized() : player.facing;
   }
 
+  ArenaVector _nearestEnemyAim() {
+    final state = widget.controller.state;
+    final player = state.player;
+    Phase0aActor? nearest;
+    var nearestDistance = double.infinity;
+    for (final enemy in state.enemies) {
+      if (!enemy.isAlive) continue;
+      final distance = (enemy.position - player.position).lengthSquared;
+      if (distance < nearestDistance) {
+        nearest = enemy;
+        nearestDistance = distance;
+      }
+    }
+    if (nearest == null) return player.facing;
+    final delta = nearest.position - player.position;
+    return delta.lengthSquared > 0 ? delta.normalized() : player.facing;
+  }
+
+  ArenaVector? _heldAttackAim() {
+    if (_primaryAttackHeld) return _pointerAimDirection;
+    if (_primaryAttackKeyHeld) return _nearestEnemyAim();
+    return null;
+  }
+
   void _enqueuePointerAttack() {
     final aim = _pointerAimDirection;
     if (!_acceptsBattleInput || aim == null) return;
@@ -307,7 +331,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     up: _heldMovementKeys.contains(LogicalKeyboardKey.keyW),
     down: _heldMovementKeys.contains(LogicalKeyboardKey.keyS),
     attack: _primaryAttackKeyHeld || _primaryAttackHeld,
-    attackAimDirection: _pointerAimDirection,
+    attackAimDirection: _heldAttackAim(),
   );
 
   void _enqueueHeldInput() {
@@ -630,17 +654,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.handled;
     }
     final command = switch (key) {
-      // G2 defense keymap TUNING: E/F/Z are currently unused by battle input;
-      // they are intentionally not presented as final ergonomics.
+      // E/F keep their existing defense semantics; Z and Space share dodge.
       LogicalKeyboardKey.keyE => const Phase0aPlayerCommand(
         defenseAction: Phase0aDefenseAction.shield,
       ),
       LogicalKeyboardKey.keyF => const Phase0aPlayerCommand(
         defenseAction: Phase0aDefenseAction.parry,
       ),
-      LogicalKeyboardKey.keyZ => const Phase0aPlayerCommand(
-        defenseAction: Phase0aDefenseAction.dodge,
-      ),
+      LogicalKeyboardKey.keyZ || LogicalKeyboardKey.space =>
+        const Phase0aPlayerCommand(defenseAction: Phase0aDefenseAction.dodge),
       LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
@@ -1550,6 +1572,10 @@ class _PlayerHud extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final player = controller.state.player;
+    final defenseAvailable = player.defenseCooldownRemaining <= 0;
+    final defenseStatus = defenseAvailable
+        ? UiStrings.skillReady
+        : UiStrings.phase0aSealCooldown(player.defenseCooldownRemaining);
     return Positioned(
       key: const ValueKey('phase0a_player_hud'),
       left: Phase0aPresentationTokens.hudInset,
@@ -1611,46 +1637,37 @@ class _PlayerHud extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 2,
                   children: [
-                    Text(
-                      UiStrings.phase0aDefenseShieldKey,
-                      style: TextStyle(
-                        color: player.shieldRemaining > 0
-                            ? WuxiaUi.qing
-                            : WuxiaUi.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    _DefenseActionStatus(
+                      actionId: 'shield',
+                      label: UiStrings.phase0aDefenseShieldKey,
+                      status: defenseStatus,
+                      available: defenseAvailable,
+                      labelColor: player.shieldRemaining > 0
+                          ? WuxiaUi.qing
+                          : WuxiaUi.ink,
                     ),
-                    Text(
-                      UiStrings.phase0aDefenseParryKey,
-                      style: TextStyle(
-                        color: player.parryTicksRemaining > 0
-                            ? WuxiaUi.gold
-                            : WuxiaUi.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    _DefenseActionStatus(
+                      actionId: 'parry',
+                      label: UiStrings.phase0aDefenseParryKey,
+                      status: defenseStatus,
+                      available: defenseAvailable,
+                      labelColor: player.parryTicksRemaining > 0
+                          ? WuxiaUi.gold
+                          : WuxiaUi.ink,
                     ),
-                    Text(
-                      UiStrings.phase0aDefenseDodgeKey,
-                      style: TextStyle(
-                        color: player.dodgeTicksRemaining > 0
-                            ? WuxiaUi.qing
-                            : WuxiaUi.ink,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    _DefenseActionStatus(
+                      actionId: 'dodge',
+                      label: UiStrings.phase0aDefenseDodgeKey,
+                      status: defenseStatus,
+                      available: defenseAvailable,
+                      labelColor: player.dodgeTicksRemaining > 0
+                          ? WuxiaUi.qing
+                          : WuxiaUi.ink,
                     ),
                     if (player.shieldRemaining > 0)
                       Text(
                         '${UiStrings.phase0aDefenseAbsorbPrefix} '
                         '${player.shieldRemaining.round()}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    if (player.defenseCooldownRemaining > 0)
-                      Text(
-                        '${UiStrings.phase0aDefenseCooldownPrefix} '
-                        '${player.defenseCooldownRemaining.toStringAsFixed(1)}',
                         style: const TextStyle(fontSize: 12),
                       ),
                   ],
@@ -1662,6 +1679,45 @@ class _PlayerHud extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DefenseActionStatus extends StatelessWidget {
+  const _DefenseActionStatus({
+    required this.actionId,
+    required this.label,
+    required this.status,
+    required this.available,
+    required this.labelColor,
+  });
+
+  final String actionId;
+  final String label;
+  final String status;
+  final bool available;
+  final Color labelColor;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          color: labelColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      Text(
+        status,
+        key: ValueKey<String>('phase0a_defense_status_$actionId'),
+        style: TextStyle(
+          color: available ? WuxiaUi.jiang : WuxiaUi.muted,
+          fontSize: 12,
+        ),
+      ),
+    ],
+  );
 }
 
 class _FeedbackLayer extends StatefulWidget {

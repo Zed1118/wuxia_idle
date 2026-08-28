@@ -576,7 +576,7 @@ void main() {
       expect(controller.events.length, greaterThanOrEqualTo(before));
     });
 
-    testWidgets('点击技能印不额外触发 basic attack，J 仍按 facing 普攻', (tester) async {
+    testWidgets('点击技能印不额外触发 basic attack，J 仍按最近敌人普攻', (tester) async {
       await pumpScreen(tester);
       await tester.tap(find.byKey(clearSealKey));
       await tester.pump();
@@ -584,12 +584,20 @@ void main() {
       expect(clearEvents.whereType<Phase0aClearStarted>(), hasLength(1));
       expect(clearEvents.whereType<Phase0aAttackStarted>(), isEmpty);
 
+      final player = controller.state.player;
+      final nearest = controller.state.enemies.reduce((left, right) {
+        final leftDistance = (left.position - player.position).lengthSquared;
+        final rightDistance = (right.position - player.position).lengthSquared;
+        return leftDistance <= rightDistance ? left : right;
+      });
+      final expectedAim = (nearest.position - player.position).normalized();
+
       await tester.sendKeyEvent(LogicalKeyboardKey.keyJ);
       await tester.pump();
       final jEvents = controller.step();
       expect(jEvents.whereType<Phase0aAttackStarted>(), hasLength(1));
-      expect(controller.state.player.facing.x, greaterThan(0));
-      expect(controller.state.player.facing.y, closeTo(0, 0.001));
+      expect(controller.state.player.facing.x, closeTo(expectedAim.x, 0.001));
+      expect(controller.state.player.facing.y, closeTo(expectedAim.y, 0.001));
     });
 
     testWidgets('命中弹出 resolvedDamage 原文数字,目标血条 == remainingHealth', (
