@@ -7,6 +7,7 @@ import '../../../data/numbers_config.dart';
 import '../../../data/yaml_loader.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
+import '../../battle/application/phase0a/phase0a_defense_tuning_mapper.dart';
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
@@ -16,6 +17,7 @@ import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_combat_reducer.dart';
+import '../../battle/domain/phase0a/phase0a_defense_tuning.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/domain/phase0a/posture.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
@@ -89,7 +91,11 @@ final class Phase0aDebugBattleFixture {
     for (final combatant in combatants) {
       roster.visualFor(combatant.actorId);
     }
-    final playerAdapter = config.playerAdapter(numbers);
+    final defenseTuning = Phase0aDefenseTuningMapper.fromNumbers(numbers);
+    final playerAdapter = config.playerAdapter(
+      numbers,
+      defenseTuning: defenseTuning,
+    );
     final flow = Phase0aProductionFlowAssembler.assemble(
       initialState: Phase0aArenaState(
         tick: config.initialTick,
@@ -105,7 +111,10 @@ final class Phase0aDebugBattleFixture {
       numbers: numbers,
       rng: Random(config.seed),
       playerAdapter: playerAdapter,
-      enemyAiAdapter: config.enemyAiAdapter(numbers),
+      enemyAiAdapter: config.enemyAiAdapter(
+        numbers,
+        defenseTuning: defenseTuning,
+      ),
     );
     return Phase0aDebugBattleFixture._(
       flow: flow,
@@ -238,7 +247,10 @@ final class _DebugBattleConfig {
     });
   }
 
-  Phase0aPlayerInputAdapter playerAdapter(NumbersConfig numbers) {
+  Phase0aPlayerInputAdapter playerAdapter(
+    NumbersConfig numbers, {
+    required Phase0aDefenseTuning? defenseTuning,
+  }) {
     final attack = _map(player, 'attack');
     final gather = _map(player, 'gather');
     final clear = _map(player, 'clear');
@@ -265,41 +277,42 @@ final class _DebugBattleConfig {
       clearCooldownSeconds: _number(clear, 'cooldown_seconds'),
       gatherSkillBinding: tactical?.gather,
       clearSkillBinding: tactical?.clear,
+      defenseTuning: defenseTuning,
     );
   }
 
-  Phase0aEnemyAiAdapter enemyAiAdapter(NumbersConfig numbers) =>
-      Phase0aEnemyAiAdapter(
-        attackRange: _number(enemyAi, 'attack_range'),
-        attackHalfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
-        attackCooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
-        postureBasicPowerMultiplier: numbers.phase0aArena.basicPowerMultiplier,
-        basicPowerMultiplierByActor: {
-          for (final wave in waveMaps)
-            for (final enemy in _mapList(wave, 'enemies'))
-              _text(enemy, 'id'): _integer(
-                _map(player, 'attack'),
-                'power_multiplier',
+  Phase0aEnemyAiAdapter enemyAiAdapter(
+    NumbersConfig numbers, {
+    required Phase0aDefenseTuning? defenseTuning,
+  }) => Phase0aEnemyAiAdapter(
+    attackRange: _number(enemyAi, 'attack_range'),
+    attackHalfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+    attackCooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
+    postureBasicPowerMultiplier: numbers.phase0aArena.basicPowerMultiplier,
+    basicPowerMultiplierByActor: {
+      for (final wave in waveMaps)
+        for (final enemy in _mapList(wave, 'enemies'))
+          _text(enemy, 'id'): _integer(
+            _map(player, 'attack'),
+            'power_multiplier',
+          ),
+    },
+    skillBindingsByActor: {
+      for (final wave in waveMaps)
+        for (final enemy in _mapList(wave, 'enemies'))
+          if (_bossSkill(enemy) case final SkillDef skill)
+            _text(enemy, 'id'): [
+              Phase0aEnemySkillBinding(
+                skill: skill,
+                attackRange: _number(enemyAi, 'attack_range'),
+                halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
+                effectRadius: _number(enemyAi, 'attack_range'),
+                cooldownSeconds: _number(enemyAi, 'attack_cooldown_seconds'),
               ),
-        },
-        skillBindingsByActor: {
-          for (final wave in waveMaps)
-            for (final enemy in _mapList(wave, 'enemies'))
-              if (_bossSkill(enemy) case final SkillDef skill)
-                _text(enemy, 'id'): [
-                  Phase0aEnemySkillBinding(
-                    skill: skill,
-                    attackRange: _number(enemyAi, 'attack_range'),
-                    halfArcRadians: _number(enemyAi, 'attack_half_arc_radians'),
-                    effectRadius: _number(enemyAi, 'attack_range'),
-                    cooldownSeconds: _number(
-                      enemyAi,
-                      'attack_cooldown_seconds',
-                    ),
-                  ),
-                ],
-        },
-      );
+            ],
+    },
+    defenseTuning: defenseTuning,
+  );
 
   Phase0aActor _enemyActor(Map<String, dynamic> enemy, NumbersConfig numbers) {
     final template = _enemyTemplate(enemy);
