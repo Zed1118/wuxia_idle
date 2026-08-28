@@ -2,7 +2,7 @@
 
 ## §0 交接快照(动手前先核,不符先报告偏差)
 
-- 交接时间:2026-08-28 · main `e858ca432167ad88cb5a176758a7be26aefcd97f`(`合入codex二阶段交接宪法`),`origin/main` 已同步同 sha
+- 交接时间:2026-08-28 · main `274a3b2ec32871bfd3c735fd75bdffa528bdb2e6`(`合入交接宪法自主推进版`),`origin/main` 已同步同 sha
 - 基线:全量 `05:28 +5650: All tests passed!` / analyze `No issues found! (ran in 4.6s)` / format `Formatted 1628 files (0 changed)`
 - **你是二阶段唯一推进者。Claude 不再逐单审核。** 你同时是执行端、自己的把关人和合并人。
 - **这意味着质量的唯一外部判据只剩 `gate.sh` 和用户试玩。** 没有人在你后面兜底了——§2 的十条和 §9 的停止条件是你不至于自我放行的全部依靠,不是可选建议。
@@ -33,13 +33,13 @@
 
 **已合并进 main**(2026-08-28,三单已过 Gate 与独立复核):J 键自动瞄准最近敌人 + 空格闪避(Z 保留)+ 三项防御 CD 展示;M2 九项范围盘点;本交接文件。
 
-**M2 剩余四项**(来自 §1.2 盘点,建议顺序即优先级):
+**M2 验收前置 1 项 + 剩余功能 4 项**(来自 §1.2 盘点,建议顺序即优先级):
 
 | # | 项 | 现状 | 事实锚点 |
 |---|---|---|---|
-| 0 | visual route 缺 `defenseTuning` | 缺陷 | 见 §2.5。**凡用 visual route 做的战斗视觉验收,拍到的防御状态都是失效态**。它在污染你后续所有战斗视觉验收的结论,建议先修 |
+| 0 | visual route 缺 `defenseTuning` | 验收前置缺陷(不计入 M2 四项功能分母) | `visual_route_host.dart:477-484` 加载 debug fixture;`phase0a_debug_battle_fixture.dart:241-268,271-302` 构造玩家/敌人 adapter 时都未传 tuning;`phase0a_player_input_adapter.dart:128-145` 会因 tuning 为 null 静默丢弃防御 intent。**凡用 visual route 做的战斗视觉验收,拍到的防御状态都是失效态** |
 | 1 | 屏外提示 | 未实装 | 反搜 `offscreen/屏外/indicator arrow` 在 battle presentation 零命中。**高密度下没有它就没法玩**,M2 剩余里优先级最高 |
-| 2 | 聚合伤害 | 未实装 | `phase0a_vfx_controller.dart:154-173` 每个伤害事件建独立 popup;`phase0a_battle_screen.dart:383-421` 只淘汰超量不合并数值 |
+| 2 | 聚合伤害 | 未实装 | `phase0a_vfx_controller.dart:154-173,195-273` 每个伤害 outcome 建独立 popup;`phase0a_battle_screen.dart:407-445` 只淘汰超量不合并数值 |
 | 3 | 五关四模板 | 部分 | `stage_assignments.yaml` 只有 `stage_01_03` 迁移;`StageDef`(`stage_def.dart:100-179`)无 template 字段;candidate fixture 里才有 roadbreak/stronghold/ambush/commander 路由 |
 | 4 | 剑形态完整普攻链 | 未实装 | `basic_attack_chain.dart:1-5,59-133` 明标 candidate-only;生产 `phase0a_player_input_adapter.dart:147-165` 每次只发单段 `moveKind: light` |
 
@@ -62,7 +62,7 @@
 3. targeted 测试(逐文件确认「All tests passed」出现次数)
 4. `flutter analyze --no-pub lib test`
 5. `dart format --output=none --set-exit-if-changed .`(**整仓 `.`**;写完 dart 必 format,CI 有门禁)
-6. 一次全量 `flutter test --no-pub`。**先建锁 `~/.claude/locks/wuxia_full_test.lock`,跑完删除;锁存在就等**,同时只允许一个全量
+6. 一次全量 `flutter test --no-pub`。**先建锁 `~/.claude/locks/wuxia_full_test.lock`,跑完删除;锁存在就等**,同时只允许一个全量。第 9 步 `gate.sh` 内部也会跑全量,调用 gate 时必须同样持有该锁
 7. `git diff --check <base>..<head>`
 8. 写 receipt(形态见 §6),tip 打 `[READY]` 或真实 `[BLOCKED]`,worktree clean
 9. **自跑 gate.sh 判决**(见 §8)。PASS 才进合并流程,FAIL 一律不合
@@ -103,8 +103,7 @@ LC_ALL=C git -c core.quotePath=false --no-pager diff --no-ext-diff --no-textconv
 合并前必须全部满足:
 
 1. 该单自跑 `gate.sh <worktree> <base> <head> --receipt <path>` 判决为 **`PASS`**
-2. gate 若判 `FAIL`:**一律不合**。修到过为止;认为判据本身有问题 → `[BLOCKED]` 停下问用户,**不许改 gate,不许绕过,不许自行裁定"这条 FAIL 可以放行"**
-   - 唯一例外:`test_deletions`。它是零删除策略,替换错误断言必然触发。此时你必须在 plan 文件里**逐行列出删了哪些行、每行为什么删**,并证明新断言比旧断言更强(不是更弱)。这条例外只对 `test_deletions` 成立,不推广到其他判据
+2. gate 若判 `FAIL`:**一律不合,本次无人工豁免(包括 `test_deletions`)**。修到过为止;认为判据本身有问题 → `[BLOCKED]` 停下问用户,**不许改 gate,不许绕过,不许自行裁定"这条 FAIL 可以放行"**
 3. `git merge-tree --write-tree main <branch>` rc=0
 4. 检查改动域重叠:`comm -12` 比对「main 领先该分支的 commit 触及的文件」与「该分支相对 main 的改动文件」,有重叠时必须逐个人工核对,防整文件覆写型静默回退
 5. 合并用 `--no-ff` 保留 `[READY]` 链,commit message 中文动宾
