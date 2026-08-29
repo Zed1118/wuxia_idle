@@ -85,3 +85,10 @@
 
 - 首次带锁全量为 `08:47 +5676 -3: Some tests failed.`、`[E]` 3：两个 reducer guard 断言发现无状态 actor 被空 ledger timeline 污染；源码契约发现空快照存在字面量 `= 0`。
 - 修复不改测试与数值：无 active status 时 reducer 完全不推进 ledger；空 ledger snapshot 归一为 const empty；timeline 初值改为语义常量。原失败文件及状态接线定向复跑为 `+54: All tests passed!`。
+
+### 最终本地收工证据
+
+- 关键 targeted 逐文件：status ledger `+14`、生产接线 `+3`、双视口短窗 `+2`、reducer guard `+17`、source contract `+20`、reducer `+29`，全部 `All tests passed!` 且 `[E]` 0。
+- analyze：`No issues found! (ran in 6.5s)`。
+- format：`Formatted 1634 files (0 changed)`。
+- 第二次带锁全量：`07:53 +5679: All tests passed!`，`[E]` 0；锁由 trap 精确释放。
