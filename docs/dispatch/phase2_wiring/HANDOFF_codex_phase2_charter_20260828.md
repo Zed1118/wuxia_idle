@@ -103,7 +103,24 @@ LC_ALL=C git -c core.quotePath=false --no-pager diff --no-ext-diff --no-textconv
 合并前必须全部满足:
 
 1. 该单自跑 `gate.sh <worktree> <base> <head> --receipt <path>` 判决为 **`PASS`**
-2. gate 若判 `FAIL`:**一律不合,本次无人工豁免(包括 `test_deletions`)**。修到过为止;认为判据本身有问题 → `[BLOCKED]` 停下问用户,**不许改 gate,不许绕过,不许自行裁定"这条 FAIL 可以放行"**
+2. gate 若判 `FAIL`:**一律不合**,唯一例外是下面的「测试契约迁移」。修到过为止;认为判据本身有问题 → `[BLOCKED]` 停下问用户,**不许改 gate,不许绕过,不许自行裁定"这条 FAIL 可以放行"**
+
+### 唯一例外 · 测试契约迁移(2026-08-29 用户拍板加入)
+
+只适用于一种情况:**这个单的产品目标本身就是改掉旧契约**,旧断言钉的正是要改掉的状态,因此必然要删。典型是把关卡从 legacy 路由迁到 migrated。`gate.sh` 的 `test_deletions` 是零删除策略,对这类单给不出合法出口;下面这条路把「删除是否合法」变成机器可判的条件,**不是**给你一个自行裁定的口子。
+
+适用条件,四条全中才成立:
+
+- gate 判决行的 FAIL 项**恰好只有 `test_deletions` 一项**。出现任何其他项(含 `receipt_crosscheck`)→ 例外不成立,先把其他项修到过再说。
+- 写登记表 `docs/dispatch/phase2_wiring/test_contract_migrations/<单名>.yaml`,体例见同目录 `_TEMPLATE.yaml`。**每一条**被删的 `expect(` / `test(` / `testWidgets(` / `group(` 行都要登记 `deleted` / `replacement` / `reason` 三个字段;同一行文本被删多次就登记多条。
+- 跑 `tools/test_contract_migration_gate.sh <worktree> <base_sha> <head_sha> <登记表>`,必须输出 `PASS: test_contract_migration`。它机器判四件事:每条删除都已登记、登记表无幽灵条目、每条 `replacement` 在 head 的 `test/` 下真实存在、断言与用例总数不下降。
+- 登记表随本单一起 commit,校验器输出原文抄进 plan 文件。
+
+两个判决都满足就直接合,不必停下问用户。
+
+**它判不了替代断言在语义上是否真的更强**——这条靠你自己守:`replacement` 必须是同一约束的更强版本(`isNull`→`isNotNull`、单关硬编码→遍历五关、手搓 fixture→走生产 repository),不许把守卫换成更松的写法充数。
+
+**一律禁止**:注释掉旧测试、`skip`、伪造 legacy 兼容层、为规避删除把生产范围缩回去。这四种是 §9 红线,不是可选项。
 3. `git merge-tree --write-tree main <branch>` rc=0
 4. 检查改动域重叠:`comm -12` 比对「main 领先该分支的 commit 触及的文件」与「该分支相对 main 的改动文件」,有重叠时必须逐个人工核对,防整文件覆写型静默回退
 5. 合并用 `--no-ff` 保留 `[READY]` 链,commit message 中文动宾
