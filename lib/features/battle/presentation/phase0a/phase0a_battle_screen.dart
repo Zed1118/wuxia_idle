@@ -375,7 +375,6 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
     if (widget.controller.feedback.isNotEmpty) {
       for (final entry in widget.controller.feedback) {
-        _trimDamagePopupResidents(entry);
         if (entry.kind == Phase0aVfxKind.damagePopup &&
             entry.targetId != null) {
           _hitFlashRemaining[entry.targetId!] =
@@ -383,6 +382,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           _hpEmphasisRemaining[entry.targetId!] =
               Phase0aPresentationTokens.hpEmphasisSeconds;
         }
+        if (!_reserveDamagePopupResident(entry)) continue;
         if (entry.kind == Phase0aVfxKind.skillCast && entry.actorId != null) {
           _actionPulseRemaining[entry.actorId!] =
               Phase0aPresentationTokens.actorActionPulseSeconds;
@@ -410,6 +410,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           ),
         );
       }
+      _scheduleDamagePopupAggregation(widget.controller.feedback);
       final overflow =
           _heldFeedback.length - Phase0aPresentationTokens.maxEntries;
       if (overflow > 0) _heldFeedback.removeRange(0, overflow);
@@ -417,45 +418,87 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (mounted) setState(() {});
   }
 
-  void _trimDamagePopupResidents(Phase0aVfxEntry incoming) {
-    if (incoming.kind != Phase0aVfxKind.damagePopup) return;
+  bool _reserveDamagePopupResident(Phase0aVfxEntry incoming) {
+    if (incoming.kind != Phase0aVfxKind.damagePopup) return true;
     final targetId = incoming.targetId;
     if (targetId != null) {
-      while (_heldFeedback
-              .where(
-                (held) =>
-                    held.entry.kind == Phase0aVfxKind.damagePopup &&
-                    held.entry.targetId == targetId,
-              )
-              .length >=
-          Phase0aPresentationTokens.maxResidentDamagePopupsPerTarget) {
-        final oldestForTarget = _heldFeedback.indexWhere(
-          (held) =>
-              held.entry.kind == Phase0aVfxKind.damagePopup &&
-              held.entry.targetId == targetId,
-        );
-        if (oldestForTarget < 0) break;
-        _heldFeedback.removeAt(oldestForTarget);
+      while (true) {
+        final sameTarget = _heldFeedback
+            .where(
+              (held) =>
+                  held.entry.kind == Phase0aVfxKind.damagePopup &&
+                  held.entry.targetId == targetId,
+            )
+            .toList();
+        if (sameTarget.length <
+            Phase0aPresentationTokens.maxResidentDamagePopupsPerTarget) {
+          break;
+        }
+        if (!_evictDamagePopup(sameTarget, incoming)) return false;
       }
     }
 
-    while (_heldFeedback
-            .where((held) => held.entry.kind == Phase0aVfxKind.damagePopup)
-            .length >=
-        Phase0aPresentationTokens.maxResidentDamagePopups) {
-      var oldest = _heldFeedback.indexWhere(
-        (held) =>
-            held.entry.kind == Phase0aVfxKind.damagePopup &&
-            !held.entry.isCritical,
-      );
-      oldest = oldest >= 0
-          ? oldest
-          : _heldFeedback.indexWhere(
-              (held) => held.entry.kind == Phase0aVfxKind.damagePopup,
-            );
-      if (oldest < 0) break;
-      _heldFeedback.removeAt(oldest);
+    while (true) {
+      final residents = _heldFeedback
+          .where((held) => held.entry.kind == Phase0aVfxKind.damagePopup)
+          .toList();
+      if (residents.length <
+          Phase0aPresentationTokens.maxResidentDamagePopups) {
+        break;
+      }
+      if (!_evictDamagePopup(residents, incoming)) return false;
     }
+    return true;
+  }
+
+  bool _evictDamagePopup(
+    List<_HeldFeedback> residents,
+    Phase0aVfxEntry incoming,
+  ) {
+    final eviction = Phase0aDamagePopupResidentPolicy.evictionIndex(
+      residents.map((held) => held.entry).toList(),
+      incoming,
+    );
+    if (eviction < 0) return false;
+    _heldFeedback.remove(residents[eviction]);
+    return true;
+  }
+
+  void _scheduleDamagePopupAggregation(List<Phase0aVfxEntry> feedback) {
+    final aggregates = const Phase0aDamagePopupAggregator()
+        .collapse(feedback)
+        .where(
+          (entry) =>
+              entry.kind == Phase0aVfxKind.damagePopup && entry.hitCount > 1,
+        )
+        .toList();
+    if (aggregates.isEmpty) return;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      var changed = false;
+      for (final aggregate in aggregates) {
+        final groupId = aggregate.damageGroupId;
+        final before = _heldFeedback.length;
+        _heldFeedback.removeWhere(
+          (held) =>
+              held.entry.kind == Phase0aVfxKind.damagePopup &&
+              held.entry.damageGroupId == groupId &&
+              held.entry.damageTargetClass ==
+                  Phase0aDamagePopupTargetClass.ordinaryEnemy,
+        );
+        changed = changed || _heldFeedback.length != before;
+        if (!_reserveDamagePopupResident(aggregate)) continue;
+        _heldFeedback.add(
+          _HeldFeedback(
+            id: _nextFeedbackId++,
+            entry: aggregate,
+            lifetimeSeconds: _feedbackLifetime(aggregate.kind),
+          ),
+        );
+        changed = true;
+      }
+      if (changed) setState(() {});
+    });
   }
 
   static bool _isSingletonFeedback(Phase0aVfxKind kind) => switch (kind) {
@@ -1815,7 +1858,15 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
   Widget _buildFeedbackLayer() {
     final children = <Widget>[];
     var popupIndex = 0;
-    for (final held in widget.entries) {
+    final orderedEntries = widget.entries.asMap().entries.toList()
+      ..sort((left, right) {
+        final byPriority = phase0aVfxPaintPriority(
+          left.value.entry.kind,
+        ).compareTo(phase0aVfxPaintPriority(right.value.entry.kind));
+        return byPriority != 0 ? byPriority : left.key.compareTo(right.key);
+      });
+    for (final indexedEntry in orderedEntries) {
+      final held = indexedEntry.value;
       final entry = held.entry;
       switch (entry.kind) {
         case Phase0aVfxKind.damagePopup:
@@ -1926,7 +1977,10 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
       child: IgnorePointer(
         child: RepaintBoundary(
           key: const ValueKey('phase0a_feedback_layer'),
-          child: Stack(children: children),
+          child: Stack(
+            key: const ValueKey('phase0a_feedback_stack'),
+            children: children,
+          ),
         ),
       ),
     );
@@ -2061,24 +2115,35 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
 
   Widget _damagePopup(_HeldFeedback held, int index) {
     final entry = held.entry;
+    final isAggregate = entry.hitCount > 1;
     // 使用事件发生时的世界坐标快照(entry.anchor),不反查当前 state。
     // 目标死亡后已从 controller.state 移除,直接查 id 会 fallback
     // 到屏幕中心,导致伤害数字位置错误。
     final anchor = entry.anchor != null
         ? widget.stage.worldToScreen(entry.anchor!)
         : widget.stage.safeRect.center;
+    const aggregateWidth = 180.0;
+    final left = isAggregate
+        ? (anchor.dx - aggregateWidth / 2)
+              .clamp(
+                widget.stage.safeRect.left,
+                widget.stage.safeRect.right - aggregateWidth,
+              )
+              .toDouble()
+        : anchor.dx;
     return Positioned(
       key: ValueKey('phase0a_popup_${held.id}'),
-      left: anchor.dx,
+      left: left,
       top:
           anchor.dy -
           Phase0aPresentationTokens.actorHeight -
           Phase0aPresentationTokens.vfxPopupLift -
           index * Phase0aPresentationTokens.vfxPopupGap,
+      width: isAggregate ? aggregateWidth : null,
       child: Opacity(
         opacity: _feedbackOpacity(held.progress),
         child: Transform.translate(
-          offset: Offset(-12, -held.progress * 64),
+          offset: Offset(isAggregate ? 0 : -12, -held.progress * 64),
           child: Transform.scale(
             scale:
                 0.84 +
@@ -2087,7 +2152,15 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                       (held.progress / 0.28).clamp(0.0, 1.0),
                     ),
             child: Text(
-              '${entry.damage}',
+              isAggregate
+                  ? '${entry.damage} ×${entry.hitCount}'
+                  : '${entry.damage}',
+              key: isAggregate
+                  ? ValueKey<String>(
+                      'phase0a_damage_group_${entry.damageGroupId}',
+                    )
+                  : null,
+              textAlign: isAggregate ? TextAlign.center : null,
               style: TextStyle(
                 color: entry.isCritical ? WuxiaUi.jiang : WuxiaUi.ink,
                 fontSize: Phase0aPresentationTokens.vfxPopupFontSize,

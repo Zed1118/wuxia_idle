@@ -26,3 +26,25 @@
 2. **扩大本单。** 先冻结毒/内伤的生产技能来源、目标、tick cadence、事件 payload 与内容映射，再由本单一并接通状态伤害和聚合表现。
 
 未获拍板前不修改 `lib/`、测试、数值、schema 或 gate。
+
+## 用户决定（2026-08-29）
+
+用户回复“同意按照推进方案”，批准上述推荐的两段式范围。本分支恢复为 M2A2a：先完成当前生产链可达的普通怪/Boss/精英/玩家聚合规则；M2A2 总项仍保持未关闭，毒/内伤必须在状态伤害生产接线具备真实消费点后补齐。
+
+## M2A2a 实现与验收分母
+
+- `Phase0aVfxController` 给每条原始伤害 entry 绑定事件 `seq` 分组键，并从同步 actor 的 `side/isBoss/defeatKind` 生成 typed 目标档；不修改结算事件历史。
+- `Phase0aDamagePopupAggregator` 仅折叠同组的普通敌人，输出总伤害、命中数、任一暴击语义和稳定上方锚点；精英、Boss、玩家与未知目标逐条保留。
+- 真实 `Phase0aBattleScreen` 首结算帧保留逐目标命中/致死确认，下一绘制帧收束普通群怪；居民仍受既有 8 组上限约束。
+- 居民淘汰顺序为普通、未知、精英、Boss、玩家，同档内暴击优先保留；低优先级新组不能挤掉全玩家伤害池。
+- 伤害数字在反馈 Stack 中先绘制，Boss 蓄力与破势反馈后绘制；双视口断言聚合组留在视口内且不覆盖玩家 HUD。
+- M2A2a 的 targeted 分母为新增聚合单测、新增真实屏双视口测试、既有 event mapping、既有 BattleScreen 四个文件；M2A2 总项分母另含尚未可达的毒/内伤短窗口聚合。
+
+### 当前 targeted 实测（提交前）
+
+- `phase0a_damage_aggregation_test.dart`：`+4: All tests passed!`
+- `phase0a_damage_aggregation_screen_test.dart`：`+2: All tests passed!`
+- `phase0a_event_mapping_test.dart`：`+44: All tests passed!`
+- `phase0a_battle_screen_test.dart`：`+28: All tests passed!`
+- `flutter analyze --no-pub lib test`：`No issues found!`
+- `dart format --output=none --set-exit-if-changed .`：`Formatted 1632 files (0 changed)`
