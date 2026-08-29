@@ -195,12 +195,26 @@ diff。先保留自由运行轨迹实测，再以同一攻击时刻状态的成�
 
 ## 当前恢复点（目标感知截停）
 
-- 状态：生产实现与同 seed probe 已通过，尚未 commit；下一步是 targeted 邻接
-  回归、中文动宾 commit、提交后双向破坏证红、analyze/format/full/gate。
+- 状态：生产实现、同 seed probe、第一轮提交后双向破坏证红和邻接 targeted
+  均通过；当前在最终 `[READY]` tip 前收口计划与静态检查，尚未跑最终 full/gate。
 - 生产路径：`Phase0aPlayerInputAdapter → Phase0aAttackIntent →
   phase0a_combat_reducer.dart`；reducer 在位移前只调用一次 segment scope，
   同一 `selectedGeometryTargets` 同时决定截停目标和 resolver 目标。
 - RED：固定 `120` 旧行为下，目标感知测试实测
   `Expected ArenaVector(60,0), Actual ArenaVector(120,0)`，reporter
   `00:00 +6 -1: Some tests failed.`；实现后同文件 `+7` 全绿。
+- 提交 `15c23010` 后第一轮双向破坏证红：
+  1. `remove_implementation`：移除 reducer 的 `stopTarget` 传递，退回固定
+     `120`，同一测试组实测 `00:00 +6 -1: Some tests failed.`；
+  2. `force_degenerate_value`：保留接线但强制 `travelDistance = distance`，
+     同样实测 `00:00 +6 -1: Some tests failed.`。
+  两向均由精确反向补丁还原，分别核 `git diff --quiet` rc=0。最终
+  `[READY]` tip 形成后须再跑一次同体例双向证红，receipt 只记最终 tip 数据。
+- 邻接 targeted：registry `+7`、chain `+6`、production mapper/五关 headless
+  `+25`、stage_01_01 checkpoint `+1`，四次均逐文件出现
+  `All tests passed!`。
+- `flutter analyze --no-pub lib test` 初跑发现本分支既有 YAML parser 两处
+  `prefer_const_constructors`；只补 `const FormatException` 后复跑
+  `No issues found! (ran in 3.2s)`。整仓 format 先定位并格式化 gitignore probe，
+  再复跑为 `Formatted 1642 files (0 changed) in 2.76 seconds.`。
 - 阻塞项：无。当前仍是 WIP，未取得 gate/CI 结论前不得报 READY。

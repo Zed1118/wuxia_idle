@@ -2079,14 +2079,14 @@ final class Phase0aBasicAttackChainConfig {
   factory Phase0aBasicAttackChainConfig.fromYaml(Object? raw) {
     if (raw == null) return empty;
     if (raw is! Map) {
-      throw FormatException('basic_attack_chain must be a map');
+      throw const FormatException('basic_attack_chain must be a map');
     }
     final segments = <String, Phase0aBasicAttackSegmentTuning>{};
     for (final entry in raw.entries) {
       final id = entry.key;
       final value = entry.value;
       if (id is! String || id.isEmpty || id != id.trim() || value is! Map) {
-        throw FormatException('invalid basic_attack_chain segment');
+        throw const FormatException('invalid basic_attack_chain segment');
       }
       segments[id] = Phase0aBasicAttackSegmentTuning.fromYaml(value);
     }
