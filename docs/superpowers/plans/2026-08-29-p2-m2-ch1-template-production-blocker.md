@@ -34,3 +34,36 @@
 ## 解锁后的执行边界
 
 用户明确批准上述冻结后，本分支才可继续：将四关提升到生产 catalog/manifest，保持现有 typed schema，补生产路径与五关顺序测试，再依宪法完成 commit 后双向破坏证红、全量、receipt、gate、合并、push 与 CI 核验。
+
+## 首次批准后发现的 runtime 坐标缺口
+
+用户已于 2026-08-29 批准上述 candidate 数值与编排，但生产消费链复核发现 candidate 不含 runtime binding 坐标，因此仍不能实装：
+
+1. candidate 目录只有 archetype、encounter 和 stage assignment 三个 YAML，没有 `runtime_bindings.yaml`。
+2. `lib/data/combat_runtime_binding_loader.dart:212-227,257-263` 强制每个 migrated stage 都必须提供入场点 `spawn_position` 和站位 `world_position`，缺失 binding 直接 fail closed。
+3. `test/data/phase2/ch1_candidate_runtime_construction_matrix_test.dart:269-280` 没有走生产 binding，而是把所有敌人手设为 `x: 1`；它不能证明四关生产位置可用。
+
+推荐不新造一套场地数值，只从已生产的 `stage_01_03` 坐标调色板中复用以下点位：
+
+| runtime ID | 推荐坐标 `(x, y)` |
+|---|---:|
+| `ch1_entrance_s01_road_west` | `(-520, 80)` |
+| `ch1_entrance_s01_road_ridge` | `(0, -120)` |
+| `ch1_entrance_s01_road_exit` | `(520, 80)` |
+| `ch1_position_s01_near` | `(-240, 140)` |
+| `ch1_position_s01_middle` | `(0, 140)` |
+| `ch1_position_s01_far` | `(240, 140)` |
+| `ch1_entrance_s02_gate` | `(-520, 80)` |
+| `ch1_entrance_s02_roof` | `(0, -120)` |
+| `ch1_entrance_s02_yard` | `(520, 80)` |
+| `ch1_position_s02_gate` | `(-240, 140)` |
+| `ch1_position_s02_roof` | `(0, -40)` |
+| `ch1_position_s02_yard` | `(240, 140)` |
+| `ch1_entrance_s04_duel_court` | `(520, 80)` |
+| `ch1_position_s04_guard_arc` | `(-120, 120)` |
+| `ch1_position_s04_commander_center` | `(0, -40)` |
+| `ch1_entrance_s05_peak_ring` | `(0, -120)` |
+| `ch1_position_s05_guard_arc` | `(-120, 120)` |
+| `ch1_position_s05_commander_center` | `(0, -40)` |
+
+四关 `base_enemy_id` 不需要新拍板，分别强绑现有 `StageDef.enemyTeam.single`：`enemy_xueTu_thug_a`、`enemy_xueTu_rufflian_a`、`enemy_xueTu_qingshan`、`enemy_xueTu_umbrella`。行为、AI、攻击集和视觉 variant 全部复用已生产的山匪四角色 binding，不引入新值。
