@@ -301,7 +301,11 @@ class _Phase0aMainlineBattleHostState
       controller: controller,
       numericSkillBindings: playerAdapter.numericSkillBindings,
       botCommandBuilder: widget.controller == ActivityController.playerBot
-          ? Phase0aPlayerBotAdapter(playerAdapter: playerAdapter).commandFor
+          ? Phase0aPlayerBotAdapter(
+              playerAdapter: playerAdapter,
+              objectiveContinuationCommandBuilder:
+                  _encounterHost?.objectiveContinuationCommandBuilder,
+            ).commandFor
           : null,
     );
   }

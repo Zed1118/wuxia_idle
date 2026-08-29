@@ -47,7 +47,7 @@ void main() {
   );
 
   test(
-    'GameRepository exposes a typed 40-entry production runtime closure',
+    'GameRepository exposes typed production runtime closures for Chapter 1',
     () async {
       final repo = await GameRepository.loadAllDefs(
         loader: _fileLoader,
@@ -218,10 +218,10 @@ void main() {
       ]) {
         expect(
           repo.combatAssignmentForStage(stageId)?.migrationState.name,
-          'legacy',
+          'migrated',
         );
-        expect(repo.combatEncounterForStage(stageId), isNull);
-        expect(repo.combatRuntimeBindingForStage(stageId), isNull);
+        expect(repo.combatEncounterForStage(stageId), isNotNull);
+        expect(repo.combatRuntimeBindingForStage(stageId), isNotNull);
         expect(repo.getStage(stageId).id, stageId);
       }
     },

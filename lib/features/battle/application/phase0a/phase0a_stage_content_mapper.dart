@@ -663,7 +663,7 @@ final class Phase0aStageContentMapper {
     final postureConfig = _postureConfig(numbers.combat.posture);
     final topLevelChargeCasts = <Phase0aChargeCast?>[
       for (final snapshot in enemySnapshots)
-        _topLevelChargeCast(
+        preResolveTopLevelChargeCast(
           snapshot: snapshot,
           arena: arena,
           chargeTicks: chargeTicks,
@@ -672,7 +672,7 @@ final class Phase0aStageContentMapper {
     ];
     final phaseChargeCastsByEnemy = <List<Phase0aChargeCast?>>[
       for (final snapshot in enemySnapshots)
-        _phaseChargeCasts(
+        preResolvePhaseChargeCasts(
           snapshot: snapshot,
           arena: arena,
           chargeTicks: chargeTicks,
@@ -718,7 +718,7 @@ final class Phase0aStageContentMapper {
 
     final enemySkillBindingsByActor = <String, List<Phase0aEnemySkillBinding>>{
       for (var i = 0; i < enemySnapshots.length; i++)
-        waveEnemies[i].id: _enemyPhaseSkillBindings(
+        waveEnemies[i].id: preResolveEnemySkillBindings(
           arena: arena,
           snapshot: enemySnapshots[i],
         ),
@@ -862,7 +862,7 @@ final class Phase0aStageContentMapper {
   /// 顶层蓄力入口(EnemyDef.chargeSkillId):从 snapshot 已解析技能表取招牌技
   /// 并预解析施放参数;配了 chargeSkillId 但技能缺失 → fail-fast(loader
   /// 红线 `_enforceBossChargeRedLines` 已保 ∈ skillIds,此处双保险)。
-  static Phase0aChargeCast? _topLevelChargeCast({
+  static Phase0aChargeCast? preResolveTopLevelChargeCast({
     required CombatantSnapshot snapshot,
     required Phase0aArenaConfig arena,
     required int chargeTicks,
@@ -894,7 +894,7 @@ final class Phase0aStageContentMapper {
   /// 阶段蓄力入口(BossPhaseMechanic.chargeCounter):逐阶段预解析招牌技
   /// (= 该阶段解锁招里 powerMultiplier 最高者,对齐旧引擎;解锁招为空 →
   /// null = no-op)。无阶段 = 空表。
-  static List<Phase0aChargeCast?> _phaseChargeCasts({
+  static List<Phase0aChargeCast?> preResolvePhaseChargeCasts({
     required CombatantSnapshot snapshot,
     required Phase0aArenaConfig arena,
     required int chargeTicks,
@@ -969,7 +969,7 @@ final class Phase0aStageContentMapper {
     defenseFlags: defenseFlags,
   );
 
-  static List<Phase0aEnemySkillBinding> _enemyPhaseSkillBindings({
+  static List<Phase0aEnemySkillBinding> preResolveEnemySkillBindings({
     required Phase0aArenaConfig arena,
     required CombatantSnapshot snapshot,
   }) {
@@ -983,7 +983,7 @@ final class Phase0aStageContentMapper {
       }
     }
     // 顶层招牌蓄力技也须进 AI 绑定表,否则 BattleAI 永远不会选中它、
-    // 起手蓄力入口静默失效(与 _topLevelChargeCast 同源 fail-fast)。
+    // 起手蓄力入口静默失效(与 preResolveTopLevelChargeCast 同源 fail-fast)。
     final chargeSkillId = snapshot.chargeSkillId;
     if (chargeSkillId != null && !byId.containsKey(chargeSkillId)) {
       for (final skill in snapshot.availableSkills) {

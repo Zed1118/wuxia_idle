@@ -1,4 +1,5 @@
 import '../../../core/domain/enums.dart';
+import '../../../data/defs/combat_encounter_def.dart';
 import '../../../data/defs/combat_enemy_archetype_def.dart';
 import '../../../data/defs/combat_runtime_binding_def.dart';
 import '../../../data/defs/skill_def.dart';
@@ -9,6 +10,7 @@ import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
+import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
@@ -73,15 +75,20 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     throw StateError('$stageId runtime binding does not cover the encounter');
   }
 
-  final baseSnapshot = EnemyCombatantSnapshotAssembler.assembleOne(
-    enemy: baseEnemy,
-    slotIndex: 0,
-    cycleIndex: cycleIndex,
-    isTower: false,
-  );
+  final commanderEntryIds = <String>{
+    for (final clause in encounter.objectives.clauses)
+      if (clause.primitive case CombatDefeatCommanderRef(:final commanderId))
+        commanderId,
+  };
   final actorBindings = <String, Phase0aEncounterActorRuntimeBinding>{};
   for (var ordinal = 0; ordinal < encounter.spawnEntries.length; ordinal++) {
     final entry = encounter.spawnEntries[ordinal];
+    final baseSnapshot = EnemyCombatantSnapshotAssembler.assembleOne(
+      enemy: baseEnemy,
+      slotIndex: ordinal,
+      cycleIndex: cycleIndex,
+      isTower: false,
+    );
     final binding = runtime.bindingForEntry(entry.entryId);
     if (binding == null) {
       throw StateError('$stageId runtime entry is missing: ${entry.entryId}');
@@ -114,28 +121,59 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     }
     _requireMatchingTokenPolicy(variant, binding.behavior);
 
+    final preserveBaseBossIdentity =
+        baseSnapshot.isBoss && commanderEntryIds.contains(entry.entryId);
     final snapshot = _applyVariant(
       base: baseSnapshot,
       variant: variant,
       skills: binding.attackSet.skills,
       repository: repo,
+      entryId: entry.entryId,
+      visualAssetPath: binding.visualVariant.assetPath,
+      preserveBaseBossIdentity: preserveBaseBossIdentity,
     );
     final basicSkill = _requiredBasicSkill(
       snapshot.availableSkills,
       stageId: stageId,
       entryId: entry.entryId,
     );
-    final enemySkills = _enemySkillBindings(
-      snapshot.availableSkills,
-      repository: repo,
-      stageId: stageId,
-      entryId: entry.entryId,
-    );
+    final enemySkills = preserveBaseBossIdentity
+        ? Phase0aStageContentMapper.preResolveEnemySkillBindings(
+            arena: repo.numbers.phase0aArena,
+            snapshot: snapshot,
+          )
+        : _enemySkillBindings(
+            snapshot.availableSkills,
+            repository: repo,
+            stageId: stageId,
+            entryId: entry.entryId,
+          );
     final token = _tokenBinding(variant, binding.behavior);
     final position = ArenaVector(binding.position.x, binding.position.y);
-    final unlockedSkillIds = List<String>.unmodifiable(
-      enemySkills.map((item) => item.skill.id),
-    );
+    final chargeCast = preserveBaseBossIdentity
+        ? Phase0aStageContentMapper.preResolveTopLevelChargeCast(
+            snapshot: snapshot,
+            arena: repo.numbers.phase0aArena,
+            chargeTicks: repo.numbers.combat.bossCharge.defaultChargeTicks,
+          )
+        : null;
+    final phaseChargeCasts = preserveBaseBossIdentity
+        ? Phase0aStageContentMapper.preResolvePhaseChargeCasts(
+            snapshot: snapshot,
+            arena: repo.numbers.phase0aArena,
+            chargeTicks: repo.numbers.combat.bossCharge.defaultChargeTicks,
+          )
+        : const <Phase0aChargeCast?>[];
+    final unlockedSkillIds = preserveBaseBossIdentity
+        ? List<String>.unmodifiable(
+            snapshot.bossPhases == null || snapshot.bossPhases!.isEmpty
+                ? const <String>[]
+                : snapshot.bossPhases!.first.unlockSkillIds,
+          )
+        : List<String>.unmodifiable(enemySkills.map((item) => item.skill.id));
+    final visualAssetPath = preserveBaseBossIdentity
+        ? snapshot.iconPath ?? binding.visualVariant.assetPath
+        : binding.visualVariant.assetPath;
 
     actorBindings[entry.entryId] = Phase0aEncounterActorRuntimeBinding(
       createActor: (runtimeEnemyId) => Phase0aActor(
@@ -161,6 +199,11 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
           snapshot,
           repo.numbers.phase0aArena.enemyAttackCooldownSeconds,
         ),
+        chargeCast: chargeCast,
+        phaseChargeCasts: phaseChargeCasts,
+        staggerTicksTotal: preserveBaseBossIdentity
+            ? repo.numbers.combat.bossCharge.defaultStaggerTicks
+            : 0,
         guardianDefIds: snapshot.guardianDefIds,
         guardianWardMult: snapshot.guardianWardMult,
         guardInterceptsInterrupt: snapshot.guardInterceptsInterrupt,
@@ -191,7 +234,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       behaviorProfile: _behaviorProfile(binding.behavior.aiProfile),
       attackSet: binding.attackSet.id,
       visualVariant: binding.visualVariant.id,
-      visualAssetPath: binding.visualVariant.assetPath,
+      visualAssetPath: visualAssetPath,
     );
   }
 
@@ -242,9 +285,15 @@ CombatantSnapshot _applyVariant({
   required CombatArchetypeVariant variant,
   required List<SkillDef> skills,
   required GameRepository repository,
+  required String entryId,
+  required String visualAssetPath,
+  required bool preserveBaseBossIdentity,
 }) {
+  final resolvedSkills = preserveBaseBossIdentity
+      ? base.availableSkills
+      : skills;
   final basic = _requiredBasicSkill(
-    skills,
+    resolvedSkills,
     stageId: 'runtime',
     entryId: variant.roleId,
   );
@@ -257,15 +306,57 @@ CombatantSnapshot _applyVariant({
       .clamp(0.0, repository.numbers.cycleEvolution.defenseRateCap)
       .toDouble();
   final speed = (base.speed * variant.speedMultiplier).round();
-  return base.copyWith(
+  final stripBossIdentity = base.isBoss && !preserveBaseBossIdentity;
+  return CombatantSnapshot(
+    characterId: base.characterId,
+    name: stripBossIdentity ? entryId : base.name,
+    realmTier: base.realmTier,
+    realmLayer: base.realmLayer,
+    school: base.school,
     maxHp: maxHp,
     currentHp: maxHp,
-    totalEquipmentAttack: attack,
-    defenseRate: defense,
+    internalForce: base.internalForce,
+    maxQi: base.maxQi,
+    currentQi: base.currentQi,
+    qiGainMultiplier: base.qiGainMultiplier,
+    qiCostReductionPct: base.qiCostReductionPct,
+    autoUltimate: preserveBaseBossIdentity && base.autoUltimate,
     speed: speed,
-    skillLoadout: CombatantSkillLoadout(basicAttack: basic),
-    availableSkills: List<SkillDef>.unmodifiable(skills),
-    openingSkillCooldowns: const {},
+    criticalRate: base.criticalRate,
+    evasionRate: base.evasionRate,
+    defenseRate: defense,
+    totalEquipmentAttack: attack,
+    mainCultivationLayer: base.mainCultivationLayer,
+    skillLoadout: preserveBaseBossIdentity
+        ? base.skillLoadout
+        : CombatantSkillLoadout(basicAttack: basic),
+    availableSkills: List<SkillDef>.unmodifiable(resolvedSkills),
+    openingSkillCooldowns: preserveBaseBossIdentity
+        ? base.openingSkillCooldowns
+        : const {},
+    skillUses: preserveBaseBossIdentity ? base.skillUses : const {},
+    activeBuffs: preserveBaseBossIdentity ? base.activeBuffs : const [],
+    swordSongResonanceActive:
+        preserveBaseBossIdentity && base.swordSongResonanceActive,
+    iconPath: preserveBaseBossIdentity ? base.iconPath : visualAssetPath,
+    attackPowerMultiplier: base.attackPowerMultiplier,
+    outputMultiplier: base.outputMultiplier,
+    isBoss: preserveBaseBossIdentity,
+    chargeSkillId: preserveBaseBossIdentity ? base.chargeSkillId : null,
+    bossPhases: preserveBaseBossIdentity ? base.bossPhases : null,
+    bossPhaseUnlockSkills: preserveBaseBossIdentity
+        ? base.bossPhaseUnlockSkills
+        : null,
+    schoolDamageTakenMult: base.schoolDamageTakenMult,
+    lineageRole: stripBossIdentity ? null : base.lineageRole,
+    forgingPiercePct: base.forgingPiercePct,
+    forgingLifestealPct: base.forgingLifestealPct,
+    enemyDefId: stripBossIdentity ? null : base.enemyDefId,
+    guardianWardMult: preserveBaseBossIdentity ? base.guardianWardMult : null,
+    guardianDefIds: preserveBaseBossIdentity ? base.guardianDefIds : const [],
+    vulnerabilityMult: preserveBaseBossIdentity ? base.vulnerabilityMult : null,
+    guardInterceptsInterrupt:
+        preserveBaseBossIdentity && base.guardInterceptsInterrupt,
   );
 }
 

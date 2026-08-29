@@ -509,7 +509,8 @@ void main() {
 
     expect(imports, hasLength(3));
     expect(source, contains('bindingByEntryId'));
-    expect(source, contains('externalProjectors: const []'));
+    expect(source, contains('externalProjectors: externalProjectors'));
+    expect(source, contains('externalProjectors =\n      const []'));
     for (final forbidden in [
       'bindingByEnemyId',
       'entryPositionOf',

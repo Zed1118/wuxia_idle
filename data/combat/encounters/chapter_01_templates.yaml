@@ -1,0 +1,447 @@
+# Frozen production Chapter 1 encounter templates approved for M2.
+encounters:
+  # Frozen production roadbreak template: 25 total, 10 active.
+  - id: ch1_encounter_01_roadbreak
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets:
+      melee: 2
+      ranged: 1
+      charge: 1
+      support: 0
+    spawn_entries:
+      - entry_id: ch1_s01_blade_01
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_01
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_02
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_02
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_03
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_03
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_04
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_04
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_05
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_05
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_06
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_06
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_07
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_07
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_08
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_08
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_09
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_09
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_10
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_10
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_11
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_01
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_12
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_02
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_13
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_03
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_blade_14
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_04
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s01_crossbow_01
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_05
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_crossbow_02
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_06
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_crossbow_03
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_07
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_crossbow_04
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_08
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_crossbow_05
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_ridge
+        position_id: ch1_position_s01_slot_09
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_crossbow_06
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_10
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s01_rope_01
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_01
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s01_rope_02
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_02
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s01_rope_03
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_03
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s01_rope_04
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s01_road_exit
+        position_id: ch1_position_s01_slot_04
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s01_rope_05
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s01_road_west
+        position_id: ch1_position_s01_slot_05
+        behavior_id: ch1_behavior_rope_flank
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch1_s01_clear_road
+          kind: defeat_targets
+          target_ids:
+            - ch1_s01_blade_01
+            - ch1_s01_blade_02
+            - ch1_s01_blade_03
+            - ch1_s01_blade_04
+            - ch1_s01_blade_05
+            - ch1_s01_blade_06
+            - ch1_s01_blade_07
+            - ch1_s01_blade_08
+            - ch1_s01_blade_09
+            - ch1_s01_blade_10
+            - ch1_s01_blade_11
+            - ch1_s01_blade_12
+            - ch1_s01_blade_13
+            - ch1_s01_blade_14
+            - ch1_s01_crossbow_01
+            - ch1_s01_crossbow_02
+            - ch1_s01_crossbow_03
+            - ch1_s01_crossbow_04
+            - ch1_s01_crossbow_05
+            - ch1_s01_crossbow_06
+            - ch1_s01_rope_01
+            - ch1_s01_rope_02
+            - ch1_s01_rope_03
+            - ch1_s01_rope_04
+            - ch1_s01_rope_05
+        - id: ch1_s01_reach_exit
+          kind: reach_checkpoint
+          checkpoint_ids:
+            - ch1_s01_checkpoint_exit
+  # Frozen production stronghold template: 25 total, 10 active; anchors or leader use flat any.
+  - id: ch1_encounter_02_stronghold
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets:
+      melee: 1
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch1_s02_blade_01
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_01
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_02
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_02
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_03
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_03
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_04
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_04
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_05
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_05
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_06
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_06
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_07
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_07
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_08
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_08
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_09
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_09
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_10
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_10
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_11
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_01
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_12
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_02
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_13
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_03
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_blade_14
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_04
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s02_crossbow_01
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_roof
+        position_id: ch1_position_s02_slot_05
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_crossbow_02
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_06
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_crossbow_03
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_roof
+        position_id: ch1_position_s02_slot_07
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_crossbow_04
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_08
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_crossbow_05
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_roof
+        position_id: ch1_position_s02_slot_09
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_crossbow_06
+        archetype_id: ch1_bandits
+        role_id: bandit_crossbow
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_10
+        behavior_id: ch1_behavior_crossbow_offset
+      - entry_id: ch1_s02_rope_01
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_01
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s02_rope_02
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s02_roof
+        position_id: ch1_position_s02_slot_02
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s02_rope_03
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s02_gate
+        position_id: ch1_position_s02_slot_03
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s02_rope_04
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s02_roof
+        position_id: ch1_position_s02_slot_04
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s02_leader_01
+        archetype_id: ch1_bandits
+        role_id: bandit_gong_leader
+        entrance_id: ch1_entrance_s02_yard
+        position_id: ch1_position_s02_slot_05
+        behavior_id: ch1_behavior_gong_command
+    objectives:
+      completion_rule: any
+      clauses:
+        - id: ch1_s02_destroy_anchors
+          kind: destroy_anchors
+          anchor_ids:
+            - ch1_s02_anchor_gate
+            - ch1_s02_anchor_gong_rack
+        - id: ch1_s02_defeat_leader
+          kind: defeat_commander
+          commander_id: ch1_s02_leader_01
+  # Frozen production commander template: 3 total, 3 active; leader plus two required guards.
+  - id: ch1_encounter_04_commander
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets:
+      melee: 1
+      ranged: 0
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch1_s04_blade_01
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s04_duel_court
+        position_id: ch1_position_s04_guard_left
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s04_rope_01
+        archetype_id: ch1_bandits
+        role_id: bandit_rope_raider
+        entrance_id: ch1_entrance_s04_duel_court
+        position_id: ch1_position_s04_guard_right
+        behavior_id: ch1_behavior_rope_flank
+      - entry_id: ch1_s04_leader_01
+        archetype_id: ch1_bandits
+        role_id: bandit_gong_leader
+        entrance_id: ch1_entrance_s04_duel_court
+        position_id: ch1_position_s04_commander_center
+        behavior_id: ch1_behavior_gong_command
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch1_s04_defeat_commander
+          kind: defeat_commander
+          commander_id: ch1_s04_leader_01
+        - id: ch1_s04_defeat_required_adds
+          kind: defeat_targets
+          target_ids:
+            - ch1_s04_blade_01
+            - ch1_s04_rope_01
+  # Frozen production commander template: 2 total, 2 active; leader plus one guard.
+  - id: ch1_encounter_05_commander
+    spawn_config:
+      active_limit: 2
+      reinforcement_threshold: 0
+      entry_warning_ticks: 30
+      attack_grace_ticks: 15
+    token_budgets:
+      melee: 1
+      ranged: 0
+      charge: 0
+      support: 1
+    spawn_entries:
+      - entry_id: ch1_s05_blade_01
+        archetype_id: ch1_bandits
+        role_id: bandit_blade
+        entrance_id: ch1_entrance_s05_peak_ring
+        position_id: ch1_position_s05_guard
+        behavior_id: ch1_behavior_blade_press
+      - entry_id: ch1_s05_leader_01
+        archetype_id: ch1_bandits
+        role_id: bandit_gong_leader
+        entrance_id: ch1_entrance_s05_peak_ring
+        position_id: ch1_position_s05_commander_center
+        behavior_id: ch1_behavior_gong_command
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch1_s05_defeat_commander
+          kind: defeat_commander
+          commander_id: ch1_s05_leader_01

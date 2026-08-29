@@ -14,11 +14,11 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_mapping.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
@@ -29,6 +29,9 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_c
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_participant_snapshot_service.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
@@ -235,35 +238,41 @@ Future<CombatantSnapshot> _resolveSnapshot({
 }
 
 final class _FlowFixture {
-  const _FlowFixture({required this.mapping, required this.flow});
+  const _FlowFixture({required this.host, required this.flow});
 
-  final Phase0aStageMapping mapping;
+  final Phase0aEncounterHost host;
   final _RecordingFlow flow;
+
+  Phase0aEncounterMapping get mapping => host.mapping!;
 }
 
-_FlowFixture _freshFlow({
+Future<_FlowFixture> _freshFlow({
   required GameRepository repository,
   required CombatantSnapshot snapshot,
   required Random rng,
-}) {
-  final mapping = Phase0aStageContentMapper.map(
-    stage: repository.getStage(_stageId),
+}) async {
+  final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
+    contentId: _stageId,
     playerSnapshot: snapshot,
     numbers: repository.numbers,
-    cycleIndex: 1,
   );
-  final flow = Phase0aProductionFlowAssembler.assemble(
-    initialState: mapping.initialState,
-    waves: mapping.waves,
-    combatants: mapping.combatants,
-    moveBindings: mapping.moveBindings,
-    numbers: repository.numbers,
-    rng: rng,
-    playerAdapter: mapping.playerAdapter,
-    enemyAiAdapter: mapping.enemyAiAdapter,
-    waveTransitionPolicy: mapping.waveTransitionPolicy,
+  final host = await createFreshPhase0aMainlineEncounter(
+    Phase0aMainlineEncounterHostBuildRequest(
+      stage: repository.getStage(_stageId),
+      playerMapping: playerMapping,
+      numbers: repository.numbers,
+      cycleIndex: 1,
+      rng: rng,
+      runtimeBindingSource:
+          const Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+            loader: loadPhase0aMainlineRuntimeBindingBundleFromRepository,
+          ),
+    ),
   );
-  return _FlowFixture(mapping: mapping, flow: _RecordingFlow(flow));
+  if (host == null || host.mapping == null) {
+    throw StateError('N14 production encounter host is unavailable');
+  }
+  return _FlowFixture(host: host, flow: _RecordingFlow(host.flow));
 }
 
 final class _BattleMatrix {
@@ -292,19 +301,24 @@ Future<_BattleMatrix> _buildBattleMatrix({
   required GameRepository repository,
   required CombatantSnapshot snapshot,
 }) async {
-  final botFixture = _freshFlow(
+  final botFixture = await _freshFlow(
     repository: repository,
     snapshot: snapshot,
     rng: newMathRandom(seed: _battleSeed),
   );
   final botController = Phase0aBattleController(
     flow: botFixture.flow,
-    roster: Phase0aVisualRoster.fromMapping(botFixture.mapping),
+    roster: Phase0aVisualRoster.fromCombatants(
+      playerId: botFixture.mapping.initialState.player.id,
+      combatants: botFixture.mapping.combatants,
+    ),
     fixedDeltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
   );
   final bot = Phase0aPlayerBotAdapter(
     playerAdapter: botFixture.mapping.playerAdapter,
     policy: _policy,
+    objectiveContinuationCommandBuilder:
+        botFixture.host.objectiveContinuationCommandBuilder,
   );
   final commands = <Phase0aPlayerCommand>[];
   while (botController.outcome == Phase0aBattleOutcome.ongoing &&
@@ -316,14 +330,17 @@ Future<_BattleMatrix> _buildBattleMatrix({
   final botTrace = _finishTrace(botFixture, botController.outcome);
   botController.dispose();
 
-  final manualFixture = _freshFlow(
+  final manualFixture = await _freshFlow(
     repository: repository,
     snapshot: snapshot,
     rng: newMathRandom(seed: _battleSeed),
   );
   final manualController = Phase0aBattleController(
     flow: manualFixture.flow,
-    roster: Phase0aVisualRoster.fromMapping(manualFixture.mapping),
+    roster: Phase0aVisualRoster.fromCombatants(
+      playerId: manualFixture.mapping.initialState.player.id,
+      combatants: manualFixture.mapping.combatants,
+    ),
     fixedDeltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
   );
   final manualIntentTypes = <List<String>>[];
@@ -343,7 +360,7 @@ Future<_BattleMatrix> _buildBattleMatrix({
   final manualTrace = _finishTrace(manualFixture, manualController.outcome);
   manualController.dispose();
 
-  final headlessFixture = _freshFlow(
+  final headlessFixture = await _freshFlow(
     repository: repository,
     snapshot: snapshot,
     rng: newMathRandom(seed: _battleSeed),
@@ -353,13 +370,15 @@ Future<_BattleMatrix> _buildBattleMatrix({
     bot: Phase0aPlayerBotAdapter(
       playerAdapter: headlessFixture.mapping.playerAdapter,
       policy: _policy,
+      objectiveContinuationCommandBuilder:
+          headlessFixture.host.objectiveContinuationCommandBuilder,
     ),
     deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
     maxTicks: repository.numbers.phase0aArena.maxSimulationTicks,
   );
   final headlessTrace = _finishTrace(headlessFixture, headlessResult.outcome);
 
-  final sweepFixture = _freshFlow(
+  final sweepFixture = await _freshFlow(
     repository: repository,
     snapshot: snapshot,
     rng: newMathRandom(seed: _battleSeed),
@@ -369,6 +388,8 @@ Future<_BattleMatrix> _buildBattleMatrix({
     bot: Phase0aPlayerBotAdapter(
       playerAdapter: sweepFixture.mapping.playerAdapter,
       policy: _policy,
+      objectiveContinuationCommandBuilder:
+          sweepFixture.host.objectiveContinuationCommandBuilder,
     ),
     deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
     maxTicks: repository.numbers.phase0aArena.maxSimulationTicks,
@@ -463,12 +484,13 @@ final class _Trace {
 }
 
 _Trace _finishTrace(_FlowFixture fixture, Phase0aBattleOutcome outcome) {
-  final settlement = Phase0aSettlementAdapter.fromMapping(
-    mapping: fixture.mapping,
-    outcome: outcome,
-    finalState: fixture.flow.state,
-    events: fixture.flow.events,
-  );
+  final settlement = fixture.host
+      .settle(
+        outcome: outcome,
+        finalState: fixture.flow.state,
+        events: fixture.flow.events,
+      )
+      .snapshot;
   return _Trace(
     states: List.unmodifiable(fixture.flow.states),
     commandSummaries: List.unmodifiable(
@@ -575,7 +597,7 @@ Future<CombatSettlementSnapshot> _runModeBattle({
     return result.settlement!;
   }
   final snapshot = await _resolveSnapshot(mode: mode, characterId: characterId);
-  final fixture = _freshFlow(
+  final fixture = await _freshFlow(
     repository: repository,
     snapshot: snapshot,
     rng: ref.read(mathRandomProvider),
@@ -583,6 +605,8 @@ Future<CombatSettlementSnapshot> _runModeBattle({
   final bot = Phase0aPlayerBotAdapter(
     playerAdapter: fixture.mapping.playerAdapter,
     policy: _policy,
+    objectiveContinuationCommandBuilder:
+        fixture.host.objectiveContinuationCommandBuilder,
   );
   if (mode == _Mode.headless) {
     final result = Phase0aHeadlessRunner.runToEnd(
@@ -591,16 +615,20 @@ Future<CombatSettlementSnapshot> _runModeBattle({
       deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
       maxTicks: repository.numbers.phase0aArena.maxSimulationTicks,
     );
-    return Phase0aSettlementAdapter.fromMapping(
-      mapping: fixture.mapping,
-      outcome: result.outcome,
-      finalState: result.finalState,
-      events: result.events,
-    );
+    return fixture.host
+        .settle(
+          outcome: result.outcome,
+          finalState: result.finalState,
+          events: result.events,
+        )
+        .snapshot;
   }
   final controller = Phase0aBattleController(
     flow: fixture.flow,
-    roster: Phase0aVisualRoster.fromMapping(fixture.mapping),
+    roster: Phase0aVisualRoster.fromCombatants(
+      playerId: fixture.mapping.initialState.player.id,
+      combatants: fixture.mapping.combatants,
+    ),
     fixedDeltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
   );
   var ticks = 0;
@@ -609,12 +637,13 @@ Future<CombatSettlementSnapshot> _runModeBattle({
     controller.step(bot.commandFor(controller.state));
     ticks++;
   }
-  final settlement = Phase0aSettlementAdapter.fromMapping(
-    mapping: fixture.mapping,
-    outcome: controller.outcome,
-    finalState: controller.state,
-    events: controller.events,
-  );
+  final settlement = fixture.host
+      .settle(
+        outcome: controller.outcome,
+        finalState: controller.state,
+        events: controller.events,
+      )
+      .snapshot;
   controller.dispose();
   return settlement;
 }

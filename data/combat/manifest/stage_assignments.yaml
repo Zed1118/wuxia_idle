@@ -1,14 +1,17 @@
-# Only stage_01_03 is migrated in this production vertical slice.
-# Other Ch1 stages remain legacy and continue using data/stages.yaml.
+# All five Chapter 1 stages use the frozen four-template production catalog.
 stage_assignments:
   - stage_id: stage_01_01
-    migration_state: legacy
+    migration_state: migrated
+    encounter_id: ch1_encounter_01_roadbreak
   - stage_id: stage_01_02
-    migration_state: legacy
+    migration_state: migrated
+    encounter_id: ch1_encounter_02_stronghold
   - stage_id: stage_01_03
     migration_state: migrated
     encounter_id: ch1_encounter_03_ambush
   - stage_id: stage_01_04
-    migration_state: legacy
+    migration_state: migrated
+    encounter_id: ch1_encounter_04_commander
   - stage_id: stage_01_05
-    migration_state: legacy
+    migration_state: migrated
+    encounter_id: ch1_encounter_05_commander

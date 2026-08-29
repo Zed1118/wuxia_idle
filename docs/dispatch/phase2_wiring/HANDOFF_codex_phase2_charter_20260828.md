@@ -40,7 +40,7 @@
 | 0 | visual route 缺 `defenseTuning` | 验收前置缺陷(不计入 M2 四项功能分母) | `visual_route_host.dart:477-484` 加载 debug fixture;`phase0a_debug_battle_fixture.dart:241-268,271-302` 构造玩家/敌人 adapter 时都未传 tuning;`phase0a_player_input_adapter.dart:128-145` 会因 tuning 为 null 静默丢弃防御 intent。**凡用 visual route 做的战斗视觉验收,拍到的防御状态都是失效态** |
 | 1 | 屏外提示 | 未实装 | 反搜 `offscreen/屏外/indicator arrow` 在 battle presentation 零命中。**高密度下没有它就没法玩**,M2 剩余里优先级最高 |
 | 2 | 聚合伤害 | 未实装 | `phase0a_vfx_controller.dart:154-173,195-273` 每个伤害 outcome 建独立 popup;`phase0a_battle_screen.dart:407-445` 只淘汰超量不合并数值 |
-| 3 | 五关四模板 | 部分 | `stage_assignments.yaml` 只有 `stage_01_03` 迁移;`StageDef`(`stage_def.dart:100-179`)无 template 字段;candidate fixture 里才有 roadbreak/stronghold/ambush/commander 路由 |
+| 3 | 五关四模板 | 实施中(待 gate) | `data/combat/manifest/stage_assignments.yaml` 已将 `stage_01_01..05` 全部连到 production migrated 路由;`data/combat/encounters/chapter_01_templates.yaml` 与 `data/combat/runtime_bindings.yaml` 承载 roadbreak/stronghold/ambush/commander 四模板,`StageDef` 不新增 template 字段 |
 | 4 | 剑形态完整普攻链 | 未实装 | `basic_attack_chain.dart:1-5,59-133` 明标 candidate-only;生产 `phase0a_player_input_adapter.dart:147-165` 每次只发单段 `moveKind: light` |
 
 **其他在途**:E2 真机打局管线需返修(首帧时间戳校正 + 帧内容语义断言 + `recording.log` 真落盘);E1 已产出 28 条真实缺陷(战斗退出 10 + 语义 18),按用户「先把基础攻击和技能做好体验」的排序押后。
@@ -53,7 +53,7 @@
 
 配套硬约束:没过 G2 不扩 21 章;M7 此时只允许建任务包和依赖图,不允许未依赖冻结模板/生态的内容包开写。
 
-**M2 四项做完后,你要做的是准备试玩材料并请用户试玩,不是开 M3。** 请用户专门玩 `stage_01_03` 黑风岭——它是唯一 migrated 的关(40 敌/12 活跃/4 令牌,三项都在 G2 要求区间内)。其余四关仍是 legacy 的 2/3/4 波,那是方案明写的「可比较的过渡 fallback」,不是遗漏。用户此前反馈「怪物出现顺序千篇一律」正是因为玩的是 legacy 关。
+**M2 四项做完后,你要做的是准备试玩材料并请用户试玩,不是开 M3。** 请用户重点玩 `stage_01_03` 黑风岭——它是密度主验收关(40 敌/12 活跃/4 令牌,三项都在 G2 要求区间内)。`stage_01_01..05` 现均为 migrated production 路由:破路、据点、伏击、三人斩将和两人斩将可用于比较出怪顺序、目标规则和 Boss 可学性;不得再把其余四关报为 legacy fallback。
 
 ## §5 每个单的固定收工流程
 
