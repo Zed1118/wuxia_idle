@@ -18,6 +18,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_damage_kind.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/status_effects.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 
@@ -435,6 +436,33 @@ void main() {
     expect(settlement.hadActions, isTrue);
     expect(settlement.totalDamage, 25);
     expect(settlement.damageByCharacterId, {1: 25});
+  });
+
+  test('fixed-tick status damage is attributed to its source actor', () {
+    final settlement = Phase0aSettlementAdapter.fromEncounterMapping(
+      mapping: _encounterMapping(
+        combatants: _combatants(),
+        moveBindings: _moveBindings(),
+      ),
+      outcome: Phase0aBattleOutcome.victory,
+      finalState: _finalState(),
+      events: const [
+        Phase0aStatusDamageApplied(
+          seq: 1,
+          tick: 2,
+          source: 'player',
+          target: 'enemy_active',
+          statusType: TimedStatusType.internalInjury,
+          resolvedDamage: 200,
+          remainingHealth: 0,
+          targetPosition: ArenaVector.zero,
+        ),
+      ],
+    );
+
+    expect(settlement.totalDamage, 200);
+    expect(settlement.damageByCharacterId, {1: 200});
+    expect(settlement.criticalCount, 0);
   });
 
   test('shared core requires exactly one mapped player actor', () {

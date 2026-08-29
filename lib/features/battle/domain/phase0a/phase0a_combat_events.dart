@@ -3,6 +3,7 @@ import 'defense_resolution.dart';
 import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
 import 'posture.dart';
+import 'status_effects.dart';
 
 /// Phase 0A 语义事件基类(对齐冻结反馈契约公共 payload)。
 ///
@@ -103,6 +104,57 @@ final class Phase0aHitLanded extends Phase0aEvent {
     resolvedDamage,
     remainingHealth,
     actorPosition,
+    targetPosition,
+  );
+}
+
+/// Fixed-tick poison/internal-injury damage already settled by the reducer.
+///
+/// Damage pierces defense because it is emitted after direct HP settlement;
+/// presentation and settlement consumers use this payload without recomputing.
+final class Phase0aStatusDamageApplied extends Phase0aEvent {
+  const Phase0aStatusDamageApplied({
+    required super.seq,
+    required super.tick,
+    required this.source,
+    required this.target,
+    required this.statusType,
+    required this.resolvedDamage,
+    required this.remainingHealth,
+    required this.targetPosition,
+  });
+
+  final String source;
+  final String target;
+  final TimedStatusType statusType;
+  final int resolvedDamage;
+  final int remainingHealth;
+  final ArenaVector targetPosition;
+
+  /// Stable exact key for short-window presentation aggregation.
+  String get aggregationKey => '${statusType.name}|$source|$target';
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aStatusDamageApplied &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.source == source &&
+      other.target == target &&
+      other.statusType == statusType &&
+      other.resolvedDamage == resolvedDamage &&
+      other.remainingHealth == remainingHealth &&
+      other.targetPosition == targetPosition;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    source,
+    target,
+    statusType,
+    resolvedDamage,
+    remainingHealth,
     targetPosition,
   );
 }

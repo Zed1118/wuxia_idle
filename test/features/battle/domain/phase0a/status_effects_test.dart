@@ -87,6 +87,29 @@ void main() {
   });
 
   group('TimedStatusLedger', () {
+    test('immutable snapshot round-trips active fixed-tick state', () {
+      final original = TimedStatusLedger.empty
+        ..apply(
+          _poison(
+            durationTicks: 4,
+            tickIntervalTicks: 2,
+            sourceId: 'source_b',
+            damagePerTick: 7,
+          ),
+        )
+        ..apply(
+          _poison(durationTicks: 3, sourceId: 'source_a', damagePerTick: 2),
+        )
+        ..advance(1);
+
+      final snapshot = original.snapshot;
+      final restored = TimedStatusLedger.fromSnapshot(snapshot);
+
+      expect(restored.snapshot, snapshot);
+      expect(restored.advance(2).damages, original.advance(2).damages);
+      expect(restored.snapshot, original.snapshot);
+    });
+
     test('same source refreshes rather than stacking by default', () {
       final ledger = TimedStatusLedger.empty
         ..apply(_poison(durationTicks: 4, sourceId: 'a'))

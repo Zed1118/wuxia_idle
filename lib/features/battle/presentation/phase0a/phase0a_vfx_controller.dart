@@ -92,6 +92,7 @@ final class Phase0aVfxEntry {
     this.damage,
     this.isCritical = false,
     this.damageGroupId,
+    this.statusDamageWindowKey,
     this.damageTargetClass = Phase0aDamagePopupTargetClass.unknown,
     this.hitCount = 1,
     this.defeatKind,
@@ -114,6 +115,9 @@ final class Phase0aVfxEntry {
 
   /// 同一次已结算攻击/技能事件的稳定分组键（事件 seq）。
   final int? damageGroupId;
+
+  /// Exact typed status/source/target key for resident-lifetime aggregation.
+  final String? statusDamageWindowKey;
 
   /// 居民聚合与淘汰只读的 typed 目标档。
   final Phase0aDamagePopupTargetClass damageTargetClass;
@@ -300,6 +304,7 @@ final class Phase0aVfxController {
       int damage,
       bool isCritical, {
       required int groupId,
+      String? statusDamageWindowKey,
       ArenaVector? anchor,
     }) {
       if (damage <= 0 || popupCount >= maxDamagePopups) return;
@@ -311,6 +316,7 @@ final class Phase0aVfxController {
           damage: damage,
           isCritical: isCritical,
           damageGroupId: groupId,
+          statusDamageWindowKey: statusDamageWindowKey,
           damageTargetClass: _damagePopupTargetClass(targetId),
           // 事件携带的结算时坐标快照优先;字段为空才回退同步状态
           // (兼容旧事件)。渲染层不得通过 id 反查当前 state
@@ -349,6 +355,15 @@ final class Phase0aVfxController {
             anchor: event.targetPosition,
           );
           _maybePushPlayerAttackVfx(event, push);
+        case Phase0aStatusDamageApplied():
+          pushPopup(
+            event.target,
+            event.resolvedDamage,
+            false,
+            groupId: event.seq,
+            statusDamageWindowKey: event.aggregationKey,
+            anchor: event.targetPosition,
+          );
         case Phase0aGatherStarted():
           push(
             Phase0aVfxEntry(

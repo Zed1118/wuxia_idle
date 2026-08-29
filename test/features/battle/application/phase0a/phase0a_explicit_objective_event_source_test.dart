@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/status_effects.dart';
 
 Phase0aActor _actor(
   String id, {
@@ -130,6 +131,55 @@ Phase0aExplicitObjectiveEventSource _source(
 );
 
 void main() {
+  test('objective frame keeps an immutable actor status snapshot', () {
+    final fixture = _EncounterFixture();
+    final ledger = TimedStatusLedger.empty
+      ..apply(
+        TimedStatusSpec(
+          type: TimedStatusType.poison,
+          sourceId: 'runtime_actor_alpha',
+          durationTicks: 3,
+          tickIntervalTicks: 1,
+          stackLimit: 1,
+          damagePerTick: 5,
+        ),
+      );
+    final beforeStatus = ledger.snapshot;
+    final frame = Phase0aEncounterObjectiveFrame(
+      beforeArena: Phase0aArenaState(
+        tick: 0,
+        nextSeq: 0,
+        player: _actor(
+          'player',
+          side: Phase0aSide.player,
+        ).copyWith(statusLedger: beforeStatus),
+        enemies: const [],
+        skillSlots: const [],
+      ),
+      afterArena: Phase0aArenaState(
+        tick: 1,
+        nextSeq: 0,
+        player: _actor('player', side: Phase0aSide.player),
+        enemies: const [],
+        skillSlots: const [],
+      ),
+      beforeSpawn: fixture.director.state,
+      afterSpawn: fixture.director.state,
+      directorEvents: const [],
+      spawnEvents: const [],
+      combatEvents: const [],
+      deltaSeconds: 0.1,
+    );
+
+    ledger.advance(1);
+
+    expect(frame.beforeArena.player.statusLedger, beforeStatus);
+    expect(
+      frame.beforeArena.player.statusLedger.instances.single.remainingTicks,
+      3,
+    );
+  });
+
   test('constructor requires exact roster actor coverage', () {
     final fixture = _EncounterFixture();
 

@@ -420,6 +420,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   bool _reserveDamagePopupResident(Phase0aVfxEntry incoming) {
     if (incoming.kind != Phase0aVfxKind.damagePopup) return true;
+    if (_mergeStatusDamagePopup(incoming)) return false;
     final targetId = incoming.targetId;
     if (targetId != null) {
       while (true) {
@@ -448,6 +449,35 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       }
       if (!_evictDamagePopup(residents, incoming)) return false;
     }
+    return true;
+  }
+
+  bool _mergeStatusDamagePopup(Phase0aVfxEntry incoming) {
+    final windowKey = incoming.statusDamageWindowKey;
+    if (windowKey == null) return false;
+    final index = _heldFeedback.indexWhere(
+      (held) =>
+          held.entry.statusDamageWindowKey == windowKey &&
+          held.elapsedSeconds <= Phase0aPresentationTokens.damagePopupSeconds,
+    );
+    if (index < 0) return false;
+    final resident = _heldFeedback[index];
+    final residentEntry = resident.entry;
+    _heldFeedback[index] = _HeldFeedback(
+      id: resident.id,
+      entry: Phase0aVfxEntry(
+        kind: Phase0aVfxKind.damagePopup,
+        targetId: incoming.targetId,
+        damage: (residentEntry.damage ?? 0) + (incoming.damage ?? 0),
+        isCritical: residentEntry.isCritical || incoming.isCritical,
+        damageGroupId: incoming.damageGroupId,
+        statusDamageWindowKey: windowKey,
+        damageTargetClass: incoming.damageTargetClass,
+        hitCount: residentEntry.hitCount + incoming.hitCount,
+        anchor: incoming.anchor ?? residentEntry.anchor,
+      ),
+      lifetimeSeconds: _feedbackLifetime(Phase0aVfxKind.damagePopup),
+    );
     return true;
   }
 
@@ -599,6 +629,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final actorRenderingChanged = _advanceActorRenderMotions(deltaSeconds);
     for (final held in _heldFeedback) {
       held.remainingSeconds -= deltaSeconds;
+      held.elapsedSeconds += deltaSeconds;
     }
     final previousFeedbackCount = _heldFeedback.length;
     _heldFeedback.removeWhere((held) => held.remainingSeconds <= 0);
@@ -1067,6 +1098,7 @@ final class _HeldFeedback {
   final Phase0aVfxEntry entry;
   final double lifetimeSeconds;
   double remainingSeconds;
+  double elapsedSeconds = 0;
 
   double get progress =>
       (1 - remainingSeconds / lifetimeSeconds).clamp(0.0, 1.0);
