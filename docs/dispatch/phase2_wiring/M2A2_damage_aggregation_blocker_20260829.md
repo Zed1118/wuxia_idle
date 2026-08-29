@@ -79,3 +79,9 @@
 - `remove_implementation`：删除 `_reserveDamagePopupResident` 对状态短窗合并支点的调用，同一 19-case targeted 变为 `+17 -2: Some tests failed.`，双视口各红 1 个。
 - `force_degenerate_value`：把聚合总额强制退化为仅保留最新 tick 伤害，同一 targeted 再次为 `+17 -2: Some tests failed.`，双视口各红 1 个。
 - 两向均用精确反向补丁恢复；每次恢复后实测 `git diff --quiet` 为 `0`，`git status --short` 无输出。
+- 全量回归修复 commit `e3172d9a` 后再次执行上述两向破坏，实测仍分别为 `+17 -2`；两次恢复后仍为 `git diff --quiet` rc=0 且空状态，证据绑定最终生产实现。
+
+### 首次全量暴露的下层回归
+
+- 首次带锁全量为 `08:47 +5676 -3: Some tests failed.`、`[E]` 3：两个 reducer guard 断言发现无状态 actor 被空 ledger timeline 污染；源码契约发现空快照存在字面量 `= 0`。
+- 修复不改测试与数值：无 active status 时 reducer 完全不推进 ledger；空 ledger snapshot 归一为 const empty；timeline 初值改为语义常量。原失败文件及状态接线定向复跑为 `+54: All tests passed!`。
