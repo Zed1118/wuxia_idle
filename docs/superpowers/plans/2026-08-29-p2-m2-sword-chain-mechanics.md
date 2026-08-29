@@ -266,3 +266,15 @@ PASS: test_contract_migration
 - 同一任务 gate 已连续失败两次，触发停止条件。状态改为 `[BLOCKED]`；未合并、
   未 push、未触发或查询 CI。需用户决定是给 gate 增加本单精确路径/内容例外，
   还是显式扩展 §8 例外以覆盖本次已授权的 numbers 窄 diff。
+
+## 精确 gate 例外授权
+
+- 用户于 2026-08-29 明确批准推荐方案：只对本单放行
+  `data/numbers.yaml`，同时绑定本单 base、最终候选 head 与该文件 diff 的
+  SHA-256；其他禁区路径、其他 numbers diff、其他 base/head 均继续 fail
+  closed。
+- 授权 numbers diff SHA-256：
+  `d5d4c38eed842f9bbbe885ad95b390285ed20f85a9c6f8e070db16562c0106df`。
+- 该例外只消除 gate 与既有产品窄授权的机械冲突，不豁免
+  `test_deletions`；后者仍须由已 PASS 的测试契约迁移校验器满足宪法 §8
+  唯一例外后才可合并。
