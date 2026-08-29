@@ -94,7 +94,6 @@ Phase0aStepResult _attack({
   required List<Phase0aActor> enemies,
   BasicAttackGeometryRegistry? registry,
   double playerX = 0,
-  List<double> barriersX = const [],
 }) => reducePhase0aTick(
   state: Phase0aArenaState(
     tick: 0,
@@ -117,7 +116,6 @@ Phase0aStepResult _attack({
       basicAttackChain: swordBasicAttackChain,
       basicAttackGeometryRegistry: registry ?? _registry(),
       basicAttackArenaBounds: _bounds,
-      basicAttackDisplacementBarriersX: barriersX,
     ),
   ],
   deltaSeconds: 0.1,
@@ -153,6 +151,21 @@ void main() {
     );
   });
 
+  test('all three sword segments resolve at most one target per attack', () {
+    for (var segmentIndex = 0; segmentIndex < 3; segmentIndex++) {
+      final result = _attack(
+        segmentIndex: segmentIndex,
+        enemies: [
+          _enemy(const ArenaVector(80, 0), id: 'near'),
+          _enemy(const ArenaVector(120, 0), id: 'far'),
+        ],
+      );
+      final hits = result.events.whereType<Phase0aHitLanded>().toList();
+      expect(hits, hasLength(1), reason: 'segmentIndex=$segmentIndex');
+      expect(hits.single.target, 'near', reason: 'segmentIndex=$segmentIndex');
+    }
+  });
+
   test(
     'missing geometry ref fails closed instead of using shared fallback',
     () {
@@ -167,25 +180,10 @@ void main() {
     },
   );
 
-  test(
-    'advancing slash clamps to arena and cannot cross a displacement barrier',
-    () {
-      final arenaEdge = _attack(
-        segmentIndex: 2,
-        playerX: 630,
-        enemies: const [],
-      );
-      expect(arenaEdge.state.player.position, const ArenaVector(640, 0));
-
-      final checkpoint = _attack(
-        segmentIndex: 2,
-        playerX: 500,
-        enemies: const [],
-        barriersX: const [520],
-      );
-      expect(checkpoint.state.player.position, const ArenaVector(500, 0));
-    },
-  );
+  test('advancing slash clamps to arena', () {
+    final arenaEdge = _attack(segmentIndex: 2, playerX: 630, enemies: const []);
+    expect(arenaEdge.state.player.position, const ArenaVector(640, 0));
+  });
 
   test(
     'advancing slash stops at and resolves the target selected before moving',

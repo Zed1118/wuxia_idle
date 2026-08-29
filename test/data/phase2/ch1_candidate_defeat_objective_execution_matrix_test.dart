@@ -469,6 +469,7 @@ Phase0aEncounterObjectiveFrame _defeatFrame(
     spawnEvents: const [],
     combatEvents: combatEvents,
     deltaSeconds: 1,
+    playerMovementDelta: ArenaVector.zero,
   );
 }
 

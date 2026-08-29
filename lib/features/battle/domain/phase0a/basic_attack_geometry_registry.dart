@@ -173,7 +173,6 @@ ArenaVector resolveBasicAttackAdvance({
   required double distance,
   CombatGeometryTarget? stopTarget,
   required BasicAttackArenaBounds bounds,
-  required Iterable<double> positiveXBarriers,
 }) {
   bounds.validate();
   if (!distance.isFinite || distance < 0) {
@@ -188,12 +187,5 @@ ArenaVector resolveBasicAttackAdvance({
     final forwardDistance = directionUnit.dot(stopTarget.position - origin);
     travelDistance = math.min(distance, math.max(0, forwardDistance));
   }
-  final proposed = bounds.clamp(origin + directionUnit * travelDistance);
-  for (final barrier in positiveXBarriers) {
-    if (!barrier.isFinite) {
-      throw ArgumentError.value(barrier, 'positiveXBarriers');
-    }
-    if (origin.x < barrier && proposed.x >= barrier) return origin;
-  }
-  return proposed;
+  return bounds.clamp(origin + directionUnit * travelDistance);
 }

@@ -162,6 +162,7 @@ final class _Fixture {
           ),
         ],
         deltaSeconds: 1,
+        playerMovementDelta: ArenaVector.zero,
       );
 }
 

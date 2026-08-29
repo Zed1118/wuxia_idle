@@ -86,7 +86,6 @@ final class Phase0aPlayerInputAdapter {
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
-    this.basicAttackDisplacementBarriersX = const [],
   });
 
   final String playerId;
@@ -118,50 +117,21 @@ final class Phase0aPlayerInputAdapter {
   final BasicAttackChain? basicAttackChain;
   final BasicAttackGeometryRegistry? basicAttackGeometryRegistry;
   final BasicAttackArenaBounds? basicAttackArenaBounds;
-  final List<double> basicAttackDisplacementBarriersX;
 
-  Phase0aPlayerInputAdapter withBasicAttackDisplacementBarriersX(
-    Iterable<double> barriers,
-  ) => Phase0aPlayerInputAdapter(
-    playerId: playerId,
-    attackRange: attackRange,
-    attackHalfArcRadians: attackHalfArcRadians,
-    attackCooldownSeconds: attackCooldownSeconds,
-    attackQiDelta: attackQiDelta,
-    postureBasicPowerMultiplier: postureBasicPowerMultiplier,
-    attackPowerMultiplier: attackPowerMultiplier,
-    gatherPowerMultiplier: gatherPowerMultiplier,
-    clearPowerMultiplier: clearPowerMultiplier,
-    gatherSlot: gatherSlot,
-    gatherRingRadius: gatherRingRadius,
-    gatherEffectRadius: gatherEffectRadius,
-    gatherQiCost: gatherQiCost,
-    gatherCooldownSeconds: gatherCooldownSeconds,
-    clearSlot: clearSlot,
-    clearEffectRadius: clearEffectRadius,
-    clearQiCost: clearQiCost,
-    clearCooldownSeconds: clearCooldownSeconds,
-    gatherSkillBinding: gatherSkillBinding,
-    clearSkillBinding: clearSkillBinding,
-    numericSkillBindings: numericSkillBindings,
-    defenseTuning: defenseTuning,
-    basicAttackChain: basicAttackChain,
-    basicAttackGeometryRegistry: basicAttackGeometryRegistry,
-    basicAttackArenaBounds: basicAttackArenaBounds,
-    basicAttackDisplacementBarriersX: List.unmodifiable(barriers),
-  );
+  ArenaVector movementDirectionFor(Phase0aPlayerCommand command) =>
+      normalizeMovementInput(
+        left: command.left,
+        right: command.right,
+        up: command.up,
+        down: command.down,
+      );
 
   List<Phase0aIntent> intentsFor({
     required Phase0aArenaState state,
     required Phase0aPlayerCommand command,
   }) {
     final intents = <Phase0aIntent>[];
-    final direction = normalizeMovementInput(
-      left: command.left,
-      right: command.right,
-      up: command.up,
-      down: command.down,
-    );
+    final direction = movementDirectionFor(command);
     if (direction.lengthSquared > 0) {
       intents.add(Phase0aMoveIntent(actorId: playerId, direction: direction));
     }
@@ -204,7 +174,6 @@ final class Phase0aPlayerInputAdapter {
           basicAttackChain: basicAttackChain,
           basicAttackGeometryRegistry: basicAttackGeometryRegistry,
           basicAttackArenaBounds: basicAttackArenaBounds,
-          basicAttackDisplacementBarriersX: basicAttackDisplacementBarriersX,
         ),
       );
     }

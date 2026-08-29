@@ -24,7 +24,7 @@ void main() {
     repository = await loadTestGameRepository();
   });
 
-  Future<Phase0aEncounterHost> fresh() async {
+  Future<Phase0aEncounterHost> fresh({double initialX = 500}) async {
     final base = Phase0aStageContentMapper.mapPlayerOnly(
       contentId: 'stage_01_01',
       playerSnapshot: testCombatantSnapshot(
@@ -37,7 +37,7 @@ void main() {
     final playerMapping = Phase0aPlayerRuntimeMapping(
       snapshot: base.snapshot,
       initialPlayer: base.initialPlayer.copyWith(
-        position: const ArenaVector(500, 0),
+        position: ArenaVector(initialX, 0),
         basicAttackSegmentIndex: 2,
       ),
       skillSlots: base.skillSlots,
@@ -98,9 +98,36 @@ void main() {
             ?.id,
         swordBasicAttackSegmentIds[2],
       );
-      expect(attackHost.flow.state.player.position.x, 500);
+      expect(
+        attackHost.flow.state.player.position.x,
+        greaterThan(520),
+        reason: 'the advancing slash must actually cross the checkpoint line',
+      );
       expect(attackHost.flow.outcome, Phase0aBattleOutcome.ongoing);
       expect(checkpointCompleted(attackHost), isFalse);
+
+      final mixedHost = await fresh(initialX: 490);
+      mixedHost.advanceManual(
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(
+          right: true,
+          attack: true,
+          attackAimDirection: ArenaVector(1, 0),
+        ),
+      );
+      expect(mixedHost.flow.state.player.position.x, greaterThan(520));
+      expect(
+        490 +
+            repository.numbers.phase0aArena.playerMoveSpeed *
+                repository.numbers.phase0aArena.fixedDeltaSeconds,
+        lessThan(520),
+        reason: 'normal movement alone must remain before the checkpoint',
+      );
+      expect(
+        checkpointCompleted(mixedHost),
+        isFalse,
+        reason: 'the attack portion of a mixed frame must not be attributed',
+      );
 
       final movementHost = await fresh();
       movementHost.advanceManual(

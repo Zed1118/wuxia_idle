@@ -194,6 +194,10 @@ final class Phase0aEncounterFlow
     // The existing resolver may consume caller-owned RNG before a later
     // projection fails. It exposes no rewind API, and this flow does not claim
     // to roll that external stream back. All state owned here remains local.
+    final playerMovementDelta = gatedSession.playerMovementDeltaFor(
+      deltaSeconds: deltaSeconds,
+      command: command,
+    );
     final combatEvents = gatedSession.advance(
       deltaSeconds: deltaSeconds,
       command: command,
@@ -238,6 +242,7 @@ final class Phase0aEncounterFlow
           spawnEvents: spawnEvents,
           combatEvents: combatEvents,
           deltaSeconds: deltaSeconds,
+          playerMovementDelta: playerMovementDelta,
         );
         objectiveTransition = objectiveTracker.prepareExternalEvents(
           _objectiveEventSource!.eventsFor(frame),

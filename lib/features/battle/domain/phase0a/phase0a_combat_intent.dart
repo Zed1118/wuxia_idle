@@ -85,7 +85,6 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
-    this.basicAttackDisplacementBarriersX = const [],
   });
 
   final double range;
@@ -109,11 +108,6 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   /// Required with [basicAttackChain]. Missing refs fail closed in reducer.
   final BasicAttackGeometryRegistry? basicAttackGeometryRegistry;
   final BasicAttackArenaBounds? basicAttackArenaBounds;
-
-  /// Existing objective checkpoint x positions that attack displacement may
-  /// not cross in the positive-x direction. Normal movement does not consume
-  /// this list and keeps its objective semantics.
-  final List<double> basicAttackDisplacementBarriersX;
 }
 
 /// Enemy phase-unlocked skill request. Binding and policy are resolved in the
