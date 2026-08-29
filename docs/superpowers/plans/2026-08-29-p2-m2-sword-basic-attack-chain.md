@@ -54,8 +54,8 @@
 
 ## 恢复点
 
-- 当前：实现已完成，待实现 commit 后做正式双向破坏证红与
-  完整九步收工。
+- 当前：实现、双向破坏证红与最终全量已完成，待
+  READY/receipt/gate 收口。
 - 初始 RED：生产 mapper 与整屏两文件先跑，因缺少
   `swordBasicAttackChain`、adapter 链字段、actor 游标与 event segment
   编译失败，结论为真 RED，不是先写实现后补测。
@@ -63,10 +63,12 @@
   `swordBasicAttackChain`；reducer 保存“下一个已接受段”游标；
   `AttackStarted/HitLanded` 透传 segment；VFX 以直刺细长墨锋、
   横扫宽弧、进步斩前倾双折墨痕绘制。
-- 当前验证：生产 mapper + 真实 `BattleScreen` 并跑
-  `+54: All tests passed!`；8 个影响面文件逐文件全绿，其中
-  新 mapper 文件 `+25`、整屏 `+29`、主线生产接线 `+18`；
-  `flutter analyze --no-pub lib test` 为 `No issues found! (ran in 3.0s)`。
+- 定向验证：生产 mapper + 真实 `BattleScreen` 并跑
+  `+54: All tests passed!`；仓内现存 4 个相关文件逐文件全绿：
+  链定义 `+6`、mapper `+25`、整屏 `+29`、主线生产接线
+  `+18`。原记录的其他 4 个测试路径并不存在，已经
+  `rg --files test` 复核并修正，不把 `Does not exist` 冒充为测试失败。
+  `flutter analyze --no-pub lib test` 为 `No issues found! (ran in 4.4s)`。
 - 提交后双向破坏证红（基于实现提交 `a68a8dec`）：
   1. `remove_implementation`：同时移除正式 player mapper 与 debug
      visual fixture 的 `basicAttackChain` 装配，同一两文件组实测
@@ -80,6 +82,11 @@
   3. 两次均以精确反向补丁还原，每次 `git diff --quiet`
      均为 `rc=0`且 `git status --short` 为空；还原后同组重跑
      `+54: All tests passed!`。
+- 全量回归：首轮在新增 actor 游标的数字默认值上触发
+  `phase0a_source_contract_test.dart`，最终为
+  `+5686 -1: Some tests failed.`。不放宽契约，而是把初值
+  移为命名常量；源码契约复验 `+20`，最终持锁全量为
+  `05:43 +5687: All tests passed!`，`[E]` 为 0。
 - 禁区文件：未触碰。
 - 数值红线：不修改生产 HP/伤害/CD/范围/目标上限。
 - G2 边界：自动验证只证明连段接线与可观测表现，不代替用户
