@@ -179,6 +179,7 @@ final class Phase0aActor {
     this.parryCounterDamage = _noDefenseScalar,
     this.parryCounterBudgetRemaining = _noDefenseScalar,
     this.statusLedger = const TimedStatusLedgerSnapshot.empty(),
+    this.basicAttackSegmentIndex = 0,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -265,6 +266,11 @@ final class Phase0aActor {
   final double parryCounterBudgetRemaining;
   final TimedStatusLedgerSnapshot statusLedger;
 
+  /// Index of the next accepted segment in the equipped basic-attack chain.
+  /// It is reducer-owned so manual, bot and headless paths share one replayable
+  /// sequence. Actors without a chain keep the neutral zero value.
+  final int basicAttackSegmentIndex;
+
   bool get isAlive => currentHealth > 0;
 
   Phase0aActor copyWith({
@@ -291,6 +297,7 @@ final class Phase0aActor {
     double? parryCounterDamage,
     double? parryCounterBudgetRemaining,
     TimedStatusLedgerSnapshot? statusLedger,
+    int? basicAttackSegmentIndex,
   }) {
     return Phase0aActor(
       id: id,
@@ -341,6 +348,8 @@ final class Phase0aActor {
       parryCounterBudgetRemaining:
           parryCounterBudgetRemaining ?? this.parryCounterBudgetRemaining,
       statusLedger: statusLedger ?? this.statusLedger,
+      basicAttackSegmentIndex:
+          basicAttackSegmentIndex ?? this.basicAttackSegmentIndex,
     );
   }
 
@@ -384,7 +393,8 @@ final class Phase0aActor {
       other.defenseCooldownRemaining == defenseCooldownRemaining &&
       other.parryCounterDamage == parryCounterDamage &&
       other.parryCounterBudgetRemaining == parryCounterBudgetRemaining &&
-      other.statusLedger == statusLedger;
+      other.statusLedger == statusLedger &&
+      other.basicAttackSegmentIndex == basicAttackSegmentIndex;
 
   @override
   int get hashCode => Object.hash(
@@ -425,7 +435,11 @@ final class Phase0aActor {
       dodgeTicksRemaining,
       defenseCooldownRemaining,
       parryCounterDamage,
-      Object.hash(parryCounterBudgetRemaining, statusLedger),
+      Object.hash(
+        parryCounterBudgetRemaining,
+        statusLedger,
+        basicAttackSegmentIndex,
+      ),
     ),
   );
 }

@@ -1,4 +1,5 @@
 import '../../domain/phase0a/arena_vector.dart';
+import '../../domain/phase0a/basic_attack_chain.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_damage_kind.dart';
@@ -81,6 +82,7 @@ final class Phase0aPlayerInputAdapter {
     this.clearSkillBinding,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
     this.defenseTuning,
+    this.basicAttackChain,
   });
 
   final String playerId;
@@ -109,6 +111,7 @@ final class Phase0aPlayerInputAdapter {
   final Phase0aTacticalSkillBinding? clearSkillBinding;
   final Phase0aNumericSkillBindings numericSkillBindings;
   final Phase0aDefenseTuning? defenseTuning;
+  final BasicAttackChain? basicAttackChain;
 
   List<Phase0aIntent> intentsFor({
     required Phase0aArenaState state,
@@ -160,6 +163,7 @@ final class Phase0aPlayerInputAdapter {
           ),
           postureHitKind: PostureHitKind.light,
           defenseFlags: defenseTuning?.basicAttackFlags,
+          basicAttackChain: basicAttackChain,
         ),
       );
     }

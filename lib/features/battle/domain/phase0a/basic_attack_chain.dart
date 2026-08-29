@@ -1,8 +1,47 @@
-/// Candidate-only schema for shared weapon basic-attack chains.
+/// Shared schema for weapon basic-attack chains.
 ///
-/// References are opaque IDs until G1 freezes the geometry, timeline and
-/// effect registries. This module does not execute any referenced behavior.
+/// Segment identity and ordering are production-consumed. Geometry, timeline
+/// and effect references stay opaque typed IDs until their wider registries
+/// are wired; the reducer does not duplicate their tuning values here.
 enum WeaponType { sword, heavy, flexible, dual, hidden }
+
+const swordBasicAttackSegmentIds = <String>[
+  'sword_thrust',
+  'sword_sweep',
+  'sword_advancing_slash',
+];
+
+/// M2 teaching/baseline sword chain frozen by the Phase 2 authority plan.
+///
+/// All three segments currently reuse the production basic-attack resolver;
+/// their identity drives deterministic sequencing and distinct presentation.
+/// Per-segment target caps and displacement remain outside this chain schema.
+final swordBasicAttackChain = BasicAttackChain(
+  weapon: WeaponType.sword,
+  segments: [
+    BasicAttackSegment(
+      id: swordBasicAttackSegmentIds[0],
+      geometryRef: 'geometry.sword.thrust',
+      timelineRef: 'timeline.weapon.sword',
+      effectRefs: const ['effect.damage.basic'],
+    ),
+    BasicAttackSegment(
+      id: swordBasicAttackSegmentIds[1],
+      geometryRef: 'geometry.sword.sweep',
+      timelineRef: 'timeline.weapon.sword',
+      effectRefs: const ['effect.damage.basic'],
+    ),
+    BasicAttackSegment(
+      id: swordBasicAttackSegmentIds[2],
+      geometryRef: 'geometry.sword.advancing_slash',
+      timelineRef: 'timeline.weapon.sword',
+      effectRefs: const ['effect.damage.basic'],
+    ),
+  ],
+  // This schema field is not a production idle timer yet. Keep it derived
+  // from the declared chain rather than inventing an independent tuning value.
+  resetAfterIdleTicks: swordBasicAttackSegmentIds.length,
+);
 
 final class BasicAttackSegment {
   BasicAttackSegment({

@@ -2247,13 +2247,21 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         opacity: _feedbackOpacity(held.progress),
         child: Transform.rotate(
           angle: angle,
-          child: CustomPaint(
-            key: const ValueKey('phase0a_palm_trail'),
-            size: Size(width, height),
-            painter: _InkEffectPainter(
-              _InkEffect.palm,
-              progress: held.progress,
-              isCritical: entry.isCritical,
+          child: KeyedSubtree(
+            key: entry.basicAttackSegmentId == null
+                ? null
+                : ValueKey(
+                    'phase0a_sword_segment_${entry.basicAttackSegmentId}',
+                  ),
+            child: CustomPaint(
+              key: const ValueKey('phase0a_palm_trail'),
+              size: Size(width, height),
+              painter: _InkEffectPainter(
+                _InkEffect.palm,
+                progress: held.progress,
+                isCritical: entry.isCritical,
+                basicAttackSegmentId: entry.basicAttackSegmentId,
+              ),
             ),
           ),
         ),
@@ -2377,7 +2385,13 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: Transform.scale(
           scale: 0.78 + 0.22 * Curves.easeOut.transform(held.progress),
           child: SizedBox.square(
-            key: containerKey,
+            key:
+                containerKey ??
+                (entry.basicAttackSegmentId == null
+                    ? null
+                    : ValueKey(
+                        'phase0a_sword_segment_${entry.basicAttackSegmentId}',
+                      )),
             dimension: size,
             child: CustomPaint(
               key: vfxKey,
@@ -2387,6 +2401,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 defeatKind: entry.defeatKind,
                 progress: held.progress,
                 isCritical: entry.isCritical,
+                basicAttackSegmentId: entry.basicAttackSegmentId,
               ),
             ),
           ),
@@ -2796,12 +2811,14 @@ class _InkEffectPainter extends CustomPainter {
     this.defeatKind,
     this.progress = 1,
     this.isCritical = false,
+    this.basicAttackSegmentId,
   });
 
   final _InkEffect effect;
   final Phase0aDefeatKind? defeatKind;
   final double progress;
   final bool isCritical;
+  final String? basicAttackSegmentId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -2828,6 +2845,17 @@ class _InkEffectPainter extends CustomPainter {
       ..color = (isCritical ? WuxiaUi.gold : WuxiaUi.ink).withValues(
         alpha: 0.72 * fade,
       );
+    if (_paintSwordSegment(
+      canvas: canvas,
+      size: size,
+      center: center,
+      reveal: reveal,
+      ink: ink,
+      wash: wash,
+      washFill: washFill,
+    )) {
+      return;
+    }
     switch (effect) {
       case _InkEffect.melee:
         final rising = Path()
@@ -3050,12 +3078,84 @@ class _InkEffectPainter extends CustomPainter {
     }
   }
 
+  bool _paintSwordSegment({
+    required Canvas canvas,
+    required Size size,
+    required Offset center,
+    required double reveal,
+    required Paint ink,
+    required Paint wash,
+    required Paint washFill,
+  }) {
+    switch (basicAttackSegmentId) {
+      case 'sword_thrust' when effect == _InkEffect.palm:
+        final start = Offset(size.width * 0.08, size.height * 0.58);
+        final tip = Offset(
+          size.width * (0.18 + 0.76 * reveal),
+          size.height * 0.42,
+        );
+        canvas.drawLine(start, tip, ink);
+        canvas.drawLine(
+          start + Offset(0, size.height * 0.16),
+          tip + Offset(-size.width * 0.08, size.height * 0.06),
+          wash,
+        );
+        final point = Path()
+          ..moveTo(tip.dx, tip.dy)
+          ..lineTo(tip.dx - size.height * 0.24, tip.dy - size.height * 0.13)
+          ..lineTo(tip.dx - size.height * 0.18, tip.dy + size.height * 0.18)
+          ..close();
+        canvas.drawPath(point, Paint()..color = wash.color);
+        return true;
+      case 'sword_sweep' when effect == _InkEffect.melee:
+        final outer = Rect.fromCircle(
+          center: center,
+          radius: size.shortestSide * 0.43,
+        );
+        canvas.drawArc(
+          outer,
+          math.pi * 0.78,
+          math.pi * 1.34 * reveal,
+          false,
+          ink,
+        );
+        canvas.drawArc(
+          outer.deflate(size.shortestSide * 0.10),
+          math.pi * 0.88,
+          math.pi * 1.18 * reveal,
+          false,
+          wash,
+        );
+        canvas.drawCircle(center, size.shortestSide * 0.14, washFill);
+        return true;
+      case 'sword_advancing_slash' when effect == _InkEffect.melee:
+        final travel = size.shortestSide * (0.28 + 0.46 * reveal);
+        final upper = Path()
+          ..moveTo(center.dx - travel * 0.72, center.dy + travel * 0.52)
+          ..lineTo(center.dx + travel, center.dy - travel * 0.58);
+        final lower = Path()
+          ..moveTo(center.dx - travel * 0.46, center.dy + travel * 0.80)
+          ..lineTo(center.dx + travel * 0.78, center.dy - travel * 0.20);
+        canvas.drawPath(upper, ink);
+        canvas.drawPath(lower, wash);
+        canvas.drawCircle(
+          Offset(center.dx + travel * 0.72, center.dy - travel * 0.32),
+          size.shortestSide * 0.10,
+          washFill,
+        );
+        return true;
+      default:
+        return false;
+    }
+  }
+
   @override
   bool shouldRepaint(covariant _InkEffectPainter oldDelegate) =>
       oldDelegate.effect != effect ||
       oldDelegate.defeatKind != defeatKind ||
       oldDelegate.progress != progress ||
-      oldDelegate.isCritical != isCritical;
+      oldDelegate.isCritical != isCritical ||
+      oldDelegate.basicAttackSegmentId != basicAttackSegmentId;
 }
 
 class _GatherPullPainter extends CustomPainter {

@@ -105,6 +105,7 @@ final class Phase0aVfxEntry {
     this.anchor,
     this.source,
     this.vfxTarget,
+    this.basicAttackSegmentId,
   });
 
   final Phase0aVfxKind kind;
@@ -140,6 +141,10 @@ final class Phase0aVfxEntry {
 
   /// 掌风轨迹:目标世界坐标。
   final ArenaVector? vfxTarget;
+
+  /// Typed basic-chain segment copied from the settled event. Presentation
+  /// must not infer it from actor ids, hit distance or local counters.
+  final String? basicAttackSegmentId;
 }
 
 /// 普通群怪伤害显示聚合器。
@@ -589,6 +594,34 @@ final class Phase0aVfxController {
         event.targetPosition ?? _actors[event.target]?.position;
     if (targetPosition == null) return;
     final ArenaVector delta = targetPosition - actorPosition;
+    final segmentId = event.basicAttackSegment?.id;
+    if (segmentId == 'sword_thrust') {
+      push(
+        Phase0aVfxEntry(
+          kind: Phase0aVfxKind.palmTrail,
+          actorId: event.actor,
+          targetId: event.target,
+          isCritical: event.isCritical,
+          source: actorPosition,
+          vfxTarget: targetPosition,
+          basicAttackSegmentId: segmentId,
+        ),
+      );
+      return;
+    }
+    if (segmentId == 'sword_sweep' || segmentId == 'sword_advancing_slash') {
+      push(
+        Phase0aVfxEntry(
+          kind: Phase0aVfxKind.meleeSlash,
+          actorId: event.actor,
+          targetId: event.target,
+          isCritical: event.isCritical,
+          anchor: targetPosition,
+          basicAttackSegmentId: segmentId,
+        ),
+      );
+      return;
+    }
     if (delta.length < palmTrailMinDistance) {
       push(
         Phase0aVfxEntry(
@@ -597,6 +630,7 @@ final class Phase0aVfxController {
           targetId: event.target,
           isCritical: event.isCritical,
           anchor: targetPosition,
+          basicAttackSegmentId: segmentId,
         ),
       );
       return;
@@ -609,6 +643,7 @@ final class Phase0aVfxController {
         isCritical: event.isCritical,
         source: actorPosition,
         vfxTarget: targetPosition,
+        basicAttackSegmentId: segmentId,
       ),
     );
   }
