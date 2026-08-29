@@ -1,5 +1,6 @@
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/basic_attack_chain.dart';
+import '../../domain/phase0a/basic_attack_geometry_registry.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_damage_kind.dart';
@@ -83,6 +84,9 @@ final class Phase0aPlayerInputAdapter {
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
     this.defenseTuning,
     this.basicAttackChain,
+    this.basicAttackGeometryRegistry,
+    this.basicAttackArenaBounds,
+    this.basicAttackDisplacementBarriersX = const [],
   });
 
   final String playerId;
@@ -112,6 +116,40 @@ final class Phase0aPlayerInputAdapter {
   final Phase0aNumericSkillBindings numericSkillBindings;
   final Phase0aDefenseTuning? defenseTuning;
   final BasicAttackChain? basicAttackChain;
+  final BasicAttackGeometryRegistry? basicAttackGeometryRegistry;
+  final BasicAttackArenaBounds? basicAttackArenaBounds;
+  final List<double> basicAttackDisplacementBarriersX;
+
+  Phase0aPlayerInputAdapter withBasicAttackDisplacementBarriersX(
+    Iterable<double> barriers,
+  ) => Phase0aPlayerInputAdapter(
+    playerId: playerId,
+    attackRange: attackRange,
+    attackHalfArcRadians: attackHalfArcRadians,
+    attackCooldownSeconds: attackCooldownSeconds,
+    attackQiDelta: attackQiDelta,
+    postureBasicPowerMultiplier: postureBasicPowerMultiplier,
+    attackPowerMultiplier: attackPowerMultiplier,
+    gatherPowerMultiplier: gatherPowerMultiplier,
+    clearPowerMultiplier: clearPowerMultiplier,
+    gatherSlot: gatherSlot,
+    gatherRingRadius: gatherRingRadius,
+    gatherEffectRadius: gatherEffectRadius,
+    gatherQiCost: gatherQiCost,
+    gatherCooldownSeconds: gatherCooldownSeconds,
+    clearSlot: clearSlot,
+    clearEffectRadius: clearEffectRadius,
+    clearQiCost: clearQiCost,
+    clearCooldownSeconds: clearCooldownSeconds,
+    gatherSkillBinding: gatherSkillBinding,
+    clearSkillBinding: clearSkillBinding,
+    numericSkillBindings: numericSkillBindings,
+    defenseTuning: defenseTuning,
+    basicAttackChain: basicAttackChain,
+    basicAttackGeometryRegistry: basicAttackGeometryRegistry,
+    basicAttackArenaBounds: basicAttackArenaBounds,
+    basicAttackDisplacementBarriersX: List.unmodifiable(barriers),
+  );
 
   List<Phase0aIntent> intentsFor({
     required Phase0aArenaState state,
@@ -164,6 +202,9 @@ final class Phase0aPlayerInputAdapter {
           postureHitKind: PostureHitKind.light,
           defenseFlags: defenseTuning?.basicAttackFlags,
           basicAttackChain: basicAttackChain,
+          basicAttackGeometryRegistry: basicAttackGeometryRegistry,
+          basicAttackArenaBounds: basicAttackArenaBounds,
+          basicAttackDisplacementBarriersX: basicAttackDisplacementBarriersX,
         ),
       );
     }

@@ -5,13 +5,13 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dar
 void main() {
   final thrust = BasicAttackSegment(
     id: 'thrust',
-    geometryRef: 'forward_fan.thrust',
+    geometryRef: 'geometry.sword.thrust',
     timelineRef: 'timeline.basic.thrust',
     effectRefs: ['damage.standard'],
   );
   final sweep = BasicAttackSegment(
     id: 'sweep',
-    geometryRef: 'forward_fan.sweep',
+    geometryRef: 'geometry.sword.sweep',
     timelineRef: 'timeline.basic.sweep',
     effectRefs: ['damage.standard', 'posture.light'],
   );
@@ -37,7 +37,10 @@ void main() {
     expect(chain.segments, [thrust, sweep]);
     expect(chain.segmentAt(0), thrust);
     expect(chain.segmentAt(1), sweep);
-    expect(chain.geometryRefs, ['forward_fan.thrust', 'forward_fan.sweep']);
+    expect(chain.geometryRefs, [
+      'geometry.sword.thrust',
+      'geometry.sword.sweep',
+    ]);
     expect(chain.timelineRefs, [
       'timeline.basic.thrust',
       'timeline.basic.sweep',
@@ -64,7 +67,7 @@ void main() {
       thrust.hashCode,
       BasicAttackSegment(
         id: 'thrust',
-        geometryRef: 'forward_fan.thrust',
+        geometryRef: 'geometry.sword.thrust',
         timelineRef: 'timeline.basic.thrust',
         effectRefs: ['damage.standard'],
       ).hashCode,
@@ -209,6 +212,9 @@ void main() {
     );
 
     expect(shared.segments, hasLength(2));
-    expect(shared.geometryRefs, ['forward_fan.thrust', 'forward_fan.thrust']);
+    expect(shared.geometryRefs, [
+      'geometry.sword.thrust',
+      'geometry.sword.thrust',
+    ]);
   });
 }

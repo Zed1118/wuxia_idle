@@ -6,6 +6,8 @@ import '../../../../data/defs/skill_def.dart';
 import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'arena_vector.dart';
 import 'basic_attack_chain.dart';
+import 'basic_attack_geometry_registry.dart';
+import 'combat_geometry.dart';
 import 'defense_resolution.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
@@ -674,6 +676,50 @@ Phase0aStepResult reducePhase0aTick({
         final basicAttackSegment = basicAttackChain?.segmentAt(
           actor.basicAttackSegmentIndex % basicAttackChain.segments.length,
         );
+        final geometryRegistry = intent.basicAttackGeometryRegistry;
+        BasicAttackGeometryTuning? segmentTuning;
+        var resolvedAimDirection = intent.aimDirection;
+        var attackActor = actor;
+        if (basicAttackSegment != null) {
+          if (geometryRegistry == null) {
+            throw StateError('basic attack chain requires a geometry registry');
+          }
+          segmentTuning = geometryRegistry.tuningFor(basicAttackSegment);
+          resolvedAimDirection = geometryRegistry.resolveAimDirection(
+            segment: basicAttackSegment,
+            origin: actor.position,
+            inputDirection: intent.aimDirection,
+            candidates: [
+              for (final target in _opposingTargets(
+                casterSide: actor.side,
+                player: player,
+                enemiesById: enemiesById,
+              ))
+                if (!_isGuardedBoss(target, enemiesById))
+                  BasicAttackAimCandidate(target.id, target.position),
+            ],
+          );
+          if (segmentTuning.advanceDistance > 0) {
+            final bounds = intent.basicAttackArenaBounds;
+            if (bounds == null) {
+              throw StateError('advancing basic attack requires arena bounds');
+            }
+            attackActor = actor.copyWith(
+              position: resolveBasicAttackAdvance(
+                origin: actor.position,
+                direction: resolvedAimDirection,
+                distance: segmentTuning.advanceDistance,
+                bounds: bounds,
+                positiveXBarriers: intent.basicAttackDisplacementBarriersX,
+              ),
+            );
+            if (isPlayer) {
+              player = attackActor;
+            } else {
+              enemiesById[actorId] = attackActor;
+            }
+          }
+        }
         final coop = _guardianCoopContext(
           actor: actor,
           enemiesById: enemiesById,
@@ -787,15 +833,39 @@ Phase0aStepResult reducePhase0aTick({
             basicAttackSegment: basicAttackSegment,
           ),
         );
-        final target = _selectStrikeTarget(
-          attacker: actor,
-          player: player,
-          enemiesById: enemiesById,
-          aimDirection: intent.aimDirection,
-          range: intent.range,
-          halfArcRadians: intent.halfArcRadians,
-        );
-        if (target != null) {
+        final targets = basicAttackSegment == null
+            ? [
+                ?_selectStrikeTarget(
+                  attacker: attackActor,
+                  player: player,
+                  enemiesById: enemiesById,
+                  aimDirection: resolvedAimDirection,
+                  range: intent.range,
+                  halfArcRadians: intent.halfArcRadians,
+                ),
+              ]
+            : geometryRegistry!
+                  .scopeFor(
+                    segment: basicAttackSegment,
+                    origin: attackActor.position,
+                    direction: resolvedAimDirection,
+                  )
+                  .hitTargets([
+                    for (final target in _opposingTargets(
+                      casterSide: attackActor.side,
+                      player: player,
+                      enemiesById: enemiesById,
+                    ))
+                      if (!_isGuardedBoss(target, enemiesById))
+                        CombatGeometryTarget(target.id, target.position),
+                  ])
+                  .map(
+                    (match) => attackActor.side == Phase0aSide.player
+                        ? enemiesById[match.id]!
+                        : player,
+                  )
+                  .toList(growable: false);
+        for (final target in targets) {
           final resolved = damageResolver.resolve(
             attackerId: actorId,
             targetId: target.id,
@@ -807,7 +877,7 @@ Phase0aStepResult reducePhase0aTick({
             defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
           );
           settleInbound(
-            attacker: actor,
+            attacker: attackActor,
             target: target,
             resolved: resolved,
             defenseFlags: intent.defenseFlags,
@@ -820,15 +890,18 @@ Phase0aStepResult reducePhase0aTick({
             basicAttackSegment: basicAttackSegment,
           );
         }
-        final aimDirection = intent.aimDirection.lengthSquared > 0
-            ? intent.aimDirection.normalized()
-            : actor.facing;
+        final aimDirection = resolvedAimDirection.lengthSquared > 0
+            ? resolvedAimDirection.normalized()
+            : attackActor.facing;
         final currentAttacker = isPlayer ? player : enemiesById[actorId];
         if (currentAttacker == null) continue;
         final recharged = currentAttacker.copyWith(
           attackCooldownRemaining: intent.cooldownSeconds,
           facing: aimDirection,
-          qiCurrent: (actor.qiCurrent + intent.qiDelta).clamp(0, actor.qiMax),
+          qiCurrent: (attackActor.qiCurrent + intent.qiDelta).clamp(
+            0,
+            attackActor.qiMax,
+          ),
           basicAttackSegmentIndex: basicAttackChain == null
               ? currentAttacker.basicAttackSegmentIndex
               : (actor.basicAttackSegmentIndex + 1) %
