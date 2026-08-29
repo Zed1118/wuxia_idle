@@ -53,7 +53,8 @@
 
 ## 当前恢复点
 
-- 状态：WIP，生产实现与第一轮 targeted 已完成，尚未进入收工九步。
+- 状态：WIP，生产实现、提交后 targeted 与双向破坏证红已完成，正在进入
+  analyze → format → 持锁 full → receipt/READY/gate。
 - 最后完成：背景 1.3 倍视差、进步斩 0.18 秒表现插值、同拍移动仲裁均已
   接入生产战斗屏/reducer；整屏 camera 增量守卫与 1280×720、1440×900
   布局守卫已补齐。
@@ -66,6 +67,23 @@
   position 的语义冲突，已替换为“领域坐标推进 + 角色或背景至少一个提供世界
   移动参照”；本次必然产生 test deletion，须在最终 gate 仅余该项时走 §8
   登记和机器校验。
-- 下一步：提交实现，执行两向破坏证红并精确反向补丁恢复，然后跑九步收工。
+- 实现提交：`b450a56096be78f7e39b90dca67c3f7348d6c32c`
+  （`修复移动参照与进步斩手感`）。
+- 双向破坏证红（同一组三个 targeted 文件）：
+  - `remove_implementation`：将 `translationForCamera` 临时退化为
+    `Offset.zero`，实测 4 项失败；中轴、相反视差、整屏 camera、10 秒移动
+    参照守卫均红。
+  - `force_degenerate_value`：临时令同拍仲裁返回 false 并将插值压为
+    0.1 秒，实测 3 项失败；领域复现 `Actual: 141.0`，纯 motion 复现
+    `24.0 > 21.0`，整屏 camera 复现 `5.76 > 5.04`。
+  - 两向均用精确反向补丁恢复，`git diff --exit-code` 为 0。
+- 提交后 targeted：新增 3 文件分别 `+1/+1/+5`；既有 geometry `+8`、
+  checkpoint `+1`、battle screen `+29`、input feel `+7`、offscreen
+  indicator `+11`，全部 `All tests passed!`。
+- 测试迁移登记：
+  `docs/dispatch/phase2_wiring/test_contract_migrations/p2-m2-controls-feel-20260830.yaml`；
+  最终 tip 形成后运行专用机器校验并抄回原文。
+- 下一步：提交登记与证据，跑 analyze、整仓 format、持锁 full、最终 tip
+  双向证红、receipt、gate。
 - 尚无结论：full、receipt、READY、gate、合并、push、CI 均未完成。
 - 阻塞：无。
