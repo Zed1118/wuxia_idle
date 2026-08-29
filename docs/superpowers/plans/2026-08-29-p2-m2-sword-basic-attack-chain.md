@@ -67,6 +67,19 @@
   `+54: All tests passed!`；8 个影响面文件逐文件全绿，其中
   新 mapper 文件 `+25`、整屏 `+29`、主线生产接线 `+18`；
   `flutter analyze --no-pub lib test` 为 `No issues found! (ran in 3.0s)`。
+- 提交后双向破坏证红（基于实现提交 `a68a8dec`）：
+  1. `remove_implementation`：同时移除正式 player mapper 与 debug
+     visual fixture 的 `basicAttackChain` 装配，同一两文件组实测
+     `+52 -2: Some tests failed.`；生产 mapper 得到 `null`，整屏三段
+     观测得到空集。结论 `RED_CONFIRMED`，`failed_count: 2`。
+  2. `force_degenerate_value`：把 reducer 选段强制为
+     `basicAttackChain?.segmentAt(0)`，同一组实测
+     `+51 -3: Some tests failed.`；生产序列退化为四次直刺，整屏只看到
+     直刺，并连带原有近/远 VFX 互斥守卫变红。结论
+     `RED_CONFIRMED`，`failed_count: 3`。
+  3. 两次均以精确反向补丁还原，每次 `git diff --quiet`
+     均为 `rc=0`且 `git status --short` 为空；还原后同组重跑
+     `+54: All tests passed!`。
 - 禁区文件：未触碰。
 - 数值红线：不修改生产 HP/伤害/CD/范围/目标上限。
 - G2 边界：自动验证只证明连段接线与可观测表现，不代替用户
