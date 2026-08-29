@@ -1,0 +1,78 @@
+schema_version: 1
+ticket: p2-m2-ch1-templates-20260829
+base_sha: 45829dddad9c4b264d30e9701a8aaec993522222
+head_sha: 00ddbe18429339bd93e0b5a2462b08bc2329de9b
+summary: 将第一章四关从 legacy 路由迁至五关 migrated 生产契约，并把旧 fixture、参与者与目标断言收紧为生产 repository 真实闭包。
+
+migrations:
+  - deleted: test('production Ch1 stages other than stage_01_03 remain legacy', () async {
+    replacement: test('all production Ch1 stages resolve migrated encounter routes', () async {
+    reason: 旧用例标题把四关锁定为 legacy；新用例遍历四关并要求每关都解析为 migrated 路由。
+
+  - deleted: expect(route, isA<LegacyCombatStageEncounterRoute>());
+    replacement: expect(route, isA<MigratedCombatStageEncounterRoute>());
+    reason: 同一路由类型约束由旧分支收紧为生产 migrated 分支。
+
+  - deleted: expect(catalog.encounterForStage(stageId), isNull);
+    replacement: expect(catalog.encounterForStage(stageId), isNotNull);
+    reason: 迁移后每关必须存在可解析 encounter，isNotNull 是对同一存在性的正向强约束。
+
+  - deleted: test(
+    replacement: test('production catalog migrates all five Chapter 1 stages', () async {
+    reason: 旧多行用例只锁定 stage03；新用例从生产 repository 验证五关完整迁移。
+
+  - deleted: expect(manifest.encounters.map((encounter) => encounter.id), [
+    replacement: manifest.encounters.map((encounter) => encounter.id).toSet(),
+    reason: 旧断言只接受单一 stage03 encounter；新断言将生产 encounter 集与五关精确 expected 集对齐。
+
+  - deleted: expect(
+    replacement: CombatEncounterMigrationState.migrated,
+    reason: 旧多行断言的迁移状态锁在 legacy；新断言在五关遍历中逐关要求 migrated。
+
+  - deleted: expect(
+    replacement: expect(assignment?.encounterId, entry.value, reason: entry.key);
+    reason: 旧多行断言配合单关硬编码；新断言对五关每个 assignment 校验精确 encounter ID。
+
+  - deleted: expect(assignment?.encounterId, isNull);
+    replacement: expect(assignment?.encounterId, entry.value, reason: entry.key);
+    reason: 旧断言允许迁移关缺 encounter；新断言要求其与逐关冻结的生产 encounter ID 精确相等。
+
+  - deleted: expect(report.migratedStageIds, ['stage_01_03']);
+    replacement: test('production catalog migrates all five Chapter 1 stages', () async {
+    reason: 旧 coverage 只允许 stage03 migrated；新生产用例以五关精确映射为分母。
+
+  - deleted: expect(report.legacyStageIds, [
+    replacement: for (final entry in expected.entries) {
+    reason: 旧断言列出四个 legacy 关；新遍历对五关每项的 migrationState 和 encounterId 同时断言。
+
+  - deleted: test('stage_01_03 keeps the G2 TUNING candidate composition', () async {
+    replacement: test('stage_01_03 keeps the frozen production composition', () async {
+    reason: 同一 40/12/3 组成由 candidate 口径收紧为经生产 repository 加载的冻结组成。
+
+  - deleted: expect(repo.combatEncounterForStage(stageId), isNull);
+    replacement: expect(repo.combatEncounterForStage(stageId), isNotNull);
+    reason: 迁移后同一 repository 查询必须返回 typed encounter，不再允许空值。
+
+  - deleted: expect(repo.combatRuntimeBindingForStage(stageId), isNull);
+    replacement: expect(repo.combatRuntimeBindingForStage(stageId), isNotNull);
+    reason: 迁移后每关必须具有生产 runtime binding，isNotNull 防止只迁 manifest 不接运行时。
+
+  - deleted: expect(source, contains('externalProjectors: const []'));
+    replacement: expect(source, contains('externalProjectors: externalProjectors'));
+    reason: 旧源码守卫禁止外部目标投影；新守卫精确要求 factory 把 typed checkpoint/anchor projector 传入事件源。
+
+  - deleted: expect(settlement.participantCharacterIds, {
+    replacement: expect(settlement.participantCharacterIds, {-2, -1, 1});
+    reason: 旧集合来自 stage05 的旧 5 敌手搓 fixture；新集合由真实两人斩将模板产生且包含玩家和两个唯一敌人身份。
+
+  - deleted: expect(settlement.participantCharacterIds, hasLength(7));
+    replacement: expect(settlement.participantCharacterIds, hasLength(3));
+    reason: 同一结算集合的数量由旧 fixture 收紧为生产 stage05 的一名玩家加两名敌人。
+
+  - deleted: expect(settlement.participants, hasLength(7));
+    replacement: expect(settlement.participants, hasLength(3));
+    reason: 参与者详情必须与新的精确 ID 集合同数，防止结算表仍混入旧 fixture 角色。
+
+  - deleted: expect(host, isNull);
+    replacement: throwsStateError,
+    reason: 旧契约允许 legacy 关缺 binding 时返回空并 fallback；新契约要求 migrated 关缺 binding 时 fail closed。

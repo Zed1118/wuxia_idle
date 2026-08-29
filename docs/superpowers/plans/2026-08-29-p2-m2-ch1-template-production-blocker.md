@@ -109,3 +109,18 @@ READY tip `cf68918b72352d27f290f193de9ec1d8034e5fcb` 的第一次正式 gate 已
 4. 基线调优测试使用 `.single` 假设只有一个 runtime binding，全五关生产化后必须按 `stage_id` 选择。
 
 将旧行改成注释、skip 旧测试、伪造 legacy 兼容或把生产范围缩回一关，都会触发 §9/§2 红线，不是合法修复。main `5e98ba1941fdb8a657c332fcaf9cf5a7f63fda7d` 新增的 §10 攒批与 §11 预授权也未改变 §8.2 对 `test_deletions` 的无豁免要求。因此本单必须依 §8.2 与 §9 标记真实 `[BLOCKED]`，等待用户修订外部判据或提供已迁移测试契约的新基线。
+
+## 用户裁决后的测试契约迁移出口
+
+main `f6c2b07dbf11922572b1b65d092cecefc9f4c42b` 于 2026-08-29 增加宪法 §8「唯一例外 · 测试契约迁移」和专用机器校验器，上述阻塞已解除。本分支已先合入该 main，并在 `docs/dispatch/phase2_wiring/test_contract_migrations/p2-m2-ch1-templates-20260829.yaml` 逐条登记模板命令实测的 15 个断言删除与 3 个用例删除。替代项均是同一约束的更强版本：五关遍历、migrated 路由、非空 encounter/runtime、生产 repository、显式 external projector、精确参与者集与缺 binding fail-closed。
+
+专用校验器输出原文：
+
+```text
+[migration] expect 删 15 / 增 53;用例 删 3 / 增 9;登记 18 条
+PASS: test_contract_migration
+```
+
+## 键盘接线测试的证据边界
+
+`test/features/mainline/presentation/phase0a_mainline_wiring_test.dart` 为了让 25 敌接线探针在固定模拟窗口内走完键盘链，将测试注入玩家血量用 `copyWith` 提到 `150000`，超过 CLAUDE.md §5.4 的玩家血量配置硬红线 `20000`。该值只存在于测试 fixture，未进入生产配置；依用户裁决不因此打回本单，但证据标签必须收窄为：**只证明键盘输入链与 typed checkpoint 生产接线可到达**。它不证明 `stage_01_01` 在真实数值下可通关，不得作为关卡可玩性、生存性或难度验收证据；是否能打过与体感结论归 G2 真人试玩。
