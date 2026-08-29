@@ -1,6 +1,8 @@
 /// Status kinds accepted by the Phase 0A fixed-tick candidate.
 enum TimedStatusType { slow, root, internalInjury, poison }
 
+const _initialTimelineTick = 0;
+
 /// Caller-supplied definition for one timed status source.
 ///
 /// This is deliberately engine-neutral: it carries no scheduler, reducer, UI,
@@ -124,7 +126,7 @@ final class TimedStatusInstanceSnapshot {
 /// Immutable fixed-tick ledger state stored on [Phase0aActor].
 final class TimedStatusLedgerSnapshot {
   const TimedStatusLedgerSnapshot.empty()
-    : timelineTick = 0,
+    : timelineTick = _initialTimelineTick,
       instances = const <TimedStatusInstanceSnapshot>[];
 
   TimedStatusLedgerSnapshot._({
@@ -232,18 +234,21 @@ final class TimedStatusLedger {
   final List<TimedStatusInstance> _statuses = [];
   int _timelineTick = 0;
 
-  TimedStatusLedgerSnapshot get snapshot => TimedStatusLedgerSnapshot._(
-    timelineTick: _timelineTick,
-    instances: [
-      for (final status in _sortedStatuses())
-        TimedStatusInstanceSnapshot(
-          spec: status.spec,
-          remainingTicks: status.remainingTicks,
-          elapsedTicks: status.elapsedTicks,
-          stacks: status.stacks,
-        ),
-    ],
-  );
+  TimedStatusLedgerSnapshot get snapshot {
+    if (_statuses.isEmpty) return const TimedStatusLedgerSnapshot.empty();
+    return TimedStatusLedgerSnapshot._(
+      timelineTick: _timelineTick,
+      instances: [
+        for (final status in _sortedStatuses())
+          TimedStatusInstanceSnapshot(
+            spec: status.spec,
+            remainingTicks: status.remainingTicks,
+            elapsedTicks: status.elapsedTicks,
+            stacks: status.stacks,
+          ),
+      ],
+    );
+  }
 
   /// Returns detached snapshots; mutating an item cannot mutate this ledger.
   List<TimedStatusInstance> get active =>

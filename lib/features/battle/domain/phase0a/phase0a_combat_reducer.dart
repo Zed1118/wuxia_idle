@@ -486,6 +486,7 @@ Phase0aStepResult reducePhase0aTick({
         ? player
         : enemiesById[actorSnapshot.id];
     if (current == null || !current.isAlive) continue;
+    if (current.statusLedger.instances.isEmpty) continue;
     final ledger = TimedStatusLedger.fromSnapshot(current.statusLedger);
     final advance = ledger.advance(1);
     var updated = current.copyWith(statusLedger: ledger.snapshot);
