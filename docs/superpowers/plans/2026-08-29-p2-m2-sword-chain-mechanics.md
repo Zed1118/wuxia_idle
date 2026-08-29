@@ -245,3 +245,24 @@ diff。先保留自由运行轨迹实测，再以同一攻击时刻状态的成�
 [migration] expect 删 2 / 增 27;用例 删 0 / 增 8;登记 2 条
 PASS: test_contract_migration
 ```
+
+## gate 判决与停止
+
+- 被判决候选 tip：`e58280156e25ff7c3b1e971c75adebcfad0c428e`。第一轮
+  gate 的隔离 full 为 `05:44 +5695: All tests passed!`，但 receipt 用了本地
+  含 gitignore probe 的 format 分母 `1643`，与隔离 tracked tree 的 `1641`
+  不同，故判为
+  `FAIL: forbidden_files,test_deletions,receipt_crosscheck`。
+- receipt 按 gate 实测改为 `Formatted 1641 files (0 changed)` 后第二轮重跑：
+  隔离 full 为 `07:25 +5695: All tests passed!`、`error_block_count=0`，analyze、
+  format 与 `receipt_crosscheck: matched` 全 PASS；最终仍为
+  `FAIL: forbidden_files,test_deletions`。
+- `test_deletions` 已由同一最终候选 tip 的迁移校验器 PASS，但宪法 §8 唯一例外
+  要求 gate 失败项恰好只剩该项；当前额外的 `forbidden_files` 使例外不成立。
+- `forbidden_files` 唯一命中 `data/numbers.yaml`，而本单产品规格又明确要求在该
+  文件新增给定的 `basic_attack_chain` 块及“位移上限”注释。gate 脚本对此路径
+  无条件拒绝，也没有窄授权参数；删除该 diff 会违反用户规格，修改 gate 或自行
+  扩展例外则越权。
+- 同一任务 gate 已连续失败两次，触发停止条件。状态改为 `[BLOCKED]`；未合并、
+  未 push、未触发或查询 CI。需用户决定是给 gate 增加本单精确路径/内容例外，
+  还是显式扩展 §8 例外以覆盖本次已授权的 numbers 窄 diff。
