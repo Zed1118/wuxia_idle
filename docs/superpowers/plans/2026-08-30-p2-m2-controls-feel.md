@@ -88,7 +88,11 @@
   独立复现同一失败。已将该守卫强化为直接断言领域 `position.y` 变小，整份
   focus nav `+8: All tests passed!`。这是同批第二处“视觉脚点不动 ≠ 输入没
   生效”的弱守卫，已如实记录，不改生产代码求绿。
-- 下一步：提交焦点守卫修正，重跑 analyze、整仓 format、持锁 full；通过后
-  再形成最终 READY tip、复跑双向证红、receipt 与 gate。
+- 焦点守卫提交：`27684905`（`强化焦点移动领域守卫`）。提交后复跑
+  analyze：`No issues found!`；整仓 format：`Formatted 1646 files
+  (0 changed)`；第二轮持锁 full：`08:09 +5703: All tests passed!`，
+  `[E]` 0，锁正常释放。
+- 下一步：提交本恢复点并形成最终 READY tip；在最终 tip 上复跑双向证红、
+  写 receipt，再跑测试契约迁移校验与正式 gate。
 - 尚无结论：full、receipt、READY、gate、合并、push、CI 均未完成。
 - 阻塞：无。
