@@ -1,4 +1,5 @@
 import '../../domain/phase0a/attack_token_lease_runtime.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -113,6 +114,22 @@ final class Phase0aCombatSession {
 
   Phase0aAttackTokenLeaseBatchReceipt? get lastAttackTokenLeaseBatchReceipt =>
       _lastAttackTokenLeaseBatchReceipt;
+
+  /// Exact displacement contributed by the player's normal move intent for
+  /// this frame. Attack lunges and defense displacement are deliberately
+  /// excluded so encounter objectives can attribute checkpoint crossings.
+  ArenaVector playerMovementDeltaFor({
+    required double deltaSeconds,
+    required Phase0aPlayerCommand command,
+  }) {
+    final before = _state.player;
+    final after = resolvePhase0aMovement(
+      actor: before,
+      direction: playerAdapter.movementDirectionFor(command),
+      deltaSeconds: deltaSeconds,
+    );
+    return after.position - before.position;
+  }
 
   /// 返回仅替换 state 的候选会话:复用同一 player adapter、enemy AI
   /// adapter、damage resolver、enemy-skill resolver、enemy-intent

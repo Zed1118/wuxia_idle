@@ -1,4 +1,5 @@
 import '../../../../data/defs/boss_phase_def.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/encounter_objective.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -21,6 +22,7 @@ final class Phase0aEncounterObjectiveFrame {
     required Iterable<Phase0aEvent> spawnEvents,
     required Iterable<Phase0aEvent> combatEvents,
     required this.deltaSeconds,
+    required this.playerMovementDelta,
   }) : beforeArena = _snapshotArena(beforeArena),
        afterArena = _snapshotArena(afterArena),
        directorEvents = List<SpawnDirectorEvent>.unmodifiable(directorEvents),
@@ -35,6 +37,11 @@ final class Phase0aEncounterObjectiveFrame {
   final List<Phase0aEvent> spawnEvents;
   final List<Phase0aEvent> combatEvents;
   final double deltaSeconds;
+
+  /// Position delta contributed by the player's normal move intent only.
+  /// Attack lunges, dodge displacement, and other position changes are not
+  /// included.
+  final ArenaVector playerMovementDelta;
 }
 
 /// Explicit caller policy for projecting one encounter frame into an ordered

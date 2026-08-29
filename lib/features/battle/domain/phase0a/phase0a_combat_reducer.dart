@@ -79,6 +79,31 @@ final class Phase0aStepResult {
   final List<Phase0aEvent> events;
 }
 
+/// Resolves only the position/facing contribution of a move intent.
+///
+/// Encounter objective projection reuses this exact function so checkpoint
+/// attribution cannot accidentally include attack or defense displacement.
+Phase0aActor resolvePhase0aMovement({
+  required Phase0aActor actor,
+  required ArenaVector direction,
+  required double deltaSeconds,
+}) {
+  if (!(deltaSeconds.isFinite && deltaSeconds >= 0)) {
+    throw ArgumentError.value(
+      deltaSeconds,
+      'deltaSeconds',
+      'must be finite and non-negative',
+    );
+  }
+  final step = direction.lengthSquared > 0
+      ? direction.normalized()
+      : ArenaVector.zero;
+  return actor.copyWith(
+    position: actor.position + step * (actor.moveSpeed * deltaSeconds),
+    facing: step.lengthSquared > 0 ? step : actor.facing,
+  );
+}
+
 /// Phase 0A 确定性结算核:单角色玩家对多敌,同一入口消费玩家与 AI
 /// 的同型 intent。给定相同初态与相同输入序列必得相等状态与事件序列。
 ///
@@ -650,12 +675,10 @@ Phase0aStepResult reducePhase0aTick({
       case Phase0aDefenseIntent():
         continue;
       case Phase0aMoveIntent(:final direction):
-        final step = direction.lengthSquared > 0
-            ? direction.normalized()
-            : ArenaVector.zero;
-        final moved = actor.copyWith(
-          position: actor.position + step * (actor.moveSpeed * deltaSeconds),
-          facing: step.lengthSquared > 0 ? step : actor.facing,
+        final moved = resolvePhase0aMovement(
+          actor: actor,
+          direction: direction,
+          deltaSeconds: deltaSeconds,
         );
         if (isPlayer) {
           player = moved;
@@ -730,7 +753,6 @@ Phase0aStepResult reducePhase0aTick({
                     ? null
                     : selectedGeometryTargets.first,
                 bounds: bounds,
-                positiveXBarriers: intent.basicAttackDisplacementBarriersX,
               ),
             );
             if (isPlayer) {

@@ -97,6 +97,7 @@ final class _EncounterFixture {
     spawnEvents: const [],
     combatEvents: combatEvents,
     deltaSeconds: 1,
+    playerMovementDelta: ArenaVector.zero,
   );
 }
 
@@ -169,6 +170,7 @@ void main() {
       spawnEvents: const [],
       combatEvents: const [],
       deltaSeconds: 0.1,
+      playerMovementDelta: ArenaVector.zero,
     );
 
     ledger.advance(1);

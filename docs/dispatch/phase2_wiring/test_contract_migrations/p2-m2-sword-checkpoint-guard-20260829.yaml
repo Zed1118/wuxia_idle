@@ -1,0 +1,30 @@
+schema_version: 1
+ticket: p2-m2-sword-checkpoint-guard-20260829
+base_sha: aca47bda6cb4f12bf72ed0f57553a990a556f1ef
+head_sha: 9b6a8c16783c0127f90fd2427a08e29b46cff823
+summary: 移除未接生产消费面的进步斩位移 barrier 假契约，改由真实主线宿主按 playerMovementDelta 验证攻击跨线不触发、混合帧不误触发且正常移动跨线触发。
+
+migrations:
+  - deleted: test(
+    replacement: 'advancing slash cannot trigger x=520 checkpoint, movement still can',
+    reason: 旧多行用例把 arena clamp 与无生产消费者的 displacement barrier 混在一起；新主线生产宿主用例让进步斩真实跨过 x=520，并覆盖纯攻击、混合帧与正常移动三种归因。
+
+  - deleted: expect(arenaEdge.state.player.position, const ArenaVector(640, 0));
+    replacement: expect(arenaEdge.state.player.position, const ArenaVector(640, 0));
+    reason: arena 边界截停不是被迁移的产品语义，拆成独立用例后保留完全相同的精确位置断言。
+
+  - deleted: expect(checkpoint.state.player.position, const ArenaVector(500, 0));
+    replacement: expect(checkpointCompleted(attackHost), isFalse);
+    reason: 旧断言只证明手造 barrier 把玩家固定在 500，未证明生产 checkpoint；新断言在进步斩已实际越过 520 后直接检查真实目标状态仍未完成。
+
+  - deleted: expect(fixture.events(beforeX: 520, afterX: 521), isEmpty);
+    replacement: playerMovementDelta: const ArenaVector(1, 0),
+    reason: 旧投影器只读最终坐标；新用例显式给出本帧玩家移动分量，并继续断言从线后移动到更后方不重复触发。
+
+  - deleted: expect(fixture.events(beforeX: 519, afterX: 519.9), isEmpty);
+    replacement: playerMovementDelta: const ArenaVector(0.9, 0),
+    reason: 旧投影器只读最终坐标；新用例用精确移动归因继续断言未跨到 520 时不触发。
+
+  - deleted: expect(attackHost.flow.state.player.position.x, 500);
+    replacement: greaterThan(520),
+    reason: 旧恒真断言让进步斩停在线前，删除守卫仍会绿；新断言强制攻击位移真实跨过 520，再配套断言 checkpoint 未触发。

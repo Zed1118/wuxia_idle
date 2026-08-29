@@ -86,6 +86,7 @@ final class _ObjectiveFixture {
     List<Phase0aEvent> combatEvents = const [],
     double beforeX = 0,
     double afterX = 0,
+    ArenaVector playerMovementDelta = ArenaVector.zero,
   }) => source
       .eventsFor(
         Phase0aEncounterObjectiveFrame(
@@ -109,6 +110,7 @@ final class _ObjectiveFixture {
           spawnEvents: const [],
           combatEvents: combatEvents,
           deltaSeconds: 0.1,
+          playerMovementDelta: playerMovementDelta,
         ),
       )
       .cast<EncounterObjectiveEvent>()
@@ -141,14 +143,37 @@ void main() {
   test('stage 1 checkpoint emits only on the approved x=520 crossing', () {
     final fixture = _ObjectiveFixture(repository, 'stage_01_01');
 
-    final crossed = fixture.events(beforeX: 519, afterX: 520);
+    expect(
+      fixture.events(beforeX: 519, afterX: 520),
+      isEmpty,
+      reason: 'an unattributed position change must not reach the checkpoint',
+    );
+    final crossed = fixture.events(
+      beforeX: 519,
+      afterX: 520,
+      playerMovementDelta: const ArenaVector(1, 0),
+    );
     expect(crossed, hasLength(1));
     expect(
       (crossed.single as CheckpointReached).checkpointId,
       'ch1_s01_checkpoint_exit',
     );
-    expect(fixture.events(beforeX: 520, afterX: 521), isEmpty);
-    expect(fixture.events(beforeX: 519, afterX: 519.9), isEmpty);
+    expect(
+      fixture.events(
+        beforeX: 520,
+        afterX: 521,
+        playerMovementDelta: const ArenaVector(1, 0),
+      ),
+      isEmpty,
+    );
+    expect(
+      fixture.events(
+        beforeX: 519,
+        afterX: 519.9,
+        playerMovementDelta: const ArenaVector(0.9, 0),
+      ),
+      isEmpty,
+    );
   });
 
   test(

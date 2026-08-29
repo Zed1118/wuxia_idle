@@ -198,6 +198,10 @@ final class Phase0aEncounterFlow
       deltaSeconds: deltaSeconds,
       command: command,
     );
+    final playerMovementDelta = gatedSession.playerMovementDeltaFor(
+      deltaSeconds: deltaSeconds,
+      command: command,
+    );
     var directorAfterCombat = nextDirector;
     for (final defeated in combatEvents.whereType<Phase0aEnemyDefeated>()) {
       final binding = _roster!.bindingByEnemyId(defeated.target);
@@ -238,6 +242,7 @@ final class Phase0aEncounterFlow
           spawnEvents: spawnEvents,
           combatEvents: combatEvents,
           deltaSeconds: deltaSeconds,
+          playerMovementDelta: playerMovementDelta,
         );
         objectiveTransition = objectiveTracker.prepareExternalEvents(
           _objectiveEventSource!.eventsFor(frame),
