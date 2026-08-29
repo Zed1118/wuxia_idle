@@ -1,13 +1,14 @@
-# M2 第一章五关四模板生产化阻塞（2026-08-29）
+# M2 第一章五关四模板决策与生产化记录（2026-08-29）
 
-## 结论
+## 当前结论
 
-本单在实装前触发交接宪法 §10，必须停下请用户冻结产品数值，不得由执行端直接把 candidate 配置提升为生产值。
+本单先后触发的数值、坐标与模板语义决策已由用户在 2026-08-29 逐项批准。实装已完成，当前状态是“待宪法收工流程与 gate 判决”，不再是产品阻塞。下文保留最初阻塞及三次批准的完整证据链。
 
 - 基线：`45829dddad9c4b264d30e9701a8aaec993522222`
 - 分支：`codex/p2-m2-ch1-templates-20260829`
 - 预热：已按 §7 完成 `libisar.dylib` 复制、`flutter pub get`、`build_runner`
-- 生产现状：`data/combat/manifest/stage_assignments.yaml:1-14` 仅 `stage_01_03` 为 migrated，其余四关仍为 legacy
+- 初始生产现状：基线上仅 `stage_01_03` 为 migrated，其余四关为 legacy
+- 当前分支实况：`data/combat/manifest/stage_assignments.yaml` 已将五关全部标记 migrated，并由 production encounter/runtime binding 闭合
 - 架构结论：现有 typed encounter schema、loader 与生产 runtime 路径可承载四模板，未发现必须新增 save/schema 字段的不可调和冲突
 
 ## 触发证据
@@ -87,3 +88,11 @@
 - **Boss 身份**：第四/五关只有 typed commander 引用指向的 entry 保留 legacy StageDef 的 Boss 姓名、图标、技能、蓄力与 phase；其余护卫使用山匪 role 技能/视觉并显式清除 Boss-only 状态。commander 仍使用锣首领的令牌种类、AI 行为和已批准倍率，因此四 role 与旧 Boss 可学攻击同时保留。
 
 实装时只扩展现有 production mapper/adapter 的显式投影与快照组装，不改 `StageDef`、不改 saveVersion、不加 YAML schema 字段，不改禁区文件。
+
+## 批准后实装结果
+
+- `data/combat/encounters/chapter_01_templates.yaml`、`data/combat/manifest.yaml`、`data/combat/runtime_bindings.yaml` 已闭合五关四模板与冻结 tuning/坐标。
+- `phase0a_mainline_production_encounter_factory.dart` 从 typed objective 构造 target/commander/anchor/checkpoint 投影；stage01 仍严格只在玩家中心跨过 `x=520` 时发 checkpoint。
+- `phase0a_mainline_repository_runtime_binding_adapter.dart` 为每个 entry 分配唯一负 `characterId`；仅 typed commander 保留旧 Boss 身份/技能/蓄力/phase，护卫明确去除 Boss-only 状态。
+- headless/前台 bot 在清场后消费同一 typed checkpoint 导航命令，真人路径仍必须经键盘移动真实跨过出口，没有自动伪造目标完成。
+- 相关 targeted 组已覆盖五关数量/活跃窗/坐标/唯一参与者 ID、精确 objective 投影、真实 migrated 四模式同核与键盘输入链；最终结论仍以 receipt 与 gate 为准。

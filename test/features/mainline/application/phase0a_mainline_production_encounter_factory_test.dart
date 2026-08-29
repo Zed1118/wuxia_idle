@@ -3,9 +3,7 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wuxia_idle/data/combat_encounter_catalog_loader.dart';
 import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
-import 'package:wuxia_idle/data/defs/combat_catalog_reference_index.dart';
 import 'package:wuxia_idle/data/defs/combat_enemy_archetype_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
@@ -26,91 +24,6 @@ import 'package:yaml/yaml.dart';
 import '../../../support/combatant_snapshot_fixture.dart';
 import '../../../support/test_data.dart';
 
-Future<CombatCatalogYamlSource> _source(String path) async =>
-    ('data/combat/$path', await File('data/combat/$path').readAsString());
-
-CombatCatalogReferenceIndex _referenceIndex() => CombatCatalogReferenceIndex(
-  entranceIds: const {
-    'ch1_entrance_s03_front',
-    'ch1_entrance_s03_rear',
-    'ch1_entrance_s03_upper',
-  },
-  positionIds: const {
-    'ch1_position_s03_slot_01',
-    'ch1_position_s03_slot_02',
-    'ch1_position_s03_slot_03',
-    'ch1_position_s03_slot_04',
-    'ch1_position_s03_slot_05',
-    'ch1_position_s03_slot_06',
-    'ch1_position_s03_slot_07',
-    'ch1_position_s03_slot_08',
-    'ch1_position_s03_slot_09',
-    'ch1_position_s03_slot_10',
-    'ch1_position_s03_slot_11',
-    'ch1_position_s03_slot_12',
-  },
-  behaviorIds: const {
-    'ch1_behavior_blade_press',
-    'ch1_behavior_crossbow_offset',
-    'ch1_behavior_rope_flank',
-    'ch1_behavior_gong_command',
-  },
-  attackSetIds: const {
-    'ch1_attack_set_blade',
-    'ch1_attack_set_crossbow',
-    'ch1_attack_set_rope_raider',
-    'ch1_attack_set_gong_leader',
-  },
-  attackTagIds: const {
-    'ch1_attack_tag_melee',
-    'ch1_attack_tag_projectile',
-    'ch1_attack_tag_charge',
-    'ch1_attack_tag_support',
-  },
-  postureProfileIds: const {
-    'ch1_posture_blade',
-    'ch1_posture_crossbow',
-    'ch1_posture_rope_raider',
-    'ch1_posture_gong_leader',
-  },
-  dropGroupIds: const {'ch1_drop_group_bandit_encounter'},
-  sfxGroupIds: const {
-    'ch1_sfx_blade',
-    'ch1_sfx_crossbow',
-    'ch1_sfx_rope_raider',
-    'ch1_sfx_gong_leader',
-  },
-  visualVariantIds: const {
-    'ch1_visual_blade_a',
-    'ch1_visual_blade_b',
-    'ch1_visual_crossbow_a',
-    'ch1_visual_crossbow_b',
-    'ch1_visual_rope_raider_a',
-    'ch1_visual_rope_raider_b',
-    'ch1_visual_gong_leader_a',
-    'ch1_visual_gong_leader_b',
-  },
-  objectiveTargetIds: {
-    for (final prefix in const ['blade', 'crossbow', 'rope'])
-      for (var index = 1; index <= (prefix == 'blade' ? 18 : 10); index++)
-        'ch1_s03_${prefix}_${index.toString().padLeft(2, '0')}',
-    'ch1_s03_leader_01',
-    'ch1_s03_leader_02',
-  },
-  objectiveAnchorIds: const [],
-  objectiveEntityIds: const [],
-  objectiveCheckpointIds: const [],
-  objectiveMarkerIds: const [],
-);
-
-Future<CombatCatalogManifestDef> _productionCatalog() async =>
-    loadCombatCatalogManifest(
-      archetypeSources: [await _source('archetypes/bandits.yaml')],
-      encounterSources: [await _source('encounters/black_wind_ridge.yaml')],
-      manifestSource: await _source('manifest/stage_assignments.yaml'),
-      referenceIndex: _referenceIndex(),
-    );
-
 void main() {
   late GameRepository repository;
   late CombatCatalogManifestDef catalog;
@@ -119,7 +32,7 @@ void main() {
 
   setUpAll(() async {
     repository = await loadTestGameRepository();
-    catalog = await _productionCatalog();
+    catalog = repository.combatCatalog!;
     playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
       contentId: 'stage_01_03',
       playerSnapshot: testCombatantSnapshot(
@@ -423,20 +336,23 @@ void main() {
   );
 
   test(
-    'explicit legacy assignment remains null from the same factory',
+    'newly migrated stage never falls back when its runtime binding is absent',
     () async {
-      final host = await createFreshPhase0aMainlineEncounter(
-        Phase0aMainlineEncounterHostBuildRequest(
-          stage: repository.getStage('stage_01_01'),
-          playerMapping: playerMapping,
-          numbers: repository.numbers,
-          cycleIndex: 1,
-          rng: Random(7),
-          runtimeBindingSource: runtimeSource,
-          catalogOverride: catalog,
+      await expectLater(
+        createFreshPhase0aMainlineEncounter(
+          Phase0aMainlineEncounterHostBuildRequest(
+            stage: repository.getStage('stage_01_01'),
+            playerMapping: playerMapping,
+            numbers: repository.numbers,
+            cycleIndex: 1,
+            rng: Random(7),
+            runtimeBindingSource:
+                const Phase0aMainlineEncounterRuntimeBindingSourceAdapter.unconfigured(),
+            catalogOverride: catalog,
+          ),
         ),
+        throwsStateError,
       );
-      expect(host, isNull);
     },
   );
 }
@@ -450,7 +366,9 @@ final class _ProductionRuntimeSource
     final runtime =
         loadYaml(File('data/combat/runtime_bindings.yaml').readAsStringSync())
             as YamlMap;
-    final binding = (runtime['runtime_bindings'] as YamlList).single as YamlMap;
+    final binding = (runtime['runtime_bindings'] as YamlList)
+        .cast<YamlMap>()
+        .firstWhere((item) => item['stage_id'] == 'stage_01_03');
     final visualVariants = <String, String>{};
     for (final raw in binding['visual_variants'] as YamlList) {
       final item = raw as YamlMap;

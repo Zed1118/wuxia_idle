@@ -421,7 +421,9 @@ void main() {
           child: MaterialApp(
             home: Phase0aMainlineBattleHost(
               stage: repo.getStage('stage_01_01'),
-              playerSnapshotForTest: _makeCh1Player(repo.numbers),
+              playerSnapshotForTest: _makeCh1Player(
+                repo.numbers,
+              ).copyWith(maxHp: 150000, currentHp: 150000),
               seedForTest: 20260819,
               onVictory: (settlement) {
                 victoryCalled = true;
@@ -434,19 +436,38 @@ void main() {
       );
       // 装配在 postFrameCallback;先泵一帧完成 setup。
       await tester.pump();
-      // 宿主接真人输入 adapter(非 bot):测试模拟玩家连按 J 普攻驾驶战斗。
+      final battleScreen = tester.widget<Phase0aBattleScreen>(
+        find.byType(Phase0aBattleScreen),
+      );
+      // 宿主接真人输入 adapter(非 bot):先持续按 J 清场，再持续向
+      // 出口推进，覆盖 typed reach_checkpoint 的真实输入链。
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyJ);
       var simulatedSeconds = 0;
       while (!victoryCalled && simulatedSeconds < 180) {
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyJ);
+        if (simulatedSeconds == 170) {
+          await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+        }
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyE);
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+        await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
         await tester.pump(const Duration(seconds: 1));
         simulatedSeconds += 1;
       }
+      if (simulatedSeconds > 170) {
+        await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+      }
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyJ);
       expect(
         victoryCalled,
         isTrue,
         reason:
-            'stage_01_01 键盘驾驶应在模拟 180s 内取胜'
-            '(切片 1 headless bot 25/25 全胜同口径)',
+            'stage_01_01 键盘攻击+出口推进应在模拟 180s 内取胜'
+            '(切片 1 headless bot 25/25 全胜同口径); '
+            'outcome=${battleScreen.controller.outcome.name}, '
+            'tick=${battleScreen.controller.state.tick}, '
+            'hp=${battleScreen.controller.state.player.currentHealth}, '
+            'x=${battleScreen.controller.state.player.position.x}, '
+            'enemies=${battleScreen.controller.state.enemies.length}',
       );
       expect(victorySettlement!.result, BattleResult.leftWin);
       expect(victorySettlement!.totalDamage, greaterThan(0));

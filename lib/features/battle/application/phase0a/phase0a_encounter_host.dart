@@ -131,6 +131,7 @@ final class Phase0aEncounterHost {
     required this.flow,
     this.mapping,
     this.visualAssetPathByActorId,
+    this.objectiveContinuationCommandBuilder,
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
   }) : tokenBindingsByActorId = tokenBindingsByActorId == null
            ? null
@@ -177,6 +178,8 @@ final class Phase0aEncounterHost {
     required Phase0aEncounterObjectiveEventSource objectiveEventSource,
     Map<String, String>? visualAssetPathByActorId,
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
+    Phase0aObjectiveContinuationCommandBuilder?
+    objectiveContinuationCommandBuilder,
   }) {
     final flow = Phase0aProductionFlowAssembler.assembleMigratedEncounterPlan(
       plan: plan,
@@ -192,6 +195,7 @@ final class Phase0aEncounterHost {
       mapping: plan.mapping,
       visualAssetPathByActorId: visualAssetPathByActorId,
       tokenBindingsByActorId: tokenBindingsByActorId,
+      objectiveContinuationCommandBuilder: objectiveContinuationCommandBuilder,
     );
   }
 
@@ -204,6 +208,8 @@ final class Phase0aEncounterHost {
     Phase0aEncounterMapping? mapping,
     Map<String, String>? visualAssetPathByActorId,
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
+    Phase0aObjectiveContinuationCommandBuilder?
+    objectiveContinuationCommandBuilder,
   }) => Phase0aEncounterHost._(
     stageId: stageId,
     nextStageId: nextStageId,
@@ -211,6 +217,7 @@ final class Phase0aEncounterHost {
     mapping: mapping,
     visualAssetPathByActorId: visualAssetPathByActorId,
     tokenBindingsByActorId: tokenBindingsByActorId,
+    objectiveContinuationCommandBuilder: objectiveContinuationCommandBuilder,
   );
 
   final String stageId;
@@ -219,6 +226,8 @@ final class Phase0aEncounterHost {
   final Phase0aEncounterMapping? mapping;
   final Map<String, String>? visualAssetPathByActorId;
   final Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId;
+  final Phase0aObjectiveContinuationCommandBuilder?
+  objectiveContinuationCommandBuilder;
 
   List<Phase0aEvent> advanceManual({
     required double deltaSeconds,

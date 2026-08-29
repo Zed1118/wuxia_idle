@@ -241,12 +241,7 @@ stage_assignments:
       );
       expect(catalog.archetypeById('ch1_bandits')!.id, 'ch1_bandits');
       final resolver = Phase0aEncounterMigrationResolver(
-        legacyContentIds: const [
-          'stage_01_01',
-          'stage_01_02',
-          'stage_01_04',
-          'stage_01_05',
-        ],
+        legacyContentIds: const [],
       );
       final route = selectCombatStageEncounterRoute(
         manifest: catalog,
@@ -271,17 +266,12 @@ stage_assignments:
     },
   );
 
-  test('production Ch1 stages other than stage_01_03 remain legacy', () async {
+  test('all production Ch1 stages resolve migrated encounter routes', () async {
     final catalog = (await loadProductionCombatCatalogIfPresent(
       (path) => File(path).readAsString(),
     ))!;
     final resolver = Phase0aEncounterMigrationResolver(
-      legacyContentIds: const [
-        'stage_01_01',
-        'stage_01_02',
-        'stage_01_04',
-        'stage_01_05',
-      ],
+      legacyContentIds: const [],
     );
     for (final stageId in const [
       'stage_01_01',
@@ -293,10 +283,10 @@ stage_assignments:
         manifest: catalog,
         stageId: stageId,
         migrationResolver: resolver,
-        hasLegacyContent: true,
+        hasLegacyContent: false,
       );
-      expect(route, isA<LegacyCombatStageEncounterRoute>());
-      expect(catalog.encounterForStage(stageId), isNull);
+      expect(route, isA<MigratedCombatStageEncounterRoute>());
+      expect(catalog.encounterForStage(stageId), isNotNull);
     }
   });
 }

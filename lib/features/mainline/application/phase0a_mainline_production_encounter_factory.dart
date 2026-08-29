@@ -1,5 +1,6 @@
 import '../../../data/defs/combat_encounter_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/validation/combat_encounter_defeat_projection_mapper.dart';
 import '../../../data/validation/combat_stage_encounter_route_selector.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
@@ -8,7 +9,12 @@ import '../../battle/application/phase0a/phase0a_explicit_objective_event_source
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_migrated_encounter_plan_builder.dart';
+import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
+import '../../battle/domain/phase0a/encounter_enemy_roster.dart';
+import '../../battle/domain/phase0a/encounter_objective.dart';
 import '../../battle/domain/phase0a/phase0a_combat_intent.dart';
+import '../../battle/domain/phase0a/phase0a_combat_events.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
 import '../../battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
@@ -187,15 +193,9 @@ Phase0aEncounterHost _assemble({
     playerAdapter: player.playerAdapter,
     enemyAiAdapter: enemyAi,
   );
-  final objectiveSource = Phase0aExplicitObjectiveEventSource(
+  final objectiveSource = buildPhase0aMainlineObjectiveEventSource(
+    encounter: route.encounter,
     roster: plan.roster,
-    defeatProjectionsByActorId: {
-      for (final entry in entries)
-        runtimeIds[entry.entryId]!: [
-          Phase0aTargetDefeatProjection(entry.entryId),
-        ],
-    },
-    externalProjectors: const [],
   );
   AttackTokenRequest? tokenMapper(Phase0aIntent intent) {
     if (intent is Phase0aMoveIntent) {
@@ -226,8 +226,124 @@ Phase0aEncounterHost _assemble({
     objectiveEventSource: objectiveSource,
     visualAssetPathByActorId: visualAssetPathByActorId,
     tokenBindingsByActorId: tokensByActor,
+    objectiveContinuationCommandBuilder: _objectiveContinuationCommandBuilder(
+      route.encounter,
+    ),
   );
 }
+
+Phase0aObjectiveContinuationCommandBuilder?
+_objectiveContinuationCommandBuilder(CombatEncounterDef encounter) {
+  final policy = _checkpointXPolicyByEncounter[encounter.id];
+  if (policy == null || policy.isEmpty) return null;
+  final furthestCheckpointX = policy.values.reduce(
+    (current, candidate) => candidate > current ? candidate : current,
+  );
+  return (state) => state.player.position.x < furthestCheckpointX
+      ? const Phase0aPlayerCommand(right: true)
+      : const Phase0aPlayerCommand();
+}
+
+/// Builds the production objective source strictly from typed encounter refs.
+/// Stage-specific checkpoint/anchor mechanics are explicit policies; role or
+/// identifier substring inference is deliberately forbidden.
+Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
+  required CombatEncounterDef encounter,
+  required Phase0aEncounterRoster roster,
+}) {
+  final targetIds = <String>{};
+  final commanderIds = <String>{};
+  final anchorIds = <String>{};
+  final checkpointIds = <String>{};
+  for (final clause in encounter.objectives.clauses) {
+    switch (clause.primitive) {
+      case CombatDefeatTargetsRef(targetIds: final clauseTargetIds):
+        targetIds.addAll(clauseTargetIds);
+      case CombatDefeatCommanderRef(:final commanderId):
+        commanderIds.add(commanderId);
+      case CombatDestroyAnchorsRef(anchorIds: final clauseAnchorIds):
+        anchorIds.addAll(clauseAnchorIds);
+      case CombatReachCheckpointRef(checkpointIds: final clauseCheckpointIds):
+        checkpointIds.addAll(clauseCheckpointIds);
+      default:
+        break;
+    }
+  }
+
+  final entryById = {
+    for (final entry in encounter.spawnEntries) entry.entryId: entry,
+  };
+  final externalProjectors = <Phase0aExternalObjectiveEventProjector>[];
+  if (anchorIds.isNotEmpty) {
+    final policy = _anchorPolicyByEncounter[encounter.id];
+    if (policy == null ||
+        policy.values.toSet().difference(anchorIds).isNotEmpty ||
+        anchorIds.difference(policy.values.toSet()).isNotEmpty) {
+      throw StateError('${encounter.id} has no exact production anchor policy');
+    }
+    externalProjectors.add((frame) sync* {
+      for (final event in frame.combatEvents) {
+        if (event is! Phase0aEnemyDefeated) continue;
+        final binding = roster.bindingByEnemyId(event.target);
+        final entry = binding == null ? null : entryById[binding.entryId];
+        final anchorId = entry == null ? null : policy[entry.entranceId];
+        if (anchorId != null) {
+          yield AnchorDestroyed(
+            anchorId,
+            eventId: 'phase0a:anchor:${event.tick}:${event.seq}:$anchorId',
+          );
+        }
+      }
+    });
+  }
+  if (checkpointIds.isNotEmpty) {
+    final policy = _checkpointXPolicyByEncounter[encounter.id];
+    if (policy == null ||
+        policy.keys.toSet().difference(checkpointIds).isNotEmpty ||
+        checkpointIds.difference(policy.keys.toSet()).isNotEmpty) {
+      throw StateError(
+        '${encounter.id} has no exact production checkpoint policy',
+      );
+    }
+    externalProjectors.add((frame) sync* {
+      for (final entry in policy.entries) {
+        if (frame.beforeArena.player.position.x < entry.value &&
+            frame.afterArena.player.position.x >= entry.value) {
+          yield CheckpointReached(
+            entry.key,
+            eventId: 'phase0a:checkpoint:${frame.afterArena.tick}:${entry.key}',
+          );
+        }
+      }
+    });
+  }
+
+  return mapCombatEncounterDefeatObjectiveEventSource(
+    encounter,
+    roster,
+    defeatProjectionEntries: [
+      for (final entry in encounter.spawnEntries)
+        MapEntry(entry.entryId, [
+          if (targetIds.contains(entry.entryId))
+            Phase0aTargetDefeatProjection(entry.entryId),
+          if (commanderIds.contains(entry.entryId))
+            Phase0aCommanderDefeatProjection(entry.entryId),
+        ]),
+    ],
+    externalProjectors: externalProjectors,
+  );
+}
+
+const _anchorPolicyByEncounter = <String, Map<String, String>>{
+  'ch1_encounter_02_stronghold': {
+    'ch1_entrance_s02_gate': 'ch1_s02_anchor_gate',
+    'ch1_entrance_s02_roof': 'ch1_s02_anchor_gong_rack',
+  },
+};
+
+const _checkpointXPolicyByEncounter = <String, Map<String, double>>{
+  'ch1_encounter_01_roadbreak': {'ch1_s01_checkpoint_exit': 520},
+};
 
 Future<Phase0aEncounterHost?> buildPhase0aMainlineProductionEncounterHost(
   Phase0aMainlineEncounterHostBuildRequest request,

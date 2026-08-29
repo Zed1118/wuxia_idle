@@ -189,7 +189,7 @@ final class ProductionCorpus {
         .single;
     final bindings = (bindingsYaml['runtime_bindings'] as YamlList)
         .whereType<YamlMap>()
-        .single;
+        .singleWhere((binding) => binding['stage_id'] == 'stage_01_03');
     final behaviors = <String, YamlMap>{
       for (final behavior
           in (bindings['behaviors'] as YamlList).whereType<YamlMap>())

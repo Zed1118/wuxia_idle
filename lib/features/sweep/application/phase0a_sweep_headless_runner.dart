@@ -113,6 +113,8 @@ final class Phase0aSweepHeadlessRunner {
         bot: Phase0aPlayerBotAdapter(
           playerAdapter: encounterHost.mapping!.playerAdapter,
           policy: botPolicy,
+          objectiveContinuationCommandBuilder:
+              encounterHost.objectiveContinuationCommandBuilder,
         ),
         deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
         maxTicks: numbers.phase0aArena.maxSimulationTicks,

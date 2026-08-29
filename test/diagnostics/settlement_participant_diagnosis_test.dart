@@ -170,17 +170,9 @@ void main() {
       expect(settlement.result, BattleResult.leftWin);
       expect(settlement.isFinished, isTrue);
       expect(settlement.playerCharacterId, run.participantId);
-      expect(settlement.participantCharacterIds, {
-        -20004,
-        -20003,
-        -20002,
-        -20001,
-        -20000,
-        -1,
-        1,
-      });
-      expect(settlement.participantCharacterIds, hasLength(7));
-      expect(settlement.participants, hasLength(7));
+      expect(settlement.participantCharacterIds, {-2, -1, 1});
+      expect(settlement.participantCharacterIds, hasLength(3));
+      expect(settlement.participants, hasLength(3));
       expect(settlement.participantCharacterIds.where((id) => id > 0).toSet(), {
         run.participantId,
       });

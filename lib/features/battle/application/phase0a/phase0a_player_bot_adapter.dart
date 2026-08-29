@@ -5,6 +5,9 @@ import 'phase0a_bot_tactic.dart';
 import 'phase0a_player_input_adapter.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 
+typedef Phase0aObjectiveContinuationCommandBuilder =
+    Phase0aPlayerCommand Function(Phase0aArenaState state);
+
 /// Phase 0A 玩家 bot(headless 内核批,路线 C 子项①落地):每拍从状态
 /// 生成与真人同型的语义指令,经同一 [Phase0aPlayerInputAdapter] → reducer
 /// 结算,不另开第二套结算入口。
@@ -19,14 +22,21 @@ final class Phase0aPlayerBotAdapter {
   const Phase0aPlayerBotAdapter({
     required this.playerAdapter,
     this.policy = const Phase0aBotTacticPolicy.production(),
+    this.objectiveContinuationCommandBuilder,
   });
 
   final Phase0aPlayerInputAdapter playerAdapter;
   final Phase0aBotTacticPolicy policy;
+  final Phase0aObjectiveContinuationCommandBuilder?
+  objectiveContinuationCommandBuilder;
 
   Phase0aPlayerCommand commandFor(Phase0aArenaState state) {
-    if (!state.player.isAlive || state.enemies.isEmpty) {
+    if (!state.player.isAlive) {
       return const Phase0aPlayerCommand();
+    }
+    if (state.enemies.isEmpty) {
+      return objectiveContinuationCommandBuilder?.call(state) ??
+          const Phase0aPlayerCommand();
     }
     final player = state.player;
     final target = _targetFor(state);

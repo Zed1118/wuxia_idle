@@ -18,6 +18,8 @@ mapCombatEncounterDefeatObjectiveEventSource(
     MapEntry<String, Iterable<Phase0aDefeatObjectiveProjection>>
   >
   defeatProjectionEntries,
+  Iterable<Phase0aExternalObjectiveEventProjector> externalProjectors =
+      const [],
 }) {
   final definitionEntryIds = {
     for (final entry in definition.spawnEntries) entry.entryId,
@@ -117,7 +119,7 @@ mapCombatEncounterDefeatObjectiveEventSource(
   return Phase0aExplicitObjectiveEventSource(
     roster: roster,
     defeatProjectionsByActorId: projectionsByActorId,
-    externalProjectors: const [],
+    externalProjectors: externalProjectors,
   );
 }
 
