@@ -96,3 +96,16 @@
 - `phase0a_mainline_repository_runtime_binding_adapter.dart` 为每个 entry 分配唯一负 `characterId`；仅 typed commander 保留旧 Boss 身份/技能/蓄力/phase，护卫明确去除 Boss-only 状态。
 - headless/前台 bot 在清场后消费同一 typed checkpoint 导航命令，真人路径仍必须经键盘移动真实跨过出口，没有自动伪造目标完成。
 - 相关 targeted 组已覆盖五关数量/活跃窗/坐标/唯一参与者 ID、精确 objective 投影、真实 migrated 四模式同核与键盘输入链；最终结论仍以 receipt 与 gate 为准。
+
+## 首次 gate 判决与当前阻塞
+
+READY tip `cf68918b72352d27f290f193de9ec1d8034e5fcb` 的第一次正式 gate 已于 2026-08-29 运行完整，结果为 `FAIL: test_deletions,receipt_crosscheck`。其余客观门均过：全量 `+5685: All tests passed!`、`error_block_count=0`、analyze `No issues found!`、format `1636 files (0 changed)`。receipt mismatch 只是将失败轮次计数推算为 `+5682`，下次可直接改为 gate 实测的 `+5685`。
+
+无法在现行判据下自主修复的是 `test_deletions=328`：
+
+1. 基线测试明确断言 `stage_01_01/02/04/05` 仍为 legacy，而本单冻结范围要求它们全部 migrated。
+2. 基线结算测试断言旧的 5/9 敌人参与者 ID 集，而生产模板现为 2/3/25/40 敌人且要求每个 entry 唯一身份。
+3. 基线键盘测试只按 J 就期待 stage01 胜利，而已冻结的 typed checkpoint 要求真实跨过 `x=520`。
+4. 基线调优测试使用 `.single` 假设只有一个 runtime binding，全五关生产化后必须按 `stage_id` 选择。
+
+将旧行改成注释、skip 旧测试、伪造 legacy 兼容或把生产范围缩回一关，都会触发 §9/§2 红线，不是合法修复。main `5e98ba1941fdb8a657c332fcaf9cf5a7f63fda7d` 新增的 §10 攒批与 §11 预授权也未改变 §8.2 对 `test_deletions` 的无豁免要求。因此本单必须依 §8.2 与 §9 标记真实 `[BLOCKED]`，等待用户修订外部判据或提供已迁移测试契约的新基线。
