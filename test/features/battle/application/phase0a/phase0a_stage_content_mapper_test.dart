@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_in
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
@@ -216,6 +217,79 @@ void main() {
           .single;
       expect(enemyAttack.qiDelta, enemyBasic.qiDelta);
       expect(enemyAttack.qiDelta, isPositive);
+    });
+
+    test('生产 player mapping 只在 reducer 接受普攻后按剑形态三段链推进', () {
+      final numbers = repo.numbers;
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: makeCh1Player(numbers),
+        numbers: numbers,
+      );
+      expect(mapping.playerAdapter.basicAttackChain, swordBasicAttackChain);
+      expect(
+        mapping.playerAdapter.basicAttackChain!.segments.map(
+          (segment) => segment.id,
+        ),
+        swordBasicAttackSegmentIds,
+      );
+
+      final flow = Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260829),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+      final segmentIds = <String>[];
+
+      final firstEvents = flow.advance(
+        deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+      segmentIds.add(
+        firstEvents
+            .whereType<Phase0aAttackStarted>()
+            .singleWhere((event) => event.actor == 'player')
+            .basicAttackSegment!
+            .id,
+      );
+      expect(flow.state.player.basicAttackSegmentIndex, 1);
+
+      final rejectedEvents = flow.advance(
+        deltaSeconds: 0,
+        command: const Phase0aPlayerCommand(attack: true),
+      );
+      expect(
+        rejectedEvents.whereType<Phase0aAttackStarted>().where(
+          (event) => event.actor == 'player',
+        ),
+        isEmpty,
+      );
+      expect(
+        flow.state.player.basicAttackSegmentIndex,
+        1,
+        reason: '冷却拒绝的重复输入不得偷跳连段',
+      );
+
+      for (var tick = 0; tick < 40 && segmentIds.length < 4; tick++) {
+        final events = flow.advance(
+          deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+          command: const Phase0aPlayerCommand(attack: true),
+        );
+        segmentIds.addAll(
+          events
+              .whereType<Phase0aAttackStarted>()
+              .where((event) => event.actor == 'player')
+              .map((event) => event.basicAttackSegment!.id),
+        );
+      }
+
+      expect(segmentIds, [...swordBasicAttackSegmentIds, 'sword_thrust']);
+      expect(flow.state.player.basicAttackSegmentIndex, 1);
     });
 
     test('Q/R 真实 skill id 经 intent 进入 reducer started 事件', () {

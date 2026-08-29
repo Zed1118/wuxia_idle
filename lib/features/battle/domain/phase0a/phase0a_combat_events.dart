@@ -1,4 +1,5 @@
 import 'arena_vector.dart';
+import 'basic_attack_chain.dart';
 import 'defense_resolution.dart';
 import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
@@ -23,10 +24,12 @@ final class Phase0aAttackStarted extends Phase0aEvent {
     required super.tick,
     required this.actor,
     required this.moveKind,
+    this.basicAttackSegment,
   });
 
   final String actor;
   final Phase0aMoveKind moveKind;
+  final BasicAttackSegment? basicAttackSegment;
 
   @override
   bool operator ==(Object other) =>
@@ -34,10 +37,12 @@ final class Phase0aAttackStarted extends Phase0aEvent {
       other.seq == seq &&
       other.tick == tick &&
       other.actor == actor &&
-      other.moveKind == moveKind;
+      other.moveKind == moveKind &&
+      other.basicAttackSegment == basicAttackSegment;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor, moveKind);
+  int get hashCode =>
+      Object.hash(seq, tick, actor, moveKind, basicAttackSegment);
 }
 
 /// 普攻命中且结算完成(对齐契约 hit_landed)。
@@ -61,6 +66,7 @@ final class Phase0aHitLanded extends Phase0aEvent {
     required this.remainingHealth,
     this.actorPosition,
     this.targetPosition,
+    this.basicAttackSegment,
   });
 
   final String actor;
@@ -76,6 +82,7 @@ final class Phase0aHitLanded extends Phase0aEvent {
 
   /// 被命中目标结算时世界坐标。
   final ArenaVector? targetPosition;
+  final BasicAttackSegment? basicAttackSegment;
 
   @override
   bool operator ==(Object other) =>
@@ -90,7 +97,8 @@ final class Phase0aHitLanded extends Phase0aEvent {
       other.resolvedDamage == resolvedDamage &&
       other.remainingHealth == remainingHealth &&
       other.actorPosition == actorPosition &&
-      other.targetPosition == targetPosition;
+      other.targetPosition == targetPosition &&
+      other.basicAttackSegment == basicAttackSegment;
 
   @override
   int get hashCode => Object.hash(
@@ -105,6 +113,7 @@ final class Phase0aHitLanded extends Phase0aEvent {
     remainingHealth,
     actorPosition,
     targetPosition,
+    basicAttackSegment,
   );
 }
 

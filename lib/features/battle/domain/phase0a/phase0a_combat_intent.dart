@@ -1,4 +1,5 @@
 import 'arena_vector.dart';
+import 'basic_attack_chain.dart';
 import '../../../../core/domain/enums.dart';
 import '../../../../data/defs/skill_def.dart';
 import 'phase0a_damage_kind.dart';
@@ -80,6 +81,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.postureHitKind,
     this.defenseFlags,
     this.behaviorProfile,
+    this.basicAttackChain,
   });
 
   final double range;
@@ -95,6 +97,10 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final PostureHitKind postureHitKind;
   final AttackDefenseFlags? defenseFlags;
   final Phase0aEnemyBehaviorProfile? behaviorProfile;
+
+  /// Player production chain. Enemy and isolated legacy fixtures keep null.
+  /// The reducer owns the accepted-action cursor; adapters never mutate it.
+  final BasicAttackChain? basicAttackChain;
 }
 
 /// Enemy phase-unlocked skill request. Binding and policy are resolved in the

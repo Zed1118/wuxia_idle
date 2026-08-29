@@ -13,6 +13,7 @@ import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../domain/phase0a/arena_vector.dart';
+import '../../domain/phase0a/basic_attack_chain.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/defense_resolution.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
@@ -1209,6 +1210,7 @@ final class Phase0aStageContentMapper {
       clearSkillBinding: clear,
       numericSkillBindings: numericSkillBindings,
       defenseTuning: defenseTuning,
+      basicAttackChain: swordBasicAttackChain,
     );
   }
 

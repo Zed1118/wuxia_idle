@@ -15,6 +15,7 @@ import '../../battle/application/phase0a/phase0a_tactical_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
+import '../../battle/domain/phase0a/basic_attack_chain.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_combat_reducer.dart';
 import '../../battle/domain/phase0a/phase0a_defense_tuning.dart';
@@ -278,6 +279,7 @@ final class _DebugBattleConfig {
       gatherSkillBinding: tactical?.gather,
       clearSkillBinding: tactical?.clear,
       defenseTuning: defenseTuning,
+      basicAttackChain: swordBasicAttackChain,
     );
   }
 

@@ -5,6 +5,7 @@ import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'arena_vector.dart';
+import 'basic_attack_chain.dart';
 import 'defense_resolution.dart';
 import 'phase0a_combat_events.dart';
 import 'phase0a_combat_intent.dart';
@@ -331,6 +332,7 @@ Phase0aStepResult reducePhase0aTick({
     required double postureDamage,
     required PostureHitKind postureHitKind,
     required int breakPower,
+    BasicAttackSegment? basicAttackSegment,
   }) {
     if (!resolved.isHit) return;
     DefenseResult? defense;
@@ -424,6 +426,7 @@ Phase0aStepResult reducePhase0aTick({
         remainingHealth: remaining,
         actorPosition: attacker.position,
         targetPosition: target.position,
+        basicAttackSegment: basicAttackSegment,
       ),
     );
     var updated = target.copyWith(currentHealth: remaining);
@@ -667,6 +670,10 @@ Phase0aStepResult reducePhase0aTick({
           continue;
         }
         if (actor.attackCooldownRemaining > 0) continue;
+        final basicAttackChain = isPlayer ? intent.basicAttackChain : null;
+        final basicAttackSegment = basicAttackChain?.segmentAt(
+          actor.basicAttackSegmentIndex % basicAttackChain.segments.length,
+        );
         final coop = _guardianCoopContext(
           actor: actor,
           enemiesById: enemiesById,
@@ -777,6 +784,7 @@ Phase0aStepResult reducePhase0aTick({
             tick: tick,
             actor: actorId,
             moveKind: intent.moveKind,
+            basicAttackSegment: basicAttackSegment,
           ),
         );
         final target = _selectStrikeTarget(
@@ -809,6 +817,7 @@ Phase0aStepResult reducePhase0aTick({
             postureDamage: intent.postureDamage,
             postureHitKind: intent.postureHitKind,
             breakPower: _noBreakPower,
+            basicAttackSegment: basicAttackSegment,
           );
         }
         final aimDirection = intent.aimDirection.lengthSquared > 0
@@ -820,6 +829,10 @@ Phase0aStepResult reducePhase0aTick({
           attackCooldownRemaining: intent.cooldownSeconds,
           facing: aimDirection,
           qiCurrent: (actor.qiCurrent + intent.qiDelta).clamp(0, actor.qiMax),
+          basicAttackSegmentIndex: basicAttackChain == null
+              ? currentAttacker.basicAttackSegmentIndex
+              : (actor.basicAttackSegmentIndex + 1) %
+                    basicAttackChain.segments.length,
         );
         if (isPlayer) {
           player = recharged;

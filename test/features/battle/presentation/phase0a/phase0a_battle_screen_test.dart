@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -53,6 +54,8 @@ void main() {
   const gatherVortexKey = ValueKey('phase0a_gather_vortex');
   const clearBurstKey = ValueKey('phase0a_clear_burst');
   const defeatInkKey = ValueKey('phase0a_defeat_ink');
+  ValueKey<String> swordSegmentKey(String segmentId) =>
+      ValueKey<String>('phase0a_sword_segment_$segmentId');
   ValueKey<String> gatherPullKey(String actorId) =>
       ValueKey<String>('phase0a_gather_pull_$actorId');
   ValueKey<String> hitFlashKey(String actorId) =>
@@ -716,6 +719,44 @@ void main() {
   });
 
   group('玩家攻击分型:近战墨痕 / 远程掌风', () {
+    testWidgets('真实 debug 生产链遍历直刺、横扫、进步斩三种墨痕', (tester) async {
+      await pumpScreen(tester, autoStep: false, feedbackHoldSeconds: 10);
+
+      final seen = <String>{};
+      for (
+        var tick = 0;
+        tick < 300 &&
+            seen.length < swordBasicAttackSegmentIds.length &&
+            controller.outcome == Phase0aBattleOutcome.ongoing;
+        tick++
+      ) {
+        final events = await stepAndPump(
+          tester,
+          attackTowardNearest(controller.state),
+        );
+        for (final hit in events.whereType<Phase0aHitLanded>()) {
+          if (hit.actor != 'player' || hit.basicAttackSegment == null) continue;
+          final segmentId = hit.basicAttackSegment!.id;
+          seen.add(segmentId);
+          expect(
+            find.byKey(swordSegmentKey(segmentId)),
+            findsOneWidget,
+            reason: '$segmentId 必须进入真实 BattleScreen 表现层',
+          );
+          final painterKey = segmentId == 'sword_thrust'
+              ? palmTrailKey
+              : meleeSlashKey;
+          await expectPainterDrawsPixels(
+            tester,
+            find.byKey(painterKey),
+            label: '剑形态 $segmentId',
+          );
+        }
+      }
+
+      expect(seen, swordBasicAttackSegmentIds.toSet());
+    });
+
     testWidgets('整局进攻中两种 VFX 均出现且同拍互斥', (tester) async {
       await pumpScreen(tester);
 
