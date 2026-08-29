@@ -73,3 +73,9 @@
 - 首次 targeted 编译按预期失败：`TimedStatusLedger.fromSnapshot` 与 `snapshot` 不存在，reporter 为 `+0 -1` 并含 `[E]`，证明测试先于实现。
 - 实现后新增三文件联合 targeted：`+19: All tests passed!`；随后生产接线 + 双视口屏幕联合复跑：`+5: All tests passed!`。
 - 扩大回归逐文件通过：status ledger `+14`、生产状态接线 `+3`、双视口短窗 `+2`、reducer `+29`、DamageCalculator adapter `+20`、旧 event mapping `+44`、wave flow `+21`、即时聚合单测 `+4`、即时聚合双视口 `+2`、BattleScreen `+28`；各文件 reporter 均为 `All tests passed!` 且 `[E]` 计数为 0。
+
+### 提交后双向破坏证红
+
+- `remove_implementation`：删除 `_reserveDamagePopupResident` 对状态短窗合并支点的调用，同一 19-case targeted 变为 `+17 -2: Some tests failed.`，双视口各红 1 个。
+- `force_degenerate_value`：把聚合总额强制退化为仅保留最新 tick 伤害，同一 targeted 再次为 `+17 -2: Some tests failed.`，双视口各红 1 个。
+- 两向均用精确反向补丁恢复；每次恢复后实测 `git diff --quiet` 为 `0`，`git status --short` 无输出。
