@@ -94,5 +94,25 @@
   `[E]` 0，锁正常释放。
 - 下一步：提交本恢复点并形成最终 READY tip；在最终 tip 上复跑双向证红、
   写 receipt，再跑测试契约迁移校验与正式 gate。
+
+## 最终门禁记录（首个 READY tip）
+
+- 首个 READY tip：`62b5706a489b5c2926199549fc74999f10c7331f`。该 tip 上
+  双向证红再次得到 `remove_implementation=4`、
+  `force_degenerate_value=3`，精确恢复后同组三文件重新全绿。
+- 测试契约迁移校验原文：
+
+```text
+[migration] expect 删 0 / 增 28;用例 删 1 / 增 8;登记 1 条
+PASS: test_contract_migration
+```
+
+- 正式 gate 原始判决：`full_test +5703`、analyze、format、
+  receipt_crosscheck、commit_msg、worktree_clean、forbidden_files 全 PASS；
+  唯一失败项为 `test_deletions: 15`，末行 `FAIL: test_deletions`。依据宪法
+  §8 唯一例外，同 tip 的测试契约迁移机器校验已 PASS，故组合门禁满足合并
+  前置；没有豁免任何其他 gate 项。
+- 因本节本身需要进入受控证据链，下一提交会形成新的最终 READY tip；新的 tip
+  必须重新绑定 receipt、复跑双向证红、迁移校验与正式 gate 后才可合并。
 - 尚无结论：full、receipt、READY、gate、合并、push、CI 均未完成。
 - 阻塞：无。
