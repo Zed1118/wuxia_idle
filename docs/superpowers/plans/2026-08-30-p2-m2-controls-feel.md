@@ -83,7 +83,12 @@
 - 测试迁移登记：
   `docs/dispatch/phase2_wiring/test_contract_migrations/p2-m2-controls-feel-20260830.yaml`；
   最终 tip 形成后运行专用机器校验并抄回原文。
-- 下一步：提交登记与证据，跑 analyze、整仓 format、持锁 full、最终 tip
-  双向证红、receipt、gate。
+- 首轮持锁 full：`08:06 +5702 -1: Some tests failed.`，`[E]` 1。唯一红项
+  是 `phase0a_focus_nav_test.dart` 仍以中轴角色脚点上移证明 W 冒泡；单文件
+  独立复现同一失败。已将该守卫强化为直接断言领域 `position.y` 变小，整份
+  focus nav `+8: All tests passed!`。这是同批第二处“视觉脚点不动 ≠ 输入没
+  生效”的弱守卫，已如实记录，不改生产代码求绿。
+- 下一步：提交焦点守卫修正，重跑 analyze、整仓 format、持锁 full；通过后
+  再形成最终 READY tip、复跑双向证红、receipt 与 gate。
 - 尚无结论：full、receipt、READY、gate、合并、push、CI 均未完成。
 - 阻塞：无。
