@@ -59,6 +59,26 @@ enum Phase0aVfxKind {
   outcomeSeal,
 }
 
+/// 伤害飘字目标的表现优先级档。
+///
+/// 该分类只来自同步的 typed actor 状态，不从 id、文案或贴图命名猜测。
+enum Phase0aDamagePopupTargetClass {
+  unknown,
+  ordinaryEnemy,
+  eliteEnemy,
+  boss,
+  player,
+}
+
+/// 同一反馈层内的绘制优先级；数值越大越晚绘制。
+///
+/// 伤害数字始终位于危险预警/破势反馈下方，避免居民飘字遮蔽关键语义。
+int phase0aVfxPaintPriority(Phase0aVfxKind kind) => switch (kind) {
+  Phase0aVfxKind.damagePopup => 0,
+  Phase0aVfxKind.bossChargeWarning || Phase0aVfxKind.postureBroken => 2,
+  _ => 1,
+};
+
 /// 单条表现指令(不可变)。字段按 kind 取用,未用字段为空。
 ///
 /// [anchor]/[source]/[vfxTarget] 为事件发生时的世界坐标快照。
@@ -71,6 +91,9 @@ final class Phase0aVfxEntry {
     this.targetId,
     this.damage,
     this.isCritical = false,
+    this.damageGroupId,
+    this.damageTargetClass = Phase0aDamagePopupTargetClass.unknown,
+    this.hitCount = 1,
     this.defeatKind,
     this.waveIndex,
     this.waveTotal,
@@ -88,6 +111,15 @@ final class Phase0aVfxEntry {
   final String? targetId;
   final int? damage;
   final bool isCritical;
+
+  /// 同一次已结算攻击/技能事件的稳定分组键（事件 seq）。
+  final int? damageGroupId;
+
+  /// 居民聚合与淘汰只读的 typed 目标档。
+  final Phase0aDamagePopupTargetClass damageTargetClass;
+
+  /// 聚合后本组命中的普通目标数；原始逐目标 entry 恒为 1。
+  final int hitCount;
   final Phase0aDefeatKind? defeatKind;
   final int? waveIndex;
   final int? waveTotal;
@@ -104,6 +136,118 @@ final class Phase0aVfxEntry {
 
   /// 掌风轨迹:目标世界坐标。
   final ArenaVector? vfxTarget;
+}
+
+/// 普通群怪伤害显示聚合器。
+///
+/// 原始 [Phase0aVfxEntry] 不被修改；同一事件 seq 下仅普通敌人合并，
+/// Boss、精英、玩家与未知目标保持逐条。聚合锚点选择世界坐标最靠上的
+/// 命中点，避免把标签推到群怪包围圈中央。
+final class Phase0aDamagePopupAggregator {
+  const Phase0aDamagePopupAggregator();
+
+  List<Phase0aVfxEntry> collapse(List<Phase0aVfxEntry> entries) {
+    final groups = <int, List<Phase0aVfxEntry>>{};
+    for (final entry in entries) {
+      final groupId = entry.damageGroupId;
+      if (entry.kind != Phase0aVfxKind.damagePopup ||
+          entry.damageTargetClass !=
+              Phase0aDamagePopupTargetClass.ordinaryEnemy ||
+          groupId == null) {
+        continue;
+      }
+      (groups[groupId] ??= <Phase0aVfxEntry>[]).add(entry);
+    }
+
+    final emittedGroups = <int>{};
+    final collapsed = <Phase0aVfxEntry>[];
+    for (final entry in entries) {
+      final groupId = entry.damageGroupId;
+      if (entry.kind != Phase0aVfxKind.damagePopup ||
+          entry.damageTargetClass !=
+              Phase0aDamagePopupTargetClass.ordinaryEnemy) {
+        collapsed.add(entry);
+        continue;
+      }
+      final group = groupId == null ? null : groups[groupId];
+      if (group == null || group.length < 2) {
+        collapsed.add(entry);
+        continue;
+      }
+      if (emittedGroups.add(groupId!)) {
+        collapsed.add(_collapseGroup(groupId, group));
+      }
+    }
+    return List.unmodifiable(collapsed);
+  }
+
+  Phase0aVfxEntry _collapseGroup(int groupId, List<Phase0aVfxEntry> group) {
+    ArenaVector? anchor;
+    var damage = 0;
+    var isCritical = false;
+    for (final entry in group) {
+      damage += entry.damage ?? 0;
+      isCritical = isCritical || entry.isCritical;
+      final candidate = entry.anchor;
+      if (candidate == null) continue;
+      final current = anchor;
+      if (current == null ||
+          candidate.y < current.y ||
+          (candidate.y == current.y && candidate.x < current.x)) {
+        anchor = candidate;
+      }
+    }
+    return Phase0aVfxEntry(
+      kind: Phase0aVfxKind.damagePopup,
+      damage: damage,
+      isCritical: isCritical,
+      damageGroupId: groupId,
+      damageTargetClass: Phase0aDamagePopupTargetClass.ordinaryEnemy,
+      hitCount: group.length,
+      anchor: anchor,
+    );
+  }
+}
+
+/// 常驻伤害组满载时的稳定淘汰策略。
+///
+/// 返回现有居民中应淘汰的下标；`-1` 表示新 entry 自身优先级最低，
+/// 应直接丢弃。同档时淘汰最旧居民，让新反馈仍可被看见。
+final class Phase0aDamagePopupResidentPolicy {
+  const Phase0aDamagePopupResidentPolicy._();
+
+  static int evictionIndex(
+    List<Phase0aVfxEntry> residents,
+    Phase0aVfxEntry incoming,
+  ) {
+    if (residents.isEmpty) return -1;
+    var candidate = 0;
+    for (var index = 1; index < residents.length; index++) {
+      if (_compareRetention(residents[index], residents[candidate]) < 0) {
+        candidate = index;
+      }
+    }
+    return _compareRetention(incoming, residents[candidate]) < 0
+        ? -1
+        : candidate;
+  }
+
+  static int _compareRetention(Phase0aVfxEntry left, Phase0aVfxEntry right) {
+    final byTarget = _targetRank(
+      left.damageTargetClass,
+    ).compareTo(_targetRank(right.damageTargetClass));
+    if (byTarget != 0) return byTarget;
+    return (left.isCritical ? 1 : 0).compareTo(right.isCritical ? 1 : 0);
+  }
+
+  static int _targetRank(Phase0aDamagePopupTargetClass targetClass) =>
+      switch (targetClass) {
+        Phase0aDamagePopupTargetClass.ordinaryEnemy => 0,
+        Phase0aDamagePopupTargetClass.unknown => 1,
+        Phase0aDamagePopupTargetClass.eliteEnemy => 2,
+        Phase0aDamagePopupTargetClass.boss => 3,
+        Phase0aDamagePopupTargetClass.player => 4,
+      };
 }
 
 /// Phase 0A 事件 → VFX entry 映射器。
@@ -155,6 +299,7 @@ final class Phase0aVfxController {
       String targetId,
       int damage,
       bool isCritical, {
+      required int groupId,
       ArenaVector? anchor,
     }) {
       if (damage <= 0 || popupCount >= maxDamagePopups) return;
@@ -165,6 +310,8 @@ final class Phase0aVfxController {
           targetId: targetId,
           damage: damage,
           isCritical: isCritical,
+          damageGroupId: groupId,
+          damageTargetClass: _damagePopupTargetClass(targetId),
           // 事件携带的结算时坐标快照优先;字段为空才回退同步状态
           // (兼容旧事件)。渲染层不得通过 id 反查当前 state
           // (目标可能已死亡/移除)。
@@ -198,6 +345,7 @@ final class Phase0aVfxController {
             event.target,
             event.resolvedDamage,
             event.isCritical,
+            groupId: event.seq,
             anchor: event.targetPosition,
           );
           _maybePushPlayerAttackVfx(event, push);
@@ -216,6 +364,7 @@ final class Phase0aVfxController {
               outcome.target,
               outcome.resolvedDamage,
               outcome.isCritical,
+              groupId: event.seq,
               anchor: outcome.targetPosition,
             );
             if (outcome.statusApplied == Phase0aSkillStatus.pulled) {
@@ -248,6 +397,7 @@ final class Phase0aVfxController {
               outcome.target,
               outcome.resolvedDamage,
               outcome.isCritical,
+              groupId: event.seq,
               anchor: outcome.targetPosition,
             );
           }
@@ -257,6 +407,7 @@ final class Phase0aVfxController {
               outcome.target,
               outcome.resolvedDamage,
               outcome.isCritical,
+              groupId: event.seq,
               anchor: outcome.targetPosition,
             );
             push(
@@ -392,6 +543,19 @@ final class Phase0aVfxController {
       }
     }
     return entries;
+  }
+
+  Phase0aDamagePopupTargetClass _damagePopupTargetClass(String targetId) {
+    final actor = _actors[targetId];
+    if (actor == null) return Phase0aDamagePopupTargetClass.unknown;
+    if (actor.side == Phase0aSide.player) {
+      return Phase0aDamagePopupTargetClass.player;
+    }
+    if (actor.isBoss) return Phase0aDamagePopupTargetClass.boss;
+    if (actor.defeatKind == Phase0aDefeatKind.elite) {
+      return Phase0aDamagePopupTargetClass.eliteEnemy;
+    }
+    return Phase0aDamagePopupTargetClass.ordinaryEnemy;
   }
 
   /// 玩家普攻按事件时距离二分表现:近距双弧墨痕,远距掌风;
