@@ -1,0 +1,37 @@
+# 测试契约迁移登记表 · 体例
+#
+# 什么时候用:一个单的产品目标本身就是改掉旧契约(例如把关卡从 legacy 路由迁到
+# migrated),旧断言钉的正是要改掉的状态,因此必然要删。gate.sh 的 test_deletions
+# 是零删除策略,这时用本登记表 + tools/test_contract_migration_gate.sh 给出合法出口。
+# 适用条件与禁止事项见宪法 §8「唯一例外 · 测试契约迁移」。
+#
+# 怎么取被删的行:
+#   git diff --no-ext-diff --no-color <base>..<head> -- test/ \
+#     | grep '^-' | grep -v '^---' \
+#     | grep -E 'expect\(|^\-\s*(test|testWidgets|group)\s*\('
+#
+# 怎么验:
+#   tools/test_contract_migration_gate.sh <worktree> <base_sha> <head_sha> <本文件>
+#   必须输出 PASS: test_contract_migration
+#
+# 解析规则(不是标准 YAML,是固定体例):
+#   - 每项以 `- deleted:` 起头,后面跟 `replacement:` 与 `reason:` 各一行。
+#   - 冒号后的内容整行取原文,不用加引号(加了成对双引号会被剥掉)。
+#   - deleted 填被删行去掉行首 `-` 之后的原文,首尾空白会被忽略。
+#   - 同一行文本被删了 N 次,就登记 N 条(校验器按出现次数配平)。
+#   - replacement 填一个在 head 的 test/ 下能 grep 到的字符串(用例名或断言原文都行)。
+
+schema_version: 1
+ticket: <单名，与 worktree 后缀一致>
+base_sha: <40 位小写>
+head_sha: <40 位小写>
+summary: <一句话说明这次迁的是哪条契约、为什么旧断言必须删>
+
+migrations:
+  - deleted: expect(catalog.encounterForStage(stageId), isNull);
+    replacement: expect(catalog.encounterForStage(stageId), isNotNull);
+    reason: 迁移前该关无 encounter 故断言 isNull；迁移后必须有，isNotNull 是更强的存在性断言。
+
+  - deleted: test('production Ch1 stages other than stage_01_03 remain legacy', () async {
+    replacement: all production Ch1 stages resolve migrated encounter routes
+    reason: 用例标题本身断言旧状态，正是本单要改掉的；新用例断言五关全部解析为 migrated 路由。
