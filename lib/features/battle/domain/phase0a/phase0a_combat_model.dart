@@ -12,6 +12,7 @@ const _noChargeTicks = 0;
 const _noStaggerTicks = 0;
 const _noDefenseTicks = 0;
 const _noDefenseScalar = 0.0;
+const _initialBasicAttackSegmentIndex = 0;
 
 /// Phase 0A 竞技场阵营:单角色玩家对多敌。
 enum Phase0aSide { player, enemy }
@@ -179,7 +180,7 @@ final class Phase0aActor {
     this.parryCounterDamage = _noDefenseScalar,
     this.parryCounterBudgetRemaining = _noDefenseScalar,
     this.statusLedger = const TimedStatusLedgerSnapshot.empty(),
-    this.basicAttackSegmentIndex = 0,
+    this.basicAttackSegmentIndex = _initialBasicAttackSegmentIndex,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
