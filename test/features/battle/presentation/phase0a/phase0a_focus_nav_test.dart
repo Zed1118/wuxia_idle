@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixtu
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import '../../../../support/test_data.dart';
+import 'phase0a_terminal_test_driver.dart';
 
 /// Phase 0A Batch 9C 键盘焦点/导航红测(plan §验收):
 /// - 技能印与再战按钮「有键盘焦点 → 必须画出金边环」(沿用 PlaqueButton
@@ -187,7 +188,7 @@ void main() {
     Future<void> driveToEndPumped(WidgetTester tester) async {
       for (var i = 0; i < 2000; i++) {
         if (controller.outcome != Phase0aBattleOutcome.ongoing) break;
-        controller.step(const Phase0aPlayerCommand(attack: true));
+        controller.step(phase0aVictoryTerminalCommand(controller));
         await tester.pump();
       }
       expect(controller.outcome, Phase0aBattleOutcome.victory);

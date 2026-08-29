@@ -218,3 +218,21 @@ diff。先保留自由运行轨迹实测，再以同一攻击时刻状态的成�
   `No issues found! (ran in 3.2s)`。整仓 format 先定位并格式化 gitignore probe，
   再复跑为 `Formatted 1642 files (0 changed) in 2.76 seconds.`。
 - 阻塞项：无。当前仍是 WIP，未取得 gate/CI 结论前不得报 READY。
+
+## 完整套件契约迁移
+
+- 首轮最终 full 为 `04:57 +5686 -9: Some tests failed.`；9 个失败全部来自
+  3 个表现层文件共用的旧终局制造方式：原地只发
+  `Phase0aPlayerCommand(attack: true)`，并把“2000 拍必胜”误当成重试、焦点
+  或音效接线的前提。失败均是期望 `victory`、实际 `defeat`，没有出现第 10
+  种错误。
+- 替代驱动复用生产 `Phase0aPlayerCommand`、真实敌人列表与真实 reducer：每拍
+  朝当前首个存活敌人移动，同时按真实可用性发普攻和清场技。它继续要求确定性
+  fixture 真实到达胜利终局，但不再把静止单一普攻的数值强弱冒充表现层契约；
+  原有重试、焦点、逐事件音效和胜利 jingle 断言全部保留。
+- 三个原失败文件合跑为 `00:02 +20: All tests passed!`。本迁移只用于构造表现层
+  所需终局，不证明任何 `stage_01` 关卡可通关；关卡强度仍归 G2 真人试玩。
+- 因本分支还统一了旧 `forward_fan.*` 测试 ref，并替换上述 4 个旧驱动调用，
+  `gate.sh` 将按设计只在 `test_deletions` 留红；随本单登记
+  `p2-m2-sword-chain-mechanics-20260829.yaml` 并运行
+  `tools/test_contract_migration_gate.sh`，校验器原文须在最终 tip 回填本节。

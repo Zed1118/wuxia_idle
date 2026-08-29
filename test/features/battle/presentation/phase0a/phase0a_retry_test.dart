@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_c
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import '../../../../support/test_data.dart';
+import 'phase0a_terminal_test_driver.dart';
 
 /// Phase 0A Batch 9B 终局重试入口红测(plan §验收):
 /// - controller.restart 换入新 flow 后 state 完全复位且事件流重新被接受;
@@ -42,11 +43,11 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
-  /// 原地普攻打到终局(确定性 fixture,9A 已证 2000 拍内必胜)。
+  /// 用真实移动、普攻和清场技把确定性 fixture 驱动到胜利终局。
   void driveToEnd() {
     for (var i = 0; i < 2000; i++) {
       if (controller.outcome != Phase0aBattleOutcome.ongoing) break;
-      controller.step(const Phase0aPlayerCommand(attack: true));
+      controller.step(phase0aVictoryTerminalCommand(controller));
     }
     expect(controller.outcome, Phase0aBattleOutcome.victory);
   }
@@ -110,7 +111,7 @@ void main() {
     Future<void> driveToEndPumped(WidgetTester tester) async {
       for (var i = 0; i < 2000; i++) {
         if (controller.outcome != Phase0aBattleOutcome.ongoing) break;
-        controller.step(const Phase0aPlayerCommand(attack: true));
+        controller.step(phase0aVictoryTerminalCommand(controller));
         await tester.pump();
       }
       expect(controller.outcome, Phase0aBattleOutcome.victory);
