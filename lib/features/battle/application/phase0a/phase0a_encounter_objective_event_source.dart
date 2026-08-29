@@ -92,6 +92,7 @@ Phase0aActor _snapshotActor(Phase0aActor actor) => Phase0aActor(
   chargeTicksRemaining: actor.chargeTicksRemaining,
   staggerTicksRemaining: actor.staggerTicksRemaining,
   posture: actor.posture,
+  statusLedger: actor.statusLedger,
 );
 
 List<BossPhaseDef>? _snapshotBossPhases(List<BossPhaseDef>? phases) =>

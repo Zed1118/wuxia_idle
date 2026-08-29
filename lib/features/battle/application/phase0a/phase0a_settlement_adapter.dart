@@ -166,6 +166,8 @@ final class Phase0aSettlementAdapter {
           :final isCritical,
         ):
           addDamage(actor, resolvedDamage, critical: isCritical);
+        case Phase0aStatusDamageApplied(:final source, :final resolvedDamage):
+          addDamage(source, resolvedDamage);
         case Phase0aGuardianCoopStrike(
           :final mainGuardian,
           :final mainGuardianDamage,

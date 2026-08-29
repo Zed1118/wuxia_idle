@@ -67,6 +67,10 @@ final class Phase0aEventOrderAdapter {
       'hit_landed',
       CombatEventStage.damageAndPosture,
     ),
+    Phase0aStatusDamageApplied() => const _EventDescriptor(
+      'status_damage_applied',
+      CombatEventStage.damageAndPosture,
+    ),
     Phase0aEnemyDefeated() => const _EventDescriptor(
       'enemy_defeated',
       CombatEventStage.killAndResources,
@@ -183,6 +187,15 @@ final class Phase0aEventOrderAdapter {
           _component('damage', event.resolvedDamage),
           _component('remaining', event.remainingHealth),
           _component('actorPosition', _vector(event.actorPosition)),
+          _component('targetPosition', _vector(event.targetPosition)),
+        ]);
+      case Phase0aStatusDamageApplied():
+        values.addAll([
+          _component('source', event.source),
+          _component('target', event.target),
+          _component('status', event.statusType.name),
+          _component('damage', event.resolvedDamage),
+          _component('remaining', event.remainingHealth),
           _component('targetPosition', _vector(event.targetPosition)),
         ]);
       case Phase0aEnemyDefeated():

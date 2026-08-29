@@ -3,6 +3,7 @@ import 'defense_resolution.dart';
 import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import 'posture.dart';
+import 'status_effects.dart';
 
 export 'posture.dart' show PostureHitKind;
 
@@ -177,6 +178,7 @@ final class Phase0aActor {
     this.defenseCooldownRemaining = _noDefenseScalar,
     this.parryCounterDamage = _noDefenseScalar,
     this.parryCounterBudgetRemaining = _noDefenseScalar,
+    this.statusLedger = const TimedStatusLedgerSnapshot.empty(),
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -261,6 +263,7 @@ final class Phase0aActor {
   final double defenseCooldownRemaining;
   final double parryCounterDamage;
   final double parryCounterBudgetRemaining;
+  final TimedStatusLedgerSnapshot statusLedger;
 
   bool get isAlive => currentHealth > 0;
 
@@ -287,6 +290,7 @@ final class Phase0aActor {
     double? defenseCooldownRemaining,
     double? parryCounterDamage,
     double? parryCounterBudgetRemaining,
+    TimedStatusLedgerSnapshot? statusLedger,
   }) {
     return Phase0aActor(
       id: id,
@@ -336,6 +340,7 @@ final class Phase0aActor {
       parryCounterDamage: parryCounterDamage ?? this.parryCounterDamage,
       parryCounterBudgetRemaining:
           parryCounterBudgetRemaining ?? this.parryCounterBudgetRemaining,
+      statusLedger: statusLedger ?? this.statusLedger,
     );
   }
 
@@ -378,7 +383,8 @@ final class Phase0aActor {
       other.dodgeTicksRemaining == dodgeTicksRemaining &&
       other.defenseCooldownRemaining == defenseCooldownRemaining &&
       other.parryCounterDamage == parryCounterDamage &&
-      other.parryCounterBudgetRemaining == parryCounterBudgetRemaining;
+      other.parryCounterBudgetRemaining == parryCounterBudgetRemaining &&
+      other.statusLedger == statusLedger;
 
   @override
   int get hashCode => Object.hash(
@@ -419,7 +425,7 @@ final class Phase0aActor {
       dodgeTicksRemaining,
       defenseCooldownRemaining,
       parryCounterDamage,
-      parryCounterBudgetRemaining,
+      Object.hash(parryCounterBudgetRemaining, statusLedger),
     ),
   );
 }

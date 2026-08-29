@@ -5,6 +5,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dar
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/status_effects.dart';
 
 void main() {
   test('同一原始事件产生稳定只读 canonical projection', () {
@@ -95,6 +96,27 @@ void main() {
       CombatEventStage.startup,
       CombatEventStage.damageAndPosture,
     ]);
+  });
+
+  test('状态伤害完整 payload 进入 damage stage canonical ID', () {
+    const source = Phase0aStatusDamageApplied(
+      seq: 5,
+      tick: 8,
+      source: 'enemy',
+      target: 'player',
+      statusType: TimedStatusType.poison,
+      resolvedDamage: 7,
+      remainingHealth: 93,
+      targetPosition: ArenaVector(3, 4),
+    );
+
+    final record = Phase0aEventOrderAdapter.project(const [source]).single;
+
+    expect(record.stage, CombatEventStage.damageAndPosture);
+    expect(record.eventId, contains('status_damage_applied'));
+    expect(record.eventId, contains('status=poison'));
+    expect(record.eventId, contains('source=enemy'));
+    expect(record.eventId, contains('damage=7'));
   });
 
   test('完整 equality payload 进入 canonical ID，列表分隔符不会碰撞', () {

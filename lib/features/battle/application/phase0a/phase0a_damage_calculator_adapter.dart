@@ -6,6 +6,7 @@ import '../../../../data/defs/phase0a_skill_behavior.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../combat_shared/domain/damage_calculator.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
+import '../../domain/phase0a/status_effects.dart';
 
 /// Phase 0A 伤害快照:不可变、显式注入的 `calculateResolved` 入参载体。
 ///
@@ -108,8 +109,8 @@ final class Phase0aDamageSnapshot {
 ///   hit=true/critical=false/damage=0;但 attacker/target 快照合法性
 ///   仍先全量校验(非法配置不得被控制技静默掩盖)。
 /// - 缺 actor/缺绑定、负值/NaN/Infinity 快照、非零吸血一律计算前
-///   fail-fast;`AttackResult.appliedEffects` 无 Phase0A 消费方,
-///   本片登记残留风险、不扩状态系统。
+///   fail-fast;既有 `internal_injury` effect 映射为 typed fixed-tick status,
+///   reducer 负责刷新与逐拍结算。
 final class Phase0aDamageCalculatorAdapter
     implements Phase0aDamageResolver, Phase0aEnemySkillDamageResolver {
   Phase0aDamageCalculatorAdapter({
@@ -239,11 +240,45 @@ final class Phase0aDamageCalculatorAdapter
       attackerPiercePct: attacker.piercePct,
       attackerLifestealPct: attacker.lifestealPct, // 已 fail-fast,恒 0
     );
+    final internalInjury = _internalInjuryStatus(
+      result: result,
+      sourceId: attackerId,
+    );
     // 冻结映射:不重算、不 clamp、不用 mainDamage。
     return Phase0aResolvedHit(
       isHit: !result.isDodged,
       isCritical: result.isCritical,
       damage: result.finalDamage,
+      appliedStatus: internalInjury,
+    );
+  }
+
+  TimedStatusSpec? _internalInjuryStatus({
+    required AttackResult result,
+    required String sourceId,
+  }) {
+    if (result.isDodged || !result.appliedEffects.contains('internal_injury')) {
+      return null;
+    }
+    final config = _numbers.schoolCounter.yinRouInternalInjury;
+    if (!config.piercesDefense ||
+        !config.followsMainHit ||
+        config.stackRule != 'refresh' ||
+        config.turnsPersist <= 0 ||
+        config.damagePerTick <= 0) {
+      throw StateError(
+        'Phase0a internal injury requires the frozen piercing, '
+        'follows-main-hit, refresh and positive fixed-tick contract',
+      );
+    }
+    return TimedStatusSpec(
+      type: TimedStatusType.internalInjury,
+      sourceId: sourceId,
+      durationTicks: config.turnsPersist,
+      // Existing contract says every defender tick and same-source refresh.
+      tickIntervalTicks: 1,
+      stackLimit: 1,
+      damagePerTick: config.damagePerTick,
     );
   }
 

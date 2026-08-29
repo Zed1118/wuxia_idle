@@ -12,6 +12,7 @@ import 'phase0a_combat_model.dart';
 import 'phase0a_damage_kind.dart';
 import 'realtime_combat_rules.dart';
 import 'posture.dart';
+import 'status_effects.dart';
 
 export 'phase0a_damage_kind.dart';
 
@@ -24,11 +25,16 @@ final class Phase0aResolvedHit {
     required this.isHit,
     required this.isCritical,
     required this.damage,
+    this.appliedStatus,
   });
 
   final bool isHit;
   final bool isCritical;
   final int damage;
+
+  /// Optional typed status already resolved by the production damage adapter.
+  /// The reducer owns application/refresh/ticking; it never derives balance.
+  final TimedStatusSpec? appliedStatus;
 }
 
 /// 显式注入的伤害结算接口。本片测试用固定实现;
@@ -429,7 +435,24 @@ Phase0aStepResult reducePhase0aTick({
       breakPower: breakPower,
       isHit: resolved.isHit,
     ).actor;
+    final appliedStatus = resolved.appliedStatus;
+    final statusFollowsHit =
+        appliedStatus != null && defense?.branch != DefenseBranch.dodge;
+    Phase0aActor applyStatus(Phase0aActor actor) {
+      if (!statusFollowsHit || !actor.isAlive) return actor;
+      if (appliedStatus.sourceId != attacker.id ||
+          (appliedStatus.type != TimedStatusType.internalInjury &&
+              appliedStatus.type != TimedStatusType.poison) ||
+          appliedStatus.damagePerTick == null) {
+        throw StateError('Phase0a received an invalid resolved damage status');
+      }
+      final ledger = TimedStatusLedger.fromSnapshot(actor.statusLedger)
+        ..apply(appliedStatus);
+      return actor.copyWith(statusLedger: ledger.snapshot);
+    }
+
     if (target.side == Phase0aSide.enemy) {
+      updated = applyStatus(updated);
       if (!updated.isAlive) {
         enemiesById.remove(target.id);
         events.add(
@@ -452,7 +475,61 @@ Phase0aStepResult reducePhase0aTick({
         seq = advanced.nextSeq;
       }
     } else {
-      player = player.copyWith(currentHealth: remaining);
+      player = applyStatus(player.copyWith(currentHealth: remaining));
+    }
+  }
+
+  final statusActors = <Phase0aActor>[player, ...enemiesById.values]
+    ..sort((left, right) => left.id.compareTo(right.id));
+  for (final actorSnapshot in statusActors) {
+    final current = actorSnapshot.side == Phase0aSide.player
+        ? player
+        : enemiesById[actorSnapshot.id];
+    if (current == null || !current.isAlive) continue;
+    if (current.statusLedger.instances.isEmpty) continue;
+    final ledger = TimedStatusLedger.fromSnapshot(current.statusLedger);
+    final advance = ledger.advance(1);
+    var updated = current.copyWith(statusLedger: ledger.snapshot);
+    for (final damage in advance.damages) {
+      if (damage.amount <= 0) continue;
+      if (damage.type != TimedStatusType.internalInjury &&
+          damage.type != TimedStatusType.poison) {
+        throw StateError(
+          'Phase0a reducer received damage from non-damage status '
+          '${damage.type.name}',
+        );
+      }
+      final remaining = math.max(0, updated.currentHealth - damage.amount);
+      events.add(
+        Phase0aStatusDamageApplied(
+          seq: seq++,
+          tick: tick,
+          source: damage.sourceId,
+          target: updated.id,
+          statusType: damage.type,
+          resolvedDamage: damage.amount,
+          remainingHealth: remaining,
+          targetPosition: updated.position,
+        ),
+      );
+      updated = updated.copyWith(currentHealth: remaining);
+      if (!updated.isAlive) break;
+    }
+    if (updated.side == Phase0aSide.player) {
+      player = updated;
+    } else if (updated.isAlive) {
+      enemiesById[updated.id] = updated;
+    } else {
+      enemiesById.remove(updated.id);
+      events.add(
+        Phase0aEnemyDefeated(
+          seq: seq++,
+          tick: tick,
+          target: updated.id,
+          defeatKind: updated.defeatKind,
+          targetPosition: updated.position,
+        ),
+      );
     }
   }
 

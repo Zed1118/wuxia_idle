@@ -1,6 +1,8 @@
 /// Status kinds accepted by the Phase 0A fixed-tick candidate.
 enum TimedStatusType { slow, root, internalInjury, poison }
 
+const _initialTimelineTick = 0;
+
 /// Caller-supplied definition for one timed status source.
 ///
 /// This is deliberately engine-neutral: it carries no scheduler, reducer, UI,
@@ -71,6 +73,78 @@ final class TimedStatusSpec {
   final int stackLimit;
   final double? movementMultiplier;
   final int? damagePerTick;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TimedStatusSpec &&
+      other.type == type &&
+      other.sourceId == sourceId &&
+      other.durationTicks == durationTicks &&
+      other.tickIntervalTicks == tickIntervalTicks &&
+      other.stackLimit == stackLimit &&
+      other.movementMultiplier == movementMultiplier &&
+      other.damagePerTick == damagePerTick;
+
+  @override
+  int get hashCode => Object.hash(
+    type,
+    sourceId,
+    durationTicks,
+    tickIntervalTicks,
+    stackLimit,
+    movementMultiplier,
+    damagePerTick,
+  );
+}
+
+/// Immutable status instance carried by replayable arena snapshots.
+final class TimedStatusInstanceSnapshot {
+  const TimedStatusInstanceSnapshot({
+    required this.spec,
+    required this.remainingTicks,
+    required this.elapsedTicks,
+    required this.stacks,
+  });
+
+  final TimedStatusSpec spec;
+  final int remainingTicks;
+  final int elapsedTicks;
+  final int stacks;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TimedStatusInstanceSnapshot &&
+      other.spec == spec &&
+      other.remainingTicks == remainingTicks &&
+      other.elapsedTicks == elapsedTicks &&
+      other.stacks == stacks;
+
+  @override
+  int get hashCode => Object.hash(spec, remainingTicks, elapsedTicks, stacks);
+}
+
+/// Immutable fixed-tick ledger state stored on [Phase0aActor].
+final class TimedStatusLedgerSnapshot {
+  const TimedStatusLedgerSnapshot.empty()
+    : timelineTick = _initialTimelineTick,
+      instances = const <TimedStatusInstanceSnapshot>[];
+
+  TimedStatusLedgerSnapshot._({
+    required this.timelineTick,
+    required List<TimedStatusInstanceSnapshot> instances,
+  }) : instances = List.unmodifiable(instances);
+
+  final int timelineTick;
+  final List<TimedStatusInstanceSnapshot> instances;
+
+  @override
+  bool operator ==(Object other) =>
+      other is TimedStatusLedgerSnapshot &&
+      other.timelineTick == timelineTick &&
+      _snapshotListsEqual(other.instances, instances);
+
+  @override
+  int get hashCode => Object.hash(timelineTick, Object.hashAll(instances));
 }
 
 final class TimedStatusInstance {
@@ -141,10 +215,40 @@ final class StatusAdvanceResult {
 final class TimedStatusLedger {
   TimedStatusLedger._();
 
+  TimedStatusLedger.fromSnapshot(TimedStatusLedgerSnapshot snapshot) {
+    _timelineTick = snapshot.timelineTick;
+    for (final instance in snapshot.instances) {
+      _statuses.add(
+        TimedStatusInstance._values(
+          instance.spec,
+          instance.remainingTicks,
+          instance.elapsedTicks,
+          instance.stacks,
+        ),
+      );
+    }
+  }
+
   static TimedStatusLedger get empty => TimedStatusLedger._();
 
   final List<TimedStatusInstance> _statuses = [];
   int _timelineTick = 0;
+
+  TimedStatusLedgerSnapshot get snapshot {
+    if (_statuses.isEmpty) return const TimedStatusLedgerSnapshot.empty();
+    return TimedStatusLedgerSnapshot._(
+      timelineTick: _timelineTick,
+      instances: [
+        for (final status in _sortedStatuses())
+          TimedStatusInstanceSnapshot(
+            spec: status.spec,
+            remainingTicks: status.remainingTicks,
+            elapsedTicks: status.elapsedTicks,
+            stacks: status.stacks,
+          ),
+      ],
+    );
+  }
 
   /// Returns detached snapshots; mutating an item cannot mutate this ledger.
   List<TimedStatusInstance> get active =>
@@ -234,4 +338,16 @@ final class TimedStatusLedger {
     final byType = a.type.index.compareTo(b.type.index);
     return byType != 0 ? byType : a.sourceId.compareTo(b.sourceId);
   }
+}
+
+bool _snapshotListsEqual(
+  List<TimedStatusInstanceSnapshot> left,
+  List<TimedStatusInstanceSnapshot> right,
+) {
+  if (identical(left, right)) return true;
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) return false;
+  }
+  return true;
 }
