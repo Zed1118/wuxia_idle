@@ -551,6 +551,7 @@ phase0a_arena:
         attack_range: 440.0
         attack_half_arc_radians: 0.60
         max_targets: 1
+        # 位移上限,实际受目标截停
         advance_distance: 120.0
         aim_assist_radians: 0.0
     gather_slot: gather

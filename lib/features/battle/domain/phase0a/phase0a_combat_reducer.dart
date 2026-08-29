@@ -678,6 +678,7 @@ Phase0aStepResult reducePhase0aTick({
         );
         final geometryRegistry = intent.basicAttackGeometryRegistry;
         BasicAttackGeometryTuning? segmentTuning;
+        List<CombatGeometryTarget> selectedGeometryTargets = const [];
         var resolvedAimDirection = intent.aimDirection;
         var attackActor = actor;
         if (basicAttackSegment != null) {
@@ -699,6 +700,22 @@ Phase0aStepResult reducePhase0aTick({
                   BasicAttackAimCandidate(target.id, target.position),
             ],
           );
+          final geometryCandidates = [
+            for (final target in _opposingTargets(
+              casterSide: actor.side,
+              player: player,
+              enemiesById: enemiesById,
+            ))
+              if (!_isGuardedBoss(target, enemiesById))
+                CombatGeometryTarget(target.id, target.position),
+          ];
+          selectedGeometryTargets = geometryRegistry
+              .scopeFor(
+                segment: basicAttackSegment,
+                origin: actor.position,
+                direction: resolvedAimDirection,
+              )
+              .hitTargets(geometryCandidates);
           if (segmentTuning.advanceDistance > 0) {
             final bounds = intent.basicAttackArenaBounds;
             if (bounds == null) {
@@ -709,6 +726,9 @@ Phase0aStepResult reducePhase0aTick({
                 origin: actor.position,
                 direction: resolvedAimDirection,
                 distance: segmentTuning.advanceDistance,
+                stopTarget: selectedGeometryTargets.isEmpty
+                    ? null
+                    : selectedGeometryTargets.first,
                 bounds: bounds,
                 positiveXBarriers: intent.basicAttackDisplacementBarriersX,
               ),
@@ -844,21 +864,7 @@ Phase0aStepResult reducePhase0aTick({
                   halfArcRadians: intent.halfArcRadians,
                 ),
               ]
-            : geometryRegistry!
-                  .scopeFor(
-                    segment: basicAttackSegment,
-                    origin: attackActor.position,
-                    direction: resolvedAimDirection,
-                  )
-                  .hitTargets([
-                    for (final target in _opposingTargets(
-                      casterSide: attackActor.side,
-                      player: player,
-                      enemiesById: enemiesById,
-                    ))
-                      if (!_isGuardedBoss(target, enemiesById))
-                        CombatGeometryTarget(target.id, target.position),
-                  ])
+            : selectedGeometryTargets
                   .map(
                     (match) => attackActor.side == Phase0aSide.player
                         ? enemiesById[match.id]!

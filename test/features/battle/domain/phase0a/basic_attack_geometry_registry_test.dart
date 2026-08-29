@@ -74,19 +74,20 @@ Phase0aActor _player({int segmentIndex = 0, double x = 0}) => Phase0aActor(
   basicAttackSegmentIndex: segmentIndex,
 );
 
-Phase0aActor _enemy(ArenaVector position) => Phase0aActor(
-  id: 'enemy',
-  side: Phase0aSide.enemy,
-  position: position,
-  facing: const ArenaVector(-1, 0),
-  maxHealth: 100,
-  currentHealth: 100,
-  moveSpeed: 0,
-  qiCurrent: 0,
-  qiMax: 0,
-  attackCooldownRemaining: 0,
-  defeatKind: Phase0aDefeatKind.normal,
-);
+Phase0aActor _enemy(ArenaVector position, {String id = 'enemy'}) =>
+    Phase0aActor(
+      id: id,
+      side: Phase0aSide.enemy,
+      position: position,
+      facing: const ArenaVector(-1, 0),
+      maxHealth: 100,
+      currentHealth: 100,
+      moveSpeed: 0,
+      qiCurrent: 0,
+      qiMax: 0,
+      attackCooldownRemaining: 0,
+      defeatKind: Phase0aDefeatKind.normal,
+    );
 
 Phase0aStepResult _attack({
   required int segmentIndex,
@@ -185,6 +186,36 @@ void main() {
       expect(checkpoint.state.player.position, const ArenaVector(500, 0));
     },
   );
+
+  test(
+    'advancing slash stops at and resolves the target selected before moving',
+    () {
+      final result = _attack(
+        segmentIndex: 2,
+        enemies: [
+          _enemy(const ArenaVector(60, 20), id: 'near'),
+          _enemy(const ArenaVector(200, 0), id: 'far'),
+        ],
+      );
+
+      expect(result.state.player.position, const ArenaVector(60, 0));
+      expect(
+        result.events.whereType<Phase0aHitLanded>().single.target,
+        'near',
+        reason: 'movement and damage must reuse one pre-move geometry target',
+      );
+    },
+  );
+
+  test('advancing slash uses its full cap when the cone has no target', () {
+    final result = _attack(
+      segmentIndex: 2,
+      enemies: [_enemy(const ArenaVector(0, 200))],
+    );
+
+    expect(result.state.player.position, const ArenaVector(120, 0));
+    expect(result.events.whereType<Phase0aHitLanded>(), isEmpty);
+  });
 
   test('zero aim assist preserves the exact caller direction', () {
     const input = ArenaVector(0.8, 0.6);

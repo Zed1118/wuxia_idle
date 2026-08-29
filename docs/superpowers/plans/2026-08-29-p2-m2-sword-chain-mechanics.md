@@ -72,8 +72,12 @@ PHASE0_SWORD_BASELINE attacks=16 hits=15 average_hits_per_attack=0.937500 first_
 2. player+sword chain 走 per-segment range/half-arc/max-targets；无 chain、
    敌人和其他武器继续走现有 420/0.72 fallback 单目标语义。本轮三段
    `max_targets` 全部为 `1`，是否开放群伤留待用户试玩后单独拍板。
-3. 进步斩先沿最终瞄向前冲，再冻结同拍命中集；位移 clamp 到既有 arena
-   边界。攻击位移不得进入 checkpoint 事件来源，移动输入的真实跨线语义不改。
+3. 进步斩先用该段同一个 `ForwardFanScope` 冻结命中集，再把
+   `advance_distance` 作为位移上限：有目标时不越过冻结目标，无目标时完整
+   前冲；resolver 直接消费这份冻结命中集，不在位移后另算一套。位移继续
+   clamp 到既有 arena 边界，且不得进入 checkpoint 事件来源；移动输入的真实
+   跨线语义不改。Phase0A 当前没有 actor 碰撞半径，接战余量沿既有点几何语义
+   为零，不新增隐藏调优数值。
 4. aim assist 从每段配置读；三段均为 `0.0` 时瞄向必须逐位保持现状。
 5. 不修改 `phase0a_battle_screen.dart` 的 pointer down/move/up 或 held attack
    读取，不改 J、CD、POSTURE、自动普攻、文案和其他武器。
@@ -142,3 +146,61 @@ PHASE0_SWORD_BASELINE attacks=27 hits=16 average_hits_per_attack=0.592593 first_
   `00:00 +1: All tests passed!`。
 - 尚未进行 commit 后双向破坏证红、analyze、整仓 format、全量或 gate；本 tip
   只能是可恢复 WIP `[BLOCKED]`，不得视为候选完成。
+
+## 目标感知截停授权与方法论修正
+
+- 用户判定根因是实现形态而非数值：固定前冲 `120.0` 撞上实际目标前向距离
+  `5.823–67.390`，使进步斩修前为 `0/8`；授权把该字段改成“位移上限”，
+  目标由该段生产 geometry 选择并与 resolver 复用同一结果。锥内无目标时仍
+  完整前冲。
+- 明确否决把直刺 `half_arc` 从 `0.35` 放宽、把横扫从 `1.30` 放宽；两者维持
+  段身份。后续不得用“覆盖当前 seed 最高需求”反推参数，命中率只用于发现
+  某段是否坏死，数值身份由产品语义决定。
+- `max_targets` 保持 `1/1/1`、`aim_assist` 保持 `0/0/0`、CD 不动；鼠标 held
+  attack/pointer aim 与 J 键路径零改动。
+- `data/numbers.yaml` 只在进步斩 `advance_distance` 上方增加授权注释
+  “位移上限,实际受目标截停”，数值仍为 `120.0`，其余行不改。
+
+## 同 seed 修前/修后证据
+
+固定 `stage_01_03`、seed `20260829`、生产 repository/runtime、
+`steadyGuard` 与活跃 `[8,16]` 过滤。修前与修后均用 gitignore 的同一
+`build/phase2_probe/phase0_sword_chain_miss_diagnostic_test.dart`；probe 不进
+diff。先保留自由运行轨迹实测，再以同一攻击时刻状态的成对重放作为降幅判据，
+避免位移改变后续站位后拿不同分母直接相减。
+
+自由运行实测（轨迹会随位移语义分叉，完整保留但不作同布局降幅判决）：
+
+| 段 | 修前命中/出手 | 修后命中/出手 | 修前命中率 | 修后命中率 |
+|---|---:|---:|---:|---:|
+| 直刺 | 7/9 | 5/8 | 0.777778 | 0.625000 |
+| 横扫 | 9/10 | 6/8 | 0.900000 | 0.750000 |
+| 进步斩 | 0/8 | 4/7 | 0.000000 | 0.571429 |
+| 合计 | 16/27 | 15/23 | 0.592593 | 0.652174 |
+
+同布局成对重放（权威降幅判据）：
+
+| 段 | 修前命中/出手 | 修后命中/出手 | 修前命中率 | 修后命中率 |
+|---|---:|---:|---:|---:|
+| 直刺 | 3/4 | 3/4 | 0.750000 | 0.750000 |
+| 横扫 | 5/6 | 5/6 | 0.833333 | 0.833333 |
+| 进步斩 | 0/6 | 6/6 | 0.000000 | 1.000000 |
+| 合计 | 8/16 | 14/16 | 0.500000 | 0.875000 |
+
+同布局生产 fallback 基线为 `15/16 = 0.937500`；修后
+`14/16 = 0.875000`，相对降幅 `6.67%`，小于停止线 `30%`。修后进步斩已与
+其余两段同量级；自由运行的三段也从单段 `0/8` 坏死恢复为
+`5/8、6/8、4/7` 同量级。修后完整输出：
+`build/phase2_probe/phase0_sword_chain_miss_diagnostic_after_output.txt`。
+
+## 当前恢复点（目标感知截停）
+
+- 状态：生产实现与同 seed probe 已通过，尚未 commit；下一步是 targeted 邻接
+  回归、中文动宾 commit、提交后双向破坏证红、analyze/format/full/gate。
+- 生产路径：`Phase0aPlayerInputAdapter → Phase0aAttackIntent →
+  phase0a_combat_reducer.dart`；reducer 在位移前只调用一次 segment scope，
+  同一 `selectedGeometryTargets` 同时决定截停目标和 resolver 目标。
+- RED：固定 `120` 旧行为下，目标感知测试实测
+  `Expected ArenaVector(60,0), Actual ArenaVector(120,0)`，reporter
+  `00:00 +6 -1: Some tests failed.`；实现后同文件 `+7` 全绿。
+- 阻塞项：无。当前仍是 WIP，未取得 gate/CI 结论前不得报 READY。

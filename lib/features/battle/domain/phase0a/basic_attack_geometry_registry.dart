@@ -171,6 +171,7 @@ ArenaVector resolveBasicAttackAdvance({
   required ArenaVector origin,
   required ArenaVector direction,
   required double distance,
+  CombatGeometryTarget? stopTarget,
   required BasicAttackArenaBounds bounds,
   required Iterable<double> positiveXBarriers,
 }) {
@@ -179,7 +180,15 @@ ArenaVector resolveBasicAttackAdvance({
     throw ArgumentError.value(distance, 'distance');
   }
   if (distance == 0 || direction.lengthSquared == 0) return origin;
-  final proposed = bounds.clamp(origin + direction.normalized() * distance);
+  final directionUnit = direction.normalized();
+  var travelDistance = distance;
+  if (stopTarget != null) {
+    // Phase0A actors currently use point geometry, so center contact is the
+    // existing zero-radius engagement margin. Never advance past the target.
+    final forwardDistance = directionUnit.dot(stopTarget.position - origin);
+    travelDistance = math.min(distance, math.max(0, forwardDistance));
+  }
+  final proposed = bounds.clamp(origin + directionUnit * travelDistance);
   for (final barrier in positiveXBarriers) {
     if (!barrier.isFinite) {
       throw ArgumentError.value(barrier, 'positiveXBarriers');
