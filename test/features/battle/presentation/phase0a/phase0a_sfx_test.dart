@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixtu
 import 'package:wuxia_idle/shared/audio/audio_backend.dart';
 import 'package:wuxia_idle/shared/audio/sound_manager.dart';
 import '../../../../support/test_data.dart';
+import 'phase0a_terminal_test_driver.dart';
 
 /// Phase 0A Batch 9A 音效接线红测(plan §验收):
 /// - 纯映射:普攻双边变体/暴击/大招/Q/R/死亡静默/波次终局静默;
@@ -223,7 +224,7 @@ void main() {
         if (controller.outcome != Phase0aBattleOutcome.ongoing) break;
         await stepAndExpectSfx(
           tester,
-          const Phase0aPlayerCommand(attack: true),
+          phase0aVictoryTerminalCommand(controller),
         );
       }
       expect(controller.outcome, Phase0aBattleOutcome.victory);

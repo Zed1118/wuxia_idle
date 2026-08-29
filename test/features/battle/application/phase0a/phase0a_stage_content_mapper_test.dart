@@ -228,6 +228,10 @@ void main() {
       );
       expect(mapping.playerAdapter.basicAttackChain, swordBasicAttackChain);
       expect(
+        mapping.playerAdapter.basicAttackGeometryRegistry!.refs,
+        swordBasicAttackChain.geometryRefs,
+      );
+      expect(
         mapping.playerAdapter.basicAttackChain!.segments.map(
           (segment) => segment.id,
         ),
@@ -643,6 +647,44 @@ void main() {
       expect(arena.arenaMinY, lessThan(arena.arenaMaxY));
       expect(arena.playerMoveSpeed, greaterThan(0));
       expect(arena.playerAttackRange, 420);
+      expect(arena.playerAttackHalfArcRadians, 0.72);
+      expect(arena.playerAttackCooldownSeconds, 0.55);
+      expect(arena.basicAttackChain.segmentIds, swordBasicAttackSegmentIds);
+      final thrust = arena.basicAttackChain.tuningForSegmentId('sword_thrust');
+      final sweep = arena.basicAttackChain.tuningForSegmentId('sword_sweep');
+      final advancing = arena.basicAttackChain.tuningForSegmentId(
+        'sword_advancing_slash',
+      );
+      expect(
+        (
+          thrust.attackRange,
+          thrust.attackHalfArcRadians,
+          thrust.maxTargets,
+          thrust.advanceDistance,
+          thrust.aimAssistRadians,
+        ),
+        (480, 0.35, 1, 0, 0),
+      );
+      expect(
+        (
+          sweep.attackRange,
+          sweep.attackHalfArcRadians,
+          sweep.maxTargets,
+          sweep.advanceDistance,
+          sweep.aimAssistRadians,
+        ),
+        (400, 1.30, 1, 0, 0),
+      );
+      expect(
+        (
+          advancing.attackRange,
+          advancing.attackHalfArcRadians,
+          advancing.maxTargets,
+          advancing.advanceDistance,
+          advancing.aimAssistRadians,
+        ),
+        (440, 0.60, 1, 120, 0),
+      );
       expect(arena.enemyMoveSpeed, greaterThan(0));
       expect(arena.basicPowerMultiplier, greaterThan(0));
       expect(arena.clearPowerMultiplier, greaterThan(0));

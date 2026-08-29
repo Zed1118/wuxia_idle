@@ -1856,6 +1856,7 @@ class Phase0aArenaConfig {
   final double playerAttackRange;
   final double playerAttackHalfArcRadians;
   final double playerAttackCooldownSeconds;
+  final Phase0aBasicAttackChainConfig basicAttackChain;
   final String gatherSlot;
   final String gatherSkillId;
   final double gatherRingRadius;
@@ -1894,6 +1895,7 @@ class Phase0aArenaConfig {
     required this.playerAttackRange,
     required this.playerAttackHalfArcRadians,
     required this.playerAttackCooldownSeconds,
+    required this.basicAttackChain,
     required this.gatherSlot,
     this.gatherSkillId = '',
     required this.gatherRingRadius,
@@ -1930,6 +1932,7 @@ class Phase0aArenaConfig {
     playerAttackRange: 0,
     playerAttackHalfArcRadians: 0,
     playerAttackCooldownSeconds: 0,
+    basicAttackChain: Phase0aBasicAttackChainConfig.empty,
     gatherSlot: '',
     gatherSkillId: '',
     gatherRingRadius: 0,
@@ -2011,6 +2014,9 @@ class Phase0aArenaConfig {
           .toDouble(),
       playerAttackCooldownSeconds: (player['attack_cooldown_seconds'] as num)
           .toDouble(),
+      basicAttackChain: Phase0aBasicAttackChainConfig.fromYaml(
+        player['basic_attack_chain'],
+      ),
       gatherSlot: player['gather_slot'] as String,
       gatherSkillId: tacticalSkillId('gather_skill_id'),
       gatherRingRadius: (player['gather_ring_radius'] as num).toDouble(),
@@ -2038,6 +2044,106 @@ class Phase0aArenaConfig {
       clearPowerMultiplier: (moves['clear_power_multiplier'] as num).toInt(),
       clearQiDelta: (moves['clear_qi_delta'] as num).toInt(),
       defense: defense,
+    );
+  }
+}
+
+/// Per-segment sword basic-attack tuning loaded from
+/// `phase0a_arena.player.basic_attack_chain`.
+///
+/// Segment IDs remain data keys here. The production mapper resolves them to
+/// the chain's opaque geometry refs and constructs the fail-closed registry.
+final class Phase0aBasicAttackChainConfig {
+  Phase0aBasicAttackChainConfig(
+    Map<String, Phase0aBasicAttackSegmentTuning> segments,
+  ) : _segments = Map.unmodifiable(segments);
+
+  const Phase0aBasicAttackChainConfig._(this._segments);
+
+  static const empty = Phase0aBasicAttackChainConfig._({});
+
+  final Map<String, Phase0aBasicAttackSegmentTuning> _segments;
+
+  List<String> get segmentIds => List.unmodifiable(_segments.keys);
+
+  bool get isEmpty => _segments.isEmpty;
+
+  Phase0aBasicAttackSegmentTuning tuningForSegmentId(String segmentId) {
+    final tuning = _segments[segmentId];
+    if (tuning == null) {
+      throw StateError('missing basic attack segment tuning: $segmentId');
+    }
+    return tuning;
+  }
+
+  factory Phase0aBasicAttackChainConfig.fromYaml(Object? raw) {
+    if (raw == null) return empty;
+    if (raw is! Map) {
+      throw const FormatException('basic_attack_chain must be a map');
+    }
+    final segments = <String, Phase0aBasicAttackSegmentTuning>{};
+    for (final entry in raw.entries) {
+      final id = entry.key;
+      final value = entry.value;
+      if (id is! String || id.isEmpty || id != id.trim() || value is! Map) {
+        throw const FormatException('invalid basic_attack_chain segment');
+      }
+      segments[id] = Phase0aBasicAttackSegmentTuning.fromYaml(value);
+    }
+    return Phase0aBasicAttackChainConfig(segments);
+  }
+}
+
+final class Phase0aBasicAttackSegmentTuning {
+  const Phase0aBasicAttackSegmentTuning({
+    required this.attackRange,
+    required this.attackHalfArcRadians,
+    required this.maxTargets,
+    required this.advanceDistance,
+    required this.aimAssistRadians,
+  });
+
+  final double attackRange;
+  final double attackHalfArcRadians;
+  final int maxTargets;
+  final double advanceDistance;
+  final double aimAssistRadians;
+
+  factory Phase0aBasicAttackSegmentTuning.fromYaml(Map raw) {
+    final attackRange = (raw['attack_range'] as num).toDouble();
+    final attackHalfArcRadians = (raw['attack_half_arc_radians'] as num)
+        .toDouble();
+    final maxTargets = (raw['max_targets'] as num).toInt();
+    final advanceDistance = (raw['advance_distance'] as num).toDouble();
+    final aimAssistRadians = (raw['aim_assist_radians'] as num).toDouble();
+    if (!attackRange.isFinite || attackRange <= 0) {
+      throw ArgumentError.value(attackRange, 'attack_range');
+    }
+    if (!attackHalfArcRadians.isFinite ||
+        attackHalfArcRadians < 0 ||
+        attackHalfArcRadians > math.pi) {
+      throw ArgumentError.value(
+        attackHalfArcRadians,
+        'attack_half_arc_radians',
+      );
+    }
+    if (maxTargets <= 0) {
+      throw ArgumentError.value(maxTargets, 'max_targets');
+    }
+    if (!advanceDistance.isFinite || advanceDistance < 0) {
+      throw ArgumentError.value(advanceDistance, 'advance_distance');
+    }
+    if (!aimAssistRadians.isFinite ||
+        aimAssistRadians < 0 ||
+        aimAssistRadians > math.pi) {
+      throw ArgumentError.value(aimAssistRadians, 'aim_assist_radians');
+    }
+    return Phase0aBasicAttackSegmentTuning(
+      attackRange: attackRange,
+      attackHalfArcRadians: attackHalfArcRadians,
+      maxTargets: maxTargets,
+      advanceDistance: advanceDistance,
+      aimAssistRadians: aimAssistRadians,
     );
   }
 }

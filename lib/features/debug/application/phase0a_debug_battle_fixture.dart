@@ -7,6 +7,7 @@ import '../../../data/numbers_config.dart';
 import '../../../data/yaml_loader.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
+import '../../battle/application/phase0a/phase0a_basic_attack_geometry_mapper.dart';
 import '../../battle/application/phase0a/phase0a_defense_tuning_mapper.dart';
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
@@ -280,6 +281,13 @@ final class _DebugBattleConfig {
       clearSkillBinding: tactical?.clear,
       defenseTuning: defenseTuning,
       basicAttackChain: swordBasicAttackChain,
+      basicAttackGeometryRegistry:
+          Phase0aBasicAttackGeometryMapper.swordRegistryFromArena(
+            numbers.phase0aArena,
+          ),
+      basicAttackArenaBounds: Phase0aBasicAttackGeometryMapper.arenaBoundsFrom(
+        numbers.phase0aArena,
+      ),
     );
   }
 

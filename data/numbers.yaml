@@ -534,6 +534,26 @@ phase0a_arena:
     attack_range: 420.0              # 普攻手感批：扩大有效接敌距离，仍由配置注入
     attack_half_arc_radians: 0.72
     attack_cooldown_seconds: 0.55
+    basic_attack_chain:
+      sword_thrust:
+        attack_range: 480.0
+        attack_half_arc_radians: 0.35
+        max_targets: 1
+        advance_distance: 0.0
+        aim_assist_radians: 0.0
+      sword_sweep:
+        attack_range: 400.0
+        attack_half_arc_radians: 1.30
+        max_targets: 1
+        advance_distance: 0.0
+        aim_assist_radians: 0.0
+      sword_advancing_slash:
+        attack_range: 440.0
+        attack_half_arc_radians: 0.60
+        max_targets: 1
+        # 位移上限,实际受目标截停
+        advance_distance: 120.0
+        aim_assist_radians: 0.0
     gather_slot: gather
     # 下列 Q/R 尺寸/真气/CD 仅供隔离 legacy fixture fallback；
     # production 从 moves 绑定的 SkillDef.phase0aBehavior 与既有技能字段取值。

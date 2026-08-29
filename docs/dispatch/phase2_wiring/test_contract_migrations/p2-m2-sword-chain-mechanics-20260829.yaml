@@ -1,0 +1,14 @@
+schema_version: 1
+ticket: p2-m2-sword-chain-mechanics-20260829
+base_sha: cdf8114ee5728eae22977e082cda0ef527896ee1
+head_sha: 6bcaba735514359183f77d2a62e3372066cf5b4d
+summary: 将剑链几何引用统一为生产 geometry.sword 命名，并让表现层终局测试用真实移动、普攻和清场技驱动胜利，不再把静止普攻必胜当作接线契约。
+
+migrations:
+  - deleted: expect(chain.geometryRefs, ['forward_fan.thrust', 'forward_fan.sweep']);
+    replacement: expect(chain.geometryRefs, [
+    reason: 同一 geometryRefs 顺序约束改为精确检查 registry 实际消费的 geometry.sword 命名，避免单测与生产保留两套 ref 约定。
+
+  - deleted: expect(shared.geometryRefs, ['forward_fan.thrust', 'forward_fan.thrust']);
+    replacement: expect(shared.geometryRefs, [
+    reason: 同一共享 geometryRef 约束改为两项 production ref 的精确有序断言，继续钉住模板复用且不接受旧 forward_fan 别名。

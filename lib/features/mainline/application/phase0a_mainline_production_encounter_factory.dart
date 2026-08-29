@@ -169,6 +169,12 @@ Phase0aEncounterHost _assemble({
     behaviorProfilesByActor: behaviorProfilesByActor,
     defenseTuning: player.defenseTuning,
   );
+  final checkpointPolicy = _checkpointXPolicyByEncounter[route.encounter.id];
+  final playerAdapter = checkpointPolicy == null
+      ? player.playerAdapter
+      : player.playerAdapter.withBasicAttackDisplacementBarriersX(
+          checkpointPolicy.values,
+        );
   final plan = buildPhase0aMigratedEncounterPlan(
     route,
     tickDuration: runtime.tickDuration,
@@ -190,7 +196,7 @@ Phase0aEncounterHost _assemble({
     ),
     combatants: combatants,
     moveBindings: player.moveBindings,
-    playerAdapter: player.playerAdapter,
+    playerAdapter: playerAdapter,
     enemyAiAdapter: enemyAi,
   );
   final objectiveSource = buildPhase0aMainlineObjectiveEventSource(
