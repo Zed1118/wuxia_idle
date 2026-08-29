@@ -233,6 +233,15 @@ diff。先保留自由运行轨迹实测，再以同一攻击时刻状态的成�
 - 三个原失败文件合跑为 `00:02 +20: All tests passed!`。本迁移只用于构造表现层
   所需终局，不证明任何 `stage_01` 关卡可通关；关卡强度仍归 G2 真人试玩。
 - 因本分支还统一了旧 `forward_fan.*` 测试 ref，并替换上述 4 个旧驱动调用，
-  `gate.sh` 将按设计只在 `test_deletions` 留红；随本单登记
+  `gate.sh` 的 `test_deletions` 将按设计留红；随本单登记
   `p2-m2-sword-chain-mechanics-20260829.yaml` 并运行
-  `tools/test_contract_migration_gate.sh`，校验器原文须在最终 tip 回填本节。
+  `tools/test_contract_migration_gate.sh`。
+- 迁移后完整套件为 `05:18 +5695: All tests passed!`，`[E]` 块为 `0`；最终
+  静态与格式检查分别为 `No issues found! (ran in 2.9s)`、
+  `Formatted 1643 files (0 changed) in 2.83 seconds.`。
+- 测试契约迁移校验器原文：
+
+```text
+[migration] expect 删 2 / 增 27;用例 删 0 / 增 8;登记 2 条
+PASS: test_contract_migration
+```
