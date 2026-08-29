@@ -11,9 +11,10 @@
 - 基线：`cdf8114ee5728eae22977e082cda0ef527896ee1`；分支
   `codex/p2-m2-sword-chain-mechanics-20260829`；worktree
   `/Users/a10506/Desktop/Projects/挂机武侠-p2-m2-sword-chain-mechanics-20260829`。
-- 当前关键阻塞：无。既有 `ForwardFanScope` 和生产 migrated encounter
-  host 可复用；若后续发现必须改 save schema/saveVersion、checkpoint
-  语义或授权块外数值字段，立即按用户停止条件转 `[BLOCKED]`。
+- 当前关键阻塞：**已命中用户明示停止条件“geometry 注册表不存在”**。
+  既有 `ForwardFanScope` 是几何 kernel，不是 `geometryRef → scope/tuning`
+  注册表；三段 ref 除定义与 chain 单测外没有任何生产消费者。未获新增
+  registry 授权前不进入实现。
 - 预期增量：M2 #4 从“只有段身份与不同 VFX”推进为“同一 reducer 中三段
   有真实力学差异”；局部 RED/提交不计完成。
 - 成本上限：只保留这一项主 WIP；约 90 分钟无验收门进展即重评路线，
@@ -90,6 +91,18 @@ PHASE0_SWORD_BASELINE attacks=16 hits=15 average_hits_per_attack=0.937500 first_
 
 ## 恢复点
 
-- 当前：Phase 0 已完成且已写入本文件；尚未修改任何 `lib/`/`data/` 生产文件。
-- 下一步：先补会因缺少 typed tuning/registry 与多目标 reducer 消费而失败的
-  targeted 测试，再做最小实现。
+- 当前：`[BLOCKED]`。Phase 0 已完成；尚未修改任何 `lib/`/`data/` 生产
+  文件，`data/numbers.yaml` 和冻结的鼠标输入均为零 diff。
+- 阻塞证据：全仓用 `geometryRef`、`GeometryRegistry`、`geometry.sword`、
+  “几何注册”及 `ForwardFanScope` 消费点交叉反搜。结果只有：
+  1. `basic_attack_chain.dart` 定义三条 opaque ref；
+  2. `basic_attack_chain_test.dart` 检查 ref 身份；
+  3. `realtime_combat_rules.dart` 直接临时构造 `ForwardFanScope(maxTargets: 1)`；
+  4. 不存在任何按 ref 解析 scope/tuning 的 registry、catalog 或 resolver。
+- 推荐解阻：用户显式授权本单**新增一个最小 typed
+  `BasicAttackGeometryRegistry`**，只把已有三条 `geometryRef` 映射到本轮已
+  授权 YAML tuning，并复用 `ForwardFanScope`；它是纯运行时 domain 配置，
+  不改 Isar/saveVersion、不建立第二套几何算法。备选是让 reducer 按
+  `segment.id` 直接查 map，但这会继续绕过已存在的 `geometryRef`，不推荐。
+- 获得该新增 registry 授权后，从“补 RED 测试”恢复；否则本单不能按原范围
+  完成。
