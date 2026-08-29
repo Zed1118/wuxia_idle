@@ -675,6 +675,13 @@ Phase0aStepResult reducePhase0aTick({
       case Phase0aDefenseIntent():
         continue;
       case Phase0aMoveIntent(:final direction):
+        final pairedAttack = attackIntentsByActor[actorId];
+        if (isPlayer &&
+            !defenseConsumed &&
+            pairedAttack != null &&
+            _willCommitBasicAttackAdvance(actor: actor, intent: pairedAttack)) {
+          continue;
+        }
         final moved = resolvePhase0aMovement(
           actor: actor,
           direction: direction,
@@ -1838,6 +1845,30 @@ List<Phase0aIntent> _stableOrderByActor(List<Phase0aIntent> intents) {
     return byActor != 0 ? byActor : a.key.compareTo(b.key);
   });
   return [for (final entry in indexed) entry.value];
+}
+
+bool _willCommitBasicAttackAdvance({
+  required Phase0aActor actor,
+  required Phase0aAttackIntent intent,
+}) {
+  if (actor.attackCooldownRemaining > 0 ||
+      intent.aimDirection.lengthSquared == 0 ||
+      !_isUsableNumber(intent.range) ||
+      !_isUsableNumber(intent.halfArcRadians) ||
+      !_isUsableNumber(intent.cooldownSeconds) ||
+      !_isUsableNumber(intent.postureDamage)) {
+    return false;
+  }
+  final chain = intent.basicAttackChain;
+  if (chain == null) return false;
+  final registry = intent.basicAttackGeometryRegistry;
+  if (registry == null) {
+    throw StateError('basic attack chain requires a geometry registry');
+  }
+  final segment = chain.segmentAt(
+    actor.basicAttackSegmentIndex % chain.segments.length,
+  );
+  return registry.tuningFor(segment).advanceDistance > 0;
 }
 
 Phase0aActor? _selectStrikeTarget({

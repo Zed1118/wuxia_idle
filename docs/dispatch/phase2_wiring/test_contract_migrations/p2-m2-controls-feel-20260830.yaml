@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m2-controls-feel-20260830
+base_sha: 55d49c97d299301b3f484051d235077f8f97c1d8
+head_sha: b450a56096be78f7e39b90dca67c3f7348d6c32c
+summary: camera 改为跟随玩家表现位置后，中轴角色可保持稳定；旧契约迁移为领域坐标必须推进且角色或背景至少一个持续提供世界移动参照，并将焦点冒泡守卫改为直接读取领域坐标。
+
+migrations:
+  - deleted: testWidgets('D/A/S/W 各一步,玩家立绘屏幕脚点按对应方向移动', (tester) async {
+    replacement: D/A/S/W 各一步,领域坐标与屏幕参照按对应方向移动
+    reason: 旧用例强制角色脚点移动，与 camera 跟随 render position 的批准语义冲突；替代用例先断言领域坐标按键方向推进，再逐半帧断言角色脚点或反向背景视差至少一项持续移动，覆盖边缘 clamp 与中轴两种区域。

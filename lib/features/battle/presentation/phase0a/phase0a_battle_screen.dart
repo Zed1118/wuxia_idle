@@ -15,12 +15,16 @@ import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
 import '../../domain/phase0a/arena_vector.dart';
+import '../../domain/phase0a/basic_attack_chain.dart';
+import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
+import 'phase0a_actor_render_motion.dart';
 import 'phase0a_offscreen_indicator.dart';
+import 'phase0a_parallax_background.dart';
 import 'phase0a_presentation_tokens.dart';
 import 'phase0a_sfx.dart';
 import 'phase0a_skill_seals.dart';
@@ -58,45 +62,6 @@ final class Phase0aBattleScreen extends StatefulWidget {
   State<Phase0aBattleScreen> createState() => _Phase0aBattleScreenState();
 }
 
-final class _ActorRenderMotion {
-  _ActorRenderMotion(ArenaVector position)
-    : current = position,
-      _from = position,
-      _target = position,
-      _visualStride = const ArenaVector(0, 0);
-
-  ArenaVector current;
-  ArenaVector _from;
-  ArenaVector _target;
-  ArenaVector _visualStride;
-  double _elapsedSeconds = 0;
-
-  ArenaVector get visualStride => _visualStride;
-
-  void retarget(ArenaVector target) {
-    if (target == _target) return;
-    _visualStride = target - _target;
-    _from = current;
-    _target = target;
-    _elapsedSeconds = 0;
-  }
-
-  bool advance(double deltaSeconds, double durationSeconds) {
-    if (current == _target) {
-      if (_visualStride == const ArenaVector(0, 0)) return false;
-      _visualStride = const ArenaVector(0, 0);
-      return true;
-    }
-    _elapsedSeconds = (_elapsedSeconds + deltaSeconds).clamp(
-      0,
-      durationSeconds,
-    );
-    final progress = _elapsedSeconds / durationSeconds;
-    current = _from + (_target - _from) * progress;
-    return true;
-  }
-}
-
 class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
@@ -110,8 +75,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   final Map<String, double> _actionPulseRemaining = <String, double>{};
-  final Map<String, _ActorRenderMotion> _actorRenderMotions =
-      <String, _ActorRenderMotion>{};
+  final Map<String, Phase0aActorRenderMotion> _actorRenderMotions =
+      <String, Phase0aActorRenderMotion>{};
   final List<String> _actorPaintOrder = <String>[];
   int? _lastActorLayerTick;
   bool _retryInFlight = false;
@@ -247,25 +212,38 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     ...widget.controller.state.enemies,
   ];
 
-  void _syncActorRenderTargets() {
+  void _syncActorRenderTargets({bool preserveAdvancingSlash = false}) {
     final actors = _currentActors();
     final actorIds = actors.map((actor) => actor.id).toSet();
     _actorRenderMotions.removeWhere((id, _) => !actorIds.contains(id));
+    final advancingActorIds = preserveAdvancingSlash
+        ? {
+            for (final event in widget.controller.lastEvents)
+              if (event is Phase0aAttackStarted &&
+                  event.basicAttackSegment?.id == swordBasicAttackSegmentIds[2])
+                event.actor,
+          }
+        : const <String>{};
     for (final actor in actors) {
       final motion = _actorRenderMotions.putIfAbsent(
         actor.id,
-        () => _ActorRenderMotion(actor.position),
+        () => Phase0aActorRenderMotion(actor.position),
       );
-      motion.retarget(actor.position);
+      final advancingSlash = advancingActorIds.contains(actor.id);
+      motion.retarget(
+        actor.position,
+        durationSeconds: advancingSlash
+            ? Phase0aPresentationTokens.basicAttackAdvanceRenderSeconds
+            : widget.controller.fixedDeltaSeconds,
+        preserveUntilComplete: advancingSlash,
+      );
     }
   }
 
   bool _advanceActorRenderMotions(double deltaSeconds) {
     var changed = false;
     for (final motion in _actorRenderMotions.values) {
-      changed =
-          motion.advance(deltaSeconds, widget.controller.fixedDeltaSeconds) ||
-          changed;
+      changed = motion.advance(deltaSeconds) || changed;
     }
     return changed;
   }
@@ -360,7 +338,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _refresh() {
-    _syncActorRenderTargets();
+    _syncActorRenderTargets(preserveAdvancingSlash: true);
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
       _clearHeldInput();
     }
@@ -817,10 +795,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.asset(
-                                'assets/scenes/battle_mountain_pass_stage_v2.png',
-                                fit: BoxFit.cover,
-                                filterQuality: FilterQuality.medium,
+                              Phase0aParallaxBackground(
+                                cameraOffset: stage.cameraWorldRect.center,
                               ),
                               const ColoredBox(color: Color(0x380F0E0B)),
                               const CustomPaint(painter: _StageWashPainter()),

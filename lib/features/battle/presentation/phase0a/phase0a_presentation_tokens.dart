@@ -12,6 +12,11 @@ abstract final class Phase0aPresentationTokens {
   /// 仅影响表现投影，不写回领域位置或战斗结算。
   static const double cameraWorldFraction = 0.75;
 
+  /// Static scene art is oversized and translated against camera motion so
+  /// the center-follow band never loses all visible movement references.
+  static const double backgroundParallaxScale = 1.3;
+  static const double backgroundParallaxFactor = 0.24;
+
   /// safeRect 相对视口的四向内边距(像素)。
   static const double safeMarginHorizontal = 32;
   static const double safeMarginVertical = 24;
@@ -55,6 +60,9 @@ abstract final class Phase0aPresentationTokens {
 
   /// 仅表现层的受击压缩 / 出手前倾；不写回领域坐标。
   static const double actorMotionTweenSeconds = 0.08;
+
+  /// Sword advancing-slash render travel; domain displacement remains atomic.
+  static const double basicAttackAdvanceRenderSeconds = 0.18;
 
   /// 角色脚底在该屏幕像素带内交叉时保持既有绘制顺序，避免近身缠斗抖层。
   static const double actorLayerHysteresisPixels = 10;

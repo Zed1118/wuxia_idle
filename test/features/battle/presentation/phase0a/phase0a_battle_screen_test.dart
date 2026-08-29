@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -54,6 +55,9 @@ void main() {
   const gatherVortexKey = ValueKey('phase0a_gather_vortex');
   const clearBurstKey = ValueKey('phase0a_clear_burst');
   const defeatInkKey = ValueKey('phase0a_defeat_ink');
+  const backgroundTranslationKey = ValueKey(
+    'phase0a_background_parallax_translation',
+  );
   ValueKey<String> swordSegmentKey(String segmentId) =>
       ValueKey<String>('phase0a_sword_segment_$segmentId');
   ValueKey<String> gatherPullKey(String actorId) =>
@@ -152,6 +156,32 @@ void main() {
       left: dx < -eps,
       down: dy > eps,
       up: dy < -eps,
+    );
+  }
+
+  Phase0aPlayerCommand attackTowardNearestWithExactAim(
+    Phase0aArenaState state,
+  ) {
+    if (state.enemies.isEmpty) return const Phase0aPlayerCommand(attack: true);
+    final player = state.player.position;
+    var nearest = state.enemies.first;
+    var best = double.infinity;
+    for (final enemy in state.enemies) {
+      final distance = (enemy.position - player).lengthSquared;
+      if (distance < best) {
+        best = distance;
+        nearest = enemy;
+      }
+    }
+    const eps = 1.0;
+    final delta = nearest.position - player;
+    return Phase0aPlayerCommand(
+      attack: true,
+      attackAimDirection: delta,
+      right: delta.x > eps,
+      left: delta.x < -eps,
+      down: delta.y > eps,
+      up: delta.y < -eps,
     );
   }
 
@@ -410,41 +440,56 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
     });
 
-    testWidgets('D/A/S/W 各一步,玩家立绘屏幕脚点按对应方向移动', (tester) async {
+    testWidgets('D/A/S/W 各一步,领域坐标与屏幕参照按对应方向移动', (tester) async {
       await pumpScreen(tester);
 
       final cases =
           <
             (
               LogicalKeyboardKey,
+              double Function(ArenaVector before, ArenaVector after),
               double Function(Offset before, Offset after),
               String,
             )
           >[
             (
               LogicalKeyboardKey.keyD,
+              (before, after) => after.x - before.x,
               (before, after) => after.dx - before.dx,
               'D 右移',
             ),
             (
               LogicalKeyboardKey.keyA,
+              (before, after) => before.x - after.x,
               (before, after) => before.dx - after.dx,
               'A 左移',
             ),
             (
               LogicalKeyboardKey.keyS,
+              (before, after) => after.y - before.y,
               (before, after) => after.dy - before.dy,
               'S 下移(y 越大越靠前)',
             ),
             (
               LogicalKeyboardKey.keyW,
+              (before, after) => before.y - after.y,
               (before, after) => before.dy - after.dy,
               'W 上移',
             ),
           ];
 
-      for (final (key, delta, label) in cases) {
-        final before = tester.getCenter(find.byKey(standeeKey('player')));
+      Offset backgroundOffset() {
+        final transform = tester.widget<Transform>(
+          find.byKey(backgroundTranslationKey),
+        );
+        final translation = transform.transform.getTranslation();
+        return Offset(translation.x, translation.y);
+      }
+
+      for (final (key, domainDelta, screenDelta, label) in cases) {
+        final beforeDomain = controller.state.player.position;
+        final beforeActor = tester.getCenter(find.byKey(standeeKey('player')));
+        final beforeBackground = backgroundOffset();
         await tester.sendKeyEvent(key);
         final expectedDuration = Duration(
           microseconds:
@@ -452,20 +497,33 @@ void main() {
                   .round(),
         );
         step(tester);
+        expect(
+          domainDelta(beforeDomain, controller.state.player.position),
+          greaterThan(0),
+          reason: '$label:领域坐标必须按输入方向推进',
+        );
         await tester.pump();
         await tester.pump(expectedDuration ~/ 2);
-        final middle = tester.getCenter(find.byKey(standeeKey('player')));
+        final middleActor = tester.getCenter(find.byKey(standeeKey('player')));
+        final middleBackground = backgroundOffset();
         expect(
-          delta(before, middle),
+          math.max(
+            screenDelta(beforeActor, middleActor),
+            -screenDelta(beforeBackground, middleBackground),
+          ),
           greaterThan(0),
-          reason: '$label:隐式动画中间帧必须朝目标移动',
+          reason: '$label:隐式动画中角色或背景至少一个必须持续移动',
         );
         await tester.pump(expectedDuration ~/ 2);
-        final after = tester.getCenter(find.byKey(standeeKey('player')));
+        final afterActor = tester.getCenter(find.byKey(standeeKey('player')));
+        final afterBackground = backgroundOffset();
         expect(
-          delta(before, after),
+          math.max(
+            screenDelta(beforeActor, afterActor),
+            -screenDelta(beforeBackground, afterBackground),
+          ),
           greaterThan(0),
-          reason: '$label:屏幕脚点必须真实移动',
+          reason: '$label:最终帧仍须保留角色或背景的世界移动参照',
         );
       }
     });
@@ -732,7 +790,7 @@ void main() {
       ) {
         final events = await stepAndPump(
           tester,
-          attackTowardNearest(controller.state),
+          attackTowardNearestWithExactAim(controller.state),
         );
         for (final hit in events.whereType<Phase0aHitLanded>()) {
           if (hit.actor != 'player' || hit.basicAttackSegment == null) continue;
