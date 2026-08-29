@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m2-ch1-templates-20260829
 base_sha: 45829dddad9c4b264d30e9701a8aaec993522222
-head_sha: 00ddbe18429339bd93e0b5a2462b08bc2329de9b
+head_sha: 76fbacd3d3aed056224e5de8a320a3f08a92417c
 summary: 将第一章四关从 legacy 路由迁至五关 migrated 生产契约，并把旧 fixture、参与者与目标断言收紧为生产 repository 真实闭包。
 
 migrations:
