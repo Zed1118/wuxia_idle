@@ -47,7 +47,10 @@ void main() {
     };
 
     expect(
-      manifest.encounters.map((encounter) => encounter.id).toSet(),
+      manifest.encounters
+          .map((encounter) => encounter.id)
+          .where((id) => id.startsWith('ch1_'))
+          .toSet(),
       expected.values.toSet(),
     );
     for (final entry in expected.entries) {
@@ -87,7 +90,9 @@ void main() {
       'bandit_gong_leader': 2,
     });
     expect(
-      manifest.archetypes.single.variants
+      manifest
+          .archetypeById('ch1_bandits')!
+          .variants
           .map((variant) => variant.roleId)
           .toSet(),
       _canonicalRoles,
@@ -229,7 +234,9 @@ void main() {
           .toList();
       expect(
         attackSets.map((item) => item['id']).toSet(),
-        manifest.archetypes.single.variants
+        manifest
+            .archetypeById('ch1_bandits')!
+            .variants
             .map((variant) => variant.attackSetId)
             .toSet(),
       );
@@ -244,7 +251,9 @@ void main() {
           .toList();
       expect(
         visualVariants.map((item) => item['id']).toSet(),
-        manifest.archetypes.single.variants
+        manifest
+            .archetypeById('ch1_bandits')!
+            .variants
             .expand((variant) => variant.visualVariantIds)
             .toSet(),
       );
@@ -253,18 +262,19 @@ void main() {
       }
 
       final verified = binding['verified_only_references'] as YamlMap;
+      final ch1Variants = manifest.archetypeById('ch1_bandits')!.variants;
       expect(verified['host_consumption'], 'none');
       expect(
         _yamlStringSet(verified['posture_profile_ids']),
-        manifest.referenceIndex.postureProfileIds,
+        ch1Variants.map((variant) => variant.postureProfileId).toSet(),
       );
       expect(
         _yamlStringSet(verified['drop_group_ids']),
-        manifest.referenceIndex.dropGroupIds,
+        ch1Variants.map((variant) => variant.dropGroupId).toSet(),
       );
       expect(
         _yamlStringSet(verified['sfx_group_ids']),
-        manifest.referenceIndex.sfxGroupIds,
+        ch1Variants.map((variant) => variant.sfxGroupId).toSet(),
       );
     },
   );

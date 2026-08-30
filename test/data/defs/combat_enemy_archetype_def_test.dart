@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/defs/combat_enemy_archetype_def.dart';
 
 CombatArchetypeVariant variant({
   String roleId = 'melee_brute',
+  String displayName = '近战力士',
   CombatAttackTokenKind attackTokenKind = CombatAttackTokenKind.melee,
   double hpMultiplier = 1.0,
   double attackMultiplier = 1.0,
@@ -18,6 +19,7 @@ CombatArchetypeVariant variant({
   List<String> visualVariantIds = const ['visual_default'],
 }) => CombatArchetypeVariant(
   roleId: roleId,
+  displayName: displayName,
   attackTokenKind: attackTokenKind,
   hpMultiplier: hpMultiplier,
   attackMultiplier: attackMultiplier,
@@ -48,6 +50,7 @@ void main() {
         speedMultiplier: 1.1,
       );
       expect(v.roleId, 'ranged_archer');
+      expect(v.displayName, '近战力士');
       expect(v.attackTokenKind, CombatAttackTokenKind.ranged);
       expect(v.hpMultiplier, 0.8);
       expect(v.attackMultiplier, 1.4);
@@ -62,6 +65,13 @@ void main() {
 
     test('roleId containing whitespace fails closed', () {
       expect(() => variant(roleId: 'melee brute'), throwsArgumentError);
+    });
+
+    test('blank or padded displayName fails closed', () {
+      expect(() => variant(displayName: ''), throwsArgumentError);
+      expect(() => variant(displayName: '  '), throwsArgumentError);
+      expect(() => variant(displayName: ' 外门弟子'), throwsArgumentError);
+      expect(() => variant(displayName: '外门弟子 '), throwsArgumentError);
     });
 
     test('non-finite multipliers fail closed', () {

@@ -307,7 +307,7 @@ CombatantSnapshot _applyVariant({
   final stripBossIdentity = base.isBoss && !preserveBaseBossIdentity;
   return CombatantSnapshot(
     characterId: base.characterId,
-    name: base.name,
+    name: preserveBaseBossIdentity ? base.name : variant.displayName,
     realmTier: base.realmTier,
     realmLayer: base.realmLayer,
     school: base.school,

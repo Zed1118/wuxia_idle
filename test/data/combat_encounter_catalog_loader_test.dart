@@ -268,6 +268,7 @@ void main() {
             '  - id: arch_bandit\n'
             '    variants:\n'
             '      - role_id: chief\n'
+            '        display_name: Chief\n'
             '        attack_token_kind: melee\n'
             '        hp_multiplier: 1.0\n'
             '        attack_multiplier: 1.0\n'

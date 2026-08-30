@@ -1,4 +1,4 @@
-# All five Chapter 1 stages use the frozen four-template production catalog.
+# Migrated mainline routes: all Chapter 1 stages plus the Chapter 2 sect slice.
 stage_assignments:
   - stage_id: stage_01_01
     migration_state: migrated
@@ -15,3 +15,6 @@ stage_assignments:
   - stage_id: stage_01_05
     migration_state: migrated
     encounter_id: ch1_encounter_05_commander
+  - stage_id: stage_02_02
+    migration_state: migrated
+    encounter_id: ch2_encounter_02_teahouse

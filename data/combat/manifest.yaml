@@ -1,10 +1,12 @@
-# Frozen production catalog manifest for all five Chapter 1 stages.
+# Production combat catalog manifest for migrated mainline encounters.
 # Migration truth is kept only in the referenced authoritative source.
 archetype_sources:
   - data/combat/archetypes/bandits.yaml
+  - data/combat/archetypes/sects.yaml
 encounter_sources:
   - data/combat/encounters/chapter_01_templates.yaml
   - data/combat/encounters/black_wind_ridge.yaml
+  - data/combat/encounters/chapter_02_sect_teahouse.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 reference_index:
@@ -20,6 +22,9 @@ reference_index:
     - ch1_entrance_s03_upper
     - ch1_entrance_s04_duel_court
     - ch1_entrance_s05_peak_ring
+    - ch2_entrance_s02_floor
+    - ch2_entrance_s02_stairs
+    - ch2_entrance_s02_courtyard
   position_ids:
     - ch1_position_s01_slot_01
     - ch1_position_s01_slot_02
@@ -58,33 +63,64 @@ reference_index:
     - ch1_position_s04_commander_center
     - ch1_position_s05_guard
     - ch1_position_s05_commander_center
+    - ch2_position_s02_slot_01
+    - ch2_position_s02_slot_02
+    - ch2_position_s02_slot_03
+    - ch2_position_s02_slot_04
+    - ch2_position_s02_slot_05
+    - ch2_position_s02_slot_06
+    - ch2_position_s02_slot_07
+    - ch2_position_s02_slot_08
+    - ch2_position_s02_slot_09
+    - ch2_position_s02_slot_10
   behavior_ids:
     - ch1_behavior_blade_press
     - ch1_behavior_crossbow_offset
     - ch1_behavior_rope_flank
     - ch1_behavior_gong_command
+    - ch2_behavior_outer_press
+    - ch2_behavior_hidden_offset
+    - ch2_behavior_lightfoot_flank
+    - ch2_behavior_instructor_command
   attack_set_ids:
     - ch1_attack_set_blade
     - ch1_attack_set_crossbow
     - ch1_attack_set_rope_raider
     - ch1_attack_set_gong_leader
+    - ch2_attack_set_outer
+    - ch2_attack_set_hidden_weapon
+    - ch2_attack_set_lightfoot
+    - ch2_attack_set_instructor
   attack_tag_ids:
     - ch1_attack_tag_melee
     - ch1_attack_tag_projectile
     - ch1_attack_tag_charge
     - ch1_attack_tag_support
+    - ch2_attack_tag_melee
+    - ch2_attack_tag_projectile
+    - ch2_attack_tag_charge
+    - ch2_attack_tag_support
   posture_profile_ids:
     - ch1_posture_blade
     - ch1_posture_crossbow
     - ch1_posture_rope_raider
     - ch1_posture_gong_leader
+    - ch2_posture_outer
+    - ch2_posture_hidden_weapon
+    - ch2_posture_lightfoot
+    - ch2_posture_instructor
   drop_group_ids:
     - ch1_drop_group_bandit_encounter
+    - ch2_drop_group_sect_encounter
   sfx_group_ids:
     - ch1_sfx_blade
     - ch1_sfx_crossbow
     - ch1_sfx_rope_raider
     - ch1_sfx_gong_leader
+    - ch2_sfx_outer
+    - ch2_sfx_hidden_weapon
+    - ch2_sfx_lightfoot
+    - ch2_sfx_instructor
   visual_variant_ids:
     - ch1_visual_blade_a
     - ch1_visual_blade_b
@@ -94,6 +130,14 @@ reference_index:
     - ch1_visual_rope_raider_b
     - ch1_visual_gong_leader_a
     - ch1_visual_gong_leader_b
+    - ch2_visual_outer_a
+    - ch2_visual_outer_b
+    - ch2_visual_hidden_weapon_a
+    - ch2_visual_hidden_weapon_b
+    - ch2_visual_lightfoot_a
+    - ch2_visual_lightfoot_b
+    - ch2_visual_instructor_a
+    - ch2_visual_instructor_b
   objective_target_ids:
     - ch1_s01_blade_01
     - ch1_s01_blade_02
@@ -190,6 +234,31 @@ reference_index:
     - ch1_s04_rope_01
     - ch1_s05_blade_01
     - ch1_s05_leader_01
+    - ch2_s02_outer_01
+    - ch2_s02_outer_02
+    - ch2_s02_outer_03
+    - ch2_s02_outer_04
+    - ch2_s02_outer_05
+    - ch2_s02_outer_06
+    - ch2_s02_outer_07
+    - ch2_s02_outer_08
+    - ch2_s02_outer_09
+    - ch2_s02_outer_10
+    - ch2_s02_outer_11
+    - ch2_s02_outer_12
+    - ch2_s02_outer_13
+    - ch2_s02_outer_14
+    - ch2_s02_hidden_01
+    - ch2_s02_hidden_02
+    - ch2_s02_hidden_03
+    - ch2_s02_hidden_04
+    - ch2_s02_hidden_05
+    - ch2_s02_hidden_06
+    - ch2_s02_lightfoot_01
+    - ch2_s02_lightfoot_02
+    - ch2_s02_lightfoot_03
+    - ch2_s02_lightfoot_04
+    - ch2_s02_instructor_01
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

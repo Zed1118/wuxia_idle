@@ -70,6 +70,7 @@ final class ParsedCombatArchetypeEntry {
 final class ParsedCombatArchetypeVariantEntry {
   ParsedCombatArchetypeVariantEntry({
     required this.roleId,
+    required this.displayName,
     required this.attackTokenKind,
     required this.hpMultiplier,
     required this.attackMultiplier,
@@ -85,6 +86,7 @@ final class ParsedCombatArchetypeVariantEntry {
        visualVariantIds = List.unmodifiable(visualVariantIds);
 
   final String roleId;
+  final String displayName;
 
   /// Raw enum name, already validated against [combatAttackTokenKindNames].
   final String attackTokenKind;
@@ -271,6 +273,7 @@ ParsedCombatArchetypeSource validateCombatArchetypeSource(
         variantMap,
         const {
           'role_id',
+          'display_name',
           'attack_token_kind',
           'hp_multiplier',
           'attack_multiplier',
@@ -291,6 +294,11 @@ ParsedCombatArchetypeSource validateCombatArchetypeSource(
           roleId: _requireString(
             variantMap['role_id'],
             '$variantPath.role_id',
+            sourceName,
+          ),
+          displayName: _requireDisplayName(
+            variantMap['display_name'],
+            '$variantPath.display_name',
             sourceName,
           ),
           attackTokenKind: _requireEnum(
@@ -832,6 +840,19 @@ String _requireString(dynamic value, String path, String sourceName) {
   }
   if (RegExp(r'\s').hasMatch(value)) {
     _fail(sourceName, path, 'must not contain whitespace');
+  }
+  return value;
+}
+
+String _requireDisplayName(dynamic value, String path, String sourceName) {
+  if (value is! String) {
+    _fail(sourceName, path, 'expected a string, got ${_typeName(value)}');
+  }
+  if (value.trim().isEmpty) {
+    _fail(sourceName, path, 'must not be empty');
+  }
+  if (value != value.trim()) {
+    _fail(sourceName, path, 'must not contain leading or trailing whitespace');
   }
   return value;
 }

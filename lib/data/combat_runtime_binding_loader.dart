@@ -234,7 +234,13 @@ Future<CombatRuntimeBindingCatalog> loadCombatRuntimeBindings({
       index,
       assetExists,
     );
-    final verifiedOnly = _parseVerifiedOnly(raw, manifest, sourceName, index);
+    final verifiedOnly = _parseVerifiedOnly(
+      raw,
+      manifest,
+      encounter,
+      sourceName,
+      index,
+    );
 
     final stageBinding = _resolveStageBinding(
       stageId: stageId,
@@ -635,6 +641,7 @@ Future<Map<String, CombatRuntimeVisualVariant>> _parseVisualVariants(
 CombatRuntimeVerifiedOnlyReferences _parseVerifiedOnly(
   Map<String, dynamic> root,
   CombatCatalogManifestDef manifest,
+  CombatEncounterDef encounter,
   String sourceName,
   int index,
 ) {
@@ -656,18 +663,26 @@ CombatRuntimeVerifiedOnlyReferences _parseVerifiedOnly(
     '$sourceName...drop_group_ids',
   );
   final sfx = _requiredIds(map['sfx_group_ids'], '$sourceName...sfx_group_ids');
+
+  final archetypeIds = encounter.spawnEntries
+      .map((entry) => entry.archetypeId)
+      .toSet();
+  final variants = [
+    for (final archetypeId in archetypeIds)
+      ...manifest.archetypeById(archetypeId)!.variants,
+  ];
   _requireExactIds(
-    manifest.referenceIndex.postureProfileIds,
+    variants.map((variant) => variant.postureProfileId),
     posture,
     '$sourceName...posture_profile_ids',
   );
   _requireExactIds(
-    manifest.referenceIndex.dropGroupIds,
+    variants.map((variant) => variant.dropGroupId),
     drop,
     '$sourceName...drop_group_ids',
   );
   _requireExactIds(
-    manifest.referenceIndex.sfxGroupIds,
+    variants.map((variant) => variant.sfxGroupId),
     sfx,
     '$sourceName...sfx_group_ids',
   );

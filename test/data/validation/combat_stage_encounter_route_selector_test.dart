@@ -14,6 +14,7 @@ void main() {
     variants: [
       CombatArchetypeVariant(
         roleId: 'role_blade',
+        displayName: '刀手',
         attackTokenKind: CombatAttackTokenKind.melee,
         hpMultiplier: 1,
         attackMultiplier: 1,
