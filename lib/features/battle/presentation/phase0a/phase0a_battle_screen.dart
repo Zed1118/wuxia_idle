@@ -587,11 +587,11 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       _clearHeldInput();
     }
     if (widget.controller.lastEvents.isNotEmpty) {
-      for (final event in widget.controller.lastEvents) {
-        final sfxAsset = phase0aSfxAssetForEvent(event, playerId: playerId);
-        if (sfxAsset != null) {
-          SoundManager.instance.playSfxPath(sfxAsset);
-        }
+      for (final sfxAsset in phase0aSfxAssetsForFrame(
+        widget.controller.lastEvents,
+        playerId: playerId,
+      )) {
+        SoundManager.instance.playSfxPath(sfxAsset);
       }
     }
     if (widget.controller.feedback.isNotEmpty) {
