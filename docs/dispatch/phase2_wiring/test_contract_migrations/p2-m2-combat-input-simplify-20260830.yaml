@@ -1,0 +1,116 @@
+schema_version: 1
+ticket: p2-m2-combat-input-simplify-20260830
+base_sha: ef6a6802dcc61bf4cbf2bb9a9463010e5004192c
+head_sha: cf79a20025d0656a277076c604452bb1628740c4
+summary: 进步斩从镜头追平迁移为角色在镜头死区内前冲，玩家防御从 E/F/Z/Space 四入口迁移为仅 Space 闪避；旧断言锁定的正是本单要删除的玩家产品行为。
+
+migrations:
+  - deleted: test('steady guard emits shield outside burst and dodge inside burst', () {
+    replacement: steady guard no longer emits shield or parry and keeps dodge for charge
+    reason: bot 不得继续使用人类玩家已移除的护盾和化解；新用例锁定常态不出防御、蓄力攻击仍可闪避。
+  - deleted: expect(safe.defenseAction, Phase0aDefenseAction.shield);
+    replacement: expect(safe.defenseAction, isNull);
+    reason: 常态自动护盾是被删除的产品行为，替代断言明确要求 bot 不发动主动防御。
+  - deleted: expect(burst.defenseAction, Phase0aDefenseAction.dodge);
+    replacement: expect(burst.defenseAction, Phase0aDefenseAction.dodge);
+    reason: 该断言仅因用例标题与前置断言迁移而重写，新契约仍原样锁定蓄力攻击时闪避。
+
+  - deleted: testWidgets('正式战斗进步斩插值期间 camera 每帧不超过普通移动一拍', (tester) async {
+    replacement: 正式战斗进步斩期间角色在屏幕上前冲而非被镜头钉住
+    reason: 旧用例只限制镜头单帧增量，仍允许镜头完全追平角色；新用例直接断言角色屏幕前冲和背景低位移。
+  - deleted: expect((current - previous).distance, greaterThan(0));
+    replacement: expect(totalForwardPixels, greaterThan(0));
+    reason: 旧断言强制进步斩期间镜头每帧都动，正会制造拉扯；新断言改为角色屏幕脚点真实前进。
+
+  - deleted: testWidgets('E 从真实战斗屏入口进入 shield 并显示护盾反馈', (tester) async {
+    replacement: $label 从真实战斗屏入口不再启动防御
+    reason: E 护盾已从玩家产品输入删除，新用例断言无事件、无位移且无任何防御状态。
+  - deleted: testWidgets('F 从真实战斗屏入口进入 parry 并点亮化解反馈', (tester) async {
+    replacement: $label 从真实战斗屏入口不再启动防御
+    reason: F 化解已从玩家产品输入删除，新用例断言无事件、无位移且无任何防御状态。
+  - deleted: testWidgets('Z 从真实战斗屏入口进入 dodge 并显示位移反馈', (tester) async {
+    replacement: $label 从真实战斗屏入口不再启动防御
+    reason: Z 备用闪避入口已删除，新用例锁定它不产生任何 defense started 事件。
+  - deleted: expect(started.action, Phase0aDefenseAction.shield);
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 护盾不再能从生产键盘启动，替代断言要求对应按键的防御事件集为空。
+  - deleted: expect(started.windowTicks, harness.tuning.shieldDurationTicks);
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 玩家键盘已无护盾窗口，新契约直接要求不产生防御开始事件。
+  - deleted: expect(started.shieldAbsorption, harness.tuning.shieldAbsorption);
+    replacement: expect(harness.controller.state.player.shieldRemaining, 0);
+    reason: 不再验收吸收量，而是验收按键后护盾状态仍为零。
+  - deleted: expect(started.action, Phase0aDefenseAction.parry);
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 化解不再能从生产键盘启动，替代断言要求对应按键的防御事件集为空。
+  - deleted: expect(started.windowTicks, harness.tuning.parryWindowTicks);
+    replacement: expect(harness.controller.state.player.parryTicksRemaining, 0);
+    reason: 玩家键盘已无化解窗口，新契约要求按键后 parry ticks 仍为零。
+  - deleted: expect(started.action, Phase0aDefenseAction.dodge);
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 该删除行属于旧 Z 闪避用例；新 Z 契约是不得产生防御事件，Space 的闪避行为由独立用例保留。
+  - deleted: expect(started.fromPosition, before);
+    replacement: expect(harness.controller.state.player.position, before.position);
+    reason: 旧 Z 用例验证闪避起点，新 Z 禁用契约要求玩家位置完全不变。
+  - deleted: expect(started.toPosition, after);
+    replacement: expect(harness.controller.state.player.position, before.position);
+    reason: 旧 Z 用例验证闪避终点，新 Z 禁用契约要求玩家位置完全不变。
+  - deleted: expect(started.windowTicks, harness.tuning.dodgeIframeTicks);
+    replacement: expect(harness.controller.state.player.dodgeTicksRemaining, 0);
+    reason: 旧 Z 用例验收无敌帧，新 Z 禁用契约要求 dodge ticks 仍为零。
+  - deleted: expect((after - before).length, harness.tuning.dodgeDistance);
+    replacement: expect(harness.controller.state.player.position, before.position);
+    reason: 旧 Z 用例验收闪避距离，新 Z 禁用契约要求零位移。
+
+  - deleted: testWidgets('$label 从聚焦战斗屏进入同一闪避路径', (tester) async {
+    replacement: Space 是聚焦战斗屏唯一闪避入口
+    reason: 旧循环同时承认 Z 和 Space，与新产品语义相反；新契约分开验证 Space 成功和 E/F/Z 禁用。
+  - deleted: testWidgets('三项防御状态在 $viewport 初始均显示可用', (tester) async {
+    replacement: $viewport 只显示 Space 闪避状态
+    reason: HUD 产品契约从三项防御迁移为仅 Space 闪避，新用例同时要求 shield/parry 状态节点不存在。
+  - deleted: testWidgets('任一防御动作进入共享 CD 后三项分别显示冷却秒数', (tester) async {
+    replacement: Space 闪避后只有闪避状态显示冷却
+    reason: 守势和化解 HUD 已删除，新用例仅验收闪避冷却并要求另两状态不存在。
+  - deleted: expect(status, findsOneWidget);
+    replacement: expect(status, findsOneWidget);
+    reason: 该断言从三项循环迁移到唯一 dodge status，新用例仍原样保证节点存在。
+  - deleted: expect(tester.widget<Text>(status).data, UiStrings.skillReady);
+    replacement: expect(tester.widget<Text>(status).data, UiStrings.skillReady);
+    reason: 该断言从三项循环迁移到唯一 dodge status，新用例仍原样保证初始可用文案。
+  - deleted: expect(tester.getSize(status).width, greaterThan(0));
+    replacement: expect(tester.getSize(status).width, greaterThan(0));
+    reason: 该断言从三项循环迁移到唯一 dodge status，新用例仍原样保证可见宽度。
+  - deleted: expect(tester.getSize(status).height, greaterThan(0));
+    replacement: expect(tester.getSize(status).height, greaterThan(0));
+    reason: 该断言从三项循环迁移到唯一 dodge status，新用例仍原样保证可见高度。
+  - deleted: expect(tester.widget<Text>(defenseStatus(action)).data, expected);
+    replacement: expect(tester.widget<Text>(defenseStatus('dodge')).data, expected);
+    reason: 共享三项冷却 HUD 已删除，新断言仅锁定唯一 dodge status 的冷却文案。
+
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+  - deleted: expect(
+    replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+    reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。

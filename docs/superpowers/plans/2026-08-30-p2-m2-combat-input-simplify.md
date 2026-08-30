@@ -29,7 +29,8 @@
 
 ## 当前恢复点
 
-- 状态：WIP；生产实现和直接回归已完成，正在持锁全量、receipt 与 gate。
+- 状态：候选验证完成，正在形成最终 `[READY]` tip 并运行 receipt/gate；
+  未经用户真人复验，不等于 G2 通过。
 - 实现提交：`9029d24d`（`消除进步斩拉扯并精简防御输入`）。
 - 初始 RED：实现前实测 8 项失败，包括角色屏幕前冲 `Actual: 0.0`、
   `E/F/Z` 各自仍发出防御事件、两视口 HUD 仍显示三项、bot 仍出 shield。
@@ -41,9 +42,14 @@
 - 已验证：直接 targeted `+47`；扩展 Phase0A 表现层与主线相邻组
   `+221`；`flutter analyze lib test` 为 `No issues found!`；整仓 format 为
   `1647 files (0 changed)`。
+- 持锁全量：`05:17 +5707: All tests passed!`，`[E]` 0，
+  `/Users/a10506/.claude/locks/wuxia_full_test.lock` 已精确释放。
+- 测试契约迁移：旧 shield/parry/Z/HUD/camera 断言正是本单修改的产品
+  语义；已登记 35 条，机器校验为 `expect 删 27 / 增 32`、
+  `用例 删 8 / 增 9`，`PASS: test_contract_migration`。
 - 已知环境基线：裸 `flutter analyze` 会跨入独立子包
   `tools/phase0minus_probe` 并因其未安装 Flame/子包依赖报 1943 项；
   根应用权威分析边界是 `lib test`。
-- 下一步：持锁跑 `flutter test --no-pub`，生成外置 receipt，形成 `[READY]`
-  tip 并运行 gate；然后从本 worktree 启动 macOS 应用交用户在 1-2 复验。
+- 下一步：形成 `[READY]` tip，生成与该 tip 绑定的外置 receipt 并运行
+  gate；然后从本 worktree 启动 macOS 应用交用户在 1-2 复验。
 - 尚未结论：用户手感、G2、合并、push、CI 均未通过。
