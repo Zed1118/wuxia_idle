@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
@@ -14,21 +15,6 @@ void main() {
   const viewports = <Size>[Size(1280, 720), Size(1440, 900)];
   const keyCases =
       <({LogicalKeyboardKey key, Phase0aDefenseAction action, String label})>[
-        (
-          key: LogicalKeyboardKey.keyE,
-          action: Phase0aDefenseAction.shield,
-          label: 'E/shield',
-        ),
-        (
-          key: LogicalKeyboardKey.keyF,
-          action: Phase0aDefenseAction.parry,
-          label: 'F/parry',
-        ),
-        (
-          key: LogicalKeyboardKey.keyZ,
-          action: Phase0aDefenseAction.dodge,
-          label: 'Z/dodge',
-        ),
         (
           key: LogicalKeyboardKey.space,
           action: Phase0aDefenseAction.dodge,
@@ -116,7 +102,9 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.keyE);
+    controller.enqueue(
+      const Phase0aPlayerCommand(defenseAction: Phase0aDefenseAction.shield),
+    );
 
     final observed = <Phase0aEvent>[];
     for (var tick = 0; tick < tuning.shieldDurationTicks; tick++) {

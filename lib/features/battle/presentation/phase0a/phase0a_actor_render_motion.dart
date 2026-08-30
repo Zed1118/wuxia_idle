@@ -8,20 +8,16 @@ final class Phase0aActorRenderMotion {
   Phase0aActorRenderMotion(ArenaVector position)
     : current = position,
       _from = position,
-      _target = position,
-      _visualStride = ArenaVector.zero;
+      _target = position;
 
   ArenaVector current;
   ArenaVector _from;
   ArenaVector _target;
-  ArenaVector _visualStride;
   double _elapsedSeconds = 0;
   double _durationSeconds = 0;
   bool _preserveUntilComplete = false;
   ArenaVector? _queuedTarget;
   double? _queuedDurationSeconds;
-
-  ArenaVector get visualStride => _visualStride;
 
   void retarget(
     ArenaVector target, {
@@ -42,7 +38,6 @@ final class Phase0aActorRenderMotion {
       target,
       durationSeconds: durationSeconds,
       preserveUntilComplete: preserveUntilComplete,
-      semanticFrom: semanticTarget,
     );
   }
 
@@ -64,19 +59,15 @@ final class Phase0aActorRenderMotion {
         if (queuedTarget != null && queuedDuration != null) {
           _queuedTarget = null;
           _queuedDurationSeconds = null;
-          final completedTarget = _target;
           _start(
             queuedTarget,
             durationSeconds: queuedDuration,
             preserveUntilComplete: false,
-            semanticFrom: completedTarget,
           );
           if (remainingSeconds == 0) return changed;
           continue;
         }
-        if (_visualStride == ArenaVector.zero) return changed;
-        _visualStride = ArenaVector.zero;
-        return true;
+        return changed;
       }
       if (remainingSeconds == 0) return changed;
 
@@ -97,9 +88,7 @@ final class Phase0aActorRenderMotion {
     ArenaVector target, {
     required double durationSeconds,
     required bool preserveUntilComplete,
-    required ArenaVector semanticFrom,
   }) {
-    _visualStride = target - semanticFrom;
     _from = current;
     _target = target;
     _elapsedSeconds = 0;

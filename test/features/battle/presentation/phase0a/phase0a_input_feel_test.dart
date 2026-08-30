@@ -36,7 +36,6 @@ final class _InputFeelHarness {
 }
 
 void main() {
-  const defenseActions = ['shield', 'parry', 'dodge'];
   const viewports = [Size(1280, 720), Size(1440, 900)];
   late GameRepository repository;
 
@@ -162,52 +161,69 @@ void main() {
     expect(harness.controller.state.player.facing.y, greaterThan(0));
   });
 
+  testWidgets('Space 是聚焦战斗屏唯一闪避入口', (tester) async {
+    final harness = await pumpProductionScreen(tester);
+    final before = harness.controller.state.player.position;
+    expect(
+      FocusManager.instance.primaryFocus?.debugLabel,
+      'phase0a-battle-input',
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    final events = harness.controller.step();
+    await tester.pump();
+
+    final started = events.whereType<Phase0aDefenseStarted>().single;
+    final after = harness.controller.state.player.position;
+    expect(started.action, Phase0aDefenseAction.dodge);
+    expect(started.fromPosition, before);
+    expect(started.toPosition, after);
+    expect(started.windowTicks, harness.tuning.dodgeIframeTicks);
+    expect((after - before).length, harness.tuning.dodgeDistance);
+    expect(
+      harness.controller.state.player.dodgeTicksRemaining,
+      harness.tuning.dodgeIframeTicks,
+    );
+  });
+
   for (final (key, label) in [
+    (LogicalKeyboardKey.keyE, 'E'),
+    (LogicalKeyboardKey.keyF, 'F'),
     (LogicalKeyboardKey.keyZ, 'Z'),
-    (LogicalKeyboardKey.space, 'Space'),
   ]) {
-    testWidgets('$label 从聚焦战斗屏进入同一闪避路径', (tester) async {
+    testWidgets('$label 不再从玩家战斗屏发出防御动作', (tester) async {
       final harness = await pumpProductionScreen(tester);
-      final before = harness.controller.state.player.position;
-      expect(
-        FocusManager.instance.primaryFocus?.debugLabel,
-        'phase0a-battle-input',
-      );
+      final before = harness.controller.state.player;
 
       await tester.sendKeyEvent(key);
       final events = harness.controller.step();
       await tester.pump();
 
-      final started = events.whereType<Phase0aDefenseStarted>().single;
-      final after = harness.controller.state.player.position;
-      expect(started.action, Phase0aDefenseAction.dodge);
-      expect(started.fromPosition, before);
-      expect(started.toPosition, after);
-      expect(started.windowTicks, harness.tuning.dodgeIframeTicks);
-      expect((after - before).length, harness.tuning.dodgeDistance);
-      expect(
-        harness.controller.state.player.dodgeTicksRemaining,
-        harness.tuning.dodgeIframeTicks,
-      );
+      expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+      expect(harness.controller.state.player.position, before.position);
+      expect(harness.controller.state.player.shieldRemaining, 0);
+      expect(harness.controller.state.player.parryTicksRemaining, 0);
+      expect(harness.controller.state.player.dodgeTicksRemaining, 0);
     });
   }
 
   for (final viewport in viewports) {
-    testWidgets('三项防御状态在 $viewport 初始均显示可用', (tester) async {
+    testWidgets('$viewport 只显示 Space 闪避状态', (tester) async {
       await pumpProductionScreen(tester, viewport: viewport);
 
-      for (final action in defenseActions) {
-        final status = defenseStatus(action);
-        expect(status, findsOneWidget);
-        expect(tester.widget<Text>(status).data, UiStrings.skillReady);
-        expect(tester.getSize(status).width, greaterThan(0));
-        expect(tester.getSize(status).height, greaterThan(0));
-      }
+      final status = defenseStatus('dodge');
+      expect(status, findsOneWidget);
+      expect(tester.widget<Text>(status).data, UiStrings.skillReady);
+      expect(tester.getSize(status).width, greaterThan(0));
+      expect(tester.getSize(status).height, greaterThan(0));
+      expect(defenseStatus('shield'), findsNothing);
+      expect(defenseStatus('parry'), findsNothing);
+      expect(find.text(UiStrings.phase0aDefenseDodgeKey), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }
 
-  testWidgets('任一防御动作进入共享 CD 后三项分别显示冷却秒数', (tester) async {
+  testWidgets('Space 闪避后只有闪避状态显示冷却', (tester) async {
     final harness = await pumpProductionScreen(tester);
 
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
@@ -217,9 +233,9 @@ void main() {
     final remaining = harness.controller.state.player.defenseCooldownRemaining;
     expect(remaining, greaterThan(0));
     final expected = UiStrings.phase0aSealCooldown(remaining);
-    for (final action in defenseActions) {
-      expect(tester.widget<Text>(defenseStatus(action)).data, expected);
-    }
+    expect(tester.widget<Text>(defenseStatus('dodge')).data, expected);
+    expect(defenseStatus('shield'), findsNothing);
+    expect(defenseStatus('parry'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

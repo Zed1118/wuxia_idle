@@ -447,7 +447,6 @@ void main() {
         if (simulatedSeconds == 170) {
           await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
         }
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyE);
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
         await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
         await tester.pump(const Duration(seconds: 1));

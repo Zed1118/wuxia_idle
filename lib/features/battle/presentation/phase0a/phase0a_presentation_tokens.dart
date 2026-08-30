@@ -17,6 +17,12 @@ abstract final class Phase0aPresentationTokens {
   static const double backgroundParallaxScale = 1.3;
   static const double backgroundParallaxFactor = 0.24;
 
+  /// Camera follow dead zone in world units. A complete 120-unit advancing
+  /// slash therefore reads primarily as actor travel while ordinary traversal
+  /// still reaches camera follow and keeps the parallax reference moving.
+  static const double cameraDeadZoneHalfWidth = 96;
+  static const double cameraDeadZoneHalfHeight = 48;
+
   /// safeRect 相对视口的四向内边距(像素)。
   static const double safeMarginHorizontal = 32;
   static const double safeMarginVertical = 24;
@@ -66,7 +72,6 @@ abstract final class Phase0aPresentationTokens {
 
   /// 角色脚底在该屏幕像素带内交叉时保持既有绘制顺序，避免近身缠斗抖层。
   static const double actorLayerHysteresisPixels = 10;
-  static const double actorStrideSwayPixels = 4;
   static const double actorActionPulseSeconds = 0.16;
   static const double actorHitScale = 0.94;
   static const double actorActionScale = 1.035;

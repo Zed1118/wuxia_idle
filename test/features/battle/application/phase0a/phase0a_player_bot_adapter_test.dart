@@ -284,31 +284,34 @@ void main() {
     expect(open.gather, isFalse);
   });
 
-  test('steady guard emits shield outside burst and dodge inside burst', () {
-    final bot = Phase0aPlayerBotAdapter(
-      playerAdapter: _adapter(defenseTuning: _defenseTuning),
-      policy: const Phase0aBotTacticPolicy.steadyGuard(),
-    );
+  test(
+    'steady guard no longer emits shield or parry and keeps dodge for charge',
+    () {
+      final bot = Phase0aPlayerBotAdapter(
+        playerAdapter: _adapter(defenseTuning: _defenseTuning),
+        policy: const Phase0aBotTacticPolicy.steadyGuard(),
+      );
 
-    final safe = bot.commandFor(_state());
-    final burst = bot.commandFor(
-      Phase0aArenaState(
-        tick: 4,
-        nextSeq: 8,
-        player: _state().player,
-        enemies: [
-          _actor(
-            side: Phase0aSide.enemy,
-            id: 'enemy',
-          ).copyWith(chargingCast: burstCast),
-        ],
-        skillSlots: _state().skillSlots,
-      ),
-    );
+      final safe = bot.commandFor(_state());
+      final burst = bot.commandFor(
+        Phase0aArenaState(
+          tick: 4,
+          nextSeq: 8,
+          player: _state().player,
+          enemies: [
+            _actor(
+              side: Phase0aSide.enemy,
+              id: 'enemy',
+            ).copyWith(chargingCast: burstCast),
+          ],
+          skillSlots: _state().skillSlots,
+        ),
+      );
 
-    expect(safe.defenseAction, Phase0aDefenseAction.shield);
-    expect(burst.defenseAction, Phase0aDefenseAction.dodge);
-  });
+      expect(safe.defenseAction, isNull);
+      expect(burst.defenseAction, Phase0aDefenseAction.dodge);
+    },
+  );
 
   test(
     'seek gap deterministically selects the nearest visible window target',

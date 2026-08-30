@@ -213,13 +213,10 @@ class UiStrings {
     int capacity, {
     required bool isVulnerable,
   }) => isVulnerable ? '破势，破绽已开' : '架势累积 $accumulated/$capacity';
-  static const String phase0aDefenseStarted = '守势';
-  static const String phase0aDefenseResolved = '化解';
-  static const String phase0aDefenseSemantics = '防御动作：E 护盾，F 化解，Z 闪避';
-  static const String phase0aDefenseShieldKey = '守势 E';
-  static const String phase0aDefenseParryKey = '化解 F';
-  static const String phase0aDefenseDodgeKey = '闪避 Z';
-  static const String phase0aDefenseAbsorbPrefix = '吸收';
+  static const String phase0aDefenseStarted = '闪避';
+  static const String phase0aDefenseResolved = '闪过';
+  static const String phase0aDefenseSemantics = '防御动作：Space 闪避';
+  static const String phase0aDefenseDodgeKey = '闪避 Space';
   static const String phase0aDefenseCooldownPrefix = '冷却';
   static const String phase0aVulnerabilityOpen = '破绽 · 全力';
   static const String phase0aVulnerabilityGuarded = '护体 · 减伤';

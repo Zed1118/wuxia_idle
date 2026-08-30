@@ -91,7 +91,7 @@ final class _MovementOnlyFlow implements Phase0aBattleFlow {
 }
 
 final class _AdvancingSlashFlow implements Phase0aBattleFlow {
-  _AdvancingSlashFlow()
+  _AdvancingSlashFlow({this.distance = 120})
     : _state = const Phase0aArenaState(
         tick: 0,
         nextSeq: 1,
@@ -125,6 +125,7 @@ final class _AdvancingSlashFlow implements Phase0aBattleFlow {
         ],
       );
 
+  final double distance;
   Phase0aArenaState _state;
 
   @override
@@ -145,7 +146,7 @@ final class _AdvancingSlashFlow implements Phase0aBattleFlow {
     _state = Phase0aArenaState(
       tick: 1,
       nextSeq: 2,
-      player: _state.player.copyWith(position: const ArenaVector(120, 0)),
+      player: _state.player.copyWith(position: ArenaVector(distance, 0)),
       enemies: _state.enemies,
       skillSlots: _state.skillSlots,
     );
@@ -252,7 +253,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('正式战斗进步斩插值期间 camera 每帧不超过普通移动一拍', (tester) async {
+  testWidgets('正式战斗进步斩期间角色在屏幕上前冲而非被镜头钉住', (tester) async {
     final controller = Phase0aBattleController(
       flow: _AdvancingSlashFlow(),
       roster: Phase0aVisualRoster.debugBattle(),
@@ -268,33 +269,80 @@ void main() {
     );
     await tester.pump();
 
-    final initial = transformTranslation(tester);
+    final playerFinder = find.byKey(
+      const ValueKey<String>('phase0a_standee_player'),
+    );
+    final initialBackground = transformTranslation(tester);
+    final initialPlayer = tester.getCenter(playerFinder);
     controller.step(const Phase0aPlayerCommand(attack: true));
     await tester.pump();
-    var previous = transformTranslation(tester);
+    var previousBackground = transformTranslation(tester);
     final ordinaryTickPixels =
         controller.state.player.moveSpeed *
         controller.fixedDeltaSeconds *
         Phase0aPresentationTokens.backgroundParallaxFactor;
     expect(
-      (previous - initial).distance,
+      (previousBackground - initialBackground).distance,
       lessThanOrEqualTo(ordinaryTickPixels),
     );
 
     for (var frame = 0; frame < 9; frame++) {
       await tester.pump(const Duration(milliseconds: 20));
-      final current = transformTranslation(tester);
-      expect((current - previous).distance, greaterThan(0));
+      final currentBackground = transformTranslation(tester);
       expect(
-        (current - previous).distance,
+        (currentBackground - previousBackground).distance,
         lessThanOrEqualTo(ordinaryTickPixels),
       );
-      previous = current;
+      previousBackground = currentBackground;
     }
+    final finalPlayer = tester.getCenter(playerFinder);
     expect(
-      (previous - initial).distance,
-      closeTo(120 * Phase0aPresentationTokens.backgroundParallaxFactor, 1e-8),
+      finalPlayer.dx - initialPlayer.dx,
+      greaterThan(40),
+      reason: '进步斩必须表现为角色向前，不能仍由镜头追平造成怪物拉扯感',
     );
+    expect(
+      (previousBackground - initialBackground).distance,
+      lessThan(120 * Phase0aPresentationTokens.backgroundParallaxFactor * 0.5),
+      reason: '前冲期间镜头只能消化超出死区的少量位移',
+    );
+  });
+
+  testWidgets('近敌截停的短进步斩屏幕脚点全程不回抽', (tester) async {
+    final controller = Phase0aBattleController(
+      flow: _AdvancingSlashFlow(distance: 18),
+      roster: Phase0aVisualRoster.debugBattle(),
+      fixedDeltaSeconds: 0.1,
+    );
+    addTearDown(controller.dispose);
+    await tester.binding.setSurfaceSize(viewport);
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Phase0aBattleScreen(controller: controller, autoStep: false),
+      ),
+    );
+    await tester.pump();
+
+    final playerFinder = find.byKey(
+      const ValueKey<String>('phase0a_standee_player'),
+    );
+    controller.step(const Phase0aPlayerCommand(attack: true));
+    await tester.pump();
+    var previousX = tester.getCenter(playerFinder).dx;
+    var totalForwardPixels = 0.0;
+    for (var frame = 0; frame < 10; frame++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      final currentX = tester.getCenter(playerFinder).dx;
+      expect(
+        currentX,
+        greaterThanOrEqualTo(previousX - 0.01),
+        reason: '近敌截停不得在收尾帧撤掉离散偏移而回抽',
+      );
+      totalForwardPixels += currentX - previousX;
+      previousX = currentX;
+    }
+    expect(totalForwardPixels, greaterThan(0));
   });
 
   testWidgets('正式战斗输入层按住 D 十秒逐 tick 前进且消费背景视差', (tester) async {

@@ -82,9 +82,6 @@ final class Phase0aPlayerBotAdapter {
     required Phase0aActor player,
   }) {
     if (policy.requiresBurstWindow && !burstWindow) {
-      // steadyGuard's defensive action is itself the safe response outside a
-      // burst window. Do not let the policy gate make shield/parry unreachable;
-      // other tactical actions remain held until the configured window.
       if (!policy.allows(Phase0aBotAction.defense)) {
         return const _TacticalCommands();
       }
@@ -94,21 +91,6 @@ final class Phase0aPlayerBotAdapter {
           target.chargingCast != null) {
         return const _TacticalCommands(
           defenseAction: Phase0aDefenseAction.dodge,
-        );
-      }
-      if (tuning != null &&
-          player.defenseCooldownRemaining <= 0 &&
-          player.shieldRemaining <= 0 &&
-          tuning.shieldAbsorption > 0) {
-        return const _TacticalCommands(
-          defenseAction: Phase0aDefenseAction.shield,
-        );
-      }
-      if (tuning != null &&
-          player.defenseCooldownRemaining <= 0 &&
-          tuning.parryWindowTicks > 0) {
-        return const _TacticalCommands(
-          defenseAction: Phase0aDefenseAction.parry,
         );
       }
       return const _TacticalCommands();
@@ -131,21 +113,6 @@ final class Phase0aPlayerBotAdapter {
               target.chargingCast != null) {
             return const _TacticalCommands(
               defenseAction: Phase0aDefenseAction.dodge,
-            );
-          }
-          if (tuning != null &&
-              player.defenseCooldownRemaining <= 0 &&
-              player.shieldRemaining <= 0 &&
-              tuning.shieldAbsorption > 0) {
-            return const _TacticalCommands(
-              defenseAction: Phase0aDefenseAction.shield,
-            );
-          }
-          if (tuning != null &&
-              player.defenseCooldownRemaining <= 0 &&
-              tuning.parryWindowTicks > 0) {
-            return const _TacticalCommands(
-              defenseAction: Phase0aDefenseAction.parry,
             );
           }
         case Phase0aBotAction.gather:

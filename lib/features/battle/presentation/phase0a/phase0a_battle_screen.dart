@@ -23,6 +23,7 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
 import 'phase0a_actor_render_motion.dart';
+import 'phase0a_camera_dead_zone.dart';
 import 'phase0a_offscreen_indicator.dart';
 import 'phase0a_parallax_background.dart';
 import 'phase0a_presentation_tokens.dart';
@@ -77,6 +78,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   final Map<String, double> _actionPulseRemaining = <String, double>{};
   final Map<String, Phase0aActorRenderMotion> _actorRenderMotions =
       <String, Phase0aActorRenderMotion>{};
+  ArenaVector? _cameraRenderPosition;
   final List<String> _actorPaintOrder = <String>[];
   int? _lastActorLayerTick;
   bool _retryInFlight = false;
@@ -96,6 +98,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _feedbackFrame = ValueNotifier<int>(0);
     _indicatorFrame = ValueNotifier<int>(0);
     _syncActorRenderTargets();
+    _resetCameraRenderPosition();
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
   }
@@ -117,6 +120,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _actorPaintOrder.clear();
     _lastActorLayerTick = null;
     _syncActorRenderTargets();
+    _resetCameraRenderPosition();
     _paused = false;
     _primaryAttackHeld = false;
     _primaryAttackKeyHeld = false;
@@ -245,7 +249,27 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     for (final motion in _actorRenderMotions.values) {
       changed = motion.advance(deltaSeconds) || changed;
     }
+    final playerRenderPosition = _actorRenderPosition(
+      widget.controller.state.player,
+    );
+    final previousCamera = _cameraRenderPosition ?? playerRenderPosition;
+    final nextCamera = Phase0aCameraDeadZone.follow(
+      current: previousCamera,
+      target: playerRenderPosition,
+      halfWidth: Phase0aPresentationTokens.cameraDeadZoneHalfWidth,
+      halfHeight: Phase0aPresentationTokens.cameraDeadZoneHalfHeight,
+    );
+    if (nextCamera != previousCamera) {
+      _cameraRenderPosition = nextCamera;
+      changed = true;
+    }
     return changed;
+  }
+
+  void _resetCameraRenderPosition() {
+    _cameraRenderPosition = _actorRenderPosition(
+      widget.controller.state.player,
+    );
   }
 
   ArenaVector _actorRenderPosition(Phase0aActor actor) =>
@@ -660,6 +684,11 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       final newFlow = await builder();
       if (!mounted) return;
       widget.controller.restart(newFlow);
+      _actorRenderMotions.clear();
+      _actorPaintOrder.clear();
+      _lastActorLayerTick = null;
+      _syncActorRenderTargets();
+      _resetCameraRenderPosition();
       _clearHeldInput();
       _heldFeedback.clear();
       _hitFlashRemaining.clear();
@@ -720,15 +749,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.handled;
     }
     final command = switch (key) {
-      // E/F keep their existing defense semantics; Z and Space share dodge.
-      LogicalKeyboardKey.keyE => const Phase0aPlayerCommand(
-        defenseAction: Phase0aDefenseAction.shield,
+      LogicalKeyboardKey.space => const Phase0aPlayerCommand(
+        defenseAction: Phase0aDefenseAction.dodge,
       ),
-      LogicalKeyboardKey.keyF => const Phase0aPlayerCommand(
-        defenseAction: Phase0aDefenseAction.parry,
-      ),
-      LogicalKeyboardKey.keyZ || LogicalKeyboardKey.space =>
-        const Phase0aPlayerCommand(defenseAction: Phase0aDefenseAction.dodge),
       LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
@@ -767,7 +790,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
             final size = constraints.biggest;
             final stage = Phase0aStage(
               viewport: size,
-              cameraCenter: _actorRenderPosition(controller.state.player),
+              cameraCenter:
+                  _cameraRenderPosition ??
+                  _actorRenderPosition(controller.state.player),
             );
             final offscreenIndicators = selectPhase0aOffscreenIndicators(
               state: controller.state,
@@ -973,50 +998,36 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
               ),
         );
-    final stride = actor.side == Phase0aSide.player
-        ? _actorRenderMotions[actor.id]?.visualStride
-        : null;
-    final strideOffset = stride == null
-        ? Offset.zero
-        : Offset(
-            stride.x.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
-            stride.y.sign * Phase0aPresentationTokens.actorStrideSwayPixels,
-          );
     return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
       left: foot.dx - width / 2,
       top: foot.dy - height,
       width: width,
       height: height,
-      child: Transform.translate(
-        offset: strideOffset,
-        child: RepaintBoundary(
-          key: ValueKey('phase0a_actor_${actor.id}'),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(
-                child: _ActorStandee(
-                  key: ValueKey('phase0a_actor_visual_${actor.id}'),
-                  actor: actor,
-                  visual: controller.roster.visualFor(actor.id),
-                  guardianWardActive: guardianWardActive,
-                  isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
-                  isHealthEmphasized: _hpEmphasisRemaining.containsKey(
-                    actor.id,
-                  ),
-                  isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
-                  guardianLabelOffsetX: guardianLabelOffsetX,
-                ),
+      child: RepaintBoundary(
+        key: ValueKey('phase0a_actor_${actor.id}'),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: _ActorStandee(
+                key: ValueKey('phase0a_actor_visual_${actor.id}'),
+                actor: actor,
+                visual: controller.roster.visualFor(actor.id),
+                guardianWardActive: guardianWardActive,
+                isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+                isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
+                isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+                guardianLabelOffsetX: guardianLabelOffsetX,
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SizedBox.shrink(
-                  key: ValueKey('phase0a_standee_${actor.id}'),
-                ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox.shrink(
+                key: ValueKey('phase0a_standee_${actor.id}'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -1753,24 +1764,6 @@ class _PlayerHud extends StatelessWidget {
                   runSpacing: 2,
                   children: [
                     _DefenseActionStatus(
-                      actionId: 'shield',
-                      label: UiStrings.phase0aDefenseShieldKey,
-                      status: defenseStatus,
-                      available: defenseAvailable,
-                      labelColor: player.shieldRemaining > 0
-                          ? WuxiaUi.qing
-                          : WuxiaUi.ink,
-                    ),
-                    _DefenseActionStatus(
-                      actionId: 'parry',
-                      label: UiStrings.phase0aDefenseParryKey,
-                      status: defenseStatus,
-                      available: defenseAvailable,
-                      labelColor: player.parryTicksRemaining > 0
-                          ? WuxiaUi.gold
-                          : WuxiaUi.ink,
-                    ),
-                    _DefenseActionStatus(
                       actionId: 'dodge',
                       label: UiStrings.phase0aDefenseDodgeKey,
                       status: defenseStatus,
@@ -1779,12 +1772,6 @@ class _PlayerHud extends StatelessWidget {
                           ? WuxiaUi.qing
                           : WuxiaUi.ink,
                     ),
-                    if (player.shieldRemaining > 0)
-                      Text(
-                        '${UiStrings.phase0aDefenseAbsorbPrefix} '
-                        '${player.shieldRemaining.round()}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
                   ],
                 ),
               ),

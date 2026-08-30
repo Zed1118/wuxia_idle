@@ -93,75 +93,32 @@ void main() {
     );
   }
 
-  testWidgets('E 从真实战斗屏入口进入 shield 并显示护盾反馈', (tester) async {
-    final harness = await pumpProductionScreen(tester);
+  for (final (key, label) in [
+    (LogicalKeyboardKey.keyE, 'E'),
+    (LogicalKeyboardKey.keyF, 'F'),
+    (LogicalKeyboardKey.keyZ, 'Z'),
+  ]) {
+    testWidgets('$label 从真实战斗屏入口不再启动防御', (tester) async {
+      final harness = await pumpProductionScreen(tester);
+      final before = harness.controller.state.player;
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.keyE);
-    final events = harness.controller.step();
-    await tester.pump();
+      await tester.sendKeyEvent(key);
+      final events = harness.controller.step();
+      await tester.pump();
 
-    final started = events.whereType<Phase0aDefenseStarted>().single;
-    expect(started.action, Phase0aDefenseAction.shield);
-    expect(started.windowTicks, harness.tuning.shieldDurationTicks);
-    expect(started.shieldAbsorption, harness.tuning.shieldAbsorption);
-    expect(
-      harness.controller.state.player.shieldRemaining,
-      harness.tuning.shieldAbsorption,
-    );
-    expect(
-      harness.controller.state.player.shieldTicksRemaining,
-      harness.tuning.shieldDurationTicks,
-    );
-    expect(
-      tester
-          .widget<Text>(find.text(UiStrings.phase0aDefenseShieldKey))
-          .style
-          ?.color,
-      WuxiaUi.qing,
-    );
-    expect(
-      find.text(
-        '${UiStrings.phase0aDefenseAbsorbPrefix} '
-        '${harness.tuning.shieldAbsorption.round()}',
-      ),
-      findsOneWidget,
-    );
-    expectDefenseStartedVisible(tester);
-  });
+      expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
+      expect(harness.controller.state.player.position, before.position);
+      expect(harness.controller.state.player.shieldRemaining, 0);
+      expect(harness.controller.state.player.parryTicksRemaining, 0);
+      expect(harness.controller.state.player.dodgeTicksRemaining, 0);
+    });
+  }
 
-  testWidgets('F 从真实战斗屏入口进入 parry 并点亮化解反馈', (tester) async {
-    final harness = await pumpProductionScreen(tester);
-
-    await tester.sendKeyEvent(LogicalKeyboardKey.keyF);
-    final events = harness.controller.step();
-    await tester.pump();
-
-    final started = events.whereType<Phase0aDefenseStarted>().single;
-    expect(started.action, Phase0aDefenseAction.parry);
-    expect(started.windowTicks, harness.tuning.parryWindowTicks);
-    expect(
-      harness.controller.state.player.parryTicksRemaining,
-      harness.tuning.parryWindowTicks,
-    );
-    expect(
-      harness.controller.state.player.parryCounterBudgetRemaining,
-      harness.tuning.counterUpperBound,
-    );
-    expect(
-      tester
-          .widget<Text>(find.text(UiStrings.phase0aDefenseParryKey))
-          .style
-          ?.color,
-      WuxiaUi.gold,
-    );
-    expectDefenseStartedVisible(tester);
-  });
-
-  testWidgets('Z 从真实战斗屏入口进入 dodge 并显示位移反馈', (tester) async {
+  testWidgets('Space 从真实战斗屏入口进入 dodge 并显示位移反馈', (tester) async {
     final harness = await pumpProductionScreen(tester);
     final before = harness.controller.state.player.position;
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.keyZ);
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
     final events = harness.controller.step();
     await tester.pump();
 
