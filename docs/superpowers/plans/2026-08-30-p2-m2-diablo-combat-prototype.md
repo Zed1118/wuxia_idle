@@ -46,8 +46,16 @@
 
 ## 当前恢复点
 
-- 状态：WIP，生产输入纵切已实现并通过定向/相邻验证，尚未全量、构建和真人试玩。
-- 最后完成：左键点地、点怪追击/连续普攻、目标偏好、右键首数字技能、WASD 优先及目标反馈均已接入真实 `Phase0aBattleScreen`；主线/塔/断魂庄 Host 显式传入既有普攻射程。
-- 下一步：提交可恢复 WIP，运行全量测试，构建并启动 macOS 候选供 `stage_01_02` 真人试玩。
-- 已跑验证：核心整屏 34/34；输入/右键技能/主线 Host/控制相邻域 40/40；`flutter analyze --no-pub` 0 issue。破坏证红：切断任意方向后 3/4（1 FAIL），切断目标偏好后目标由 `wave1_archer` 错成 `wave1_blade`（1 FAIL）；均已精确还原并复绿。
-- 阻塞项：最终手感 Gate 必须由用户在 `stage_01_02` 真人试玩签字。
+- 状态：候选已冻结前收口；生产输入纵切、风险匹配验证和 macOS 构建均完成，等待用户真人手感 Gate。
+- 最后完成：左键点地、点怪追击/连续普攻、目标偏好、右键首数字技能、WASD 优先及目标反馈均已接入真实 `Phase0aBattleScreen`；主线/塔/断魂庄 Host 显式传入既有普攻射程。Debug 候选已从本 worktree 构建并启动。
+- 下一步：用户在 `stage_01_02` 真人试玩；若手感通过，再由用户决定是否授权合并与推送。M3/M4 不启动。
+- 已跑验证：核心整屏 34/34；输入/右键技能/主线 Host/控制相邻域 40/40；`flutter analyze --no-pub` 0 issue；整仓格式 1648 文件、0 改动；全量 `flutter test --no-pub --reporter compact` 5715/5715；`flutter build macos --debug --no-pub` 成功。破坏证红：切断任意方向后 3/4（1 FAIL），切断目标偏好后目标由 `wave1_archer` 错成 `wave1_blade`（1 FAIL）；均已精确还原并复绿。
+- 阻塞项：自动化不能回答“是否愿意继续战斗”。最终 Gate 仍须用户在 `stage_01_02` 真实生产入口签字；当前仅为候选，不代表 G2 PASS。
+
+## §8.2 交付清单
+
+- 生产接线：真实 `Phase0aBattleScreen` 入口；命令经 `Phase0aPlayerCommand`、`Phase0aPlayerInputAdapter`、既有 intents 和 reducer 消费，不停在 fixture/VisualRoute。
+- 定向验证：34/34 核心整屏、40/40 相邻域、两项破坏证红、5715/5715 全量、analyze 0、macOS Debug build 成功。
+- 红线影响：不改 YAML 数值、schema/saveVersion、checkpoint 归因、在线/离线 reducer、三系锁死或反主流清单；未新增 Dart 中文文案和高频 debug 日志。
+- 桌面语义：空格闪避、数字键技能、WASD 保留；WASD 当前输入覆盖鼠标目的地；鼠标左/右键走真实 pointer 入口。常规桌面视口的最终运动感和目标可点性由本轮真人试玩收口。
+- 残留风险：第三方 `audioplayers_darwin` 有 Swift actor warning，Xcode Flutter Assemble 有既有脚本提示；均未阻止构建。右键在无已装备数字技能时 fail closed。真人手感未签字前不得晋升 G2。
