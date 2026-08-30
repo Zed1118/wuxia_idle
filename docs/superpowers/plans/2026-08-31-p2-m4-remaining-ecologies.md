@@ -43,3 +43,5 @@
 - 构建：`flutter build macos --debug --no-pub` 成功生成 `wuxia_idle.app`，仅有既存第三方 `audioplayers` Swift warning。
 - 全量：持锁执行 `flutter test --no-pub`，`5734/5734`，末行 `All tests passed!`，退出码 `0`。进程退出钩子误写 `/usr/bin/unlink`，随后仅对本次创建的精确锁文件使用 `/bin/unlink` 清理并确认不存在。
 - 独立 Gate：待候选提交后记录。
+- 首次独立 Gate：静态、格式及前置项通过，但全量在既有 `game_event_feed_providers_test.dart` 的首个 Isar 查询处因默认 30 秒超时而失败；展开日志复跑在同一位置再次失败。该文件单跑 `3/3`，墙钟 `2.94s`，确认是整仓并发冷启动资源饥饿而非本批生产数据回归。
+- Gate 稳定性修复：仅为该测试库增加 2 分钟时间预算；不改断言、不 skip、不改生产实现，并保持 test diff 纯新增、零删除。修复后的全量与独立 Gate 待记录。
