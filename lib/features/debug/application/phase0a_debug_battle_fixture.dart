@@ -7,7 +7,6 @@ import '../../../data/numbers_config.dart';
 import '../../../data/yaml_loader.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
-import '../../battle/application/phase0a/phase0a_basic_attack_geometry_mapper.dart';
 import '../../battle/application/phase0a/phase0a_defense_tuning_mapper.dart';
 import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
@@ -16,7 +15,6 @@ import '../../battle/application/phase0a/phase0a_tactical_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/arena_vector.dart';
-import '../../battle/domain/phase0a/basic_attack_chain.dart';
 import '../../battle/domain/phase0a/phase0a_combat_model.dart';
 import '../../battle/domain/phase0a/phase0a_combat_reducer.dart';
 import '../../battle/domain/phase0a/phase0a_defense_tuning.dart';
@@ -280,14 +278,6 @@ final class _DebugBattleConfig {
       gatherSkillBinding: tactical?.gather,
       clearSkillBinding: tactical?.clear,
       defenseTuning: defenseTuning,
-      basicAttackChain: swordBasicAttackChain,
-      basicAttackGeometryRegistry:
-          Phase0aBasicAttackGeometryMapper.swordRegistryFromArena(
-            numbers.phase0aArena,
-          ),
-      basicAttackArenaBounds: Phase0aBasicAttackGeometryMapper.arenaBoundsFrom(
-        numbers.phase0aArena,
-      ),
     );
   }
 

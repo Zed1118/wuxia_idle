@@ -7,7 +7,6 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
@@ -80,7 +79,7 @@ void main() {
   }
 
   test(
-    'advancing slash cannot trigger x=520 checkpoint, movement still can',
+    'single ranged attack never moves or triggers x=520 checkpoint, movement still can',
     () async {
       final attackHost = await fresh();
       final attackEvents = attackHost.advanceManual(
@@ -94,15 +93,10 @@ void main() {
         attackEvents
             .whereType<Phase0aAttackStarted>()
             .singleWhere((event) => event.actor == 'player')
-            .basicAttackSegment
-            ?.id,
-        swordBasicAttackSegmentIds[2],
+            .basicAttackSegment,
+        isNull,
       );
-      expect(
-        attackHost.flow.state.player.position.x,
-        greaterThan(520),
-        reason: 'the advancing slash must actually cross the checkpoint line',
-      );
+      expect(attackHost.flow.state.player.position.x, 500);
       expect(attackHost.flow.outcome, Phase0aBattleOutcome.ongoing);
       expect(checkpointCompleted(attackHost), isFalse);
 
@@ -115,7 +109,7 @@ void main() {
           attackAimDirection: ArenaVector(1, 0),
         ),
       );
-      expect(mixedHost.flow.state.player.position.x, greaterThan(520));
+      expect(mixedHost.flow.state.player.position.x, 511);
       expect(
         490 +
             repository.numbers.phase0aArena.playerMoveSpeed *
@@ -126,7 +120,7 @@ void main() {
       expect(
         checkpointCompleted(mixedHost),
         isFalse,
-        reason: 'the attack portion of a mixed frame must not be attributed',
+        reason: 'single ranged attack must not add displacement to the frame',
       );
 
       final movementHost = await fresh();

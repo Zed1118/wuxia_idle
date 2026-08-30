@@ -595,6 +595,19 @@ final class Phase0aVfxController {
     if (targetPosition == null) return;
     final ArenaVector delta = targetPosition - actorPosition;
     final segmentId = event.basicAttackSegment?.id;
+    if (segmentId == null) {
+      push(
+        Phase0aVfxEntry(
+          kind: Phase0aVfxKind.palmTrail,
+          actorId: event.actor,
+          targetId: event.target,
+          isCritical: event.isCritical,
+          source: actorPosition,
+          vfxTarget: targetPosition,
+        ),
+      );
+      return;
+    }
     if (segmentId == 'sword_thrust') {
       push(
         Phase0aVfxEntry(

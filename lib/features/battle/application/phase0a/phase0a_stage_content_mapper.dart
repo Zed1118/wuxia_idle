@@ -13,7 +13,6 @@ import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../domain/phase0a/arena_vector.dart';
-import '../../domain/phase0a/basic_attack_chain.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/defense_resolution.dart';
 import '../../domain/phase0a/phase0a_defense_tuning.dart';
@@ -22,7 +21,6 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import '../../domain/phase0a/posture.dart';
 import '../../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
-import 'phase0a_basic_attack_geometry_mapper.dart';
 import 'phase0a_enemy_ai_adapter.dart';
 import 'phase0a_enemy_skill_binding.dart';
 import 'phase0a_numeric_skill_binding.dart';
@@ -1211,12 +1209,6 @@ final class Phase0aStageContentMapper {
       clearSkillBinding: clear,
       numericSkillBindings: numericSkillBindings,
       defenseTuning: defenseTuning,
-      basicAttackChain: swordBasicAttackChain,
-      basicAttackGeometryRegistry:
-          Phase0aBasicAttackGeometryMapper.swordRegistryFromArena(arena),
-      basicAttackArenaBounds: Phase0aBasicAttackGeometryMapper.arenaBoundsFrom(
-        arena,
-      ),
     );
   }
 

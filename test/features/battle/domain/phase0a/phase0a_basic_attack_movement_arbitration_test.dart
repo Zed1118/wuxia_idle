@@ -29,7 +29,7 @@ void main() {
   setUpAll(() async => repository = await loadTestGameRepository());
   tearDownAll(GameRepository.resetForTest);
 
-  test('进步斩出手拍不叠加普通移动且下一拍恢复 held movement 语义', () {
+  test('单段远程普攻与 held movement 同拍兼容且不附加攻击位移', () {
     final mapping = Phase0aStageContentMapper.map(
       stage: repository.getStage('stage_01_02'),
       playerSnapshot: testCombatantSnapshot(
@@ -39,15 +39,10 @@ void main() {
       numbers: repository.numbers,
     );
     final deltaSeconds = repository.numbers.phase0aArena.fixedDeltaSeconds;
-    final advancing = repository.numbers.phase0aArena.basicAttackChain
-        .tuningForSegmentId('sword_advancing_slash');
     final initial = Phase0aArenaState(
       tick: 0,
       nextSeq: 1,
-      player: mapping.initialState.player.copyWith(
-        position: ArenaVector.zero,
-        basicAttackSegmentIndex: 2,
-      ),
+      player: mapping.initialState.player.copyWith(position: ArenaVector.zero),
       enemies: const [],
       skillSlots: mapping.initialState.skillSlots,
     );
@@ -57,7 +52,7 @@ void main() {
       attackAimDirection: ArenaVector(1, 0),
     );
 
-    final advancingTick = reducePhase0aTick(
+    final attackTick = reducePhase0aTick(
       state: initial,
       intents: mapping.playerAdapter.intentsFor(
         state: initial,
@@ -69,18 +64,18 @@ void main() {
     final ordinaryStep = initial.player.moveSpeed * deltaSeconds;
 
     expect(ordinaryStep, 21);
-    expect(advancing.advanceDistance, 120);
     expect(
-      advancingTick.state.player.position.x,
-      advancing.advanceDistance,
-      reason: '进步斩拍只能贡献 120，不能与普通移动叠成 21 + 120',
+      attackTick.state.player.position.x,
+      ordinaryStep,
+      reason: '远程普攻不得附加位移，同拍只保留正常移动的 21',
     );
+    expect(attackTick.state.player.basicAttackSegmentIndex, 0);
 
     const heldMoveOnly = Phase0aPlayerCommand(right: true);
     final resumedTick = reducePhase0aTick(
-      state: advancingTick.state,
+      state: attackTick.state,
       intents: mapping.playerAdapter.intentsFor(
-        state: advancingTick.state,
+        state: attackTick.state,
         command: heldMoveOnly,
       ),
       deltaSeconds: deltaSeconds,
@@ -89,8 +84,8 @@ void main() {
 
     expect(
       resumedTick.state.player.position.x,
-      advancing.advanceDistance + ordinaryStep,
-      reason: '进步斩不得清除 held movement，下一拍应继续普通移动',
+      ordinaryStep * 2,
+      reason: '远程普攻不得清除 held movement，下一拍应继续普通移动',
     );
   });
 }

@@ -264,7 +264,7 @@ void main() {
       expect(_popups(entries), isEmpty);
     });
 
-    test('玩家近程命中产生双弧墨痕,远程命中产生掌风且互斥', () {
+    test('玩家统一远程普攻在近距与远距命中都只产生掌风', () {
       final controller = Phase0aVfxController()
         ..syncActors(
           _state(
@@ -289,13 +289,13 @@ void main() {
       final slashes = entries
           .where((e) => e.kind == Phase0aVfxKind.meleeSlash)
           .toList();
-      expect(trails, hasLength(1));
-      expect(trails.single.actorId, 'player');
-      expect(trails.single.targetId, 'far');
-      expect(slashes, hasLength(1));
-      expect(slashes.single.actorId, 'player');
-      expect(slashes.single.targetId, 'near');
-      expect(slashes.single.anchor, const ArenaVector(20, 0));
+      expect(trails, hasLength(2));
+      expect(trails.map((entry) => entry.actorId), everyElement('player'));
+      expect(
+        trails.map((entry) => entry.targetId),
+        containsAll(['far', 'near']),
+      );
+      expect(slashes, isEmpty);
     });
 
     test('普攻 critical 语义透传到墨痕,表现层不重算', () {
@@ -312,10 +312,10 @@ void main() {
           isCritical: true,
         ),
       ]);
-      final slash = entries.firstWhere(
-        (entry) => entry.kind == Phase0aVfxKind.meleeSlash,
+      final trail = entries.firstWhere(
+        (entry) => entry.kind == Phase0aVfxKind.palmTrail,
       );
-      expect(slash.isCritical, isTrue);
+      expect(trail.isCritical, isTrue);
     });
 
     test('敌方命中不产生玩家专属掌风或双弧墨痕', () {
@@ -876,7 +876,7 @@ void main() {
       expect(popups.single.anchor, const ArenaVector(50, 25));
     });
 
-    test('双弧墨痕/掌风坐标 event-first,与同步位置无关', () {
+    test('统一远程掌风坐标 event-first,与同步位置无关', () {
       final controller = Phase0aVfxController()..syncActors(_state());
       final far = Phase0aVfxController.palmTrailMinDistance + 50;
       final entries = controller.consume([
@@ -910,14 +910,15 @@ void main() {
       final slashes = entries
           .where((e) => e.kind == Phase0aVfxKind.meleeSlash)
           .toList();
-      expect(slashes, hasLength(1));
-      expect(slashes.single.anchor, const ArenaVector(510, 0));
+      expect(slashes, isEmpty);
       final trails = entries
           .where((e) => e.kind == Phase0aVfxKind.palmTrail)
           .toList();
-      expect(trails, hasLength(1));
-      expect(trails.single.source, const ArenaVector(0, 0));
-      expect(trails.single.vfxTarget, ArenaVector(far, 0));
+      expect(trails, hasLength(2));
+      expect(trails[0].source, const ArenaVector(500, 0));
+      expect(trails[0].vfxTarget, const ArenaVector(510, 0));
+      expect(trails[1].source, const ArenaVector(0, 0));
+      expect(trails[1].vfxTarget, ArenaVector(far, 0));
     });
 
     test('无同步状态时事件坐标仍可用(涡旋/死亡墨散)', () {

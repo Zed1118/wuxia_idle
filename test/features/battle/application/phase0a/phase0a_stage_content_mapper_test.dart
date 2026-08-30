@@ -219,24 +219,16 @@ void main() {
       expect(enemyAttack.qiDelta, isPositive);
     });
 
-    test('生产 player mapping 只在 reducer 接受普攻后按剑形态三段链推进', () {
+    test('生产 player mapping 连续普攻始终无链段且玩家零攻击位移', () {
       final numbers = repo.numbers;
       final mapping = Phase0aStageContentMapper.map(
         stage: repo.getStage('stage_01_01'),
         playerSnapshot: makeCh1Player(numbers),
         numbers: numbers,
       );
-      expect(mapping.playerAdapter.basicAttackChain, swordBasicAttackChain);
-      expect(
-        mapping.playerAdapter.basicAttackGeometryRegistry!.refs,
-        swordBasicAttackChain.geometryRefs,
-      );
-      expect(
-        mapping.playerAdapter.basicAttackChain!.segments.map(
-          (segment) => segment.id,
-        ),
-        swordBasicAttackSegmentIds,
-      );
+      expect(mapping.playerAdapter.basicAttackChain, isNull);
+      expect(mapping.playerAdapter.basicAttackGeometryRegistry, isNull);
+      expect(mapping.playerAdapter.basicAttackArenaBounds, isNull);
 
       final flow = Phase0aProductionFlowAssembler.assemble(
         initialState: mapping.initialState,
@@ -248,20 +240,21 @@ void main() {
         playerAdapter: mapping.playerAdapter,
         enemyAiAdapter: mapping.enemyAiAdapter,
       );
-      final segmentIds = <String>[];
+      final attackSegments = <BasicAttackSegment?>[];
+      final initialPosition = flow.state.player.position;
 
       final firstEvents = flow.advance(
         deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
         command: const Phase0aPlayerCommand(attack: true),
       );
-      segmentIds.add(
+      attackSegments.add(
         firstEvents
             .whereType<Phase0aAttackStarted>()
             .singleWhere((event) => event.actor == 'player')
-            .basicAttackSegment!
-            .id,
+            .basicAttackSegment,
       );
-      expect(flow.state.player.basicAttackSegmentIndex, 1);
+      expect(flow.state.player.basicAttackSegmentIndex, 0);
+      expect(flow.state.player.position, initialPosition);
 
       final rejectedEvents = flow.advance(
         deltaSeconds: 0,
@@ -275,25 +268,26 @@ void main() {
       );
       expect(
         flow.state.player.basicAttackSegmentIndex,
-        1,
-        reason: '冷却拒绝的重复输入不得偷跳连段',
+        0,
+        reason: '冷却拒绝的重复输入不得改变单段游标',
       );
 
-      for (var tick = 0; tick < 40 && segmentIds.length < 4; tick++) {
+      for (var tick = 0; tick < 40 && attackSegments.length < 4; tick++) {
         final events = flow.advance(
           deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
           command: const Phase0aPlayerCommand(attack: true),
         );
-        segmentIds.addAll(
+        attackSegments.addAll(
           events
               .whereType<Phase0aAttackStarted>()
               .where((event) => event.actor == 'player')
-              .map((event) => event.basicAttackSegment!.id),
+              .map((event) => event.basicAttackSegment),
         );
+        expect(flow.state.player.position, initialPosition);
       }
 
-      expect(segmentIds, [...swordBasicAttackSegmentIds, 'sword_thrust']);
-      expect(flow.state.player.basicAttackSegmentIndex, 1);
+      expect(attackSegments, List<BasicAttackSegment?>.filled(4, null));
+      expect(flow.state.player.basicAttackSegmentIndex, 0);
     });
 
     test('Q/R 真实 skill id 经 intent 进入 reducer started 事件', () {

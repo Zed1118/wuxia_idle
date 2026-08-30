@@ -719,6 +719,13 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       }
       return KeyEventResult.ignored;
     }
+    if (event is KeyRepeatEvent &&
+        (_isMovementKey(key) || key == LogicalKeyboardKey.keyJ)) {
+      // Held movement/attack is sampled once per fixed tick. Consuming the
+      // platform repeat prevents macOS from treating it as an unhandled key
+      // (the audible alert) without enqueueing duplicate gameplay commands.
+      return KeyEventResult.handled;
+    }
     if (event is! KeyDownEvent) return KeyEventResult.ignored;
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
       _clearHeldInput();

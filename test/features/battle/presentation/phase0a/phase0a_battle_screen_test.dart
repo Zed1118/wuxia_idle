@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/basic_attack_chain.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -58,8 +57,6 @@ void main() {
   const backgroundTranslationKey = ValueKey(
     'phase0a_background_parallax_translation',
   );
-  ValueKey<String> swordSegmentKey(String segmentId) =>
-      ValueKey<String>('phase0a_sword_segment_$segmentId');
   ValueKey<String> gatherPullKey(String actorId) =>
       ValueKey<String>('phase0a_gather_pull_$actorId');
   ValueKey<String> hitFlashKey(String actorId) =>
@@ -393,6 +390,27 @@ void main() {
   });
 
   group('键盘 WASD:手动步进改变屏幕脚点', () {
+    testWidgets('macOS 长按移动键的 repeat 由战斗焦点消费，不冒泡触发系统提示音', (tester) async {
+      await pumpScreen(tester);
+
+      final downHandled = await tester.sendKeyDownEvent(
+        LogicalKeyboardKey.keyD,
+        platform: 'macos',
+      );
+      final repeatHandled = await tester.sendKeyRepeatEvent(
+        LogicalKeyboardKey.keyD,
+        platform: 'macos',
+      );
+      final upHandled = await tester.sendKeyUpEvent(
+        LogicalKeyboardKey.keyD,
+        platform: 'macos',
+      );
+
+      expect(downHandled, isTrue);
+      expect(repeatHandled, isTrue);
+      expect(upHandled, isTrue);
+    });
+
     testWidgets('按住 D 跨多个 fixed tick 持续移动,抬起后停止', (tester) async {
       await pumpScreen(tester);
 
@@ -776,54 +794,57 @@ void main() {
     });
   });
 
-  group('玩家攻击分型:近战墨痕 / 远程掌风', () {
-    testWidgets('真实 debug 生产链遍历直刺、横扫、进步斩三种墨痕', (tester) async {
+  group('玩家单段远程普攻', () {
+    testWidgets('真实 debug 生产链连续命中始终无链段且攻击不附加位移', (tester) async {
       await pumpScreen(tester, autoStep: false, feedbackHoldSeconds: 10);
 
-      final seen = <String>{};
+      var hitCount = 0;
       for (
         var tick = 0;
         tick < 300 &&
-            seen.length < swordBasicAttackSegmentIds.length &&
+            hitCount < 4 &&
             controller.outcome == Phase0aBattleOutcome.ongoing;
         tick++
       ) {
+        final before = controller.state.player;
         final events = await stepAndPump(
           tester,
           attackTowardNearestWithExactAim(controller.state),
         );
+        final movementDistance =
+            (controller.state.player.position - before.position).length;
+        expect(
+          movementDistance,
+          lessThanOrEqualTo(
+            before.moveSpeed * controller.fixedDeltaSeconds + 0.0001,
+          ),
+          reason: '普攻不得在正常移动之外追加任何位移',
+        );
         for (final hit in events.whereType<Phase0aHitLanded>()) {
-          if (hit.actor != 'player' || hit.basicAttackSegment == null) continue;
-          final segmentId = hit.basicAttackSegment!.id;
-          seen.add(segmentId);
-          expect(
-            find.byKey(swordSegmentKey(segmentId)),
-            findsOneWidget,
-            reason: '$segmentId 必须进入真实 BattleScreen 表现层',
-          );
-          final painterKey = segmentId == 'sword_thrust'
-              ? palmTrailKey
-              : meleeSlashKey;
+          if (hit.actor != 'player') continue;
+          hitCount++;
+          expect(hit.basicAttackSegment, isNull);
+          expect(find.byKey(meleeSlashKey), findsNothing);
           await expectPainterDrawsPixels(
             tester,
-            find.byKey(painterKey),
-            label: '剑形态 $segmentId',
+            find.byKey(palmTrailKey),
+            label: '单段远程掌风',
           );
         }
       }
 
-      expect(seen, swordBasicAttackSegmentIds.toSet());
+      expect(hitCount, 4);
     });
 
-    testWidgets('整局进攻中两种 VFX 均出现且同拍互斥', (tester) async {
+    testWidgets('连续四次玩家命中只出现远程掌风，不再出现近战墨痕', (tester) async {
       await pumpScreen(tester);
 
       var trailSeen = false;
-      var slashSeen = false;
+      var playerHitCount = 0;
       for (
         var i = 0;
         i < 240 &&
-            !(trailSeen && slashSeen) &&
+            playerHitCount < 4 &&
             controller.outcome == Phase0aBattleOutcome.ongoing;
         i++
       ) {
@@ -833,11 +854,13 @@ void main() {
         final command = engaged
             ? const Phase0aPlayerCommand(attack: true)
             : attackTowardNearest(controller.state);
-        await stepAndPump(tester, command);
-        if (!trailSeen &&
-            controller.feedback.any(
-              (e) => e.kind == Phase0aVfxKind.palmTrail,
-            )) {
+        final events = await stepAndPump(tester, command);
+        final playerHits = events
+            .whereType<Phase0aHitLanded>()
+            .where((event) => event.actor == 'player')
+            .length;
+        if (playerHits > 0) {
+          playerHitCount += playerHits;
           trailSeen = true;
           expect(find.byKey(actionKey('player')), findsOneWidget);
           expect(find.byKey(palmTrailKey), findsOneWidget);
@@ -848,24 +871,10 @@ void main() {
             label: '远程掌风',
           );
         }
-        if (!slashSeen &&
-            controller.feedback.any(
-              (e) => e.kind == Phase0aVfxKind.meleeSlash,
-            )) {
-          slashSeen = true;
-          expect(find.byKey(actionKey('player')), findsOneWidget);
-          expect(find.byKey(meleeSlashKey), findsOneWidget);
-          expect(find.byKey(palmTrailKey), findsNothing);
-          await expectPainterDrawsPixels(
-            tester,
-            find.byKey(meleeSlashKey),
-            label: '近战墨痕',
-          );
-        }
       }
 
-      expect(trailSeen, isTrue, reason: 'fixture 必含一次玩家远距命中');
-      expect(slashSeen, isTrue, reason: 'fixture 必含一次玩家近距命中');
+      expect(playerHitCount, greaterThanOrEqualTo(4));
+      expect(trailSeen, isTrue, reason: 'fixture 必含玩家远距命中');
     });
   });
 
