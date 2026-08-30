@@ -11,6 +11,7 @@ import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../../../shared/widgets/wuxia_image.dart';
 import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
@@ -1585,11 +1586,7 @@ class _ActorStandee extends StatelessWidget {
                         ),
                         BlendMode.srcATop,
                       ),
-                      child: Image.asset(
-                        visual.assetPath,
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.medium,
-                      ),
+                      child: WuxiaImage(visual.assetPath, fit: BoxFit.contain),
                     ),
                   ),
                 ),
