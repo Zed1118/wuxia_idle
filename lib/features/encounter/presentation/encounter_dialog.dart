@@ -483,6 +483,8 @@ class _EncounterOutcomeOverlayState extends State<EncounterOutcomeOverlay>
     // 不换 DismissLayer:本弹窗内部已有键盘可达控件(_ChoiceButton 走
     // InkWell(canRequestFocus) / _ConfirmButton 走 PlaqueButton(autofocus:true)),
     // 外层遮罩再 autofocus 会与确认键抢焦点。此处只作「点外关闭」的便利层。
+    // 该手势只负责便利关闭遮罩，真正的交互仍由内部键盘可达控件承担，
+    // 与语义白名单中登记的职责边界保持一致。
     return GestureDetector(
       onTap: _finish,
       behavior: HitTestBehavior.opaque,
