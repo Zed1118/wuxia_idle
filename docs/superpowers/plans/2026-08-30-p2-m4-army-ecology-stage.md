@@ -27,6 +27,9 @@
 
 ## 当前恢复点
 
-- 状态：只读合同已冻结，尚未开始生产写入。
-- 下一步：先添加 `ch7_army`/`stage_07_01` 生产守卫并确认 RED，再补 archetype、encounter、manifest、assignment 与 runtime binding，最后跑完整批末工程门。
+- 状态：生产实现、双向破坏证红与风险匹配验证均已完成，等待冻结 `[READY]` tip 并执行独立 Gate；Gate 前 M4-B 仍记 `0/1`。
+- 生产闭包：`ch7_army` 四角色与 8 个现有立绘变体已进入 typed catalog；`stage_07_01` 精确路由 `ch7_encounter_01_northern_outpost`，25 总量/10 active/12-6-5-2 分布/2-1-1-1 token；production host、AI、目标投影全部闭合。
+- 破坏证红：删除 `stage_07_01` assignment 后 catalog fail closed，精确 `1` 个测试单元失败；把盾兵 `guardedPosition` 退化为 `directAdvance` 后角色策略守卫精确 `1` 例失败。两处均以精确反向补丁还原，新增守卫 `3/3` 转绿。
+- 已跑验证：门派+官军纵切 `6/6`；loader/validator/migration/route `83/83`；`test/data/phase2` `55/55`；`flutter analyze --no-pub lib test` 零问题；整仓 format `1650` 文件、0 changed；持锁全量 `5731/5731`，末行 `08:22 +5731: All tests passed!`；macOS Debug build 成功。
+- 下一步：提交本恢复点，运行无测试删行的独立 Gate；Gate 后不得再改写候选。
 - 目检挂账：角色实战辨识度、阵型可读性、远程错峰、冲阵公平性、掌旗军官视觉优先级与 1600×900/1280×720 高密度表现，均待用户阶段性集中验收。
