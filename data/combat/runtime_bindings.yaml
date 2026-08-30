@@ -106,6 +106,378 @@ runtime_bindings:
         - ch1_sfx_crossbow
         - ch1_sfx_rope_raider
         - ch1_sfx_gong_leader
+  - stage_id: stage_02_01
+    encounter_id: ch2_encounter_01_poison_escort
+    base_enemy_id: enemy_sanLiu_thief_a
+    entrances:
+      - id: ch2p_entrance_s01_left
+        spawn_position: {x: -520, y: 80}
+      - id: ch2p_entrance_s01_upper
+        spawn_position: {x: 0, y: -120}
+      - id: ch2p_entrance_s01_right
+        spawn_position: {x: 520, y: 80}
+    positions:
+      - id: ch2p_position_s01_slot_01
+        world_position: {x: -360, y: 120}
+      - id: ch2p_position_s01_slot_02
+        world_position: {x: -240, y: 140}
+      - id: ch2p_position_s01_slot_03
+        world_position: {x: -120, y: 120}
+      - id: ch2p_position_s01_slot_04
+        world_position: {x: 0, y: 140}
+      - id: ch2p_position_s01_slot_05
+        world_position: {x: 120, y: 120}
+      - id: ch2p_position_s01_slot_06
+        world_position: {x: 240, y: 140}
+      - id: ch2p_position_s01_slot_07
+        world_position: {x: 360, y: 120}
+      - id: ch2p_position_s01_slot_08
+        world_position: {x: -360, y: 0}
+      - id: ch2p_position_s01_slot_09
+        world_position: {x: -120, y: 0}
+      - id: ch2p_position_s01_slot_10
+        world_position: {x: 120, y: 0}
+    behaviors:
+      - id: ch2p_behavior_blood_blade
+        ai_profile_id: ai_ch2p_blood_blade
+        token_policy: melee
+        priority: 1
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch2p_behavior_dart
+        ai_profile_id: ai_ch2p_dart
+        token_policy: ranged
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch2p_behavior_shadow
+        ai_profile_id: ai_ch2p_shadow
+        token_policy: charge
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch2p_behavior_master
+        ai_profile_id: ai_ch2p_master
+        token_policy: support
+        priority: 3
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+    ai_profiles:
+      - id: ai_ch2p_blood_blade
+        target_policy: nearest_player
+        movement_policy: direct_advance
+        attack_policy: close_range
+      - id: ai_ch2p_dart
+        target_policy: nearest_player
+        movement_policy: hold_distance
+        attack_policy: ranged_pressure
+      - id: ai_ch2p_shadow
+        target_policy: nearest_player
+        movement_policy: lateral_flank
+        attack_policy: charge_and_reposition
+      - id: ai_ch2p_master
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: support_pulse
+    attack_sets:
+      - id: ch2p_attack_set_blood_blade
+        skill_ids: [skill_gangmeng_jichu_basic]
+      - id: ch2p_attack_set_dart
+        skill_ids: [skill_lingqiao_jichu_basic]
+      - id: ch2p_attack_set_shadow
+        skill_ids: [skill_yinrou_jichu_basic]
+      - id: ch2p_attack_set_master
+        skill_ids: [skill_yinrou_jichu_basic, skill_yinrou_jichu_skill]
+    visual_variants:
+      - id: ch2p_visual_blood_blade_a
+        asset_path: assets/enemies/battle_black_killer.png
+      - id: ch2p_visual_blood_blade_b
+        asset_path: assets/enemies/battle_anye.png
+      - id: ch2p_visual_dart_a
+        asset_path: assets/enemies/battle_hidden_elder.png
+      - id: ch2p_visual_dart_b
+        asset_path: assets/enemies/battle_hidden_elder_sample_v2.png
+      - id: ch2p_visual_shadow_a
+        asset_path: assets/enemies/battle_you_hufa.png
+      - id: ch2p_visual_shadow_b
+        asset_path: assets/enemies/battle_zuo_hufa.png
+      - id: ch2p_visual_master_a
+        asset_path: assets/enemies/tower_boss_dushou_yaocha.png
+      - id: ch2p_visual_master_b
+        asset_path: assets/enemies/battle_tower_boss_20.png
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids:
+        - ch2p_posture_blood_blade
+        - ch2p_posture_dart
+        - ch2p_posture_shadow
+        - ch2p_posture_master
+      drop_group_ids: [ch2p_drop_group_ecology_encounter]
+      sfx_group_ids:
+        - ch2p_sfx_blood_blade
+        - ch2p_sfx_dart
+        - ch2p_sfx_shadow
+        - ch2p_sfx_master
+  - stage_id: stage_04_01
+    encounter_id: ch4_encounter_01_xiliang_crossing
+    base_enemy_id: enemy_yiLiu_liukou_a
+    entrances:
+      - id: ch4_entrance_s01_left
+        spawn_position: {x: -520, y: 80}
+      - id: ch4_entrance_s01_upper
+        spawn_position: {x: 0, y: -120}
+      - id: ch4_entrance_s01_right
+        spawn_position: {x: 520, y: 80}
+    positions:
+      - id: ch4_position_s01_slot_01
+        world_position: {x: -360, y: 120}
+      - id: ch4_position_s01_slot_02
+        world_position: {x: -240, y: 140}
+      - id: ch4_position_s01_slot_03
+        world_position: {x: -120, y: 120}
+      - id: ch4_position_s01_slot_04
+        world_position: {x: 0, y: 140}
+      - id: ch4_position_s01_slot_05
+        world_position: {x: 120, y: 120}
+      - id: ch4_position_s01_slot_06
+        world_position: {x: 240, y: 140}
+      - id: ch4_position_s01_slot_07
+        world_position: {x: 360, y: 120}
+      - id: ch4_position_s01_slot_08
+        world_position: {x: -360, y: 0}
+      - id: ch4_position_s01_slot_09
+        world_position: {x: -120, y: 0}
+      - id: ch4_position_s01_slot_10
+        world_position: {x: 120, y: 0}
+    behaviors:
+      - id: ch4_behavior_sand_blade
+        ai_profile_id: ai_ch4_sand_blade
+        token_policy: melee
+        priority: 1
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch4_behavior_horse_archer
+        ai_profile_id: ai_ch4_horse_archer
+        token_policy: ranged
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch4_behavior_heavy_cavalry
+        ai_profile_id: ai_ch4_heavy_cavalry
+        token_policy: charge
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch4_behavior_banner
+        ai_profile_id: ai_ch4_banner
+        token_policy: support
+        priority: 3
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+    ai_profiles:
+      - id: ai_ch4_sand_blade
+        target_policy: nearest_player
+        movement_policy: direct_advance
+        attack_policy: close_range
+      - id: ai_ch4_horse_archer
+        target_policy: nearest_player
+        movement_policy: hold_distance
+        attack_policy: ranged_pressure
+      - id: ai_ch4_heavy_cavalry
+        target_policy: nearest_player
+        movement_policy: lateral_flank
+        attack_policy: charge_and_reposition
+      - id: ai_ch4_banner
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: support_pulse
+    attack_sets:
+      - id: ch4_attack_set_sand_blade
+        skill_ids: [skill_gangmeng_changlian_basic]
+      - id: ch4_attack_set_horse_archer
+        skill_ids: [skill_lingqiao_changlian_basic]
+      - id: ch4_attack_set_heavy_cavalry
+        skill_ids: [skill_gangmeng_changlian_basic]
+      - id: ch4_attack_set_banner
+        skill_ids: [skill_gangmeng_changlian_basic, skill_gangmeng_jichu_skill]
+    visual_variants:
+      - id: ch4_visual_sand_blade_a
+        asset_path: assets/enemies/battle_xiliang_sandizi.png
+      - id: ch4_visual_sand_blade_b
+        asset_path: assets/enemies/battle_xiliang_bazhu.png
+      - id: ch4_visual_horse_archer_a
+        asset_path: assets/enemies/battle_massbattle_canbu_b.png
+      - id: ch4_visual_horse_archer_b
+        asset_path: assets/enemies/battle_lightfoot_changfeng_b.png
+      - id: ch4_visual_heavy_cavalry_a
+        asset_path: assets/enemies/battle_massbattle_canbu_a.png
+      - id: ch4_visual_heavy_cavalry_b
+        asset_path: assets/enemies/battle_xiliangboss.png
+      - id: ch4_visual_banner_a
+        asset_path: assets/enemies/battle_xiliangbazhu.png
+      - id: ch4_visual_banner_b
+        asset_path: assets/enemies/battle_massbattle_canbu_c.png
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids:
+        - ch4_posture_sand_blade
+        - ch4_posture_horse_archer
+        - ch4_posture_heavy_cavalry
+        - ch4_posture_banner
+      drop_group_ids: [ch4_drop_group_ecology_encounter]
+      sfx_group_ids:
+        - ch4_sfx_sand_blade
+        - ch4_sfx_horse_archer
+        - ch4_sfx_heavy_cavalry
+        - ch4_sfx_banner
+  - stage_id: stage_13_02
+    encounter_id: ch13_encounter_02_halfway_temple
+    base_enemy_id: enemy_jueDing_shanwai_banshan_seng
+    entrances:
+      - id: ch13_entrance_s02_left
+        spawn_position: {x: -520, y: 80}
+      - id: ch13_entrance_s02_upper
+        spawn_position: {x: 0, y: -120}
+      - id: ch13_entrance_s02_right
+        spawn_position: {x: 520, y: 80}
+    positions:
+      - id: ch13_position_s02_slot_01
+        world_position: {x: -360, y: 120}
+      - id: ch13_position_s02_slot_02
+        world_position: {x: -240, y: 140}
+      - id: ch13_position_s02_slot_03
+        world_position: {x: -120, y: 120}
+      - id: ch13_position_s02_slot_04
+        world_position: {x: 0, y: 140}
+      - id: ch13_position_s02_slot_05
+        world_position: {x: 120, y: 120}
+      - id: ch13_position_s02_slot_06
+        world_position: {x: 240, y: 140}
+      - id: ch13_position_s02_slot_07
+        world_position: {x: 360, y: 120}
+      - id: ch13_position_s02_slot_08
+        world_position: {x: -360, y: 0}
+      - id: ch13_position_s02_slot_09
+        world_position: {x: -120, y: 0}
+      - id: ch13_position_s02_slot_10
+        world_position: {x: 120, y: 0}
+    behaviors:
+      - id: ch13_behavior_staff
+        ai_profile_id: ai_ch13_staff
+        token_policy: melee
+        priority: 1
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch13_behavior_thrower
+        ai_profile_id: ai_ch13_thrower
+        token_policy: ranged
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch13_behavior_arhat
+        ai_profile_id: ai_ch13_arhat
+        token_policy: charge
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch13_behavior_guard
+        ai_profile_id: ai_ch13_guard
+        token_policy: support
+        priority: 3
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+    ai_profiles:
+      - id: ai_ch13_staff
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: close_range
+      - id: ai_ch13_thrower
+        target_policy: nearest_player
+        movement_policy: hold_distance
+        attack_policy: ranged_pressure
+      - id: ai_ch13_arhat
+        target_policy: nearest_player
+        movement_policy: lateral_flank
+        attack_policy: charge_and_reposition
+      - id: ai_ch13_guard
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: support_pulse
+    attack_sets:
+      - id: ch13_attack_set_staff
+        skill_ids: [skill_gangmeng_jianghu_basic]
+      - id: ch13_attack_set_thrower
+        skill_ids: [skill_lingqiao_jianghu_basic]
+      - id: ch13_attack_set_arhat
+        skill_ids: [skill_gangmeng_jianghu_basic]
+      - id: ch13_attack_set_guard
+        skill_ids: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]
+    visual_variants:
+      - id: ch13_visual_staff_a
+        asset_path: assets/enemies/battle_seng_huiyi.png
+      - id: ch13_visual_staff_b
+        asset_path: assets/enemies/battle_songshan_daozong_dizi.png
+      - id: ch13_visual_thrower_a
+        asset_path: assets/enemies/battle_hidden_elder.png
+      - id: ch13_visual_thrower_b
+        asset_path: assets/enemies/battle_hidden_elder_sample_v2.png
+      - id: ch13_visual_arhat_a
+        asset_path: assets/enemies/battle_kunlun_waimen_shouguan.png
+      - id: ch13_visual_arhat_b
+        asset_path: assets/enemies/battle_songshan_shouguan.png
+      - id: ch13_visual_guard_a
+        asset_path: assets/enemies/battle_elder_grey.png
+      - id: ch13_visual_guard_b
+        asset_path: assets/enemies/battle_mingmen_a.png
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids:
+        - ch13_posture_staff
+        - ch13_posture_thrower
+        - ch13_posture_arhat
+        - ch13_posture_guard
+      drop_group_ids: [ch13_drop_group_ecology_encounter]
+      sfx_group_ids:
+        - ch13_sfx_staff
+        - ch13_sfx_thrower
+        - ch13_sfx_arhat
+        - ch13_sfx_guard
   - stage_id: stage_02_02
     encounter_id: ch2_encounter_02_teahouse
     base_enemy_id: enemy_sanLiu_elder

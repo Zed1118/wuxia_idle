@@ -21,3 +21,12 @@ stage_assignments:
   - stage_id: stage_07_01
     migration_state: migrated
     encounter_id: ch7_encounter_01_northern_outpost
+  - stage_id: stage_02_01
+    migration_state: migrated
+    encounter_id: ch2_encounter_01_poison_escort
+  - stage_id: stage_04_01
+    migration_state: migrated
+    encounter_id: ch4_encounter_01_xiliang_crossing
+  - stage_id: stage_13_02
+    migration_state: migrated
+    encounter_id: ch13_encounter_02_halfway_temple

@@ -1,0 +1,195 @@
+# Chapter 13 temple ecology for the halfway temple examination. 25 total actors, 10 active.
+encounters:
+  - id: ch13_encounter_02_halfway_temple
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets:
+      melee: 2
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch13_s02_staff_01
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_01
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_02
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_02
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_03
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_03
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_04
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_04
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_05
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_05
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_06
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_06
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_07
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_07
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_08
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_08
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_09
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_09
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_10
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_10
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_11
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_01
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_staff_12
+        archetype_id: ch13_temple
+        role_id: temple_staff
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_02
+        behavior_id: ch13_behavior_staff
+      - entry_id: ch13_s02_thrower_01
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_03
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_thrower_02
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_04
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_thrower_03
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_05
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_thrower_04
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_06
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_thrower_05
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_07
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_thrower_06
+        archetype_id: ch13_temple
+        role_id: temple_thrower
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_08
+        behavior_id: ch13_behavior_thrower
+      - entry_id: ch13_s02_arhat_01
+        archetype_id: ch13_temple
+        role_id: temple_arhat_charger
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_09
+        behavior_id: ch13_behavior_arhat
+      - entry_id: ch13_s02_arhat_02
+        archetype_id: ch13_temple
+        role_id: temple_arhat_charger
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_10
+        behavior_id: ch13_behavior_arhat
+      - entry_id: ch13_s02_arhat_03
+        archetype_id: ch13_temple
+        role_id: temple_arhat_charger
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_01
+        behavior_id: ch13_behavior_arhat
+      - entry_id: ch13_s02_arhat_04
+        archetype_id: ch13_temple
+        role_id: temple_arhat_charger
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_02
+        behavior_id: ch13_behavior_arhat
+      - entry_id: ch13_s02_arhat_05
+        archetype_id: ch13_temple
+        role_id: temple_arhat_charger
+        entrance_id: ch13_entrance_s02_upper
+        position_id: ch13_position_s02_slot_03
+        behavior_id: ch13_behavior_arhat
+      - entry_id: ch13_s02_guard_01
+        archetype_id: ch13_temple
+        role_id: temple_guard
+        entrance_id: ch13_entrance_s02_right
+        position_id: ch13_position_s02_slot_04
+        behavior_id: ch13_behavior_guard
+      - entry_id: ch13_s02_guard_02
+        archetype_id: ch13_temple
+        role_id: temple_guard
+        entrance_id: ch13_entrance_s02_left
+        position_id: ch13_position_s02_slot_05
+        behavior_id: ch13_behavior_guard
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch13_s02_clear_ecology
+          kind: defeat_targets
+          target_ids:
+            - ch13_s02_staff_01
+            - ch13_s02_staff_02
+            - ch13_s02_staff_03
+            - ch13_s02_staff_04
+            - ch13_s02_staff_05
+            - ch13_s02_staff_06
+            - ch13_s02_staff_07
+            - ch13_s02_staff_08
+            - ch13_s02_staff_09
+            - ch13_s02_staff_10
+            - ch13_s02_staff_11
+            - ch13_s02_staff_12
+            - ch13_s02_thrower_01
+            - ch13_s02_thrower_02
+            - ch13_s02_thrower_03
+            - ch13_s02_thrower_04
+            - ch13_s02_thrower_05
+            - ch13_s02_thrower_06
+            - ch13_s02_arhat_01
+            - ch13_s02_arhat_02
+            - ch13_s02_arhat_03
+            - ch13_s02_arhat_04
+            - ch13_s02_arhat_05
+            - ch13_s02_guard_01
+            - ch13_s02_guard_02

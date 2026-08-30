@@ -4,11 +4,17 @@ archetype_sources:
   - data/combat/archetypes/bandits.yaml
   - data/combat/archetypes/sects.yaml
   - data/combat/archetypes/army.yaml
+  - data/combat/archetypes/poison.yaml
+  - data/combat/archetypes/xiliang.yaml
+  - data/combat/archetypes/temple.yaml
 encounter_sources:
   - data/combat/encounters/chapter_01_templates.yaml
   - data/combat/encounters/black_wind_ridge.yaml
   - data/combat/encounters/chapter_02_sect_teahouse.yaml
   - data/combat/encounters/chapter_07_army_outpost.yaml
+  - data/combat/encounters/chapter_02_poison_escort.yaml
+  - data/combat/encounters/chapter_04_xiliang_crossing.yaml
+  - data/combat/encounters/chapter_13_temple_pass.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 reference_index:
@@ -30,6 +36,15 @@ reference_index:
     - ch7_entrance_s01_gate
     - ch7_entrance_s01_wall
     - ch7_entrance_s01_road
+    - ch2p_entrance_s01_left
+    - ch2p_entrance_s01_upper
+    - ch2p_entrance_s01_right
+    - ch4_entrance_s01_left
+    - ch4_entrance_s01_upper
+    - ch4_entrance_s01_right
+    - ch13_entrance_s02_left
+    - ch13_entrance_s02_upper
+    - ch13_entrance_s02_right
   position_ids:
     - ch1_position_s01_slot_01
     - ch1_position_s01_slot_02
@@ -88,6 +103,36 @@ reference_index:
     - ch7_position_s01_slot_08
     - ch7_position_s01_slot_09
     - ch7_position_s01_slot_10
+    - ch2p_position_s01_slot_01
+    - ch2p_position_s01_slot_02
+    - ch2p_position_s01_slot_03
+    - ch2p_position_s01_slot_04
+    - ch2p_position_s01_slot_05
+    - ch2p_position_s01_slot_06
+    - ch2p_position_s01_slot_07
+    - ch2p_position_s01_slot_08
+    - ch2p_position_s01_slot_09
+    - ch2p_position_s01_slot_10
+    - ch4_position_s01_slot_01
+    - ch4_position_s01_slot_02
+    - ch4_position_s01_slot_03
+    - ch4_position_s01_slot_04
+    - ch4_position_s01_slot_05
+    - ch4_position_s01_slot_06
+    - ch4_position_s01_slot_07
+    - ch4_position_s01_slot_08
+    - ch4_position_s01_slot_09
+    - ch4_position_s01_slot_10
+    - ch13_position_s02_slot_01
+    - ch13_position_s02_slot_02
+    - ch13_position_s02_slot_03
+    - ch13_position_s02_slot_04
+    - ch13_position_s02_slot_05
+    - ch13_position_s02_slot_06
+    - ch13_position_s02_slot_07
+    - ch13_position_s02_slot_08
+    - ch13_position_s02_slot_09
+    - ch13_position_s02_slot_10
   behavior_ids:
     - ch1_behavior_blade_press
     - ch1_behavior_crossbow_offset
@@ -101,6 +146,18 @@ reference_index:
     - ch7_behavior_archer_volley
     - ch7_behavior_spear_charge
     - ch7_behavior_officer_command
+    - ch2p_behavior_blood_blade
+    - ch2p_behavior_dart
+    - ch2p_behavior_shadow
+    - ch2p_behavior_master
+    - ch4_behavior_sand_blade
+    - ch4_behavior_horse_archer
+    - ch4_behavior_heavy_cavalry
+    - ch4_behavior_banner
+    - ch13_behavior_staff
+    - ch13_behavior_thrower
+    - ch13_behavior_arhat
+    - ch13_behavior_guard
   attack_set_ids:
     - ch1_attack_set_blade
     - ch1_attack_set_crossbow
@@ -114,6 +171,18 @@ reference_index:
     - ch7_attack_set_archer
     - ch7_attack_set_spear_charger
     - ch7_attack_set_standard_officer
+    - ch2p_attack_set_blood_blade
+    - ch2p_attack_set_dart
+    - ch2p_attack_set_shadow
+    - ch2p_attack_set_master
+    - ch4_attack_set_sand_blade
+    - ch4_attack_set_horse_archer
+    - ch4_attack_set_heavy_cavalry
+    - ch4_attack_set_banner
+    - ch13_attack_set_staff
+    - ch13_attack_set_thrower
+    - ch13_attack_set_arhat
+    - ch13_attack_set_guard
   attack_tag_ids:
     - ch1_attack_tag_melee
     - ch1_attack_tag_projectile
@@ -127,6 +196,18 @@ reference_index:
     - ch7_attack_tag_projectile
     - ch7_attack_tag_charge
     - ch7_attack_tag_support
+    - ch2p_attack_tag_melee
+    - ch2p_attack_tag_projectile
+    - ch2p_attack_tag_charge
+    - ch2p_attack_tag_support
+    - ch4_attack_tag_melee
+    - ch4_attack_tag_projectile
+    - ch4_attack_tag_charge
+    - ch4_attack_tag_support
+    - ch13_attack_tag_melee
+    - ch13_attack_tag_projectile
+    - ch13_attack_tag_charge
+    - ch13_attack_tag_support
   posture_profile_ids:
     - ch1_posture_blade
     - ch1_posture_crossbow
@@ -140,10 +221,25 @@ reference_index:
     - ch7_posture_archer
     - ch7_posture_spear_charger
     - ch7_posture_standard_officer
+    - ch2p_posture_blood_blade
+    - ch2p_posture_dart
+    - ch2p_posture_shadow
+    - ch2p_posture_master
+    - ch4_posture_sand_blade
+    - ch4_posture_horse_archer
+    - ch4_posture_heavy_cavalry
+    - ch4_posture_banner
+    - ch13_posture_staff
+    - ch13_posture_thrower
+    - ch13_posture_arhat
+    - ch13_posture_guard
   drop_group_ids:
     - ch1_drop_group_bandit_encounter
     - ch2_drop_group_sect_encounter
     - ch7_drop_group_army_encounter
+    - ch2p_drop_group_ecology_encounter
+    - ch4_drop_group_ecology_encounter
+    - ch13_drop_group_ecology_encounter
   sfx_group_ids:
     - ch1_sfx_blade
     - ch1_sfx_crossbow
@@ -157,6 +253,18 @@ reference_index:
     - ch7_sfx_archer
     - ch7_sfx_spear_charger
     - ch7_sfx_standard_officer
+    - ch2p_sfx_blood_blade
+    - ch2p_sfx_dart
+    - ch2p_sfx_shadow
+    - ch2p_sfx_master
+    - ch4_sfx_sand_blade
+    - ch4_sfx_horse_archer
+    - ch4_sfx_heavy_cavalry
+    - ch4_sfx_banner
+    - ch13_sfx_staff
+    - ch13_sfx_thrower
+    - ch13_sfx_arhat
+    - ch13_sfx_guard
   visual_variant_ids:
     - ch1_visual_blade_a
     - ch1_visual_blade_b
@@ -182,6 +290,30 @@ reference_index:
     - ch7_visual_spear_charger_b
     - ch7_visual_standard_officer_a
     - ch7_visual_standard_officer_b
+    - ch2p_visual_blood_blade_a
+    - ch2p_visual_blood_blade_b
+    - ch2p_visual_dart_a
+    - ch2p_visual_dart_b
+    - ch2p_visual_shadow_a
+    - ch2p_visual_shadow_b
+    - ch2p_visual_master_a
+    - ch2p_visual_master_b
+    - ch4_visual_sand_blade_a
+    - ch4_visual_sand_blade_b
+    - ch4_visual_horse_archer_a
+    - ch4_visual_horse_archer_b
+    - ch4_visual_heavy_cavalry_a
+    - ch4_visual_heavy_cavalry_b
+    - ch4_visual_banner_a
+    - ch4_visual_banner_b
+    - ch13_visual_staff_a
+    - ch13_visual_staff_b
+    - ch13_visual_thrower_a
+    - ch13_visual_thrower_b
+    - ch13_visual_arhat_a
+    - ch13_visual_arhat_b
+    - ch13_visual_guard_a
+    - ch13_visual_guard_b
   objective_target_ids:
     - ch1_s01_blade_01
     - ch1_s01_blade_02
@@ -328,6 +460,81 @@ reference_index:
     - ch7_s01_charger_05
     - ch7_s01_officer_01
     - ch7_s01_officer_02
+    - ch2p_s01_blood_blade_01
+    - ch2p_s01_blood_blade_02
+    - ch2p_s01_blood_blade_03
+    - ch2p_s01_blood_blade_04
+    - ch2p_s01_blood_blade_05
+    - ch2p_s01_blood_blade_06
+    - ch2p_s01_blood_blade_07
+    - ch2p_s01_blood_blade_08
+    - ch2p_s01_blood_blade_09
+    - ch2p_s01_blood_blade_10
+    - ch2p_s01_blood_blade_11
+    - ch2p_s01_blood_blade_12
+    - ch2p_s01_dart_01
+    - ch2p_s01_dart_02
+    - ch2p_s01_dart_03
+    - ch2p_s01_dart_04
+    - ch2p_s01_dart_05
+    - ch2p_s01_dart_06
+    - ch2p_s01_shadow_01
+    - ch2p_s01_shadow_02
+    - ch2p_s01_shadow_03
+    - ch2p_s01_shadow_04
+    - ch2p_s01_shadow_05
+    - ch2p_s01_master_01
+    - ch2p_s01_master_02
+    - ch4_s01_sand_blade_01
+    - ch4_s01_sand_blade_02
+    - ch4_s01_sand_blade_03
+    - ch4_s01_sand_blade_04
+    - ch4_s01_sand_blade_05
+    - ch4_s01_sand_blade_06
+    - ch4_s01_sand_blade_07
+    - ch4_s01_sand_blade_08
+    - ch4_s01_sand_blade_09
+    - ch4_s01_sand_blade_10
+    - ch4_s01_sand_blade_11
+    - ch4_s01_sand_blade_12
+    - ch4_s01_horse_archer_01
+    - ch4_s01_horse_archer_02
+    - ch4_s01_horse_archer_03
+    - ch4_s01_horse_archer_04
+    - ch4_s01_horse_archer_05
+    - ch4_s01_horse_archer_06
+    - ch4_s01_heavy_cavalry_01
+    - ch4_s01_heavy_cavalry_02
+    - ch4_s01_heavy_cavalry_03
+    - ch4_s01_heavy_cavalry_04
+    - ch4_s01_heavy_cavalry_05
+    - ch4_s01_banner_01
+    - ch4_s01_banner_02
+    - ch13_s02_staff_01
+    - ch13_s02_staff_02
+    - ch13_s02_staff_03
+    - ch13_s02_staff_04
+    - ch13_s02_staff_05
+    - ch13_s02_staff_06
+    - ch13_s02_staff_07
+    - ch13_s02_staff_08
+    - ch13_s02_staff_09
+    - ch13_s02_staff_10
+    - ch13_s02_staff_11
+    - ch13_s02_staff_12
+    - ch13_s02_thrower_01
+    - ch13_s02_thrower_02
+    - ch13_s02_thrower_03
+    - ch13_s02_thrower_04
+    - ch13_s02_thrower_05
+    - ch13_s02_thrower_06
+    - ch13_s02_arhat_01
+    - ch13_s02_arhat_02
+    - ch13_s02_arhat_03
+    - ch13_s02_arhat_04
+    - ch13_s02_arhat_05
+    - ch13_s02_guard_01
+    - ch13_s02_guard_02
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
