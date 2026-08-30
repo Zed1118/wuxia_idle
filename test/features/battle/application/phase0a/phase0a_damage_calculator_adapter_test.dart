@@ -523,7 +523,7 @@ void main() {
         phase0aBehavior: Phase0aSkillBehavior.fromYaml({
           'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
           'effects': [
-            {'type': 'pull', 'destinationRadius': 2},
+            {'type': 'pull', 'destinationRadius': 2, 'controlTicks': 1},
           ],
         }),
       );

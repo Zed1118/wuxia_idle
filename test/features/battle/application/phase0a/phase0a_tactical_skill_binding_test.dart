@@ -27,6 +27,7 @@ SkillDef tacticalSkill(double cooldownSeconds) => SkillDef(
       Phase0aSkillEffect(
         type: Phase0aSkillEffectType.pull,
         destinationRadius: 50,
+        controlTicks: 5,
       ),
     ],
   ),
@@ -60,5 +61,6 @@ void main() {
     );
 
     expect(binding.cooldownSeconds, 0);
+    expect(binding.controlTicks, 5);
   });
 }

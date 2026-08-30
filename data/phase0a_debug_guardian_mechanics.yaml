@@ -52,14 +52,14 @@ player:
     power_multiplier: 500
   gather:
     slot: gather
-    ring_radius: 120.0
+    ring_radius: 60.0
     effect_radius: 1100.0
     qi_cost: 25
     cooldown_seconds: 5.0
     phase0a_behavior:
       geometry: {shape: radial, anchor: target_point, radius: 1100.0}
       effects:
-        - {type: pull, destinationRadius: 120.0}
+        - {type: pull, destinationRadius: 60.0, controlTicks: 5}
   clear:
     slot: clear
     effect_radius: 520.0

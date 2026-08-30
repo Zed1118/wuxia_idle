@@ -153,7 +153,8 @@ void main() {
         greaterThanOrEqualTo(cameraDiagonal),
         reason: '点击位聚怪必须覆盖同一镜头内从一端到另一端的敌人',
       );
-      expect(gatherBinding.destinationRadius, 120);
+      expect(gatherBinding.destinationRadius, 60);
+      expect(gatherBinding.controlTicks, 5);
       expect(gatherBinding.qiCost, 25);
       expect(gatherBinding.cooldownSeconds, 5);
       expect(clearBinding.effectRadius, 340);
@@ -363,11 +364,12 @@ void main() {
       expect(
         (
           gather.destinationRadius,
+          gather.controlTicks,
           gather.effectRadius,
           gather.qiCost,
           gather.cooldownSeconds,
         ),
-        (120, 1100, 25, 5),
+        (60, 5, 1100, 25, 5),
       );
       expect(
         (clear.effectRadius, clear.qiCost, clear.cooldownSeconds),
@@ -380,7 +382,7 @@ void main() {
           mapping.playerAdapter.gatherQiCost,
           mapping.playerAdapter.gatherCooldownSeconds,
         ),
-        (120, 1100, 25, 5),
+        (60, 1100, 25, 5),
       );
       expect(
         (

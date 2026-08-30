@@ -49,7 +49,7 @@ player:
     power_multiplier: 500
   gather:
     slot: gather
-    ring_radius: 120.0
+    ring_radius: 60.0
     effect_radius: 1100.0
     qi_cost: 25
     cooldown_seconds: 5.0

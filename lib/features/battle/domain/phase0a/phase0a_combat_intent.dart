@@ -162,6 +162,7 @@ final class Phase0aGatherIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    required this.controlTicks,
     required this.postureDamage,
     required this.postureHitKind,
     this.targetPoint,
@@ -182,6 +183,7 @@ final class Phase0aGatherIntent extends Phase0aIntent {
 
   final int qiCost;
   final double cooldownSeconds;
+  final int controlTicks;
   final double postureDamage;
   final PostureHitKind postureHitKind;
 }

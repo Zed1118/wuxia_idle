@@ -74,7 +74,7 @@ void main() {
       'phase0aBehavior': {
         'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
         'effects': [
-          {'type': 'pull', 'destinationRadius': 1},
+          {'type': 'pull', 'destinationRadius': 1, 'controlTicks': 1},
         ],
       },
     };

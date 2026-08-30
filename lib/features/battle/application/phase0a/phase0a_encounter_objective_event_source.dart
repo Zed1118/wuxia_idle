@@ -98,6 +98,7 @@ Phase0aActor _snapshotActor(Phase0aActor actor) => Phase0aActor(
   chargingCast: actor.chargingCast,
   chargeTicksRemaining: actor.chargeTicksRemaining,
   staggerTicksRemaining: actor.staggerTicksRemaining,
+  gatherControlTicksRemaining: actor.gatherControlTicksRemaining,
   posture: actor.posture,
   statusLedger: actor.statusLedger,
 );

@@ -45,7 +45,7 @@ skills:
     phase0aBehavior:
       geometry: { shape: radial, anchor: target_point, radius: 1100.0 }
       effects:
-        - { type: pull, destinationRadius: 120.0 }
+        - { type: pull, destinationRadius: 60.0, controlTicks: 5 }
 
   - id: skill_phase0a_clear
     name: 破阵

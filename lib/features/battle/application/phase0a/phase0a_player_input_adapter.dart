@@ -201,6 +201,7 @@ final class Phase0aPlayerInputAdapter {
           skillId: binding?.skill.id ?? '',
           slot: binding?.slot ?? gatherSlot,
           ringRadius: binding?.destinationRadius ?? gatherRingRadius,
+          controlTicks: binding?.controlTicks ?? 0,
           effectRadius: binding?.effectRadius ?? gatherEffectRadius,
           qiCost: binding?.qiCost ?? gatherQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? gatherCooldownSeconds,

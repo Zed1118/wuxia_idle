@@ -152,6 +152,7 @@ Phase0aGatherIntent gatherIntent({
     effectRadius: effectRadius,
     qiCost: qiCost,
     cooldownSeconds: cooldownSeconds,
+    controlTicks: 0,
     postureDamage: 0,
     postureHitKind: PostureHitKind.heavy,
   );

@@ -136,6 +136,35 @@ void main() {
     );
   });
 
+  test('聚怪控制期间 AI 不生成移动、普攻或技能 intent', () {
+    final adapter = const Phase0aEnemyAiAdapter(
+      attackRange: 82,
+      attackHalfArcRadians: 0.9,
+      attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
+      behaviorProfilesByActor: profiles,
+    );
+    final base = state();
+    final controlled = Phase0aArenaState(
+      tick: base.tick,
+      nextSeq: base.nextSeq,
+      player: base.player,
+      enemies: [
+        for (final enemy in base.enemies)
+          enemy.id == 'hold'
+              ? enemy.copyWith(gatherControlTicksRemaining: 1)
+              : enemy,
+      ],
+      skillSlots: base.skillSlots,
+    );
+
+    final intents = adapter.intentsFor(state: controlled);
+
+    expect(intents.where((intent) => intent.actorId == 'hold'), isEmpty);
+    expect(intents.where((intent) => intent.actorId == 'direct'), isNotEmpty);
+  });
+
   test(
     'the reducer consumes the profile-derived direction in the same core',
     () {

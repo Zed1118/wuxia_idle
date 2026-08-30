@@ -288,23 +288,31 @@ Phase0aStepResult reducePhase0aTick({
     return guardianAlive ? wardMult : 1.0;
   }
 
-  // 蓄力/踉跄 pre-step(对齐旧引擎「踉跄判定必须先于蓄力」序):
-  // 踉跄中 → 本拍压制并递减(蓄力冻结);否则蓄力中 → 本拍压制并递减,
-  // 归零者登记拍尾释放招牌技。压制 = 移动/普攻/技能 intent 全拒收。
+  // 控制/蓄力 pre-step:聚怪控制只压制行动,不带踉跄减防;若与踉跄
+  // 重叠则两者各自递减。控制或踉跄期间蓄力冻结。压制 = 移动/普攻/
+  // 技能 intent 全拒收。
   // [staggeredActorIds] 记录拍初踉跄事实(递减在先,伤害结算在后,
   // 减防窗口必须与压制窗口同拍界)。
   final suppressedActorIds = <String>{};
   final staggeredActorIds = <String>{};
   final chargeFireActorIds = <String>[];
   for (final enemy in state.enemies) {
-    final current = enemiesById[enemy.id]!;
+    var current = enemiesById[enemy.id]!;
+    final gatherControlled = current.gatherControlTicksRemaining > 0;
+    if (gatherControlled) {
+      suppressedActorIds.add(enemy.id);
+      current = current.copyWith(
+        gatherControlTicksRemaining: current.gatherControlTicksRemaining - 1,
+      );
+      enemiesById[enemy.id] = current;
+    }
     if (current.staggerTicksRemaining > 0) {
       suppressedActorIds.add(enemy.id);
       staggeredActorIds.add(enemy.id);
       enemiesById[enemy.id] = current.copyWith(
         staggerTicksRemaining: current.staggerTicksRemaining - 1,
       );
-    } else if (current.chargeTicksRemaining > 0) {
+    } else if (!gatherControlled && current.chargeTicksRemaining > 0) {
       suppressedActorIds.add(enemy.id);
       final remaining = current.chargeTicksRemaining - 1;
       enemiesById[enemy.id] = current.copyWith(chargeTicksRemaining: remaining);
@@ -1093,6 +1101,7 @@ Phase0aStepResult reducePhase0aTick({
             (intent.targetPoint != null &&
                 !_isFiniteVector(intent.targetPoint!)) ||
             intent.qiCost < 0 ||
+            intent.controlTicks < 0 ||
             intent.ringRadius > intent.effectRadius) {
           continue;
         }
@@ -1154,6 +1163,12 @@ Phase0aStepResult reducePhase0aTick({
           var updated = target.copyWith(
             position: destination,
             currentHealth: remaining,
+            gatherControlTicksRemaining: remaining > 0
+                ? math.max(
+                    target.gatherControlTicksRemaining,
+                    intent.controlTicks,
+                  )
+                : target.gatherControlTicksRemaining,
           );
           updated = applyPostureDamage(
             actorId: actorId,

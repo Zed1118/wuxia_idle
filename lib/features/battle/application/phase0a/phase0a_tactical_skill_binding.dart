@@ -71,6 +71,8 @@ final class Phase0aTacticalSkillBinding {
   double get effectRadius => behavior.geometry.radius;
   double? get destinationRadius =>
       behavior.effectOf(Phase0aSkillEffectType.pull)?.destinationRadius;
+  int get controlTicks =>
+      behavior.effectOf(Phase0aSkillEffectType.pull)?.controlTicks ?? 0;
   int get qiCost => skill.qiCost;
 
   /// typed break 契约载荷(reducer 破招迁移唯一触发源);无 break 效果 = 0。

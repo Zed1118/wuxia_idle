@@ -200,6 +200,7 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            controlTicks: 0,
             postureDamage: 0,
             postureHitKind: PostureHitKind.heavy,
           ),
@@ -542,6 +543,7 @@ void main() {
       double effectRadius = 500,
       int qiCost = 20,
       double cooldownSeconds = 3,
+      int controlTicks = 0,
       ArenaVector? targetPoint,
     }) {
       return Phase0aGatherIntent(
@@ -551,6 +553,7 @@ void main() {
         effectRadius: effectRadius,
         qiCost: qiCost,
         cooldownSeconds: cooldownSeconds,
+        controlTicks: controlTicks,
         postureDamage: 0,
         postureHitKind: PostureHitKind.heavy,
         targetPoint: targetPoint,
@@ -605,6 +608,23 @@ void main() {
       expect(result.state.skillSlots.single.cooldownRemaining, 0);
     });
 
+    test('负控制拍数拒绝释放且不消耗真气或冷却', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(100, 0))],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: [gatherIntent(controlTicks: -1)],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+
+      expect(result.events.whereType<Phase0aGatherStarted>(), isEmpty);
+      expect(result.state.player.qiCurrent, 100);
+      expect(result.state.skillSlots.single.cooldownRemaining, 0);
+      expect(result.state.enemies.single.position, const ArenaVector(100, 0));
+    });
+
     test('环内不推、环外沿来向投影到环上,逐目标 outcomes 稳定有序', () {
       final result = reducePhase0aTick(
         state: makeState(
@@ -614,7 +634,7 @@ void main() {
           ],
           skillSlots: [makeSlot('gather')],
         ),
-        intents: [gatherIntent(ringRadius: 100)],
+        intents: [gatherIntent(ringRadius: 100, controlTicks: 5)],
         deltaSeconds: 0.1,
         damageResolver: hitResolver,
       );
@@ -633,7 +653,71 @@ void main() {
       expect(byId['e1']!.position, const ArenaVector(30, 40));
       expect(byId['e2']!.position.x, closeTo(60, 0.0001));
       expect(byId['e2']!.position.y, closeTo(80, 0.0001));
+      expect(byId['e1']!.gatherControlTicksRemaining, 5);
+      expect(byId['e2']!.gatherControlTicksRemaining, 5);
       expect(result.state.player.qiCurrent, 80);
+    });
+
+    test('聚拢后独立控制五拍，期间敌人不能移动或普攻且不附加踉跄', () {
+      var state = reducePhase0aTick(
+        state: makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(200, 0))],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: [gatherIntent(ringRadius: 60, controlTicks: 5)],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      ).state;
+
+      expect(state.enemies.single.position, const ArenaVector(60, 0));
+      expect(state.enemies.single.gatherControlTicksRemaining, 5);
+      expect(state.enemies.single.staggerTicksRemaining, 0);
+
+      for (var remaining = 4; remaining >= 0; remaining--) {
+        final step = reducePhase0aTick(
+          state: state,
+          intents: const [
+            Phase0aMoveIntent(actorId: 'e1', direction: ArenaVector(1, 0)),
+            Phase0aAttackIntent(
+              actorId: 'e1',
+              range: 120,
+              halfArcRadians: math.pi / 2,
+              cooldownSeconds: 1,
+              qiDelta: 0,
+              postureDamage: 0,
+              postureHitKind: PostureHitKind.light,
+              moveKind: Phase0aMoveKind.light,
+              aimDirection: ArenaVector(-1, 0),
+            ),
+          ],
+          deltaSeconds: 0.1,
+          damageResolver: hitResolver,
+        );
+        expect(step.state.enemies.single.position, const ArenaVector(60, 0));
+        expect(step.state.player.currentHealth, 100);
+        expect(
+          step.events.whereType<Phase0aHitLanded>().where(
+            (event) => event.actor == 'e1',
+          ),
+          isEmpty,
+        );
+        expect(
+          step.state.enemies.single.gatherControlTicksRemaining,
+          remaining,
+        );
+        expect(step.state.enemies.single.staggerTicksRemaining, 0);
+        state = step.state;
+      }
+
+      final resumed = reducePhase0aTick(
+        state: state,
+        intents: const [
+          Phase0aMoveIntent(actorId: 'e1', direction: ArenaVector(1, 0)),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+      expect(resumed.state.enemies.single.position, const ArenaVector(66, 0));
     });
 
     test('聚怪击杀携带结算伤害与 defeated,死亡事件仅一次', () {
@@ -884,6 +968,7 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            controlTicks: 0,
             postureDamage: 0,
             postureHitKind: PostureHitKind.heavy,
           ),
@@ -919,6 +1004,7 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            controlTicks: 0,
             postureDamage: 0,
             postureHitKind: PostureHitKind.heavy,
           ),
@@ -948,6 +1034,7 @@ void main() {
             effectRadius: 100,
             qiCost: 20,
             cooldownSeconds: 3,
+            controlTicks: 0,
             postureDamage: 0,
             postureHitKind: PostureHitKind.heavy,
           ),
@@ -1009,6 +1096,7 @@ void main() {
             effectRadius: 500,
             qiCost: 20,
             cooldownSeconds: 3,
+            controlTicks: 0,
             postureDamage: 0,
             postureHitKind: PostureHitKind.heavy,
           ),

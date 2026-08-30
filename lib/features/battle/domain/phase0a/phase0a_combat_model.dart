@@ -10,6 +10,7 @@ export 'posture.dart' show PostureHitKind;
 const _initialBossPhaseIndex = 0;
 const _noChargeTicks = 0;
 const _noStaggerTicks = 0;
+const _noGatherControlTicks = 0;
 const _noDefenseTicks = 0;
 const _noDefenseScalar = 0.0;
 const _initialBasicAttackSegmentIndex = 0;
@@ -171,6 +172,7 @@ final class Phase0aActor {
     this.chargingDefenseFlags,
     this.chargeTicksRemaining = _noChargeTicks,
     this.staggerTicksRemaining = _noStaggerTicks,
+    this.gatherControlTicksRemaining = _noGatherControlTicks,
     this.posture,
     this.shieldRemaining = _noDefenseScalar,
     this.shieldTicksRemaining = _noDefenseTicks,
@@ -257,6 +259,9 @@ final class Phase0aActor {
 
   /// 运行态:踉跄剩余拍数(>0 = 跳过行动且承伤减防,reducer 每拍递减)。
   final int staggerTicksRemaining;
+
+  /// 聚怪后的独立行动抑制；不携带踉跄的减防/破绽语义。
+  final int gatherControlTicksRemaining;
   final PostureState? posture;
   final double shieldRemaining;
   final int shieldTicksRemaining;
@@ -289,6 +294,7 @@ final class Phase0aActor {
     bool clearChargingCast = false,
     int? chargeTicksRemaining,
     int? staggerTicksRemaining,
+    int? gatherControlTicksRemaining,
     PostureState? posture,
     double? shieldRemaining,
     int? shieldTicksRemaining,
@@ -338,6 +344,8 @@ final class Phase0aActor {
       chargeTicksRemaining: chargeTicksRemaining ?? this.chargeTicksRemaining,
       staggerTicksRemaining:
           staggerTicksRemaining ?? this.staggerTicksRemaining,
+      gatherControlTicksRemaining:
+          gatherControlTicksRemaining ?? this.gatherControlTicksRemaining,
       posture: posture ?? this.posture,
       shieldRemaining: shieldRemaining ?? this.shieldRemaining,
       shieldTicksRemaining: shieldTicksRemaining ?? this.shieldTicksRemaining,
@@ -386,6 +394,7 @@ final class Phase0aActor {
       other.chargingDefenseFlags == chargingDefenseFlags &&
       other.chargeTicksRemaining == chargeTicksRemaining &&
       other.staggerTicksRemaining == staggerTicksRemaining &&
+      other.gatherControlTicksRemaining == gatherControlTicksRemaining &&
       other.posture == posture &&
       other.shieldRemaining == shieldRemaining &&
       other.shieldTicksRemaining == shieldTicksRemaining &&
@@ -429,14 +438,15 @@ final class Phase0aActor {
       chargingDefenseFlags,
       chargeTicksRemaining,
       staggerTicksRemaining,
+      gatherControlTicksRemaining,
       posture,
       shieldRemaining,
       shieldTicksRemaining,
       parryTicksRemaining,
       dodgeTicksRemaining,
       defenseCooldownRemaining,
-      parryCounterDamage,
       Object.hash(
+        parryCounterDamage,
         parryCounterBudgetRemaining,
         statusLedger,
         basicAttackSegmentIndex,

@@ -30,7 +30,7 @@ void main() {
     final behavior = Phase0aSkillBehavior.fromYaml({
       'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 520},
       'effects': [
-        {'type': 'pull', 'destinationRadius': 120},
+        {'type': 'pull', 'destinationRadius': 120, 'controlTicks': 5},
       ],
     });
 
@@ -41,6 +41,7 @@ void main() {
       behavior.effectOf(Phase0aSkillEffectType.pull)?.destinationRadius,
       120,
     );
+    expect(behavior.effectOf(Phase0aSkillEffectType.pull)?.controlTicks, 5);
     expect(
       () => behavior.effects.add(
         const Phase0aSkillEffect(type: Phase0aSkillEffectType.damage),
@@ -53,7 +54,7 @@ void main() {
     final behavior = Phase0aSkillBehavior.fromYaml({
       'geometry': {'shape': 'radial', 'anchor': 'target_point', 'radius': 520},
       'effects': [
-        {'type': 'pull', 'destinationRadius': 120},
+        {'type': 'pull', 'destinationRadius': 120, 'controlTicks': 5},
       ],
     });
 
@@ -80,10 +81,15 @@ void main() {
       Object? effect = 'damage',
       num radius = 10,
       num? destinationRadius,
+      Object? controlTicks,
     }) => {
       'geometry': {'shape': shape, 'anchor': anchor, 'radius': radius},
       'effects': [
-        {'type': effect, 'destinationRadius': ?destinationRadius},
+        {
+          'type': effect,
+          'destinationRadius': ?destinationRadius,
+          'controlTicks': ?controlTicks,
+        },
       ],
     };
 
@@ -101,10 +107,23 @@ void main() {
     );
     expect(
       () => Phase0aSkillBehavior.fromYaml(
-        yaml(effect: 'pull', destinationRadius: 11),
+        yaml(effect: 'pull', destinationRadius: 11, controlTicks: 5),
       ),
       throwsStateError,
     );
+    for (final controlTicks in <Object?>[null, 0, -1, 1.5]) {
+      expect(
+        () => Phase0aSkillBehavior.fromYaml(
+          yaml(
+            effect: 'pull',
+            destinationRadius: 1,
+            controlTicks: controlTicks,
+          ),
+        ),
+        throwsStateError,
+        reason: 'controlTicks=$controlTicks',
+      );
+    }
   });
 
   test('duplicates fail; break parses and clear binding consumes it', () {
@@ -172,7 +191,7 @@ void main() {
     final behavior = Phase0aSkillBehavior.fromYaml({
       'geometry': {'shape': 'radial', 'anchor': 'target_point', 'radius': 10},
       'effects': [
-        {'type': 'pull', 'destinationRadius': 1},
+        {'type': 'pull', 'destinationRadius': 1, 'controlTicks': 1},
       ],
     });
     final skill = tacticalSkill(
