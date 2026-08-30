@@ -104,6 +104,7 @@ void main() {
           controller: controller,
           autoStep: autoStep,
           feedbackHoldSeconds: feedbackHoldSeconds,
+          basicAttackRange: fixture.playerAdapter.attackRange,
         ),
       ),
     );
@@ -572,11 +573,68 @@ void main() {
       expect(afterUpCount, heldCount);
     });
 
-    testWidgets('舞台 primary click 入队一次普攻并按点击方向瞄准', (tester) async {
+    testWidgets('左键点地沿任意方向移动而不误触普攻', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+      final before = controller.state.player.position;
+      const ground = Offset(640, 610);
+
+      await tester.tapAt(ground);
+      final events = controller.step();
+
+      expect(controller.state.player.position.y, greaterThan(before.y));
+      expect(events.whereType<Phase0aAttackStarted>(), isEmpty);
+    });
+
+    testWidgets('点地移动在一拍步长内停止且不会围绕目标振荡', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      final player = stage.worldToScreen(controller.state.player.position);
-      final target = player + const Offset(240, -80);
+      const ground = Offset(640, 610);
+      final initial = controller.state.player.position;
+      final destination = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: initial,
+      ).screenToWorld(ground);
+
+      await tester.tapAt(ground);
+      for (var i = 0; i < 25; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final stopped = controller.state.player.position;
+      final oneTickDistance =
+          controller.state.player.moveSpeed * controller.fixedDeltaSeconds;
+      expect(
+        (destination - stopped).length,
+        lessThanOrEqualTo(oneTickDistance),
+      );
+
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(controller.state.player.position, stopped);
+    });
+
+    testWidgets('同拍 WASD 覆盖鼠标目的地且抬键后不恢复旧导航', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+      const ground = Offset(640, 610);
+      final before = controller.state.player.position;
+
+      await tester.tapAt(ground);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      controller.step();
+      final keyboardStep = controller.state.player.position;
+      expect(keyboardStep.x, greaterThan(before.x));
+      expect(keyboardStep.y, before.y);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+      controller.step();
+      expect(controller.state.player.position, keyboardStep);
+    });
+
+    testWidgets('左键点怪入队一次普攻并按目标方向瞄准', (tester) async {
+      await pumpScreen(tester);
+      final targetId = controller.state.enemies.first.id;
+      final target = tester.getCenter(
+        find.byKey(ValueKey('phase0a_actor_visual_$targetId')),
+      );
 
       await tester.tapAt(target);
       await tester.pump();
@@ -588,10 +646,10 @@ void main() {
 
     testWidgets('primary pointer down 持续攻击，pointer up 后停止重复攻击', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      final target =
-          stage.worldToScreen(controller.state.player.position) +
-          const Offset(220, 0);
+      const targetId = 'wave1_archer';
+      final target = tester.getCenter(
+        find.byKey(const ValueKey('phase0a_actor_visual_$targetId')),
+      );
       final gesture = await tester.startGesture(
         target,
         kind: PointerDeviceKind.mouse,
@@ -615,6 +673,41 @@ void main() {
           .where((event) => event.actor == 'player')
           .length;
       expect(afterUpCount, heldCount);
+    });
+
+    testWidgets('点击远敌持续追击并优先命中所点目标', (tester) async {
+      await pumpScreen(tester);
+      const targetId = 'wave1_archer';
+      final target = tester.getCenter(
+        find.byKey(const ValueKey('phase0a_actor_visual_$targetId')),
+      );
+      final before = controller.state.player.position;
+      final gesture = await tester.startGesture(
+        target,
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('phase0a_selected_target_$targetId')),
+        findsOneWidget,
+      );
+      await gesture.up();
+
+      Phase0aHitLanded? firstPlayerHit;
+      for (var i = 0; i < 80 && firstPlayerHit == null; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        for (final event in controller.events.whereType<Phase0aHitLanded>()) {
+          if (event.actor == controller.state.player.id) {
+            firstPlayerHit = event;
+            break;
+          }
+        }
+      }
+
+      expect(controller.state.player.position, isNot(before));
+      expect(firstPlayerHit, isNotNull);
+      expect(firstPlayerHit!.target, targetId);
     });
 
     testWidgets('非 primary、暂停、终局舞台点击均不产生普攻', (tester) async {

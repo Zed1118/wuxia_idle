@@ -891,6 +891,7 @@ Phase0aStepResult reducePhase0aTick({
                   aimDirection: resolvedAimDirection,
                   range: intent.range,
                   halfArcRadians: intent.halfArcRadians,
+                  preferredTargetId: intent.preferredTargetId,
                 ),
               ]
             : selectedGeometryTargets
@@ -1879,6 +1880,7 @@ Phase0aActor? _selectStrikeTarget({
   required double range,
   required double halfArcRadians,
   bool allowGuardedBoss = false,
+  String? preferredTargetId,
 }) {
   final candidates = attacker.side == Phase0aSide.player
       ? enemiesById.values.where((enemy) => enemy.isAlive).toList()
@@ -1898,6 +1900,11 @@ Phase0aActor? _selectStrikeTarget({
       )
       .toList();
   if (inArc.isEmpty) return null;
+  if (preferredTargetId != null) {
+    for (final candidate in inArc) {
+      if (candidate.id == preferredTargetId) return candidate;
+    }
+  }
   inArc.sort((a, b) {
     final distanceA = (a.position - attacker.position).lengthSquared;
     final distanceB = (b.position - attacker.position).lengthSquared;

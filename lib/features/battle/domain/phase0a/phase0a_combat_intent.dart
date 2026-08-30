@@ -82,6 +82,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.postureHitKind,
     this.defenseFlags,
     this.behaviorProfile,
+    this.preferredTargetId,
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
@@ -92,6 +93,10 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final double cooldownSeconds;
   final Phase0aMoveKind moveKind;
   final ArenaVector aimDirection;
+
+  /// Optional context-click preference. It never bypasses normal strike
+  /// geometry or protected-target rules.
+  final String? preferredTargetId;
 
   /// Pre-resolved qi delta for this basic attack. Zero preserves existing
   /// fixtures; production mapping supplies the bound basic skill value.

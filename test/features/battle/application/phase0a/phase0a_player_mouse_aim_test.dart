@@ -80,4 +80,19 @@ void main() {
 
     expect(intents.whereType<Phase0aAttackIntent>(), isEmpty);
   });
+
+  test('pointer movement keeps its arbitrary world direction', () {
+    const pointerDirection = ArenaVector(3, 4);
+    final intents = adapter.intentsFor(
+      state: state,
+      command: const Phase0aPlayerCommand(
+        moveDirection: pointerDirection,
+        right: true,
+      ),
+    );
+
+    final move = intents.whereType<Phase0aMoveIntent>().single;
+    expect(move.direction.x, closeTo(0.6, 0.0001));
+    expect(move.direction.y, closeTo(0.8, 0.0001));
+  });
 }

@@ -19,8 +19,10 @@ final class Phase0aPlayerCommand {
     this.right = false,
     this.up = false,
     this.down = false,
+    this.moveDirection,
     this.attack = false,
     this.attackAimDirection,
+    this.attackTargetId,
     this.skillHotkey,
     this.skillAimDirection,
     this.gather = false,
@@ -34,11 +36,19 @@ final class Phase0aPlayerCommand {
   final bool up;
   final bool down;
 
+  /// Mouse/context movement in world space. When present it takes precedence
+  /// over the four keyboard directions for this fixed-tick command.
+  final ArenaVector? moveDirection;
+
   /// 普攻请求。
   final bool attack;
 
   /// 鼠标普攻的世界空间瞄准方向；null = 键盘兼容路径沿用当前朝向。
   final ArenaVector? attackAimDirection;
+
+  /// Context-click preferred target. The reducer still validates side,
+  /// survival, range, arc, and guardian rules before honoring it.
+  final String? attackTargetId;
 
   /// 数字 1–6 的真实技能槽请求；空槽由 input Adapter fail-closed。
   final int? skillHotkey;
@@ -119,6 +129,7 @@ final class Phase0aPlayerInputAdapter {
   final BasicAttackArenaBounds? basicAttackArenaBounds;
 
   ArenaVector movementDirectionFor(Phase0aPlayerCommand command) =>
+      command.moveDirection?.normalized() ??
       normalizeMovementInput(
         left: command.left,
         right: command.right,
@@ -164,6 +175,7 @@ final class Phase0aPlayerInputAdapter {
           cooldownSeconds: attackCooldownSeconds,
           moveKind: Phase0aMoveKind.light,
           aimDirection: command.attackAimDirection ?? state.player.facing,
+          preferredTargetId: command.attackTargetId,
           qiDelta: attackQiDelta,
           postureDamage: powerMultiplierToPostureDamage(
             attackPowerMultiplier,

@@ -170,6 +170,7 @@ class _Phase0aTowerBattleHostState
     return Phase0aBattleScreen(
       controller: controller,
       numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
+      basicAttackRange: _mapping!.playerAdapter.attackRange,
     );
   }
 }

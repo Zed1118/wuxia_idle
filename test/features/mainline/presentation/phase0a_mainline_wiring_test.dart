@@ -439,6 +439,10 @@ void main() {
       final battleScreen = tester.widget<Phase0aBattleScreen>(
         find.byType(Phase0aBattleScreen),
       );
+      expect(
+        battleScreen.basicAttackRange,
+        repo.numbers.phase0aArena.playerAttackRange,
+      );
       // 宿主接真人输入 adapter(非 bot):先持续按 J 清场，再持续向
       // 出口推进，覆盖 typed reach_checkpoint 的真实输入链。
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyJ);
