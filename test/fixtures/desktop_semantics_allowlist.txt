@@ -14,7 +14,7 @@
 # 不要直接删条目了事。
 
 # ── convenience:整屏遮罩,真操作在内部按钮上 ──
-lib/features/encounter/presentation/encounter_dialog.dart:488  # convenience · 奇遇弹窗「点外完成」;_ChoiceButton 走 InkWell(canRequestFocus)、_ConfirmButton 走 PlaqueButton(autofocus:true),外层再抢焦点会压掉确认键
+lib/features/encounter/presentation/encounter_dialog.dart:486  # convenience · 奇遇弹窗「点外完成」;_ChoiceButton 走 InkWell(canRequestFocus)、_ConfirmButton 走 PlaqueButton(autofocus:true),外层再抢焦点会压掉确认键
 
 # ── noop:吞点不操作 ──
 

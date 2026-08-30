@@ -1298,6 +1298,7 @@ Future<bool> _drainMainlinePendingJianghuAffairs({
             applied: fallbackApplied!,
           );
         }
+        if (!context.mounted) return false;
         if (recruitResult == SectRecruitTransactionResult.success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
