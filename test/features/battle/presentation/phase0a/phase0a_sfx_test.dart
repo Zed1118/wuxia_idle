@@ -173,10 +173,10 @@ void main() {
       final before = backend.sfxPaths.length;
       final events = controller.step(command);
       await tester.pump();
-      final expected = phase0aSfxAssetsForFrame(
-        events,
-        playerId: controller.state.player.id,
-      );
+      final expected = <String>[
+        for (final event in events)
+          ?phase0aSfxAssetForEvent(event, playerId: controller.state.player.id),
+      ];
       expect(
         backend.sfxPaths.sublist(before),
         expected,
