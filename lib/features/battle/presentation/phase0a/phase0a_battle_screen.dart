@@ -97,6 +97,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   bool _primaryPointerDown = false;
   bool _secondarySkillHeld = false;
   bool _secondaryPointerDown = false;
+  bool _gatherTargetingArmed = false;
   bool _contextAttackPending = false;
   final Set<LogicalKeyboardKey> _heldMovementKeys = <LogicalKeyboardKey>{};
   ArenaVector? _pointerAimDirection;
@@ -143,6 +144,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _primaryPointerDown = false;
     _secondarySkillHeld = false;
     _secondaryPointerDown = false;
+    _gatherTargetingArmed = false;
     _contextAttackPending = false;
     _heldMovementKeys.clear();
     _pointerAimDirection = null;
@@ -236,6 +238,27 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
     if (!_acceptsBattleInput) return;
+    if (_gatherTargetingArmed) {
+      if ((event.buttons & kPrimaryMouseButton) != 0) {
+        final targetPoint = stage.screenToWorld(event.localPosition);
+        _gatherTargetingArmed = false;
+        _primaryPointerDown = false;
+        _primaryAttackHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerMoveDestination = null;
+        _pointerAimDirection = null;
+        widget.controller.enqueue(
+          Phase0aPlayerCommand(gather: true, gatherTargetPoint: targetPoint),
+        );
+        if (mounted) setState(() {});
+      } else if ((event.buttons & kSecondaryMouseButton) != 0) {
+        _gatherTargetingArmed = false;
+        if (mounted) setState(() {});
+      }
+      _focusNode.requestFocus();
+      return;
+    }
     if ((event.buttons & kPrimaryMouseButton) != 0) {
       _primaryPointerDown = true;
       final target = _enemyAtPointer(event.localPosition, stage);
@@ -297,6 +320,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _primaryAttackHeld = false;
     _secondaryPointerDown = false;
     _secondarySkillHeld = false;
+    _gatherTargetingArmed = false;
     _contextAttackPending = false;
     _pointerAimDirection = null;
     _pointerMoveDestination = null;
@@ -307,6 +331,24 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _primaryAttackKeyHeld = false;
     _heldMovementKeys.clear();
     _cancelPointerContext();
+  }
+
+  void _toggleGatherTargeting() {
+    if (!_acceptsBattleInput) return;
+    setState(() {
+      _gatherTargetingArmed = !_gatherTargetingArmed;
+      if (_gatherTargetingArmed) {
+        _primaryPointerDown = false;
+        _primaryAttackHeld = false;
+        _secondaryPointerDown = false;
+        _secondarySkillHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerMoveDestination = null;
+        _pointerAimDirection = null;
+      }
+    });
+    _focusNode.requestFocus();
   }
 
   List<Phase0aActor> _currentActors() => <Phase0aActor>[
@@ -907,6 +949,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.handled;
     }
     if (_paused) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.keyQ) {
+      _toggleGatherTargeting();
+      return KeyEventResult.handled;
+    }
     if (_isMovementKey(key)) {
       _pointerMoveDestination = null;
       _heldMovementKeys.add(key);
@@ -922,7 +968,6 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       LogicalKeyboardKey.space => const Phase0aPlayerCommand(
         defenseAction: Phase0aDefenseAction.dodge,
       ),
-      LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
       LogicalKeyboardKey.numpad1 => const Phase0aPlayerCommand(skillHotkey: 1),
@@ -975,52 +1020,60 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               fit: StackFit.expand,
               children: [
                 Positioned.fill(
-                  child: Listener(
-                    key: const ValueKey('phase0a_stage_input_layer'),
-                    behavior: HitTestBehavior.opaque,
-                    onPointerDown: (event) => _onStagePointerDown(event, stage),
-                    onPointerMove: (event) => _onStagePointerMove(event, stage),
-                    onPointerUp: (_) => _stopHeldPointerActions(),
-                    onPointerCancel: (_) => _cancelPointerContext(),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        RepaintBoundary(
-                          key: const ValueKey('phase0a_static_background'),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Phase0aParallaxBackground(
-                                cameraOffset: stage.cameraWorldRect.center,
-                              ),
-                              const ColoredBox(color: Color(0x380F0E0B)),
-                              const CustomPaint(painter: _StageWashPainter()),
-                            ],
-                          ),
-                        ),
-                        ..._buildActors(controller, stage),
-                        _FeedbackLayer(
-                          controller: controller,
-                          stage: stage,
-                          entries: _heldFeedback,
-                          feedbackFrame: _feedbackFrame,
-                          numericSkillBindings: widget.numericSkillBindings,
-                        ),
-                        if (offscreenIndicators.isNotEmpty)
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: CustomPaint(
-                                key: const ValueKey(
-                                  'phase0a_offscreen_indicators',
+                  child: MouseRegion(
+                    key: const ValueKey('phase0a_stage_mouse_region'),
+                    cursor: _gatherTargetingArmed
+                        ? SystemMouseCursors.precise
+                        : SystemMouseCursors.basic,
+                    child: Listener(
+                      key: const ValueKey('phase0a_stage_input_layer'),
+                      behavior: HitTestBehavior.opaque,
+                      onPointerDown: (event) =>
+                          _onStagePointerDown(event, stage),
+                      onPointerMove: (event) =>
+                          _onStagePointerMove(event, stage),
+                      onPointerUp: (_) => _stopHeldPointerActions(),
+                      onPointerCancel: (_) => _cancelPointerContext(),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          RepaintBoundary(
+                            key: const ValueKey('phase0a_static_background'),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Phase0aParallaxBackground(
+                                  cameraOffset: stage.cameraWorldRect.center,
                                 ),
-                                painter: Phase0aOffscreenIndicatorPainter(
-                                  indicators: offscreenIndicators,
-                                  frame: _indicatorFrame,
+                                const ColoredBox(color: Color(0x380F0E0B)),
+                                const CustomPaint(painter: _StageWashPainter()),
+                              ],
+                            ),
+                          ),
+                          ..._buildActors(controller, stage),
+                          _FeedbackLayer(
+                            controller: controller,
+                            stage: stage,
+                            entries: _heldFeedback,
+                            feedbackFrame: _feedbackFrame,
+                            numericSkillBindings: widget.numericSkillBindings,
+                          ),
+                          if (offscreenIndicators.isNotEmpty)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: CustomPaint(
+                                  key: const ValueKey(
+                                    'phase0a_offscreen_indicators',
+                                  ),
+                                  painter: Phase0aOffscreenIndicatorPainter(
+                                    indicators: offscreenIndicators,
+                                    frame: _indicatorFrame,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1065,11 +1118,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     gatherSlot: _displaySlot(controller, 'gather'),
                     clearSlot: _displaySlot(controller, 'clear'),
                     qiCurrent: controller.state.player.qiCurrent,
-                    onGather: _paused
-                        ? () {}
-                        : () => controller.enqueue(
-                            const Phase0aPlayerCommand(gather: true),
-                          ),
+                    onGather: _paused ? () {} : _toggleGatherTargeting,
                     onClear: _paused
                         ? () {}
                         : () => controller.enqueue(

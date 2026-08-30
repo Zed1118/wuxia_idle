@@ -49,6 +49,17 @@ void main() {
     );
   });
 
+  test('parses radial target-point pull for ground-target gather', () {
+    final behavior = Phase0aSkillBehavior.fromYaml({
+      'geometry': {'shape': 'radial', 'anchor': 'target_point', 'radius': 520},
+      'effects': [
+        {'type': 'pull', 'destinationRadius': 120},
+      ],
+    });
+
+    expect(behavior.geometry.anchor, Phase0aSkillGeometryAnchor.targetPoint);
+  });
+
   test('parses damage plus stagger clear behavior', () {
     final behavior = Phase0aSkillBehavior.fromYaml({
       'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 340},
@@ -159,7 +170,7 @@ void main() {
 
   test('tactical binding reads explicit seconds instead of legacy turns', () {
     final behavior = Phase0aSkillBehavior.fromYaml({
-      'geometry': {'shape': 'radial', 'anchor': 'caster', 'radius': 10},
+      'geometry': {'shape': 'radial', 'anchor': 'target_point', 'radius': 10},
       'effects': [
         {'type': 'pull', 'destinationRadius': 1},
       ],

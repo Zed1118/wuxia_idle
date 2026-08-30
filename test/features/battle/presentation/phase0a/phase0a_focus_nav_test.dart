@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -9,6 +10,7 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_c
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_skill_seals.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_stage.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
@@ -245,6 +247,9 @@ void main() {
       expect(ringInside(find.byKey(gatherSealKey)), findsOneWidget);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(controller.state.player.position);
+      await tester.tapAt(stage.worldToScreen(const ArenaVector(80, 0)));
       final gatherEvents = controller.step();
       await tester.pump();
       expect(

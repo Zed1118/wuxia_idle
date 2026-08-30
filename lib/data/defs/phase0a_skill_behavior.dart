@@ -1,6 +1,6 @@
 enum Phase0aSkillGeometryShape { radial }
 
-enum Phase0aSkillGeometryAnchor { caster }
+enum Phase0aSkillGeometryAnchor { caster, targetPoint }
 
 enum Phase0aSkillEffectType { damage, pull, stagger, breakPower }
 
@@ -102,9 +102,11 @@ final class Phase0aSkillBehavior {
     if (rawShape != 'radial') {
       throw StateError('Unsupported Phase0a geometry shape: $rawShape');
     }
-    if (rawAnchor != 'caster') {
-      throw StateError('Unsupported Phase0a geometry anchor: $rawAnchor');
-    }
+    final anchor = switch (rawAnchor) {
+      'caster' => Phase0aSkillGeometryAnchor.caster,
+      'target_point' => Phase0aSkillGeometryAnchor.targetPoint,
+      _ => throw StateError('Unsupported Phase0a geometry anchor: $rawAnchor'),
+    };
     final rawEffects = yaml['effects'];
     if (rawEffects is! List) {
       throw StateError('Phase0a behavior effects must be a list');
@@ -112,7 +114,7 @@ final class Phase0aSkillBehavior {
     return Phase0aSkillBehavior(
       geometry: Phase0aSkillGeometry(
         shape: Phase0aSkillGeometryShape.radial,
-        anchor: Phase0aSkillGeometryAnchor.caster,
+        anchor: anchor,
         radius: (rawGeometry['radius'] as num).toDouble(),
       ),
       effects: [

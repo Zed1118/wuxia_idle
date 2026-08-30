@@ -30,7 +30,7 @@ skills:
   # 待内容技能覆盖 Q/R capability matrix 后删除，不作为永久全局能力。
   - id: skill_phase0a_gather
     name: 揽势
-    description: 气机回卷，将近处敌手牵至身前。
+    description: 气机落于指定之处，将近处敌手牵向落点。
     type: powerSkill
     targetType: aoe
     powerMultiplier: 0
@@ -43,7 +43,7 @@ skills:
     visualEffect: phase0a_gather
     source: special
     phase0aBehavior:
-      geometry: { shape: radial, anchor: caster, radius: 520.0 }
+      geometry: { shape: radial, anchor: target_point, radius: 520.0 }
       effects:
         - { type: pull, destinationRadius: 120.0 }
 

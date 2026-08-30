@@ -1090,6 +1090,8 @@ Phase0aStepResult reducePhase0aTick({
             !_isUsableNumber(intent.effectRadius) ||
             !_isUsableNumber(intent.cooldownSeconds) ||
             !_isUsableNumber(intent.postureDamage) ||
+            (intent.targetPoint != null &&
+                !_isFiniteVector(intent.targetPoint!)) ||
             intent.qiCost < 0 ||
             intent.ringRadius > intent.effectRadius) {
           continue;
@@ -1102,6 +1104,7 @@ Phase0aStepResult reducePhase0aTick({
           slots: slots,
         );
         if (cast == null) continue;
+        final gatherCenter = intent.targetPoint ?? actor.position;
         events.add(
           Phase0aGatherStarted(
             seq: seq++,
@@ -1109,6 +1112,7 @@ Phase0aStepResult reducePhase0aTick({
             actor: actorId,
             skillId: intent.skillId,
             actorPosition: actor.position,
+            centerPosition: gatherCenter,
           ),
         );
         final targets =
@@ -1119,7 +1123,7 @@ Phase0aStepResult reducePhase0aTick({
                 )
                 .where(
                   (target) => _withinEffectRadius(
-                    origin: actor.position,
+                    origin: gatherCenter,
                     position: target.position,
                     effectRadius: intent.effectRadius,
                   ),
@@ -1130,7 +1134,7 @@ Phase0aStepResult reducePhase0aTick({
         final deaths = <Phase0aActor>[];
         for (final target in targets) {
           final destination = gatherRingDestination(
-            playerCenter: actor.position,
+            playerCenter: gatherCenter,
             enemyPosition: target.position,
             ringRadius: intent.ringRadius,
           );
@@ -1823,6 +1827,8 @@ double _cooldownAfter(double remaining, double deltaSeconds) {
 /// 负值经平方(射程/半径)或减法(冷却/真气)会被悄悄合法化,NaN 比较
 /// 恒 false 会绕过一切边界检查,两者都必须在结算前拒绝。
 bool _isUsableNumber(double value) => value.isFinite && value >= 0;
+
+bool _isFiniteVector(ArenaVector value) => value.x.isFinite && value.y.isFinite;
 
 /// resolver 返回的结算伤害必须非负:负伤害经 `hp - damage` 会变成治疗,
 /// clamp 成 0 会掩盖 resolver/公式错误,故 fail-fast。

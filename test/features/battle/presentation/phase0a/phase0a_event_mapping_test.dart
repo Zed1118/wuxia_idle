@@ -930,6 +930,7 @@ void main() {
           tick: 1,
           actor: 'player',
           actorPosition: ArenaVector(123, 45),
+          centerPosition: ArenaVector(300, 200),
         ),
         const Phase0aEnemyDefeated(
           seq: 2,
@@ -943,7 +944,7 @@ void main() {
           .where((e) => e.kind == Phase0aVfxKind.gatherVortex)
           .toList();
       expect(vortex, hasLength(1));
-      expect(vortex.single.anchor, const ArenaVector(123, 45));
+      expect(vortex.single.anchor, const ArenaVector(300, 200));
       final ink = entries
           .where((e) => e.kind == Phase0aVfxKind.defeatInk)
           .toList();

@@ -164,6 +164,7 @@ final class Phase0aGatherIntent extends Phase0aIntent {
     required this.cooldownSeconds,
     required this.postureDamage,
     required this.postureHitKind,
+    this.targetPoint,
     this.skillId = '',
   });
 
@@ -172,6 +173,9 @@ final class Phase0aGatherIntent extends Phase0aIntent {
   final String skillId;
   final String slot;
   final double ringRadius;
+
+  /// 玩家指定的地面聚拢中心；null 为自动/历史调用兼容路径，回退施放者位置。
+  final ArenaVector? targetPoint;
 
   /// 作用半径:仅距 caster ≤ 该值的存活敌对单位进入结算(闭区间)。
   final double effectRadius;

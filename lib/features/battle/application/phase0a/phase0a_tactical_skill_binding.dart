@@ -50,6 +50,16 @@ final class Phase0aTacticalSkillBinding {
         '${effectTypes.map((effect) => effect.name).toList()}',
       );
     }
+    final expectedAnchor = switch (kind) {
+      Phase0aTacticalSkillKind.gather => Phase0aSkillGeometryAnchor.targetPoint,
+      Phase0aTacticalSkillKind.clear => Phase0aSkillGeometryAnchor.caster,
+    };
+    if (behavior.geometry.anchor != expectedAnchor) {
+      throw StateError(
+        '${skill.id} has unsupported ${kind.name} anchor: '
+        '${behavior.geometry.anchor.name}',
+      );
+    }
   }
 
   final Phase0aTacticalSkillKind kind;
@@ -57,6 +67,7 @@ final class Phase0aTacticalSkillBinding {
   final SkillDef skill;
 
   Phase0aSkillBehavior get behavior => skill.phase0aBehavior!;
+  Phase0aSkillGeometryAnchor get anchor => behavior.geometry.anchor;
   double get effectRadius => behavior.geometry.radius;
   double? get destinationRadius =>
       behavior.effectOf(Phase0aSkillEffectType.pull)?.destinationRadius;

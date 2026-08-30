@@ -20,7 +20,7 @@ SkillDef tacticalSkill(double cooldownSeconds) => SkillDef(
   phase0aBehavior: Phase0aSkillBehavior(
     geometry: const Phase0aSkillGeometry(
       shape: Phase0aSkillGeometryShape.radial,
-      anchor: Phase0aSkillGeometryAnchor.caster,
+      anchor: Phase0aSkillGeometryAnchor.targetPoint,
       radius: 100,
     ),
     effects: const [

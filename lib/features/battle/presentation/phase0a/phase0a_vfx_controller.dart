@@ -373,7 +373,10 @@ final class Phase0aVfxController {
           push(
             Phase0aVfxEntry(
               kind: Phase0aVfxKind.gatherVortex,
-              anchor: event.actorPosition ?? _actors[event.actor]?.position,
+              anchor:
+                  event.centerPosition ??
+                  event.actorPosition ??
+                  _actors[event.actor]?.position,
             ),
           );
         case Phase0aGatherApplied():

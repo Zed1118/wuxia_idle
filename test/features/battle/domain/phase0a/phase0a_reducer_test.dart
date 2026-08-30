@@ -542,6 +542,7 @@ void main() {
       double effectRadius = 500,
       int qiCost = 20,
       double cooldownSeconds = 3,
+      ArenaVector? targetPoint,
     }) {
       return Phase0aGatherIntent(
         actorId: 'player',
@@ -552,8 +553,57 @@ void main() {
         cooldownSeconds: cooldownSeconds,
         postureDamage: 0,
         postureHitKind: PostureHitKind.heavy,
+        targetPoint: targetPoint,
       );
     }
+
+    test('指定地面点时以该点筛选并聚拢，不再把敌人拉到玩家身边', () {
+      const targetPoint = ArenaVector(400, 0);
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [
+            makeEnemy(id: 'near_player', position: const ArenaVector(50, 0)),
+            makeEnemy(id: 'near_target', position: const ArenaVector(500, 0)),
+          ],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: [
+          gatherIntent(
+            effectRadius: 150,
+            ringRadius: 50,
+            targetPoint: targetPoint,
+          ),
+        ],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+
+      final started = result.events.whereType<Phase0aGatherStarted>().single;
+      expect(started.centerPosition, targetPoint);
+      final applied = result.events.whereType<Phase0aGatherApplied>().single;
+      expect(applied.outcomes.map((outcome) => outcome.target), [
+        'near_target',
+      ]);
+      final byId = {for (final enemy in result.state.enemies) enemy.id: enemy};
+      expect(byId['near_player']!.position, const ArenaVector(50, 0));
+      expect(byId['near_target']!.position, const ArenaVector(450, 0));
+    });
+
+    test('非有限地面点拒绝释放且不消耗真气或冷却', () {
+      final result = reducePhase0aTick(
+        state: makeState(
+          enemies: [makeEnemy(id: 'e1', position: const ArenaVector(100, 0))],
+          skillSlots: [makeSlot('gather')],
+        ),
+        intents: [gatherIntent(targetPoint: const ArenaVector(double.nan, 0))],
+        deltaSeconds: 0.1,
+        damageResolver: hitResolver,
+      );
+
+      expect(result.events.whereType<Phase0aGatherStarted>(), isEmpty);
+      expect(result.state.player.qiCurrent, 100);
+      expect(result.state.skillSlots.single.cooldownRemaining, 0);
+    });
 
     test('环内不推、环外沿来向投影到环上,逐目标 outcomes 稳定有序', () {
       final result = reducePhase0aTick(

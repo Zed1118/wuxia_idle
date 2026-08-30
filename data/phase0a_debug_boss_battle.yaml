@@ -51,7 +51,7 @@ player:
     qi_cost: 25
     cooldown_seconds: 5.0
     phase0a_behavior:
-      geometry: {shape: radial, anchor: caster, radius: 520.0}
+      geometry: {shape: radial, anchor: target_point, radius: 520.0}
       effects:
         - {type: pull, destinationRadius: 120.0}
   clear:

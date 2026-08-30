@@ -183,13 +183,6 @@ void main() {
     );
   }
 
-  double distanceToPlayer(Phase0aArenaState state, String actorId) {
-    final enemy = state.enemies.firstWhere((e) => e.id == actorId);
-    final dx = enemy.position.x - state.player.position.x;
-    final dy = enemy.position.y - state.player.position.y;
-    return dx * dx + dy * dy;
-  }
-
   Future<void> expectPainterDrawsPixels(
     WidgetTester tester,
     Finder paintFinder, {
@@ -1012,19 +1005,28 @@ void main() {
     });
   });
 
-  group('键盘 Q:涡旋 + 拉拢', () {
-    testWidgets('Q 产生 gatherVortex,被拉目标离玩家距离变小', (tester) async {
+  group('键盘 Q + 左键落点:涡旋 + 拉拢', () {
+    testWidgets('Q 先进入定点态，左键后围绕点击位聚怪且玩家不移动', (tester) async {
       await pumpScreen(tester);
 
       final before = controller.state;
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(before.player.position);
+      const targetPoint = ArenaVector(80, 0);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      final armedEvents = await stepAndPump(tester);
+      expect(armedEvents.whereType<Phase0aGatherStarted>(), isEmpty);
+      final mouseRegion = tester.widget<MouseRegion>(
+        find.byKey(const ValueKey('phase0a_stage_mouse_region')),
+      );
+      expect(mouseRegion.cursor, SystemMouseCursors.precise);
+
+      await tester.tapAt(stage.worldToScreen(targetPoint));
       final events = await stepAndPump(tester);
 
-      expect(
-        events.whereType<Phase0aGatherStarted>(),
-        hasLength(1),
-        reason: '键盘 Q 必须真实驱动聚怪',
-      );
+      final started = events.whereType<Phase0aGatherStarted>().single;
+      expect(started.centerPosition, targetPoint);
+      expect(controller.state.player.position, before.player.position);
       final applied = events.whereType<Phase0aGatherApplied>().single;
       final pulled = applied.outcomes
           .where((o) => o.statusApplied == Phase0aSkillStatus.pulled)
@@ -1037,8 +1039,6 @@ void main() {
         find.byKey(gatherVortexKey),
         label: '聚怪涡旋',
       );
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      stage.updateCameraCenter(before.player.position);
       for (final outcome in pulled) {
         final pull = controller.feedback.singleWhere(
           (entry) =>
@@ -1062,14 +1062,32 @@ void main() {
                   expectedMidpoint)
               .distance,
           lessThan(2),
-          reason: 'Q 拉拢轨迹必须绑定目标→玩家的事件位置快照',
+          reason: 'Q 拉拢轨迹必须绑定目标→点击位的事件位置快照',
         );
         expect(
-          distanceToPlayer(controller.state, outcome.target),
-          lessThan(distanceToPlayer(before, outcome.target)),
-          reason: '被拉目标 ${outcome.target} 必须向玩家拉近',
+          (outcome.targetPosition! - targetPoint).lengthSquared,
+          lessThan((outcome.sourcePosition! - targetPoint).lengthSquared),
+          reason: '被拉目标 ${outcome.target} 必须向点击位拉近',
         );
       }
+    });
+
+    testWidgets('点击聚怪技能印同样进入定点态，下一次舞台点击才释放', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(controller.state.player.position);
+      const targetPoint = ArenaVector(40, 60);
+
+      await tester.tap(find.byKey(gatherSealKey));
+      await tester.pump();
+      expect(controller.step().whereType<Phase0aGatherStarted>(), isEmpty);
+
+      await tester.tapAt(stage.worldToScreen(targetPoint));
+      final events = await stepAndPump(tester);
+      expect(
+        events.whereType<Phase0aGatherStarted>().single.centerPosition,
+        targetPoint,
+      );
     });
   });
 
@@ -1370,8 +1388,10 @@ void main() {
         final stage = Phase0aStage(viewport: const Size(1280, 720));
         stage.updateCameraCenter(controller.state.player.position);
         final safeCenter = stage.safeRect.center;
+        const targetPoint = ArenaVector(80, 0);
 
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+        await tester.tapAt(stage.worldToScreen(targetPoint));
         await stepAndPump(tester);
 
         final vortexEntry = controller.feedback.firstWhere(
@@ -1434,8 +1454,10 @@ void main() {
       final stage = Phase0aStage(viewport: const Size(1440, 900));
       stage.updateCameraCenter(controller.state.player.position);
       final safeCenter = stage.safeRect.center;
+      const targetPoint = ArenaVector(80, 0);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.tapAt(stage.worldToScreen(targetPoint));
       await stepAndPump(tester);
 
       final vortexEntry = controller.feedback.firstWhere(

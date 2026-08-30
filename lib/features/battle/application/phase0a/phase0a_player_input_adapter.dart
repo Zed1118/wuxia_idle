@@ -26,6 +26,7 @@ final class Phase0aPlayerCommand {
     this.skillHotkey,
     this.skillAimDirection,
     this.gather = false,
+    this.gatherTargetPoint,
     this.clear = false,
     this.defenseAction,
     this.defenseDirection,
@@ -56,6 +57,9 @@ final class Phase0aPlayerCommand {
 
   /// Q 聚怪请求。
   final bool gather;
+
+  /// 地面定点聚怪中心；null 保留自动/旧调用的施放者中心兼容语义。
+  final ArenaVector? gatherTargetPoint;
 
   /// R 清场请求。
   final bool clear;
@@ -200,6 +204,7 @@ final class Phase0aPlayerInputAdapter {
           effectRadius: binding?.effectRadius ?? gatherEffectRadius,
           qiCost: binding?.qiCost ?? gatherQiCost,
           cooldownSeconds: binding?.cooldownSeconds ?? gatherCooldownSeconds,
+          targetPoint: command.gatherTargetPoint,
           postureDamage: binding == null
               ? powerMultiplierToPostureDamage(
                   gatherPowerMultiplier,

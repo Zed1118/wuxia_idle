@@ -113,6 +113,9 @@ final class Phase0aBattleController extends ChangeNotifier {
         ? right.skillAimDirection
         : left.skillAimDirection,
     gather: left.gather || right.gather,
+    gatherTargetPoint: right.gather
+        ? right.gatherTargetPoint
+        : left.gatherTargetPoint,
     clear: left.clear || right.clear,
     defenseAction: right.defenseAction ?? left.defenseAction,
     defenseDirection: right.defenseAction != null
