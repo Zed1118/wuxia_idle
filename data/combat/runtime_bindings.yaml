@@ -230,6 +230,130 @@ runtime_bindings:
         - ch2_sfx_hidden_weapon
         - ch2_sfx_lightfoot
         - ch2_sfx_instructor
+  - stage_id: stage_07_01
+    encounter_id: ch7_encounter_01_northern_outpost
+    base_enemy_id: enemy_erLiu_beidi_shuzu
+    entrances:
+      - id: ch7_entrance_s01_gate
+        spawn_position: {x: -520, y: 80}
+      - id: ch7_entrance_s01_wall
+        spawn_position: {x: 0, y: -120}
+      - id: ch7_entrance_s01_road
+        spawn_position: {x: 520, y: 80}
+    positions:
+      - id: ch7_position_s01_slot_01
+        world_position: {x: -360, y: 120}
+      - id: ch7_position_s01_slot_02
+        world_position: {x: -240, y: 140}
+      - id: ch7_position_s01_slot_03
+        world_position: {x: -120, y: 120}
+      - id: ch7_position_s01_slot_04
+        world_position: {x: 0, y: 140}
+      - id: ch7_position_s01_slot_05
+        world_position: {x: 120, y: 120}
+      - id: ch7_position_s01_slot_06
+        world_position: {x: 240, y: 140}
+      - id: ch7_position_s01_slot_07
+        world_position: {x: 360, y: 120}
+      - id: ch7_position_s01_slot_08
+        world_position: {x: -360, y: 0}
+      - id: ch7_position_s01_slot_09
+        world_position: {x: -120, y: 0}
+      - id: ch7_position_s01_slot_10
+        world_position: {x: 120, y: 0}
+    behaviors:
+      - id: ch7_behavior_shield_wall
+        ai_profile_id: ai_army_shield_wall
+        token_policy: melee
+        priority: 1
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch7_behavior_archer_volley
+        ai_profile_id: ai_army_archer_volley
+        token_policy: ranged
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch7_behavior_spear_charge
+        ai_profile_id: ai_army_spear_charge
+        token_policy: charge
+        priority: 2
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+      - id: ch7_behavior_officer_command
+        ai_profile_id: ai_army_officer_command
+        token_policy: support
+        priority: 3
+        is_offscreen: false
+        is_high_impact: false
+        is_unblockable_area: false
+        spawn_grace_ticks_remaining: 0
+        telegraph_ready: true
+    ai_profiles:
+      - id: ai_army_shield_wall
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: close_range
+      - id: ai_army_archer_volley
+        target_policy: nearest_player
+        movement_policy: hold_distance
+        attack_policy: ranged_pressure
+      - id: ai_army_spear_charge
+        target_policy: nearest_player
+        movement_policy: lateral_flank
+        attack_policy: charge_and_reposition
+      - id: ai_army_officer_command
+        target_policy: nearest_player
+        movement_policy: guarded_position
+        attack_policy: support_pulse
+    attack_sets:
+      - id: ch7_attack_set_shield
+        skill_ids: [skill_gangmeng_mingjia_basic]
+      - id: ch7_attack_set_archer
+        skill_ids: [skill_lingqiao_mingjia_basic]
+      - id: ch7_attack_set_spear_charger
+        skill_ids: [skill_gangmeng_mingjia_basic]
+      - id: ch7_attack_set_standard_officer
+        skill_ids: [skill_gangmeng_mingjia_basic, skill_gangmeng_mingjia_skill]
+    visual_variants:
+      - id: ch7_visual_shield_a
+        asset_path: assets/enemies/battle_massbattle_guanqi_c.png
+      - id: ch7_visual_shield_b
+        asset_path: assets/enemies/battle_tongguan_shoujiang.png
+      - id: ch7_visual_archer_a
+        asset_path: assets/enemies/battle_massbattle_guanqi_a.png
+      - id: ch7_visual_archer_b
+        asset_path: assets/enemies/battle_massbattle_guanqi_b.png
+      - id: ch7_visual_spear_charger_a
+        asset_path: assets/enemies/battle_guard_a.png
+      - id: ch7_visual_spear_charger_b
+        asset_path: assets/enemies/battle_massbattle_canbu_b.png
+      - id: ch7_visual_standard_officer_a
+        asset_path: assets/enemies/battle_massbattle_canbu_a.png
+      - id: ch7_visual_standard_officer_b
+        asset_path: assets/enemies/battle_lightfoot_changfeng_a.png
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids:
+        - ch7_posture_shield
+        - ch7_posture_archer
+        - ch7_posture_spear_charger
+        - ch7_posture_standard_officer
+      drop_group_ids: [ch7_drop_group_army_encounter]
+      sfx_group_ids:
+        - ch7_sfx_shield
+        - ch7_sfx_archer
+        - ch7_sfx_spear_charger
+        - ch7_sfx_standard_officer
   - stage_id: stage_01_02
     encounter_id: ch1_encounter_02_stronghold
     base_enemy_id: enemy_xueTu_rufflian_a

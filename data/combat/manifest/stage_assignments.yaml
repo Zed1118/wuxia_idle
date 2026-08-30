@@ -1,4 +1,4 @@
-# Migrated mainline routes: all Chapter 1 stages plus the Chapter 2 sect slice.
+# Migrated mainline routes: all Chapter 1 stages plus the Chapter 2 sect and Chapter 7 army slices.
 stage_assignments:
   - stage_id: stage_01_01
     migration_state: migrated
@@ -18,3 +18,6 @@ stage_assignments:
   - stage_id: stage_02_02
     migration_state: migrated
     encounter_id: ch2_encounter_02_teahouse
+  - stage_id: stage_07_01
+    migration_state: migrated
+    encounter_id: ch7_encounter_01_northern_outpost

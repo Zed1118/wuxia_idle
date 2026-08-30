@@ -1,0 +1,195 @@
+# Production Chapter 7 army ecology vertical slice: 25 total, 10 active.
+encounters:
+  - id: ch7_encounter_01_northern_outpost
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets:
+      melee: 2
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch7_s01_shield_01
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_01
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_02
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_02
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_03
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_03
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_04
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_04
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_05
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_05
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_06
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_06
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_07
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_07
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_08
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_08
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_09
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_09
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_10
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_10
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_11
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_01
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_shield_12
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_02
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s01_archer_01
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_03
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_archer_02
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_04
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_archer_03
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_05
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_archer_04
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_06
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_archer_05
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_07
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_archer_06
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_08
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s01_charger_01
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_09
+        behavior_id: ch7_behavior_spear_charge
+      - entry_id: ch7_s01_charger_02
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_10
+        behavior_id: ch7_behavior_spear_charge
+      - entry_id: ch7_s01_charger_03
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_01
+        behavior_id: ch7_behavior_spear_charge
+      - entry_id: ch7_s01_charger_04
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_02
+        behavior_id: ch7_behavior_spear_charge
+      - entry_id: ch7_s01_charger_05
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_03
+        behavior_id: ch7_behavior_spear_charge
+      - entry_id: ch7_s01_officer_01
+        archetype_id: ch7_army
+        role_id: army_standard_officer
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_04
+        behavior_id: ch7_behavior_officer_command
+      - entry_id: ch7_s01_officer_02
+        archetype_id: ch7_army
+        role_id: army_standard_officer
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_05
+        behavior_id: ch7_behavior_officer_command
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch7_s01_clear_northern_outpost
+          kind: defeat_targets
+          target_ids:
+            - ch7_s01_shield_01
+            - ch7_s01_shield_02
+            - ch7_s01_shield_03
+            - ch7_s01_shield_04
+            - ch7_s01_shield_05
+            - ch7_s01_shield_06
+            - ch7_s01_shield_07
+            - ch7_s01_shield_08
+            - ch7_s01_shield_09
+            - ch7_s01_shield_10
+            - ch7_s01_shield_11
+            - ch7_s01_shield_12
+            - ch7_s01_archer_01
+            - ch7_s01_archer_02
+            - ch7_s01_archer_03
+            - ch7_s01_archer_04
+            - ch7_s01_archer_05
+            - ch7_s01_archer_06
+            - ch7_s01_charger_01
+            - ch7_s01_charger_02
+            - ch7_s01_charger_03
+            - ch7_s01_charger_04
+            - ch7_s01_charger_05
+            - ch7_s01_officer_01
+            - ch7_s01_officer_02

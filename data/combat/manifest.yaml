@@ -3,10 +3,12 @@
 archetype_sources:
   - data/combat/archetypes/bandits.yaml
   - data/combat/archetypes/sects.yaml
+  - data/combat/archetypes/army.yaml
 encounter_sources:
   - data/combat/encounters/chapter_01_templates.yaml
   - data/combat/encounters/black_wind_ridge.yaml
   - data/combat/encounters/chapter_02_sect_teahouse.yaml
+  - data/combat/encounters/chapter_07_army_outpost.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 reference_index:
@@ -25,6 +27,9 @@ reference_index:
     - ch2_entrance_s02_floor
     - ch2_entrance_s02_stairs
     - ch2_entrance_s02_courtyard
+    - ch7_entrance_s01_gate
+    - ch7_entrance_s01_wall
+    - ch7_entrance_s01_road
   position_ids:
     - ch1_position_s01_slot_01
     - ch1_position_s01_slot_02
@@ -73,6 +78,16 @@ reference_index:
     - ch2_position_s02_slot_08
     - ch2_position_s02_slot_09
     - ch2_position_s02_slot_10
+    - ch7_position_s01_slot_01
+    - ch7_position_s01_slot_02
+    - ch7_position_s01_slot_03
+    - ch7_position_s01_slot_04
+    - ch7_position_s01_slot_05
+    - ch7_position_s01_slot_06
+    - ch7_position_s01_slot_07
+    - ch7_position_s01_slot_08
+    - ch7_position_s01_slot_09
+    - ch7_position_s01_slot_10
   behavior_ids:
     - ch1_behavior_blade_press
     - ch1_behavior_crossbow_offset
@@ -82,6 +97,10 @@ reference_index:
     - ch2_behavior_hidden_offset
     - ch2_behavior_lightfoot_flank
     - ch2_behavior_instructor_command
+    - ch7_behavior_shield_wall
+    - ch7_behavior_archer_volley
+    - ch7_behavior_spear_charge
+    - ch7_behavior_officer_command
   attack_set_ids:
     - ch1_attack_set_blade
     - ch1_attack_set_crossbow
@@ -91,6 +110,10 @@ reference_index:
     - ch2_attack_set_hidden_weapon
     - ch2_attack_set_lightfoot
     - ch2_attack_set_instructor
+    - ch7_attack_set_shield
+    - ch7_attack_set_archer
+    - ch7_attack_set_spear_charger
+    - ch7_attack_set_standard_officer
   attack_tag_ids:
     - ch1_attack_tag_melee
     - ch1_attack_tag_projectile
@@ -100,6 +123,10 @@ reference_index:
     - ch2_attack_tag_projectile
     - ch2_attack_tag_charge
     - ch2_attack_tag_support
+    - ch7_attack_tag_melee
+    - ch7_attack_tag_projectile
+    - ch7_attack_tag_charge
+    - ch7_attack_tag_support
   posture_profile_ids:
     - ch1_posture_blade
     - ch1_posture_crossbow
@@ -109,9 +136,14 @@ reference_index:
     - ch2_posture_hidden_weapon
     - ch2_posture_lightfoot
     - ch2_posture_instructor
+    - ch7_posture_shield
+    - ch7_posture_archer
+    - ch7_posture_spear_charger
+    - ch7_posture_standard_officer
   drop_group_ids:
     - ch1_drop_group_bandit_encounter
     - ch2_drop_group_sect_encounter
+    - ch7_drop_group_army_encounter
   sfx_group_ids:
     - ch1_sfx_blade
     - ch1_sfx_crossbow
@@ -121,6 +153,10 @@ reference_index:
     - ch2_sfx_hidden_weapon
     - ch2_sfx_lightfoot
     - ch2_sfx_instructor
+    - ch7_sfx_shield
+    - ch7_sfx_archer
+    - ch7_sfx_spear_charger
+    - ch7_sfx_standard_officer
   visual_variant_ids:
     - ch1_visual_blade_a
     - ch1_visual_blade_b
@@ -138,6 +174,14 @@ reference_index:
     - ch2_visual_lightfoot_b
     - ch2_visual_instructor_a
     - ch2_visual_instructor_b
+    - ch7_visual_shield_a
+    - ch7_visual_shield_b
+    - ch7_visual_archer_a
+    - ch7_visual_archer_b
+    - ch7_visual_spear_charger_a
+    - ch7_visual_spear_charger_b
+    - ch7_visual_standard_officer_a
+    - ch7_visual_standard_officer_b
   objective_target_ids:
     - ch1_s01_blade_01
     - ch1_s01_blade_02
@@ -259,6 +303,31 @@ reference_index:
     - ch2_s02_lightfoot_03
     - ch2_s02_lightfoot_04
     - ch2_s02_instructor_01
+    - ch7_s01_shield_01
+    - ch7_s01_shield_02
+    - ch7_s01_shield_03
+    - ch7_s01_shield_04
+    - ch7_s01_shield_05
+    - ch7_s01_shield_06
+    - ch7_s01_shield_07
+    - ch7_s01_shield_08
+    - ch7_s01_shield_09
+    - ch7_s01_shield_10
+    - ch7_s01_shield_11
+    - ch7_s01_shield_12
+    - ch7_s01_archer_01
+    - ch7_s01_archer_02
+    - ch7_s01_archer_03
+    - ch7_s01_archer_04
+    - ch7_s01_archer_05
+    - ch7_s01_archer_06
+    - ch7_s01_charger_01
+    - ch7_s01_charger_02
+    - ch7_s01_charger_03
+    - ch7_s01_charger_04
+    - ch7_s01_charger_05
+    - ch7_s01_officer_01
+    - ch7_s01_officer_02
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
