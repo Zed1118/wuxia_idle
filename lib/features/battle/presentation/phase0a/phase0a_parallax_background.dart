@@ -20,14 +20,17 @@ final class Phase0aParallaxBackground extends StatelessWidget {
   Widget build(BuildContext context) => Transform.translate(
     key: const ValueKey('phase0a_background_parallax_translation'),
     offset: translationForCamera(cameraOffset),
-    child: Transform.scale(
-      key: const ValueKey('phase0a_background_parallax_scale'),
-      scale: Phase0aPresentationTokens.backgroundParallaxScale,
-      child: Image.asset(
-        'assets/scenes/battle_mountain_pass_stage_v2.png',
-        fit: BoxFit.cover,
-        filterQuality: FilterQuality.medium,
-        errorBuilder: (_, _, _) => const ColoredBox(color: WuxiaUi.ink),
+    child: RepaintBoundary(
+      key: const ValueKey('phase0a_background_static_raster_cache'),
+      child: Transform.scale(
+        key: const ValueKey('phase0a_background_parallax_scale'),
+        scale: Phase0aPresentationTokens.backgroundParallaxScale,
+        child: Image.asset(
+          'assets/scenes/battle_mountain_pass_stage_v2.png',
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.medium,
+          errorBuilder: (_, _, _) => const ColoredBox(color: WuxiaUi.ink),
+        ),
       ),
     ),
   );

@@ -235,6 +235,29 @@ void main() {
     expect(right.dx, -left.dx);
   });
 
+  testWidgets('视差平移只合成内层静态背景光栅缓存', (tester) async {
+    const rasterKey = ValueKey('phase0a_background_static_raster_cache');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SizedBox(
+          width: viewport.width,
+          height: viewport.height,
+          child: const Phase0aParallaxBackground(
+            cameraOffset: Offset(120, -40),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final translation = tester.widget<Transform>(find.byKey(translationKey));
+    expect(translation.child, isA<RepaintBoundary>());
+    final rasterBoundary = translation.child! as RepaintBoundary;
+    expect(rasterBoundary.key, rasterKey);
+    expect(rasterBoundary.child, isA<Transform>());
+    expect((rasterBoundary.child! as Transform).key, scaleKey);
+  });
+
   testWidgets('1440x900 视口背景仍保持 1.3 倍覆盖且无布局异常', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1440, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
