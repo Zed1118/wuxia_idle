@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
@@ -8,6 +9,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_vfx_controller.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 
@@ -82,6 +84,78 @@ void main() {
       isTrue,
     );
     expect(() => fixture.prewarmRestartPool(count: -1), throwsArgumentError);
+  });
+
+  test(
+    'M4 density profile keeps exactly 24 active enemies across restarts',
+    () async {
+      final densityFixture = await Phase0aDebugBattleFixture.loadM4Density(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+      );
+
+      expect(densityFixture.flow.state.enemies, hasLength(24));
+      expect(densityFixture.flow.waves, hasLength(1));
+      expect(
+        densityFixture.flow.state.enemies.map((enemy) => enemy.id).toSet(),
+        hasLength(24),
+      );
+      for (final enemy in densityFixture.flow.state.enemies) {
+        expect(
+          File(
+            densityFixture.roster.visualFor(enemy.id).assetPath,
+          ).existsSync(),
+          isTrue,
+          reason: enemy.id,
+        );
+      }
+
+      expect(densityFixture.fresh().flow.state.enemies, hasLength(24));
+      expect(
+        densityFixture
+            .prewarmRestartPool(count: 2)
+            .every((entry) => entry.flow.state.enemies.length == 24),
+        isTrue,
+      );
+    },
+  );
+
+  testWidgets('M4 density fixture mounts all 24 actors in production screen', (
+    tester,
+  ) async {
+    final densityFixture = (await tester.runAsync(
+      () => Phase0aDebugBattleFixture.loadM4Density(
+        assetLoader: loadTestAsset,
+        numbers: GameRepository.instance.numbers,
+      ),
+    ))!;
+    final controller = Phase0aBattleController(
+      flow: densityFixture.flow,
+      roster: densityFixture.roster,
+      fixedDeltaSeconds: densityFixture.fixedDeltaSeconds,
+    );
+    addTearDown(controller.dispose);
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Phase0aBattleScreen(controller: controller, autoStep: false),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('phase0a_battle_screen')), findsOneWidget);
+    for (final enemy in controller.state.enemies) {
+      expect(
+        find.byKey(ValueKey('phase0a_actor_${enemy.id}')),
+        findsOneWidget,
+        reason: enemy.id,
+      );
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
   });
 
   test(

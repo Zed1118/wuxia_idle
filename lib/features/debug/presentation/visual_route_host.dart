@@ -519,6 +519,12 @@ Future<Widget> buildVisualTarget(
         numbers: GameRepository.instance.numbers,
       );
       return _Phase0aProfilePreview(initialFixture: fixture);
+    case VisualRoute.phase0aM4DensityProfile:
+      final fixture = await Phase0aDebugBattleFixture.loadM4Density(
+        assetLoader: rootBundle.loadString,
+        numbers: GameRepository.instance.numbers,
+      );
+      return _Phase0aProfilePreview(initialFixture: fixture);
     case VisualRoute.phase0aBlackRidgeProfile:
       final repository = GameRepository.instance;
       await Phase2SeedService(isar: isar).seedVisualMasterAllTiers();

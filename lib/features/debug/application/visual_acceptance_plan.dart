@@ -199,6 +199,11 @@ List<String> _checksFor(VisualRoute route) {
       'Boss 与护法身份、血条和反馈不混淆',
       '最低视口下机制标签无溢出',
     ],
+    VisualRoute.phase0aM4DensityProfile => const [
+      '24 active 下玩家与关键威胁仍可辨',
+      '伤害数字、屏外提示与音效不遮蔽判断',
+      '双视口正式 Profile 性能矩阵另行签字',
+    ],
     VisualRoute.techniquePanelTierAll => const [
       '七阶心法 cover 同屏',
       '阶层梯度清楚',

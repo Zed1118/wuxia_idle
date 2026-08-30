@@ -43,6 +43,7 @@ final class Phase0aDebugBattleFixture {
        _numbers = numbers;
 
   static const String assetPath = 'data/phase0a_debug_battle.yaml';
+  static const int m4DensityActiveEnemyCount = 24;
 
   final Phase0aWaveBattleFlow flow;
   final Phase0aVisualRoster roster;
@@ -65,6 +66,46 @@ final class Phase0aDebugBattleFixture {
     return _fromConfig(config, numbers);
   }
 
+  /// Builds the M4 P09 high-density profile fixture from the existing typed
+  /// debug config without introducing a second gameplay tuning source.
+  static Future<Phase0aDebugBattleFixture> loadM4Density({
+    required Phase0aDebugAssetLoader assetLoader,
+    required NumbersConfig numbers,
+  }) async {
+    final yaml = parseYamlMap(await assetLoader(assetPath));
+    final waves = _mapList(yaml, 'waves');
+    final sourceEnemies = _mapList(waves.first, 'enemies');
+    final source = sourceEnemies.first;
+    final arena = _map(yaml, 'arena');
+    final minX = _number(arena, 'min_x');
+    final maxX = _number(arena, 'max_x');
+    final minY = _number(arena, 'min_y');
+    final maxY = _number(arena, 'max_y');
+    final columns = sqrt(m4DensityActiveEnemyCount).ceil();
+    final rows = (m4DensityActiveEnemyCount / columns).ceil();
+    final xStep = (maxX - minX) / (columns + 1);
+    final yStep = (maxY - minY) / (rows + 1);
+    final sourceCharacterId = _integer(source, 'character_id');
+    yaml['waves'] = [
+      {
+        'enemies': [
+          for (var index = 0; index < m4DensityActiveEnemyCount; index += 1)
+            <String, dynamic>{
+              ...source,
+              'id': 'm4_density_${(index + 1).toString().padLeft(2, '0')}',
+              'character_id': sourceCharacterId + index,
+              'slot_index': index,
+              'position': [
+                minX + (index % columns + 1) * xStep,
+                minY + (index ~/ columns + 1) * yStep,
+              ],
+            },
+        ],
+      },
+    ];
+    return _fromConfig(_DebugBattleConfig.fromYaml(yaml), numbers);
+  }
+
   /// Rebuilds mutable combat state from the parsed fixture configuration.
   /// Profile loops avoid repeated YAML I/O/parsing at battle boundaries so
   /// debug-only allocation spikes do not contaminate production-frame data.
@@ -84,9 +125,13 @@ final class Phase0aDebugBattleFixture {
     _DebugBattleConfig config,
     NumbersConfig numbers,
   ) {
-    final roster = Phase0aVisualRoster.debugBattle();
     final playerActor = config.playerActor();
     final waves = config.waves(numbers);
+    final roster = Phase0aVisualRoster.debugBattle(
+      extraEnemyIds: waves.expand(
+        (wave) => wave.enemies.map((enemy) => enemy.id),
+      ),
+    );
     final combatants = config.combatants();
     for (final combatant in combatants) {
       roster.visualFor(combatant.actorId);
