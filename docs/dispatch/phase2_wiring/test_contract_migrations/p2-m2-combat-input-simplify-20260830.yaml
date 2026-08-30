@@ -1,8 +1,8 @@
 schema_version: 1
 ticket: p2-m2-combat-input-simplify-20260830
 base_sha: ef6a6802dcc61bf4cbf2bb9a9463010e5004192c
-head_sha: 74c4085afb41949663c480c891592f89aae4b17b
-summary: 进步斩从镜头追平迁移为角色在镜头死区内前冲，玩家防御从 E/F/Z/Space 四入口迁移为仅 Space 闪避；旧断言锁定的正是本单要删除的玩家产品行为。
+head_sha: b653852e28607129b52fa485d1869857c17072c5
+summary: 玩家普攻从直刺、横扫、进步斩三段链迁移为无攻击位移的单段远程掌风，玩家防御仍仅保留 Space 闪避，并消费 macOS 移动键重复事件；旧断言锁定的正是本单要删除的玩家产品行为。
 
 migrations:
   - deleted: test('steady guard emits shield outside burst and dodge inside burst', () {
@@ -90,6 +90,120 @@ migrations:
   - deleted: expect(
     replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
     reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。
+
+  - deleted: test('生产 player mapping 只在 reducer 接受普攻后按剑形态三段链推进', () {
+    replacement: test('生产 player mapping 连续普攻始终无链段且玩家零攻击位移', () {
+    reason: 玩家生产路径不再注入三段链，新用例锁定连续普攻均无链段和攻击位移。
+  - deleted: expect(mapping.playerAdapter.basicAttackChain, swordBasicAttackChain);
+    replacement: expect(mapping.playerAdapter.basicAttackChain, isNull);
+    reason: 旧断言强制生产接入三段链，与用户要求的单段远程普攻相反。
+  - deleted: expect(flow.state.player.basicAttackSegmentIndex, 1);
+    replacement: expect(flow.state.player.basicAttackSegmentIndex, 0);
+    reason: 无链段普攻不再推进三段索引，新断言锁定索引保持初始值。
+  - deleted: expect(flow.state.player.basicAttackSegmentIndex, 1);
+    replacement: expect(flow.state.player.basicAttackSegmentIndex, 0);
+    reason: 连续无链段普攻同样不得推进三段索引。
+  - deleted: expect(segmentIds, [...swordBasicAttackSegmentIds, 'sword_thrust']);
+    replacement: expect(attackSegments, List<BasicAttackSegment?>.filled(4, null));
+    reason: 旧断言验收三段循环，新断言验收四次被接受的普攻都没有链段身份。
+
+  - deleted: test('进步斩出手拍不叠加普通移动且下一拍恢复 held movement 语义', () {
+    replacement: test('单段远程普攻与 held movement 同拍兼容且不附加攻击位移', () {
+    reason: 生产玩家已无进步斩，新用例锁定攻击同拍只有普通移动且下一拍继续移动。
+  - deleted: expect(advancing.advanceDistance, 120);
+    replacement: expect(attackTick.state.player.basicAttackSegmentIndex, 0);
+    reason: 单段远程普攻没有 advance，替代断言锁定无链索引状态。
+
+  - deleted: group('玩家攻击分型:近战墨痕 / 远程掌风', () {
+    replacement: group('玩家单段远程普攻', () {
+    reason: 玩家不再按近远距离切换两种攻击身份，统一为远程掌风。
+  - deleted: testWidgets('真实 debug 生产链遍历直刺、横扫、进步斩三种墨痕', (tester) async {
+    replacement: testWidgets('真实 debug 生产链连续命中始终无链段且攻击不附加位移', (tester) async {
+    reason: debug 玩家路径与生产语义同步，不再遍历三段链。
+  - deleted: expect(seen, swordBasicAttackSegmentIds.toSet());
+    replacement: expect(hitCount, 4);
+    reason: 旧断言要求看到三种链段，新断言只要求连续四次单段远程命中完成。
+  - deleted: testWidgets('整局进攻中两种 VFX 均出现且同拍互斥', (tester) async {
+    replacement: testWidgets('连续四次玩家命中只出现远程掌风，不再出现近战墨痕', (tester) async {
+    reason: 玩家攻击表现从近战墨痕与掌风双分型迁移为唯一掌风。
+  - deleted: expect(find.byKey(actionKey('player')), findsOneWidget);
+    replacement: expect(find.byKey(actionKey('player')), findsOneWidget);
+    reason: 该断言因所属用例迁移而重写，仍保留玩家动作可见契约。
+  - deleted: expect(find.byKey(meleeSlashKey), findsOneWidget);
+    replacement: expect(find.byKey(meleeSlashKey), findsNothing);
+    reason: 单段远程普攻任何命中都不得生成近战墨痕。
+  - deleted: expect(find.byKey(palmTrailKey), findsNothing);
+    replacement: expect(find.byKey(palmTrailKey), findsOneWidget);
+    reason: 玩家每次命中均统一生成远程掌风轨迹。
+  - deleted: expect(trailSeen, isTrue, reason: 'fixture 必含一次玩家远距命中');
+    replacement: expect(trailSeen, isTrue, reason: 'fixture 必含玩家远距命中');
+    reason: 用例从双分型迁移为统一掌风，仍保留至少一次掌风命中的夹具守卫。
+  - deleted: expect(slashSeen, isTrue, reason: 'fixture 必含一次玩家近距命中');
+    replacement: expect(playerHitCount, greaterThanOrEqualTo(4));
+    reason: 近距墨痕产品语义已删除，替代断言保证连续命中样本充足。
+
+  - deleted: test('玩家近程命中产生双弧墨痕,远程命中产生掌风且互斥', () {
+    replacement: test('玩家统一远程普攻在近距与远距命中都只产生掌风', () {
+    reason: 近距与远距不再切换表现，两者均须生成掌风且没有墨痕。
+  - deleted: expect(trails, hasLength(1));
+    replacement: expect(trails, hasLength(2));
+    reason: 旧契约只有远距命中生成掌风，新契约要求近距和远距各生成一条。
+  - deleted: expect(trails, hasLength(1));
+    replacement: expect(trails, hasLength(2));
+    reason: critical 分支同步迁移为近距和远距都生成掌风。
+  - deleted: expect(trails.single.actorId, 'player');
+    replacement: expect(trails.map((entry) => entry.actorId), everyElement('player'));
+    reason: 掌风从单条变为两条，替代断言逐条锁定来源均为玩家。
+  - deleted: expect(trails.single.targetId, 'far');
+    replacement: expect(trails, hasLength(2));
+    reason: 掌风不再只有 far 目标，替代断言锁定近远两个样本都产生轨迹。
+  - deleted: expect(slashes, hasLength(1));
+    replacement: expect(slashes, isEmpty);
+    reason: 单段远程普攻不再产生任何近战墨痕。
+  - deleted: expect(slashes, hasLength(1));
+    replacement: expect(slashes, isEmpty);
+    reason: critical 分支同样不得恢复近战墨痕。
+  - deleted: expect(slashes.single.actorId, 'player');
+    replacement: expect(slashes, isEmpty);
+    reason: 近战墨痕集合已为空，不再存在 actor 归属断言。
+  - deleted: expect(slashes.single.targetId, 'near');
+    replacement: expect(slashes, isEmpty);
+    reason: 近距目标也使用掌风，不再产生 slash target。
+  - deleted: expect(slashes.single.anchor, const ArenaVector(20, 0));
+    replacement: expect(slashes, isEmpty);
+    reason: 近战墨痕 anchor 产品语义随墨痕删除。
+  - deleted: expect(slash.isCritical, isTrue);
+    replacement: expect(trail.isCritical, isTrue);
+    reason: 暴击表现契约从近战墨痕迁移到唯一远程掌风。
+  - deleted: test('双弧墨痕/掌风坐标 event-first,与同步位置无关', () {
+    replacement: test('统一远程掌风坐标 event-first,与同步位置无关', () {
+    reason: event-first 坐标契约保留，但唯一输出类型变为远程掌风。
+  - deleted: expect(slashes.single.anchor, const ArenaVector(510, 0));
+    replacement: expect(slashes, isEmpty);
+    reason: 统一远程表现后没有 slash anchor，替代断言明确集合为空。
+  - deleted: expect(trails.single.source, const ArenaVector(0, 0));
+    replacement: expect(trails[1].source, const ArenaVector(0, 0));
+    reason: 掌风样本从一条变为近远两条，远距样本继续验证 event-first source。
+  - deleted: expect(trails.single.vfxTarget, ArenaVector(far, 0));
+    replacement: expect(trails[1].vfxTarget, ArenaVector(far, 0));
+    reason: 远距掌风继续使用事件目标坐标，只调整为两条列表中的远距项。
+
+  - deleted: expect(mixedHost.flow.state.player.position.x, greaterThan(520));
+    replacement: expect(mixedHost.flow.state.player.position.x, 511);
+    reason: 取消进步斩位移后混合帧只有普通移动 21，替代断言锁定不会因攻击跨过 checkpoint。
+
+  - deleted: expect(
+    replacement: expect(hit.basicAttackSegment, isNull);
+    reason: 旧三段链多行断言迁移为每次命中均无链段身份。
+  - deleted: expect(
+    replacement: expect(hit.basicAttackSegment, isNull);
+    reason: 旧进步斩位移多行断言迁移为单段远程命中无链段。
+  - deleted: expect(
+    replacement: expect(hit.basicAttackSegment, isNull);
+    reason: 旧双 VFX 多行断言迁移为统一远程命中无链段。
+  - deleted: expect(
+    replacement: expect(hit.basicAttackSegment, isNull);
+    reason: 旧 checkpoint 三段断言迁移为统一远程命中无链段。
   - deleted: expect(
     replacement: expect(events.whereType<Phase0aDefenseStarted>(), isEmpty);
     reason: 旧多行防御断言片段属于已删除的 E/F/Z 启动或三项 HUD 契约，新契约以无防御事件为核心替代。

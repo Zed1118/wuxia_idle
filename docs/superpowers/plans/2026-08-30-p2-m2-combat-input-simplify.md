@@ -1,55 +1,54 @@
-# M2 进步斩镜头与防御输入收敛计划
+# M2 单段远程普攻与移动输入静音计划
 
 ## 结果合同
 
-- 单一目标：修复用户在 `stage_01_02` 反馈的第三段进步斩拉扯、
-  近敌截停收尾抽搐，并将玩家侧主动防御收敛为仅 `Space` 闪避。
-- 验收分母：生产 `Phase0aBattleScreen` 中进步斩时角色在屏幕上
-  有可见前冲；短距离截停全程屏幕脚点不回退；`E/F/Z` 不产生
-  防御事件；`Space` 仍产生闪避；HUD 仅显示 `Space 闪避`；
-  playerBot 不再使用护盾或化解。
+- 单一目标：响应用户在 `stage_01_02` 的真人反馈，取消玩家生产路径的
+  直刺→横扫→进步斩三段链，改为无前冲、无链段切换的单段远程普攻，
+  并消除长按移动键时 macOS 连续提示音。
+- 验收分母：生产和 debug player mapping 均不注入 basic attack chain、
+  geometry registry 或 arena bounds；每次被 reducer 接受的玩家普攻都没有
+  `basicAttackSegment` 且不附加攻击位移；近距和远距命中均只产生同一种
+  掌风轨迹；macOS 的 `KeyRepeatEvent` 被战斗屏消费但不重复入队。
 - 基线：`ef6a6802dcc61bf4cbf2bb9a9463010e5004192c`；分支
   `codex/p2-m2-combat-input-simplify-20260830`；独立 worktree
   `/Users/a10506/.codex/worktrees/p2-m2-combat-input-simplify-20260830`。
-- 预期增量：交付 M2 手感复验候选；G2 继续 FAIL，用户在 1-2 真人复验
-  前不改判；M3/M4 不启动。
-- 成本边界：单 WIP，不改 schema/存档/现有 `numbers.yaml` 数值，
-  不拆 checkpoint 移动归因守卫；超过约 90 分钟无验收门变化则重评。
+- 当前候选前态：`456c247f5649152e3b5863f231b0d50a9408c96c` 虽完成前一轮
+  镜头与防御输入收敛，但用户真人复验仍感到第三段拉扯和抽搐，故不接受。
+- 预期增量：交付新的 M2 真人复验候选；G2 继续 FAIL，用户在 1-2
+  重新试玩前不改判；M3/M4 不启动。
+- 成本边界：单 WIP，不改 schema/存档/checkpoint 移动归因守卫、
+  `strings.dart`、现有 `numbers.yaml` 数值或既有 range/cooldown；不合并、
+  不 push。
 
 ## 实施选择
 
-1. 保留 M2 已冻结的直刺→横扫→进步斩三段链与 `advance_distance=120.0`；
-   本单不擅自删除三段产品语义。
-2. 镜头在玩家渲染坐标周围保留世界空间死区；120 单位进步斩
-   主要表现为角色向前，只由镜头消化超出死区的余量。
-3. 移除 actor 外层固定 4px 步态偏移，避免短距离截停收尾帧离散回抽。
-4. 移除人类玩家 `E/F/Z` 生产输入、守势/化解 HUD 和 bot 的
-   shield/parry 选择；保留底层 defense intent/reducer 作为 parked 能力，
-   不改 schema 或存档结构。
+1. 生产和 debug player adapter 不再注入 `swordBasicAttackChain`，沿用已有
+   标量射程、角度和冷却；底层链配置保留为 parked/historical 能力，不再有
+   玩家生产消费者。
+2. 单段普攻不产生 `basicAttackSegment`、advance 或截停位移；普通移动仍按
+   held input 每个 fixed tick 采样，攻击与移动同拍只产生正常移动量。
+3. 玩家命中无论距离均使用已有 `palmTrail` 表现，形成稳定、可辨认的单一
+   远程攻击，不新增美术或数值。
+4. `W/A/S/D/J` 的 macOS `KeyRepeatEvent` 返回 handled，阻止未处理键事件
+   冒泡到系统产生“滴滴”提示音；重复事件不入队，按住状态与松键语义不变。
+5. 前一候选已经完成的仅 `Space` 闪避、移除 `E/F/Z` 玩家防御入口继续保留。
 
 ## 当前恢复点
 
-- 状态：候选验证完成，正在形成最终 `[READY]` tip 并运行 receipt/gate；
-  未经用户真人复验，不等于 G2 通过。
-- 实现提交：`9029d24d`（`消除进步斩拉扯并精简防御输入`）。
-- 初始 RED：实现前实测 8 项失败，包括角色屏幕前冲 `Actual: 0.0`、
-  `E/F/Z` 各自仍发出防御事件、两视口 HUD 仍显示三项、bot 仍出 shield。
-- 近敌截停 RED：18 世界单位短进步斩在收尾帧从
-  `663.74` 回退到 `662.28125`；移除 4px 离散偏移后该用例通过。
-- 双向破坏证红：将水平镜头死区临时改为 0，进步斩屏幕前冲守卫
-  1 项失败；临时恢复 `Z || Space` 闪避映射，`Z` 禁用守卫 1 项失败。
-  两向均已用精确反向补丁还原，worktree 回到提交态。
-- 已验证：直接 targeted `+47`；扩展 Phase0A 表现层与主线相邻组
-  `+221`；`flutter analyze lib test` 为 `No issues found!`；整仓 format 为
-  `1647 files (0 changed)`。
-- 持锁全量：`05:17 +5707: All tests passed!`，`[E]` 0，
-  `/Users/a10506/.claude/locks/wuxia_full_test.lock` 已精确释放。
-- 测试契约迁移：旧 shield/parry/Z/HUD/camera 断言正是本单修改的产品
-  语义；已登记 35 条，机器校验为 `expect 删 27 / 增 32`、
-  `用例 删 8 / 增 9`，`PASS: test_contract_migration`。
-- 已知环境基线：裸 `flutter analyze` 会跨入独立子包
-  `tools/phase0minus_probe` 并因其未安装 Flame/子包依赖报 1943 项；
-  根应用权威分析边界是 `lib test`。
-- 下一步：形成 `[READY]` tip，生成与该 tip 绑定的外置 receipt 并运行
-  gate；然后从本 worktree 启动 macOS 应用交用户在 1-2 复验。
+- 实现提交：`b653852e28607129b52fa485d1869857c17072c5`
+  （`取消三段普攻并消除移动键提示音`），worktree 干净。
+- 初始 RED：测试先改后实测 6 项失败，分别覆盖三段仍被 production mapping
+  注入、进步斩仍产生 120 位移、checkpoint 用例仍出现进步斩链段、
+  macOS repeat 未消费及两项真实 BattleScreen 链段/VFX 行为。
+- 实现路线校验：曾尝试保留单一 `sword_thrust` 链段，但 Chapter 1
+  `stage_01_05` headless 战败且 25 seeds 从 25/25 退化为 20/25，已否决且
+  未提交；最终采用完全不注入 chain 的现有 scalar attack 路径。
+- 已验证：直接相关 101 项通过；扩展 Phase0A、debug 与 mainline 相邻组
+  `+1417: All tests passed!`；`flutter analyze --no-pub lib test` 为
+  `No issues found!`；`git diff --check` 通过。
+- 双向破坏证红：临时恢复 production `swordBasicAttackChain`，生产映射守卫
+  1 项失败；临时把 movement `KeyRepeatEvent` 改回 ignored，macOS 输入守卫
+  1 项失败。两向均已精确反向还原，worktree 回到提交态。
+- 待完成：更新本次契约迁移登记，整仓 format、持锁全量、migration gate、
+  总 gate 与外置 receipt，然后从本 worktree 启动 macOS 候选供用户复验。
 - 尚未结论：用户手感、G2、合并、push、CI 均未通过。
