@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../application/phase0a/phase0a_survive_objective_observation.dart';
 import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -11,6 +12,19 @@ import '../../domain/phase0a/phase0a_wave.dart';
 import 'phase0a_event_sequencer.dart';
 import 'phase0a_vfx_controller.dart';
 import 'phase0a_visual_roster.dart';
+
+final class Phase0aSurviveObjectiveProgress {
+  const Phase0aSurviveObjectiveProgress({
+    required this.requiredTicks,
+    required this.elapsedTicks,
+  });
+
+  final int requiredTicks;
+  final int elapsedTicks;
+
+  int get remainingTicks => requiredTicks - elapsedTicks;
+  bool get completed => elapsedTicks >= requiredTicks;
+}
 
 final class Phase0aBattleController extends ChangeNotifier {
   Phase0aBattleController({
@@ -50,6 +64,26 @@ final class Phase0aBattleController extends ChangeNotifier {
   List<CombatEventRecord> get lastEventRecords => _flow.lastOrderedEventRecords;
   List<Phase0aEvent> get events => _events;
   List<Phase0aVfxEntry> get feedback => _feedback;
+
+  Phase0aSurviveObjectiveProgress? get surviveObjectiveProgress {
+    final flow = _flow;
+    if (flow is! Phase0aSurviveObjectiveObservationSource) return null;
+    final observation = (flow as Phase0aSurviveObjectiveObservationSource)
+        .surviveObjectiveObservation;
+    if (observation == null) return null;
+
+    final tickMicroseconds =
+        (fixedDeltaSeconds * Duration.microsecondsPerSecond).round();
+    final requiredTicks =
+        (observation.requiredDuration.inMicroseconds / tickMicroseconds).ceil();
+    final elapsedTicks = (observation.elapsed.inMicroseconds / tickMicroseconds)
+        .floor()
+        .clamp(0, requiredTicks);
+    return Phase0aSurviveObjectiveProgress(
+      requiredTicks: requiredTicks,
+      elapsedTicks: elapsedTicks,
+    );
+  }
 
   /// 终局重开(9B):换入调用方装配的全新 flow,重建排序器与 VFX 控制器,
   /// 清空 pending/事件/反馈缓存。只换实例,不触碰 domain 任何规则;

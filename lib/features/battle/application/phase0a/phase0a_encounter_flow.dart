@@ -16,6 +16,7 @@ import 'phase0a_enemy_intent_gate.dart';
 import 'phase0a_objective_runtime_tracker.dart';
 import 'phase0a_player_input_adapter.dart';
 import 'phase0a_spawn_event_adapter.dart';
+import 'phase0a_survive_objective_observation.dart';
 import 'phase0a_wave_battle_flow.dart';
 
 /// Compatibility seam for the future encounter flow.
@@ -24,7 +25,10 @@ import 'phase0a_wave_battle_flow.dart';
 /// create another session/reducer, consume encounter directors, or infer any
 /// production policy.
 final class Phase0aEncounterFlow
-    implements Phase0aBattleFlow, Phase0aEncounterRuntimeObservationSource {
+    implements
+        Phase0aBattleFlow,
+        Phase0aEncounterRuntimeObservationSource,
+        Phase0aSurviveObjectiveObservationSource {
   Phase0aEncounterFlow.compatibility({required Phase0aWaveBattleFlow legacy})
     : _legacy = legacy,
       _objectiveTracker = null,
@@ -127,6 +131,21 @@ final class Phase0aEncounterFlow
         objectiveProgress: objectiveProgress,
         lastAttackTokenLeaseBatchReceipt: lastAttackTokenLeaseBatchReceipt,
       );
+
+  @override
+  Phase0aSurviveObjectiveObservation? get surviveObjectiveObservation {
+    final tracker = _objectiveTracker;
+    if (tracker == null) return null;
+    for (var index = 0; index < tracker.controller.clauses.length; index += 1) {
+      final objective = tracker.controller.clauses[index].objective;
+      if (objective is! SurviveDurationObjective) continue;
+      return Phase0aSurviveObjectiveObservation(
+        requiredDuration: objective.requiredDuration,
+        elapsed: tracker.progress.clauses[index].progress.elapsed,
+      );
+    }
+    return null;
+  }
 
   SpawnDirectorState get spawnState {
     final director = _director;

@@ -1018,6 +1018,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         body: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
+            final typedSurvive = controller.surviveObjectiveProgress;
             final stage = Phase0aStage(
               viewport: size,
               cameraCenter:
@@ -1098,7 +1099,12 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     controller.state.player.id,
                   ),
                 ),
-                if (controller.state.winCondition?.isSurviveTicks == true)
+                if (typedSurvive != null)
+                  _SurviveConditionBanner(
+                    requiredTicks: typedSurvive.requiredTicks,
+                    currentTick: typedSurvive.elapsedTicks,
+                  )
+                else if (controller.state.winCondition?.isSurviveTicks == true)
                   _SurviveConditionBanner(
                     requiredTicks:
                         controller.state.winCondition!.surviveTicksRequired!,
@@ -2654,7 +2660,9 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: Center(
           child: Text(
             outcome == Phase0aBattleOutcome.victory &&
-                    widget.controller.state.winCondition?.isSurviveTicks == true
+                    (widget.controller.surviveObjectiveProgress != null ||
+                        widget.controller.state.winCondition?.isSurviveTicks ==
+                            true)
                 ? UiStrings.battleResultSurvived
                 : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal
