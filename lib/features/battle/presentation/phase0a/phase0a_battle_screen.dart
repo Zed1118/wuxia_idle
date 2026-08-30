@@ -33,6 +33,9 @@ import 'phase0a_stage.dart';
 import 'phase0a_vfx_controller.dart';
 import 'phase0a_visual_roster.dart';
 
+String get _phase0aDodgeKeyLabel =>
+    UiStrings.phase0aDefenseDodgeKey.replaceFirst('Z', 'Space');
+
 final class Phase0aBattleScreen extends StatefulWidget {
   const Phase0aBattleScreen({
     super.key,
@@ -1758,14 +1761,14 @@ class _PlayerHud extends StatelessWidget {
               const SizedBox(height: Phase0aPresentationTokens.hudGap),
               Semantics(
                 container: true,
-                label: UiStrings.phase0aDefenseSemantics,
+                label: _phase0aDodgeKeyLabel,
                 child: Wrap(
                   spacing: 6,
                   runSpacing: 2,
                   children: [
                     _DefenseActionStatus(
                       actionId: 'dodge',
-                      label: UiStrings.phase0aDefenseDodgeKey,
+                      label: _phase0aDodgeKeyLabel,
                       status: defenseStatus,
                       available: defenseAvailable,
                       labelColor: player.dodgeTicksRemaining > 0
@@ -1804,6 +1807,7 @@ class _DefenseActionStatus extends StatelessWidget {
     children: [
       Text(
         label,
+        key: ValueKey<String>('phase0a_defense_label_$actionId'),
         style: TextStyle(
           color: labelColor,
           fontSize: 12,
@@ -1949,7 +1953,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           children.add(
             _bossMechanicBanner(
               key: ValueKey('phase0a_defense_start_${held.id}'),
-              label: UiStrings.phase0aDefenseStarted,
+              label: _phase0aDodgeKeyLabel,
               accent: WuxiaUi.qingOnDark,
             ),
           );
@@ -1957,7 +1961,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           children.add(
             _bossMechanicBanner(
               key: ValueKey('phase0a_defense_resolved_${held.id}'),
-              label: UiStrings.phase0aDefenseResolved,
+              label: _phase0aDodgeKeyLabel,
               accent: WuxiaUi.gold,
             ),
           );

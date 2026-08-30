@@ -87,7 +87,9 @@ void main() {
     expect(
       find.descendant(
         of: feedback,
-        matching: find.text(UiStrings.phase0aDefenseStarted),
+        matching: find.text(
+          UiStrings.phase0aDefenseDodgeKey.replaceFirst('Z', 'Space'),
+        ),
       ),
       findsOneWidget,
     );
@@ -135,7 +137,9 @@ void main() {
     );
     expect(
       tester
-          .widget<Text>(find.text(UiStrings.phase0aDefenseDodgeKey))
+          .widget<Text>(
+            find.byKey(const ValueKey<String>('phase0a_defense_label_dodge')),
+          )
           .style
           ?.color,
       WuxiaUi.qing,

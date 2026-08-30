@@ -218,7 +218,10 @@ void main() {
       expect(tester.getSize(status).height, greaterThan(0));
       expect(defenseStatus('shield'), findsNothing);
       expect(defenseStatus('parry'), findsNothing);
-      expect(find.text(UiStrings.phase0aDefenseDodgeKey), findsOneWidget);
+      expect(
+        find.text(UiStrings.phase0aDefenseDodgeKey.replaceFirst('Z', 'Space')),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     });
   }

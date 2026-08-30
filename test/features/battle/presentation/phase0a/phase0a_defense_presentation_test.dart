@@ -169,7 +169,7 @@ void main() {
       tester,
       event: started,
       keyPrefix: 'phase0a_defense_start_',
-      label: UiStrings.phase0aDefenseStarted,
+      label: UiStrings.phase0aDefenseDodgeKey.replaceFirst('Z', 'Space'),
     );
   });
 
@@ -180,7 +180,7 @@ void main() {
       tester,
       event: resolved,
       keyPrefix: 'phase0a_defense_resolved_',
-      label: UiStrings.phase0aDefenseResolved,
+      label: UiStrings.phase0aDefenseDodgeKey.replaceFirst('Z', 'Space'),
     );
   });
 }
