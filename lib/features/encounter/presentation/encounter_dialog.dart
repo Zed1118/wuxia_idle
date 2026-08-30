@@ -389,26 +389,24 @@ class _ConfirmButton extends StatelessWidget {
 /// W15 C-2 语义保持:UnlockSkillApplied 摘要用 SkillDef.name 中文招名;
 /// GameRepository 未加载或 id 未注册时降级回 raw id(test fixture 不全 / race 兜底)。
 ///
-/// fire-and-forget:浮层自管生命周期(auto-dismiss / tap 关闭后 Navigator.pop),
-/// caller 无需 await。
-void showEncounterOutcomeBanner({
+/// 返回的 Future 在 auto-dismiss 或轻触关闭后完成。caller 必须 await，确保
+/// 后续路由不会在不可穿透的浮层背后提前推进。
+Future<void> showEncounterOutcomeBanner({
   required BuildContext context,
   required OutcomeApplied applied,
 }) {
   final outcome = _EncounterOutcomePresentation.from(applied);
-  unawaited(
-    showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.transparent,
-      transitionDuration: Duration.zero,
-      pageBuilder: (ctx, _, _) => EncounterOutcomeOverlay(
-        title: outcome.title,
-        message: outcome.message,
-        icon: outcome.icon,
-        color: outcome.color,
-        onDone: () => Navigator.of(ctx).pop(),
-      ),
+  return showGeneralDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.transparent,
+    transitionDuration: Duration.zero,
+    pageBuilder: (ctx, _, _) => EncounterOutcomeOverlay(
+      title: outcome.title,
+      message: outcome.message,
+      icon: outcome.icon,
+      color: outcome.color,
+      onDone: () => Navigator.of(ctx).pop(),
     ),
   );
 }

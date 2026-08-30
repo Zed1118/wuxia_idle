@@ -137,7 +137,7 @@ Future<void> runEncounterHookAfterVictory({
         encounterId: triggeredDef.id,
       );
       if (!context.mounted) return;
-      showEncounterOutcomeBanner(context: context, applied: applied);
+      await showEncounterOutcomeBanner(context: context, applied: applied);
       return;
     }
     // outcomeId == 'accept_recruit' → 走 sect wire(B2 抽公共 helper)
@@ -145,7 +145,7 @@ Future<void> runEncounterHookAfterVictory({
     if (candidate == null) {
       // 红线已校 candidateRef 必在 sectCandidates · 此处保险 fallback
       debugPrint('sect candidate not loaded: ${asm.candidateRef}');
-      showEncounterOutcomeBanner(context: context, applied: applied);
+      await showEncounterOutcomeBanner(context: context, applied: applied);
       return;
     }
     // P4.1 1.1 Q6B B2 抽:`_handleSectRecruit` → `runSectRecruitFlow` 共用
@@ -179,7 +179,10 @@ Future<void> runEncounterHookAfterVictory({
           reputationPlayerId: reputationService == null ? null : 1,
         );
         if (!context.mounted) return;
-        showEncounterOutcomeBanner(context: context, applied: fallbackApplied);
+        await showEncounterOutcomeBanner(
+          context: context,
+          applied: fallbackApplied,
+        );
       },
       successSnackBar: UiStrings.sectEncounterRecruitSuccess(candidate.name),
       capFullSnackBar: UiStrings.sectEncounterRecruitCapFull(candidate.name),
@@ -188,5 +191,5 @@ Future<void> runEncounterHookAfterVictory({
     return;
   }
 
-  showEncounterOutcomeBanner(context: context, applied: applied);
+  await showEncounterOutcomeBanner(context: context, applied: applied);
 }

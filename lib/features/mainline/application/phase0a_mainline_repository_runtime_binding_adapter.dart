@@ -128,7 +128,6 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       variant: variant,
       skills: binding.attackSet.skills,
       repository: repo,
-      entryId: entry.entryId,
       visualAssetPath: binding.visualVariant.assetPath,
       preserveBaseBossIdentity: preserveBaseBossIdentity,
     );
@@ -285,7 +284,6 @@ CombatantSnapshot _applyVariant({
   required CombatArchetypeVariant variant,
   required List<SkillDef> skills,
   required GameRepository repository,
-  required String entryId,
   required String visualAssetPath,
   required bool preserveBaseBossIdentity,
 }) {
@@ -309,7 +307,7 @@ CombatantSnapshot _applyVariant({
   final stripBossIdentity = base.isBoss && !preserveBaseBossIdentity;
   return CombatantSnapshot(
     characterId: base.characterId,
-    name: stripBossIdentity ? entryId : base.name,
+    name: base.name,
     realmTier: base.realmTier,
     realmLayer: base.realmLayer,
     school: base.school,

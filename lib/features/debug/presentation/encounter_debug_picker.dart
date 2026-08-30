@@ -84,7 +84,7 @@ class _EncounterDebugPickerScreenState
         reputationPlayerId: reputationService == null ? null : 1,
       );
       if (!mounted) return;
-      showEncounterOutcomeBanner(context: context, applied: applied);
+      await showEncounterOutcomeBanner(context: context, applied: applied);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

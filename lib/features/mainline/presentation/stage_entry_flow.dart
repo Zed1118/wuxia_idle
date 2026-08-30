@@ -1215,7 +1215,7 @@ Future<bool> _drainMainlinePendingJianghuAffairs({
             throw StateError('Pending encounter claim was not applied');
           }
           if (!context.mounted) return false;
-          showEncounterOutcomeBanner(context: context, applied: applied);
+          await showEncounterOutcomeBanner(context: context, applied: applied);
           continue;
         }
 
@@ -1293,7 +1293,7 @@ Future<bool> _drainMainlinePendingJianghuAffairs({
         }
         if (!context.mounted) return false;
         if (fallbackApplied != null) {
-          showEncounterOutcomeBanner(
+          await showEncounterOutcomeBanner(
             context: context,
             applied: fallbackApplied!,
           );
@@ -1403,6 +1403,21 @@ Future<bool> _drainMainlinePendingJianghuAffairs({
     }
   }
 }
+
+@visibleForTesting
+Future<bool> drainMainlinePendingJianghuAffairsForTest({
+  required BuildContext context,
+  required WidgetRef ref,
+  required StageDef stage,
+  required MainlineDurableSettlementContext durableSettlement,
+  required bool includeStageBossRecruit,
+}) => _drainMainlinePendingJianghuAffairs(
+  context: context,
+  ref: ref,
+  stage: stage,
+  durableSettlement: durableSettlement,
+  includeStageBossRecruit: includeStageBossRecruit,
+);
 
 EncounterDef _encounterForPendingAffair(
   MainlinePendingJianghuAffairRef affair,

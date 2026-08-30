@@ -7,6 +7,7 @@ import 'package:wuxia_idle/data/defs/combat_catalog_manifest_def.dart';
 import 'package:wuxia_idle/data/defs/combat_enemy_archetype_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
@@ -271,6 +272,57 @@ void main() {
     );
     expect(host.flow.state.tick, 1);
   });
+
+  test(
+    'stage_01_04 production roster keeps localized enemy display names',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final source = container.read(
+        phase0aMainlineEncounterRuntimeBindingSourceProvider,
+      );
+      final bundle = await source.load(
+        stageId: 'stage_01_04',
+        encounterId: 'ch1_encounter_04_commander',
+        cycleIndex: 1,
+      );
+      final entries = catalog.encounterForStage('stage_01_04')!.spawnEntries;
+      final combatants = <Phase0aCombatantInput>[
+        Phase0aCombatantInput(
+          actorId: playerMapping.initialPlayer.id,
+          snapshot: playerMapping.snapshot,
+        ),
+      ];
+      final assets = <String, String>{};
+      for (var index = 0; index < entries.length; index++) {
+        final entry = entries[index];
+        final actorId = 'stage_01_04/actor-$index';
+        final binding = bundle.actorBindingsByEntryId[entry.entryId]!;
+        combatants.add(
+          Phase0aCombatantInput(actorId: actorId, snapshot: binding.combatant),
+        );
+        assets[actorId] = binding.visualAssetPath;
+      }
+
+      final roster = Phase0aVisualRoster.fromCombatants(
+        playerId: playerMapping.initialPlayer.id,
+        combatants: combatants,
+        assetPathByActorId: assets,
+      );
+      final expectedName = repository
+          .getStage('stage_01_04')
+          .enemyTeam
+          .single
+          .name;
+      for (final combatant in combatants.skip(1)) {
+        expect(roster.visualFor(combatant.actorId).name, expectedName);
+        expect(
+          roster.visualFor(combatant.actorId).name,
+          isNot(contains('ch1_s04_')),
+        );
+      }
+    },
+  );
 
   test('migrated binding failure never falls back to legacy', () async {
     await expectLater(
