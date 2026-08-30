@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m2-combat-input-simplify-20260830
 base_sha: ef6a6802dcc61bf4cbf2bb9a9463010e5004192c
-head_sha: cf79a20025d0656a277076c604452bb1628740c4
+head_sha: 74c4085afb41949663c480c891592f89aae4b17b
 summary: 进步斩从镜头追平迁移为角色在镜头死区内前冲，玩家防御从 E/F/Z/Space 四入口迁移为仅 Space 闪避；旧断言锁定的正是本单要删除的玩家产品行为。
 
 migrations:
