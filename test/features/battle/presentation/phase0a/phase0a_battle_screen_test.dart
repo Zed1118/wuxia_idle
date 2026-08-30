@@ -1012,7 +1012,7 @@ void main() {
       final before = controller.state;
       final stage = Phase0aStage(viewport: const Size(1280, 720));
       stage.updateCameraCenter(before.player.position);
-      const targetPoint = ArenaVector(80, 0);
+      const targetPoint = ArenaVector(-560, 0);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
       final armedEvents = await stepAndPump(tester);
       expect(armedEvents.whereType<Phase0aGatherStarted>(), isEmpty);
@@ -1070,6 +1070,30 @@ void main() {
           reason: '被拉目标 ${outcome.target} 必须向点击位拉近',
         );
       }
+    });
+
+    testWidgets('聚怪冷却中按 Q 不进入定点态，避免点击后静默无效', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(controller.state.player.position);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.tapAt(stage.worldToScreen(const ArenaVector(80, 0)));
+      final firstCast = await stepAndPump(tester);
+      expect(firstCast.whereType<Phase0aGatherStarted>(), hasLength(1));
+      expect(
+        controller.state.skillSlots
+            .singleWhere((slot) => slot.slot == 'gather')
+            .availability,
+        Phase0aSkillAvailability.cooldown,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.pump();
+      final mouseRegion = tester.widget<MouseRegion>(
+        find.byKey(const ValueKey('phase0a_stage_mouse_region')),
+      );
+      expect(mouseRegion.cursor, SystemMouseCursors.basic);
     });
 
     testWidgets('点击聚怪技能印同样进入定点态，下一次舞台点击才释放', (tester) async {

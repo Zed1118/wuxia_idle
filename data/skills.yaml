@@ -43,7 +43,7 @@ skills:
     visualEffect: phase0a_gather
     source: special
     phase0aBehavior:
-      geometry: { shape: radial, anchor: target_point, radius: 520.0 }
+      geometry: { shape: radial, anchor: target_point, radius: 1100.0 }
       effects:
         - { type: pull, destinationRadius: 120.0 }
 

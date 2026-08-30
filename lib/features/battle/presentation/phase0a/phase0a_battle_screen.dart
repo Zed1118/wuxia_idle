@@ -239,6 +239,13 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
     if (!_acceptsBattleInput) return;
     if (_gatherTargetingArmed) {
+      if (_slot(widget.controller.state, 'gather').availability !=
+          Phase0aSkillAvailability.ready) {
+        _gatherTargetingArmed = false;
+        if (mounted) setState(() {});
+        _focusNode.requestFocus();
+        return;
+      }
       if ((event.buttons & kPrimaryMouseButton) != 0) {
         final targetPoint = stage.screenToWorld(event.localPosition);
         _gatherTargetingArmed = false;
@@ -335,6 +342,14 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   void _toggleGatherTargeting() {
     if (!_acceptsBattleInput) return;
+    if (_slot(widget.controller.state, 'gather').availability !=
+        Phase0aSkillAvailability.ready) {
+      if (_gatherTargetingArmed) {
+        setState(() => _gatherTargetingArmed = false);
+      }
+      _focusNode.requestFocus();
+      return;
+    }
     setState(() {
       _gatherTargetingArmed = !_gatherTargetingArmed;
       if (_gatherTargetingArmed) {

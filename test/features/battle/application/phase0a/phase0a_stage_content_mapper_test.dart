@@ -19,6 +19,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
@@ -138,7 +139,20 @@ void main() {
       );
       final gatherBinding = mapping.playerAdapter.gatherSkillBinding!;
       final clearBinding = mapping.playerAdapter.clearSkillBinding!;
-      expect(gatherBinding.effectRadius, 520);
+      final cameraWidth =
+          (numbers.phase0aArena.arenaMaxX - numbers.phase0aArena.arenaMinX) *
+          Phase0aPresentationTokens.cameraWorldFraction;
+      final cameraHeight =
+          (numbers.phase0aArena.arenaMaxY - numbers.phase0aArena.arenaMinY) *
+          Phase0aPresentationTokens.cameraWorldFraction;
+      final cameraDiagonal = sqrt(
+        cameraWidth * cameraWidth + cameraHeight * cameraHeight,
+      );
+      expect(
+        gatherBinding.effectRadius,
+        greaterThanOrEqualTo(cameraDiagonal),
+        reason: '点击位聚怪必须覆盖同一镜头内从一端到另一端的敌人',
+      );
       expect(gatherBinding.destinationRadius, 120);
       expect(gatherBinding.qiCost, 25);
       expect(gatherBinding.cooldownSeconds, 5);
@@ -353,7 +367,7 @@ void main() {
           gather.qiCost,
           gather.cooldownSeconds,
         ),
-        (120, 520, 25, 5),
+        (120, 1100, 25, 5),
       );
       expect(
         (clear.effectRadius, clear.qiCost, clear.cooldownSeconds),
@@ -366,7 +380,7 @@ void main() {
           mapping.playerAdapter.gatherQiCost,
           mapping.playerAdapter.gatherCooldownSeconds,
         ),
-        (120, 520, 25, 5),
+        (120, 1100, 25, 5),
       );
       expect(
         (

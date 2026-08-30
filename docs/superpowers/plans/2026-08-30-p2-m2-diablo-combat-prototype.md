@@ -48,16 +48,16 @@
 
 ## 当前恢复点
 
-- 状态：用户已确认基础移动与普攻正常；生产输入纵切和定点聚怪已完成自动化收口，等待用户真人验证聚怪落点与生存压力。
-- 最后完成：`Q` 或聚怪技能印进入定点态，下一次左键点击把世界落点送入同一 reducer；敌人按落点筛选并围绕落点聚拢，玩家不移动，涡旋也锚定同一点。旧的无落点调用保留 caster fallback，避免破坏自动/headless 路径。Debug 候选已从本 worktree 重新构建。
+- 状态：用户已确认基础移动与普攻正常，并实测反馈远端点击无法聚怪；已确认原 520 半径小于当前镜头世界对角线约 1036，且冷却/真气不可用时键盘 `Q` 仍会产生假选点。两项均已修复并完成自动化收口，等待用户真人复验。
+- 最后完成：聚怪作用半径由 520 调整为 1100，覆盖同一镜头两端但不扩成无条件全地图吸怪；`Q` 仅在聚怪槽为 ready 时进入选点，冷却或真气不足不再显示十字光标后静默失效。敌人仍按点击位筛选并围绕落点聚拢，玩家不移动，涡旋锚定同一点。旧的无落点调用保留 caster fallback，避免破坏自动/headless 路径。Debug 候选已从本 worktree 重新构建。
 - 下一步：用户在 `stage_01_02` 真人试玩定点聚怪；若落点准确且不再把敌群拉到自己身边，再由用户决定是否授权合并与推送。M3/M4 不启动。
-- 已跑验证：定点聚怪相关 12 文件 200/200；`flutter analyze --no-pub` 0 issue；整仓格式 1648 文件、0 改动；全量 `flutter test --no-pub --reporter compact` 5720/5720；`flutter build macos --debug --no-pub` 成功。破坏证红：把结算中心退回玩家后，目标由 `near_target` 错成 `near_player`（1 FAIL）；把涡旋锚点退回角色后，实际位置由 `(300,200)` 错成 `(123,45)`（1 FAIL）；均已精确还原并复绿。此前任意方向与目标偏好两项破坏证红保持有效。
+- 已跑验证：定点聚怪相关 12 文件 201/201；`flutter analyze --no-pub` 0 issue；整仓格式 1648 文件、0 改动；全量 `flutter test --no-pub --reporter compact` 5721/5721；`flutter build macos --debug --no-pub` 成功。新增真实红证：旧 520 半径下远端落点拉到 0 个敌人（1 FAIL），冷却中按 `Q` 仍显示 precise cursor（1 FAIL）；修复后均复绿。此前定点结算、涡旋锚点、任意方向与目标偏好破坏证红保持有效。
 - 阻塞项：自动化不能判断定点操作是否顺手、是否真实改善围杀风险。最终 Gate 仍须用户在 `stage_01_02` 真实生产入口签字；当前仅为候选，不代表 G2 PASS。
 
 ## §8.2 交付清单
 
 - 生产接线：真实 `Phase0aBattleScreen` 入口；命令经 `Phase0aPlayerCommand`、`Phase0aPlayerInputAdapter`、既有 intents 和 reducer 消费，不停在 fixture/VisualRoute。
-- 定向验证：定点聚怪相关 12 文件 200/200、定点结算与涡旋锚点两项新增破坏证红、5720/5720 全量、analyze 0、macOS Debug build 成功。
-- 红线影响：不改 YAML 数值、schema/saveVersion、checkpoint 归因、在线/离线 reducer、三系锁死或反主流清单；未新增 Dart 中文文案和高频 debug 日志。
+- 定向验证：定点聚怪相关 12 文件 201/201、远端落点范围与不可用 `Q` 假选点两项新增红证、5721/5721 全量、analyze 0、macOS Debug build 成功。
+- 红线影响：仅将聚怪作用半径 520 调整为 1100，并同步 production、legacy fallback 与 debug fixture；不改伤害、冷却、真气消耗、schema/saveVersion、checkpoint 归因、在线/离线 reducer、三系锁死或反主流清单；未新增 Dart 中文文案和高频 debug 日志。
 - 桌面语义：空格闪避、数字键技能、WASD 保留；WASD 当前输入覆盖鼠标目的地；鼠标左/右键走真实 pointer 入口。`Q`/聚怪技能印进入定点态，左键释放、右键取消。常规桌面视口的落点准确性与生存压力由本轮真人试玩收口。
 - 残留风险：第三方 `audioplayers_darwin` 有 Swift actor warning，Xcode Flutter Assemble 有既有脚本提示；均未阻止构建。右键在无已装备数字技能时 fail closed。真人手感未签字前不得晋升 G2。

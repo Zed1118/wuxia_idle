@@ -50,7 +50,7 @@ player:
   gather:
     slot: gather
     ring_radius: 120.0
-    effect_radius: 520.0
+    effect_radius: 1100.0
     qi_cost: 25
     cooldown_seconds: 5.0
   clear:
