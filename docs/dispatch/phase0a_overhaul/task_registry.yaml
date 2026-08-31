@@ -5135,6 +5135,71 @@ tasks:
       - no failure policy weights reward economy unlock tuning schema save version YAML or main change
       - do not claim U10 M6 or overall Phase 2 completion before seven of seven
 
+  - id: P2-M6-U11-PROGRESSIVE-UNLOCK
+    milestone: M6
+    owner: codex_root
+    branch: codex/p2-m6-u11-progressive-unlock-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m6-u11-progressive-unlock-20260901
+    status: verification_pending
+    current_authoritative_wip: true
+    base_commit: 77a40e62134098a667850f54fbe5d49f4686fd4c
+    code_candidate_commit: 2f2e701d81248287b8ce1f7f25a30bd37ffaf7e7
+    reviewed_candidate_commit: 2f2e701d81248287b8ce1f7f25a30bd37ffaf7e7
+    ready_marker: "[READY][CODEX][P2-M6-U11-PROGRESSIVE-UNLOCK] 补齐渐进解锁与一次蜡封"
+    completion_scope: connect_seven_existing_production_gates_to_shared_hidden_heard_open_projection_and_one_durable_acknowledged_wax_seal
+    acceptance_baseline: 0_of_1_progressive_unlock_and_durable_seal_boundary
+    acceptance_target: 1_of_1_progressive_unlock_and_durable_seal_boundary
+    acceptance_result: 1_of_1_progressive_unlock_and_durable_seal_boundary
+    authorization:
+      decision: PROGRESSIVE-UNLOCK-01
+      existing_gate_changes: none
+      additive_isar_collection: ProgressiveUnlockReceipt
+      save_version: 0.43.0
+      historical_unlock_backfill: false
+    evidence:
+      production_capabilities: 7
+      shared_states: 3
+      current_gate_changes: 0
+      initial_red_test_files: 6
+      mutation_red_proofs: 6
+      weak_hidden_guard_tests_found_and_hardened: 1
+      restored_u11_tests: 23
+      affected_route_migration_and_save_tests: 299
+      scoped_analyze_issues: 0
+      format_changed_files: 0
+      final_full_suite: pending
+      final_gate: pending
+      human_visual_acceptance: deferred_by_user
+    owned_files:
+      - lib/data/isar_setup.dart
+      - lib/features/progressive_unlock/
+      - lib/features/main_menu/presentation/main_menu_startup_gate.dart
+      - lib/features/jianghu_map/presentation/jianghu_map_screen.dart
+      - lib/shared/strings.dart
+      - test/features/progressive_unlock/
+      - test/features/main_menu/presentation/main_menu_startup_gate_unlock_order_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_screen_test.dart
+      - test/features/jianghu_map/presentation/jianghu_map_expedition_location_test.dart
+      - test/data/progressive_unlock_migration_test.dart
+      - test/data/mainline_settlement_journal_migration_test.dart
+      - test/data/reward_claim_receipt_migration_test.dart
+      - test/data/save_migration_version_gate_test.dart
+      - data_schema.md
+      - docs/superpowers/plans/2026-09-01-p2-m6-u11-progressive-unlock.md
+      - docs/audit/phase2_u11_progressive_unlock_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - tower and disciple scheduling remain open on a fresh save
+      - light foot and mass battle remain heard before and open after their existing chapter six configuration gate
+      - expedition and gauntlet remain hidden until the existing durable journey milestone is true
+      - inner demon remains hidden until the existing first-node realm threshold is reached
+      - first observation establishes a quiet baseline and never fabricates historical pending seals
+      - only a non_open_to_open transition creates a pending seal and only the CTA acknowledges it
+      - downgrade identity drift incomplete snapshots duplicate acknowledgements and missing receipts fail closed
+      - no reward economy player value skill combat YAML tuning or existing unlock gate change
+      - do not claim M6 or overall Phase 2 completion and keep human visual acceptance deferred
+
   - id: P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
     milestone: M6
     owner: codex_root
