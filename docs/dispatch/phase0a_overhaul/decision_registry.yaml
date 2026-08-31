@@ -2,7 +2,7 @@ schema_version: 1
 phase: phase2_phase0a_overhaul
 source_plan: /Users/a10506/Desktop/二阶段优化方案.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-31"
+updated_at: "2026-09-01"
 
 policy:
   frozen_may_implement: true
@@ -134,7 +134,7 @@ decisions:
 
   - id: MAINLINE-RUN-01
     status: frozen
-    summary: 连续 run 整段锁同一参与者，关间可换装并生成版本化新快照，仅下一关不再可战时中断
+    summary: 章内连续 run 锁同一参与者并版本化换装；章末卷轴进入下一章时新建 run，终章无下一章
     g0_choice:
       participant_lock: A
       between_stage_loadout: B
@@ -142,9 +142,15 @@ decisions:
     participant_scope: locked_for_entire_run
     between_stage_loadout: allowed_with_new_versioned_snapshot
     injury_stop_condition: participant_not_battle_eligible_for_next_stage
-    batch_action: implement_in_m2_m6
+    chapter_boundary:
+      ordinary_chapter_end: return_current_chapter_epilogue_scroll
+      non_final_scroll_action: start_distinct_next_chapter_run_at_loadout_version_1
+      final_stage: stage_21_05_without_next_chapter
+      crash_recovery_cursor: showChapterScroll
+    batch_action: integrated_in_m2_m6
+    owner_task: P2-M6-U13-CROSS-CHAPTER-RUN
     approved_at: "2026-08-24"
-    approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
+    approval_basis: '2026-08-24 用户批准 G0 run 合同；2026-08-31 当前 Codex 会话明确冻结 U13 章内连续、章末卷轴、下一章新 run、终章无下一章'
 
   - id: MENTOR-INSIGHT-CORE-01
     status: frozen

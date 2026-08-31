@@ -1,26 +1,30 @@
-# Phase 2 U13 主线跨章语义差距审计
+# Phase 2 U13 主线跨章实现与验收证据
 
-日期：2026-08-31  
-冻结语义：章内连续；章末返回章节卷轴；下一章新建 run；终章无下一章。
+日期：2026-08-31 至 2026-09-01
+冻结语义：章内连续；章末返回当前章卷尾；非终章从卷轴进入下一章时新建 run；`stage_21_05` 终章无下一章。
 
-## 当前事实
+## 结论
 
-| 检查项 | 当前结论 | 生产证据 |
+U13 非视觉生产门已从 `0/1` 推进到候选 `1/1`。本单只补齐主线跨章编排与持久恢复，不改奖励、经济、解锁、玩家数值、技能或战斗规则；真人观感继续挂账，不用自动测试冒充试玩。
+
+| 检查项 | 候选结论 | 生产证据 |
 |---|---|---|
-| 章内连续 | 已存在 | `MainlineRunCoordinator` 只在完整结算后装配同一参与者的下一关快照；生产 resolver `_nextStageInSameChapter` 限制同章后继。 |
-| 章末返回章节卷轴 | 缺口 | coordinator 在同章无后继时只返回 `chapterCompleted`；`runStageEntryFlow` 未消费该结果做导航。`ChapterTransitionScreen` 目前只能从章节卡“卷”入口进入。 |
-| 下一章新建 run | 数据入口可形成，但无跨章流程守卫 | 各章首关 `prevStageId == null`，从 StageList 重新进入会 bootstrap 新 run；当前没有“章末卷轴 → 下一章首关”的生产编排，也没有断言新 run id 的跨章用例。 |
-| 终章无下一章 | 数据上成立，但无专门终章分支 | `stage_21_05` 无 successor；现有同章 resolver 同样返回 null。当前代码不能区分普通章末与终章，因此也没有只对非终章展示下一章入口的契约。 |
-| 崩溃恢复 | 仅覆盖关内/章内继续 | durable journal 支持已结算后继续下一关，但没有“章末已结算、卷轴未展示”和“卷轴已展示、下一章 run 未创建”的恢复游标。 |
+| 章内连续 | PASS | `MainlineRunCoordinator` 与 `_nextStageInSameChapter` 保持原同章连续 run；整个 `test/features/mainline` 回归 `453/453`。 |
+| 普通章末卷尾 | PASS | `runStageFlow` 消费 `chapterCompleted`，持久记录 `showChapterScroll` 后打开 managed `ChapterTransitionScreen`。 |
+| 下一章新 run | PASS | 卷轴 typed action 调用 `beginNextChapter`；旧游标关闭与下一章 `prepared` journal 在同一 Isar 事务，run id 不同且 loadout version 从 1 开始。 |
+| 终章无下一章 | PASS | production repository 解析 `stage_21_05` 为 final boundary；卷轴只返回章节，不创建 active next run。 |
+| 崩溃恢复 | PASS | `coreApplied + none` 的章末崩溃点会补记卷轴游标；`showChapterScroll` 可重显；事务中断回滚为旧游标 active 且零部分新 run。 |
+| 真人卷轴观感 | DEFERRED | 按用户指示挂账；不计入本单 `1/1` 非视觉生产门。 |
 
-## 建议下一门
+## 实测证据
 
-把 U13 定为独立 `0/1 → 1/1` 非视觉生产门，不复用上一章 run：
+- 初始真红：4 个测试文件因 boundary resolver、卷轴游标、跨章事务 API 与 typed UI action 均不存在而加载失败。
+- 定向合同：章末解析、journal domain/service、卷轴 UI 共 `26/26`；含 coordinator/recovery 的扩展定向组 `40/40`。
+- 生产接线：真实 `runStageFlow` 从章末空动作崩溃点恢复卷轴，进入 `stage_02_01` 独立 version-1 run；终章关闭后 active journal 为零。
+- 主线域回归：`453/453`。
+- 双向破坏证红：删除“创建新 run”半边，服务合同与生产接线各红 1 项，共 2 项；删除“关闭旧游标”半边，同样共红 2 项并报 multiple active journals；均用精确反向补丁还原。
+- 静态验证：`flutter analyze --no-pub lib test` 为 `No issues found! (ran in 14.4s)`；整仓 format 为 `Formatted 1685 files (0 changed) in 2.98 seconds.`。
+- 首次持锁全量：`06:01 +5801: All tests passed!`，`[E]=0`，退出码 0。
+- 相对基线没有 `lib/shared/strings.dart` 最终差异，没有测试删除，因此无需测试契约迁移登记。
 
-1. 为 chapter completion 返回 typed disposition，明确 `nextChapterIndex?`，终章为 null；
-2. `runStageEntryFlow` 在普通章末结算完成后导航到当前章卷尾，并只为非终章提供进入下一章入口；
-3. 下一章入口调用现有 bootstrap 新建 run，断言 run id、loadout version 与上一章不同；
-4. 在现有 settlement journal/outbox 上记录章末过场恢复事实，避免崩溃后跳过或重复创建 run；
-5. 破坏证红覆盖跨章沿用旧 run、普通章末不进卷轴、终章错误出现下一章入口三类退化。
-
-该审计未修改 U13 生产行为，也未启动 M3/M7；视觉与真人流程验收继续挂账。
+本证据只支持 U13 候选与最终 Gate/集成判定，不宣称 M6 或整个 Phase 2 完成，不启动 M3/M7。

@@ -1,7 +1,7 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-26"
+updated_at: "2026-09-01"
 
 resource_locks:
   full_flutter_test: 1
@@ -5516,6 +5516,65 @@ tasks:
       - existing inner demon live stage flow failure settlement disorder and personal breakthrough owners remain unchanged
       - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
       - do not claim M5 U14 M6 or overall Phase 2 completion
+
+  - id: P2-M6-U13-CROSS-CHAPTER-RUN
+    milestone: M6
+    owner: codex_root
+    branch: codex/p2-m6-u13-cross-chapter-run-20260831
+    worktree: /Users/a10506/.codex/worktrees/p2-m6-u13-cross-chapter-run-20260831
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: 7efb337e6ed2ed13dc67e9330b4c034de83a5d30
+    code_candidate_commit: d2851edc10dc98adf9c893695babc11d55d39555
+    reviewed_candidate_commit: d2851edc10dc98adf9c893695babc11d55d39555
+    ready_marker: "[READY][CODEX][P2-M6-U13-CROSS-CHAPTER-RUN] 补齐主线跨章运行与恢复"
+    completion_scope: connect_same_chapter_continuation_to_durable_chapter_scroll_and_distinct_next_chapter_run
+    acceptance_baseline: 0_of_1_cross_chapter_production_flow
+    acceptance_target: 1_of_1_cross_chapter_production_flow
+    acceptance_result: 1_of_1_cross_chapter_production_flow
+    evidence:
+      real_repository_chapter_boundaries: 21
+      ordinary_boundary_sample: stage_01_05_to_stage_02_01
+      final_boundary: stage_21_05
+      durable_scroll_cursor: showChapterScroll
+      next_run_distinct_id_and_version_1: true
+      atomic_close_old_and_prepare_next: true
+      crash_rollback_keeps_old_cursor: true
+      initial_red_test_files: 4
+      mutation_remove_new_run_failures: 2
+      mutation_keep_old_active_failures: 2
+      focused_contract_tests: 40
+      mainline_domain_tests: 453
+      scoped_analyze_issues: 0
+      format_changed_files: 0
+      preliminary_full_suite: 5801
+      preliminary_full_suite_failures: 0
+      preliminary_full_suite_error_blocks: 0
+      final_gate: must_pass_before_merge
+      human_visual_acceptance: deferred_by_user
+    owned_files:
+      - lib/features/mainline/application/mainline_chapter_boundary.dart
+      - lib/features/mainline/application/mainline_run_coordinator.dart
+      - lib/features/mainline/application/mainline_settlement_journal_service.dart
+      - lib/features/mainline/domain/mainline_settlement_journal.dart
+      - lib/features/mainline/presentation/chapter_transition_screen.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/mainline/presentation/stage_victory_dialog.dart
+      - test/features/mainline/application/mainline_chapter_boundary_test.dart
+      - test/features/mainline/application/mainline_settlement_journal_service_test.dart
+      - test/features/mainline/domain/mainline_settlement_journal_test.dart
+      - test/features/mainline/presentation/chapter_transition_screen_test.dart
+      - test/features/mainline/presentation/mainline_ch1_continuous_run_test.dart
+      - docs/audit/phase2_u13_cross_chapter_gap_2026-08-31.md
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - within_chapter_continuation_keeps_one_locked_participant_and_versioned_loadout_snapshots
+      - crossing_a_chapter_boundary_never_reuses_the_previous_run_id_or_loadout_version
+      - stage_21_05_never_exposes_or_creates_a_next_chapter
+      - settlement_rewards_and_post_settlement_effects_are_not_replayed_during_scroll_recovery
+      - no_reward_economy_unlock_player_value_skill_combat_rule_or_persistent_schema_change
+      - human_visual_acceptance_remains_deferred_and_does_not_claim_M6_or_overall_Phase2_completion
 
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
