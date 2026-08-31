@@ -19,6 +19,7 @@ import 'package:wuxia_idle/features/main_menu/application/main_menu_status_summa
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mass_battle/presentation/mass_battle_screen.dart';
+import 'package:wuxia_idle/features/progressive_unlock/domain/progressive_unlock.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
@@ -222,6 +223,7 @@ void main() {
   test('轻功地点锁定和进度从生产链派生', () {
     final locked = jianghuMapLightFootLocationState(MainlineProgress());
     expect(locked.locked, isTrue);
+    expect(locked.unlockState, ProgressiveUnlockState.heard);
     expect(locked.status, UiStrings.mainMenuLateGameLockedHint);
 
     final inconsistent = jianghuMapLightFootLocationState(
@@ -239,6 +241,7 @@ void main() {
         ],
     );
     expect(progressed.locked, isFalse);
+    expect(progressed.unlockState, ProgressiveUnlockState.open);
     expect(progressed.status, UiStrings.jianghuMapLightFootProgress(2, 5));
   });
 
@@ -269,6 +272,7 @@ void main() {
   test('守城地点锁定和进度从生产链派生', () {
     final locked = jianghuMapMassBattleLocationState(MainlineProgress());
     expect(locked.locked, isTrue);
+    expect(locked.unlockState, ProgressiveUnlockState.heard);
     expect(locked.status, UiStrings.mainMenuLateGameLockedHint);
 
     final inconsistent = jianghuMapMassBattleLocationState(
@@ -286,7 +290,13 @@ void main() {
         ],
     );
     expect(progressed.locked, isFalse);
+    expect(progressed.unlockState, ProgressiveUnlockState.open);
     expect(progressed.status, UiStrings.jianghuMapMassBattleProgress(2, 5));
+  });
+
+  test('远征与断魂庄沿用生产事实派生 hidden/open 三态', () {
+    expect(jianghuMapJourneyUnlockState(false), ProgressiveUnlockState.hidden);
+    expect(jianghuMapJourneyUnlockState(true), ProgressiveUnlockState.open);
   });
 
   test('守城地点遇到脱离根链的环时 fail closed', () {

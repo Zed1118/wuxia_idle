@@ -1657,6 +1657,19 @@ class UiStrings {
   static const String jianghuMapSubtitle = '循迹而行，各处机缘自有门槛';
   static const String jianghuMapKnownLocations = '已知地点';
   static const String jianghuMapKnownLocationsHint = '山河辽阔，未闻之处尚隐于烟岚';
+  static const String progressiveUnlockSealTitle = '江湖新启';
+  static const String progressiveUnlockSealBody = '新的去处与修行已写入江湖题签：';
+  static const String progressiveUnlockSealConfirm = '收下题签';
+  static String progressiveUnlockName(String id) => switch (id) {
+    'tower' => mainMenuTower,
+    'lightFoot' => mainMenuLightFoot,
+    'discipleScheduling' => sectHubLineup,
+    'massBattle' => mainMenuMassBattle,
+    'expedition' => expeditionBaicaoName,
+    'gauntlet' => gauntletName,
+    'innerDemon' => mainMenuInnerDemon,
+    _ => throw ArgumentError.value(id, 'id', 'unknown progressive unlock id'),
+  };
   static const String towerLocationDetailTitle = '九霄塔 · 地点详情';
   static const String towerLocationUnavailable = '塔中情报暂不可核实，暂不能进入';
   static const String towerLocationProgressLabel = '当前进度';
