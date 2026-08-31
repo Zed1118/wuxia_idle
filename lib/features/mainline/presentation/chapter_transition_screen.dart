@@ -159,10 +159,8 @@ class ChapterTransitionScreen extends StatelessWidget {
                           child: Text(
                             isRunCompletion
                                 ? nextChapterIndex == null
-                                      ? UiStrings.chapterScrollReturnToChapters
-                                      : UiStrings.chapterScrollEnterNextChapter(
-                                          nextChapterIndex!,
-                                        )
+                                      ? UiStrings.titleBarBack
+                                      : UiStrings.chapterScrollEnter
                                 : UiStrings.chapterScrollEnter,
                           ),
                         ),

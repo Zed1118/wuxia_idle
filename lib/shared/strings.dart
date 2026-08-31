@@ -2022,11 +2022,6 @@ class UiStrings {
   /// 过场底部「入此章」按钮。
   static const String chapterScrollEnter = '翻过此页 · 入关';
 
-  /// 连续主线完成一章后的卷尾动作。
-  static String chapterScrollEnterNextChapter(int chapterIndex) =>
-      '翻过此页 · 入第$chapterIndex章';
-  static const String chapterScrollReturnToChapters = '合卷 · 返回章节';
-
   // ── Phase 3 爬塔（T42）──
 
   static const String mainMenuTower = '问鼎九霄';

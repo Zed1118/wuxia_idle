@@ -289,11 +289,8 @@ void main() {
     await _pumpUntil(tester, find.byType(ChapterTransitionScreen));
 
     expect(find.byType(ChapterTransitionScreen), findsOneWidget);
-    expect(
-      find.text(UiStrings.chapterScrollEnterNextChapter(2)),
-      findsOneWidget,
-    );
-    await tester.tap(find.text(UiStrings.chapterScrollEnterNextChapter(2)));
+    expect(find.text(UiStrings.chapterScrollEnter), findsOneWidget);
+    await tester.tap(find.text(UiStrings.chapterScrollEnter));
     await _pumpUntil(tester, find.text('done-cross-chapter'));
 
     final active = await tester.runAsync(
@@ -356,9 +353,9 @@ void main() {
     await tester.tap(find.text('start-cross-chapter'));
     await _pumpUntil(tester, find.byType(ChapterTransitionScreen));
 
-    expect(find.text(UiStrings.chapterScrollReturnToChapters), findsOneWidget);
-    expect(find.textContaining('入第'), findsNothing);
-    await tester.tap(find.text(UiStrings.chapterScrollReturnToChapters));
+    expect(find.text(UiStrings.titleBarBack), findsOneWidget);
+    expect(find.text(UiStrings.chapterScrollEnter), findsNothing);
+    await tester.tap(find.text(UiStrings.titleBarBack));
     await _pumpUntil(tester, find.text('done-cross-chapter'));
 
     final active = await tester.runAsync(

@@ -93,7 +93,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(find.textContaining('路还很长'), findsOneWidget);
-    await tester.tap(find.text(UiStrings.chapterScrollEnterNextChapter(2)));
+    await tester.tap(find.text(UiStrings.chapterScrollEnter));
     await tester.pumpAndSettle();
     expect(result, ChapterTransitionAction.enterNextChapter);
   });
@@ -125,7 +125,8 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(find.textContaining('下一章'), findsNothing);
-    await tester.tap(find.text(UiStrings.chapterScrollReturnToChapters));
+    expect(find.text(UiStrings.chapterScrollEnter), findsNothing);
+    await tester.tap(find.text(UiStrings.titleBarBack));
     await tester.pumpAndSettle();
     expect(result, ChapterTransitionAction.returnToChapters);
   });
