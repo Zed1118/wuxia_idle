@@ -649,13 +649,18 @@ Future<_MainlineRunBootstrap?> _presentCompletedChapterAndContinue({
     loadoutVersion: nextBootstrap.run.currentLoadoutVersion,
     participantId: nextBootstrap.run.participantId,
   );
-  await service.beginNextChapter(
+  final prepared = await service.beginNextChapter(
     previousIdentity: journal.identity,
     nextIdentity: nextIdentity,
     nextLoadoutSnapshotId:
         nextBootstrap.run.loadoutSnapshots.last.loadoutSnapshotId,
     now: DateTime.now(),
   );
+  if (prepared.identity != nextIdentity ||
+      prepared.phase != MainlineSettlementPhase.prepared ||
+      prepared.loadoutSnapshotIds.length != 1) {
+    throw StateError('Next chapter transaction did not prepare the exact run');
+  }
   return nextBootstrap;
 }
 
