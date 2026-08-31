@@ -187,17 +187,17 @@ void main() {
               entry.key,
             ).overrideWith((ref) async => entry.value),
           if (innerDemonProgress != null)
-            innerDemonProgressProvider.overrideWith(
-              (ref) async => innerDemonProgress,
-            ),
+            innerDemonProgressProvider(
+              character.id,
+            ).overrideWith((ref) async => innerDemonProgress),
           if (innerDemonProgressFuture != null)
-            innerDemonProgressProvider.overrideWith(
-              (ref) => innerDemonProgressFuture,
-            ),
+            innerDemonProgressProvider(
+              character.id,
+            ).overrideWith((ref) => innerDemonProgressFuture),
           if (innerDemonProgressError != null)
-            innerDemonProgressProvider.overrideWith(
-              (ref) async => throw innerDemonProgressError,
-            ),
+            innerDemonProgressProvider(
+              character.id,
+            ).overrideWith((ref) async => throw innerDemonProgressError),
         ],
         child: MaterialApp(
           home: CharacterPanelScreen(characterId: character.id),

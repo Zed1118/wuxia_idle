@@ -24,6 +24,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bo
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/inner_demon/application/inner_demon_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/combat_shared/application/combat_content_providers.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
@@ -371,17 +372,21 @@ void main() {
     });
   });
 
-  testWidgets('心魔首通 receipt 按实际参战者个人作用域落库', (tester) async {
-    final participantId = (await tester.runAsync(() async {
-      final id = await insertCharacter(name: '心魔参战者');
-      await writeSaveData(activeIds: [id], founderId: id);
-      return id;
+  testWidgets('心魔生产胜利事务只推进实际参战者的个人进度', (tester) async {
+    final (participantId, otherId) = (await tester.runAsync(() async {
+      final participant = await insertCharacter(name: '心魔参战者');
+      final other = await insertCharacter(name: '未参战者');
+      await writeSaveData(
+        activeIds: [participant, other],
+        founderId: participant,
+      );
+      return (participant, other);
     }))!;
     await runWithRef(
       tester,
       (ref) => applyVictoryResolution(
         ref: ref,
-        stage: normalStage(stageType: StageType.innerDemon),
+        stage: GameRepository.instance.getStage('stage_inner_demon_01'),
         settlementSnapshot: finishedSettlement([participantId]),
         expectedParticipantId: participantId,
         rewardOccurrenceId: 'inner-demon-personal-scope',
@@ -401,6 +406,20 @@ void main() {
       );
       expect(firstClear.scope, RewardScope.personal);
       expect(firstClear.participantId, participantId);
+
+      final container = ProviderContainer();
+      try {
+        final participantProgress = await container.read(
+          innerDemonProgressProvider(participantId).future,
+        );
+        final otherProgress = await container.read(
+          innerDemonProgressProvider(otherId).future,
+        );
+        expect(participantProgress.clearedStageIds, {'stage_inner_demon_01'});
+        expect(otherProgress.clearedStageIds, isEmpty);
+      } finally {
+        container.dispose();
+      }
     });
   });
 

@@ -998,7 +998,7 @@ class _BreakthroughBlockerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressAsync = ref.watch(innerDemonProgressProvider);
+    final progressAsync = ref.watch(innerDemonProgressProvider(character.id));
     final progress = progressAsync.asData?.value;
     if (progress == null) return const SizedBox.shrink(); // loading/err 不闪
 

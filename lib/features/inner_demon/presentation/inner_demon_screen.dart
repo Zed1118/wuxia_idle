@@ -13,6 +13,7 @@ import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
+import '../application/inner_demon_providers.dart';
 import '../application/inner_demon_participant_service.dart';
 import '../domain/inner_demon_participation_policy.dart';
 import '../../../data/defs/inner_demon_def.dart';
@@ -67,6 +68,7 @@ class InnerDemonScreen extends ConsumerWidget {
           ..sort((a, b) => a.id.compareTo(b.id));
     final innerDemonDef = GameRepository.instance.numbers.innerDemon;
     final async = ref.watch(mainlineProgressProvider);
+    final personalAsync = ref.watch(innerDemonProgressProvider(characterId));
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -84,72 +86,85 @@ class InnerDemonScreen extends ConsumerWidget {
               style: const TextStyle(color: WuxiaColors.hpLow),
             ),
           ),
-          data: (progress) {
-            if (stages.isEmpty) {
-              return const Center(
-                child: Text(
-                  UiStrings.innerDemonEmpty,
-                  style: TextStyle(color: WuxiaColors.textMuted),
-                ),
-              );
-            }
-            final cleared = progress.clearedStageIds.toSet();
-            // 周目按章(Phase 2):整个心魔副本视为一章,chapterKey=stageType.name。
-            const chapterKey = 'innerDemon';
-            int cycleFor() => resolveTargetCycle(
-              ref.read(selectedChallengeCycleForCurrentSlot(chapterKey)),
-              progress,
-              chapterKey,
-            );
-            return Column(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: CycleSelectControl(chapterKey: chapterKey),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    itemCount: stages.length,
-                    itemBuilder: (ctx, i) {
-                      final s = stages[i];
-                      final status = _statusOf(
-                        stageId: s.id,
-                        clearedStageIds: cleared,
-                        innerDemonDef: innerDemonDef,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _InnerDemonRow(
-                          def: s,
-                          status: status,
-                          onTap: status == _InnerDemonStageStatus.locked
-                              ? null
-                              : () => runInnerDemonChallenge(
-                                  context: context,
-                                  ref: ref,
-                                  stage: s,
-                                  targetCycle: cycleFor(),
-                                  characterId: characterId,
-                                  entryKind:
-                                      status == _InnerDemonStageStatus.cleared
-                                      ? ActivityEntryKind.replay
-                                      : ActivityEntryKind.firstClear,
-                                  stageRunner: stageRunnerForTest,
-                                  participantSnapshotResolver:
-                                      participantSnapshotResolverForTest,
-                                ),
-                        ),
-                      );
-                    },
+          data: (progress) => personalAsync.when(
+            loading: () => const Center(child: InkLoadingIndicator()),
+            error: (e, _) => Center(
+              child: SelectableText(
+                UiStrings.loadFailed(e),
+                style: const TextStyle(color: WuxiaColors.hpLow),
+              ),
+            ),
+            data: (personalProgress) {
+              if (stages.isEmpty) {
+                return const Center(
+                  child: Text(
+                    UiStrings.innerDemonEmpty,
+                    style: TextStyle(color: WuxiaColors.textMuted),
                   ),
-                ),
-              ],
-            );
-          },
+                );
+              }
+              final cleared = {
+                for (final stageId in progress.clearedStageIds)
+                  if (!stageId.startsWith('stage_inner_demon_')) stageId,
+                ...personalProgress.clearedStageIds,
+              };
+              // 周目按章(Phase 2):整个心魔副本视为一章,chapterKey=stageType.name。
+              const chapterKey = 'innerDemon';
+              int cycleFor() => resolveTargetCycle(
+                ref.read(selectedChallengeCycleForCurrentSlot(chapterKey)),
+                progress,
+                chapterKey,
+              );
+              return Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: CycleSelectControl(chapterKey: chapterKey),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      itemCount: stages.length,
+                      itemBuilder: (ctx, i) {
+                        final s = stages[i];
+                        final status = _statusOf(
+                          stageId: s.id,
+                          clearedStageIds: cleared,
+                          innerDemonDef: innerDemonDef,
+                        );
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _InnerDemonRow(
+                            def: s,
+                            status: status,
+                            onTap: status == _InnerDemonStageStatus.locked
+                                ? null
+                                : () => runInnerDemonChallenge(
+                                    context: context,
+                                    ref: ref,
+                                    stage: s,
+                                    targetCycle: cycleFor(),
+                                    characterId: characterId,
+                                    entryKind:
+                                        status == _InnerDemonStageStatus.cleared
+                                        ? ActivityEntryKind.replay
+                                        : ActivityEntryKind.firstClear,
+                                    stageRunner: stageRunnerForTest,
+                                    participantSnapshotResolver:
+                                        participantSnapshotResolverForTest,
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -235,6 +250,7 @@ Future<void> runInnerDemonChallenge({
     targetCycle: targetCycle,
     participantSnapshot: participantSnapshot,
   );
+  ref.invalidate(innerDemonProgressProvider(characterId));
 }
 
 Future<void> runInnerDemonStageFlow({
