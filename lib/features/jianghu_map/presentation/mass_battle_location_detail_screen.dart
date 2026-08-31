@@ -132,13 +132,12 @@ class _DetailContent extends ConsumerWidget {
                   detail.eligibleParticipantCount,
                 ),
               ),
-              const _DetailRow(
+              _DetailRow(
                 label: UiStrings.massBattleLocationEntryModeLabel,
-                value: UiStrings.massBattleLocationEntryModeDirect,
-              ),
-              const _DetailRow(
-                label: UiStrings.massBattleLocationOccupancyLabel,
-                value: UiStrings.massBattleLocationExpectedOccupancy,
+                value: [
+                  UiStrings.massBattleParticipantAvailable,
+                  UiStrings.expeditionDispatchTeamSection,
+                ].join(UiStrings.offlineRecapDetailSeparator),
                 isLast: true,
               ),
             ],

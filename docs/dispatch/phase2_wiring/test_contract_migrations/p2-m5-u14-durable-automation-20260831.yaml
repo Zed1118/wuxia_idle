@@ -1,0 +1,18 @@
+schema_version: 1
+ticket: p2-m5-u14-durable-automation-20260831
+base_sha: 1800c9f666aba995788b930ea1ee206b24ca3e88
+head_sha: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+summary: 存档当前版本由 0.40.0 加法迁至 0.41.0，并移除轻功与守城地点详情中“仅亲战且无长期占用”的旧事实断言；替代契约验证旧档不伪造 durable run、当前版本更新且生产页真实显示差遣入口。
+
+migrations:
+  - deleted: test('0.39.0 → 0.40.0 纯可加迁移：不从历史进度伪造 active journal', () async {
+    replacement: test('0.39.0 → 当前纯可加迁移：不从历史进度伪造 active journal/run', () async {
+    reason: 旧标题只覆盖 0.40.0 的 mainline journal；0.41.0 增加轻功守城 collection 后，新标题与同一用例同时验证历史进度既不伪造 journal 也不伪造 durable activity run。
+
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.40.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.41.0');
+    reason: 当前存档版本依法加法升级为 0.41.0，替代断言仍精确核对迁移后的持久版本值。
+
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.40.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.41.0');
+    reason: schema 注册新增 collection 后当前版本必须同步为 0.41.0；替代断言保留相同门槛并更新唯一合法值。

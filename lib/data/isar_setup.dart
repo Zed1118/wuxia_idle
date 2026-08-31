@@ -34,6 +34,7 @@ import '../features/battle_record/domain/boss_memory.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 import '../features/expedition/domain/expedition_run.dart';
 import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
+import '../features/activity/domain/durable_activity_combat_run.dart';
 
 /// 存档由更高版本程序写入，当前程序不得迁移或打开继续游玩。
 class UnsupportedSaveVersionException implements Exception {
@@ -129,6 +130,7 @@ class IsarSetup {
     EquipmentCatalogEntrySchema,
     ExpeditionRunSchema,
     BossGauntletRunSchema,
+    DurableActivityCombatRunSchema,
   ];
 
   @visibleForTesting
@@ -204,7 +206,9 @@ class IsarSetup {
   //   RarityTier 在战斗/成长/掉落层零消费)。
   // 0.40.0 主线持久结算:新增 MainlineSettlementJournal collection；旧档初始
   // 无 active journal，属于可加性迁移，不伪造 run/session/settlement identity。
-  static const _currentSaveVersion = '0.40.0';
+  // 0.41.0 轻功/守城 durable automation：新增 DurableActivityCombatRun
+  // collection。旧档天然无 active 差遣，不从历史通关反推会话或结算回执。
+  static const _currentSaveVersion = '0.41.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -513,6 +517,13 @@ class IsarSetup {
       // 新 collection 对旧档天然为空；不得从 clearedStageIds/cycle keys 反推
       // active run 或 settlement receipt，否则会把历史通关伪造成待恢复事务。
       if (_compareVersion(fromVersion, '0.40.0') < 0) {
+        // 无显式迁移动作(纯可加)。
+      }
+
+      // --- 段 11(0.41.0 轻功/守城 durable automation)---
+      // 新 collection 对旧档天然为空；历史通关只决定后续是否允许新建差遣，
+      // 不能被迁移成 active run 或已结算 receipt。
+      if (_compareVersion(fromVersion, '0.41.0') < 0) {
         // 无显式迁移动作(纯可加)。
       }
 

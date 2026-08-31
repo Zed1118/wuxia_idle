@@ -5,6 +5,8 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/activity/application/durable_activity_automation_providers.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mass_battle/application/mass_battle_participant_service.dart';
@@ -90,5 +92,26 @@ void main() {
     expect(captured, isNotNull);
     expect(captured!.characterId, 2);
     expect(captured!.name, '守城门人');
+  });
+
+  testWidgets('已首通守城关在 durable provider 已决且无在途 run 时显示生产差遣入口', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainlineProgressProvider.overrideWith(
+            (ref) async =>
+                MainlineProgress()
+                  ..clearedStageIds = const ['stage_mass_battle_01'],
+          ),
+          durableActivityRunProvider(
+            DurableActivityKind.massBattle,
+          ).overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(home: MassBattleScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.schedule_send_outlined), findsOneWidget);
   });
 }

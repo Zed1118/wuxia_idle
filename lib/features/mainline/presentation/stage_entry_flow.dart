@@ -8,6 +8,7 @@ import 'package:isar_community/isar.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/encounter_def.dart';
 import '../../../data/game_repository.dart';
+import '../../../data/numbers_config.dart';
 import '../../../data/encounter_event_loader.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
@@ -35,6 +36,8 @@ import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../activity/application/character_occupancy_service.dart';
+import '../../activity/application/durable_activity_automation_service.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
 import '../../cultivation/domain/advancement_entry.dart';
 import '../../cultivation/domain/skill_drop_result.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
@@ -57,6 +60,7 @@ import '../../equipment/application/first_acquisition_tiers.dart';
 import '../../equipment/domain/resonance_upgrade_notice.dart';
 import '../../event/application/game_event_service.dart';
 import '../../tutorial/application/tutorial_providers.dart';
+import '../../tutorial/application/tutorial_service.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
@@ -98,6 +102,26 @@ typedef MainlineDurableSettlementContext = ({
   MainlineSettlementJournalService service,
   MainlineSettlementIdentity identity,
 });
+
+/// durable activity 结算的显式依赖包，使 application coordinator 可在非 widget
+/// 测试中验证真实 settlement，而不伪造 sealed WidgetRef。
+final class DurableActivityCombatSettlementDependencies {
+  const DurableActivityCombatSettlementDependencies({
+    required this.numbers,
+    required this.dropService,
+    required this.rng,
+    required this.skillDropRng,
+    required this.tutorialService,
+    required this.reputationService,
+  });
+
+  final NumbersConfig numbers;
+  final DropService dropService;
+  final Rng rng;
+  final math.Random skillDropRng;
+  final TutorialService? tutorialService;
+  final ReputationService? reputationService;
+}
 
 @visibleForTesting
 bool shouldAutomaticallyPresentStageNarratives(StageDef stage) =>
@@ -1501,7 +1525,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   ActivityController controller = ActivityController.human,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
-      ? await _pickFormation(
+      ? await pickMassBattleFormation(
           context,
           stage,
           GameRepository.instance.numbers.massBattle,
@@ -1831,13 +1855,25 @@ Future<
   })?
 >
 applyVictoryResolution({
-  required WidgetRef ref,
+  WidgetRef? ref,
   required StageDef stage,
   int cycle = 1,
   CombatSettlementSnapshot? settlementSnapshot,
   MainlineDurableSettlementContext? durableSettlement,
+  DurableActivitySettlementContext? durableActivitySettlement,
+  DurableActivityCombatSettlementDependencies? durableActivityDependencies,
   int? expectedParticipantId,
 }) async {
+  if (durableSettlement != null && durableActivitySettlement != null) {
+    throw ArgumentError(
+      'Mainline and activity durable settlement contexts are exclusive',
+    );
+  }
+  if (ref == null && durableActivityDependencies == null) {
+    throw ArgumentError(
+      'Settlement requires WidgetRef or durable activity dependencies',
+    );
+  }
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) {
     if (expectedParticipantId != null) {
@@ -1912,10 +1948,20 @@ applyVictoryResolution({
   }
   if (characters.isEmpty) return null;
 
-  final numbers = ref.read(numbersConfigProvider);
-  final dropSvc = ref.read(dropServiceProvider);
+  final NumbersConfig numbers;
+  final DropService dropSvc;
+  final Rng settlementRng;
+  if (durableActivityDependencies != null) {
+    numbers = durableActivityDependencies.numbers;
+    dropSvc = durableActivityDependencies.dropService;
+    settlementRng = durableActivityDependencies.rng;
+  } else {
+    numbers = ref!.read(numbersConfigProvider);
+    dropSvc = ref.read(dropServiceProvider);
+    settlementRng = ref.read(rngProvider);
+  }
 
-  if (durableSettlement != null) {
+  if (durableSettlement != null || durableActivitySettlement != null) {
     await MainlineProgressService(
       isar: isar,
     ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
@@ -1934,7 +1980,7 @@ applyVictoryResolution({
     stageDef: stage,
     // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
     // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
-    rng: ref.read(rngProvider),
+    rng: settlementRng,
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
@@ -1989,15 +2035,23 @@ applyVictoryResolution({
   );
 
   final now = DateTime.now();
-  final durableTutorialService = durableSettlement == null
+  final durableTutorialService =
+      durableSettlement == null && durableActivitySettlement == null
       ? null
-      : ref.read(tutorialServiceProvider);
-  final durableSkillDropRng = durableSettlement == null
+      : durableActivityDependencies != null
+      ? durableActivityDependencies.tutorialService
+      : ref!.read(tutorialServiceProvider);
+  final durableSkillDropRng =
+      durableSettlement == null && durableActivitySettlement == null
       ? null
-      : ref.read(mathRandomProvider);
-  final durableReputation = durableSettlement == null
+      : durableActivityDependencies?.skillDropRng ??
+            ref!.read(mathRandomProvider);
+  final durableReputation =
+      durableSettlement == null && durableActivitySettlement == null
       ? null
-      : ref.read(reputationServiceProvider);
+      : durableActivityDependencies != null
+      ? durableActivityDependencies.reputationService
+      : ref!.read(reputationServiceProvider);
   Future<void> persistResolutionInTxn() async {
     // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
     await isar.characters.putAll(characters);
@@ -2070,7 +2124,7 @@ applyVictoryResolution({
           : null,
     );
 
-    if (durableSettlement == null) return;
+    if (durableSettlement == null && durableActivitySettlement == null) return;
 
     await MainlineProgressService(isar: isar).recordVictoryInTxn(
       saveDataId: IsarSetup.currentSlotId,
@@ -2169,9 +2223,9 @@ applyVictoryResolution({
     }
   }
 
-  if (durableSettlement == null) {
+  if (durableSettlement == null && durableActivitySettlement == null) {
     await isar.writeTxn(persistResolutionInTxn);
-  } else {
+  } else if (durableSettlement != null) {
     final disposition =
         await MainlinePendingJianghuAffairService(
           durableSettlement.service,
@@ -2191,13 +2245,24 @@ applyVictoryResolution({
                 attributeEffects: numbers.attributeEffects,
               ),
               encounters: GameRepository.instance.allEncounters,
-              rng: ref.read(rngProvider),
+              rng: ref!.read(rngProvider),
               festivalToday: ref.read(todayFestivalProvider),
             );
           },
         );
     if (disposition != MainlineCoreCommitDisposition.applied) {
       throw StateError('Mainline settlement core was already applied');
+    }
+  } else {
+    final disposition = await durableActivitySettlement!.service
+        .commitSettlement(
+          runId: durableActivitySettlement.runId,
+          outcome: DurableActivityOutcome.victory,
+          now: now,
+          applyInTxn: persistResolutionInTxn,
+        );
+    if (disposition != DurableActivitySettlementDisposition.applied) {
+      throw StateError('Durable activity settlement was already applied');
     }
   }
 
@@ -2210,7 +2275,7 @@ applyVictoryResolution({
 
   // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(result.dropResult.equipments)
   // 已 commit),留册图鉴(best-effort)。
-  if (durableSettlement == null) {
+  if (durableSettlement == null && durableActivitySettlement == null) {
     await runEquipmentCatalogHookAfterObtain(
       defIds: [for (final e in result.dropResult.equipments) e.defId],
       from: stage.name,
@@ -2240,11 +2305,18 @@ ItemType _itemTypeOfMainline(String defId) => ItemType.fromDefId(defId);
 /// 旧流程在 Isar 未 ready / 角色为空 / finalState 异常时返回空 list；轻功
 /// exact participant 流程必须 fail closed，避免跳过真实参与者的最终败北账本。
 Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
-  required WidgetRef ref,
+  WidgetRef? ref,
   required StageDef stage,
   CombatSettlementSnapshot? settlementSnapshot,
   int? expectedParticipantId,
+  DurableActivitySettlementContext? durableActivitySettlement,
+  DurableActivityCombatSettlementDependencies? durableActivityDependencies,
 }) async {
+  if (ref == null && durableActivityDependencies == null) {
+    throw ArgumentError(
+      'Defeat settlement requires WidgetRef or durable activity dependencies',
+    );
+  }
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) {
     if (expectedParticipantId != null) {
@@ -2316,8 +2388,18 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
   }
   if (characters.isEmpty) return const [];
 
-  final numbers = ref.read(numbersConfigProvider);
-  final dropSvc = ref.read(dropServiceProvider);
+  final NumbersConfig numbers;
+  final DropService dropSvc;
+  final Rng settlementRng;
+  if (durableActivityDependencies != null) {
+    numbers = durableActivityDependencies.numbers;
+    dropSvc = durableActivityDependencies.dropService;
+    settlementRng = durableActivityDependencies.rng;
+  } else {
+    numbers = ref!.read(numbersConfigProvider);
+    dropSvc = ref.read(dropServiceProvider);
+    settlementRng = ref.read(rngProvider);
+  }
   final injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
     for (final character in characters)
       character.id: (
@@ -2333,7 +2415,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     techniquesByCharacter: techsByCh,
     stageDef: stage,
     // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
-    rng: ref.read(rngProvider),
+    rng: settlementRng,
     progressToNextMap: numbers.cultivationProgressToNext,
     techniqueDefLookup: GameRepository.instance.getTechnique,
     dropService: dropSvc,
@@ -2343,8 +2425,9 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     isHardFight: stage.isBossStage,
   );
 
-  // 写回 Isar：受影响的 character + 所有 technique + 所有装备
-  await isar.writeTxn(() async {
+  // 写回 Isar：受影响的 character + 所有 technique + 所有装备。
+  // durable activity 把这些业务写入与 receipt 同事务提交，恢复不重放。
+  Future<void> persistDefeatInTxn() async {
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
       if (list.isNotEmpty) await isar.techniques.putAll(list);
@@ -2352,7 +2435,21 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     for (final list in equipsByCh.values) {
       if (list.isNotEmpty) await isar.equipments.putAll(list);
     }
-  });
+  }
+
+  if (durableActivitySettlement == null) {
+    await isar.writeTxn(persistDefeatInTxn);
+  } else {
+    final disposition = await durableActivitySettlement.service
+        .commitSettlement(
+          runId: durableActivitySettlement.runId,
+          outcome: DurableActivityOutcome.defeat,
+          applyInTxn: persistDefeatInTxn,
+        );
+    if (disposition != DurableActivitySettlementDisposition.applied) {
+      throw StateError('Durable activity defeat was already applied');
+    }
+  }
 
   // 构造损失摘要（Boss 散功 + 心魔惩罚）
   return buildDefeatLossEntries(
@@ -2528,7 +2625,7 @@ Future<void> _applyBossKillReputation({
   ref.invalidate(reputationsForCurrentPlayerProvider);
 }
 
-Future<Formation> _pickFormation(
+Future<Formation> pickMassBattleFormation(
   BuildContext context,
   StageDef stage,
   MassBattleDef config,

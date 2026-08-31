@@ -2,7 +2,7 @@ schema_version: 1
 phase: phase2_phase0a_overhaul
 source_plan: /Users/a10506/Desktop/二阶段优化方案.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-08-24"
+updated_at: "2026-08-31"
 
 policy:
   frozen_may_implement: true
@@ -35,6 +35,44 @@ decisions:
     summary: 首版全存档同时最多一条 active expedition
     batch_action: verify_existing
     owner_task: P2-M0-PI-EVIDENCE
+
+  - id: DURABLE-ACTIVITY-AUTOMATION-01
+    status: frozen_implementation_authorized
+    summary: 轻功与守城已首通内容允许单人 durable 差遣，共用持久会话、统一占用、既有 headless runner 与共享结算
+    durable_kinds:
+      - light_foot
+      - mass_battle
+    required_request:
+      participation: dispatch
+      controller: playerBot
+      clock: headless
+      entry_kind: offlineResume
+      first_clear_required: true
+    persistence:
+      migration_kind: additive
+      save_version: 0.41.0
+      actual_participant_and_loadout_snapshot: true
+      mass_battle_formation_snapshot: true
+      offline_cursor: true
+      idempotent_settlement_receipt: true
+    shared_owners:
+      reducer: existing_phase0a
+      content_mapper: existing_phase0a_stage_content_mapper
+      headless_runner: existing_phase0a_sweep_headless_runner
+      settlement: existing_shared_stage_settlement
+      occupancy: character_occupancy_service
+    forbidden_changes:
+      - player_values
+      - skills
+      - reward_amounts
+      - economy
+      - combat_rules
+    owner_tasks:
+      - P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
+      - P2-M5-MASS-BATTLE-AUTOMATION-ADMISSION
+      - P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
+    approved_at: "2026-08-31"
+    approval_basis: '当前 Codex 会话：用户明确授权加法迁移、durable run/session、实际参与者与装配占用、守城阵型快照、离线游标和幂等 receipt'
 
   - id: MAINLINE-PARTICIPANT-01
     status: frozen

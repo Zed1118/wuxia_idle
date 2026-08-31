@@ -13,6 +13,9 @@ import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
+import '../../activity/application/durable_activity_automation_providers.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
+import '../../activity/presentation/durable_activity_automation_ui.dart';
 import '../application/light_foot_service.dart';
 import '../application/light_foot_participant_service.dart';
 import 'light_foot_participant_picker.dart';
@@ -63,6 +66,9 @@ class LightFootScreen extends ConsumerWidget {
           ..sort((a, b) => a.id.compareTo(b.id));
     final lightFootDef = GameRepository.instance.numbers.lightFoot;
     final async = ref.watch(mainlineProgressProvider);
+    final automationAsync = ref.watch(
+      durableActivityRunProvider(DurableActivityKind.lightFoot),
+    );
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -90,6 +96,7 @@ class LightFootScreen extends ConsumerWidget {
               );
             }
             final cleared = progress.clearedStageIds.toSet();
+            final automationRun = automationAsync.value;
             // 周目按章(Phase 2):整个轻功副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'lightFoot';
             int cycleFor() => resolveTargetCycle(
@@ -103,6 +110,28 @@ class LightFootScreen extends ConsumerWidget {
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: CycleSelectControl(chapterKey: chapterKey),
                 ),
+                if (automationRun != null)
+                  DurableActivityRunCard(
+                    run: automationRun,
+                    stageName:
+                        GameRepository
+                            .instance
+                            .stageDefs[automationRun.stageId]
+                            ?.name ??
+                        automationRun.stageId,
+                    onPressed: () {
+                      final runStage = GameRepository
+                          .instance
+                          .stageDefs[automationRun.stageId];
+                      if (runStage == null) return;
+                      resumeDurableActivityAutomation(
+                        context: context,
+                        ref: ref,
+                        stage: runStage,
+                        runId: automationRun.id,
+                      );
+                    },
+                  ),
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
@@ -122,6 +151,30 @@ class LightFootScreen extends ConsumerWidget {
                         child: _LightFootRow(
                           def: s,
                           status: status,
+                          onDispatch:
+                              status == LightFootStageStatus.cleared &&
+                                  automationAsync.hasValue &&
+                                  automationRun == null
+                              ? () async {
+                                  final participantId =
+                                      await selectLightFootParticipant(
+                                        context: context,
+                                        ref: ref,
+                                      );
+                                  if (participantId == null ||
+                                      !context.mounted) {
+                                    return;
+                                  }
+                                  await startDurableActivityAutomation(
+                                    context: context,
+                                    ref: ref,
+                                    kind: DurableActivityKind.lightFoot,
+                                    stage: s,
+                                    cycleIndex: cycleFor(),
+                                    participantId: participantId,
+                                  );
+                                }
+                              : null,
                           onTap: status == LightFootStageStatus.locked
                               ? null
                               : () => runLightFootChallenge(
@@ -209,11 +262,13 @@ class _LightFootRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
+    required this.onDispatch,
   });
 
   final StageDef def;
   final LightFootStageStatus status;
   final VoidCallback? onTap;
+  final VoidCallback? onDispatch;
 
   @override
   Widget build(BuildContext context) {
@@ -263,6 +318,15 @@ class _LightFootRow extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (onDispatch != null)
+                  IconButton(
+                    tooltip: UiStrings.expeditionDispatchTeamSection,
+                    onPressed: onDispatch,
+                    icon: const Icon(
+                      Icons.schedule_send_outlined,
+                      color: WuxiaColors.textPrimary,
+                    ),
+                  ),
                 _StatusIcon(status: status),
               ],
             ),

@@ -5100,33 +5100,40 @@ tasks:
   - id: P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
     milestone: M6
     owner: codex_root
-    branch: codex/phase2-u14-special-mode-matrix-requalified-blocked-2modes-20260825
-    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: blocked
+    branch: codex/p2-m5-u14-durable-automation-20260831
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-u14-durable-automation-20260831
+    status: ready_reviewed
     current_authoritative_wip: false
-    base_commit: eb247d7f72610534f39b6ca5281b044252d2bc34
+    base_commit: 1800c9f666aba995788b930ea1ee206b24ca3e88
     requalified_base_commit: d9801ef48d725d25ea9b626b272abb5f44cc34a1
+    code_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    reviewed_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    ready_marker: "[READY][CODEX][P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES] 关闭六特殊模式生产准入矩阵"
     completion_scope: prove_six_special_mode_allowed_matrix_through_real_production_admissions_and_full_entry_route_states
     acceptance_baseline: 0_of_1_six_mode_production_matrix_and_route_gate
     acceptance_target: 1_of_1_six_mode_production_matrix_and_route_gate
-    acceptance_result: 0_of_1_blocked
-    blocker:
-      type: missing_production_mode_admissions
-      summary: tower_is_ready_but_light_foot_and_mass_battle_still_lack_complete_typed_production_admission_because_their_required_durable_dispatch_owners_do_not_exist
-      required_precondition: authorize_schema_save_version_and_shared_occupancy_owners_for_light_foot_and_mass_battle_dispatch_or_explicitly_remove_dispatch_from_their_fixed_gates
+    acceptance_result: 1_of_1_six_mode_production_matrix_and_route_gate
+    requalification:
+      prior_blocker: light_foot_and_mass_battle_missing_durable_dispatch_owners
+      result: authorized_additive_persistence_and_shared_occupancy_are_connected_to_both_real_production_entries_and_existing_headless_settlement
+      remaining_gap: human_visual_and_interaction_acceptance_deferred_without_blocking_this_engineering_gate
     evidence:
       special_modes: 6
-      typed_request_production_consumers: 4
-      dedicated_automation_policy_consumers: 2
+      typed_request_production_consumers: 6
+      dedicated_automation_policy_consumers: 3
       inner_demon_manual_only_typed_admission_ready: true
       tower_typed_headless_admission_ready: true
-      missing_typed_production_modes: 2
-      focused_existing_contract_and_route_tests: 96
+      light_foot_durable_dispatch_ready: true
+      mass_battle_durable_dispatch_ready: true
+      missing_typed_production_modes: 0
+      focused_contract_runner_route_and_migration_tests: 70
       five_location_zero_eligible_routes_ready: true
       full_route_state_suite: 117
       async_boundary_cells: 12
       route_state_subgate_ready: true
-      schema_or_shared_truth_source_changes_made: 0
+      additive_schema_and_shared_occupancy_changes: 1
+      remove_occupancy_implementation_mutation_failed_tests: 2
+      degenerate_first_clear_guard_mutation_failed_tests: 1
     prerequisite_tasks:
       - P2-M5-TOWER-AUTOMATION-ADMISSION
       - P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
@@ -5141,7 +5148,8 @@ tasks:
       - inner demon remains self only manual only and outside the jianghu map
       - location and participant errors fail closed without fallback identity or false CTA
       - no isolated policy table or enum test may be presented as a production matrix
-      - no reducer session headless provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - additive durable run receipt save version and shared occupancy changes are limited to the explicit user authorization
+      - no new reducer headless kernel settlement truth source YAML tuning reward economy unlock narrative combat rule or player value change
       - do not claim U14 M6 or overall Phase 2 completion
 
   - id: P2-M5-TOWER-AUTOMATION-ADMISSION
@@ -5316,30 +5324,44 @@ tasks:
   - id: P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_root
-    branch: codex/phase2-light-foot-automation-admission-requalified-blocked-20260825
-    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: blocked
+    branch: codex/p2-m5-u14-durable-automation-20260831
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-u14-durable-automation-20260831
+    status: ready_reviewed
     current_authoritative_wip: false
-    base_commit: 5b648cf07da5a15114816996ec8e869f688db345
+    base_commit: 1800c9f666aba995788b930ea1ee206b24ca3e88
+    code_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    reviewed_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    ready_marker: "[READY][CODEX][P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION] 接通轻功持久差遣生产闭环"
     completion_scope: connect_post_first_clear_typed_light_foot_bot_headless_and_dispatch_admission_to_a_real_production_runner
     acceptance_baseline: 0_of_1_typed_production_light_foot_automation_path
     acceptance_target: 1_of_1_typed_production_light_foot_automation_path
-    acceptance_result: 0_of_1_blocked
-    blocker:
-      type: missing_durable_dispatch_owner_and_shared_occupancy_authorization
-      summary: tower_runner_can_be_reused_for_immediate_headless_but_light_foot_has_no_durable_run_session_occupancy_offline_or_return_report_owner_for_the_required_dispatch_path
-      required_precondition: authorize_schema_save_version_and_shared_occupancy_extension_for_light_foot_dispatch_or_explicitly_remove_dispatch_from_this_fixed_gate
+    acceptance_result: 1_of_1_typed_production_light_foot_automation_path
+    requalification:
+      prior_blocker: missing_durable_dispatch_owner_and_shared_occupancy_authorization
+      result: authorized_additive_run_receipt_and_occupancy_owner_connect_the_cleared_route_dispatch_button_to_existing_headless_and_shared_settlement
+      remaining_gap: human_visual_and_wording_acceptance_deferred
     evidence:
-      light_foot_feature_tests: 12
-      activity_participation_request_consumers_in_light_foot_lib: 0
-      phase0a_headless_runner_consumers_in_light_foot_lib: 0
+      focused_combined_tests: 70
+      activity_participation_request_production_consumer: true
+      production_dispatch_widget_guard: true
       existing_sweep_headless_runner_reusable: true
       existing_light_foot_phase0a_mapper: true
-      durable_light_foot_run_or_session: false
-      light_foot_activity_occupancy_kind: false
-      light_foot_offline_and_return_report_owner: false
-      schema_or_shared_truth_source_changes_made: 0
+      durable_light_foot_run_or_session: true
+      light_foot_activity_occupancy_kind: true
+      light_foot_offline_cursor_and_return_report_owner: true
+      exact_participant_and_loadout_snapshot: true
+      atomic_idempotent_settlement_receipt: true
+      additive_schema_and_shared_occupancy_changes: 1
     owned_files:
+      - lib/features/activity/domain/durable_activity_combat_run.dart
+      - lib/features/activity/domain/durable_activity_automation_policy.dart
+      - lib/features/activity/application/durable_activity_automation_service.dart
+      - lib/features/activity/application/durable_activity_automation_coordinator.dart
+      - lib/features/activity/presentation/durable_activity_automation_ui.dart
+      - lib/features/light_foot/presentation/light_foot_screen.dart
+      - test/features/activity/durable_activity_automation_policy_test.dart
+      - test/features/activity/durable_activity_automation_service_test.dart
+      - test/features/activity/durable_activity_automation_coordinator_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m5-light-foot-automation-admission.md
       - docs/audit/phase2_m5_light_foot_automation_admission_blocked_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -5347,37 +5369,52 @@ tasks:
       - manual light foot entry keeps per_attempt exact participant selection and shared live stage flow
       - existing progress participant settlement injury and report owners remain unchanged
       - no isolated policy or test only runner may be presented as production wiring
-      - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - additive durable run receipt save version and shared occupancy changes are limited to the explicit user authorization
+      - no new reducer headless kernel settlement truth source YAML tuning reward economy unlock narrative combat rule or player value change
       - do not claim light foot automation M5 U14 M6 or overall Phase 2 completion
 
   - id: P2-M5-MASS-BATTLE-AUTOMATION-ADMISSION
     milestone: M5
     owner: codex_root
-    branch: codex/phase2-mass-battle-automation-admission-requalified-blocked-20260825
-    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: blocked
+    branch: codex/p2-m5-u14-durable-automation-20260831
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-u14-durable-automation-20260831
+    status: ready_reviewed
     current_authoritative_wip: false
-    base_commit: 9b26ccac3c7efb4e696a8138be61e7f8717e268a
+    base_commit: 1800c9f666aba995788b930ea1ee206b24ca3e88
+    code_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    reviewed_candidate_commit: fedad8812b81f10b44d2fca02b71bcfc0975c0fb
+    ready_marker: "[READY][CODEX][P2-M5-MASS-BATTLE-AUTOMATION-ADMISSION] 接通守城持久差遣生产闭环"
     completion_scope: connect_post_first_clear_typed_mass_battle_bot_headless_and_dispatch_admission_to_a_real_production_runner
     acceptance_baseline: 0_of_1_typed_production_mass_battle_automation_path
     acceptance_target: 1_of_1_typed_production_mass_battle_automation_path
-    acceptance_result: 0_of_1_blocked
-    blocker:
-      type: missing_durable_dispatch_owner_formation_snapshot_and_shared_occupancy_authorization
-      summary: tower_runner_can_be_reused_for_immediate_headless_but_mass_battle_has_no_durable_run_session_formation_occupancy_offline_or_return_report_owner_for_the_required_dispatch_path
-      required_precondition: authorize_schema_save_version_and_shared_occupancy_extension_for_mass_battle_dispatch_or_explicitly_remove_dispatch_from_this_fixed_gate
+    acceptance_result: 1_of_1_typed_production_mass_battle_automation_path
+    requalification:
+      prior_blocker: missing_durable_dispatch_owner_formation_snapshot_and_shared_occupancy_authorization
+      result: authorized_additive_run_receipt_formation_snapshot_and_occupancy_owner_connect_the_cleared_stage_dispatch_button_to_existing_multiwave_headless_and_shared_settlement
+      remaining_gap: human_visual_formation_picker_and_wording_acceptance_deferred
     evidence:
-      mass_battle_feature_tests: 13
-      activity_participation_request_consumers_in_mass_battle_lib: 0
-      phase0a_headless_runner_consumers_in_mass_battle_lib: 0
+      focused_combined_tests: 70
+      activity_participation_request_production_consumer: true
+      production_dispatch_widget_guard: true
       existing_sweep_headless_runner_reusable: true
       existing_mass_battle_phase0a_mapper_and_formation_input: true
-      durable_mass_battle_run_or_session: false
-      mass_battle_activity_occupancy_kind: false
-      durable_mass_battle_formation_snapshot: false
-      mass_battle_offline_and_return_report_owner: false
-      schema_or_shared_truth_source_changes_made: 0
+      durable_mass_battle_run_or_session: true
+      mass_battle_activity_occupancy_kind: true
+      durable_mass_battle_formation_snapshot: true
+      mass_battle_offline_cursor_and_return_report_owner: true
+      exact_participant_and_loadout_snapshot: true
+      atomic_idempotent_settlement_receipt: true
+      additive_schema_and_shared_occupancy_changes: 1
     owned_files:
+      - lib/features/activity/domain/durable_activity_combat_run.dart
+      - lib/features/activity/domain/durable_activity_automation_policy.dart
+      - lib/features/activity/application/durable_activity_automation_service.dart
+      - lib/features/activity/application/durable_activity_automation_coordinator.dart
+      - lib/features/activity/presentation/durable_activity_automation_ui.dart
+      - lib/features/mass_battle/presentation/mass_battle_screen.dart
+      - test/features/activity/durable_activity_automation_policy_test.dart
+      - test/features/activity/durable_activity_automation_service_test.dart
+      - test/features/activity/durable_activity_automation_coordinator_test.dart
       - docs/superpowers/plans/2026-08-25-p2-m5-mass-battle-automation-admission.md
       - docs/audit/phase2_m5_mass_battle_automation_admission_blocked_2026-08-25.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -5385,7 +5422,8 @@ tasks:
       - manual mass battle entry keeps formation and per_attempt exact participant selection
       - existing progress participant settlement injury and report owners remain unchanged
       - no isolated policy or test only runner may be presented as production wiring
-      - no reducer session headless kernel provider settlement truth source schema save version YAML tuning reward economy unlock narrative combat or main change
+      - additive durable run receipt save version and shared occupancy changes are limited to the explicit user authorization
+      - no new reducer headless kernel settlement truth source YAML tuning reward economy unlock narrative combat rule or player value change
       - do not claim mass battle automation M5 U14 M6 or overall Phase 2 completion
 
   - id: P2-M5-INNER-DEMON-MANUAL-ONLY-ADMISSION

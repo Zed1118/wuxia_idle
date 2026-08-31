@@ -192,6 +192,8 @@ String _statusFor(DiscipleSchedulingMember member) {
     ActivityKind.retreat => UiStrings.discipleSchedulingActivityRetreat,
     ActivityKind.expedition => UiStrings.discipleSchedulingActivityExpedition,
     ActivityKind.bossGauntlet => UiStrings.discipleSchedulingActivityGauntlet,
+    ActivityKind.lightFoot => UiStrings.mainMenuLightFoot,
+    ActivityKind.massBattle => UiStrings.mainMenuMassBattle,
     null => UiStrings.discipleSchedulingAvailable,
   };
 }

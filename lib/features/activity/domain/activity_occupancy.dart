@@ -1,5 +1,5 @@
-/// 活动种类（闭关/百草岭/断魂庄）。
-enum ActivityKind { retreat, expedition, bossGauntlet }
+/// 活动种类（闭关/百草岭/断魂庄/轻功差遣/守城差遣）。
+enum ActivityKind { retreat, expedition, bossGauntlet, lightFoot, massBattle }
 
 /// 单个活动会话的占用/保留条目。
 class ActivityOccupancyEntry {

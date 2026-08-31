@@ -6,6 +6,8 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/activity/application/durable_activity_automation_providers.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
 import 'package:wuxia_idle/features/light_foot/application/light_foot_participant_service.dart';
 import 'package:wuxia_idle/features/light_foot/presentation/light_foot_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
@@ -95,5 +97,26 @@ void main() {
     expect(captured, isNotNull);
     expect(captured!.characterId, 2);
     expect(captured!.name, '空闲门人');
+  });
+
+  testWidgets('已首通路线在 durable provider 已决且无在途 run 时显示生产差遣入口', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mainlineProgressProvider.overrideWith(
+            (ref) async =>
+                MainlineProgress()
+                  ..clearedStageIds = const ['stage_light_foot_01'],
+          ),
+          durableActivityRunProvider(
+            DurableActivityKind.lightFoot,
+          ).overrideWith((ref) async => null),
+        ],
+        child: const MaterialApp(home: LightFootScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.schedule_send_outlined), findsOneWidget);
   });
 }
