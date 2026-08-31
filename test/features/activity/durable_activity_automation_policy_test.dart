@@ -136,16 +136,14 @@ void main() {
       request(kind: kind, stageId: stage.id),
     ];
     for (final allowedRequest in allowedRequests) {
-      expect(
-        DurableActivityAutomationPolicy.evaluate(
-          kind: kind,
-          stage: stage,
-          request: allowedRequest,
-          alreadyCleared: true,
-          formation: null,
-        ).allowed,
-        isTrue,
+      final allowedDecision = DurableActivityAutomationPolicy.evaluate(
+        kind: kind,
+        stage: stage,
+        request: allowedRequest,
+        alreadyCleared: true,
+        formation: null,
       );
+      expect(allowedDecision.allowed, isTrue);
       expect(
         DurableActivityAutomationPolicy.evaluate(
           kind: kind,
