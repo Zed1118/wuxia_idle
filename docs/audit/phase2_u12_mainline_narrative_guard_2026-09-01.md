@@ -20,11 +20,14 @@ U02/U03 的生产实现仍在真实入口生效：主线三类自动阅读统一
 | manifest `targetId` 漂移 | 1 FAIL，RED_CONFIRMED |
 | 增加 `stage_99_99_opening` 物理孤儿 | 1 FAIL，RED_CONFIRMED |
 | 精确反向补丁恢复后三类核心守卫 | 17/17 PASS |
+| U02/U03 原 12 文件保护网 + 新拓扑断言 | 105/105 PASS |
+| `flutter analyze --no-pub lib test` | 0 issue |
+| `dart format .` | 1698 files，0 changed |
+| 锁定全量 | 5820/5820 PASS，`[E]=0` |
 
 ## 待完成
 
-- U02/U03 原 12 文件保护网 + 新拓扑守卫。
-- analyze、整仓 format、锁定全量、Gate。
+- 最终 READY tip Gate。
 - main 合并、push 与精确 SHA CI。
 
 真人章节卷轴阅读、键鼠交互与视觉密度继续按用户要求挂账；本工程门不得据此宣称 M6 或 Phase 2 正式验收通过。
