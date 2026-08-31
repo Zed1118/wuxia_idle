@@ -5881,6 +5881,8 @@ tasks:
       focused_production_failures: 0
       mutation_remove_participant_filter_failures: 1
       exact_reverse_patch_restore: true
+      test_contract_migration_entries: 8
+      test_contract_migration_gate: pending
       analyze_issues: 0
       schema_changed: false
       save_version_changed: false
@@ -5900,6 +5902,7 @@ tasks:
       - docs/audit/phase2_m5_inner_demon_personal_progress_2026-09-01.md
       - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m5-inner-demon-personal-progress-20260901.yaml
       - CLAUDE.md
     protected_behavior:
       - personal progress is derived only from exact participant durable reward receipts written by the existing production settlement

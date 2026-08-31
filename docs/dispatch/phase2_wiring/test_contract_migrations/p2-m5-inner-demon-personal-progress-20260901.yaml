@@ -1,0 +1,38 @@
+schema_version: 1
+ticket: p2-m5-inner-demon-personal-progress-20260901
+base_sha: ef2a8fe20a70f4aca90a272186cf7c936e364008
+head_sha: 959df260b21c4ff053088d9631c46c4d738f0dd2
+summary: 心魔进度由存档级通关事实迁为 U09 个人奖励凭据事实；旧全局进度断言必须替换为参战者推进且其他角色不继承的隔离合同。
+
+migrations:
+  - deleted: test('零通关 → clearedCount=0 / next=首关;记两关 → 推进', () async {
+    replacement: test('全局通关不跨角色继承，个人 receipt 只推进实际参战者', () async {
+    reason: 旧用例把存档级 MainlineProgress 当成个人心魔进度，会让一名角色的通关被所有角色继承；新用例用真实个人 receipt 同时钉住参战者推进和未参战者零继承。
+
+  - deleted: expect(progress.clearedCount, 0);
+    replacement: "expect(other.clearedCount, 0, reason: '存档全局通关事实不得冒充另一角色个人进度');"
+    reason: 零通关断言在没有个人归属守卫时也会成立；替代断言先写入全局通关和另一角色个人凭据，再证明当前角色仍为零。
+
+  - deleted: "expect(progress.totalCount, demonTotal, reason: '总数派生自 numbers 不硬编码');"
+    replacement: "expect(winner.totalCount, demonTotal, reason: '总数派生自 numbers 不硬编码');"
+    reason: 总关数派生合同保留，但进度对象必须是持有个人凭据的实际参战者。
+
+  - deleted: expect(progress.nextUnclearedStageId, 'stage_inner_demon_01');
+    replacement: expect(other.nextUnclearedStageId, 'stage_inner_demon_01');
+    reason: 首关断言改为在已存在全局通关事实时验证未参战角色仍从首关开始，强于旧零数据场景。
+
+  - deleted: expect(progress.clearedCount, 2);
+    replacement: expect(winner.clearedCount, 2);
+    reason: 两关推进必须归属于持有两条个人 receipt 的参战者，不再由存档级通关集合直接派生。
+
+  - deleted: expect(progress.nextUnclearedStageId, 'stage_inner_demon_03');
+    replacement: expect(winner.nextUnclearedStageId, 'stage_inner_demon_03');
+    reason: 下一关推进合同保留，并改为消费实际参战者的个人持久凭据。
+
+  - deleted: expect(capturedRequest!.entryKind, ActivityEntryKind.firstClear);
+    replacement: "reason: '另一角色造成的存档级心魔通关不得把本人入口变成重打',"
+    reason: 旧断言未制造跨角色冲突所以无法证明个人首通；新断言先注入他人造成的全局心魔通关，再要求本人入口仍是 firstClear。
+
+  - deleted: testWidgets('心魔首通 receipt 按实际参战者个人作用域落库', (tester) async {
+    replacement: testWidgets('心魔生产胜利事务只推进实际参战者的个人进度', (tester) async {
+    reason: 旧用例只检查 receipt 字段而未证明生产消费者使用它；新用例保留字段断言并验证胜利事务后仅参战者 provider 推进。
