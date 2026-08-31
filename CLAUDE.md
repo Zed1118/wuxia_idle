@@ -6,7 +6,7 @@
 >
 > **版本:v1.97**
 >
-> v1.97 变更摘要(2026-09-01 二阶段 M5 心魔个人进度归属):心魔角色面板与关卡列表改为按 `characterId` 消费 U09 既有 personal-scope `RewardClaimReceipt`，以真实胜利事务落下的 `contentId + participantId` 作为个人进度；存档级 `MainlineProgress` 继续承担全局内容链、周目与宗门首通，不再让一名角色的心魔胜利被另一名角色继承。旧档无法证明参与者时不猜人、不伪造个人记录。生产 settlement→receipt→provider 与两个消费者的定向 `57/57`，移除 participant 过滤后精确 `1` 条失败并反向还原，analyze 0 issue。M5 固定工程矩阵由 `36/42` 推至 `37/42`，顶层 M5 与 M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
+> v1.97 变更摘要(2026-09-01 二阶段 M5 心魔个人进度归属):心魔角色面板与关卡列表改为按 `characterId` 消费 U09 既有 personal-scope `RewardClaimReceipt`，以真实胜利事务落下的 `contentId + participantId` 作为个人进度；存档级 `MainlineProgress` 继续承担全局内容链、周目与宗门首通，不再让一名角色的心魔胜利被另一名角色继承。旧档无法证明参与者时不猜人、不伪造个人记录。生产 settlement→receipt→provider 与两个消费者的扩展定向 `113/113`，两向破坏证红各精确 `1` 条失败并反向还原，测试契约迁移 Gate PASS、全量 `5828/5828`、analyze 0 issue。M5 固定工程矩阵由 `36/42` 推至 `37/42`，顶层 M5 与 M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >
 > v1.96 变更摘要(2026-09-01 二阶段 M5 轻功/守城自动化矩阵):轻功与守城首通继续锁定真人；已通关可见重打消费全局 `autoPlayDefault`，以玩家本次选择的 exact participant 进入既有前台 `Phase0aMainlineBattleHost`；新增“快速推演”提交 `direct + playerBot + headless + replay`，复用既有 durable receipt、占用、Phase 0A headless runner 与共享 settlement，守城在开跑前选择并持久化阵型。既有差遣继续保持 `dispatch + playerBot + headless + offlineResume`，三通道不互相冒充。破坏证红 `4+1+2`，扩展定向 `82/82`、全量 `5828/5828`、analyze 0 issue。M5 固定工程矩阵由 `34/42` 推至 `36/42`，顶层 M5 与 M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁或战斗规则。
 >

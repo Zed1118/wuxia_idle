@@ -5877,16 +5877,20 @@ tasks:
       - P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
       - P2-M5-INNER-DEMON-MANUAL-ONLY-ADMISSION
     evidence:
-      focused_production_tests: 57
+      focused_production_tests: 113
       focused_production_failures: 0
       mutation_remove_participant_filter_failures: 1
+      mutation_force_empty_progress_failures: 1
       exact_reverse_patch_restore: true
       test_contract_migration_entries: 8
-      test_contract_migration_gate: pending
+      test_contract_migration_gate: pass
       analyze_issues: 0
       schema_changed: false
       save_version_changed: false
-      full_suite_tests: pending
+      format_files: 1699
+      format_changed: 0
+      full_suite_tests: 5828
+      full_suite_failures: 0
       final_gate: pending
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred

@@ -24,6 +24,18 @@
 
 临时移除 `receipt.participantId != characterId` 后，个人 provider 用例出现 `1` 条失败：未参战角色的实际 `clearedCount` 从预期 `0` 变为 `2`。精确反向补丁恢复过滤后同用例重新通过，证明跨角色隔离断言不是恒真。
 
+把生产派生结果临时强制退化为空集合后，同一用例再次精确出现 `1` 条失败：实际参战者的 `clearedCount` 从预期 `2` 变为 `0`。精确反向补丁恢复真实 receipt 集合后用例通过，证明写端事实确实被生产读端消费。
+
+## 验证
+
+- 生产 settlement、receipt、provider、角色面板与心魔页面扩展定向：`113/113 PASS`。
+- 两向破坏证红：删除 participant 隔离 `1` 条失败；强制空进度 `1` 条失败；均精确还原。
+- 测试契约迁移：`expect` 删除 `6`/新增 `8`、用例删除 `2`/新增 `2`，登记 `8` 条，`PASS: test_contract_migration`。
+- `flutter analyze`：`No issues found!`。
+- `dart format .`：`1699 files / 0 changed`。
+- 锁保护整仓全量：`5828/5828 PASS`，退出码 `0`，末行 `All tests passed!`。
+- 项目 Gate：待最终审计 tip 复跑。
+
 ## 范围
 
 - 未新增 schema、未提升 saveVersion，未改任何奖励、数值、概率、经济、解锁阈值、YAML TUNING、技能或战斗规则。

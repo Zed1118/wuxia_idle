@@ -4,7 +4,7 @@
 
 原审计基线：`22afa6d3831b4dfb0d20df7d6694f6f7c13ff968`
 
-本轮最新实现：`959c2a10986243fc70cad51b2a9376b2ef2e9b5c`
+本轮最新代码实现：`959c2a10986243fc70cad51b2a9376b2ef2e9b5c`
 
 任务：`P2-M5-ENGINEERING-INTEGRATION-AUDIT`
 
@@ -43,13 +43,13 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮轻功/守城候选另完成扩展定向 `82/82 PASS`、破坏证红 `4 + 1 + 2` 条失败并精确还原、`flutter analyze --no-pub lib test tool` 0 issue，以及锁保护整仓全量 `5828/5828 PASS`、`[E]=0`、末行 `All tests passed!`。
 
-这些绿色证据连同心魔个人 receipt 纵切关闭三格，不证明剩余五个不存在的 owner 已完成。
+心魔个人进度纵切另完成扩展定向 `113/113 PASS`、两向破坏证红各 `1` 条失败并精确还原、测试契约迁移 Gate `PASS`、`flutter analyze` 0 issue、`dart format .` 1699 files / 0 changed，以及锁保护整仓全量 `5828/5828 PASS`。这些绿色证据连同轻功/守城纵切合计关闭三格，不证明剩余五个不存在的 owner 已完成。
 
 最终工程检查：
 
-- `flutter analyze --no-pub lib test`：0 issue，末行 `No issues found! (ran in 13.5s)`；
+- `flutter analyze`：0 issue，末行 `No issues found!`；
 - `dart format .`：`1699 files / 0 changed`；
-- 锁保护整仓全量：`5822/5822 PASS`，退出码 0，`[E]=0`，末行 `05:02 +5822: All tests passed!`；
+- 锁保护整仓全量：`5828/5828 PASS`，退出码 0，末行 `04:56 +5828: All tests passed!`；
 - 项目 Gate 必须在最终 `[READY]` 审计 tip 上独立通过后才允许合并。
 
 ## 推荐施工顺序
