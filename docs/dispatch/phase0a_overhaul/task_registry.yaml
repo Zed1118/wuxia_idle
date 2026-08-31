@@ -5803,8 +5803,8 @@ tasks:
     status: ready_reviewed
     current_authoritative_wip: false
     base_commit: 44a5d241d3c96d58e9ef67254bfc5af2292b8cb1
-    code_candidate_commit: 9a861386344e868428abb5fb101bd794c3c795dc
-    reviewed_candidate_commit: 9a861386344e868428abb5fb101bd794c3c795dc
+    code_candidate_commit: b74c2dbfae6fb9e60df7bd0c4a7d8d785aa5c07c
+    reviewed_candidate_commit: b74c2dbfae6fb9e60df7bd0c4a7d8d785aa5c07c
     ready_marker: "[READY][CODEX][P2-M5-LIGHT-MASS-AUTOMATION-MATRIX] 接通轻功守城前台托管与快速推演"
     completion_scope: connect_cleared_light_foot_and_mass_battle_visible_bot_and_immediate_headless_to_existing_production_owners
     acceptance_baseline: 34_of_42_M5_engineering_cells
@@ -5826,6 +5826,8 @@ tasks:
       mutation_force_direct_host_human_failures: 1
       mutation_bypass_first_clear_failures: 2
       exact_reverse_patch_restore: true
+      test_contract_migration_entries: 2
+      test_contract_migration_gate: must_pass_before_merge
       final_gate: must_pass_before_merge
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
@@ -5845,6 +5847,7 @@ tasks:
       - docs/audit/phase2_m5_light_mass_automation_matrix_2026-09-01.md
       - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m5-light-mass-automation-matrix-20260901.yaml
       - CLAUDE.md
     protected_behavior:
       - first_clear_remains_human_and_only_cleared_routes_unlock_automation

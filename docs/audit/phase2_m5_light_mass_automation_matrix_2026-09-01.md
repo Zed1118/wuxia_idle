@@ -37,6 +37,7 @@
 - `flutter analyze --no-pub lib test tool`：0 issue；
 - `git diff --check`：0 issue；
 - 锁保护整仓全量：`5828/5828 PASS`，`[E]=0`，约 `4m55s`，末行 `All tests passed!`；
+- 旧“仅允许差遣”用例迁为三通道精确矩阵，2 条 load-bearing 删除逐条登记；专用契约迁移 Gate 必须 PASS；
 - `dart format .` 与最终项目 Gate：必须在最终 `[READY]` tip 上通过后才允许合并。
 
 ## 保留边界

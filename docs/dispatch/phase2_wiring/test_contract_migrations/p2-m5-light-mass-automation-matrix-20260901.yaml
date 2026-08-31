@@ -1,0 +1,14 @@
+schema_version: 1
+ticket: p2-m5-light-mass-automation-matrix-20260901
+base_sha: 44a5d241d3c96d58e9ef67254bfc5af2292b8cb1
+head_sha: b74c2dbfae6fb9e60df7bd0c4a7d8d785aa5c07c
+summary: 轻功自动化契约由仅允许差遣迁为已首通后前台 bot、快速 headless 与 durable 差遣三条精确通道；保留并强化首通与错元组拒绝断言。
+
+migrations:
+  - deleted: test('轻功仅允许已首通的 dispatch + bot + headless + offlineResume', () {
+    replacement: test('轻功已首通后精确允许前台 bot、快速推演与 durable 差遣三通道', () {
+    reason: 旧用例标题钉死单一差遣通道，与本批新增的两条 direct replay 生产合同冲突；新用例逐条验证三通道，并继续验证未首通与错元组拒绝。
+
+  - deleted: expect(allowed.allowed, isTrue);
+    replacement: expect(allowedDecision.allowed, isTrue);
+    reason: 旧断言只覆盖一个 dispatch 请求；替代断言在三请求循环中分别验证可见 bot、快速 headless 与 durable 差遣均由同一 policy 明确放行。
