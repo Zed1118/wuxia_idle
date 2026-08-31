@@ -33,13 +33,14 @@
 - [x] 接通轻功、守城 typed policy/service、生产入口和恢复报告。
 - [x] 复用同一 mapper/headless/settlement；守城阵型快照进入真实 mapper。
 - [x] 六特殊模式真实 production owner 矩阵闭合。
-- [ ] 双向破坏证红、整仓验证与独立 Gate。
+- [x] 双向破坏证红。
+- [ ] 整仓验证与独立 Gate。
 - [ ] READY、合并 main、push 与最终挂账。
 
 ## 当前恢复点
 
-- 状态：WIP，生产实现与新增定向证据已绿，尚未冻结候选。
-- 最后完成：轻功和守城均补齐真实 coordinator → 共享结算 → durable receipt 证据；首通后生产差遣入口已有 widget 守卫；六模式矩阵对齐远征既有 `firstClear` 合同。
-- 下一步：处理 `strings.dart` 与独立 Gate 固定禁改清单的冲突；随后登记任务状态、执行双向破坏证红、全量与 Gate。
-- 已跑验证：activity/sweep/migration 定向组 `26/26 PASS`；coordinator + 两模式生产入口 `6/6 PASS`；scoped analyze 0 issue（最终整仓尚未跑）。
+- 状态：WIP，生产实现、登记和双向破坏证红完成，尚未冻结 READY。
+- 最后完成：移除 durable 占用聚合得到 `2 FAIL`；强制跳过首通门得到 `1 FAIL`；两次均精确反向还原，还原组 `8/8 PASS`。`strings.dart` 已通过复用既有合法词条回到零 diff，地点详情不再显示旧的“仅亲战/无长期占用”错误事实。
+- 下一步：登记测试契约迁移，跑最终 targeted、建锁全量和独立 Gate，随后 READY、合并与 push。
+- 已跑验证：activity/light-foot/mass-battle/地点详情/sweep/migration 组合 `70/70 PASS`；整仓 analyze 0 issue；整仓 format `1674 files / 0 changed`。
 - 阻塞项：无外部阻塞；真人目检为明确挂账，不阻止当前工程候选进入 main。
