@@ -97,9 +97,14 @@ enum MainlineSettlementRecoveryAction {
   none,
 }
 
-enum MainlinePostSettlementAction { none, returnToMap, enterNextStage }
+enum MainlinePostSettlementAction {
+  none,
+  returnToMap,
+  enterNextStage,
+  showChapterScroll,
+}
 
-/// 第一章连续首通的持久 stage-boundary journal。
+/// 主线单章连续首通的持久 stage-boundary journal。
 ///
 /// `prepared` 只证明同一参与者/关卡/装配版本已获准开战，不证明胜负或结算；
 /// 崩溃后必须重打当前关。`coreApplied` 只能与核心业务写入在同一 Isar 事务

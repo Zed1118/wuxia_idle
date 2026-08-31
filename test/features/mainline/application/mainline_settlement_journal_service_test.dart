@@ -336,4 +336,120 @@ void main() {
       MainlineSettlementPhase.closed,
     );
   });
+
+  test('进入下一章时原子关闭旧章卷轴游标并创建版本 1 的新 run', () async {
+    final previous = identity(
+      runId: 'chapter-1-run',
+      stageId: 'stage_01_05',
+      version: 5,
+    );
+    await service().prepare(
+      saveDataId: 1,
+      identity: previous,
+      loadoutSnapshotId: 'chapter-1-run:loadout:5',
+      loadoutSnapshotIds: [
+        for (var version = 1; version <= 5; version++)
+          'chapter-1-run:loadout:$version',
+      ],
+      now: DateTime.utc(2026, 8, 31),
+    );
+    await service().commitCore(
+      identity: previous,
+      pendingEffectIds: const [],
+      now: DateTime.utc(2026, 8, 31, 0, 1),
+      applyInTxn: () async {},
+    );
+    await service().recordPostSettlementAction(
+      identity: previous,
+      action: MainlinePostSettlementAction.showChapterScroll,
+      now: DateTime.utc(2026, 8, 31, 0, 2),
+    );
+
+    final next = identity(
+      runId: 'chapter-2-run',
+      stageId: 'stage_02_01',
+      version: 1,
+      participantId: 84,
+    );
+    final prepared = await service().beginNextChapter(
+      previousIdentity: previous,
+      nextIdentity: next,
+      nextLoadoutSnapshotId: 'chapter-2-run:loadout:1',
+      now: DateTime.utc(2026, 8, 31, 0, 3),
+    );
+
+    expect(prepared.identity, next);
+    expect(prepared.phase, MainlineSettlementPhase.prepared);
+    expect(prepared.loadoutSnapshotIds, ['chapter-2-run:loadout:1']);
+    expect((await service().activeForSave(1))!.identity, next);
+    final rows = await IsarSetup.instance.mainlineSettlementJournals
+        .where()
+        .findAll();
+    expect(
+      rows.singleWhere((row) => row.settlementId == previous.canonical).phase,
+      MainlineSettlementPhase.closed,
+    );
+  });
+
+  test('下一章 journal 创建中断时旧章卷轴游标不关闭且零部分新 run', () async {
+    final previous = identity(
+      runId: 'chapter-1-run',
+      stageId: 'stage_01_05',
+      version: 5,
+    );
+    await service().prepare(
+      saveDataId: 1,
+      identity: previous,
+      loadoutSnapshotId: 'chapter-1-run:loadout:5',
+      loadoutSnapshotIds: [
+        for (var version = 1; version <= 5; version++)
+          'chapter-1-run:loadout:$version',
+      ],
+      now: DateTime.utc(2026, 8, 31),
+    );
+    await service().commitCore(
+      identity: previous,
+      pendingEffectIds: const [],
+      now: DateTime.utc(2026, 8, 31, 0, 1),
+      applyInTxn: () async {},
+    );
+    await service().recordPostSettlementAction(
+      identity: previous,
+      action: MainlinePostSettlementAction.showChapterScroll,
+      now: DateTime.utc(2026, 8, 31, 0, 2),
+    );
+
+    final next = identity(
+      runId: 'chapter-2-run',
+      stageId: 'stage_02_01',
+      participantId: 84,
+    );
+    await expectLater(
+      service().beginNextChapter(
+        previousIdentity: previous,
+        nextIdentity: next,
+        nextLoadoutSnapshotId: 'chapter-2-run:loadout:1',
+        now: DateTime.utc(2026, 8, 31, 0, 3),
+        afterPreviousClosedInTxnForTest: () async {
+          throw StateError('crash');
+        },
+      ),
+      throwsStateError,
+    );
+
+    final active = await service().activeForSave(1);
+    expect(active!.identity, previous);
+    expect(active.phase, MainlineSettlementPhase.coreApplied);
+    expect(
+      active.postSettlementAction,
+      MainlinePostSettlementAction.showChapterScroll,
+    );
+    expect(
+      await IsarSetup.instance.mainlineSettlementJournals
+          .filter()
+          .settlementIdEqualTo(next.canonical)
+          .count(),
+      0,
+    );
+  });
 }

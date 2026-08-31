@@ -9,6 +9,8 @@ import 'stage_list_screen.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 
+enum ChapterTransitionAction { returnToChapters, enterNextChapter }
+
 /// 章节翻篇过场（H2 小套餐 C1）。
 ///
 /// 把 `data/narratives/chapters/<id>.yaml` 的 prologue/epilogue 接进可达 UI —
@@ -23,13 +25,22 @@ class ChapterTransitionScreen extends StatelessWidget {
     super.key,
     required this.chapterIndex,
     required this.showEpilogue,
+    this.isRunCompletion = false,
+    this.nextChapterIndex,
     this.loadOverride,
-  });
+  }) : assert(!isRunCompletion || showEpilogue),
+       assert(nextChapterIndex == null || isRunCompletion);
 
   final int chapterIndex;
 
   /// 章节是否已通关 → 决定卷尾是否解锁。
   final bool showEpilogue;
+
+  /// true 表示由章末生产 flow 打开：页面只返回 typed action，不自行新建路由。
+  final bool isRunCompletion;
+
+  /// null 表示当前章是终章；非 null 时由 caller 创建下一章新 run。
+  final int? nextChapterIndex;
 
   /// 测试注入;生产走 [NarrativeLoader.loadChapter]。
   final Future<ChapterNarrative> Function(int chapterIndex)? loadOverride;
@@ -129,15 +140,31 @@ class ChapterTransitionScreen extends StatelessWidget {
                             foregroundColor: WuxiaColors.textPrimary,
                             minimumSize: const Size.fromHeight(44),
                           ),
-                          onPressed: () =>
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => StageListScreen(
-                                    chapterIndex: chapterIndex,
-                                  ),
-                                ),
+                          onPressed: () {
+                            if (isRunCompletion) {
+                              Navigator.of(context).pop(
+                                nextChapterIndex == null
+                                    ? ChapterTransitionAction.returnToChapters
+                                    : ChapterTransitionAction.enterNextChapter,
+                              );
+                              return;
+                            }
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    StageListScreen(chapterIndex: chapterIndex),
                               ),
-                          child: const Text(UiStrings.chapterScrollEnter),
+                            );
+                          },
+                          child: Text(
+                            isRunCompletion
+                                ? nextChapterIndex == null
+                                      ? UiStrings.chapterScrollReturnToChapters
+                                      : UiStrings.chapterScrollEnterNextChapter(
+                                          nextChapterIndex!,
+                                        )
+                                : UiStrings.chapterScrollEnter,
+                          ),
                         ),
                       ),
                     ),

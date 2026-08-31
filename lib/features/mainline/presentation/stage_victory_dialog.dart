@@ -27,7 +27,7 @@ import '../../inventory/presentation/post_battle_healing_panel.dart';
 typedef EquipmentDropLockHandler =
     Future<bool> Function(Equipment equipment, bool locked);
 
-enum StageVictoryAction { returnToMap, enterNextStage }
+enum StageVictoryAction { returnToMap, enterNextStage, showChapterScroll }
 
 Future<StageVictoryAction> showRecoveredStageSettlementDialog({
   required BuildContext context,
