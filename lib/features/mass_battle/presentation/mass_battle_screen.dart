@@ -13,6 +13,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
+import '../../activity/application/durable_activity_automation_providers.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
+import '../../activity/presentation/durable_activity_automation_ui.dart';
 import '../application/mass_battle_participant_service.dart';
 import '../application/mass_battle_service.dart';
 import 'mass_battle_participant_picker.dart';
@@ -66,6 +69,9 @@ class MassBattleScreen extends ConsumerWidget {
           ..sort((a, b) => a.id.compareTo(b.id));
     final massBattleDef = GameRepository.instance.numbers.massBattle;
     final async = ref.watch(mainlineProgressProvider);
+    final automationAsync = ref.watch(
+      durableActivityRunProvider(DurableActivityKind.massBattle),
+    );
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -93,6 +99,7 @@ class MassBattleScreen extends ConsumerWidget {
               );
             }
             final cleared = progress.clearedStageIds.toSet();
+            final automationRun = automationAsync.value;
             // 周目按章(Phase 2):整个群战副本视为一章,chapterKey=stageType.name。
             const chapterKey = 'massBattle';
             int cycleFor() => resolveTargetCycle(
@@ -106,6 +113,28 @@ class MassBattleScreen extends ConsumerWidget {
                   padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: CycleSelectControl(chapterKey: chapterKey),
                 ),
+                if (automationRun != null)
+                  DurableActivityRunCard(
+                    run: automationRun,
+                    stageName:
+                        GameRepository
+                            .instance
+                            .stageDefs[automationRun.stageId]
+                            ?.name ??
+                        automationRun.stageId,
+                    onPressed: () {
+                      final runStage = GameRepository
+                          .instance
+                          .stageDefs[automationRun.stageId];
+                      if (runStage == null) return;
+                      resumeDurableActivityAutomation(
+                        context: context,
+                        ref: ref,
+                        stage: runStage,
+                        runId: automationRun.id,
+                      );
+                    },
+                  ),
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(
@@ -130,6 +159,38 @@ class MassBattleScreen extends ConsumerWidget {
                           def: s,
                           status: status,
                           formation: formation,
+                          onDispatch:
+                              status == MassBattleStageStatus.cleared &&
+                                  automationAsync.hasValue &&
+                                  automationRun == null
+                              ? () async {
+                                  final participantId =
+                                      await selectMassBattleParticipant(
+                                        context: context,
+                                        ref: ref,
+                                      );
+                                  if (participantId == null ||
+                                      !context.mounted) {
+                                    return;
+                                  }
+                                  final selectedFormation =
+                                      await pickMassBattleFormation(
+                                        context,
+                                        s,
+                                        massBattleDef,
+                                      );
+                                  if (!context.mounted) return;
+                                  await startDurableActivityAutomation(
+                                    context: context,
+                                    ref: ref,
+                                    kind: DurableActivityKind.massBattle,
+                                    stage: s,
+                                    cycleIndex: cycleFor(),
+                                    participantId: participantId,
+                                    formation: selectedFormation,
+                                  );
+                                }
+                              : null,
                           onTap: status == MassBattleStageStatus.locked
                               ? null
                               : () => runMassBattleChallenge(
@@ -218,12 +279,14 @@ class _MassBattleRow extends StatelessWidget {
     required this.status,
     required this.formation,
     required this.onTap,
+    required this.onDispatch,
   });
 
   final StageDef def;
   final MassBattleStageStatus status;
   final Formation formation;
   final VoidCallback? onTap;
+  final VoidCallback? onDispatch;
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +341,15 @@ class _MassBattleRow extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (onDispatch != null)
+                  IconButton(
+                    tooltip: UiStrings.expeditionDispatchTeamSection,
+                    onPressed: onDispatch,
+                    icon: const Icon(
+                      Icons.schedule_send_outlined,
+                      color: WuxiaColors.textPrimary,
+                    ),
+                  ),
                 _StatusIcon(status: status),
               ],
             ),

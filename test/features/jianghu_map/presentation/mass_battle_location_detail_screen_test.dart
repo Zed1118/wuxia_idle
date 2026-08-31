@@ -118,12 +118,21 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.massBattleLocationEntryModeDirect),
+      find.text(
+        [
+          UiStrings.massBattleParticipantAvailable,
+          UiStrings.expeditionDispatchTeamSection,
+        ].join(UiStrings.offlineRecapDetailSeparator),
+      ),
       findsOneWidget,
     );
     expect(
+      find.text(UiStrings.massBattleLocationEntryModeDirect),
+      findsNothing,
+    );
+    expect(
       find.text(UiStrings.massBattleLocationExpectedOccupancy),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.text(UiStrings.massBattleLocationEnter), findsOneWidget);
     expect(find.textContaining(value.enemies.first.name), findsOneWidget);

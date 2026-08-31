@@ -93,12 +93,18 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.lightFootLocationEntryModeDirect),
+      find.text(
+        [
+          UiStrings.lightFootParticipantAvailable,
+          UiStrings.expeditionDispatchTeamSection,
+        ].join(UiStrings.offlineRecapDetailSeparator),
+      ),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.lightFootLocationEntryModeDirect), findsNothing);
     expect(
       find.text(UiStrings.lightFootLocationExpectedOccupancy),
-      findsOneWidget,
+      findsNothing,
     );
     expect(find.text(UiStrings.lightFootLocationEnter), findsOneWidget);
     expect(find.textContaining(value.enemies.first.name), findsOneWidget);

@@ -17,6 +17,9 @@ import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_run
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/activity/application/durable_activity_automation_service.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_automation_policy.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -67,6 +70,7 @@ void main() {
           ..clearedStageIds = GameRepository.instance.stageDefs.values
               .where((stage) => stage.stageType == StageType.mainline)
               .map((stage) => stage.id)
+              .followedBy(const ['stage_light_foot_01', 'stage_mass_battle_01'])
               .toList(growable: false)
           ..clearedAt = [],
       );
@@ -200,6 +204,68 @@ void main() {
     );
   });
 
+  test('轻功 durable admission 进入真实 mapLightFoot 同核 runner 并产终局', () async {
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final participantId = save.founderCharacterId!;
+    final stage = GameRepository.instance.getStage('stage_light_foot_01');
+    final service = DurableActivityAutomationService(isar);
+    final runId = await service.start(
+      kind: DurableActivityKind.lightFoot,
+      stage: stage,
+      cycleIndex: 1,
+      request: _durableRequest(
+        kind: DurableActivityKind.lightFoot,
+        stageId: stage.id,
+        characterId: participantId,
+      ),
+    );
+    final admission = await service.admit(runId: runId, stage: stage);
+    final result = await Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: GameRepository.instance.numbers,
+      rng: Random(admission.run.seed),
+      botPolicy: const Phase0aBotTacticPolicy.production(),
+    ).runLightFoot(stage: stage, admission: admission);
+
+    expect(result.timedOut, isFalse);
+    expect(result.settlement?.isFinished, isTrue);
+    expect(result.expectedParticipantId, participantId);
+    expect(result.settlement?.playerCharacterId, participantId);
+  });
+
+  test('守城 durable admission 消费持久阵型进入真实多波 mapper 并产终局', () async {
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final participantId = save.founderCharacterId!;
+    final stage = GameRepository.instance.getStage('stage_mass_battle_01');
+    final service = DurableActivityAutomationService(isar);
+    final runId = await service.start(
+      kind: DurableActivityKind.massBattle,
+      stage: stage,
+      cycleIndex: 1,
+      request: _durableRequest(
+        kind: DurableActivityKind.massBattle,
+        stageId: stage.id,
+        characterId: participantId,
+      ),
+      formation: Formation.fengShi,
+    );
+    final admission = await service.admit(runId: runId, stage: stage);
+    expect(admission.run.formation, Formation.fengShi);
+    final result = await Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: GameRepository.instance.numbers,
+      rng: Random(admission.run.seed),
+      botPolicy: const Phase0aBotTacticPolicy.production(),
+    ).runMassBattle(stage: stage, admission: admission);
+
+    expect(result.timedOut, isFalse);
+    expect(result.settlement?.isFinished, isTrue);
+    expect(result.expectedParticipantId, participantId);
+    expect(result.settlement?.playerCharacterId, participantId);
+  });
+
   test('真实 Ch1 快速 headless 重演返回当前掌门身份报告', () async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);
@@ -269,4 +335,25 @@ ActivityParticipationRequest _towerRequest({
   controller: ActivityController.playerBot,
   clock: ActivityClock.headless,
   entryKind: ActivityEntryKind.sweep,
+);
+
+ActivityParticipationRequest _durableRequest({
+  required DurableActivityKind kind,
+  required String stageId,
+  required int characterId,
+}) => ActivityParticipationRequest(
+  contentId: stageId,
+  contentKind: kind == DurableActivityKind.lightFoot
+      ? ActivityContentKind.lightFoot
+      : ActivityContentKind.massBattle,
+  characterId: characterId,
+  loadoutPlanId: durableActivityLoadoutPlanId(
+    kind: kind,
+    stageId: stageId,
+    characterId: characterId,
+  ),
+  participation: ActivityParticipationMode.dispatch,
+  controller: ActivityController.playerBot,
+  clock: ActivityClock.headless,
+  entryKind: ActivityEntryKind.offlineResume,
 );

@@ -124,13 +124,12 @@ class _DetailContent extends ConsumerWidget {
                   detail.eligibleParticipantCount,
                 ),
               ),
-              const _DetailRow(
+              _DetailRow(
                 label: UiStrings.lightFootLocationEntryModeLabel,
-                value: UiStrings.lightFootLocationEntryModeDirect,
-              ),
-              const _DetailRow(
-                label: UiStrings.lightFootLocationOccupancyLabel,
-                value: UiStrings.lightFootLocationExpectedOccupancy,
+                value: [
+                  UiStrings.lightFootParticipantAvailable,
+                  UiStrings.expeditionDispatchTeamSection,
+                ].join(UiStrings.offlineRecapDetailSeparator),
                 isLast: true,
               ),
             ],

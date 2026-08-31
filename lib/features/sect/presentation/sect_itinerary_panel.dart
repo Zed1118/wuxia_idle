@@ -99,6 +99,8 @@ class _SectItineraryContent extends StatelessWidget {
     ActivityKind.retreat => UiStrings.sectItineraryActivityRetreat,
     ActivityKind.expedition => UiStrings.sectItineraryActivityExpedition,
     ActivityKind.bossGauntlet => UiStrings.sectItineraryActivityGauntlet,
+    ActivityKind.lightFoot => UiStrings.mainMenuLightFoot,
+    ActivityKind.massBattle => UiStrings.mainMenuMassBattle,
   };
 
   String _gauntletPhaseLabel(GauntletPhase phase) => switch (phase) {

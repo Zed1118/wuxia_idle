@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_settlement_journal.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
 
 import '../support/isar_test_support.dart';
 
@@ -26,7 +27,7 @@ void main() {
     if (await tempDir.exists()) await tempDir.delete(recursive: true);
   });
 
-  test('0.39.0 → 0.40.0 纯可加迁移：不从历史进度伪造 active journal', () async {
+  test('0.39.0 → 当前纯可加迁移：不从历史进度伪造 active journal/run', () async {
     await IsarSetup.init(directory: tempDir, inspector: false);
     await IsarSetup.instance.writeTxn(() async {
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
@@ -36,11 +37,13 @@ void main() {
     await IsarSetup.close();
 
     await IsarSetup.init(directory: tempDir, inspector: false);
-    expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.40.0');
+    expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.41.0');
     expect(await IsarSetup.instance.mainlineSettlementJournals.count(), 0);
+    expect(await IsarSetup.instance.durableActivityCombatRuns.count(), 0);
 
     await IsarSetup.close();
     await IsarSetup.init(directory: tempDir, inspector: false);
     expect(await IsarSetup.instance.mainlineSettlementJournals.count(), 0);
+    expect(await IsarSetup.instance.durableActivityCombatRuns.count(), 0);
   });
 }

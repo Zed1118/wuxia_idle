@@ -9,6 +9,8 @@ import 'package:wuxia_idle/features/activity/application/character_occupancy_ser
 import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dart';
 import 'package:wuxia_idle/features/activity/domain/activity_occupancy.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 
 import '../../support/isar_test_support.dart';
 
@@ -76,5 +78,55 @@ void main() {
     );
     // 闭关只锁角色，不保留装备
     expect(occ.reservedEquipmentIds, isEmpty);
+  });
+
+  test('未关闭轻功/守城 run 进入统一占用，closed receipt 不再占用', () async {
+    late int lightFootRunId;
+    await IsarSetup.instance.writeTxn(() async {
+      lightFootRunId = await IsarSetup.instance.durableActivityCombatRuns.put(
+        DurableActivityCombatRun()
+          ..saveDataId = 1
+          ..kind = DurableActivityKind.lightFoot
+          ..contentId = 'stage_light_foot_01'
+          ..loadoutPlanId = 'lightFoot:stage_light_foot_01:character:42'
+          ..stageId = 'stage_light_foot_01'
+          ..cycleIndex = 1
+          ..seed = 1
+          ..contentKind = ActivityContentKind.lightFoot
+          ..participation = ActivityParticipationMode.dispatch
+          ..controller = ActivityController.playerBot
+          ..clock = ActivityClock.headless
+          ..entryKind = ActivityEntryKind.offlineResume
+          ..members = [
+            ActivityMemberSnapshot()
+              ..characterId = 42
+              ..reservedEquipmentIds = [100]
+              ..reservedTechniqueIds = [5],
+          ]
+          ..participantCreatedAt = DateTime(2026, 8, 31)
+          ..participantName = '门人'
+          ..startedAt = DateTime(2026, 8, 31)
+          ..lastAdvancedAt = DateTime(2026, 8, 31),
+      );
+    });
+    expect(
+      (await CharacterOccupancyService(
+        IsarSetup.instance,
+      ).snapshot()).activityOf(42),
+      ActivityKind.lightFoot,
+    );
+    await IsarSetup.instance.writeTxn(() async {
+      final run = (await IsarSetup.instance.durableActivityCombatRuns.get(
+        lightFootRunId,
+      ))!;
+      run.phase = DurableActivityPhase.closed;
+      await IsarSetup.instance.durableActivityCombatRuns.put(run);
+    });
+    expect(
+      (await CharacterOccupancyService(
+        IsarSetup.instance,
+      ).snapshot()).activityOf(42),
+      isNull,
+    );
   });
 }

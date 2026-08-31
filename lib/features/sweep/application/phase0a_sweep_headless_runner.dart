@@ -24,6 +24,8 @@ import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import '../../tower/application/tower_automation_admission.dart';
+import '../../activity/application/durable_activity_automation_service.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
 
 /// 扫荡消费面的 Phase 0A 同核 headless runner。
 ///
@@ -172,6 +174,50 @@ final class Phase0aSweepHeadlessRunner {
       expectedParticipantId: admission.participantCharacterId,
       participantName: admission.snapshot.name,
       towerAutomationAdmission: admission,
+    );
+  }
+
+  Future<Phase0aSweepRunResult> runLightFoot({
+    required StageDef stage,
+    required DurableActivityAutomationAdmission admission,
+  }) async {
+    if (admission.run.kind != DurableActivityKind.lightFoot ||
+        admission.run.stageId != stage.id) {
+      throw StateError('Light-foot headless admission does not match stage');
+    }
+    final mapping = Phase0aStageContentMapper.mapLightFoot(
+      stage: stage,
+      playerSnapshot: admission.snapshot,
+      numbers: numbers,
+      cycleIndex: admission.run.cycleIndex,
+    );
+    return _run(
+      mapping,
+      expectedParticipantId: admission.snapshot.characterId,
+      participantName: admission.snapshot.name,
+    );
+  }
+
+  Future<Phase0aSweepRunResult> runMassBattle({
+    required StageDef stage,
+    required DurableActivityAutomationAdmission admission,
+  }) async {
+    if (admission.run.kind != DurableActivityKind.massBattle ||
+        admission.run.stageId != stage.id ||
+        admission.run.formation == null) {
+      throw StateError('Mass-battle headless admission does not match stage');
+    }
+    final mapping = Phase0aStageContentMapper.mapMassBattle(
+      stage: stage,
+      playerSnapshot: admission.snapshot,
+      numbers: numbers,
+      cycleIndex: admission.run.cycleIndex,
+      formation: admission.run.formation,
+    );
+    return _run(
+      mapping,
+      expectedParticipantId: admission.snapshot.characterId,
+      participantName: admission.snapshot.name,
     );
   }
 
