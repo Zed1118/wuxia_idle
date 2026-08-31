@@ -74,6 +74,46 @@ decisions:
     approved_at: "2026-08-31"
     approval_basis: '当前 Codex 会话：用户明确授权加法迁移、durable run/session、实际参与者与装配占用、守城阵型快照、离线游标和幂等 receipt'
 
+  - id: DURABLE-REWARD-CLAIM-01
+    status: frozen_implementation_authorized
+    summary: 七类内容共用版本化 RewardClaimReceipt，以 canonical RewardClaimKey 将奖励写入与领取事实并入同一事务边界
+    content_kinds:
+      - mainline
+      - tower
+      - light_foot
+      - mass_battle
+      - inner_demon
+      - gauntlet
+      - expedition
+    persistence:
+      migration_kind: additive
+      save_version: 0.42.0
+      canonical_key_version: v2
+      receipt_unique_by_claim_key: true
+      reward_effect_and_receipt_same_transaction: true
+    reward_layers:
+      first_clear: sect_shared_except_personal_inner_demon
+      repeat: personal
+      personal_growth: personal
+    historical_migration:
+      tombstones_only_from_proven_clear_or_claim_facts: true
+      reward_backfill: false
+      skipped_when_owner_or_occurrence_is_unprovable:
+        - inner_demon
+        - expedition
+    forbidden_changes:
+      - reward_amounts
+      - reward_probabilities
+      - economy
+      - unlock_rules
+      - player_values
+      - skills
+      - combat_rules
+      - persistent_save_payload_fabrication
+    owner_task: P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
+    approved_at: "2026-08-31"
+    approval_basis: '当前 Codex 会话：用户明确授权版本化 Isar RewardClaimReceipt、schemaVersion/saveVersion 提升、canonical RewardClaimKey 扩展、七类内容事务合并与仅按旧档已证事实建立防重墓碑'
+
   - id: MAINLINE-PARTICIPANT-01
     status: frozen
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed

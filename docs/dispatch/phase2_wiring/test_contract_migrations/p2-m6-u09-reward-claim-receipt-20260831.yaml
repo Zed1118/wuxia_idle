@@ -1,0 +1,18 @@
+schema_version: 1
+ticket: p2-m6-u09-reward-claim-receipt-20260831
+base_sha: bdc8c2c5ef8073a5e1a49f06ca5f0a20613cc599
+head_sha: d2c5185fa307c065fdf67a981e51637fee5de1cd
+summary: 存档当前版本由 0.41.0 加法迁至 0.42.0，并把旧迁移用例从只禁止伪造 journal/run 扩展为同时禁止伪造 RewardClaimReceipt；原版本断言以新版本精确值替代。
+
+migrations:
+  - deleted: test('0.39.0 → 当前纯可加迁移：不从历史进度伪造 active journal/run', () async {
+    replacement: test('0.39.0 → 当前纯可加迁移：不从空历史伪造 active journal/run/receipt', () async {
+    reason: 0.42.0 新增 durable reward receipt 后，空历史迁移必须继续不伪造 journal 或 run，并新增不伪造 receipt 的同级契约；新标题与新增零 receipt 断言共同收紧该边界。
+
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.41.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.42.0');
+    reason: 当前存档版本依法加法升级为 0.42.0，替代断言仍精确核对迁移后的持久版本值。
+
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.41.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.42.0');
+    reason: schema 注册 RewardClaimReceipt 后当前版本必须同步为 0.42.0；替代断言保留相同门槛并更新唯一合法值。

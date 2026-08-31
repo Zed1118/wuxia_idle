@@ -5012,36 +5012,74 @@ tasks:
   - id: P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
     milestone: M6
     owner: codex_root
-    branch: codex/phase2-u09-reward-layers-blocked-audit-20260825
-    worktree: /Users/a10506/.codex/worktrees/b679/挂机武侠
-    status: blocked
+    branch: codex/p2-m6-u09-reward-claim-receipt-20260831
+    worktree: /Users/a10506/.codex/worktrees/p2-m6-u09-reward-claim-receipt-20260831
+    status: ready_reviewed
     current_authoritative_wip: false
-    base_commit: 0275ffb53bc6fcc6e220734c9211b6225c31d32f
+    base_commit: bdc8c2c5ef8073a5e1a49f06ca5f0a20613cc599
+    code_candidate_commit: d2c5185fa307c065fdf67a981e51637fee5de1cd
+    reviewed_candidate_commit: d2c5185fa307c065fdf67a981e51637fee5de1cd
+    ready_marker: "[READY][CODEX][P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING] 收口七模式奖励领取回执"
     completion_scope: connect_first_clear_repeat_and_personal_growth_reward_layers_to_one_durable_shared_and_personal_claim_boundary
     acceptance_baseline: 0_of_1_durable_cross_mode_reward_claim_boundary
     acceptance_target: 1_of_1_durable_cross_mode_reward_claim_boundary
-    acceptance_result: 0_of_1_blocked
-    blocker:
-      type: schema_and_shared_truth_source
-      summary: existing_reward_guard_is_memory_only_and_mode_specific_progress_or_run_markers_do_not_provide_one_crash_safe_receipt_or_outbox_boundary
-      required_decision: authorize_a_versioned_durable_reward_claim_receipt_or_explicitly_extend_each_existing_mode_journal_with_one_canonical_contract
+    acceptance_result: 1_of_1_durable_cross_mode_reward_claim_boundary
+    authorization:
+      decision: DURABLE-REWARD-CLAIM-01
+      additive_isar_collection: RewardClaimReceipt
+      save_version: 0.42.0
+      canonical_reward_claim_key: v2_content_layer
+      historical_reward_backfill: false
     evidence:
-      reward_contract_tests: 33
-      production_consumers_of_reward_policy: 0
-      durable_generic_reward_claim_collections: 0
-      mainline_durable_journal_only: true
-      tower_progress_and_reward_persistence_split: true
-      schema_or_shared_truth_source_changes_made: 0
+      durable_generic_reward_claim_collections: 1
+      production_content_kinds: 7
+      reward_layers_per_settlement: first_clear_repeat_personal_growth_as_applicable
+      actual_participant_personal_scope: true
+      reward_effect_and_receipt_same_transaction: true
+      migration_tombstones_from_proven_facts_only: true
+      mutation_red_proofs: 4
+      key_service_plan_tests: 32
+      mainline_and_durable_activity_tests: 60
+      tower_tests: 50
+      gauntlet_tests: 20
+      expedition_tests: 23
+      migration_tests: 9
+      scoped_analyze_issues: 0
+      restored_affected_tests: 89
+      final_full_suite: 5792
+      final_full_suite_failures: 0
+      final_full_suite_error_blocks: 0
+      final_gate: must_pass_before_merge
     owned_files:
+      - lib/data/isar_setup.dart
+      - lib/features/reward/
+      - lib/shared/battle_shared/reward_contract.dart
+      - lib/shared/battle_shared/reward_claim_key.dart
+      - lib/shared/battle_shared/reward_policy.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/tower/
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - lib/features/expedition/application/expedition_service.dart
+      - lib/features/sweep/application/sweep_settlement.dart
+      - lib/features/cultivation/presentation/stage_skill_drop_hook.dart
+      - lib/features/equipment/presentation/milestone_grant_hook.dart
+      - test/data/reward_claim_receipt_migration_test.dart
+      - test/features/reward/
+      - test/shared/battle_shared/durable_reward_claim_service_test.dart
       - docs/superpowers/plans/2026-08-25-p2-u09-reward-layers-production-wiring.md
-      - docs/audit/phase2_u09_reward_layers_blocked_2026-08-25.md
+      - docs/audit/phase2_u09_reward_claim_receipt_2026-08-31.md
+      - docs/audit/phase2_u13_cross_chapter_gap_2026-08-31.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m6-u09-reward-claim-receipt-20260831.yaml
     protected_behavior:
       - first clear unique rewards remain save or sect shared except personal inner demon breakthrough
       - repeat output and personal growth remain distinct layers
       - manual automatic dispatch and sweep do not receive reward multipliers
       - no memory only guard may be presented as durable duplicate prevention
-      - no schema save version reward values tuning economy unlock or main change without authorization
+      - additive RewardClaimReceipt and save version 0.42.0 are the only authorized persistent schema changes
+      - historical migration may only add tombstones from proven facts and never backfill rewards
+      - do not change reward values probabilities tuning economy unlock player values skills combat rules or main outside the authorized merge flow
       - do not claim U09 M6 or overall Phase 2 completion
 
   - id: P2-M6-U10-FACTUAL-FAILURE-INJURY-DISPLAY
