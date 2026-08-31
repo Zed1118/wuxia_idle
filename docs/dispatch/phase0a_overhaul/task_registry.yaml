@@ -5920,9 +5920,11 @@ tasks:
     owner: codex_root
     branch: codex/p2-m5-gauntlet-headless-production-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m5-gauntlet-headless-production-20260901
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: fe2a287f29285ab9988b0c3387765fc6f04a5b3f
+    code_candidate_commit: b787209a
+    reviewed_candidate_commit: b787209a
     ready_marker: "[READY][CODEX][P2-M5-GAUNTLET-HEADLESS-PRODUCTION-WIRING] 接通断魂庄首通后快速推演生产入口"
     completion_scope: connect_the_existing_first_clear_gated_gauntlet_headless_replay_to_the_real_loadout_entry
     acceptance_baseline: published_37_of_42_included_an_unwired_gauntlet_automation_cell
@@ -5932,17 +5934,23 @@ tasks:
       - P2-M5-GAUNTLET-AUTOMATION-ADMISSION
     evidence:
       preimplementation_red_failures: 2
-      focused_production_tests: pending
-      focused_production_failures: pending
-      mutation_force_preclear_visibility_failures: pending
-      mutation_break_exact_request_failures: pending
-      exact_reverse_patch_restore: pending
-      analyze_issues: pending
-      format_changed_files: pending
-      full_suite_tests: pending
-      full_suite_failures: pending
-      final_gate: pending
-      exact_sha_ci: pending
+      focused_core_tests: 40
+      focused_production_tests: 192
+      focused_production_failures: 0
+      mutation_force_preclear_visibility_failures: 1
+      mutation_break_exact_request_failures: 1
+      mutation_remove_atomic_admission_failures: 1
+      exact_reverse_patch_restore: true
+      analyze_issues: 0
+      format_files: 1699
+      format_changed_files: 0
+      full_suite_tests: 5833
+      full_suite_failures: 0
+      full_suite_error_blocks: 0
+      test_deleted_lines: 0
+      test_contract_migration_gate: not_required
+      final_gate: must_pass_before_merge
+      exact_sha_ci: must_pass_after_merge
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
     owned_files:

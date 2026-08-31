@@ -9,12 +9,11 @@ ActivityParticipationRequest _request({
   ActivityController controller = ActivityController.playerBot,
   ActivityClock clock = ActivityClock.headless,
   ActivityEntryKind entryKind = ActivityEntryKind.replay,
-  String loadoutPlanId = 'gauntlet-plan-42',
 }) => ActivityParticipationRequest(
   contentId: contentId,
   contentKind: contentKind,
   characterId: 42,
-  loadoutPlanId: loadoutPlanId,
+  loadoutPlanId: 'gauntlet-plan-42',
   participation: participation,
   controller: controller,
   clock: clock,
@@ -112,7 +111,16 @@ void main() {
 
   test('loadout plan must bind the exact participant', () {
     final decision = GauntletAutomationPolicy.evaluate(
-      request: _request(loadoutPlanId: 'gauntlet-plan-7'),
+      request: ActivityParticipationRequest(
+        contentKind: ActivityContentKind.gauntlet,
+        contentId: GauntletAutomationPolicy.gauntletId,
+        characterId: 42,
+        loadoutPlanId: 'gauntlet-plan-7',
+        participation: ActivityParticipationMode.direct,
+        controller: ActivityController.playerBot,
+        clock: ActivityClock.headless,
+        entryKind: ActivityEntryKind.replay,
+      ),
       clearedGauntletIds: cleared,
     );
     expect(decision.allowed, isFalse);
