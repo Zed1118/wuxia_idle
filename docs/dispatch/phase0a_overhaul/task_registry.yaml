@@ -5746,6 +5746,50 @@ tasks:
       - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule reducer headless_kernel or settlement_owner change
       - human visual interaction and Windows evidence remain deferred and do not claim formal M6 or overall Phase2 completion
 
+  - id: P2-M5-ENGINEERING-INTEGRATION-AUDIT
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-six-mode-integration-gate-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-six-mode-integration-gate-20260901
+    status: blocked
+    current_authoritative_wip: true
+    base_commit: 22afa6d3831b4dfb0d20df7d6694f6f7c13ff968
+    ready_marker: "[READY][CODEX][P2-M5-ENGINEERING-INTEGRATION-AUDIT] 固化 M5 六模式顶层缺口"
+    completion_scope: requalify_the_six_mode_by_seven_contract_M5_denominator_against_real_production_owners
+    acceptance_baseline: 0_of_1_authoritative_M5_engineering_gate
+    acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
+    acceptance_result: 34_of_42_cells_and_0_of_1_authoritative_M5_engineering_gate
+    evidence:
+      modes: 6
+      contracts_per_mode: 7
+      denominator_cells: 42
+      production_proven_cells: 34
+      blocked_cells: 8
+      focused_production_tests: 565
+      focused_production_failures: 0
+      false_green_integration_test_added: false
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    blockers:
+      - tower_personal_floor_record
+      - tower_durable_assignment_or_dispatch
+      - light_foot_visible_bot_and_immediate_headless
+      - mass_battle_visible_bot_and_immediate_headless
+      - inner_demon_personal_progress_scope
+      - gauntlet_durable_dispatch
+      - expedition_manual_first_milestone_takeover
+      - expedition_route_and_milestone_automation_unlock_record
+    owned_files:
+      - docs/superpowers/plans/2026-09-01-p2-m5-six-mode-integration-audit.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - do not infer M5 from historical READY tasks U09 U10 U14 or the M6 engineering candidate
+      - every PASS cell must name a real production owner and behavior test
+      - missing personal persistence or automation channels remain BLOCKED rather than being represented by constants
+      - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule reducer headless_kernel settlement_owner or direct main checkout write in this audit
+      - human visual interaction and Windows evidence remain deferred and do not claim formal M5 or overall Phase2 completion
+
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
     owner: codex_root
