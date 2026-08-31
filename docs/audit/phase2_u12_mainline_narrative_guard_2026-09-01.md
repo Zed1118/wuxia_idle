@@ -1,7 +1,7 @@
 # Phase 2 U12 主线叙事守卫审计
 
-日期：2026-09-01  
-基线：`4dc54697df9a26d26abceb58577a67368e9b63cb`  
+日期：2026-09-01
+基线：`4dc54697df9a26d26abceb58577a67368e9b63cb`
 任务：`P2-M6-U12-MAINLINE-NARRATIVE-GUARD`
 
 ## 当前结论
