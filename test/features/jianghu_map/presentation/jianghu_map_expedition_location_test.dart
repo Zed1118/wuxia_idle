@@ -71,6 +71,8 @@ void main() {
   });
 
   testWidgets('未解锁时江湖地图隐藏百草岭', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(app(unlocked: false));
     await tester.pump();
     await tester.pump();
