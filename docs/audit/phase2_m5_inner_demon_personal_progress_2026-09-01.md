@@ -34,7 +34,7 @@
 - `flutter analyze`：`No issues found!`。
 - `dart format .`：`1699 files / 0 changed`。
 - 锁保护整仓全量：`5828/5828 PASS`，退出码 `0`，末行 `All tests passed!`。
-- 项目 Gate：待最终审计 tip 复跑。
+- 项目 Gate：普通检查、全量、analyze、format 与 receipt 必须在最终 READY tip 通过；原始 `test_deletions` 仅允许由上述 8 条专用迁移 Gate 覆盖。
 
 ## 范围
 

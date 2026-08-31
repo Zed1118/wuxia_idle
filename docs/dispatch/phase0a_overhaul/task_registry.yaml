@@ -5862,16 +5862,16 @@ tasks:
     owner: codex_root
     branch: codex/p2-m5-inner-demon-personal-progress-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m5-inner-demon-personal-progress-20260901
-    status: wip
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: ef2a8fe20a70f4aca90a272186cf7c936e364008
     code_candidate_commit: 959c2a10986243fc70cad51b2a9376b2ef2e9b5c
-    reviewed_candidate_commit: null
+    reviewed_candidate_commit: 959c2a10986243fc70cad51b2a9376b2ef2e9b5c
     ready_marker: "[READY][CODEX][P2-M5-INNER-DEMON-PERSONAL-PROGRESS] 修正心魔个人进度归属"
     completion_scope: consume_existing_personal_reward_receipts_for_exact_character_inner_demon_progress
     acceptance_baseline: 36_of_42_M5_engineering_cells
     acceptance_target: 37_of_42_M5_engineering_cells
-    acceptance_result: pending_final_gate
+    acceptance_result: 37_of_42_M5_engineering_cells_and_0_of_1_authoritative_M5_gate
     dependencies:
       - P2-M5-ENGINEERING-INTEGRATION-AUDIT
       - P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
@@ -5891,7 +5891,7 @@ tasks:
       format_changed: 0
       full_suite_tests: 5828
       full_suite_failures: 0
-      final_gate: pending
+      final_gate: pass_with_exact_test_contract_migration_exception
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
     owned_files:

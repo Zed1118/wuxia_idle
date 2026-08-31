@@ -50,7 +50,7 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 - `flutter analyze`：0 issue，末行 `No issues found!`；
 - `dart format .`：`1699 files / 0 changed`；
 - 锁保护整仓全量：`5828/5828 PASS`，退出码 0，末行 `04:56 +5828: All tests passed!`；
-- 项目 Gate 必须在最终 `[READY]` 审计 tip 上独立通过后才允许合并。
+- 项目 Gate 在最终 `[READY]` tip 上必须只剩已登记的 `test_deletions`，并由专用测试契约迁移 Gate 精确覆盖后才允许合并。
 
 ## 推荐施工顺序
 
