@@ -30,11 +30,12 @@
 
 ## 当前恢复点
 
-- 状态：WIP，生产模板从 `4/7` 推进到诚实的 `6/7`；生存与追击 targeted Gate 已绿，待破坏证红和最终 Gate。
+- 状态：`[BLOCKED]` 候选，生产模板从 `4/7` 推进到诚实的 `6/7`；生存与追击工程 Gate 已闭合，第七类守阵受下述运行时所有权缺口阻塞。
 - 已完成：
   - `stage_02_02` 改为 `survive_duration`，`required_ticks: 900` 明确为 90 秒 TUNING 候选；真实 production host/headless 在第 900 拍带残敌胜利。
   - `stage_07_04` 接入 `ch7_encounter_04_grey_cloak_pursuit`；目标保留灰衣 Boss 身份，同一 entry/runtime actor ID 驱动逃逸 AI、接近投影、观察层、HUD 与终局；默认 headless bot 可完成且无硬超时。
   - 1280×720 与 1440×900 的生存/追击 HUD 结构 smoke 已覆盖；真人可读性继续挂账。
-- 已跑验证：新数据/运行时/HUD 真红已记录；targeted + adjacent 共 43 项通过；`flutter analyze lib test` 零问题。无范围参数的整仓 `flutter analyze` 会进入历史独立子包 `tools/phase0minus_probe`，因其自身 package 依赖未解析报约 1900 项，非本 diff 引入。
-- 下一步：提交可恢复点；对生存生产目标和追击投影/移动做双向破坏证红并精确还原，然后 format、macOS build、持锁全量与 Gate。
+- 已跑验证：新数据/运行时/HUD 真红已记录；targeted + adjacent 共 43 项通过；双向破坏证红分别杀死追击逃逸移动实现 1 项、生存时长退化 2 项，另有追击接近投影恒不触发 1 项；均以精确反向补丁还原。`flutter analyze --no-pub lib test` 零问题；整仓 format 为 `1660 files (0 changed)`；macOS Debug 构建成功；最终 tip 持锁全量为 `05:35 +5754: All tests passed!`、`[E]=0`。无范围参数的整仓 `flutter analyze` 会进入历史独立子包 `tools/phase0minus_probe`，因其自身 package 依赖未解析报约 1900 项，非本 diff 引入。
+- 测试契约迁移：`stage_02_02` 从“25 个击杀投影”迁移为“900 个逐帧时间投影”，登记表覆盖被删的 3 条断言和 1 个用例，替代侧新增 43 条断言和 10 个用例。校验原文：`[migration] expect 删 3 / 增 43;用例 删 1 / 增 10;登记 4 条`；`PASS: test_contract_migration`。
+- Gate：快速预检除 `test_deletions` 外全部 PASS；该唯一失败满足宪法 §8 的测试契约迁移例外，最终 Gate 仍需对最终 tip/receipt 重跑并确认不存在第二项失败。
 - 阻塞项：`CombatDefendEntityRef` 只有 `entityId + requiredTicks`，没有位置或 durability；`Phase0aArenaState` 只有单玩家与敌方 actor，生产流没有独立可受击目标 owner。按本单“不改 schema/saveVersion”红线，无法实现“敌压可毁、失守即败”的守阵语义；恒真 `EntityDefended` 计时器或把玩家冒充阵眼均被验收标准禁止。

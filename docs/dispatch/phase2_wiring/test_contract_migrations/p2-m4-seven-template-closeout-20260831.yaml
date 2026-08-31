@@ -6,7 +6,7 @@ summary: 将 stage_02_02 从全清 25 个敌人的旧目标迁移为 900 tick �
 
 migrations:
   - deleted: test('all 25 production defeat projections complete the objective', () async {
-    replacement: production stage_02_02 projects one TimeElapsed event per frame
+    replacement: 900 production frame projections complete the survive objective
     reason: 旧用例标题把生产关锁定为全清敌人；替代用例从真实 repository 装配 stage_02_02，并逐帧要求唯一 TimeElapsed 投影驱动 900 tick 生存目标。
 
   - deleted: expect(objectiveEvents, hasLength(25));
