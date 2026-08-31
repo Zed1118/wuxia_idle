@@ -1,0 +1,22 @@
+schema_version: 1
+ticket: p2-m4-seven-template-closeout-20260831
+base_sha: 96be15e572413929549f3723af4d565f8d8fc666
+head_sha: 4deb51b21efa0ffee30b008daae12c14abf8d713
+summary: 将 stage_02_02 从全清 25 个敌人的旧目标迁移为 900 tick 生存目标，旧的逐敌击杀投影数量契约必须由逐 tick 时间投影与同核终局契约替代。
+
+migrations:
+  - deleted: test('all 25 production defeat projections complete the objective', () async {
+    replacement: production stage_02_02 projects one TimeElapsed event per frame
+    reason: 旧用例标题把生产关锁定为全清敌人；替代用例从真实 repository 装配 stage_02_02，并逐帧要求唯一 TimeElapsed 投影驱动 900 tick 生存目标。
+
+  - deleted: expect(objectiveEvents, hasLength(25));
+    replacement: expect(objectiveEvents, hasLength(1));
+    reason: 全清目标按 25 个敌人投影事件；生存目标每帧只能产生一个时间事件，因此数量契约必须由 25 改为 1。
+
+  - deleted: expect(progress.completed, isTrue);
+    replacement: expect(progress.completed, isTrue);
+    reason: 完成断言未被削弱，只是从一次性敌人事件批次迁移到循环 900 个逐帧时间投影之后，head 中保留同一终局断言。
+
+  - deleted: expect(progress.clauses.single.completed, isTrue);
+    replacement: expect(progress.clauses.single.completed, isTrue);
+    reason: 单 clause 完成断言未被删除，迁移后仍在 900 tick 循环之后验证同一 typed clause 已完成。
