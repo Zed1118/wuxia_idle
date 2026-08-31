@@ -1,6 +1,3 @@
-@Timeout(Duration(minutes: 2))
-library;
-
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
