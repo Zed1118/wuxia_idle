@@ -5922,8 +5922,8 @@ tasks:
     status: ready_reviewed
     current_authoritative_wip: false
     base_commit: fe2a287f29285ab9988b0c3387765fc6f04a5b3f
-    code_candidate_commit: b787209a
-    reviewed_candidate_commit: b787209a
+    code_candidate_commit: b94ffb31ee53d287e04d86448af421845a758903
+    reviewed_candidate_commit: b94ffb31ee53d287e04d86448af421845a758903
     ready_marker: "[READY][CODEX][P2-M5-GAUNTLET-HEADLESS-PRODUCTION-WIRING] 接通断魂庄首通后快速推演生产入口"
     completion_scope: connect_the_existing_first_clear_gated_gauntlet_headless_replay_to_the_real_loadout_entry
     acceptance_baseline: published_37_of_42_included_an_unwired_gauntlet_automation_cell
