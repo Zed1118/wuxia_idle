@@ -9,7 +9,7 @@
 ## 生产合同
 
 1. 首次完整通关仍只能亲战；只有真实 `clearedGauntletIds` 包含 exact gauntlet 时才能自动准入。
-2. 已通关整备页显示“快速推演”，提交玩家实际选定的单名参与者和固定 `direct + playerBot + headless + replay` tuple。
+2. 已通关整备页复用通用“快速重演”按钮，提交玩家实际选定的单名参与者和固定 `direct + playerBot + headless + replay` tuple。
 3. 自动策略校验、扣帖与建会话共用 [GauntletService.enter] 的同一事务边界；界面状态陈旧时不得先扣资源再拒绝。
 4. 进入成功后只调用既有 `driveHeadlessReplayToRewardChoice`；败局仍由既有伤势/失败 owner 结算，胜局硬停在现有三选一页，不代替玩家选奖。
 5. 现有 direct headless replay 不得冒充 durable dispatch；断魂庄差遣一格继续 `BLOCKED`。

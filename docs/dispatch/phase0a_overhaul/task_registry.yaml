@@ -2926,7 +2926,6 @@ tasks:
       - INNER-DEMON-CULTIVATION-01
     owned_files:
       - lib/features/mainline/presentation/stage_entry_flow.dart
-      - lib/shared/strings.dart
       - test/features/mainline/inner_demon_defeat_summary_test.dart
       - test/features/mainline/presentation/defeat_loss_banner_residue_test.dart
       - test/features/mainline/presentation/stage_entry_flow_pure_test.dart

@@ -423,7 +423,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                   ),
                   if (cleared >= 1)
                     PlaqueButton(
-                      label: UiStrings.gauntletHeadlessReplayButton,
+                      label: UiStrings.mainlineHeadlessReplayMode,
                       onTap: canEnter
                           ? () => _enter(
                               info.ticketCount,

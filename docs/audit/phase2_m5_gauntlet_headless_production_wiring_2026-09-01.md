@@ -17,7 +17,7 @@
 ## 生产路径
 
 - 可达入口：`GauntletLoadoutScreen`。
-- 可见门：只有 `GauntletLoadoutInfo.clearedCyclesMax >= 1` 显示“快速推演”；未选人、无帖、active run 或正在提交时继续禁用。
+- 可见门：只有 `GauntletLoadoutInfo.clearedCyclesMax >= 1` 显示复用的通用“快速重演”按钮；未选人、无帖、active run 或正在提交时继续禁用。
 - canonical request：`gauntletHeadlessReplayRequest(characterId)` 固定 exact `contentId`/participant/loadout 与 `direct + playerBot + headless + replay`。
 - 原子准入：`GauntletService.enter(automationRequest: ...)` 在同一 Isar 事务中重读 `clearedGauntletIds`，先经既有 policy 校验 exact gauntlet 首通、exact loadout 和参与者，再扣帖并建 run；拒绝后帖和 run 均零变化。
 - 推演：入场和 `driveHeadlessReplayToRewardChoice` 复用同一 request 快照，复用现有 Phase 0A runner、admission、共享 settlement、伤势/失败结算和奖励三选一边界。
@@ -33,7 +33,7 @@
 
 ## 验证
 
-- 实现前 RED：新增两条生产页用例精确 `2` 条失败，原因均为找不到“快速推演”。
+- 实现前 RED：新增两条生产页用例精确 `2` 条失败，原因均为找不到快速 headless replay 入口。
 - 核心定向：策略、原子入场与整备页 `40/40 PASS`。
 - 断魂庄全域：`192/192 PASS`。
 - `flutter analyze --no-pub lib test tool`：`No issues found!`。

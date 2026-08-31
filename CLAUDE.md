@@ -6,7 +6,7 @@
 >
 > **版本:v1.98**
 >
-> v1.98 变更摘要(2026-09-01 二阶段 M5 断魂庄自动化生产资格修复):复查发现已发布 `37/42` 将只有 policy/service/driver、没有 `lib/` 真实入口的断魂庄自动化误计为 PASS，严格基线暂回 `36/42`。现已在首通后的真实整备页接入“快速推演”，按玩家选定 exact participant 提交 `direct + playerBot + headless + replay`；入场与既有 driver 复用同一 request，自动化准入、门票扣减与 run 创建处于同一事务边界，胜利停在既有奖励选择，不代选或改变奖励。生产 RED `2`、核心定向 `40/40`、断魂庄目录 `192/192`，三组 mutation 各精确 `1` 条失败并反向还原，全量 `5833/5833`、analyze 0 issue。有效矩阵恢复 `37/42`、顶层 M5 仍 `0/1 BLOCKED`；direct replay 不冒充 durable dispatch，真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
+> v1.98 变更摘要(2026-09-01 二阶段 M5 断魂庄自动化生产资格修复):复查发现已发布 `37/42` 将只有 policy/service/driver、没有 `lib/` 真实入口的断魂庄自动化误计为 PASS，严格基线暂回 `36/42`。现已在首通后的真实整备页复用通用“快速重演”入口文案，按玩家选定 exact participant 提交 `direct + playerBot + headless + replay`；入场与既有 driver 复用同一 request，自动化准入、门票扣减与 run 创建处于同一事务边界，胜利停在既有奖励选择，不代选或改变奖励。生产 RED `2`、核心定向 `40/40`、断魂庄目录 `192/192`，三组 mutation 各精确 `1` 条失败并反向还原，全量 `5833/5833`、analyze 0 issue。有效矩阵恢复 `37/42`、顶层 M5 仍 `0/1 BLOCKED`；direct replay 不冒充 durable dispatch，真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >
 > v1.97 变更摘要(2026-09-01 二阶段 M5 心魔个人进度归属):心魔角色面板与关卡列表改为按 `characterId` 消费 U09 既有 personal-scope `RewardClaimReceipt`，以真实胜利事务落下的 `contentId + participantId` 作为个人进度；存档级 `MainlineProgress` 继续承担全局内容链、周目与宗门首通，不再让一名角色的心魔胜利被另一名角色继承。旧档无法证明参与者时不猜人、不伪造个人记录。生产 settlement→receipt→provider 与两个消费者的扩展定向 `113/113`，两向破坏证红各精确 `1` 条失败并反向还原，测试契约迁移 Gate PASS、全量 `5828/5828`、analyze 0 issue。M5 固定工程矩阵由 `36/42` 推至 `37/42`，顶层 M5 与 M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >

@@ -4389,7 +4389,6 @@ class UiStrings {
   static String gauntletSupplyBudget(int used, int cap) => '已装 $used / $cap 份';
   // 入庄
   static const String gauntletEnterButton = '持帖入庄';
-  static const String gauntletHeadlessReplayButton = '快速推演';
   static const String gauntletEnterFailed = '入庄受阻，请核对队伍与补给。';
   // 断线续战（§5.6/§10 · C2.5 恢复分支）
   static const String gauntletResumeTitle = '庄局未了';

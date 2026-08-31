@@ -301,7 +301,11 @@ void main() {
 
   testWidgets('完整首通后生产整备入口才开放快速推演', (tester) async {
     await _pump(tester, const Size(1280, 720), candidates: candidates);
-    expect(find.text('快速推演'), findsNothing, reason: '首次通关必须保持真人亲战');
+    expect(
+      find.text(UiStrings.mainlineHeadlessReplayMode),
+      findsNothing,
+      reason: '首次通关必须保持真人亲战',
+    );
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -312,10 +316,12 @@ void main() {
       candidates: candidates,
       info: _clearedInfo,
     );
-    expect(find.text('快速推演'), findsOneWidget);
+    expect(find.text(UiStrings.mainlineHeadlessReplayMode), findsOneWidget);
     final button = tester.widget<PlaqueButton>(
       find.byWidgetPredicate(
-        (widget) => widget is PlaqueButton && widget.label == '快速推演',
+        (widget) =>
+            widget is PlaqueButton &&
+            widget.label == UiStrings.mainlineHeadlessReplayMode,
       ),
     );
     expect(button.onTap, isNull, reason: '未选择实际参与者时必须 fail closed');
@@ -335,7 +341,9 @@ void main() {
     await tester.tap(find.text('沈青'));
     await tester.pumpAndSettle();
     final quickButton = find.byWidgetPredicate(
-      (widget) => widget is PlaqueButton && widget.label == '快速推演',
+      (widget) =>
+          widget is PlaqueButton &&
+          widget.label == UiStrings.mainlineHeadlessReplayMode,
     );
     await tester.ensureVisible(quickButton);
     await tester.tap(quickButton);
