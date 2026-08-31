@@ -1,0 +1,14 @@
+schema_version: 1
+ticket: p2-m6-u11-progressive-unlock-20260901
+base_sha: 77a40e62134098a667850f54fbe5d49f4686fd4c
+head_sha: a5cf0a3e3451431f87d3a9dc7cb2f46fc2a7570d
+summary: 存档当前版本由 0.42.0 加法迁至 0.43.0，原有精确版本断言全部以新版本精确值替代，不删除版本门或降低断言数量。
+
+migrations:
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.42.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.43.0');
+    reason: ProgressiveUnlockReceipt 注册后当前存档版本必须精确为 0.43.0；替代断言保留原迁移结果门并更新唯一合法值。
+
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.42.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.43.0');
+    reason: 加法 collection 与迁移段 13 要求当前版本同步提升；替代断言继续钉死字面版本，防止意外回退或漏升。

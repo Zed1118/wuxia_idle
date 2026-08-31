@@ -12,12 +12,12 @@ import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../../expedition/application/expedition_providers.dart';
 import '../../expedition/domain/expedition_run.dart';
-import '../../light_foot/application/light_foot_service.dart';
 import '../../main_menu/application/main_menu_status_summary_provider.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mainline/domain/onboarding_gate.dart';
-import '../../mass_battle/application/mass_battle_service.dart';
+import '../../progressive_unlock/application/progressive_unlock_projection.dart';
+import '../../progressive_unlock/domain/progressive_unlock.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../tower/application/tower_providers.dart';
 import '../../tower/domain/tower_progress.dart';
@@ -49,7 +49,8 @@ String jianghuMapTowerStatus(TowerProgress progress) {
       : UiStrings.mainMenuTowerStatus(highest, next);
 }
 
-({bool locked, String status}) jianghuMapLightFootLocationState(
+({bool locked, ProgressiveUnlockState unlockState, String status})
+jianghuMapLightFootLocationState(
   MainlineProgress progress, {
   LightFootDef? configOverride,
 }) {
@@ -58,37 +59,46 @@ String jianghuMapTowerStatus(TowerProgress progress) {
   try {
     stageIds = validatedLightFootLocationStageIds(config);
   } on StateError {
-    return (locked: true, status: UiStrings.lightFootEmpty);
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.lightFootEmpty,
+    );
   }
   if (stageIds.isEmpty) {
-    return (locked: true, status: UiStrings.lightFootEmpty);
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.lightFootEmpty,
+    );
   }
   final cleared = progress.clearedStageIds.toSet();
-  final firstStagePrerequisites = config.unlockTriggers.entries
-      .where((entry) => entry.value == stageIds.first)
-      .map((entry) => entry.key)
-      .toList(growable: false);
-  if (firstStagePrerequisites.length != 1) {
-    return (locked: true, status: UiStrings.lightFootEmpty);
+  late final bool open;
+  try {
+    open = currentLightFootGateOpen(config: config, clearedStageIds: cleared);
+  } on StateError {
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.lightFootEmpty,
+    );
   }
-  final firstStatus = LightFootService.statusOf(
-    stageId: stageIds.first,
-    config: config,
-    clearedStageIds: cleared,
+  final unlockState = resolveProgressiveUnlockState(
+    visible: true,
+    enabled: open,
   );
-  final locked =
-      !cleared.contains(firstStagePrerequisites.single) ||
-      firstStatus == LightFootStageStatus.locked;
   final clearedCount = stageIds.where(cleared.contains).length;
   return (
-    locked: locked,
-    status: locked
+    locked: unlockState != ProgressiveUnlockState.open,
+    unlockState: unlockState,
+    status: unlockState != ProgressiveUnlockState.open
         ? UiStrings.mainMenuLateGameLockedHint
         : UiStrings.jianghuMapLightFootProgress(clearedCount, stageIds.length),
   );
 }
 
-({bool locked, String status}) jianghuMapMassBattleLocationState(
+({bool locked, ProgressiveUnlockState unlockState, String status})
+jianghuMapMassBattleLocationState(
   MainlineProgress progress, {
   MassBattleDef? configOverride,
 }) {
@@ -97,35 +107,46 @@ String jianghuMapTowerStatus(TowerProgress progress) {
   try {
     stageIds = validatedMassBattleLocationStageIds(config);
   } on StateError {
-    return (locked: true, status: UiStrings.massBattleEmpty);
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.massBattleEmpty,
+    );
   }
   if (stageIds.isEmpty) {
-    return (locked: true, status: UiStrings.massBattleEmpty);
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.massBattleEmpty,
+    );
   }
   final cleared = progress.clearedStageIds.toSet();
-  final firstStagePrerequisites = config.unlockTriggers.entries
-      .where((entry) => entry.value == stageIds.first)
-      .map((entry) => entry.key)
-      .toList(growable: false);
-  if (firstStagePrerequisites.length != 1) {
-    return (locked: true, status: UiStrings.massBattleEmpty);
+  late final bool open;
+  try {
+    open = currentMassBattleGateOpen(config: config, clearedStageIds: cleared);
+  } on StateError {
+    return (
+      locked: true,
+      unlockState: ProgressiveUnlockState.heard,
+      status: UiStrings.massBattleEmpty,
+    );
   }
-  final firstStatus = MassBattleService.statusOf(
-    stageId: stageIds.first,
-    config: config,
-    clearedStageIds: cleared,
+  final unlockState = resolveProgressiveUnlockState(
+    visible: true,
+    enabled: open,
   );
-  final locked =
-      !cleared.contains(firstStagePrerequisites.single) ||
-      firstStatus == MassBattleStageStatus.locked;
   final clearedCount = stageIds.where(cleared.contains).length;
   return (
-    locked: locked,
-    status: locked
+    locked: unlockState != ProgressiveUnlockState.open,
+    unlockState: unlockState,
+    status: unlockState != ProgressiveUnlockState.open
         ? UiStrings.mainMenuLateGameLockedHint
         : UiStrings.jianghuMapMassBattleProgress(clearedCount, stageIds.length),
   );
 }
+
+ProgressiveUnlockState jianghuMapJourneyUnlockState(bool unlocked) =>
+    resolveProgressiveUnlockState(visible: unlocked, enabled: unlocked);
 
 String? jianghuMapGauntletStatus(BossGauntletRun? run) {
   if (run == null) return null;
@@ -174,12 +195,14 @@ class JianghuMapScreen extends ConsumerWidget {
       data: jianghuMapReputationLocationLocked,
       orElse: () => null,
     );
-    final jianghuJourneyUnlocked = ref
-        .watch(mainMenuSaveSnapshotProvider)
-        .maybeWhen(
-          data: (save) => save?.jianghuJourneyUnlocked ?? false,
-          orElse: () => false,
-        );
+    final journeyUnlockState = jianghuMapJourneyUnlockState(
+      ref
+          .watch(mainMenuSaveSnapshotProvider)
+          .maybeWhen(
+            data: (save) => save?.jianghuJourneyUnlocked ?? false,
+            orElse: () => false,
+          ),
+    );
     final activeGauntlet = ref.watch(activeGauntletProvider);
     final gauntletReady = activeGauntlet.asData != null;
     final gauntletStatus = activeGauntlet.maybeWhen(
@@ -274,7 +297,7 @@ class JianghuMapScreen extends ConsumerWidget {
                         )
                       : null,
                 ),
-                if (jianghuJourneyUnlocked) ...[
+                if (journeyUnlockState != ProgressiveUnlockState.hidden) ...[
                   const SizedBox(height: 12),
                   WuxiaInkButton(
                     key: const ValueKey('jianghu-map-gauntlet-location'),

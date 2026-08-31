@@ -2095,6 +2095,19 @@ lib/
 
 ---
 
+### 7.4 当前生产增量：渐进解锁回执（saveVersion 0.43.0）
+
+`ProgressiveUnlockReceipt` 是每槽、每能力一行的加法 collection，唯一键为
+`v1:<saveDataId>:<unlockId>`。字段包括 `receiptVersion`、`saveDataId`、
+`unlockId`、`highestState`、`firstObservedAt`、`updatedAt`、`openedAt` 与
+`sealAcknowledgedAt`。`highestState` 只单调记录 `hidden → heard → open`，降级
+观察不得覆盖已发生事实。
+
+0.42.0 及更早存档升级时不回填该 collection；首次生产观察统一建立安静基线。
+只有之后真实从非 `open` 推进到 `open` 才写 `openedAt` 并形成待确认蜡封；玩家
+点击唯一确认动作后写 `sealAcknowledgedAt`。该迁移不改既有解锁门槛，也不伪造
+历史待确认状态。
+
 **文档结束。**
 
 下一份文档：`numbers.yaml`（待生成 · 数值配置）

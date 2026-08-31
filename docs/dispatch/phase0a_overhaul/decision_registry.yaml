@@ -234,13 +234,26 @@ decisions:
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: PROGRESSIVE-UNLOCK-01
-    status: deferred_pending_migration_table
+    status: frozen_implemented_safe_default
     evidence_alias: UNREGISTERED-UNLOCK-01
     summary: 每个模式先形成 current 到 target 的解锁迁移表，未签模式保持现有 gate
     g0_choice: C
     target_change_requires_explicit_user_choice: true
     batch_action: author_per_mode_migration_table_then_get_user_signoff_before_m5_m6_gate_changes
     safe_default: preserve_current_mode_gates
+    implementation:
+      owner_task: P2-M6-U11-PROGRESSIVE-UNLOCK
+      shared_states:
+        - hidden
+        - heard
+        - open
+      existing_gate_changes: none
+      migration_kind: additive
+      save_version: 0.43.0
+      receipt_collection: ProgressiveUnlockReceipt
+      first_observation_backfill: quiet_baseline_only
+      one_time_seal_acknowledgement: durable
+      human_visual_acceptance: deferred
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 

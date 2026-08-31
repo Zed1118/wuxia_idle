@@ -36,6 +36,7 @@ import '../features/expedition/domain/expedition_run.dart';
 import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../features/activity/domain/durable_activity_combat_run.dart';
 import '../features/reward/domain/reward_claim_receipt.dart';
+import '../features/progressive_unlock/domain/progressive_unlock_receipt.dart';
 import '../features/reward/domain/reward_scope_policy.dart';
 import '../shared/battle_shared/reward_claim_key.dart';
 import '../shared/battle_shared/reward_contract.dart';
@@ -136,6 +137,7 @@ class IsarSetup {
     BossGauntletRunSchema,
     DurableActivityCombatRunSchema,
     RewardClaimReceiptSchema,
+    ProgressiveUnlockReceiptSchema,
   ];
 
   @visibleForTesting
@@ -215,7 +217,9 @@ class IsarSetup {
   // collection。旧档天然无 active 差遣，不从历史通关反推会话或结算回执。
   // 0.42.0 七内容 durable reward claim：新增 RewardClaimReceipt collection；
   // 旧档只从已有通关/领取事实建防重墓碑，绝不补发或伪造奖励。
-  static const _currentSaveVersion = '0.42.0';
+  // 0.43.0 渐进解锁：新增 ProgressiveUnlockReceipt collection；旧档首次观察
+  // 只建立现状基线，不伪造待确认蜡封，也不改变任何模式的既有解锁门槛。
+  static const _currentSaveVersion = '0.43.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -544,6 +548,13 @@ class IsarSetup {
           mainlineRows: mainlineRows,
           towerRows: towerRows,
         );
+      }
+
+      // --- 段 13(0.43.0 渐进解锁三态与一次性蜡封)---
+      // 新 collection 对旧档天然为空；首次生产观察负责建立安静基线，迁移本身
+      // 不推测历史玩家何时听闻/开放，也不补造待确认题签。
+      if (_compareVersion(fromVersion, '0.43.0') < 0) {
+        // 无显式迁移动作(纯可加)。
       }
 
       save.saveVersion = _currentSaveVersion;

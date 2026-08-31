@@ -128,7 +128,7 @@ void main() {
       );
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.42.0',
+        '0.43.0',
       );
 
       await IsarSetup.close();
