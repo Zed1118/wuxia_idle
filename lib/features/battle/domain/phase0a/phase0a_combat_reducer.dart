@@ -128,6 +128,7 @@ Phase0aStepResult reducePhase0aTick({
   final tick = state.tick + 1;
   var seq = state.nextSeq;
   final events = <Phase0aEvent>[];
+  var defendedEntity = state.defendedEntity;
 
   var player = state.player.copyWith(
     attackCooldownRemaining: _cooldownAfter(
@@ -890,7 +891,58 @@ Phase0aStepResult reducePhase0aTick({
             basicAttackSegment: basicAttackSegment,
           ),
         );
-        final targets = basicAttackSegment == null
+        final preferredDefendedEntity =
+            !isPlayer &&
+                intent.preferredTargetId != null &&
+                intent.preferredTargetId == defendedEntity?.id
+            ? defendedEntity
+            : null;
+        final defendedEntityInArc =
+            preferredDefendedEntity != null &&
+            preferredDefendedEntity.isAlive &&
+            isTargetInsideStrikeArc(
+              origin: attackActor.position,
+              aimDirection: resolvedAimDirection,
+              target: preferredDefendedEntity.position,
+              range: intent.range,
+              halfArcRadians: intent.halfArcRadians,
+            );
+        if (defendedEntityInArc) {
+          final beforeDurability = preferredDefendedEntity.currentDurability;
+          final remaining = math.max(
+            0,
+            beforeDurability - preferredDefendedEntity.damagePerHit,
+          );
+          final resolvedDamage = beforeDurability - remaining;
+          defendedEntity = preferredDefendedEntity.copyWith(
+            currentDurability: remaining,
+          );
+          events.add(
+            Phase0aDefendedEntityHit(
+              seq: seq++,
+              tick: tick,
+              actor: actorId,
+              target: preferredDefendedEntity.id,
+              resolvedDamage: resolvedDamage,
+              remainingDurability: remaining,
+              actorPosition: attackActor.position,
+              targetPosition: preferredDefendedEntity.position,
+            ),
+          );
+          if (remaining == 0) {
+            events.add(
+              Phase0aDefendedEntityDestroyed(
+                seq: seq++,
+                tick: tick,
+                target: preferredDefendedEntity.id,
+                targetPosition: preferredDefendedEntity.position,
+              ),
+            );
+          }
+        }
+        final targets = preferredDefendedEntity != null
+            ? const <Phase0aActor>[]
+            : basicAttackSegment == null
             ? [
                 ?_selectStrikeTarget(
                   attacker: attackActor,
@@ -1666,6 +1718,7 @@ Phase0aStepResult reducePhase0aTick({
       player: player,
       enemies: List.unmodifiable(enemiesById.values.toList()),
       skillSlots: List.unmodifiable(slots),
+      defendedEntity: defendedEntity,
       winCondition: state.winCondition,
     ),
     events: List.unmodifiable(events),

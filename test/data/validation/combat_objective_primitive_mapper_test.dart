@@ -27,7 +27,7 @@ void main() {
 
       final defendEntity =
           mapCombatObjectivePrimitive(
-                CombatDefendEntityRef(entityId: 'ward', requiredTicks: 3),
+                _defend(requiredTicks: 3),
                 tickDuration: tickDuration,
               )
               as DefendEntityObjective;
@@ -85,7 +85,7 @@ void main() {
       final references = <CombatObjectivePrimitiveRef>[
         CombatDefeatTargetsRef(const ['target']),
         CombatDestroyAnchorsRef(const ['anchor']),
-        CombatDefendEntityRef(entityId: 'ward', requiredTicks: 1),
+        _defend(requiredTicks: 1),
         CombatSurviveDurationRef(requiredTicks: 1),
         CombatReachCheckpointRef(const ['checkpoint']),
         CombatTouchMarkersRef(const ['marker']),
@@ -124,7 +124,7 @@ void main() {
 
       final defend =
           mapCombatObjectivePrimitive(
-                CombatDefendEntityRef(entityId: 'ward', requiredTicks: 2),
+                _defend(requiredTicks: 2),
                 tickDuration: const Duration(microseconds: maxInt ~/ 2),
               )
               as DefendEntityObjective;
@@ -143,7 +143,7 @@ void main() {
       );
       expect(
         () => mapCombatObjectivePrimitive(
-          CombatDefendEntityRef(entityId: 'ward', requiredTicks: maxInt),
+          _defend(requiredTicks: maxInt),
           tickDuration: const Duration(microseconds: 2),
         ),
         throwsArgumentError,
@@ -316,3 +316,13 @@ void main() {
     });
   });
 }
+
+CombatDefendEntityRef _defend({required int requiredTicks}) =>
+    CombatDefendEntityRef(
+      entityId: 'ward',
+      positionId: 'ward_position',
+      durability: 100,
+      damagePerHit: 5,
+      requiredTicks: requiredTicks,
+      attackerIds: const ['attacker'],
+    );

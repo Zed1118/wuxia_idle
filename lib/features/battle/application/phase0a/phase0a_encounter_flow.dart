@@ -13,8 +13,10 @@ import 'phase0a_event_order_adapter.dart';
 import '../../domain/phase0a/phase0a_wave.dart' show Phase0aBattleOutcome;
 import 'phase0a_battle_flow.dart';
 import 'phase0a_enemy_intent_gate.dart';
+import 'phase0a_defend_objective_observation.dart';
 import 'phase0a_objective_runtime_tracker.dart';
 import 'phase0a_player_input_adapter.dart';
+import 'phase0a_pursue_objective_observation.dart';
 import 'phase0a_spawn_event_adapter.dart';
 import 'phase0a_survive_objective_observation.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -28,6 +30,8 @@ final class Phase0aEncounterFlow
     implements
         Phase0aBattleFlow,
         Phase0aEncounterRuntimeObservationSource,
+        Phase0aDefendObjectiveObservationSource,
+        Phase0aPursueObjectiveObservationSource,
         Phase0aSurviveObjectiveObservationSource {
   Phase0aEncounterFlow.compatibility({required Phase0aWaveBattleFlow legacy})
     : _legacy = legacy,
@@ -147,6 +151,66 @@ final class Phase0aEncounterFlow
     return null;
   }
 
+  @override
+  Phase0aDefendObjectiveObservation? get defendObjectiveObservation {
+    final tracker = _objectiveTracker;
+    if (tracker == null) return null;
+    for (var index = 0; index < tracker.controller.clauses.length; index += 1) {
+      final objective = tracker.controller.clauses[index].objective;
+      if (objective is! DefendEntityObjective) continue;
+      final defended = state.defendedEntity;
+      if (defended == null || defended.id != objective.entityId) {
+        throw StateError(
+          'Defend entity is not present in the arena: ${objective.entityId}',
+        );
+      }
+      return Phase0aDefendObjectiveObservation(
+        entityId: defended.id,
+        position: defended.position,
+        maxDurability: defended.maxDurability,
+        currentDurability: defended.currentDurability,
+        requiredDuration: objective.requiredDuration,
+        elapsed: tracker.progress.clauses[index].progress.elapsed,
+        completed: tracker.progress.clauses[index].completed,
+      );
+    }
+    return null;
+  }
+
+  @override
+  Phase0aPursueObjectiveObservation? get pursueObjectiveObservation {
+    final tracker = _objectiveTracker;
+    final roster = _roster;
+    if (tracker == null || roster == null) return null;
+    for (var index = 0; index < tracker.controller.clauses.length; index += 1) {
+      final objective = tracker.controller.clauses[index].objective;
+      if (objective is! PursueTargetObjective) continue;
+      final binding = roster.bindingByEntryId(objective.targetId);
+      if (binding == null) {
+        throw StateError(
+          'Pursue target is not present in the encounter roster: '
+          '${objective.targetId}',
+        );
+      }
+      Phase0aActor? target;
+      for (final enemy in state.enemies) {
+        if (enemy.id == binding.actorId) {
+          target = enemy;
+          break;
+        }
+      }
+      return Phase0aPursueObjectiveObservation(
+        targetId: objective.targetId,
+        targetActorId: binding.actorId,
+        distance: target == null
+            ? null
+            : (target.position - state.player.position).length,
+        completed: tracker.progress.clauses[index].completed,
+      );
+    }
+    return null;
+  }
+
   SpawnDirectorState get spawnState {
     final director = _director;
     if (director == null) {
@@ -242,6 +306,11 @@ final class Phase0aEncounterFlow
     if (!resolved.player.isAlive) {
       // Defeat is authoritative and deliberately bypasses objective mapping
       // and commit, even if the same frame could otherwise complete it.
+      nextOutcome = Phase0aBattleOutcome.defeat;
+      events.add(
+        Phase0aBattleDefeat(seq: resolved.nextSeq, tick: resolved.tick),
+      );
+    } else if (resolved.defendedEntity?.isDestroyed == true) {
       nextOutcome = Phase0aBattleOutcome.defeat;
       events.add(
         Phase0aBattleDefeat(seq: resolved.nextSeq, tick: resolved.tick),
@@ -342,6 +411,7 @@ final class Phase0aEncounterFlow
     player: state.player,
     enemies: enemies ?? state.enemies,
     skillSlots: state.skillSlots,
+    defendedEntity: state.defendedEntity,
     winCondition: state.winCondition,
   );
 }

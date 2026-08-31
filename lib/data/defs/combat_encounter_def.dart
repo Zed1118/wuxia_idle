@@ -165,11 +165,25 @@ final class CombatDestroyAnchorsRef extends CombatObjectivePrimitiveRef {
 /// Reference to the defend-entity primitive: the listed entity must survive
 /// for [requiredTicks]. All values are explicit caller inputs.
 final class CombatDefendEntityRef extends CombatObjectivePrimitiveRef {
-  CombatDefendEntityRef({required String entityId, required int requiredTicks})
-    : entityId = _checkedId(entityId, 'entityId'),
-      requiredTicks = _checkedPositiveTicks(requiredTicks, 'requiredTicks');
+  CombatDefendEntityRef({
+    required String entityId,
+    required String positionId,
+    required int durability,
+    required int damagePerHit,
+    required int requiredTicks,
+    required Iterable<String> attackerIds,
+  }) : entityId = _checkedId(entityId, 'entityId'),
+       positionId = _checkedId(positionId, 'positionId'),
+       durability = _checkedPositiveTicks(durability, 'durability'),
+       damagePerHit = _checkedPositiveTicks(damagePerHit, 'damagePerHit'),
+       attackerIds = _checkedIdSet(attackerIds, 'attackerIds'),
+       requiredTicks = _checkedPositiveTicks(requiredTicks, 'requiredTicks');
 
   final String entityId;
+  final String positionId;
+  final int durability;
+  final int damagePerHit;
+  final UnmodifiableSetView<String> attackerIds;
   final int requiredTicks;
 }
 
@@ -285,6 +299,21 @@ final class CombatEncounterDef {
         'spawnEntries',
         'duplicate entryId(s)',
       );
+    }
+    final spawnEntryIds = this.spawnEntries
+        .map((entry) => entry.entryId)
+        .toSet();
+    for (final clause in objectives.clauses) {
+      if (clause.primitive case CombatDefendEntityRef(:final attackerIds)) {
+        final unknown = attackerIds.difference(spawnEntryIds).toList()..sort();
+        if (unknown.isNotEmpty) {
+          throw ArgumentError.value(
+            unknown,
+            'objectives',
+            'defend attacker id(s) must be encounter spawn entries',
+          );
+        }
+      }
     }
   }
 

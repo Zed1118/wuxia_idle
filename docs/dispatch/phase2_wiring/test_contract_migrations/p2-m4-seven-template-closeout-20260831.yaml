@@ -1,0 +1,30 @@
+schema_version: 1
+ticket: p2-m4-seven-template-closeout-20260831
+base_sha: 96be15e572413929549f3723af4d565f8d8fc666
+head_sha: 158d9e3843eb80f3101ce807f5e650dbf1e88454
+summary: 将 stage_02_02 从全清目标迁移为 900 tick 生存目标，并把 stage_02_01 从全清目标迁移为具备位置、耐久、指定攻击者和固定受击合同的守阵目标；旧的简化 defend 构造与逐敌击杀投影契约由完整运行时合同和同核终局契约替代。
+
+migrations:
+  - deleted: test('all 25 production defeat projections complete the objective', () async {
+    replacement: 900 production frame projections complete the survive objective
+    reason: 旧用例标题把生产关锁定为全清敌人；替代用例从真实 repository 装配 stage_02_02，并逐帧要求唯一 TimeElapsed 投影驱动 900 tick 生存目标。
+
+  - deleted: expect(objectiveEvents, hasLength(25));
+    replacement: expect(objectiveEvents, hasLength(1));
+    reason: 全清目标按 25 个敌人投影事件；生存目标每帧只能产生一个时间事件，因此数量契约必须由 25 改为 1。
+
+  - deleted: expect(progress.completed, isTrue);
+    replacement: expect(progress.completed, isTrue);
+    reason: 完成断言未被削弱，只是从一次性敌人事件批次迁移到循环 900 个逐帧时间投影之后，head 中保留同一终局断言。
+
+  - deleted: expect(progress.clauses.single.completed, isTrue);
+    replacement: expect(progress.clauses.single.completed, isTrue);
+    reason: 单 clause 完成断言未被删除，迁移后仍在 900 tick 循环之后验证同一 typed clause 已完成。
+
+  - deleted: expect(
+    replacement: final defend = objectives.whereType<CombatDefendEntityRef>().single;
+    reason: 原多行断言只读取 requiredTicks，改为先取得 typed defend 引用，再逐项验证位置、耐久、单次伤害、时长和攻击者集合；被删的 expect 起始行由后续完整字段断言替代。
+
+  - deleted: test('defend-entity reference validates entity id and ticks', () {
+    replacement: test('defend-entity reference validates its complete runtime contract', () {
+    reason: 旧用例只验证实体 id 与时长，已迁移为完整非持久化运行时合同，并新增退化耐久、退化伤害、空攻击者和非本 encounter 攻击者的 fail-closed 断言。

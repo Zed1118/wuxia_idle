@@ -117,6 +117,77 @@ final class Phase0aHitLanded extends Phase0aEvent {
   );
 }
 
+/// A designated enemy basic attack has damaged the runtime-only defended
+/// entity. Durability damage is authored by the encounter contract and is not
+/// recalculated by presentation or persistence consumers.
+final class Phase0aDefendedEntityHit extends Phase0aEvent {
+  const Phase0aDefendedEntityHit({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.target,
+    required this.resolvedDamage,
+    required this.remainingDurability,
+    required this.actorPosition,
+    required this.targetPosition,
+  });
+
+  final String actor;
+  final String target;
+  final int resolvedDamage;
+  final int remainingDurability;
+  final ArenaVector actorPosition;
+  final ArenaVector targetPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aDefendedEntityHit &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.actor == actor &&
+      other.target == target &&
+      other.resolvedDamage == resolvedDamage &&
+      other.remainingDurability == remainingDurability &&
+      other.actorPosition == actorPosition &&
+      other.targetPosition == targetPosition;
+
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    target,
+    resolvedDamage,
+    remainingDurability,
+    actorPosition,
+    targetPosition,
+  );
+}
+
+/// Emitted exactly once when a defended entity reaches zero durability.
+final class Phase0aDefendedEntityDestroyed extends Phase0aEvent {
+  const Phase0aDefendedEntityDestroyed({
+    required super.seq,
+    required super.tick,
+    required this.target,
+    required this.targetPosition,
+  });
+
+  final String target;
+  final ArenaVector targetPosition;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aDefendedEntityDestroyed &&
+      other.seq == seq &&
+      other.tick == tick &&
+      other.target == target &&
+      other.targetPosition == targetPosition;
+
+  @override
+  int get hashCode => Object.hash(seq, tick, target, targetPosition);
+}
+
 /// Fixed-tick poison/internal-injury damage already settled by the reducer.
 ///
 /// Damage pierces defense because it is emitted after direct HP settlement;

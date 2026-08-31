@@ -166,6 +166,8 @@ final class Phase0aSettlementAdapter {
           :final isCritical,
         ):
           addDamage(actor, resolvedDamage, critical: isCritical);
+        case Phase0aDefendedEntityHit():
+          hadActions = true;
         case Phase0aStatusDamageApplied(:final source, :final resolvedDamage):
           addDamage(source, resolvedDamage);
         case Phase0aGuardianCoopStrike(
@@ -240,6 +242,7 @@ final class Phase0aSettlementAdapter {
         case Phase0aBossChargeStarted() || Phase0aEnemySkillStarted():
           hadActions = true;
         case Phase0aEnemyDefeated() ||
+            Phase0aDefendedEntityDestroyed() ||
             Phase0aBossPhaseChanged() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||

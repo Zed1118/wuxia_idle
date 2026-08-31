@@ -158,20 +158,71 @@ void main() {
       );
     });
 
-    test('defend-entity reference validates entity id and ticks', () {
+    test('defend-entity reference validates its complete runtime contract', () {
       expect(
         CombatDefendEntityRef(
           entityId: 'npc_guardsman',
+          positionId: 'ward_position',
+          durability: 100,
+          damagePerHit: 5,
           requiredTicks: 30,
+          attackerIds: const ['attacker'],
         ).entityId,
         'npc_guardsman',
       );
       expect(
-        () => CombatDefendEntityRef(entityId: '', requiredTicks: 30),
+        () => CombatDefendEntityRef(
+          entityId: '',
+          positionId: 'ward_position',
+          durability: 100,
+          damagePerHit: 5,
+          requiredTicks: 30,
+          attackerIds: const ['attacker'],
+        ),
         throwsArgumentError,
       );
       expect(
-        () => CombatDefendEntityRef(entityId: 'npc', requiredTicks: 0),
+        () => CombatDefendEntityRef(
+          entityId: 'npc',
+          positionId: 'ward_position',
+          durability: 100,
+          damagePerHit: 5,
+          requiredTicks: 0,
+          attackerIds: const ['attacker'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => CombatDefendEntityRef(
+          entityId: 'npc',
+          positionId: 'ward_position',
+          durability: 0,
+          damagePerHit: 5,
+          requiredTicks: 30,
+          attackerIds: const ['attacker'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => CombatDefendEntityRef(
+          entityId: 'npc',
+          positionId: 'ward_position',
+          durability: 100,
+          damagePerHit: 0,
+          requiredTicks: 30,
+          attackerIds: const ['attacker'],
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => CombatDefendEntityRef(
+          entityId: 'npc',
+          positionId: 'ward_position',
+          durability: 100,
+          damagePerHit: 5,
+          requiredTicks: 30,
+          attackerIds: const [],
+        ),
         throwsArgumentError,
       );
     });
@@ -206,6 +257,30 @@ void main() {
   });
 
   group('CombatEncounterDef', () {
+    test('defend attackers must be local encounter spawn entries', () {
+      expect(
+        () => encounter(
+          objectives: CombatObjectiveCompositionRef(
+            completionRule: CombatObjectiveCompletionRule.all,
+            clauses: [
+              CombatObjectiveClauseRef(
+                id: 'defend',
+                primitive: CombatDefendEntityRef(
+                  entityId: 'ward',
+                  positionId: 'ward_position',
+                  durability: 100,
+                  damagePerHit: 5,
+                  requiredTicks: 30,
+                  attackerIds: const ['foreign_attacker'],
+                ),
+              ),
+            ],
+          ),
+        ),
+        throwsArgumentError,
+      );
+    });
+
     test('constructs with explicit caller values', () {
       final def = encounter();
       expect(def.id, 'encounter_blackwind_ambush');

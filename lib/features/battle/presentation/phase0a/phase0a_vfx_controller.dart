@@ -351,6 +351,14 @@ final class Phase0aVfxController {
         break;
       }
       switch (event) {
+        case Phase0aDefendedEntityHit():
+          pushPopup(
+            event.target,
+            event.resolvedDamage,
+            false,
+            groupId: event.seq,
+            anchor: event.targetPosition,
+          );
         case Phase0aHitLanded():
           pushPopup(
             event.target,
@@ -555,6 +563,7 @@ final class Phase0aVfxController {
             ),
           );
         case Phase0aAttackStarted():
+        case Phase0aDefendedEntityDestroyed():
         case Phase0aBossPhaseChanged():
         case Phase0aEnemySkillStarted():
         case Phase0aSkillAvailabilityChanged():

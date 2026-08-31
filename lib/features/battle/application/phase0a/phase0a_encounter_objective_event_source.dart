@@ -62,6 +62,7 @@ Phase0aArenaState _snapshotArena(Phase0aArenaState state) => Phase0aArenaState(
   player: _snapshotActor(state.player),
   enemies: List<Phase0aActor>.unmodifiable(state.enemies.map(_snapshotActor)),
   skillSlots: List<Phase0aSkillSlot>.unmodifiable(state.skillSlots),
+  defendedEntity: state.defendedEntity,
   winCondition: state.winCondition,
 );
 

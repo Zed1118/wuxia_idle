@@ -193,3 +193,55 @@ encounters:
             - ch7_s01_charger_05
             - ch7_s01_officer_01
             - ch7_s01_officer_02
+
+  # Chapter 7 stage 4 pursuit: the grey-cloak target runs for the east edge
+  # while a finite guard group delays the player. Missing the shortest route
+  # never creates a hard timeout.
+  - id: ch7_encounter_04_grey_cloak_pursuit
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 1
+      entry_warning_ticks: 12
+      attack_grace_ticks: 8
+    token_budgets:
+      melee: 1
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch7_s04_grey_cloak
+        archetype_id: ch7_army
+        role_id: army_standard_officer
+        entrance_id: ch7_entrance_s01_road
+        position_id: ch7_position_s01_slot_07
+        behavior_id: ch7_behavior_officer_command
+      - entry_id: ch7_s04_guard_01
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_05
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s04_archer_01
+        archetype_id: ch7_army
+        role_id: army_archer
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_06
+        behavior_id: ch7_behavior_archer_volley
+      - entry_id: ch7_s04_guard_02
+        archetype_id: ch7_army
+        role_id: army_shield
+        entrance_id: ch7_entrance_s01_wall
+        position_id: ch7_position_s01_slot_04
+        behavior_id: ch7_behavior_shield_wall
+      - entry_id: ch7_s04_charger_01
+        archetype_id: ch7_army
+        role_id: army_spear_charger
+        entrance_id: ch7_entrance_s01_gate
+        position_id: ch7_position_s01_slot_03
+        behavior_id: ch7_behavior_spear_charge
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch7_s04_catch_grey_cloak
+          kind: pursue_target
+          target_id: ch7_s04_grey_cloak

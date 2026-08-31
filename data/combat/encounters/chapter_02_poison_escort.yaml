@@ -165,31 +165,15 @@ encounters:
     objectives:
       completion_rule: all
       clauses:
-        - id: ch2p_s01_clear_ecology
-          kind: defeat_targets
-          target_ids:
+        - id: ch2p_s01_defend_ward
+          kind: defend_entity
+          entity_id: ch2p_s01_ward
+          position_id: ch2p_position_s01_ward
+          durability: 300 # TUNING candidate: 60 designated hits before failure.
+          damage_per_hit: 5 # TUNING candidate; independent of player stats.
+          required_ticks: 600 # TUNING candidate: 60 seconds at 0.1 s/tick.
+          attacker_ids:
             - ch2p_s01_blood_blade_01
             - ch2p_s01_blood_blade_02
-            - ch2p_s01_blood_blade_03
-            - ch2p_s01_blood_blade_04
-            - ch2p_s01_blood_blade_05
-            - ch2p_s01_blood_blade_06
-            - ch2p_s01_blood_blade_07
-            - ch2p_s01_blood_blade_08
-            - ch2p_s01_blood_blade_09
-            - ch2p_s01_blood_blade_10
-            - ch2p_s01_blood_blade_11
-            - ch2p_s01_blood_blade_12
             - ch2p_s01_dart_01
             - ch2p_s01_dart_02
-            - ch2p_s01_dart_03
-            - ch2p_s01_dart_04
-            - ch2p_s01_dart_05
-            - ch2p_s01_dart_06
-            - ch2p_s01_shadow_01
-            - ch2p_s01_shadow_02
-            - ch2p_s01_shadow_03
-            - ch2p_s01_shadow_04
-            - ch2p_s01_shadow_05
-            - ch2p_s01_master_01
-            - ch2p_s01_master_02

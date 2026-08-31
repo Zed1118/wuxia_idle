@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_flow.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_defend_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_survive_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/objective_controller.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -16,40 +13,25 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_s
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-final class _ObservedSurviveFlow
-    implements Phase0aBattleFlow, Phase0aSurviveObjectiveObservationSource {
-  _ObservedSurviveFlow({required int elapsedTicks, required this.outcome})
-    : objectiveController = ObjectiveController(
-        completionRule: ObjectiveCompletionRule.all,
-        clauses: [
-          ObjectiveClause(
-            id: 'survive',
-            objective: SurviveDurationObjective(const Duration(seconds: 3)),
-          ),
-        ],
-      ) {
-    final tracker = Phase0aObjectiveRuntimeTracker(
-      controller: objectiveController,
-    );
-    for (var tick = 1; tick <= elapsedTicks; tick += 1) {
-      tracker.advanceExternal(
-        TimeElapsed(const Duration(seconds: 1), eventId: 'survive:$tick'),
-      );
-    }
-    objectiveProgress = tracker.progress;
-  }
+final class _ObservedDefendFlow
+    implements Phase0aBattleFlow, Phase0aDefendObjectiveObservationSource {
+  _ObservedDefendFlow({
+    required this.currentDurability,
+    required this.elapsedTicks,
+    required this.outcome,
+  });
 
-  final ObjectiveController objectiveController;
-  late final ObjectiveControllerProgress objectiveProgress;
+  final int currentDurability;
+  final int elapsedTicks;
 
   @override
   final Phase0aBattleOutcome outcome;
 
   @override
-  Phase0aArenaState get state => const Phase0aArenaState(
-    tick: 1,
+  Phase0aArenaState get state => Phase0aArenaState(
+    tick: elapsedTicks,
     nextSeq: 1,
-    player: Phase0aActor(
+    player: const Phase0aActor(
       id: 'player',
       side: Phase0aSide.player,
       position: ArenaVector.zero,
@@ -62,8 +44,8 @@ final class _ObservedSurviveFlow
       attackCooldownRemaining: 0,
       defeatKind: Phase0aDefeatKind.normal,
     ),
-    enemies: [],
-    skillSlots: [
+    enemies: const [],
+    skillSlots: const [
       Phase0aSkillSlot(
         slot: 'gather',
         cooldownRemaining: 0,
@@ -77,17 +59,29 @@ final class _ObservedSurviveFlow
         availability: Phase0aSkillAvailability.ready,
       ),
     ],
+    defendedEntity: Phase0aDefendedEntityState(
+      id: 'ward',
+      position: const ArenaVector(120, 40),
+      maxDurability: 100,
+      currentDurability: currentDurability,
+      damagePerHit: 5,
+    ),
   );
 
   @override
-  List<CombatEventRecord> get lastOrderedEventRecords => const [];
+  Phase0aDefendObjectiveObservation get defendObjectiveObservation =>
+      Phase0aDefendObjectiveObservation(
+        entityId: 'ward',
+        position: const ArenaVector(120, 40),
+        maxDurability: 100,
+        currentDurability: currentDurability,
+        requiredDuration: const Duration(seconds: 3),
+        elapsed: Duration(seconds: elapsedTicks),
+        completed: elapsedTicks >= 3,
+      );
 
   @override
-  Phase0aSurviveObjectiveObservation get surviveObjectiveObservation =>
-      Phase0aSurviveObjectiveObservation(
-        requiredDuration: const Duration(seconds: 3),
-        elapsed: objectiveProgress.clauses.single.progress.elapsed,
-      );
+  List<CombatEventRecord> get lastOrderedEventRecords => const [];
 
   @override
   List<Phase0aEvent> advance({
@@ -96,7 +90,7 @@ final class _ObservedSurviveFlow
   }) => const [];
 }
 
-Phase0aBattleController _controller(_ObservedSurviveFlow flow) =>
+Phase0aBattleController _controller(_ObservedDefendFlow flow) =>
     Phase0aBattleController(
       flow: flow,
       roster: Phase0aVisualRoster(
@@ -112,60 +106,14 @@ Phase0aBattleController _controller(_ObservedSurviveFlow flow) =>
     );
 
 void main() {
-  testWidgets('typed survive progress drives existing HUD and outcome copy', (
+  testWidgets('typed defend state renders world ward and durability HUD', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    final ongoing = _controller(
-      _ObservedSurviveFlow(
-        elapsedTicks: 1,
-        outcome: Phase0aBattleOutcome.ongoing,
-      ),
-    );
-    addTearDown(ongoing.dispose);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Phase0aBattleScreen(controller: ongoing, autoStep: false),
-      ),
-    );
-    await tester.pump();
-
-    expect(
-      find.byKey(const ValueKey('phase0a_survive_condition_banner')),
-      findsOneWidget,
-    );
-    expect(
-      find.text(UiStrings.surviveConditionRemaining(3, 2)),
-      findsOneWidget,
-    );
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    final completed = _controller(
-      _ObservedSurviveFlow(
-        elapsedTicks: 3,
-        outcome: Phase0aBattleOutcome.victory,
-      ),
-    );
-    addTearDown(completed.dispose);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Phase0aBattleScreen(controller: completed, autoStep: false),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text(UiStrings.battleResultSurvived), findsOneWidget);
-  });
-
-  testWidgets('typed survive HUD remains structurally visible at 1440x900', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(1440, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
     final controller = _controller(
-      _ObservedSurviveFlow(
+      _ObservedDefendFlow(
+        currentDurability: 75,
         elapsedTicks: 1,
         outcome: Phase0aBattleOutcome.ongoing,
       ),
@@ -180,9 +128,42 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('phase0a_survive_condition_banner')),
+      find.byKey(const ValueKey('phase0a_defend_condition_banner')),
       findsOneWidget,
     );
+    expect(
+      find.text(UiStrings.defendConditionRemaining(75, 100, 2)),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('phase0a_defended_entity_ward')),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.defendEntityLabel), findsOneWidget);
+  });
+
+  testWidgets('destroyed ward owns the defeat copy at 1440x900', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1440, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = _controller(
+      _ObservedDefendFlow(
+        currentDurability: 0,
+        elapsedTicks: 2,
+        outcome: Phase0aBattleOutcome.defeat,
+      ),
+    );
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Phase0aBattleScreen(controller: controller, autoStep: false),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text(UiStrings.battleResultWardLost), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

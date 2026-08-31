@@ -3,8 +3,11 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_battle_flow.dart';
+import '../../application/phase0a/phase0a_defend_objective_observation.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../application/phase0a/phase0a_pursue_objective_observation.dart';
 import '../../application/phase0a/phase0a_survive_objective_observation.dart';
+import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -24,6 +27,46 @@ final class Phase0aSurviveObjectiveProgress {
 
   int get remainingTicks => requiredTicks - elapsedTicks;
   bool get completed => elapsedTicks >= requiredTicks;
+}
+
+final class Phase0aPursueObjectiveProgress {
+  const Phase0aPursueObjectiveProgress({
+    required this.targetId,
+    required this.targetActorId,
+    required this.distance,
+    required this.completed,
+  });
+
+  final String targetId;
+  final String targetActorId;
+  final double? distance;
+  final bool completed;
+
+  int? get remainingDistance => distance?.ceil();
+}
+
+final class Phase0aDefendObjectiveProgress {
+  const Phase0aDefendObjectiveProgress({
+    required this.entityId,
+    required this.position,
+    required this.maxDurability,
+    required this.currentDurability,
+    required this.requiredTicks,
+    required this.elapsedTicks,
+    required this.completed,
+  });
+
+  final String entityId;
+  final ArenaVector position;
+  final int maxDurability;
+  final int currentDurability;
+  final int requiredTicks;
+  final int elapsedTicks;
+  final bool completed;
+
+  int get remainingTicks =>
+      (requiredTicks - elapsedTicks).clamp(0, requiredTicks);
+  bool get destroyed => currentDurability <= 0;
 }
 
 final class Phase0aBattleController extends ChangeNotifier {
@@ -82,6 +125,44 @@ final class Phase0aBattleController extends ChangeNotifier {
     return Phase0aSurviveObjectiveProgress(
       requiredTicks: requiredTicks,
       elapsedTicks: elapsedTicks,
+    );
+  }
+
+  Phase0aDefendObjectiveProgress? get defendObjectiveProgress {
+    final flow = _flow;
+    if (flow is! Phase0aDefendObjectiveObservationSource) return null;
+    final observation = (flow as Phase0aDefendObjectiveObservationSource)
+        .defendObjectiveObservation;
+    if (observation == null) return null;
+    final tickMicroseconds =
+        (fixedDeltaSeconds * Duration.microsecondsPerSecond).round();
+    final requiredTicks =
+        (observation.requiredDuration.inMicroseconds / tickMicroseconds).ceil();
+    final elapsedTicks = (observation.elapsed.inMicroseconds / tickMicroseconds)
+        .floor()
+        .clamp(0, requiredTicks);
+    return Phase0aDefendObjectiveProgress(
+      entityId: observation.entityId,
+      position: observation.position,
+      maxDurability: observation.maxDurability,
+      currentDurability: observation.currentDurability,
+      requiredTicks: requiredTicks,
+      elapsedTicks: elapsedTicks,
+      completed: observation.completed,
+    );
+  }
+
+  Phase0aPursueObjectiveProgress? get pursueObjectiveProgress {
+    final flow = _flow;
+    if (flow is! Phase0aPursueObjectiveObservationSource) return null;
+    final observation = (flow as Phase0aPursueObjectiveObservationSource)
+        .pursueObjectiveObservation;
+    if (observation == null) return null;
+    return Phase0aPursueObjectiveProgress(
+      targetId: observation.targetId,
+      targetActorId: observation.targetActorId,
+      distance: observation.distance,
+      completed: observation.completed,
     );
   }
 

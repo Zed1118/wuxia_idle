@@ -168,10 +168,13 @@ void main() {
       });
       expect(objectives.whereType<CombatDestroyAnchorsRef>(), hasLength(1));
       expect(objectives.whereType<CombatDefendEntityRef>(), hasLength(1));
-      expect(
-        objectives.whereType<CombatDefendEntityRef>().single.requiredTicks,
-        600,
-      );
+      final defend = objectives.whereType<CombatDefendEntityRef>().single;
+      expect(defend.entityId, 'escorted_cart');
+      expect(defend.positionId, 'position_fixture');
+      expect(defend.durability, 100);
+      expect(defend.damagePerHit, 5);
+      expect(defend.attackerIds, {'wolf_pack_a', 'wolf_pack_b'});
+      expect(defend.requiredTicks, 600);
       expect(objectives.whereType<CombatSurviveDurationRef>(), hasLength(1));
       expect(objectives.whereType<CombatReachCheckpointRef>(), hasLength(2));
       expect(objectives.whereType<CombatTouchMarkersRef>(), hasLength(1));

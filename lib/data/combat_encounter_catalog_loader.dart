@@ -489,6 +489,13 @@ void _validateObjectiveReferences(
         '$path.entity_id',
         'objective entity',
       );
+      _requireKnownReference(
+        objective.positionId!,
+        referenceIndex.positionIds,
+        sourceName,
+        '$path.position_id',
+        'position',
+      );
     case 'survive_duration':
       break;
     case 'reach_checkpoint':
@@ -547,7 +554,11 @@ CombatObjectivePrimitiveRef _buildObjective(ParsedCombatObjective objective) {
     case 'defend_entity':
       return CombatDefendEntityRef(
         entityId: objective.singleId!,
+        positionId: objective.positionId!,
+        durability: objective.durability!,
+        damagePerHit: objective.damagePerHit!,
         requiredTicks: objective.requiredTicks!,
+        attackerIds: objective.attackerIds,
       );
     case 'survive_duration':
       return CombatSurviveDurationRef(requiredTicks: objective.requiredTicks!);

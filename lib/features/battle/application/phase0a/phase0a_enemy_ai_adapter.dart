@@ -23,6 +23,7 @@ final class Phase0aEnemyAiAdapter {
     required this.postureBasicPowerMultiplier,
     this.uniformBasicPowerMultiplier,
     this.behaviorProfilesByActor = const {},
+    this.defendedEntityTargetIdByActor = const {},
     this.defenseTuning,
   });
 
@@ -35,6 +36,7 @@ final class Phase0aEnemyAiAdapter {
   final int postureBasicPowerMultiplier;
   final int? uniformBasicPowerMultiplier;
   final Map<String, Phase0aEnemyBehaviorProfile> behaviorProfilesByActor;
+  final Map<String, String> defendedEntityTargetIdByActor;
   final Phase0aDefenseTuning? defenseTuning;
 
   List<Phase0aIntent> intentsFor({required Phase0aArenaState state}) {
@@ -53,7 +55,16 @@ final class Phase0aEnemyAiAdapter {
           enemy.gatherControlTicksRemaining > 0) {
         continue;
       }
-      final delta = player.position - enemy.position;
+      final defendedEntity = state.defendedEntity;
+      final defendedTargetId = defendedEntityTargetIdByActor[enemy.id];
+      final targetsDefendedEntity =
+          defendedTargetId != null &&
+          defendedEntity?.id == defendedTargetId &&
+          defendedEntity!.isAlive;
+      final targetPosition = targetsDefendedEntity
+          ? defendedEntity.position
+          : player.position;
+      final delta = targetPosition - enemy.position;
       final behaviorProfile = behaviorProfilesByActor[enemy.id];
       final movement = _movementFor(
         profile: behaviorProfile,
@@ -70,7 +81,7 @@ final class Phase0aEnemyAiAdapter {
         );
         continue;
       }
-      final skill = _pickSkill(enemy);
+      final skill = targetsDefendedEntity ? null : _pickSkill(enemy);
       if (skill != null) {
         intents.add(
           Phase0aEnemySkillIntent(
@@ -112,6 +123,7 @@ final class Phase0aEnemyAiAdapter {
           postureHitKind: PostureHitKind.light,
           defenseFlags: defenseTuning?.basicAttackFlags,
           behaviorProfile: behaviorProfile,
+          preferredTargetId: targetsDefendedEntity ? defendedTargetId : null,
         ),
       );
     }
@@ -148,6 +160,10 @@ final class Phase0aEnemyAiAdapter {
         return (toward + ArenaVector(-toward.y, toward.x)).normalized();
       case Phase0aEnemyMovementPolicy.guardedPosition:
         return inRange ? null : ArenaVector.zero;
+      case Phase0aEnemyMovementPolicy.pursuitEvasion:
+        return delta.lengthSquared > 0
+            ? ArenaVector(-delta.x, -delta.y).normalized()
+            : ArenaVector.zero;
     }
   }
 

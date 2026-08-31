@@ -297,7 +297,14 @@ void main() {
       final cases = <CombatObjectivePrimitiveRef>[
         CombatDefeatTargetsRef(const ['unknown_target']),
         CombatDestroyAnchorsRef(const ['unknown_anchor']),
-        CombatDefendEntityRef(entityId: 'unknown_entity', requiredTicks: 1),
+        CombatDefendEntityRef(
+          entityId: 'unknown_entity',
+          positionId: 'position',
+          durability: 10,
+          damagePerHit: 1,
+          requiredTicks: 1,
+          attackerIds: const ['target'],
+        ),
         CombatReachCheckpointRef(const ['unknown_checkpoint']),
         CombatTouchMarkersRef(const ['unknown_marker']),
         CombatPursueTargetRef(targetId: 'unknown_target'),

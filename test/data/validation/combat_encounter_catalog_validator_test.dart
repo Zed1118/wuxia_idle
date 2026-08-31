@@ -660,7 +660,11 @@ void main() {
             '          kind: defeat_targets\n'
                 '          target_ids: [brute_a]\n',
             '          kind: defend_entity\n'
-                '          entity_id: cart\n',
+                '          entity_id: cart\n'
+                '          position_id: position_fixture\n'
+                '          durability: 100\n'
+                '          damage_per_hit: 5\n'
+                '          attacker_ids: [brute_a]\n',
           ),
         ),
         failsWithSource(
