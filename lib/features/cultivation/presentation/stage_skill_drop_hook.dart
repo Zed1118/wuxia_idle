@@ -109,3 +109,21 @@ Future<SkillDropResult> runTowerSkillDropHookAfterVictory({
     rng: rng,
   );
 }
+
+/// [runTowerSkillDropHookAfterVictory] 的 caller-owned transaction 形态。
+Future<SkillDropResult> runTowerSkillDropHookAfterVictoryInTxn({
+  required TowerFloorDef floor,
+  required SkillUnlockService svc,
+  required double towerFragmentDropProb,
+  required Random rng,
+}) {
+  return _applySkillDrop(
+    manualId: null,
+    fragmentId: floor.dropSkillFragmentId,
+    isFirstClear: false,
+    svc: svc,
+    fragmentDropProb: towerFragmentDropProb,
+    rng: rng,
+    transactionOwned: true,
+  );
+}

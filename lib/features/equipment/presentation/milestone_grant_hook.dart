@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../shared/strings.dart';
 import '../application/milestone_equipment_grant_service.dart';
 
@@ -37,6 +38,21 @@ Future<List<String>> grantMilestoneForClearedStage({
   if (tag == null) return const [];
   final svc = MilestoneEquipmentGrantService(isar: isar);
   return svc.grantForTag(tag, obtainedFrom: _obtainedFromForTag(tag));
+}
+
+/// [grantMilestoneForClearedStage] 的 caller-owned transaction 形态。
+Future<List<String>> grantMilestoneForClearedStageInTxn({
+  required Isar isar,
+  required SaveData save,
+  required String clearedStageId,
+}) async {
+  if (!GameRepository.isLoaded) return const [];
+  final tag =
+      GameRepository.instance.numbers.milestoneEquipmentGrants[clearedStageId];
+  if (tag == null) return const [];
+  return MilestoneEquipmentGrantService(
+    isar: isar,
+  ).grantForTagInTxn(save, tag, obtainedFrom: _obtainedFromForTag(tag));
 }
 
 /// post-victory hook 包装。Isar 未 ready → no-op 不阻塞胜利流。

@@ -11,6 +11,9 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
+import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
@@ -273,6 +276,102 @@ void main() {
       expect(disciple!.lightInjuryStacks, 1);
       expect(founder.experience, 0);
       expect(disciple.experience, 0, reason: '塔败北不得发放首通经验');
+    });
+  });
+
+  testWidgets('U09 塔进度、成长与 receipt 同事务回滚且重放防重', (tester) async {
+    final founderId = (await tester.runAsync(() async {
+      final id = await insertCharacter('原子结算门人');
+      await writeSave(id, id);
+      await TowerProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      return id;
+    }))!;
+    final floor = GameRepository.instance.getTowerFloor(1);
+    final settlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 10,
+      hadActions: true,
+      playerCharacterId: founderId,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: founderId,
+          currentHp: 7900,
+          maxHp: 8000,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 100,
+      criticalCount: 0,
+      damageByCharacterId: {founderId: 100},
+    );
+    late WidgetRef ref;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Consumer(
+            builder: (_, value, _) {
+              ref = value;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.runAsync(() async {
+      await expectLater(
+        applyTowerVictorySettlement(
+          ref: ref,
+          floor: floor,
+          participantId: founderId,
+          elapsedMs: 1234,
+          settlementSnapshot: settlement,
+          rewardOccurrenceId: 'tower-atomic-replay',
+          afterProgressInTxnForTest: () async => throw StateError('crash'),
+        ),
+        throwsStateError,
+      );
+      var progress = await IsarSetup.instance.towerProgress.where().findFirst();
+      var character = await IsarSetup.instance.characters.get(founderId);
+      expect(progress!.highestClearedFloor, 0);
+      expect(progress.totalAttempts, 0);
+      expect(character!.experience, 0);
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 0);
+
+      final applied = await applyTowerVictorySettlement(
+        ref: ref,
+        floor: floor,
+        participantId: founderId,
+        elapsedMs: 1234,
+        settlementSnapshot: settlement,
+        rewardOccurrenceId: 'tower-atomic-replay',
+      );
+      expect(applied.clearResult.isFirstClear, isTrue);
+      progress = await IsarSetup.instance.towerProgress.where().findFirst();
+      character = await IsarSetup.instance.characters.get(founderId);
+      expect(progress!.highestClearedFloor, 1);
+      expect(progress.totalAttempts, 1);
+      expect(character!.experience, floor.baseExpReward);
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
+
+      await expectLater(
+        applyTowerVictorySettlement(
+          ref: ref,
+          floor: floor,
+          participantId: founderId,
+          elapsedMs: 1234,
+          settlementSnapshot: settlement,
+          rewardOccurrenceId: 'tower-atomic-replay',
+        ),
+        throwsStateError,
+      );
+      progress = await IsarSetup.instance.towerProgress.where().findFirst();
+      character = await IsarSetup.instance.characters.get(founderId);
+      expect(progress!.totalAttempts, 1);
+      expect(character!.experience, floor.baseExpReward);
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
     });
   });
 }

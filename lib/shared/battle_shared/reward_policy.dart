@@ -1,10 +1,12 @@
 import 'reward_claim_key.dart';
+import 'reward_contract.dart';
+
+export 'reward_contract.dart';
 
 /// The three reward layers a content clear can produce.
 ///
 /// The layer set is fixed; which scope each layer grants into is decided by
 /// the caller-supplied [RewardPolicy], never hardcoded here.
-enum RewardLayer { firstClear, repeat, personalGrowth }
 
 /// Where a granted reward lands.
 ///
@@ -12,7 +14,6 @@ enum RewardLayer { firstClear, repeat, personalGrowth }
 /// - [sectShared]: the whole sect receives it (e.g. unique first-clear
 ///   rewards), so the claim guard for this scope must be shared across all
 ///   characters while [personal] guards stay per character.
-enum RewardScope { personal, sectShared }
 
 /// Pure declaration of which [RewardScope] each [RewardLayer] grants into.
 ///

@@ -28,7 +28,10 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/combat_shared/application/combat_content_providers.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_contract.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/combatant_snapshot_fixture.dart';
@@ -358,6 +361,120 @@ void main() {
       expect(founder!.experience, 30, reason: '真实参战祖师获得经验');
       expect(reserve!.experience, 0, reason: '未参战替补不得被结算');
       expect(silver!.quantity, 5, reason: '0A 胜利照常发放关卡掉落');
+      final receipts = await IsarSetup.instance.rewardClaimReceipts
+          .where()
+          .findAll();
+      expect(receipts, hasLength(3));
+      expect(receipts.map((receipt) => receipt.contentKind).toSet(), {
+        RewardContentKind.mainline,
+      });
+    });
+  });
+
+  testWidgets('心魔首通 receipt 按实际参战者个人作用域落库', (tester) async {
+    final participantId = (await tester.runAsync(() async {
+      final id = await insertCharacter(name: '心魔参战者');
+      await writeSaveData(activeIds: [id], founderId: id);
+      return id;
+    }))!;
+    await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: normalStage(stageType: StageType.innerDemon),
+        settlementSnapshot: finishedSettlement([participantId]),
+        expectedParticipantId: participantId,
+        rewardOccurrenceId: 'inner-demon-personal-scope',
+      ),
+    );
+
+    await tester.runAsync(() async {
+      final receipts = await IsarSetup.instance.rewardClaimReceipts
+          .where()
+          .findAll();
+      expect(receipts, hasLength(3));
+      expect(receipts.map((receipt) => receipt.contentKind).toSet(), {
+        RewardContentKind.innerDemon,
+      });
+      final firstClear = receipts.singleWhere(
+        (receipt) => receipt.layer == RewardLayer.firstClear,
+      );
+      expect(firstClear.scope, RewardScope.personal);
+      expect(firstClear.participantId, participantId);
+    });
+  });
+
+  testWidgets('U09 主线奖励事务中断时进度、掉落、成长与 receipt 整体回滚', (tester) async {
+    final participantId = (await tester.runAsync(() async {
+      final id = await insertCharacter(name: '主线原子参战者');
+      await writeSaveData(activeIds: [id], founderId: id);
+      return id;
+    }))!;
+    final stage = normalStage(
+      baseExpReward: 30,
+      dropTable: const [
+        ItemDrop(
+          inventoryItemDefId: 'item_silver',
+          quantityMin: 5,
+          quantityMax: 5,
+          dropChance: 1,
+        ),
+      ],
+    );
+
+    final error = await runWithRef<Object?>(tester, (ref) async {
+      try {
+        await applyVictoryResolution(
+          ref: ref,
+          stage: stage,
+          settlementSnapshot: finishedSettlement([participantId]),
+          rewardOccurrenceId: 'mainline-atomic-replay',
+          afterRewardWritesInTxnForTest: () async => throw StateError('crash'),
+        );
+        return null;
+      } catch (caught) {
+        return caught;
+      }
+    });
+    expect(error, isA<StateError>());
+    await tester.runAsync(() async {
+      final progress = await IsarSetup.instance.mainlineProgress
+          .where()
+          .findFirst();
+      expect(progress!.clearedStageIds, isEmpty);
+      expect(
+        (await IsarSetup.instance.characters.get(participantId))!.experience,
+        0,
+      );
+      expect(
+        await IsarSetup.instance.inventoryItems.getByDefId('item_silver'),
+        isNull,
+      );
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 0);
+    });
+
+    final outcome = await runWithRef(
+      tester,
+      (ref) => applyVictoryResolution(
+        ref: ref,
+        stage: stage,
+        settlementSnapshot: finishedSettlement([participantId]),
+        rewardOccurrenceId: 'mainline-atomic-replay',
+      ),
+    );
+    expect(outcome, isNotNull);
+    await tester.runAsync(() async {
+      expect(
+        (await IsarSetup.instance.characters.get(participantId))!.experience,
+        30,
+      );
+      expect(
+        (await IsarSetup.instance.inventoryItems.getByDefId(
+          'item_silver',
+        ))!.quantity,
+        5,
+      );
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
     });
   });
 

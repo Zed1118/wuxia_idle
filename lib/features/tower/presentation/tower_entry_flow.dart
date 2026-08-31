@@ -61,6 +61,10 @@ import '../application/tower_progress_service.dart';
 import '../application/tower_providers.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
+import '../../weapon_codex/application/equipment_catalog_service.dart';
+import '../../reward/application/durable_reward_claim_service.dart';
+import '../../reward/application/reward_claim_plan.dart';
+import '../../../shared/battle_shared/reward_claim_key.dart';
 import 'phase0a_tower_battle_host.dart';
 
 typedef TowerBattleExit = ({
@@ -73,6 +77,23 @@ typedef TowerDefeatFacts = ({
   String participantName,
   int lightInjuryStacksAdded,
   double heavyInjuryHoursAdded,
+});
+
+typedef TowerCombatResolution = ({
+  List<AdvancementEntry> advancements,
+  List<ResonanceUpgradeNotice> resonanceUpgrades,
+  CombatStatsSummary stats,
+  HeroCameraData? heroCamera,
+  String? participantName,
+  int lightInjuryStacksAdded,
+  double heavyInjuryHoursAdded,
+});
+
+typedef TowerVictorySettlement = ({
+  TowerClearResult clearResult,
+  TowerCombatResolution resolution,
+  SkillDropResult skillDrop,
+  DropResult drops,
 });
 
 /// Phase 3 T43 爬塔进入流程串联。
@@ -218,62 +239,66 @@ Future<void> runTowerFlow({
   }
 
   // ── victory ──
-  TowerClearResult clearResult;
-  try {
-    if (clearRecorderForTest != null) {
-      clearResult = await clearRecorderForTest(floor.floorIndex, elapsedMs);
-    } else {
-      // W12 fix: 同 defeat 分支，ensure getOrCreate 避免 race
-      final svc = TowerProgressService(isar: IsarSetup.instance);
-      await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
-      clearResult = await svc.recordClear(
-        floorIndex: floor.floorIndex,
-        now: DateTime.now(),
-        elapsedMs: elapsedMs,
-        maxFloor: GameRepository.instance.towerMaxFloor,
-      );
-    }
-  } catch (e, st) {
-    // 加 log 便于诊断（W12 之前是 catch (_) 静默吞，Codex 视觉验收无法追踪根因）
-    debugPrint('runTowerFlow recordClear unexpected failure: $e\n$st');
-    clearResult = (isFirstClear: false, highestAfter: 0);
-  }
-
-  // 可玩性 P1a：爬塔 Boss 残页掉落(spec §二)。每次 Boss 胜利 rng 掉(非首通限定,
-  // 重复刷集残页 grind)。纯数据写;test stub(clearRecorderForTest)路径跳过
-  // (与 recordClear 一致,不依赖未初始化 IsarSetup)。
-  // 第七阶段批二④:捕获残页掉落结果供战后仪式分层(test stub 路径留 .none)。
-  SkillDropResult skillDrop = SkillDropResult.none;
-  if (clearRecorderForTest == null &&
-      floor.dropSkillFragmentId != null &&
-      GameRepository.isLoaded) {
-    skillDrop = await runTowerSkillDropHookAfterVictory(
+  late TowerClearResult clearResult;
+  late TowerCombatResolution victoryRes;
+  var skillDrop = SkillDropResult.none;
+  var drops = const DropResult(equipments: [], items: []);
+  Set<EquipmentTier> extraDisplayTiers = const {};
+  if (clearRecorderForTest == null) {
+    final atomic = await applyTowerVictorySettlement(
+      ref: ref,
       floor: floor,
-      svc: SkillUnlockService(
-        IsarSetup.instance,
-        fragmentThreshold:
-            GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
-      ),
-      towerFragmentDropProb:
-          GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-      rng: ref.read(mathRandomProvider),
+      participantId: participantId,
+      elapsedMs: elapsedMs,
+      settlementSnapshot: battleExit.settlement,
     );
+    clearResult = atomic.clearResult;
+    victoryRes = atomic.resolution;
+    skillDrop = atomic.skillDrop;
+    drops = atomic.drops;
+    final isar = ref.read(isarProvider);
+    if (isar != null && drops.equipments.isNotEmpty) {
+      extraDisplayTiers = await computeFirstAcquisitionTiers(isar, drops);
+    }
+  } else {
+    try {
+      clearResult = await clearRecorderForTest(floor.floorIndex, elapsedMs);
+    } catch (e, st) {
+      debugPrint('runTowerFlow clearRecorderForTest failed: $e\n$st');
+      clearResult = (isFirstClear: false, highestAfter: 0);
+    }
+    victoryRes = await applyTowerCombatResolution(
+      ref: ref,
+      floor: floor,
+      grantsFirstClearExperience: clearResult.isFirstClear,
+      expectedParticipantId: participantId,
+      settlementSnapshot: battleExit.settlement,
+    );
+    if (clearResult.isFirstClear && GameRepository.isLoaded) {
+      final towerDropSvc = DropService(
+        equipmentDefLookup: GameRepository.instance.getEquipment,
+        defaultObtainedFrom: UiStrings.towerDropSource,
+      );
+      final towerRng = ref.read(rngProvider);
+      drops = towerDropSvc.rollTowerRewards(floor, towerRng);
+      final towerBonus = towerDropSvc.rollRareBonus(
+        baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
+        config: GameRepository.instance.numbers.rareBonusDrop,
+        rng: towerRng,
+        poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
+            .where((equipment) => equipment.tier == tier)
+            .toList(growable: false),
+        obtainedFrom: UiStrings.dropSourceRareBonus,
+      );
+      if (towerBonus != null) {
+        drops = DropResult(
+          equipments: [...drops.equipments, towerBonus],
+          items: drops.items,
+        );
+      }
+      await _persistDrops(ref, drops, floor: floor);
+    }
   }
-
-  // Phase 4 W11 #32 销账：爬塔 victory 战斗结算（装备 battleCount / 心法 skillUsage /
-  // 主修升层 in-place + writeTxn putAll）。drops 仍走下方 rollTowerRewards 路径，
-  // 首通才发奖控制不变（stageDef=null 让 service.resolve 不内部 roll drops）。
-  // W15 #30 P3:isFirstClear 时 EXP 写回 + 升层(沿 drops 首通发奖体例,
-  // 防刷塔无脑刷 EXP)。
-  // W15 #30 P3 后续 A:收 advancements 暂存供 victory dialog banner。
-  // P1.1 候选 3-a:同段收 resonanceUpgrades 供 dialog 显共鸣度晋阶 sub-row。
-  final victoryRes = await applyTowerCombatResolution(
-    ref: ref,
-    floor: floor,
-    grantsFirstClearExperience: clearResult.isFirstClear,
-    expectedParticipantId: participantId,
-    settlementSnapshot: battleExit.settlement,
-  );
   final advancements = victoryRes.advancements;
   final resonanceUpgrades = victoryRes.resonanceUpgrades;
   final heroCamera = victoryRes.heroCamera;
@@ -282,45 +307,6 @@ Future<void> runTowerFlow({
   // 角色面板看到 Riverpod 缓存的旧 battleCount / cultivationProgress
   // + 主菜单隐藏入口门控 / 银两(体检批3 P0-5),统一走共享 helper。
   invalidateAfterCombatSettlement(ref.invalidate);
-
-  // ── drops（isFirstClear 控发奖；重打不发奖 CLAUDE §5.1 防刷）──
-  DropResult drops = const DropResult(equipments: [], items: []);
-  Set<EquipmentTier> extraDisplayTiers = const {};
-  if (clearResult.isFirstClear && GameRepository.isLoaded) {
-    final towerDropSvc = DropService(
-      equipmentDefLookup: GameRepository.instance.getEquipment,
-      defaultObtainedFrom: UiStrings.towerDropSource,
-    );
-    // 随机源走 rngProvider(不 inline new):塔层首通掉落与稀有彩头共用此源,
-    // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红
-    // (PR #75 已在主线结算侧证过同一根因)。
-    final towerRng = ref.read(rngProvider);
-    drops = towerDropSvc.rollTowerRewards(floor, towerRng);
-    // 第八阶段 E·稀有彩头:塔层首通也额外 roll(与塔奖同 first-clear gating 守 §5.1
-    // 防刷:重打不发,故彩头也仅首通)。
-    final towerBonus = towerDropSvc.rollRareBonus(
-      baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
-      config: GameRepository.instance.numbers.rareBonusDrop,
-      rng: towerRng,
-      poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
-          .where((e) => e.tier == tier)
-          .toList(growable: false),
-      obtainedFrom: UiStrings.dropSourceRareBonus,
-    );
-    if (towerBonus != null) {
-      drops = DropResult(
-        equipments: [...drops.equipments, towerBonus],
-        items: drops.items,
-      );
-    }
-    await _persistDrops(ref, drops, floor: floor);
-    // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
-    // (须在 _persistDrops putAll 入库后调用)。
-    final isar = ref.read(isarProvider);
-    if (isar != null) {
-      extraDisplayTiers = await computeFirstAcquisitionTiers(isar, drops);
-    }
-  }
 
   // P4 战绩册:爬塔 Boss 层胜利 → 留档(纯数据写;test stub 路径跳过,同 recordClear/skillDrop)。
   // 普通层 bossKind == null,守卫确保只有 Boss 层才记。
@@ -485,6 +471,138 @@ Future<TowerBattleExit> _runPhase0aTowerBattle({
   return completer.future;
 }
 
+/// U09 九霄塔胜利的单一原子结算边界。
+///
+/// 塔进度、首通掉落、重打残页、战斗成长与 receipt 共享
+/// 同一 write transaction；任一写入失败都整体回滚。
+Future<TowerVictorySettlement> applyTowerVictorySettlement({
+  required WidgetRef ref,
+  required TowerFloorDef floor,
+  required int participantId,
+  required int elapsedMs,
+  CombatSettlementSnapshot? settlementSnapshot,
+  String? rewardOccurrenceId,
+  @visibleForTesting Future<void> Function()? afterProgressInTxnForTest,
+}) async {
+  final isar = ref.read(isarProvider);
+  if (isar == null) {
+    throw StateError('Tower reward settlement storage is unavailable');
+  }
+  final progressService = TowerProgressService(isar: isar);
+  final progress = await progressService.getOrCreate(
+    saveDataId: IsarSetup.currentSlotId,
+  );
+  final maxFloor = GameRepository.instance.towerMaxFloor;
+  final isFirstClear =
+      floor.floorIndex == progress.highestClearedFloor + 1 &&
+      floor.floorIndex >= 1 &&
+      floor.floorIndex <= maxFloor;
+  final cycle = progress.currentCycleIndex;
+  final now = DateTime.now();
+  final occurrenceId = rewardOccurrenceId?.trim().isNotEmpty == true
+      ? rewardOccurrenceId!.trim()
+      : 'tower:$cycle:${floor.floorIndex}:$participantId:'
+            '${now.microsecondsSinceEpoch}';
+
+  var drops = const DropResult(equipments: <Equipment>[], items: []);
+  if (isFirstClear && GameRepository.isLoaded) {
+    final dropService = DropService(
+      equipmentDefLookup: GameRepository.instance.getEquipment,
+      defaultObtainedFrom: UiStrings.towerDropSource,
+    );
+    final rng = ref.read(rngProvider);
+    drops = dropService.rollTowerRewards(floor, rng);
+    final bonus = dropService.rollRareBonus(
+      baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
+      config: GameRepository.instance.numbers.rareBonusDrop,
+      rng: rng,
+      poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
+          .where((equipment) => equipment.tier == tier)
+          .toList(growable: false),
+      obtainedFrom: UiStrings.dropSourceRareBonus,
+    );
+    if (bonus != null) {
+      drops = DropResult(
+        equipments: [...drops.equipments, bonus],
+        items: drops.items,
+      );
+    }
+  }
+
+  final keys = RewardClaimPlan.forSettlement(
+    contentKind: RewardContentKind.tower,
+    contentId: 'tower_floor_${floor.floorIndex}_cycle_$cycle',
+    saveDataId: IsarSetup.currentSlotId,
+    participantId: participantId,
+    occurrenceId: occurrenceId,
+    includesFirstClear: isFirstClear,
+  );
+  late TowerClearResult clearResult;
+  late TowerCombatResolution resolution;
+  var skillDrop = SkillDropResult.none;
+  final disposition = await DurableRewardClaimService(isar).claimBatch(
+    keys: keys,
+    sourceSettlementId: occurrenceId,
+    at: now,
+    applyInTxn: () async {
+      clearResult = await progressService.recordClearInTxn(
+        floorIndex: floor.floorIndex,
+        now: now,
+        elapsedMs: elapsedMs,
+        maxFloor: maxFloor,
+      );
+      if (clearResult.isFirstClear != isFirstClear) {
+        throw StateError(
+          'Tower first-clear snapshot changed during settlement',
+        );
+      }
+      await afterProgressInTxnForTest?.call();
+      resolution = await applyTowerCombatResolution(
+        ref: ref,
+        floor: floor,
+        grantsFirstClearExperience: isFirstClear,
+        expectedParticipantId: participantId,
+        settlementSnapshot: settlementSnapshot,
+        transactionOwned: true,
+      );
+      if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
+        skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
+          floor: floor,
+          svc: SkillUnlockService(
+            isar,
+            fragmentThreshold:
+                GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
+          ),
+          towerFragmentDropProb:
+              GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
+          rng: ref.read(mathRandomProvider),
+        );
+      }
+      await _persistTowerDropsInTxn(
+        isar: isar,
+        drops: drops,
+        floor: floor,
+        now: now,
+      );
+      await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
+        saveDataId: IsarSetup.currentSlotId,
+        defIds: [for (final equipment in drops.equipments) equipment.defId],
+        from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
+        now: now,
+      );
+    },
+  );
+  if (disposition != RewardClaimDisposition.applied) {
+    throw StateError('Tower reward settlement was already applied');
+  }
+  return (
+    clearResult: clearResult,
+    resolution: resolution,
+    skillDrop: skillDrop,
+    drops: drops,
+  );
+}
+
 /// 九霄塔单人战斗结算（in-place 副作用 + 写回 Isar）。
 ///
 /// 与主线 `_applyVictoryResolution` 体例对齐，但传 `stageDef: null` 让
@@ -500,23 +618,13 @@ Future<TowerBattleExit> _runPhase0aTowerBattle({
 /// W15 #30 P3 后续 A:返回升层结果 list 供 caller push `_showVictoryDialog`
 /// 时显多角色升层 banner。
 /// P1.1 候选 3-a:record 加 `resonanceUpgrades` 供 dialog 显共鸣度晋阶 sub-row。
-Future<
-  ({
-    List<AdvancementEntry> advancements,
-    List<ResonanceUpgradeNotice> resonanceUpgrades,
-    CombatStatsSummary stats,
-    HeroCameraData? heroCamera,
-    String? participantName,
-    int lightInjuryStacksAdded,
-    double heavyInjuryHoursAdded,
-  })
->
-applyTowerCombatResolution({
+Future<TowerCombatResolution> applyTowerCombatResolution({
   required WidgetRef ref,
   required TowerFloorDef floor,
   required bool grantsFirstClearExperience,
   int? expectedParticipantId,
   CombatSettlementSnapshot? settlementSnapshot,
+  @visibleForTesting bool transactionOwned = false,
 }) async {
   const empty = (
     advancements: <AdvancementEntry>[],
@@ -620,7 +728,7 @@ applyTowerCombatResolution({
   final founderId = save?.founderCharacterId;
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
   var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
-  await isar.writeTxn(() async {
+  Future<void> persistInTxn() async {
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
       if (list.isNotEmpty) await isar.techniques.putAll(list);
@@ -649,7 +757,13 @@ applyTowerCombatResolution({
             )
           : null,
     );
-  });
+  }
+
+  if (transactionOwned) {
+    await persistInTxn();
+  } else {
+    await isar.writeTxn(persistInTxn);
+  }
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
   final bossName = floor.enemyTeam.isNotEmpty
@@ -734,47 +848,14 @@ Future<void> _persistDrops(
   final isar = ref.read(isarProvider);
   if (isar == null) return;
   final now = DateTime.now();
-  final save = await isar.saveDatas.get(0);
-  final founderId = save?.founderCharacterId;
-  await isar.writeTxn(() async {
-    if (drops.equipments.isNotEmpty) {
-      await isar.equipments.putAll(drops.equipments);
-    }
-    for (final item in drops.items) {
-      final existing = await isar.inventoryItems.getByDefId(item.defId);
-      if (existing != null) {
-        existing.quantity += item.quantity;
-        existing.lastObtainedAt = now;
-        await isar.inventoryItems.put(existing);
-      } else {
-        await isar.inventoryItems.put(
-          InventoryItem()
-            ..defId = item.defId
-            ..itemType = ItemType.fromDefId(item.defId)
-            ..quantity = item.quantity
-            ..firstObtainedAt = now
-            ..lastObtainedAt = now,
-        );
-      }
-    }
-
-    // P1 #42 Phase 2:GameEvent #3 equipmentObtained(同事务原子)。
-    if (drops.equipments.isNotEmpty && floor != null) {
-      final events = GameEventService(isar);
-      final source = UiStrings.towerFloorLabel(floor.floorIndex);
-      for (final drop in drops.equipments) {
-        final def = GameRepository.instance.getEquipment(drop.defId);
-        await events.recordEquipmentObtained(
-          characterId: founderId,
-          equipmentId: drop.id,
-          equipmentDefId: drop.defId,
-          equipmentName: def.name,
-          source: source,
-          equipment: drop,
-        );
-      }
-    }
-  });
+  await isar.writeTxn(
+    () => _persistTowerDropsInTxn(
+      isar: isar,
+      drops: drops,
+      floor: floor,
+      now: now,
+    ),
+  );
 
   // 兵器谱：新掉落装备已落库(上方 writeTxn putAll(drops.equipments) 已 commit),
   // 留册图鉴(best-effort)。
@@ -783,6 +864,52 @@ Future<void> _persistDrops(
       defIds: [for (final e in drops.equipments) e.defId],
       from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
     );
+  }
+}
+
+Future<void> _persistTowerDropsInTxn({
+  required Isar isar,
+  required DropResult drops,
+  required TowerFloorDef? floor,
+  required DateTime now,
+}) async {
+  final save = await isar.saveDatas.get(0);
+  final founderId = save?.founderCharacterId;
+  if (drops.equipments.isNotEmpty) {
+    await isar.equipments.putAll(drops.equipments);
+  }
+  for (final item in drops.items) {
+    final existing = await isar.inventoryItems.getByDefId(item.defId);
+    if (existing != null) {
+      existing.quantity += item.quantity;
+      existing.lastObtainedAt = now;
+      await isar.inventoryItems.put(existing);
+    } else {
+      await isar.inventoryItems.put(
+        InventoryItem()
+          ..defId = item.defId
+          ..itemType = ItemType.fromDefId(item.defId)
+          ..quantity = item.quantity
+          ..firstObtainedAt = now
+          ..lastObtainedAt = now,
+      );
+    }
+  }
+
+  if (drops.equipments.isNotEmpty && floor != null) {
+    final events = GameEventService(isar);
+    final source = UiStrings.towerFloorLabel(floor.floorIndex);
+    for (final drop in drops.equipments) {
+      final def = GameRepository.instance.getEquipment(drop.defId);
+      await events.recordEquipmentObtained(
+        characterId: founderId,
+        equipmentId: drop.id,
+        equipmentDefId: drop.defId,
+        equipmentName: def.name,
+        source: source,
+        equipment: drop,
+      );
+    }
   }
 }
 

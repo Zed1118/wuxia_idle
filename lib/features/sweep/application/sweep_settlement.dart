@@ -16,7 +16,7 @@ import '../../mainline/application/mainline_providers.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../tower/presentation/tower_entry_flow.dart'
-    show applyTowerCombatResolution;
+    show applyTowerCombatResolution, applyTowerVictorySettlement;
 import '../../tutorial/application/tutorial_providers.dart';
 import '../domain/sweep_recap.dart';
 import 'sweep_readiness_providers.dart';
@@ -190,6 +190,21 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
       );
     }
   }
+  if (admission != null) {
+    final atomic = await applyTowerVictorySettlement(
+      ref: ref,
+      floor: floor,
+      participantId: admission.participantCharacterId,
+      elapsedMs: 0,
+      settlementSnapshot: settlementSnapshot,
+    );
+    invalidateAfterCombatSettlement(ref.invalidate);
+    return SweepBattleOutcome(
+      skillFragments: atomic.skillDrop.fragmentSkillId == null ? 0 : 1,
+    );
+  }
+
+  // 无 0A admission 的旧测试 seam：保留旧行为，生产扫荡不走此分支。
   // recordClear 幂等：重打 floor ≤ highestClearedFloor → isFirstClear=false。
   final svc = TowerProgressService(isar: IsarSetup.instance);
   await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);

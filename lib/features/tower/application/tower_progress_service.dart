@@ -146,69 +146,76 @@ class TowerProgressService {
     required int elapsedMs,
     required int maxFloor,
   }) async {
-    late TowerClearResult result;
-    await isar.writeTxn(() async {
-      final progress = await isar.towerProgress
-          .filter()
-          .saveDataIdEqualTo(IsarSetup.currentSlotId)
-          .findFirst();
-      if (progress == null) {
-        throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordClear 前调用');
+    return isar.writeTxn(
+      () => recordClearInTxn(
+        floorIndex: floorIndex,
+        now: now,
+        elapsedMs: elapsedMs,
+        maxFloor: maxFloor,
+      ),
+    );
+  }
+
+  /// [recordClear] 的 caller-owned transaction 形态。
+  ///
+  /// U09 奖励 receipt 与进度、掉落、成长必须共享一个事务；
+  /// 本方法不开嵌套事务，只允许在已有 writeTxn 内调用。
+  Future<TowerClearResult> recordClearInTxn({
+    required int floorIndex,
+    required DateTime now,
+    required int elapsedMs,
+    required int maxFloor,
+  }) async {
+    final progress = await isar.towerProgress
+        .filter()
+        .saveDataIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    if (progress == null) {
+      throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordClear 前调用');
+    }
+    progress.totalAttempts += 1;
+    final isFirstClear =
+        floorIndex == progress.highestClearedFloor + 1 &&
+        floorIndex >= 1 &&
+        floorIndex <= maxFloor;
+    if (isFirstClear) {
+      progress.highestClearedFloor = floorIndex;
+      progress.highestClearedAt = now;
+
+      final times = List<int>.from(progress.perFloorClearTimes);
+      while (times.length < floorIndex - 1) {
+        times.add(0);
       }
-      progress.totalAttempts += 1;
-      final isFirstClear =
-          floorIndex == progress.highestClearedFloor + 1 &&
-          floorIndex >= 1 &&
-          floorIndex <= maxFloor;
-      if (isFirstClear) {
-        progress.highestClearedFloor = floorIndex;
-        progress.highestClearedAt = now;
+      if (times.length == floorIndex - 1) {
+        times.add(elapsedMs);
+      } else if (times[floorIndex - 1] == 0) {
+        times[floorIndex - 1] = elapsedMs;
+      }
+      progress.perFloorClearTimes = times;
 
-        // P0.2 #40 Phase 2:首通锁耗时,重打不覆盖
-        // List<int> @embedded findFirst 反序列化为 fixed-length,
-        // 必须 List.from 转 growable 再写(memory feedback_isar_pitfalls §2)
-        final times = List<int>.from(progress.perFloorClearTimes);
-        while (times.length < floorIndex - 1) {
-          times.add(0); // 跳层占位(canChallenge 已拦,理论不可达,守 invariant)
-        }
-        if (times.length == floorIndex - 1) {
-          times.add(elapsedMs);
-        } else if (times[floorIndex - 1] == 0) {
-          times[floorIndex - 1] = elapsedMs; // 历史空位补首通
-        }
-        progress.perFloorClearTimes = times;
+      final nonZero = times.where((t) => t > 0);
+      progress.bestClearTime = nonZero.isEmpty
+          ? null
+          : nonZero.reduce((a, b) => a < b ? a : b);
 
-        // 重算 bestClearTime 派生(min over 非 0 值)
-        final nonZero = times.where((t) => t > 0);
-        progress.bestClearTime = nonZero.isEmpty
-            ? null
-            : nonZero.reduce((a, b) => a < b ? a : b);
-
-        // P1 A2 问鼎轮回：顶层首通 → 标记当前周目已完成
-        // 单调递增（max 防回退），不降级
-        if (floorIndex == maxFloor) {
-          final completed = progress.currentCycleIndex;
-          if (completed > progress.maxClearedCycle) {
-            progress.maxClearedCycle = completed;
-          }
-        }
-
-        // 断魂帖里程碑（design §6.4·批 A 重定 16/33/49）：首通一次性各一张。
-        if (ticketMilestoneFloors.contains(floorIndex)) {
-          await _grantTicketMilestone(floorIndex, now);
+      if (floorIndex == maxFloor) {
+        final completed = progress.currentCycleIndex;
+        if (completed > progress.maxClearedCycle) {
+          progress.maxClearedCycle = completed;
         }
       }
 
-      // P0.2 #40 Phase 2:任何通关(首通/重打/跳层)都更新 lastClearedAt
-      progress.lastClearedAt = now;
+      if (ticketMilestoneFloors.contains(floorIndex)) {
+        await _grantTicketMilestone(floorIndex, now);
+      }
+    }
 
-      await isar.towerProgress.put(progress);
-      result = (
-        isFirstClear: isFirstClear,
-        highestAfter: progress.highestClearedFloor,
-      );
-    });
-    return result;
+    progress.lastClearedAt = now;
+    await isar.towerProgress.put(progress);
+    return (
+      isFirstClear: isFirstClear,
+      highestAfter: progress.highestClearedFloor,
+    );
   }
 
   /// 旧档里程碑补发（design §6.4/§12.1「断魂帖旧塔里程碑补发只执行一次」）。

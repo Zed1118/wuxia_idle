@@ -35,6 +35,10 @@ import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 import '../features/expedition/domain/expedition_run.dart';
 import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../features/activity/domain/durable_activity_combat_run.dart';
+import '../features/reward/domain/reward_claim_receipt.dart';
+import '../features/reward/domain/reward_scope_policy.dart';
+import '../shared/battle_shared/reward_claim_key.dart';
+import '../shared/battle_shared/reward_contract.dart';
 
 /// 存档由更高版本程序写入，当前程序不得迁移或打开继续游玩。
 class UnsupportedSaveVersionException implements Exception {
@@ -131,6 +135,7 @@ class IsarSetup {
     ExpeditionRunSchema,
     BossGauntletRunSchema,
     DurableActivityCombatRunSchema,
+    RewardClaimReceiptSchema,
   ];
 
   @visibleForTesting
@@ -208,7 +213,9 @@ class IsarSetup {
   // 无 active journal，属于可加性迁移，不伪造 run/session/settlement identity。
   // 0.41.0 轻功/守城 durable automation：新增 DurableActivityCombatRun
   // collection。旧档天然无 active 差遣，不从历史通关反推会话或结算回执。
-  static const _currentSaveVersion = '0.41.0';
+  // 0.42.0 七内容 durable reward claim：新增 RewardClaimReceipt collection；
+  // 旧档只从已有通关/领取事实建防重墓碑，绝不补发或伪造奖励。
+  static const _currentSaveVersion = '0.42.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -527,9 +534,155 @@ class IsarSetup {
         // 无显式迁移动作(纯可加)。
       }
 
+      // --- 段 12(0.42.0 七内容 durable reward claim)---
+      // 迁移墓碑在专用 helper 中按现有通关/领取事实建立；只写 receipt，不写
+      // 奖励 payload，不触碰奖励金额、概率、经济或玩家成长。
+      if (_compareVersion(fromVersion, '0.42.0') < 0) {
+        await _backfillRewardClaimTombstonesInTxn(
+          isar: isar,
+          save: save,
+          mainlineRows: mainlineRows,
+          towerRows: towerRows,
+        );
+      }
+
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });
+  }
+
+  static Future<void> _backfillRewardClaimTombstonesInTxn({
+    required Isar isar,
+    required SaveData save,
+    required List<MainlineProgress> mainlineRows,
+    required List<TowerProgress> towerRows,
+  }) async {
+    final saveDataId = save.slotId;
+    if (saveDataId < 1 || saveDataId > 3) {
+      throw StateError('Reward claim migration requires save slot 1, 2 or 3');
+    }
+    final createdAt = save.lastSavedAt;
+
+    if (GameRepository.isLoaded) {
+      for (final progress in mainlineRows) {
+        if (progress.saveDataId != saveDataId) continue;
+        for (final stageId in progress.clearedStageIds) {
+          final stage = GameRepository.instance.stageDefs[stageId];
+          if (stage == null) continue;
+          final RewardContentKind? contentKind = switch (stage.stageType) {
+            StageType.mainline => RewardContentKind.mainline,
+            StageType.lightFoot => RewardContentKind.lightFoot,
+            StageType.massBattle => RewardContentKind.massBattle,
+            // 心魔首通属于个人 scope；旧进度没有保存实际领取者，禁止猜人。
+            StageType.innerDemon => null,
+            StageType.tower || StageType.pvp => null,
+          };
+          if (contentKind == null) continue;
+          await _putRewardClaimTombstoneInTxn(
+            isar: isar,
+            key: RewardClaimKey.contentLayer(
+              contentKind: contentKind,
+              contentId: stageId,
+              layer: RewardLayer.firstClear,
+              scope: RewardScopePolicy.scopeFor(
+                contentKind: contentKind,
+                layer: RewardLayer.firstClear,
+              ),
+              saveDataId: saveDataId,
+              participantId: null,
+              occurrenceId: 'ignored',
+            ),
+            sourceSettlementId: 'migration:0.42.0:cleared-stage:$stageId',
+            createdAt: createdAt,
+          );
+        }
+      }
+
+      final maxFloor = GameRepository.instance.towerMaxFloor;
+      for (final progress in towerRows) {
+        if (progress.saveDataId != saveDataId) continue;
+        for (var cycle = 1; cycle <= progress.maxClearedCycle; cycle++) {
+          for (var floor = 1; floor <= maxFloor; floor++) {
+            await _putTowerRewardClaimTombstoneInTxn(
+              isar: isar,
+              saveDataId: saveDataId,
+              floor: floor,
+              cycle: cycle,
+              createdAt: createdAt,
+            );
+          }
+        }
+        for (var floor = 1; floor <= progress.highestClearedFloor; floor++) {
+          await _putTowerRewardClaimTombstoneInTxn(
+            isar: isar,
+            saveDataId: saveDataId,
+            floor: floor,
+            cycle: progress.currentCycleIndex,
+            createdAt: createdAt,
+          );
+        }
+      }
+    }
+
+    for (final gauntletId in save.clearedGauntletIds) {
+      await _putRewardClaimTombstoneInTxn(
+        isar: isar,
+        key: RewardClaimKey.contentLayer(
+          contentKind: RewardContentKind.gauntlet,
+          contentId: gauntletId,
+          layer: RewardLayer.firstClear,
+          scope: RewardScope.sectShared,
+          saveDataId: saveDataId,
+          participantId: null,
+          occurrenceId: 'ignored',
+        ),
+        sourceSettlementId: 'migration:0.42.0:cleared-gauntlet:$gauntletId',
+        createdAt: createdAt,
+      );
+    }
+  }
+
+  static Future<void> _putTowerRewardClaimTombstoneInTxn({
+    required Isar isar,
+    required int saveDataId,
+    required int floor,
+    required int cycle,
+    required DateTime createdAt,
+  }) {
+    final contentId = 'tower_floor_${floor}_cycle_$cycle';
+    return _putRewardClaimTombstoneInTxn(
+      isar: isar,
+      key: RewardClaimKey.contentLayer(
+        contentKind: RewardContentKind.tower,
+        contentId: contentId,
+        layer: RewardLayer.firstClear,
+        scope: RewardScope.sectShared,
+        saveDataId: saveDataId,
+        participantId: null,
+        occurrenceId: 'ignored',
+      ),
+      sourceSettlementId: 'migration:0.42.0:cleared-tower:$contentId',
+      createdAt: createdAt,
+    );
+  }
+
+  static Future<void> _putRewardClaimTombstoneInTxn({
+    required Isar isar,
+    required RewardClaimKey key,
+    required String sourceSettlementId,
+    required DateTime createdAt,
+  }) async {
+    if (await isar.rewardClaimReceipts.getByClaimKey(key.canonical) != null) {
+      return;
+    }
+    await isar.rewardClaimReceipts.put(
+      RewardClaimReceipt.fromKey(
+        key: key,
+        sourceSettlementId: sourceSettlementId,
+        createdAt: createdAt,
+        isHistoricalTombstone: true,
+      ),
+    );
   }
 
   /// 语义化版本比较(major.minor.patch)。a<b 返 -1,a==b 返 0,a>b 返 1。

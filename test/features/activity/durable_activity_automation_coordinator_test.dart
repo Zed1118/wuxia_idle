@@ -20,6 +20,8 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart'
     show DurableActivityCombatSettlementDependencies;
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
 import 'package:wuxia_idle/shared/utils/math_random.dart';
 import 'package:wuxia_idle/shared/utils/rng_provider.dart';
 
@@ -117,6 +119,13 @@ void main() {
       (await service.runById(runId))!.phase,
       DurableActivityPhase.settlementApplied,
     );
+    final receipts = await IsarSetup.instance.rewardClaimReceipts
+        .where()
+        .findAll();
+    expect(receipts, hasLength(2));
+    expect(receipts.map((receipt) => receipt.contentKind).toSet(), {
+      RewardContentKind.lightFoot,
+    });
   });
 
   test('真实守城 durable run 消费持久阵型并经共享结算原子落 receipt', () async {
@@ -166,5 +175,12 @@ void main() {
     expect(result.run.formation, Formation.baGua);
     expect(result.run.settlementAppliedAt, isNotNull);
     expect(result.run.members.single.characterId, leader.id);
+    final receipts = await IsarSetup.instance.rewardClaimReceipts
+        .where()
+        .findAll();
+    expect(receipts, hasLength(2));
+    expect(receipts.map((receipt) => receipt.contentKind).toSet(), {
+      RewardContentKind.massBattle,
+    });
   });
 }

@@ -17,6 +17,7 @@ import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart'
 import 'package:wuxia_idle/features/cultivation/application/character_advancement_service.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../../support/isar_test_support.dart';
@@ -153,6 +154,44 @@ void main() {
     expect(await qtyOf('item_liaoshangdan'), 1);
     // ⑤ 关会话。
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
+  });
+
+  test('U09 选奖事务中断时奖励、会话与 receipt 整体回滚', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    await putAwaitingRun(candidates: config.rewardCandidateEquipmentIds);
+    final insightBefore = (await IsarSetup.instance.characters.get(
+      1,
+    ))!.insightPoints;
+
+    await expectLater(
+      svc().chooseReward(
+        chosenEquipmentDefId: chosen,
+        config: config,
+        numbers: GameRepository.instance.numbers,
+        rng: DefaultRng(seed: 7),
+        afterRewardInTxnForTest: () async => throw StateError('crash'),
+      ),
+      throwsStateError,
+    );
+    expect(await ownedCount(chosen), 0);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 1);
+    expect(
+      (await IsarSetup.instance.characters.get(1))!.insightPoints,
+      insightBefore,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 0);
+
+    await svc().chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+    );
+    expect(await ownedCount(chosen), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
   });
 
   test('幂等：结算后重入（无 run）→ no-op 不重复发装备', () async {

@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -123,6 +124,7 @@ void main() {
     );
     expect(item, isNotNull);
     expect(item!.quantity, 3);
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 2);
 
     // 占用释放：可再次派遣。
     final runId2 = await svc.dispatch(
@@ -131,6 +133,42 @@ void main() {
       now: departedAt,
     );
     expect(runId2, isNot(runId));
+  });
+
+  test('U09 返程事务中断时奖励、run 与 receipt 整体回滚', () async {
+    final runId = await dispatchSeeded();
+    await stageRun(
+      runId,
+      currentNode: 4,
+      rewards: [rw('exp', 120), rw('item_yaocao', 3)],
+    );
+    final before = (await IsarSetup.instance.characters.get(1))!.experience;
+    final svc = ExpeditionService(IsarSetup.instance);
+
+    await expectLater(
+      svc.recall(
+        afterRewardsInTxnForTest: () async => throw StateError('crash'),
+      ),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.expeditionRuns.get(runId), isNotNull);
+    expect((await IsarSetup.instance.characters.get(1))!.experience, before);
+    expect(
+      await IsarSetup.instance.inventoryItems.getByDefId('item_yaocao'),
+      isNull,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 0);
+
+    final result = await svc.recall();
+    expect(result.returned, isTrue);
+    expect(await IsarSetup.instance.expeditionRuns.get(runId), isNull);
+    expect(
+      (await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_yaocao',
+      ))!.quantity,
+      3,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 2);
   });
 
   test('战败返程：倒下者重伤、仍发已完成奖励、删 run', () async {

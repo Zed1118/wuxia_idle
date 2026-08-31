@@ -1,7 +1,129 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_policy.dart';
 
 void main() {
+  group('durable content-layer identity', () {
+    test(
+      'sect first-clear stays identical across participants and sessions',
+      () {
+        final first = RewardClaimKey.contentLayer(
+          contentKind: RewardContentKind.mainline,
+          contentId: 'stage_01_05',
+          layer: RewardLayer.firstClear,
+          scope: RewardScope.sectShared,
+          saveDataId: 1,
+          participantId: 11,
+          occurrenceId: 'run-a',
+        );
+        final replay = RewardClaimKey.contentLayer(
+          contentKind: RewardContentKind.mainline,
+          contentId: 'stage_01_05',
+          layer: RewardLayer.firstClear,
+          scope: RewardScope.sectShared,
+          saveDataId: 1,
+          participantId: 22,
+          occurrenceId: 'run-b',
+        );
+
+        expect(first, replay);
+        expect(first.canonical, replay.canonical);
+        expect(RewardClaimKey.parse(first.canonical), first);
+      },
+    );
+
+    test('personal claims stay isolated by participant', () {
+      RewardClaimKey key(int participantId) => RewardClaimKey.contentLayer(
+        contentKind: RewardContentKind.innerDemon,
+        contentId: 'inner_demon_wusheng',
+        layer: RewardLayer.firstClear,
+        scope: RewardScope.personal,
+        saveDataId: 1,
+        participantId: participantId,
+        occurrenceId: 'run-a',
+      );
+
+      expect(key(11), isNot(key(22)));
+    });
+
+    test(
+      'repeat and personal-growth require and retain occurrence identity',
+      () {
+        RewardClaimKey key(RewardLayer layer, String occurrenceId) =>
+            RewardClaimKey.contentLayer(
+              contentKind: RewardContentKind.tower,
+              contentId: 'tower_floor_7',
+              layer: layer,
+              scope: RewardScope.personal,
+              saveDataId: 1,
+              participantId: 11,
+              occurrenceId: occurrenceId,
+            );
+
+        expect(
+          key(RewardLayer.repeat, 'battle-a'),
+          isNot(key(RewardLayer.repeat, 'battle-b')),
+        );
+        expect(
+          key(RewardLayer.repeat, 'battle-a'),
+          isNot(key(RewardLayer.personalGrowth, 'battle-a')),
+        );
+        expect(
+          () => RewardClaimKey.contentLayer(
+            contentKind: RewardContentKind.tower,
+            contentId: 'tower_floor_7',
+            layer: RewardLayer.repeat,
+            scope: RewardScope.personal,
+            saveDataId: 1,
+            participantId: 11,
+            occurrenceId: '',
+          ),
+          throwsArgumentError,
+        );
+      },
+    );
+
+    test('legacy v1 canonicals remain parseable after v2 is added', () {
+      const legacy = 'v1|runChoice|run-7|choice-b';
+      expect(RewardClaimKey.parse(legacy).canonical, legacy);
+    });
+
+    test(
+      'durable occurrence may contain legacy separators and round-trips',
+      () {
+        final key = RewardClaimKey.contentLayer(
+          contentKind: RewardContentKind.mainline,
+          contentId: 'stage_01_05',
+          layer: RewardLayer.repeat,
+          scope: RewardScope.personal,
+          saveDataId: 1,
+          participantId: 9,
+          occurrenceId: 'v1|run|stage_01_05|5|9',
+        );
+
+        expect(key.canonical, contains('|b64:'));
+        expect(RewardClaimKey.parse(key.canonical), key);
+        expect(key.occurrenceId, 'v1|run|stage_01_05|5|9');
+      },
+    );
+
+    test('malformed durable canonicals fail with FormatException', () {
+      for (final canonical in [
+        'v2|contentLayer|mainline|stage|repeat|personal|0|9|b64:cnVu',
+        'v2|contentLayer|mainline|stage|repeat|personal|1|sect|b64:cnVu',
+        'v2|contentLayer|mainline|stage|repeat|personal|1|9|b64:',
+        'v2|contentLayer|mainline|stage|repeat|personal|1|9|b64:***',
+        'v2|contentLayer|mainline|stage|firstClear|sectShared|1|sect|b64:cnVu',
+      ]) {
+        expect(
+          () => RewardClaimKey.parse(canonical),
+          throwsFormatException,
+          reason: canonical,
+        );
+      }
+    });
+  });
+
   group('canonical stability', () {
     test('same inputs always produce equal keys and identical canonicals', () {
       final a = RewardClaimKey.battleSessionGrant(
@@ -159,7 +281,7 @@ void main() {
 
     test('parse rejects foreign versions instead of accepting them', () {
       expect(
-        () => RewardClaimKey.parse('v2|runChoice|run-1|choice-1'),
+        () => RewardClaimKey.parse('v3|runChoice|run-1|choice-1'),
         throwsA(
           isA<FormatException>().having(
             (e) => e.message,

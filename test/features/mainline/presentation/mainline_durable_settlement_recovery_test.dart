@@ -24,6 +24,7 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart';
 import 'package:wuxia_idle/features/mainline/presentation/stage_victory_dialog.dart';
 import 'package:wuxia_idle/features/weapon_codex/domain/equipment_catalog_entry.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -186,6 +187,7 @@ void main() {
       final manualUnlocked = await SkillUnlockService(
         isar,
       ).isUnlocked('skill_xie_yu_chuan_lian');
+      final receiptCount = await isar.rewardClaimReceipts.where().count();
       return (
         identity: identity,
         service: journalService,
@@ -198,6 +200,7 @@ void main() {
         participant: participant,
         reputation: reputation,
         manualUnlocked: manualUnlocked,
+        receiptCount: receiptCount,
       );
     }))!;
 
@@ -214,6 +217,7 @@ void main() {
     expect(evidence.progress!.clearedStageIds, contains('stage_01_05'));
     expect(evidence.participant!.experience, 7);
     expect(evidence.manualUnlocked, isTrue);
+    expect(evidence.receiptCount, 3);
     expect(evidence.catalog!.obtainedCount, 1);
     expect(evidence.boss!.defeatCount, 1);
     expect(evidence.reputation!.value, lessThan(0));
@@ -230,6 +234,7 @@ void main() {
       expect(restored!.identity, evidence.identity);
       expect(restored.phase, MainlineSettlementPhase.coreApplied);
       expect(restored.loadoutSnapshotIds, hasLength(5));
+      expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
       final affairs = MainlinePendingJianghuAffairService(service);
       while (true) {
         final pending = await affairs.firstPending(identity: evidence.identity);

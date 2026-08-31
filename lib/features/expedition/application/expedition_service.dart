@@ -26,6 +26,9 @@ import '../../equipment/application/drop_service.dart';
 import '../../injury/application/injury_service.dart';
 import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../reward/application/durable_reward_claim_service.dart';
+import '../../reward/application/reward_claim_plan.dart';
+import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_seed.dart';
@@ -668,6 +671,7 @@ class ExpeditionService {
     bool defeated = false,
     DateTime? now,
     @visibleForTesting Future<void> Function()? beforeCommitForTest,
+    @visibleForTesting Future<void> Function()? afterRewardsInTxnForTest,
   }) async {
     final run = await _activeRun();
     if (run == null) {
@@ -706,6 +710,23 @@ class ExpeditionService {
 
     final numbers = GameRepository.instance.numbers;
     final stagedExp = granted.quantityOf('exp');
+    final claimKeys = <RewardClaimKey>[];
+    final seenClaimKeys = <String>{};
+    for (final memberId in memberIds) {
+      for (final key in RewardClaimPlan.forSettlement(
+        contentKind: RewardContentKind.expedition,
+        contentId: contentId,
+        saveDataId: IsarSetup.currentSlotId,
+        participantId: memberId,
+        occurrenceId: run.id.toString(),
+        includesFirstClear: false,
+      )) {
+        if (seenClaimKeys.add(key.canonical)) claimKeys.add(key);
+      }
+    }
+    if (claimKeys.isEmpty) {
+      throw StateError('百草岭返程会话无可结算成员');
+    }
 
     // 测试钩子：模拟事务提交前的并发召回/推进（生产恒 null）。
     await beforeCommitForTest?.call();
@@ -720,90 +741,109 @@ class ExpeditionService {
         raced = true;
         return;
       }
-      // 1. 全员发经验（含途中倒下者）+ 战败伤势。
-      // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
-      // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是
-      // SaveData 单例 id=0，仅作 run 归属与种子用，二者不可混查
-      // （07-21 审查 P1-5.5：误用 run.saveDataId 导致生产永远查空、
-      // 层锁门禁按未通关误判）。
-      final progress = await _isar.mainlineProgress
-          .filter()
-          .saveDataIdEqualTo(IsarSetup.currentSlotId)
-          .findFirst();
-      final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-      for (final id in memberIds) {
-        final ch = await _isar.characters.get(id);
-        if (ch == null) {
-          if (participantCharacterId != null) {
-            throw StateError('Expedition return participant is missing: $id');
-          }
-          continue;
-        }
-        if (id == participantCharacterId) participantName = ch.name;
-        if (stagedExp > 0) {
-          CharacterAdvancementService.applyExperience(
-            ch,
-            stagedExp,
-            realmLookup: GameRepository.instance.getRealm,
-            isLayerLocked: (tier, layer) =>
-                ProgressionGateService.isLayerLocked(
-                  nextTier: tier,
-                  nextLayer: layer,
-                  releaseCap: numbers.progressionReleaseCap,
-                  realmLookup: GameRepository.instance.getRealm,
-                  innerDemonDef: numbers.innerDemon,
-                  clearedStageIds: clearedSet,
-                ),
-          );
-        }
-        if (isDefeated) {
-          // §4.6：倒下者重伤、其余轻伤；召回不进此分支（不附伤）。
-          if (downedIds.contains(id)) {
-            final hours = AttributeEffectPolicy(numbers.attributeEffects)
-                .heavyInjuryHours(
-                  baseHours: numbers.injury.heavyRecoveryHours,
-                  constitution: ch.attributes.constitution,
+      final disposition = await DurableRewardClaimService(_isar)
+          .claimBatchInTxn(
+            keys: claimKeys,
+            sourceSettlementId: 'expedition-run:${run.id}',
+            at: at,
+            applyInTxn: () async {
+              // 1. 全员发经验（含途中倒下者）+ 战败伤势。
+              // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
+              // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是
+              // SaveData 单例 id=0，仅作 run 归属与种子用，二者不可混查
+              // （07-21 审查 P1-5.5：误用 run.saveDataId 导致生产永远查空、
+              // 层锁门禁按未通关误判）。
+              final progress = await _isar.mainlineProgress
+                  .filter()
+                  .saveDataIdEqualTo(IsarSetup.currentSlotId)
+                  .findFirst();
+              final clearedSet =
+                  progress?.clearedStageIds.toSet() ?? <String>{};
+              for (final id in memberIds) {
+                final ch = await _isar.characters.get(id);
+                if (ch == null) {
+                  if (participantCharacterId != null) {
+                    throw StateError(
+                      'Expedition return participant is missing: $id',
+                    );
+                  }
+                  continue;
+                }
+                if (id == participantCharacterId) participantName = ch.name;
+                if (stagedExp > 0) {
+                  CharacterAdvancementService.applyExperience(
+                    ch,
+                    stagedExp,
+                    realmLookup: GameRepository.instance.getRealm,
+                    isLayerLocked: (tier, layer) =>
+                        ProgressionGateService.isLayerLocked(
+                          nextTier: tier,
+                          nextLayer: layer,
+                          releaseCap: numbers.progressionReleaseCap,
+                          realmLookup: GameRepository.instance.getRealm,
+                          innerDemonDef: numbers.innerDemon,
+                          clearedStageIds: clearedSet,
+                        ),
+                  );
+                }
+                if (isDefeated) {
+                  // §4.6：倒下者重伤、其余轻伤；召回不进此分支（不附伤）。
+                  if (downedIds.contains(id)) {
+                    final hours =
+                        AttributeEffectPolicy(
+                          numbers.attributeEffects,
+                        ).heavyInjuryHours(
+                          baseHours: numbers.injury.heavyRecoveryHours,
+                          constitution: ch.attributes.constitution,
+                        );
+                    InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
+                  } else {
+                    InjuryService.accumulateLightInjury(
+                      ch,
+                      maxStacks: numbers.injury.lightMaxStacks,
+                    );
+                  }
+                }
+                await _isar.characters.put(ch);
+              }
+
+              // 2. 发暂存物品到背包（exp 已发，跳过）。
+              for (final r in granted) {
+                if (r.rewardKey == 'exp' || r.quantity <= 0) continue;
+                final existing = await _isar.inventoryItems.getByDefId(
+                  r.rewardKey,
                 );
-            InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
-          } else {
-            InjuryService.accumulateLightInjury(
-              ch,
-              maxStacks: numbers.injury.lightMaxStacks,
-            );
-          }
-        }
-        await _isar.characters.put(ch);
-      }
+                if (existing != null) {
+                  existing.quantity += r.quantity;
+                  existing.lastObtainedAt = at;
+                  await _isar.inventoryItems.put(existing);
+                } else {
+                  await _isar.inventoryItems.put(
+                    InventoryItem()
+                      ..defId = r.rewardKey
+                      ..itemType = ItemType.fromDefId(r.rewardKey)
+                      ..quantity = r.quantity
+                      ..firstObtainedAt = at
+                      ..lastObtainedAt = at,
+                  );
+                }
+              }
 
-      // 2. 发暂存物品到背包（exp 已发，跳过）。
-      for (final r in granted) {
-        if (r.rewardKey == 'exp' || r.quantity <= 0) continue;
-        final existing = await _isar.inventoryItems.getByDefId(r.rewardKey);
-        if (existing != null) {
-          existing.quantity += r.quantity;
-          existing.lastObtainedAt = at;
-          await _isar.inventoryItems.put(existing);
-        } else {
-          await _isar.inventoryItems.put(
-            InventoryItem()
-              ..defId = r.rewardKey
-              ..itemType = ItemType.fromDefId(r.rewardKey)
-              ..quantity = r.quantity
-              ..firstObtainedAt = at
-              ..lastObtainedAt = at,
+              // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
+              await _isar.expeditionRuns.delete(run.id);
+
+              // 4. 永久进度：百草岭历史最深节点（展示用 §3.3，07-21 审查 P1-5.7；
+              // max 单调不回退）。
+              final save = await _isar.saveDatas.get(0);
+              if (save != null && deepest > save.baicaoMaxDepth) {
+                save.baicaoMaxDepth = deepest;
+                await _isar.saveDatas.put(save);
+              }
+              await afterRewardsInTxnForTest?.call();
+            },
           );
-        }
-      }
-
-      // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
-      await _isar.expeditionRuns.delete(run.id);
-
-      // 4. 永久进度：百草岭历史最深节点（展示用 §3.3，07-21 审查 P1-5.7；
-      // max 单调不回退）。
-      final save = await _isar.saveDatas.get(0);
-      if (save != null && deepest > save.baicaoMaxDepth) {
-        save.baicaoMaxDepth = deepest;
-        await _isar.saveDatas.put(save);
+      if (disposition != RewardClaimDisposition.applied) {
+        throw StateError('百草岭返程奖励已结算');
       }
     });
 
