@@ -5760,13 +5760,13 @@ tasks:
     completion_scope: requalify_the_six_mode_by_seven_contract_M5_denominator_against_real_production_owners
     acceptance_baseline: 0_of_1_authoritative_M5_engineering_gate
     acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
-    acceptance_result: 36_of_42_cells_and_0_of_1_authoritative_M5_engineering_gate
+    acceptance_result: 37_of_42_cells_and_0_of_1_authoritative_M5_engineering_gate
     evidence:
       modes: 6
       contracts_per_mode: 7
       denominator_cells: 42
-      production_proven_cells: 36
-      blocked_cells: 6
+      production_proven_cells: 37
+      blocked_cells: 5
       focused_production_tests: 565
       focused_production_failures: 0
       full_suite_tests: 5828
@@ -5780,7 +5780,6 @@ tasks:
     blockers:
       - tower_personal_floor_record
       - tower_durable_assignment_or_dispatch
-      - inner_demon_personal_progress_scope
       - gauntlet_durable_dispatch
       - expedition_manual_first_milestone_takeover
       - expedition_route_and_milestone_automation_unlock_record
@@ -5856,6 +5855,57 @@ tasks:
       - light_foot_rejects_formation_and_mass_battle_headless_requires_selected_formation
       - existing_phase0a_host_runner_shared_settlement_and_durable_receipt_remain_the_only_owners
       - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
+      - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+
+  - id: P2-M5-INNER-DEMON-PERSONAL-PROGRESS
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-inner-demon-personal-progress-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-inner-demon-personal-progress-20260901
+    status: wip
+    current_authoritative_wip: true
+    base_commit: ef2a8fe20a70f4aca90a272186cf7c936e364008
+    code_candidate_commit: 959c2a10986243fc70cad51b2a9376b2ef2e9b5c
+    reviewed_candidate_commit: null
+    ready_marker: "[READY][CODEX][P2-M5-INNER-DEMON-PERSONAL-PROGRESS] 修正心魔个人进度归属"
+    completion_scope: consume_existing_personal_reward_receipts_for_exact_character_inner_demon_progress
+    acceptance_baseline: 36_of_42_M5_engineering_cells
+    acceptance_target: 37_of_42_M5_engineering_cells
+    acceptance_result: pending_final_gate
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+      - P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
+      - P2-M5-INNER-DEMON-MANUAL-ONLY-ADMISSION
+    evidence:
+      focused_production_tests: 57
+      focused_production_failures: 0
+      mutation_remove_participant_filter_failures: 1
+      exact_reverse_patch_restore: true
+      analyze_issues: 0
+      schema_changed: false
+      save_version_changed: false
+      full_suite_tests: pending
+      final_gate: pending
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    owned_files:
+      - lib/features/inner_demon/application/inner_demon_providers.dart
+      - lib/features/inner_demon/presentation/inner_demon_screen.dart
+      - lib/features/character_panel/presentation/character_panel_screen.dart
+      - test/features/inner_demon/inner_demon_providers_test.dart
+      - test/features/inner_demon/presentation/inner_demon_screen_test.dart
+      - test/features/character_panel/presentation/character_panel_screen_test.dart
+      - test/features/mainline/presentation/apply_victory_resolution_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m5-inner-demon-personal-progress.md
+      - docs/audit/phase2_m5_inner_demon_personal_progress_2026-09-01.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+    protected_behavior:
+      - personal progress is derived only from exact participant durable reward receipts written by the existing production settlement
+      - save scoped mainline progress remains the global content chain and never becomes a personal completion fact
+      - legacy global inner demon clears never fabricate a participant receipt or personal completion
+      - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule or main_checkout_write
       - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
 
   - id: P2-CANDIDATE-STABILIZATION
