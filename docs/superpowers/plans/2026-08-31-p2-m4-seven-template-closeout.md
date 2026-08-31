@@ -39,4 +39,6 @@
 - 守阵验证：首轮缺少完整 schema/runtime 类型时编译 RED；修复后合同/生产数据/reducer/host/headless/UI 合计 118 项定向测试通过，`flutter analyze lib test` 为 `No issues found`。还定位并修复 objective snapshot 丢弃守阵实体导致时长不累计的真实接线缺口。
 - 守阵破坏证红：移除 reducer 守阵受击实现后 2 项失败；把生产 `damage_per_hit` 强制退化为 0 后 catalog fail-closed，1 项失败；均以精确反向补丁还原并复绿。
 - 边界：未修改 Isar、持久化存档 schema、schemaVersion/saveVersion、玩家数值、技能或奖励；守阵只扩展非持久化 catalog/runtime 合同并补充最小 `strings.dart` UI 文案。
-- 待收口：测试契约迁移登记、整仓 format、macOS Debug build、持锁全量、receipt 与最终 Gate。
+- 相邻回归发现并修复一条遗漏旧契约：`m4_remaining_ecologies_production_test.dart` 曾把 `stage_02_01` 固定为 25 个击杀事件；现保留 25 敌/四角色生态断言，同时逐 tick 验证守阵 1–599 未完成、600 完成。修复后 `test/data` 全部 740 项通过。
+- 最终工程验证：`flutter analyze --no-pub lib test` 为 `No issues found! (ran in 2.9s)`；整仓 format 为 `Formatted 1663 files (0 changed) in 2.82 seconds.`；macOS Debug build 成功；持锁全量为 `05:15 +5762: All tests passed!`，`[E]=0`。
+- Gate 边界：用户本轮明确授权并要求补充 `lib/shared/strings.dart` 守阵文案，但通用 Gate 将该路径静态列为 forbidden；不得修改 Gate 或隐去结果。最终 Gate 需把该项、测试契约迁移例外与其余实测项分别报告。
