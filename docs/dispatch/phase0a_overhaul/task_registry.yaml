@@ -1532,7 +1532,6 @@ tasks:
       - CLAUDE.md
       - GDD.md
       - README.md
-      - lib/shared/strings.dart
       - test/tools/stress_test.dart
       - test/tools/idle_economy_test.dart
       - test/balance/full_build_damage_redline_test.dart

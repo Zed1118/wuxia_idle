@@ -74,19 +74,19 @@ void main() {
 
       await tester.tap(find.text('open-test-seal'));
       await tester.pumpAndSettle();
-      expect(find.text(UiStrings.progressiveUnlockSealTitle), findsOneWidget);
+      expect(find.text(UiStrings.jianghuMapKnownLocations), findsOneWidget);
       expect(find.text(UiStrings.mainMenuLightFoot), findsOneWidget);
       expect(find.text(UiStrings.mainMenuMassBattle), findsOneWidget);
       expect(port.acknowledged, isEmpty, reason: '弹窗出现不等于玩家已确认');
 
-      await tester.tap(find.text(UiStrings.progressiveUnlockSealConfirm));
+      await tester.tap(find.text(UiStrings.itemUseDismiss));
       await tester.pumpAndSettle();
       expect(port.acknowledged, [
         ProgressiveUnlockId.lightFoot,
         ProgressiveUnlockId.massBattle,
       ]);
       expect(port.acknowledgedAt, observedAt);
-      expect(find.text(UiStrings.progressiveUnlockSealTitle), findsNothing);
+      expect(find.text(UiStrings.jianghuMapKnownLocations), findsNothing);
     },
   );
 
@@ -120,7 +120,7 @@ void main() {
 
     await tester.tap(find.text('observe-empty-seal'));
     await tester.pumpAndSettle();
-    expect(find.text(UiStrings.progressiveUnlockSealTitle), findsNothing);
+    expect(find.text(UiStrings.jianghuMapKnownLocations), findsNothing);
     expect(port.acknowledged, isEmpty);
   });
 }

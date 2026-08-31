@@ -48,23 +48,23 @@ Future<void> maybeShowProgressiveUnlockSeal({
     context: context,
     barrierDismissible: false,
     builder: (dialogContext) => PaperDialog(
-      title: UiStrings.progressiveUnlockSealTitle,
+      title: UiStrings.jianghuMapKnownLocations,
       body: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(UiStrings.progressiveUnlockSealBody),
+          const Text(UiStrings.mainMenuJianghuChronicleHint),
           const SizedBox(height: 10),
           for (final entry in pending)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
-              child: Text(UiStrings.progressiveUnlockName(entry.unlockId.name)),
+              child: Text(_progressiveUnlockName(entry.unlockId)),
             ),
         ],
       ),
       actions: [
         PlaqueButton(
-          label: UiStrings.progressiveUnlockSealConfirm,
+          label: UiStrings.itemUseDismiss,
           primary: true,
           autofocus: true,
           onTap: () => Navigator.of(dialogContext).pop(true),
@@ -79,3 +79,14 @@ Future<void> maybeShowProgressiveUnlockSeal({
     now: now,
   );
 }
+
+String _progressiveUnlockName(ProgressiveUnlockId unlockId) =>
+    switch (unlockId) {
+      ProgressiveUnlockId.tower => UiStrings.mainMenuTower,
+      ProgressiveUnlockId.lightFoot => UiStrings.mainMenuLightFoot,
+      ProgressiveUnlockId.discipleScheduling => UiStrings.sectHubLineup,
+      ProgressiveUnlockId.massBattle => UiStrings.mainMenuMassBattle,
+      ProgressiveUnlockId.expedition => UiStrings.expeditionBaicaoName,
+      ProgressiveUnlockId.gauntlet => UiStrings.gauntletName,
+      ProgressiveUnlockId.innerDemon => UiStrings.mainMenuInnerDemon,
+    };
