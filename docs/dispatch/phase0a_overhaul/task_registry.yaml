@@ -5204,6 +5204,60 @@ tasks:
       - no reward economy player value skill combat YAML tuning or existing unlock gate change
       - do not claim M6 or overall Phase 2 completion and keep human visual acceptance deferred
 
+  - id: P2-M6-U12-MAINLINE-NARRATIVE-GUARD
+    milestone: M6
+    owner: codex_root
+    branch: codex/p2-m6-u12-mainline-narrative-guard-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m6-u12-mainline-narrative-guard-20260901
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: 4dc54697df9a26d26abceb58577a67368e9b63cb
+    code_candidate_commit: 58c434d5fe086b87573b43c19995e9dc6f6c86a9
+    reviewed_candidate_commit: 58c434d5fe086b87573b43c19995e9dc6f6c86a9
+    ready_marker: "[READY][CODEX][P2-M6-U12-MAINLINE-NARRATIVE-GUARD] 收口主线叙事去阻塞与搬迁守卫"
+    completion_scope: requalify_exact_105_stage_deblocking_252_id_manifest_and_zero_orphan_shadow_guard
+    acceptance_baseline: 0_of_1_authoritative_u12_engineering_gate
+    acceptance_target: 1_of_1_authoritative_u12_engineering_gate
+    acceptance_result: 1_of_1_authoritative_u12_engineering_gate
+    evidence:
+      exact_mainline_stage_ids: 105
+      chapters: 21
+      stages_per_chapter: 5
+      opening_ids: 105
+      victory_ids: 105
+      defeat_ids: 42
+      manifest_ids: 252
+      orphaned_assets: 0
+      shadowed_assets: 0
+      weak_count_only_guard_found_and_hardened: 1
+      mutation_remove_deblocking_failures: 2
+      mutation_manifest_destination_drift_failures: 1
+      mutation_physical_orphan_failures: 1
+      restored_core_tests: 17
+      targeted_tests: 105
+      scoped_analyze_issues: 0
+      format_changed_files: 0
+      final_full_suite: 5820
+      final_full_suite_failures: 0
+      final_full_suite_error_blocks: 0
+      final_gate: must_pass_before_merge
+      human_visual_acceptance: deferred_by_user
+    owned_files:
+      - test/features/mainline/presentation/mainline_narrative_deblocking_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m6-u12-mainline-narrative-guard.md
+      - docs/audit/phase2_u12_mainline_narrative_guard_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - all exact stage_01_01_through_stage_21_05 mainline stages skip automatic opening victory and defeat readers
+      - special modes retain existing automatic narrative behavior
+      - mainline Boss defeat still settles and reports fact only loss before returning
+      - every current old narrative id has exactly one validated manifest destination
+      - physical mainline narrative assets remain zero orphan and zero shadow across loader directories
+      - existing chapter timeline remains optional and manifest loading or error cannot block stage entry
+      - no narrative content asset unlock reward economy player value skill combat schema save version or main behavior change
+      - do not claim M6 or overall Phase 2 completion and keep human visual acceptance deferred
+
   - id: P2-M6-U14-SPECIAL-MODE-MATRIX-AND-ROUTE-STATES
     milestone: M6
     owner: codex_root

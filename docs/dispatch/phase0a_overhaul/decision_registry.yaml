@@ -397,7 +397,7 @@ decisions:
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: MAINLINE-NARRATIVE-DEBLOCKING-01
-    status: frozen_plan_requirement
+    status: frozen_implemented_requalified
     summary: 所有主线关含第 4/5 关 Boss 均不自动弹 opening victory defeat 阅读器，旧叙事逐 ID 搬迁到现有章节卷轴等可选载体且不删除资产
     source_authority: '/Users/a10506/Desktop/二阶段优化方案.md §1.3 / §20 U02 U03 U12'
     applies_to_stage_type: mainline
@@ -430,6 +430,15 @@ decisions:
       source_tip: 802511dc987d1b2cffd96419be4b48c79e6cefc8
       integration_task: P2-M6-BATCH1-DEBLOCKING-GAUNTLET-ADMISSION
       audit: docs/audit/phase2_m6_batch1_deblocking_gauntlet_admission_2026-08-24.md
+    u12_requalification:
+      task: P2-M6-U12-MAINLINE-NARRATIVE-GUARD
+      base_commit: 4dc54697df9a26d26abceb58577a67368e9b63cb
+      exact_mainline_topology: 21_chapters_x_5_stages
+      narrative_ids: 252
+      orphaned_assets: 0
+      shadowed_assets: 0
+      current_gate_changes: none
+      audit: docs/audit/phase2_u12_mainline_narrative_guard_2026-09-01.md
 
   - id: TUNE-FORWARD-FAN-01
     status: tuning
