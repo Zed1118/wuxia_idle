@@ -5752,8 +5752,10 @@ tasks:
     branch: codex/p2-m5-six-mode-integration-gate-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m5-six-mode-integration-gate-20260901
     status: blocked
-    current_authoritative_wip: true
+    current_authoritative_wip: false
     base_commit: 22afa6d3831b4dfb0d20df7d6694f6f7c13ff968
+    code_candidate_commit: 8d9b806dd2f006d9c556aaf969c14a1d93aad84d
+    reviewed_candidate_commit: b25655cd100159842f36493f638cc68d9834d3eb
     ready_marker: "[READY][CODEX][P2-M5-ENGINEERING-INTEGRATION-AUDIT] 固化 M5 六模式顶层缺口"
     completion_scope: requalify_the_six_mode_by_seven_contract_M5_denominator_against_real_production_owners
     acceptance_baseline: 0_of_1_authoritative_M5_engineering_gate
