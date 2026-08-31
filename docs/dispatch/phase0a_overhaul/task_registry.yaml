@@ -5704,18 +5704,26 @@ tasks:
     owner: codex_root
     branch: codex/p2-m6-integration-gate-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m6-integration-gate-20260901
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: a6a76917a1731fe96ed3ba650b741961eba05788
+    code_candidate_commit: a6a5ce1e9f67fc9711c009fdb22e887d6ba10527
+    reviewed_candidate_commit: a6a5ce1e9f67fc9711c009fdb22e887d6ba10527
     ready_marker: "[READY][CODEX][P2-M6-ENGINEERING-INTEGRATION-GATE] 收口 M6 工程集成候选"
     completion_scope: requalify_the_four_authoritative_M6_gates_as_one_cross_mode_production_engineering_boundary
     acceptance_baseline: 0_of_1_authoritative_M6_engineering_integration_gate
     acceptance_target: 1_of_1_authoritative_M6_engineering_integration_gate
+    acceptance_result: 1_of_1_authoritative_M6_engineering_integration_gate
     evidence:
       authoritative_gate_count: 4
       production_admission_kinds: 7
       idle_and_retreat_cross_mode_tests: 2
       focused_production_chain_tests: 157
+      full_suite_tests: 5822
+      full_suite_failures: 0
+      full_suite_error_blocks: 0
+      analyze_issues: 0
+      format_changed_files: 0
       mutation_remove_retreat_occupancy_failures: 1
       mutation_invert_idle_guard_failures: 2
       mutation_wrong_map_route_failures: 1

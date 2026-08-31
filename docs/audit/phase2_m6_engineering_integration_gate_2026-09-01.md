@@ -35,10 +35,10 @@ U01–U14 的分项候选已在 main 汇合，但旧记录多次明确只关闭�
 
 ## 最终验证
 
-- `flutter analyze --no-pub lib test`：待最终候选。
-- `dart format .`：待最终候选。
-- 锁保护全量：待最终候选。
-- 项目 Gate：待 READY tip。
+- `flutter analyze --no-pub lib test`：0 issue，末行 `No issues found! (ran in 14.7s)`。
+- `dart format .`：`1699 files / 0 changed`。
+- 锁保护全量：`5822/5822 PASS`，退出码 0，`[E]=0`，末行 `05:09 +5822: All tests passed!`。
+- 项目 Gate：必须在最终 READY tip 上独立执行并 PASS 后才允许合并。
 - main 合并、push、精确 SHA CI：待完成。
 
 ## 挂账与判定边界
