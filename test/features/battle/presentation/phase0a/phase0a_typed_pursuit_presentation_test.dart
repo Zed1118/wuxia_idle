@@ -123,7 +123,7 @@ void main() {
       find.byKey(const ValueKey('phase0a_pursue_condition_banner')),
       findsOneWidget,
     );
-    expect(find.text(UiStrings.pursueTargetRemaining(82)), findsOneWidget);
+    expect(find.text('${UiStrings.skillInfoTarget}: 82'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     final completed = _controller(
@@ -141,7 +141,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text(UiStrings.battleResultPursued), findsOneWidget);
+    expect(find.text(UiStrings.phase0aVictorySeal), findsOneWidget);
   });
 
   testWidgets('pursuit HUD remains structurally visible at 1440x900', (
@@ -169,7 +169,7 @@ void main() {
       find.byKey(const ValueKey('phase0a_pursue_condition_banner')),
       findsOneWidget,
     );
-    expect(find.text(UiStrings.pursueTargetWaiting), findsOneWidget);
+    expect(find.text(UiStrings.skillInfoTarget), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -2664,9 +2664,6 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                         widget.controller.state.winCondition?.isSurviveTicks ==
                             true)
                 ? UiStrings.battleResultSurvived
-                : outcome == Phase0aBattleOutcome.victory &&
-                      widget.controller.pursueObjectiveProgress != null
-                ? UiStrings.battleResultPursued
                 : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal
                 : UiStrings.phase0aDefeatSeal,
@@ -2743,10 +2740,10 @@ final class _PursueConditionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final distance = progress.remainingDistance;
     final label = progress.completed
-        ? UiStrings.pursueTargetCaught
+        ? '${UiStrings.skillInfoTarget}: ${UiStrings.phase0aVictorySeal}'
         : distance == null
-        ? UiStrings.pursueTargetWaiting
-        : UiStrings.pursueTargetRemaining(distance);
+        ? UiStrings.skillInfoTarget
+        : '${UiStrings.skillInfoTarget}: $distance';
     return Positioned(
       key: const ValueKey('phase0a_pursue_condition_banner'),
       top: Phase0aPresentationTokens.hudInset,
