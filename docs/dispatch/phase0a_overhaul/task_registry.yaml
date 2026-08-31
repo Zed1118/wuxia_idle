@@ -5835,7 +5835,6 @@ tasks:
       - lib/features/mainline/presentation/stage_entry_flow.dart
       - lib/features/light_foot/presentation/light_foot_screen.dart
       - lib/features/mass_battle/presentation/mass_battle_screen.dart
-      - lib/shared/strings.dart
       - test/features/activity/durable_activity_automation_policy_test.dart
       - test/features/activity/durable_activity_automation_service_test.dart
       - test/features/activity/durable_activity_automation_coordinator_test.dart
@@ -5847,9 +5846,6 @@ tasks:
       - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
       - CLAUDE.md
-      - GDD.md
-      - PROGRESS.md
-      - docs/_archive/GDD_CHANGELOG.md
     protected_behavior:
       - first_clear_remains_human_and_only_cleared_routes_unlock_automation
       - visible_replay_uses_global_auto_setting_and_exact_selected_participant

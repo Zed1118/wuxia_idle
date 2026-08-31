@@ -401,7 +401,7 @@ class _LightFootRow extends StatelessWidget {
                 ),
                 if (onHeadlessReplay != null)
                   IconButton(
-                    tooltip: UiStrings.specialActivityHeadlessReplay,
+                    tooltip: UiStrings.mainlineHeadlessReplayMode,
                     onPressed: onHeadlessReplay,
                     icon: const Icon(
                       Icons.fast_forward_outlined,
