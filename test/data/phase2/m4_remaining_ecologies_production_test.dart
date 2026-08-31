@@ -8,7 +8,9 @@ import 'package:wuxia_idle/data/validation/combat_objective_primitive_mapper.dar
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
@@ -315,6 +317,56 @@ Future<void> _verifyEcology(
       hasLength(10),
       reason: '${spec.stageId} active position window start=$start',
     );
+  }
+
+  if (encounterDef.objectives.clauses.single.primitive
+      case CombatDefendEntityRef(:final requiredTicks)) {
+    final defended = host.mapping!.initialState.defendedEntity;
+    expect(defended, isNotNull);
+    expect(defended!.isAlive, isTrue);
+    final defendSource = buildPhase0aMainlineObjectiveEventSource(
+      encounter: encounterDef,
+      roster: host.mapping!.roster,
+    );
+    final defendController = mapCombatObjectiveComposition(
+      encounterDef.objectives,
+      tickDuration: const Duration(milliseconds: 100),
+    );
+    var defendProgress = defendController.initialProgress;
+    final initialArena = host.mapping!.initialState;
+    for (var index = 0; index < requiredTicks; index++) {
+      final events = defendSource.eventsFor(
+        Phase0aEncounterObjectiveFrame(
+          beforeArena: initialArena,
+          afterArena: Phase0aArenaState(
+            tick: index + 1,
+            nextSeq: initialArena.nextSeq,
+            player: initialArena.player,
+            enemies: initialArena.enemies,
+            skillSlots: initialArena.skillSlots,
+            defendedEntity: initialArena.defendedEntity,
+            winCondition: initialArena.winCondition,
+          ),
+          beforeSpawn: host.mapping!.director.state,
+          afterSpawn: host.mapping!.director.state,
+          directorEvents: const [],
+          spawnEvents: const [],
+          combatEvents: const [],
+          deltaSeconds: 0.1,
+          playerMovementDelta: playerMapping.initialPlayer.position * 0,
+        ),
+      );
+      expect(events, hasLength(1));
+      expect(events.single, isA<EntityDefended>());
+      defendProgress = defendController.advance(defendProgress, events.single);
+      expect(
+        defendProgress.completed,
+        index == requiredTicks - 1,
+        reason: '${spec.stageId} defend tick ${index + 1}',
+      );
+    }
+    expect(defendProgress.clauses.single.completed, isTrue);
+    return;
   }
 
   final objectiveEvents =
