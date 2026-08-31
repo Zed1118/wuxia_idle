@@ -34,5 +34,6 @@
 - 根因结论：相同生产代码在前台 Profile 下，1280×720 连续三轮 p99 total 为 `9.549/9.658/9.886ms`，1440×900 诊断轮为 `9.992ms`，严重连续帧均为 0。自动轮次的失败样本只有 `2565` 帧，原始间隔在约 12～55 秒持续出现 `115～121ms` 空洞，符合 macOS 后台节流而非战斗帧内耗时；因此不做无依据的生产优化。
 - 已跑验证：24-active fixture `10/10`、生产 route `9/9`、帧采样器 `5/5`、解码预算 `1/1`、手感回归 `6/6`、战斗屏 `36/36`；`flutter analyze --no-pub lib test` 为 `No issues found!`；整仓 format `1656 files (0 changed)`。
 - 现有证据：有效诊断位于 `build/g2_playtest/20260831/m4_performance_closeout/formal_matrix_frontmost_78101482/` 与 `diagnostic_frontmost_78101482/`；后台节流红样本保留在 `formal_matrix_78101482/`，不计入最终矩阵。
-- 下一步：提交最终 `[READY]` tip；两向破坏证红并精确还原；在该 tip 上重跑正式 3×2、全量、组合 receipt 与独立 Gate。
+- 破坏证红：移除生产战斗立绘 `WuxiaImage` 受限解码接线后，解码预算测试 `1` 项失败；把 24-active 数量强制退化为 `1` 后，精确数量测试 `1` 项失败。后者同时揭示 widget 挂载用例原先只遍历现有敌人，数量退化时会假绿，已补独立 `hasLength(24)` 守卫，须在新 tip 上重做该向证红。
+- 下一步：重新提交最终 `[READY]` tip；复验增强后的退化向破坏证红并精确还原；在该 tip 上重跑正式 3×2、全量、组合 receipt 与独立 Gate。
 - 阻塞项：当前无工程阻塞；G2 真人可读性、手感、音频与 Windows 物理性能继续挂账，不在本单自签。

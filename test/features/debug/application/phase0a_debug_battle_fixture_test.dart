@@ -146,6 +146,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('phase0a_battle_screen')), findsOneWidget);
+    expect(controller.state.enemies, hasLength(24));
     for (final enemy in controller.state.enemies) {
       expect(
         find.byKey(ValueKey('phase0a_actor_${enemy.id}')),
