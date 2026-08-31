@@ -37,26 +37,128 @@ void main() {
     entryKind: entryKind,
   );
 
-  test('轻功仅允许已首通的 dispatch + bot + headless + offlineResume', () {
+  ActivityParticipationRequest replayRequest({
+    required DurableActivityKind kind,
+    required String stageId,
+    required ActivityClock clock,
+  }) => request(
+    kind: kind,
+    stageId: stageId,
+    participation: ActivityParticipationMode.direct,
+    clock: clock,
+    entryKind: ActivityEntryKind.replay,
+  );
+
+  test('构造器固定产出前台重打、快速推演与差遣的精确三元组', () {
+    const kind = DurableActivityKind.lightFoot;
+    const stageId = 'stage_light_foot_01';
+
+    final visible = durableActivityAutomationRequest(
+      kind: kind,
+      stageId: stageId,
+      characterId: 7,
+      mode: DurableActivityAutomationMode.visibleReplay,
+    );
+    final headless = durableActivityAutomationRequest(
+      kind: kind,
+      stageId: stageId,
+      characterId: 7,
+      mode: DurableActivityAutomationMode.headlessReplay,
+    );
+    final dispatch = durableActivityAutomationRequest(
+      kind: kind,
+      stageId: stageId,
+      characterId: 7,
+      mode: DurableActivityAutomationMode.dispatch,
+    );
+
+    expect(
+      (
+        visible.participation,
+        visible.controller,
+        visible.clock,
+        visible.entryKind,
+      ),
+      (
+        ActivityParticipationMode.direct,
+        ActivityController.playerBot,
+        ActivityClock.realtime,
+        ActivityEntryKind.replay,
+      ),
+    );
+    expect(
+      (
+        headless.participation,
+        headless.controller,
+        headless.clock,
+        headless.entryKind,
+      ),
+      (
+        ActivityParticipationMode.direct,
+        ActivityController.playerBot,
+        ActivityClock.headless,
+        ActivityEntryKind.replay,
+      ),
+    );
+    expect(
+      (
+        dispatch.participation,
+        dispatch.controller,
+        dispatch.clock,
+        dispatch.entryKind,
+      ),
+      (
+        ActivityParticipationMode.dispatch,
+        ActivityController.playerBot,
+        ActivityClock.headless,
+        ActivityEntryKind.offlineResume,
+      ),
+    );
+    expect(visible.contentId, stageId);
+    expect(visible.characterId, 7);
+    expect(visible.loadoutPlanId, 'lightFoot:$stageId:character:7');
+  });
+
+  test('轻功已首通后精确允许前台 bot、快速推演与 durable 差遣三通道', () {
     const kind = DurableActivityKind.lightFoot;
     final stage = GameRepository.instance.getStage('stage_light_foot_01');
-    final allowed = DurableActivityAutomationPolicy.evaluate(
-      kind: kind,
-      stage: stage,
-      request: request(kind: kind, stageId: stage.id),
-      alreadyCleared: true,
-      formation: null,
-    );
-    expect(allowed.allowed, isTrue);
+    final allowedRequests = [
+      replayRequest(
+        kind: kind,
+        stageId: stage.id,
+        clock: ActivityClock.realtime,
+      ),
+      replayRequest(
+        kind: kind,
+        stageId: stage.id,
+        clock: ActivityClock.headless,
+      ),
+      request(kind: kind, stageId: stage.id),
+    ];
+    for (final allowedRequest in allowedRequests) {
+      expect(
+        DurableActivityAutomationPolicy.evaluate(
+          kind: kind,
+          stage: stage,
+          request: allowedRequest,
+          alreadyCleared: true,
+          formation: null,
+        ).allowed,
+        isTrue,
+      );
+      expect(
+        DurableActivityAutomationPolicy.evaluate(
+          kind: kind,
+          stage: stage,
+          request: allowedRequest,
+          alreadyCleared: false,
+          formation: null,
+        ).rejectionReason,
+        DurableActivityAutomationRejectionReason.firstClearRequired,
+      );
+    }
 
     final rejected = <DurableActivityAutomationDecision>[
-      DurableActivityAutomationPolicy.evaluate(
-        kind: kind,
-        stage: stage,
-        request: request(kind: kind, stageId: stage.id),
-        alreadyCleared: false,
-        formation: null,
-      ),
       DurableActivityAutomationPolicy.evaluate(
         kind: kind,
         stage: stage,
@@ -124,6 +226,48 @@ void main() {
         formation: Formation.baGua,
       ).allowed,
       isTrue,
+    );
+    expect(
+      DurableActivityAutomationPolicy.evaluate(
+        kind: kind,
+        stage: stage,
+        request: replayRequest(
+          kind: kind,
+          stageId: stage.id,
+          clock: ActivityClock.realtime,
+        ),
+        alreadyCleared: true,
+        formation: null,
+      ).allowed,
+      isTrue,
+    );
+    expect(
+      DurableActivityAutomationPolicy.evaluate(
+        kind: kind,
+        stage: stage,
+        request: replayRequest(
+          kind: kind,
+          stageId: stage.id,
+          clock: ActivityClock.headless,
+        ),
+        alreadyCleared: true,
+        formation: Formation.baGua,
+      ).allowed,
+      isTrue,
+    );
+    expect(
+      DurableActivityAutomationPolicy.evaluate(
+        kind: kind,
+        stage: stage,
+        request: replayRequest(
+          kind: kind,
+          stageId: stage.id,
+          clock: ActivityClock.headless,
+        ),
+        alreadyCleared: true,
+        formation: null,
+      ).rejectionReason,
+      DurableActivityAutomationRejectionReason.missingFormation,
     );
     expect(
       DurableActivityAutomationPolicy.evaluate(

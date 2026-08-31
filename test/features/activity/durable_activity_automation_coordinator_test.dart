@@ -183,4 +183,57 @@ void main() {
       RewardContentKind.massBattle,
     });
   });
+
+  test('轻功快速推演 direct replay 复用同一 headless 与共享 receipt', () async {
+    final stage = GameRepository.instance.getStage('stage_light_foot_01');
+    final request = ActivityParticipationRequest(
+      contentId: stage.id,
+      contentKind: ActivityContentKind.lightFoot,
+      characterId: leader.id,
+      loadoutPlanId: durableActivityLoadoutPlanId(
+        kind: DurableActivityKind.lightFoot,
+        stageId: stage.id,
+        characterId: leader.id,
+      ),
+      participation: ActivityParticipationMode.direct,
+      controller: ActivityController.playerBot,
+      clock: ActivityClock.headless,
+      entryKind: ActivityEntryKind.replay,
+    );
+    final runId = await service.start(
+      kind: DurableActivityKind.lightFoot,
+      stage: stage,
+      cycleIndex: 1,
+      request: request,
+    );
+
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final result = await executeDurableActivityAutomation(
+      dependencies: DurableActivityAutomationExecutionDependencies(
+        service: service,
+        settlement: DurableActivityCombatSettlementDependencies(
+          numbers: container.read(numbersConfigProvider),
+          dropService: container.read(dropServiceProvider),
+          rng: container.read(rngProvider),
+          skillDropRng: container.read(mathRandomProvider),
+          tutorialService: container.read(tutorialServiceProvider),
+          reputationService: container.read(reputationServiceProvider),
+        ),
+      ),
+      stage: stage,
+      runId: runId,
+    );
+
+    expect(result.outcome, isNot(DurableActivityExecutionOutcome.timeout));
+    expect(result.run.request, request);
+    expect(result.run.phase, DurableActivityPhase.settlementApplied);
+    expect(result.run.members.single.characterId, leader.id);
+    expect(
+      (await IsarSetup.instance.rewardClaimReceipts.where().findAll())
+          .map((receipt) => receipt.contentKind)
+          .toSet(),
+      {RewardContentKind.lightFoot},
+    );
+  });
 }

@@ -5797,6 +5797,54 @@ tasks:
       - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule reducer headless_kernel settlement_owner or direct main checkout write in this audit
       - human visual interaction and Windows evidence remain deferred and do not claim formal M5 or overall Phase2 completion
 
+  - id: P2-M5-LIGHT-MASS-AUTOMATION-MATRIX
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-light-mass-automation-matrix-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-light-mass-automation-matrix-20260901
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 44a5d241d3c96d58e9ef67254bfc5af2292b8cb1
+    ready_marker: "[READY][CODEX][P2-M5-LIGHT-MASS-AUTOMATION-MATRIX] 接通轻功守城前台托管与快速推演"
+    completion_scope: connect_cleared_light_foot_and_mass_battle_visible_bot_and_immediate_headless_to_existing_production_owners
+    acceptance_baseline: 34_of_42_M5_engineering_cells
+    acceptance_target: 36_of_42_M5_engineering_cells
+    acceptance_result: pending
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+      - P2-M5-LIGHT-FOOT-AUTOMATION-ADMISSION
+      - P2-M5-MASS-BATTLE-AUTOMATION-ADMISSION
+    owned_files:
+      - lib/features/activity/domain/durable_activity_automation_policy.dart
+      - lib/features/activity/application/durable_activity_automation_service.dart
+      - lib/features/activity/presentation/durable_activity_automation_ui.dart
+      - lib/features/mainline/presentation/stage_entry_flow.dart
+      - lib/features/light_foot/presentation/light_foot_screen.dart
+      - lib/features/mass_battle/presentation/mass_battle_screen.dart
+      - lib/shared/strings.dart
+      - test/features/activity/durable_activity_automation_policy_test.dart
+      - test/features/activity/durable_activity_automation_service_test.dart
+      - test/features/activity/durable_activity_automation_coordinator_test.dart
+      - test/features/mainline/presentation/stage_entry_flow_test.dart
+      - test/features/light_foot/presentation/light_foot_screen_test.dart
+      - test/features/mass_battle/presentation/mass_battle_screen_test.dart
+      - test/features/sweep/application/phase0a_sweep_headless_runner_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m5-light-mass-automation-matrix.md
+      - docs/audit/phase2_m5_light_mass_automation_matrix_2026-09-01.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+      - GDD.md
+      - PROGRESS.md
+    protected_behavior:
+      - first_clear_remains_human_and_only_cleared_routes_unlock_automation
+      - visible_replay_uses_global_auto_setting_and_exact_selected_participant
+      - immediate_headless_is_direct_replay_while_dispatch_remains_offline_resume
+      - light_foot_rejects_formation_and_mass_battle_headless_requires_selected_formation
+      - existing_phase0a_host_runner_shared_settlement_and_durable_receipt_remain_the_only_owners
+      - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
+      - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
     owner: codex_root

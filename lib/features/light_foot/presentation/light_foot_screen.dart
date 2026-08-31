@@ -14,8 +14,11 @@ import '../../../shared/widgets/cycle_select_control.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart';
 import '../../activity/application/durable_activity_automation_providers.dart';
+import '../../activity/domain/durable_activity_automation_policy.dart';
 import '../../activity/domain/durable_activity_combat_run.dart';
 import '../../activity/presentation/durable_activity_automation_ui.dart';
+import '../../battle/domain/phase0a/activity_participation_request.dart';
+import '../../settings/application/gameplay_settings_provider.dart';
 import '../application/light_foot_service.dart';
 import '../application/light_foot_participant_service.dart';
 import 'light_foot_participant_picker.dart';
@@ -41,6 +44,7 @@ typedef LightFootStageRunner =
       required StageDef stage,
       required int targetCycle,
       required CombatantSnapshot participantSnapshot,
+      required ActivityController controller,
     });
 
 typedef LightFootParticipantSnapshotResolver =
@@ -151,6 +155,32 @@ class LightFootScreen extends ConsumerWidget {
                         child: _LightFootRow(
                           def: s,
                           status: status,
+                          onHeadlessReplay:
+                              status == LightFootStageStatus.cleared &&
+                                  automationAsync.hasValue &&
+                                  automationRun == null
+                              ? () async {
+                                  final participantId =
+                                      await selectLightFootParticipant(
+                                        context: context,
+                                        ref: ref,
+                                      );
+                                  if (participantId == null ||
+                                      !context.mounted) {
+                                    return;
+                                  }
+                                  await startDurableActivityAutomation(
+                                    context: context,
+                                    ref: ref,
+                                    kind: DurableActivityKind.lightFoot,
+                                    stage: s,
+                                    cycleIndex: cycleFor(),
+                                    participantId: participantId,
+                                    mode: DurableActivityAutomationMode
+                                        .headlessReplay,
+                                  );
+                                }
+                              : null,
                           onDispatch:
                               status == LightFootStageStatus.cleared &&
                                   automationAsync.hasValue &&
@@ -177,15 +207,45 @@ class LightFootScreen extends ConsumerWidget {
                               : null,
                           onTap: status == LightFootStageStatus.locked
                               ? null
-                              : () => runLightFootChallenge(
-                                  context: context,
-                                  ref: ref,
-                                  stage: s,
-                                  targetCycle: cycleFor(),
-                                  stageRunner: stageRunnerForTest,
-                                  participantSnapshotResolver:
-                                      participantSnapshotResolverForTest,
-                                ),
+                              : () async {
+                                  var controller = ActivityController.human;
+                                  if (status == LightFootStageStatus.cleared) {
+                                    try {
+                                      final settings = await ref.read(
+                                        gameplaySettingsProvider.future,
+                                      );
+                                      if (settings.autoPlayDefault) {
+                                        controller =
+                                            ActivityController.playerBot;
+                                      }
+                                    } catch (_) {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              UiStrings
+                                                  .discipleSchedulingUnavailable,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                      return;
+                                    }
+                                  }
+                                  if (!context.mounted) return;
+                                  await runLightFootChallenge(
+                                    context: context,
+                                    ref: ref,
+                                    stage: s,
+                                    targetCycle: cycleFor(),
+                                    controller: controller,
+                                    stageRunner: stageRunnerForTest,
+                                    participantSnapshotResolver:
+                                        participantSnapshotResolverForTest,
+                                  );
+                                },
                         ),
                       );
                     },
@@ -206,6 +266,7 @@ Future<void> runLightFootChallenge({
   required WidgetRef ref,
   required StageDef stage,
   required int targetCycle,
+  ActivityController controller = ActivityController.human,
   LightFootStageRunner? stageRunner,
   LightFootParticipantSnapshotResolver? participantSnapshotResolver,
 }) async {
@@ -217,6 +278,21 @@ Future<void> runLightFootChallenge({
 
   late final CombatantSnapshot participantSnapshot;
   try {
+    if (controller == ActivityController.playerBot) {
+      final progress = await ref.read(mainlineProgressProvider.future);
+      DurableActivityAutomationPolicy.requireAllowed(
+        kind: DurableActivityKind.lightFoot,
+        stage: stage,
+        request: durableActivityAutomationRequest(
+          kind: DurableActivityKind.lightFoot,
+          stageId: stage.id,
+          characterId: participantId,
+          mode: DurableActivityAutomationMode.visibleReplay,
+        ),
+        alreadyCleared: progress.clearedStageIds.contains(stage.id),
+        formation: null,
+      );
+    }
     participantSnapshot = participantSnapshotResolver == null
         ? await resolveLightFootParticipantSnapshot(
             isar: IsarSetup.instance,
@@ -240,6 +316,7 @@ Future<void> runLightFootChallenge({
     stage: stage,
     targetCycle: targetCycle,
     participantSnapshot: participantSnapshot,
+    controller: controller,
   );
 }
 
@@ -249,12 +326,14 @@ Future<void> runLightFootStageFlow({
   required StageDef stage,
   required int targetCycle,
   required CombatantSnapshot participantSnapshot,
+  ActivityController controller = ActivityController.human,
 }) => runStageFlow(
   context: context,
   ref: ref,
   stage: stage,
   targetCycle: targetCycle,
   directParticipantSnapshot: participantSnapshot,
+  directParticipantController: controller,
 );
 
 class _LightFootRow extends StatelessWidget {
@@ -262,12 +341,14 @@ class _LightFootRow extends StatelessWidget {
     required this.def,
     required this.status,
     required this.onTap,
+    required this.onHeadlessReplay,
     required this.onDispatch,
   });
 
   final StageDef def;
   final LightFootStageStatus status;
   final VoidCallback? onTap;
+  final VoidCallback? onHeadlessReplay;
   final VoidCallback? onDispatch;
 
   @override
@@ -318,6 +399,15 @@ class _LightFootRow extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (onHeadlessReplay != null)
+                  IconButton(
+                    tooltip: UiStrings.specialActivityHeadlessReplay,
+                    onPressed: onHeadlessReplay,
+                    icon: const Icon(
+                      Icons.fast_forward_outlined,
+                      color: WuxiaColors.textPrimary,
+                    ),
+                  ),
                 if (onDispatch != null)
                   IconButton(
                     tooltip: UiStrings.expeditionDispatchTeamSection,

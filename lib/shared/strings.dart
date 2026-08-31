@@ -4021,6 +4021,7 @@ class UiStrings {
       '选择一名可战角色；按全局设置由真人或前台 bot 操作。';
   static const String mainlineHeadlessReplayMode = '快速重演';
   static const String mainlineHeadlessReplayModeHint = '当前掌门同核无画面演算；不消耗扫荡战备。';
+  static const String specialActivityHeadlessReplay = '快速推演';
   static const String botTacticSeekGap = '寻隙';
   static const String botTacticSeekGapHint = '保留资源，等待破绽再出手。';
   static const String botTacticAssault = '强攻';

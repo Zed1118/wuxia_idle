@@ -9,6 +9,37 @@ String durableActivityLoadoutPlanId({
   required int characterId,
 }) => '${kind.name}:$stageId:character:$characterId';
 
+enum DurableActivityAutomationMode { visibleReplay, headlessReplay, dispatch }
+
+ActivityParticipationRequest durableActivityAutomationRequest({
+  required DurableActivityKind kind,
+  required String stageId,
+  required int characterId,
+  required DurableActivityAutomationMode mode,
+}) => ActivityParticipationRequest(
+  contentId: stageId,
+  contentKind: switch (kind) {
+    DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
+    DurableActivityKind.massBattle => ActivityContentKind.massBattle,
+  },
+  characterId: characterId,
+  loadoutPlanId: durableActivityLoadoutPlanId(
+    kind: kind,
+    stageId: stageId,
+    characterId: characterId,
+  ),
+  participation: mode == DurableActivityAutomationMode.dispatch
+      ? ActivityParticipationMode.dispatch
+      : ActivityParticipationMode.direct,
+  controller: ActivityController.playerBot,
+  clock: mode == DurableActivityAutomationMode.visibleReplay
+      ? ActivityClock.realtime
+      : ActivityClock.headless,
+  entryKind: mode == DurableActivityAutomationMode.dispatch
+      ? ActivityEntryKind.offlineResume
+      : ActivityEntryKind.replay,
+);
+
 enum DurableActivityAutomationRejectionReason {
   wrongStageType,
   wrongContentKind,
@@ -42,10 +73,11 @@ final class DurableActivityAutomationRejectedException extends StateError {
   final DurableActivityAutomationRejectionReason reason;
 }
 
-/// 已首通轻功/守城的唯一 automation allowlist。
+/// 已首通轻功/守城的 automation allowlist。
 ///
-/// 差遣、bot、headless 与 offlineResume 必须同时成立；阵型只属于守城且必须由
-/// 玩家显式选择。该 policy 不选人、不读存档、不创建 runner。
+/// 精确允许三条生产通道：前台 bot 重打、快速 headless 重打与 durable 差遣。
+/// 阵型只属于守城；无画面通道必须在开跑前持有玩家选择的阵型，前台通道由
+/// battle host 继续呈现原阵型选择。该 policy 不选人、不读存档、不创建 runner。
 final class DurableActivityAutomationPolicy {
   const DurableActivityAutomationPolicy._();
 
@@ -89,32 +121,40 @@ final class DurableActivityAutomationPolicy {
         DurableActivityAutomationRejectionReason.wrongLoadoutPlan,
       );
     }
-    if (request.participation != ActivityParticipationMode.dispatch) {
-      return const DurableActivityAutomationDecision.rejected(
-        DurableActivityAutomationRejectionReason.unsupportedParticipation,
-      );
-    }
     if (request.controller != ActivityController.playerBot) {
       return const DurableActivityAutomationDecision.rejected(
         DurableActivityAutomationRejectionReason.unsupportedController,
       );
     }
-    if (request.clock != ActivityClock.headless) {
-      return const DurableActivityAutomationDecision.rejected(
-        DurableActivityAutomationRejectionReason.unsupportedClock,
-      );
-    }
-    if (request.entryKind != ActivityEntryKind.offlineResume) {
-      return const DurableActivityAutomationDecision.rejected(
-        DurableActivityAutomationRejectionReason.unsupportedEntryKind,
-      );
+    switch (request.participation) {
+      case ActivityParticipationMode.direct:
+        if (request.entryKind != ActivityEntryKind.replay) {
+          return const DurableActivityAutomationDecision.rejected(
+            DurableActivityAutomationRejectionReason.unsupportedEntryKind,
+          );
+        }
+        break;
+      case ActivityParticipationMode.dispatch:
+        if (request.clock != ActivityClock.headless) {
+          return const DurableActivityAutomationDecision.rejected(
+            DurableActivityAutomationRejectionReason.unsupportedClock,
+          );
+        }
+        if (request.entryKind != ActivityEntryKind.offlineResume) {
+          return const DurableActivityAutomationDecision.rejected(
+            DurableActivityAutomationRejectionReason.unsupportedEntryKind,
+          );
+        }
+        break;
     }
     if (!alreadyCleared) {
       return const DurableActivityAutomationDecision.rejected(
         DurableActivityAutomationRejectionReason.firstClearRequired,
       );
     }
-    if (kind == DurableActivityKind.massBattle && formation == null) {
+    if (kind == DurableActivityKind.massBattle &&
+        request.clock == ActivityClock.headless &&
+        formation == null) {
       return const DurableActivityAutomationDecision.rejected(
         DurableActivityAutomationRejectionReason.missingFormation,
       );

@@ -97,6 +97,18 @@ StageDef _bossFlowStage() => const StageDef(
   difficultyMultiplier: 1.0,
 );
 
+StageDef _lightFootFlowStage() => const StageDef(
+  id: 'stage_light_foot_test',
+  name: '轻功托管接线关',
+  stageType: StageType.lightFoot,
+  requiredRealm: RealmTier.xueTu,
+  enemyTeam: [_testEnemy],
+  isBossStage: false,
+  baseExpReward: 0,
+  difficultyMultiplier: 1.0,
+  terrainBiome: TerrainBiome.bamboo,
+);
+
 void main() {
   late GameRepository repo;
 
@@ -385,6 +397,41 @@ void main() {
   });
 
   group('Phase0aMainlineBattleHost 集成(注入玩家角色,真跑 0A flow)', () {
+    testWidgets(
+      '特殊模式 direct participant controller 经生产 flow 进入前台 playerBot Host',
+      (tester) async {
+        final player = _makeCh1Player(repo.numbers);
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: _DirectSpecialFlowHarness(
+                stage: _lightFootFlowStage(),
+                player: player,
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('start-direct-bot'));
+        for (
+          var i = 0;
+          i < 120 && find.byType(Phase0aMainlineBattleHost).evaluate().isEmpty;
+          i++
+        ) {
+          await tester.pump(const Duration(milliseconds: 10));
+        }
+        expect(find.byType(Phase0aMainlineBattleHost), findsOneWidget);
+        final host = tester.widget<Phase0aMainlineBattleHost>(
+          find.byType(Phase0aMainlineBattleHost),
+        );
+        expect(host.controller, ActivityController.playerBot);
+        expect(host.playerSnapshot?.characterId, player.characterId);
+        Navigator.of(
+          tester.element(find.byType(Phase0aMainlineBattleHost)),
+        ).pop();
+        await tester.pumpAndSettle();
+      },
+    );
+
     testWidgets('前台 playerBot 每个 fixed tick 驾驶同一宿主至终局', (tester) async {
       CombatSettlementSnapshot? terminal;
       await tester.pumpWidget(
@@ -721,6 +768,29 @@ void main() {
       expect(find.text('done'), findsOneWidget);
     });
   });
+}
+
+class _DirectSpecialFlowHarness extends ConsumerWidget {
+  const _DirectSpecialFlowHarness({required this.stage, required this.player});
+
+  final StageDef stage;
+  final CombatantSnapshot player;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      body: TextButton(
+        onPressed: () => runStageFlow(
+          context: context,
+          ref: ref,
+          stage: stage,
+          directParticipantSnapshot: player,
+          directParticipantController: ActivityController.playerBot,
+        ),
+        child: const Text('start-direct-bot'),
+      ),
+    );
+  }
 }
 
 /// 灰度分支专用 harness(沿 stage_entry_flow_test 体例):battleRunner/

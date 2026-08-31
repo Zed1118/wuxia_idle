@@ -140,6 +140,7 @@ Future<void> runStageFlow({
   int? visibleReplayParticipantId,
   ActivityController visibleReplayController = ActivityController.human,
   CombatantSnapshot? directParticipantSnapshot,
+  ActivityController directParticipantController = ActivityController.human,
   @visibleForTesting Future<bool> Function()? battleRunnerForTest,
   @visibleForTesting
   Future<({bool won, bool surrendered})> Function()? battleOutcomeForTest,
@@ -167,6 +168,10 @@ Future<void> runStageFlow({
         'Direct participant cannot be combined with a mainline run or replay',
       );
     }
+  } else if (directParticipantController != ActivityController.human) {
+    throw ArgumentError(
+      'Direct participant controller requires a direct participant snapshot',
+    );
   }
   if (!continueFirstClearRun ||
       targetCycle != 1 ||
@@ -206,7 +211,9 @@ Future<void> runStageFlow({
       stage: stage,
       targetCycle: targetCycle,
       playerSnapshot: directParticipantSnapshot ?? visibleReplaySnapshot,
-      battleController: visibleReplaySnapshot == null
+      battleController: directParticipantSnapshot != null
+          ? directParticipantController
+          : visibleReplaySnapshot == null
           ? ActivityController.human
           : visibleReplayController,
       battleRunnerForTest: battleRunnerForTest,

@@ -5,7 +5,6 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
-import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../light_foot/application/light_foot_participant_service.dart';
 import '../../mass_battle/application/mass_battle_participant_service.dart';
 import '../application/durable_activity_automation_coordinator.dart';
@@ -21,28 +20,25 @@ Future<void> startDurableActivityAutomation({
   required int cycleIndex,
   required int participantId,
   Formation? formation,
+  DurableActivityAutomationMode mode = DurableActivityAutomationMode.dispatch,
 }) async {
+  if (mode == DurableActivityAutomationMode.visibleReplay) {
+    throw ArgumentError.value(
+      mode,
+      'mode',
+      'visible replay belongs to the realtime stage flow',
+    );
+  }
   final service = ref.read(durableActivityAutomationServiceProvider);
   if (service == null) {
     _showUnavailable(context);
     return;
   }
-  final request = ActivityParticipationRequest(
-    contentId: stage.id,
-    contentKind: switch (kind) {
-      DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
-      DurableActivityKind.massBattle => ActivityContentKind.massBattle,
-    },
+  final request = durableActivityAutomationRequest(
+    kind: kind,
+    stageId: stage.id,
     characterId: participantId,
-    loadoutPlanId: durableActivityLoadoutPlanId(
-      kind: kind,
-      stageId: stage.id,
-      characterId: participantId,
-    ),
-    participation: ActivityParticipationMode.dispatch,
-    controller: ActivityController.playerBot,
-    clock: ActivityClock.headless,
-    entryKind: ActivityEntryKind.offlineResume,
+    mode: mode,
   );
   try {
     final runId = await service.start(

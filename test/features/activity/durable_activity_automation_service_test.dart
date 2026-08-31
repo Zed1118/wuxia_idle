@@ -61,8 +61,12 @@ void main() {
 
   ActivityParticipationRequest request(
     DurableActivityKind kind,
-    String stageId,
-  ) => ActivityParticipationRequest(
+    String stageId, {
+    ActivityParticipationMode participation =
+        ActivityParticipationMode.dispatch,
+    ActivityClock clock = ActivityClock.headless,
+    ActivityEntryKind entryKind = ActivityEntryKind.offlineResume,
+  }) => ActivityParticipationRequest(
     contentId: stageId,
     contentKind: kind == DurableActivityKind.lightFoot
         ? ActivityContentKind.lightFoot
@@ -73,10 +77,10 @@ void main() {
       stageId: stageId,
       characterId: leader.id,
     ),
-    participation: ActivityParticipationMode.dispatch,
+    participation: participation,
     controller: ActivityController.playerBot,
-    clock: ActivityClock.headless,
-    entryKind: ActivityEntryKind.offlineResume,
+    clock: clock,
+    entryKind: entryKind,
   );
 
   test('轻功会话先落库并锁角色/装配，receipt 幂等且阅报后释放', () async {
@@ -179,6 +183,60 @@ void main() {
     await expectLater(
       service.admit(runId: runId, stage: stage),
       throwsStateError,
+    );
+  });
+
+  test('快速推演持久化 direct + bot + headless + replay 且仍受首通门保护', () async {
+    const kind = DurableActivityKind.lightFoot;
+    final stage = GameRepository.instance.getStage('stage_light_foot_01');
+    final replayRequest = request(
+      kind,
+      stage.id,
+      participation: ActivityParticipationMode.direct,
+      clock: ActivityClock.headless,
+      entryKind: ActivityEntryKind.replay,
+    );
+    final runId = await service.start(
+      kind: kind,
+      stage: stage,
+      cycleIndex: 1,
+      request: replayRequest,
+    );
+    final run = (await service.runById(runId))!;
+    expect(run.request, replayRequest);
+    expect(run.participation, ActivityParticipationMode.direct);
+    expect(run.clock, ActivityClock.headless);
+    expect(run.entryKind, ActivityEntryKind.replay);
+    expect(
+      (await CharacterOccupancyService(
+        IsarSetup.instance,
+      ).snapshot()).activityOf(leader.id),
+      ActivityKind.lightFoot,
+    );
+
+    await IsarSetup.instance.writeTxn(() async {
+      final progress = (await IsarSetup.instance.mainlineProgress
+          .where()
+          .findFirst())!;
+      progress.clearedStageIds = progress.clearedStageIds
+          .where((id) => id != stage.id)
+          .toList();
+      await IsarSetup.instance.mainlineProgress.put(progress);
+    });
+    await service.commitSettlement(
+      runId: runId,
+      outcome: DurableActivityOutcome.victory,
+      applyInTxn: () async {},
+    );
+    await service.close(runId: runId);
+    await expectLater(
+      service.start(
+        kind: kind,
+        stage: stage,
+        cycleIndex: 1,
+        request: replayRequest,
+      ),
+      throwsA(isA<DurableActivityAutomationRejectedException>()),
     );
   });
 }
