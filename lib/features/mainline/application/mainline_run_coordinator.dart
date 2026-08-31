@@ -65,7 +65,7 @@ typedef MainlineNextLoadoutSnapshotLoader =
       required StageDef nextStage,
     });
 
-/// 第一章首次推进的外层非递归协调器。
+/// 单章首次推进的外层非递归协调器。
 ///
 /// 战斗、结算和 UI 仍由 caller 的 [executeStage] 负责；只有 caller 在完整
 /// 成功后返回 [MainlineStageFlowDecision.enterNextStage]，本类才准备下一关。

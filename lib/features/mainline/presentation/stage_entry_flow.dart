@@ -66,6 +66,7 @@ import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/mainline_progress_service.dart';
+import '../application/mainline_chapter_boundary.dart';
 import '../application/mainline_participant_snapshot_service.dart';
 import '../application/mainline_pending_jianghu_affair_service.dart';
 import '../application/mainline_providers.dart';
@@ -91,6 +92,7 @@ import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import 'phase0a_mainline_battle_host.dart';
+import 'chapter_transition_screen.dart';
 import 'stage_victory_dialog.dart';
 import '../domain/mainline_participation_policy.dart';
 
@@ -217,7 +219,18 @@ Future<void> runStageFlow({
     return;
   }
 
-  final bootstrap = await _bootstrapMainlineRun(stage);
+  final settlementService = MainlineSettlementJournalService(
+    IsarSetup.instance,
+  );
+  final scrollResume = await _resumeChapterScrollAtEntry(
+    context: context,
+    ref: ref,
+    service: settlementService,
+  );
+  if (scrollResume.handled && scrollResume.nextBootstrap == null) return;
+  final bootstrap = scrollResume.handled
+      ? scrollResume.nextBootstrap
+      : await _bootstrapMainlineRun(stage);
   if (bootstrap == null) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -228,88 +241,136 @@ Future<void> runStageFlow({
     }
     return;
   }
-  final coordinator = MainlineRunCoordinator(
-    executeStage: (launch) async {
-      StageVictoryAction? action;
-      final nextStage = _nextStageInSameChapter(launch.stage);
-      final settlementService = MainlineSettlementJournalService(
-        IsarSetup.instance,
-      );
-      final identity = MainlineSettlementIdentity(
-        runId: launch.run.runId,
-        stageId: launch.stage.id,
-        loadoutVersion: launch.run.currentLoadoutVersion,
-        participantId: launch.run.participantId,
-      );
-      final journal = await settlementService.prepare(
-        saveDataId: IsarSetup.currentSlotId,
-        identity: identity,
-        loadoutSnapshotId: launch.run.loadoutSnapshots.last.loadoutSnapshotId,
-        loadoutSnapshotIds: launch.run.loadoutSnapshots
-            .map((snapshot) => snapshot.loadoutSnapshotId)
-            .toList(growable: false),
-        now: DateTime.now(),
-      );
-      if (!context.mounted) {
-        return MainlineStageFlowDecision.stoppedBeforeVictory;
-      }
-      await _runSingleStageFlow(
-        context: context,
-        ref: ref,
-        stage: launch.stage,
-        targetCycle: targetCycle,
-        playerSnapshot: launch.playerSnapshot,
-        allowEnterNextStage: nextStage != null,
-        victoryActionSink: (value) => action = value,
-        durableSettlement: (service: settlementService, identity: identity),
-        durableJournal: journal,
-        battleRunnerForTest: battleRunnerForTest,
-        battleOutcomeForTest: battleOutcomeForTest,
-        phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
-        stageRetryDeciderForTest: stageRetryDeciderForTest,
-        victoryRecorderForTest: victoryRecorderForTest,
-        bossDefeatPenaltyForTest: bossDefeatPenaltyForTest,
-      );
-      final resolvedAction = action;
-      if (resolvedAction == null) {
-        return MainlineStageFlowDecision.stoppedBeforeVictory;
-      }
-      if (nextStage == null) {
-        return MainlineStageFlowDecision.enterNextStage;
-      }
-      return resolvedAction == StageVictoryAction.enterNextStage
-          ? MainlineStageFlowDecision.enterNextStage
-          : MainlineStageFlowDecision.returnToMapAfterVictory;
-    },
-    nextStageOf: _nextStageInSameChapter,
-    loadNextSnapshot: ({required run, required nextStage}) =>
-        _loadNextMainlineSnapshot(run: run, nextStage: nextStage),
-  );
-  final result = await coordinator.run(
-    initialStage: bootstrap.stage,
-    initialRun: bootstrap.run,
-    initialPlayerSnapshot: bootstrap.playerSnapshot,
-  );
-  if (result.reason ==
-      MainlineRunCompletionReason.participantNotBattleEligibleForNextStage) {
-    final service = MainlineSettlementJournalService(IsarSetup.instance);
-    final active = await service.activeForSave(IsarSetup.currentSlotId);
-    if (active != null &&
-        active.phase == MainlineSettlementPhase.coreApplied &&
-        active.postSettlementAction ==
-            MainlinePostSettlementAction.enterNextStage) {
-      await service.close(identity: active.identity, now: DateTime.now());
-    }
-  }
-  if (result.reason ==
-          MainlineRunCompletionReason
-              .participantNotBattleEligibleForNextStage &&
-      context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(UiStrings.mainlineRunParticipantUnavailable),
-      ),
+  var currentBootstrap = bootstrap;
+  while (true) {
+    final coordinator = MainlineRunCoordinator(
+      executeStage: (launch) async {
+        StageVictoryAction? action;
+        final nextStage = _nextStageInSameChapter(launch.stage);
+        final boundary = resolveMainlineChapterBoundary(
+          repository: GameRepository.instance,
+          completedStage: launch.stage,
+        );
+        final identity = MainlineSettlementIdentity(
+          runId: launch.run.runId,
+          stageId: launch.stage.id,
+          loadoutVersion: launch.run.currentLoadoutVersion,
+          participantId: launch.run.participantId,
+        );
+        final journal = await settlementService.prepare(
+          saveDataId: IsarSetup.currentSlotId,
+          identity: identity,
+          loadoutSnapshotId: launch.run.loadoutSnapshots.last.loadoutSnapshotId,
+          loadoutSnapshotIds: launch.run.loadoutSnapshots
+              .map((snapshot) => snapshot.loadoutSnapshotId)
+              .toList(growable: false),
+          now: DateTime.now(),
+        );
+        if (!context.mounted) {
+          return MainlineStageFlowDecision.stoppedBeforeVictory;
+        }
+        await _runSingleStageFlow(
+          context: context,
+          ref: ref,
+          stage: launch.stage,
+          targetCycle: targetCycle,
+          playerSnapshot: launch.playerSnapshot,
+          allowEnterNextStage: nextStage != null,
+          completesChapter: boundary != null,
+          victoryActionSink: (value) => action = value,
+          durableSettlement: (service: settlementService, identity: identity),
+          durableJournal: journal,
+          battleRunnerForTest: battleRunnerForTest,
+          battleOutcomeForTest: battleOutcomeForTest,
+          phase0aBattleOutcomeForTest: phase0aBattleOutcomeForTest,
+          stageRetryDeciderForTest: stageRetryDeciderForTest,
+          victoryRecorderForTest: victoryRecorderForTest,
+          bossDefeatPenaltyForTest: bossDefeatPenaltyForTest,
+        );
+        final resolvedAction = action;
+        if (resolvedAction == null) {
+          return MainlineStageFlowDecision.stoppedBeforeVictory;
+        }
+        if (boundary != null) {
+          return resolvedAction == StageVictoryAction.showChapterScroll
+              ? MainlineStageFlowDecision.enterNextStage
+              : MainlineStageFlowDecision.stoppedBeforeVictory;
+        }
+        if (nextStage == null) {
+          throw StateError('Mainline stage has no successor or chapter edge');
+        }
+        return resolvedAction == StageVictoryAction.enterNextStage
+            ? MainlineStageFlowDecision.enterNextStage
+            : MainlineStageFlowDecision.returnToMapAfterVictory;
+      },
+      nextStageOf: _nextStageInSameChapter,
+      loadNextSnapshot: ({required run, required nextStage}) =>
+          _loadNextMainlineSnapshot(run: run, nextStage: nextStage),
     );
+    final result = await coordinator.run(
+      initialStage: currentBootstrap.stage,
+      initialRun: currentBootstrap.run,
+      initialPlayerSnapshot: currentBootstrap.playerSnapshot,
+    );
+    if (result.reason ==
+        MainlineRunCompletionReason.participantNotBattleEligibleForNextStage) {
+      final active = await settlementService.activeForSave(
+        IsarSetup.currentSlotId,
+      );
+      if (active != null &&
+          active.phase == MainlineSettlementPhase.coreApplied &&
+          active.postSettlementAction ==
+              MainlinePostSettlementAction.enterNextStage) {
+        await settlementService.close(
+          identity: active.identity,
+          now: DateTime.now(),
+        );
+      }
+    }
+    if (result.reason ==
+            MainlineRunCompletionReason
+                .participantNotBattleEligibleForNextStage &&
+        context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.mainlineRunParticipantUnavailable),
+        ),
+      );
+    }
+    if (result.reason != MainlineRunCompletionReason.chapterCompleted) {
+      return;
+    }
+    final completedStage =
+        GameRepository.instance.stageDefs[result.run.currentStageId];
+    if (completedStage == null) {
+      throw StateError('Completed mainline stage is unavailable');
+    }
+    final boundary = resolveMainlineChapterBoundary(
+      repository: GameRepository.instance,
+      completedStage: completedStage,
+    );
+    if (boundary == null) {
+      throw StateError('Coordinator completed outside a chapter boundary');
+    }
+    final active = await settlementService.activeForSave(
+      IsarSetup.currentSlotId,
+    );
+    if (active == null ||
+        active.identity.runId != result.run.runId ||
+        active.identity.stageId != completedStage.id ||
+        active.postSettlementAction !=
+            MainlinePostSettlementAction.showChapterScroll) {
+      throw StateError('Chapter scroll recovery cursor is unavailable');
+    }
+    if (!context.mounted) return;
+    final nextBootstrap = await _presentCompletedChapterAndContinue(
+      context: context,
+      service: settlementService,
+      journal: active,
+      boundary: boundary,
+    );
+    if (nextBootstrap == null) return;
+    currentBootstrap = nextBootstrap;
   }
 }
 
@@ -472,6 +533,137 @@ typedef _MainlineRunBootstrap = ({
   CombatantSnapshot playerSnapshot,
 });
 
+typedef _ChapterScrollResume = ({
+  bool handled,
+  _MainlineRunBootstrap? nextBootstrap,
+});
+
+Future<_ChapterScrollResume> _resumeChapterScrollAtEntry({
+  required BuildContext context,
+  required WidgetRef ref,
+  required MainlineSettlementJournalService service,
+}) async {
+  final active = await service.activeForSave(IsarSetup.currentSlotId);
+  if (active == null ||
+      active.phase != MainlineSettlementPhase.coreApplied ||
+      (active.postSettlementAction != MainlinePostSettlementAction.none &&
+          active.postSettlementAction !=
+              MainlinePostSettlementAction.showChapterScroll)) {
+    return (handled: false, nextBootstrap: null);
+  }
+  final completedStage = GameRepository.instance.stageDefs[active.stageId];
+  if (completedStage == null ||
+      completedStage.stageType != StageType.mainline) {
+    throw StateError('Chapter scroll stage is unavailable');
+  }
+  final boundary = resolveMainlineChapterBoundary(
+    repository: GameRepository.instance,
+    completedStage: completedStage,
+  );
+  if (boundary == null) {
+    return (handled: false, nextBootstrap: null);
+  }
+  if (active.postSettlementAction == MainlinePostSettlementAction.none) {
+    await service.recordPostSettlementAction(
+      identity: active.identity,
+      action: MainlinePostSettlementAction.showChapterScroll,
+      now: DateTime.now(),
+    );
+  }
+  if (!context.mounted) return (handled: true, nextBootstrap: null);
+  final drained = await _drainMainlinePendingJianghuAffairs(
+    context: context,
+    ref: ref,
+    stage: completedStage,
+    durableSettlement: (service: service, identity: active.identity),
+    includeStageBossRecruit: true,
+  );
+  if (!drained) return (handled: true, nextBootstrap: null);
+  final refreshed = await service.journalFor(active.identity);
+  if (refreshed == null ||
+      refreshed.phase != MainlineSettlementPhase.coreApplied ||
+      refreshed.postSettlementAction !=
+          MainlinePostSettlementAction.showChapterScroll ||
+      !refreshed.allEffectsCompleted) {
+    throw StateError('Chapter scroll recovery cursor drifted');
+  }
+  if (!context.mounted) return (handled: true, nextBootstrap: null);
+  final nextBootstrap = await _presentCompletedChapterAndContinue(
+    context: context,
+    service: service,
+    journal: refreshed,
+    boundary: boundary,
+  );
+  return (handled: true, nextBootstrap: nextBootstrap);
+}
+
+Future<_MainlineRunBootstrap?> _presentCompletedChapterAndContinue({
+  required BuildContext context,
+  required MainlineSettlementJournalService service,
+  required MainlineSettlementJournal journal,
+  required MainlineChapterBoundary boundary,
+}) async {
+  if (journal.phase != MainlineSettlementPhase.coreApplied ||
+      journal.postSettlementAction !=
+          MainlinePostSettlementAction.showChapterScroll ||
+      !journal.allEffectsCompleted ||
+      journal.stageId != boundary.completedStageId) {
+    throw StateError('Chapter scroll is not ready to present');
+  }
+  if (!context.mounted) return null;
+  final action = await Navigator.of(context).push<ChapterTransitionAction>(
+    MaterialPageRoute(
+      builder: (_) => ChapterTransitionScreen(
+        chapterIndex: boundary.completedChapterIndex,
+        showEpilogue: true,
+        isRunCompletion: true,
+        nextChapterIndex: boundary.nextChapterIndex,
+      ),
+    ),
+  );
+  if (!context.mounted) return null;
+  if (action != ChapterTransitionAction.enterNextChapter ||
+      boundary.isFinalChapter) {
+    await service.close(identity: journal.identity, now: DateTime.now());
+    return null;
+  }
+  final nextStage = boundary.nextChapterFirstStage;
+  if (nextStage == null ||
+      nextStage.chapterIndex != boundary.nextChapterIndex) {
+    throw StateError('Next chapter first stage is unavailable');
+  }
+  final nextBootstrap = await _createFreshMainlineRunBootstrap(nextStage);
+  if (nextBootstrap == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(UiStrings.mainlineRunParticipantUnavailable),
+        ),
+      );
+    }
+    return null;
+  }
+  final nextIdentity = MainlineSettlementIdentity(
+    runId: nextBootstrap.run.runId,
+    stageId: nextStage.id,
+    loadoutVersion: nextBootstrap.run.currentLoadoutVersion,
+    participantId: nextBootstrap.run.participantId,
+  );
+  final prepared = await service.beginNextChapter(
+    previousIdentity: journal.identity,
+    nextIdentity: nextIdentity,
+    nextLoadoutSnapshotId:
+        nextBootstrap.run.loadoutSnapshots.last.loadoutSnapshotId,
+    now: DateTime.now(),
+  );
+  if (prepared.identity != nextIdentity ||
+      prepared.phase != MainlineSettlementPhase.prepared ||
+      prepared.loadoutSnapshotIds.length != 1) {
+    throw StateError('Next chapter transaction did not prepare the exact run');
+  }
+  return nextBootstrap;
+}
+
 Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
   final isar = IsarSetup.instance;
   final active = await MainlineSettlementJournalService(
@@ -506,6 +698,13 @@ Future<_MainlineRunBootstrap?> _bootstrapMainlineRun(StageDef stage) async {
       playerSnapshot: playerSnapshot,
     );
   }
+  return _createFreshMainlineRunBootstrap(stage);
+}
+
+Future<_MainlineRunBootstrap?> _createFreshMainlineRunBootstrap(
+  StageDef stage,
+) async {
+  final isar = IsarSetup.instance;
   final save = await isar.saveDatas.get(0);
   final participantId = await CurrentLeaderResolver.resolve(
     save: save,
@@ -722,6 +921,7 @@ Future<void> _runSingleStageFlow({
   CombatantSnapshot? playerSnapshot,
   ActivityController battleController = ActivityController.human,
   bool allowEnterNextStage = false,
+  bool completesChapter = false,
   ValueChanged<StageVictoryAction>? victoryActionSink,
   MainlineDurableSettlementContext? durableSettlement,
   MainlineSettlementJournal? durableJournal,
@@ -740,6 +940,9 @@ Future<void> _runSingleStageFlow({
   if ((durableSettlement == null) != (durableJournal == null)) {
     throw StateError('Durable settlement context must be complete');
   }
+  if (allowEnterNextStage && completesChapter) {
+    throw StateError('A stage cannot continue within and complete a chapter');
+  }
   if (durableJournal?.phase == MainlineSettlementPhase.coreApplied) {
     final drained = await _drainMainlinePendingJianghuAffairs(
       context: context,
@@ -754,24 +957,36 @@ Future<void> _runSingleStageFlow({
         StageVictoryAction.returnToMap,
       MainlinePostSettlementAction.enterNextStage =>
         StageVictoryAction.enterNextStage,
+      MainlinePostSettlementAction.showChapterScroll =>
+        StageVictoryAction.showChapterScroll,
       MainlinePostSettlementAction.none => null,
     };
     if (action == null) {
-      if (!context.mounted) return;
-      action = await showRecoveredStageSettlementDialog(
-        context: context,
-        stage: stage,
-        allowEnterNextStage: allowEnterNextStage,
-      );
+      if (completesChapter) {
+        action = StageVictoryAction.showChapterScroll;
+      } else {
+        if (!context.mounted) return;
+        action = await showRecoveredStageSettlementDialog(
+          context: context,
+          stage: stage,
+          allowEnterNextStage: allowEnterNextStage,
+        );
+      }
       await durableSettlement.service.recordPostSettlementAction(
         identity: durableSettlement.identity,
-        action: action == StageVictoryAction.enterNextStage
-            ? MainlinePostSettlementAction.enterNextStage
-            : MainlinePostSettlementAction.returnToMap,
+        action: switch (action) {
+          StageVictoryAction.returnToMap =>
+            MainlinePostSettlementAction.returnToMap,
+          StageVictoryAction.enterNextStage =>
+            MainlinePostSettlementAction.enterNextStage,
+          StageVictoryAction.showChapterScroll =>
+            MainlinePostSettlementAction.showChapterScroll,
+        },
         now: DateTime.now(),
       );
     }
-    if (action == StageVictoryAction.returnToMap || !allowEnterNextStage) {
+    if (action == StageVictoryAction.returnToMap ||
+        (!allowEnterNextStage && !completesChapter)) {
       await durableSettlement.service.close(
         identity: durableSettlement.identity,
         now: DateTime.now(),
@@ -1011,7 +1226,7 @@ Future<void> _runSingleStageFlow({
       extraDisplayTiers: outcome.extraDisplayTiers,
     );
     if (!context.mounted) return;
-    final victoryAction = await showStageVictoryDialog(
+    final dialogAction = await showStageVictoryDialog(
       context: context,
       stage: stage,
       participantName: participantName,
@@ -1031,16 +1246,24 @@ Future<void> _runSingleStageFlow({
       allowEnterNextStage: allowEnterNextStage,
     );
     if (durableSettlement != null) {
+      final victoryAction = completesChapter
+          ? StageVictoryAction.showChapterScroll
+          : dialogAction;
       durableVictoryAction = victoryAction;
       await durableSettlement.service.recordPostSettlementAction(
         identity: durableSettlement.identity,
-        action: victoryAction == StageVictoryAction.enterNextStage
-            ? MainlinePostSettlementAction.enterNextStage
-            : MainlinePostSettlementAction.returnToMap,
+        action: switch (victoryAction) {
+          StageVictoryAction.returnToMap =>
+            MainlinePostSettlementAction.returnToMap,
+          StageVictoryAction.enterNextStage =>
+            MainlinePostSettlementAction.enterNextStage,
+          StageVictoryAction.showChapterScroll =>
+            MainlinePostSettlementAction.showChapterScroll,
+        },
         now: DateTime.now(),
       );
     } else {
-      victoryActionSink?.call(victoryAction);
+      victoryActionSink?.call(dialogAction);
     }
   }
 
@@ -1121,7 +1344,8 @@ Future<void> _runSingleStageFlow({
     if (action == null) {
       throw StateError('Durable settlement victory action was not recorded');
     }
-    if (action == StageVictoryAction.returnToMap || !allowEnterNextStage) {
+    if (action == StageVictoryAction.returnToMap ||
+        (!allowEnterNextStage && !completesChapter)) {
       await durableSettlement.service.close(
         identity: durableSettlement.identity,
         now: DateTime.now(),

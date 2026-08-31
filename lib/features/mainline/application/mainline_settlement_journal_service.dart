@@ -1,10 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
 import '../domain/mainline_settlement_journal.dart';
 
 enum MainlineCoreCommitDisposition { applied, alreadyApplied }
 
-/// 第一章连续首通的持久结算事务边界。
+/// 主线单章连续首通的持久结算事务边界。
 ///
 /// 本服务只拥有 journal/claim 与调用方提供的事务内 callback，不复制战斗结算、
 /// 奖励或伤势规则。callback 必须使用同一个 [isar] 且不得再开启 writeTxn。
@@ -225,6 +226,60 @@ class MainlineSettlementJournalService {
       }
     });
     return recorded;
+  }
+
+  /// 章末卷轴确认进入下一章时，原子关闭旧章 receipt 并创建新 run 首关。
+  ///
+  /// 新 run 必须从 loadout version 1 开始且不得沿用旧 run id；任一写入失败
+  /// 都保留旧章 [MainlinePostSettlementAction.showChapterScroll] 游标。
+  Future<MainlineSettlementJournal> beginNextChapter({
+    required MainlineSettlementIdentity previousIdentity,
+    required MainlineSettlementIdentity nextIdentity,
+    required String nextLoadoutSnapshotId,
+    required DateTime now,
+    @visibleForTesting Future<void> Function()? afterPreviousClosedInTxnForTest,
+  }) async {
+    if (nextIdentity.runId == previousIdentity.runId ||
+        nextIdentity.stageId == previousIdentity.stageId ||
+        nextIdentity.loadoutVersion != 1) {
+      throw StateError('Next chapter must start a distinct version-1 run');
+    }
+    late MainlineSettlementJournal result;
+    await isar.writeTxn(() async {
+      final previous = await _requireByIdentityInTxn(previousIdentity);
+      final existing = await _findByIdentityInTxn(nextIdentity);
+      if (previous.phase == MainlineSettlementPhase.closed) {
+        if (existing != null &&
+            existing.phase == MainlineSettlementPhase.prepared) {
+          result = existing;
+          return;
+        }
+        throw StateError('Previous chapter settlement is already closed');
+      }
+      if (previous.phase != MainlineSettlementPhase.coreApplied ||
+          previous.postSettlementAction !=
+              MainlinePostSettlementAction.showChapterScroll ||
+          !previous.allEffectsCompleted) {
+        throw StateError('Previous chapter is not ready to cross boundary');
+      }
+      if (existing != null) {
+        throw StateError('Next chapter settlement identity already exists');
+      }
+      previous.close(at: now);
+      await isar.mainlineSettlementJournals.put(previous);
+      await afterPreviousClosedInTxnForTest?.call();
+
+      final next = MainlineSettlementJournal.prepare(
+        saveDataId: previous.saveDataId,
+        identity: nextIdentity,
+        loadoutSnapshotId: nextLoadoutSnapshotId,
+        loadoutSnapshotIds: [nextLoadoutSnapshotId],
+        createdAt: now,
+      );
+      await isar.mainlineSettlementJournals.put(next);
+      result = next;
+    });
+    return result;
   }
 
   Future<MainlineSettlementJournal?> _activeForSaveInTxn(int saveDataId) async {

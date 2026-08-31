@@ -201,5 +201,30 @@ void main() {
         throwsStateError,
       );
     });
+
+    test('章末卷轴动作是可恢复游标且排空后允许关闭', () {
+      final journal = prepared();
+      journal.markCoreApplied(
+        pendingEffectIds: const [],
+        at: DateTime.utc(2026, 8, 31, 0, 1),
+      );
+      expect(
+        journal.recordPostSettlementAction(
+          MainlinePostSettlementAction.showChapterScroll,
+          at: DateTime.utc(2026, 8, 31, 0, 2),
+        ),
+        isTrue,
+      );
+      expect(
+        journal.postSettlementAction,
+        MainlinePostSettlementAction.showChapterScroll,
+      );
+      expect(
+        journal.recoveryAction,
+        MainlineSettlementRecoveryAction.resumePostSettlement,
+      );
+      journal.close(at: DateTime.utc(2026, 8, 31, 0, 3));
+      expect(journal.phase, MainlineSettlementPhase.closed);
+    });
   });
 }
