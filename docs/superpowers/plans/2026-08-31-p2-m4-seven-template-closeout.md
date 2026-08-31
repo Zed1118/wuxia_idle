@@ -30,12 +30,13 @@
 
 ## 当前恢复点
 
-- 状态：`[BLOCKED]` 候选，生产模板从 `4/7` 推进到诚实的 `6/7`；生存与追击工程 Gate 已闭合，第七类守阵受下述运行时所有权缺口阻塞。
+- 状态：工程候选已从 `6/7` 推进到 `7/7`；守阵不再阻塞。最终 READY 仍以整仓 format、持锁全量、macOS Debug build、receipt 和最终 tip Gate 为准，真人目检不在本工程结论内。
 - 已完成：
-  - `stage_02_02` 改为 `survive_duration`，`required_ticks: 900` 明确为 90 秒 TUNING 候选；真实 production host/headless 在第 900 拍带残敌胜利。
-  - `stage_07_04` 接入 `ch7_encounter_04_grey_cloak_pursuit`；目标保留灰衣 Boss 身份，同一 entry/runtime actor ID 驱动逃逸 AI、接近投影、观察层、HUD 与终局；默认 headless bot 可完成且无硬超时。
-  - 1280×720 与 1440×900 的生存/追击 HUD 结构 smoke 已覆盖；真人可读性继续挂账。
-- 已跑验证：新数据/运行时/HUD 真红已记录；targeted + adjacent 共 43 项通过；双向破坏证红分别杀死追击逃逸移动实现 1 项、生存时长退化 2 项，另有追击接近投影恒不触发 1 项；均以精确反向补丁还原。`flutter analyze --no-pub lib test` 零问题；整仓 format 为 `1660 files (0 changed)`；macOS Debug 构建成功；最终 tip 持锁全量为 `05:35 +5754: All tests passed!`、`[E]=0`。无范围参数的整仓 `flutter analyze` 会进入历史独立子包 `tools/phase0minus_probe`，因其自身 package 依赖未解析报约 1900 项，非本 diff 引入。
-- 测试契约迁移：`stage_02_02` 从“25 个击杀投影”迁移为“900 个逐帧时间投影”，登记表覆盖被删的 3 条断言和 1 个用例，替代侧新增 43 条断言和 10 个用例。校验原文：`[migration] expect 删 3 / 增 43;用例 删 1 / 增 10;登记 4 条`；`PASS: test_contract_migration`。
-- Gate：快速预检除 `test_deletions` 外全部 PASS；该唯一失败满足宪法 §8 的测试契约迁移例外，最终 Gate 仍需对最终 tip/receipt 重跑并确认不存在第二项失败。
-- 阻塞项：`CombatDefendEntityRef` 只有 `entityId + requiredTicks`，没有位置或 durability；`Phase0aArenaState` 只有单玩家与敌方 actor，生产流没有独立可受击目标 owner。按本单“不改 schema/saveVersion”红线，无法实现“敌压可毁、失守即败”的守阵语义；恒真 `EntityDefended` 计时器或把玩家冒充阵眼均被验收标准禁止。
+  - `stage_02_02` 使用 `survive_duration`，真实 production host/headless 在第 900 拍带残敌胜利。
+  - `stage_07_04` 使用 `pursue_target`，同一 canonical actor 驱动逃逸、接近投影、观察、HUD 与终局。
+  - `stage_02_01` 使用完整 `defend_entity` 合同：独立世界位置与耐久归 runtime-only arena state 所有；指定攻击者通过既有 AI intent 选阵眼，既有 reducer 处理距离/角度/冷却并施加 authored 固定耐久伤害；非指定敌人继续攻击玩家。阵眼存活至 600 tick 胜利，失守优先失败。
+  - 守阵 HUD 与世界标记已覆盖 1280×720、1440×900 结构 smoke；真人清晰度、压力和 TUNING 体验继续挂账。
+- 守阵验证：首轮缺少完整 schema/runtime 类型时编译 RED；修复后合同/生产数据/reducer/host/headless/UI 合计 118 项定向测试通过，`flutter analyze lib test` 为 `No issues found`。还定位并修复 objective snapshot 丢弃守阵实体导致时长不累计的真实接线缺口。
+- 守阵破坏证红：移除 reducer 守阵受击实现后 2 项失败；把生产 `damage_per_hit` 强制退化为 0 后 catalog fail-closed，1 项失败；均以精确反向补丁还原并复绿。
+- 边界：未修改 Isar、持久化存档 schema、schemaVersion/saveVersion、玩家数值、技能或奖励；守阵只扩展非持久化 catalog/runtime 合同并补充最小 `strings.dart` UI 文案。
+- 待收口：测试契约迁移登记、整仓 format、macOS Debug build、持锁全量、receipt 与最终 Gate。
