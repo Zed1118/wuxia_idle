@@ -6,6 +6,7 @@ import '../../battle/domain/phase0a/activity_participation_request.dart';
 enum GauntletAutomationRejectionReason {
   wrongContentKind,
   wrongContentId,
+  wrongLoadoutPlan,
   unsupportedParticipation,
   unsupportedController,
   visibleRealtimePlayerBot,
@@ -13,6 +14,26 @@ enum GauntletAutomationRejectionReason {
   unsupportedEntryKind,
   fullClearRequired,
 }
+
+String gauntletAutomationLoadoutPlanId(int characterId) {
+  if (characterId <= 0) {
+    throw ArgumentError.value(characterId, 'characterId', 'must be > 0');
+  }
+  return 'gauntlet-plan-$characterId';
+}
+
+ActivityParticipationRequest gauntletHeadlessReplayRequest({
+  required int characterId,
+}) => ActivityParticipationRequest(
+  contentId: GauntletAutomationPolicy.gauntletId,
+  contentKind: ActivityContentKind.gauntlet,
+  characterId: characterId,
+  loadoutPlanId: gauntletAutomationLoadoutPlanId(characterId),
+  participation: ActivityParticipationMode.direct,
+  controller: ActivityController.playerBot,
+  clock: ActivityClock.headless,
+  entryKind: ActivityEntryKind.replay,
+);
 
 /// Pure policy result. Application code must fail closed on every rejection.
 final class GauntletAutomationDecision {
@@ -61,6 +82,12 @@ final class GauntletAutomationPolicy {
     if (request.contentId != gauntletId) {
       return const GauntletAutomationDecision.rejected(
         GauntletAutomationRejectionReason.wrongContentId,
+      );
+    }
+    if (request.loadoutPlanId !=
+        gauntletAutomationLoadoutPlanId(request.characterId)) {
+      return const GauntletAutomationDecision.rejected(
+        GauntletAutomationRejectionReason.wrongLoadoutPlan,
       );
     }
     if (request.participation != ActivityParticipationMode.direct) {

@@ -5915,6 +5915,58 @@ tasks:
       - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule or main_checkout_write
       - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
 
+  - id: P2-M5-GAUNTLET-HEADLESS-PRODUCTION-WIRING
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-gauntlet-headless-production-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-gauntlet-headless-production-20260901
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: fe2a287f29285ab9988b0c3387765fc6f04a5b3f
+    ready_marker: "[READY][CODEX][P2-M5-GAUNTLET-HEADLESS-PRODUCTION-WIRING] 接通断魂庄首通后快速推演生产入口"
+    completion_scope: connect_the_existing_first_clear_gated_gauntlet_headless_replay_to_the_real_loadout_entry
+    acceptance_baseline: published_37_of_42_included_an_unwired_gauntlet_automation_cell
+    acceptance_target: requalify_gauntlet_automation_and_restore_a_valid_37_of_42_M5_matrix
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+      - P2-M5-GAUNTLET-AUTOMATION-ADMISSION
+    evidence:
+      preimplementation_red_failures: 2
+      focused_production_tests: pending
+      focused_production_failures: pending
+      mutation_force_preclear_visibility_failures: pending
+      mutation_break_exact_request_failures: pending
+      exact_reverse_patch_restore: pending
+      analyze_issues: pending
+      format_changed_files: pending
+      full_suite_tests: pending
+      full_suite_failures: pending
+      final_gate: pending
+      exact_sha_ci: pending
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    owned_files:
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - lib/features/boss_gauntlet/domain/gauntlet_automation_policy.dart
+      - lib/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart
+      - lib/shared/strings.dart
+      - test/features/boss_gauntlet/gauntlet_automation_policy_test.dart
+      - test/features/boss_gauntlet/gauntlet_enter_test.dart
+      - test/features/boss_gauntlet/gauntlet_loadout_screen_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m5-gauntlet-headless-production-wiring.md
+      - docs/audit/phase2_m5_gauntlet_headless_production_wiring_2026-09-01.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - CLAUDE.md
+    protected_behavior:
+      - first_clear_remains_human_and_only_exact_cleared_gauntlet_membership_allows_headless_replay
+      - entry_admission_ticket_consumption_and_run_creation_share_one_transaction_boundary
+      - production_entry_and_driver_reuse_the_same_exact_participant_and_loadout_request
+      - automation_stops_at_existing_reward_choice_and_never_selects_or_changes_rewards
+      - direct_headless_replay_does_not_claim_to_be_durable_dispatch
+      - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
+      - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
     owner: codex_root

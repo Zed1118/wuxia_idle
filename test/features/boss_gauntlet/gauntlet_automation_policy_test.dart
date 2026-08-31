@@ -9,11 +9,12 @@ ActivityParticipationRequest _request({
   ActivityController controller = ActivityController.playerBot,
   ActivityClock clock = ActivityClock.headless,
   ActivityEntryKind entryKind = ActivityEntryKind.replay,
+  String loadoutPlanId = 'gauntlet-plan-42',
 }) => ActivityParticipationRequest(
   contentId: contentId,
   contentKind: contentKind,
   characterId: 42,
-  loadoutPlanId: 'gauntlet-plan-42',
+  loadoutPlanId: loadoutPlanId,
   participation: participation,
   controller: controller,
   clock: clock,
@@ -92,6 +93,33 @@ void main() {
         GauntletAutomationRejectionReason.wrongContentId,
       );
     }
+  });
+
+  test(
+    'production request builder freezes the exact headless replay tuple',
+    () {
+      final request = gauntletHeadlessReplayRequest(characterId: 42);
+      expect(request.contentKind, ActivityContentKind.gauntlet);
+      expect(request.contentId, GauntletAutomationPolicy.gauntletId);
+      expect(request.characterId, 42);
+      expect(request.loadoutPlanId, 'gauntlet-plan-42');
+      expect(request.participation, ActivityParticipationMode.direct);
+      expect(request.controller, ActivityController.playerBot);
+      expect(request.clock, ActivityClock.headless);
+      expect(request.entryKind, ActivityEntryKind.replay);
+    },
+  );
+
+  test('loadout plan must bind the exact participant', () {
+    final decision = GauntletAutomationPolicy.evaluate(
+      request: _request(loadoutPlanId: 'gauntlet-plan-7'),
+      clearedGauntletIds: cleared,
+    );
+    expect(decision.allowed, isFalse);
+    expect(
+      decision.rejectionReason,
+      GauntletAutomationRejectionReason.wrongLoadoutPlan,
+    );
   });
 
   test('visible realtime playerBot has an explicit rejection reason', () {

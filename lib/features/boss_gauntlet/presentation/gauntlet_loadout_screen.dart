@@ -15,6 +15,7 @@ import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
+import '../domain/gauntlet_automation_policy.dart';
 import 'gauntlet_defeat_screen.dart';
 import 'gauntlet_entry_flow.dart';
 
@@ -50,28 +51,67 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
 
   int get _loadedTotal => _supplyLoad.values.fold(0, (a, b) => a + b);
 
-  Future<void> _enter(int ticketCount, int cycleIndex) async {
+  Future<void> _enter(
+    int ticketCount,
+    int cycleIndex, {
+    bool headlessReplay = false,
+  }) async {
     if (_selected.length != 1 || _submitting || ticketCount < 1) return;
     final service = ref.read(gauntletServiceProvider);
     if (service == null) return; // 测试旁路：未 init Isar
+    final config = ref.read(gauntletConfigProvider);
+    final numbers = GameRepository.instanceOrNull?.numbers;
+    if (headlessReplay && (config == null || numbers == null)) return;
+    final participantId = _selected.single;
+    final automationRequest = headlessReplay
+        ? gauntletHeadlessReplayRequest(characterId: participantId)
+        : null;
     setState(() => _submitting = true);
     try {
       await service.enter(
-        characterIds: _selected.toList(),
+        characterIds: [participantId],
         supplies: {
           for (final e in _supplyLoad.entries)
             if (e.value > 0) e.key: e.value,
         },
         supplyCap: _supplyCap,
         cycleIndex: cycleIndex,
+        automationRequest: automationRequest,
       );
       if (!mounted) return;
       ref.invalidate(activeGauntletProvider);
       ref.invalidate(gauntletCandidatesProvider);
       ref.invalidate(gauntletLoadoutInfoProvider);
-      // 入庄成功 → 逐关战斗流（#1 wiring Task 5）；终局（选奖 / 离庄 / 认输）返回后
-      // pop 本屏回主菜单（镜像 tower 花名册 → runTowerFlow）。
-      await runGauntletFlow(context: context, ref: ref);
+      if (headlessReplay) {
+        final result = await service.driveHeadlessReplayToRewardChoice(
+          request: automationRequest!,
+          config: config!,
+          numbers: numbers!,
+        );
+        if (!mounted) return;
+        ref.invalidate(activeGauntletProvider);
+        ref.invalidate(gauntletCandidatesProvider);
+        ref.invalidate(gauntletLoadoutInfoProvider);
+        switch (result.terminal) {
+          case GauntletAutomationDriveTerminal.awaitingRewardChoice:
+            // 自动战斗只推进到现有三选一边界，选择权仍由玩家本人处理。
+            await runGauntletFlow(context: context, ref: ref);
+          case GauntletAutomationDriveTerminal.defeated:
+            final summary = result.defeatSummary;
+            if (summary == null) {
+              throw StateError('Gauntlet automation defeat has no summary');
+            }
+            await Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => GauntletDefeatScreen(summary: summary),
+              ),
+            );
+        }
+      } else {
+        // 入庄成功 → 逐关战斗流（#1 wiring Task 5）；终局（选奖 / 离庄 / 认输）
+        // 返回后 pop 本屏回主菜单（镜像 tower 花名册 → runTowerFlow）。
+        await runGauntletFlow(context: context, ref: ref);
+      }
       if (!mounted) return;
       Navigator.of(context).maybePop();
     } on StateError {
@@ -369,15 +409,30 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
                     ),
                   ),
                 ),
-              Align(
-                alignment: Alignment.center,
-                child: PlaqueButton(
-                  label: UiStrings.gauntletEnterButton,
-                  primary: true,
-                  onTap: canEnter
-                      ? () => _enter(info.ticketCount, selectedCycle)
-                      : null,
-                ),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  PlaqueButton(
+                    label: UiStrings.gauntletEnterButton,
+                    primary: true,
+                    onTap: canEnter
+                        ? () => _enter(info.ticketCount, selectedCycle)
+                        : null,
+                  ),
+                  if (cleared >= 1)
+                    PlaqueButton(
+                      label: UiStrings.gauntletHeadlessReplayButton,
+                      onTap: canEnter
+                          ? () => _enter(
+                              info.ticketCount,
+                              selectedCycle,
+                              headlessReplay: true,
+                            )
+                          : null,
+                    ),
+                ],
               ),
             ],
           ),

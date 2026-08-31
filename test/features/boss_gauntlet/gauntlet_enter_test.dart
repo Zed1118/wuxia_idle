@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/domain/gauntlet_automation_policy.dart';
 
 import '../../support/isar_test_support.dart';
 
@@ -133,6 +134,24 @@ void main() {
     // 普通库存守恒：扣量 == 托管装入量
     expect(await qtyOf('item_liaoshangdan'), 1); // 3 - 2
     expect(await qtyOf('item_xingnang_buji'), 0); // 1 - 1
+  });
+
+  test('自动首通门槛在扣帖与建会话前 fail closed', () async {
+    final cid = await putDisciple(mainTech: 5);
+    await putInventory('item_duanhuntie', ItemType.ticket, 1);
+    final svc = GauntletService(IsarSetup.instance);
+
+    await expectLater(
+      svc.enter(
+        characterIds: [cid],
+        supplyCap: 3,
+        automationRequest: gauntletHeadlessReplayRequest(characterId: cid),
+      ),
+      throwsStateError,
+    );
+
+    expect(await qtyOf('item_duanhuntie'), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
 
   test('新会话 seed 同 slot 稳定、不同 slot 不同', () async {

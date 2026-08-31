@@ -1,17 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
+import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/wuxia_ui.dart';
 
+import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
 
 /// C2.5 断魂庄装载屏（§7.1）：帖库存 / 三关 Boss + 推荐境界 / 单人选择 / 补给装载 /
@@ -60,12 +69,19 @@ const _noTicketInfo = GauntletLoadoutInfo(
   ],
 );
 
+const _clearedInfo = GauntletLoadoutInfo(
+  ticketCount: 2,
+  supplies: [],
+  clearedCyclesMax: 1,
+);
+
 Future<void> _pump(
   WidgetTester tester,
   Size size, {
   required List<GauntletCandidate> candidates,
   GauntletLoadoutInfo info = _info,
   BossGauntletRun? activeRun,
+  GauntletService? service,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -73,6 +89,8 @@ Future<void> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        if (service != null)
+          gauntletServiceProvider.overrideWith((ref) => service),
         gauntletCandidatesProvider.overrideWith((ref) async => candidates),
         gauntletLoadoutInfoProvider.overrideWith((ref) async => info),
         activeGauntletProvider.overrideWith((ref) async => activeRun),
@@ -91,11 +109,63 @@ BossGauntletRun _fakeRun({required GauntletPhase phase, int stage = 2}) =>
       ..currentStage = stage
       ..sessionPhase = phase;
 
+class _SpyGauntletService extends GauntletService {
+  _SpyGauntletService(super.isar);
+
+  List<int>? enteredCharacterIds;
+  ActivityParticipationRequest? entryAutomationRequest;
+  ActivityParticipationRequest? driveAutomationRequest;
+
+  @override
+  Future<int> enter({
+    required List<int> characterIds,
+    Map<String, int> supplies = const {},
+    required int supplyCap,
+    int cycleIndex = 1,
+    ActivityParticipationRequest? automationRequest,
+  }) async {
+    enteredCharacterIds = List.of(characterIds);
+    entryAutomationRequest = automationRequest;
+    return 77;
+  }
+
+  @override
+  Future<GauntletAutomationDriveResult> driveHeadlessReplayToRewardChoice({
+    required ActivityParticipationRequest request,
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+  }) async {
+    driveAutomationRequest = request;
+    return const GauntletAutomationDriveResult(
+      terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
+      stagesCompleted: 3,
+    );
+  }
+
+  @override
+  Future<BossGauntletRun?> activeRun() async => null;
+}
+
 void main() {
+  late Directory tempDir;
+
   setUpAll(() async {
+    await initializeTestIsarCore();
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
     }
+  });
+
+  setUp(() async {
+    tempDir = await Directory.systemTemp.createTemp('wuxia_gauntlet_loadout_');
+    await IsarSetup.init(directory: tempDir, inspector: false);
+  });
+
+  tearDown(() async {
+    if (Isar.getInstance('wuxia_save_slot1') != null) {
+      await IsarSetup.close();
+    }
+    if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
   });
 
   final candidates = [
@@ -226,6 +296,66 @@ void main() {
     await tester.tap(find.text('沈青'));
     await tester.pumpAndSettle();
     expect(find.text(UiStrings.gauntletSelectedCount(1)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('完整首通后生产整备入口才开放快速推演', (tester) async {
+    await _pump(tester, const Size(1280, 720), candidates: candidates);
+    expect(find.text('快速推演'), findsNothing, reason: '首次通关必须保持真人亲战');
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      info: _clearedInfo,
+    );
+    expect(find.text('快速推演'), findsOneWidget);
+    final button = tester.widget<PlaqueButton>(
+      find.byWidgetPredicate(
+        (widget) => widget is PlaqueButton && widget.label == '快速推演',
+      ),
+    );
+    expect(button.onTap, isNull, reason: '未选择实际参与者时必须 fail closed');
+  });
+
+  testWidgets('快速推演从生产整备页提交 exact participant 的 headless replay', (
+    tester,
+  ) async {
+    final service = _SpyGauntletService(IsarSetup.instance);
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      info: _clearedInfo,
+      service: service,
+    );
+    await tester.tap(find.text('沈青'));
+    await tester.pumpAndSettle();
+    final quickButton = find.byWidgetPredicate(
+      (widget) => widget is PlaqueButton && widget.label == '快速推演',
+    );
+    await tester.ensureVisible(quickButton);
+    await tester.tap(quickButton);
+    await tester.pumpAndSettle();
+
+    expect(service.enteredCharacterIds, [1]);
+    expect(
+      service.entryAutomationRequest,
+      same(service.driveAutomationRequest),
+      reason: '扣帖前准入与实际推演必须复用同一请求快照',
+    );
+    final request = service.driveAutomationRequest!;
+    expect(request.contentKind, ActivityContentKind.gauntlet);
+    expect(request.contentId, GauntletService.gauntletId);
+    expect(request.characterId, 1);
+    expect(request.loadoutPlanId, 'gauntlet-plan-1');
+    expect(request.participation, ActivityParticipationMode.direct);
+    expect(request.controller, ActivityController.playerBot);
+    expect(request.clock, ActivityClock.headless);
+    expect(request.entryKind, ActivityEntryKind.replay);
     expect(tester.takeException(), isNull);
   });
 

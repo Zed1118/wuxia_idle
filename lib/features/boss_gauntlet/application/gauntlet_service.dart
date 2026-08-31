@@ -170,6 +170,7 @@ class GauntletService {
     Map<String, int> supplies = const {},
     required int supplyCap,
     int cycleIndex = 1,
+    ActivityParticipationRequest? automationRequest,
   }) async {
     if (characterIds.length != 1) {
       throw StateError('断魂庄入场：路线 C 只允许单人，got ${characterIds.length}');
@@ -191,6 +192,18 @@ class GauntletService {
     return _isar.writeTxn(() async {
       final save = await _isar.saveDatas.get(0);
       if (save == null) throw StateError('断魂庄入场：无存档');
+
+      if (automationRequest != null) {
+        GauntletAutomationPolicy.requireAllowed(
+          request: automationRequest,
+          clearedGauntletIds: save.clearedGauntletIds.toSet(),
+        );
+        if (automationRequest.characterId != characterIds.single) {
+          throw StateError(
+            'Gauntlet automation participant does not match entry member',
+          );
+        }
+      }
 
       final runs = await _isar.bossGauntletRuns.where().findAll();
       if (runs.any((r) => r.saveDataId == save.id)) {
