@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.76
+> **版本**:v1.77
+> **v1.77 变更**(2026-09-01 二阶段 M5 轻功/守城自动化矩阵):轻功与守城仍要求真人首通；已通关后，可见重打按全局自动战斗设置选择真人或前台 bot，快速推演走 `direct + playerBot + headless + replay`，原差遣保持 `dispatch + playerBot + headless + offlineResume`。三条通道使用玩家本次选定的 exact participant；守城 headless 在开跑前选择并持久化阵型，轻功拒绝阵型。既有 live Host、Phase 0A headless runner、durable receipt、占用与共享 settlement 仍是唯一 owner。M5 固定工程矩阵由 `34/42` 推至 `36/42`，顶层 M5、M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 验收继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁或战斗规则。
 > **v1.76 变更**(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):既有玩家可达塔扫荡入口现只对已首通层开放 typed `direct + playerBot + headless + sweep`；请求经当前掌门、exact snapshot、占用与精确装配准入后进入既有 Phase 0A sweep runner，并在共享 settlement 前重验同一参与者，报告归该人。异常身份/代际、生死、疗养、主修、占用、装配、进度、stale admission 与错人 settlement 均 fail closed。只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增战斗/结算真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
-> **v1.75 变更**(2026-08-25 二阶段 U14 六模式入口全状态路由子门):五个江湖活动地点在相关 provider loading/error 时均禁用地图 CTA 并置空回调，心魔角色入口在进度 loading/error 时隐藏；结合既有 hidden/locked/open/active/complete/zero-eligible 生产证据，入口全状态路由子门关闭，异步边界达到 `12/12`。塔、轻功、守城仍缺真实 automation runner/admission，故 U14 权威门仍 `0/1 BLOCKED`、顶层 M0–M9 仍 `1/10`；不新增 provider/policy/runner，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)

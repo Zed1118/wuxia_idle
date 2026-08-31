@@ -1,5 +1,7 @@
 # GDD.md 历史变更摘要归档
 
+> **v1.75 变更**(2026-08-25 二阶段 U14 六模式入口全状态路由子门):五个江湖活动地点在相关 provider loading/error 时均禁用地图 CTA 并置空回调，心魔角色入口在进度 loading/error 时隐藏；结合既有 hidden/locked/open/active/complete/zero-eligible 生产证据，入口全状态路由子门关闭，异步边界达到 `12/12`。塔、轻功、守城仍缺真实 automation runner/admission，故 U14 权威门仍 `0/1 BLOCKED`、顶层 M0–M9 仍 `1/10`；不新增 provider/policy/runner，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。(2026-09-01 v1.77 批按体例迁入)
+
 > **v1.74 变更**(2026-08-25 二阶段 U14 五地点零 eligible 路由子门):九霄塔、轻功、守城、断魂庄和百草岭地点详情在 idle 且无 eligible 参与者时均 fail closed；断魂庄与百草岭 active 会话仍可在当前候选为零时恢复。生产行为与显式 widget 回归均达到 `5/5`。本子门关闭为 `1/1`，但塔、轻功、守城仍缺真实 automation runner/admission，故 U14 权威门仍 `0/1 BLOCKED`、顶层 M0–M9 仍 `1/10`；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.76 批按体例迁入)
 
 > **v1.73 变更**(2026-08-25 二阶段 M5 心魔本人手动准入生产纵切):心魔仍只由角色突破阻断区进入，但现在保留当前目标身份；首通/重打只允许本人 `direct + human + realtime`，经当代、占用、生死、疗养和精确装配复核后，exact snapshot 进入既有 live stage flow，共享结算与胜败报告归该人。bot/headless/差遣/扫荡/离线恢复、替代角色、跨代、占用、无主修、悬空装配或错人 settlement 均 fail closed。这只关闭心魔 manual-only 子门，顶层 M0–M9 仍 `1/10`，M5/U14/M6/Phase 2 仍开放；不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。(2026-08-25 v1.75 批按体例迁入)

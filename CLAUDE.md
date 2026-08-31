@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.95**
+> **版本:v1.96**
+>
+> v1.96 变更摘要(2026-09-01 二阶段 M5 轻功/守城自动化矩阵):轻功与守城首通继续锁定真人；已通关可见重打消费全局 `autoPlayDefault`，以玩家本次选择的 exact participant 进入既有前台 `Phase0aMainlineBattleHost`；新增“快速推演”提交 `direct + playerBot + headless + replay`，复用既有 durable receipt、占用、Phase 0A headless runner 与共享 settlement，守城在开跑前选择并持久化阵型。既有差遣继续保持 `dispatch + playerBot + headless + offlineResume`，三通道不互相冒充。破坏证红 `4+1+2`，扩展定向 `82/82`、全量 `5828/5828`、analyze 0 issue。M5 固定工程矩阵由 `34/42` 推至 `36/42`，顶层 M5 与 M0–M9 仍分别 `0/1 BLOCKED`、`1/10`；真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁或战斗规则。
 >
 > v1.95 变更摘要(2026-08-26 二阶段候选稳定化):吸收结果驱动交付门禁，固定“一个权威 Gate + 受控集成态 + 真实墙钟成本”口径；纠正将测试 reporter 的 `5:00` 误读为约 5 小时的历史错误。历史热缓存全量约 4–7 分钟；当前 6,294-test 冷隔离候选实测 `14:06.91`，合理施工预算按约 5–15 分钟而非小时。M0–M9 仍只按未加权 `1/10` 报告，不因 READY、局部绿测或文档数量晋升；本次不改 schema/saveVersion、玩法、数值、YAML 或 main。
 >
