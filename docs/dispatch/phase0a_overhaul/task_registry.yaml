@@ -5767,6 +5767,11 @@ tasks:
       blocked_cells: 8
       focused_production_tests: 565
       focused_production_failures: 0
+      full_suite_tests: 5822
+      full_suite_failures: 0
+      full_suite_error_blocks: 0
+      analyze_issues: 0
+      format_changed_files: 0
       false_green_integration_test_added: false
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred

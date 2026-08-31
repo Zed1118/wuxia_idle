@@ -44,6 +44,13 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 该绿色基线证明现有纵切没有被当前 main 破坏，不证明八个不存在的 owner 已完成。
 
+最终工程检查：
+
+- `flutter analyze --no-pub lib test`：0 issue，末行 `No issues found! (ran in 13.5s)`；
+- `dart format .`：`1699 files / 0 changed`；
+- 锁保护整仓全量：`5822/5822 PASS`，退出码 0，`[E]=0`，末行 `05:02 +5822: All tests passed!`；
+- 项目 Gate 必须在最终 `[READY]` 审计 tip 上独立通过后才允许合并。
+
 ## 推荐施工顺序
 
 1. 先补个人记录作用域：塔个人层记录与心魔个人进度共用一次版本化加法迁移，先解决“换角色继承个人成就”的事实错误。
