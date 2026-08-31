@@ -300,6 +300,7 @@ class _Phase0aMainlineBattleHostState
     return Phase0aBattleScreen(
       controller: controller,
       numericSkillBindings: playerAdapter.numericSkillBindings,
+      basicAttackRange: playerAdapter.attackRange,
       botCommandBuilder: widget.controller == ActivityController.playerBot
           ? Phase0aPlayerBotAdapter(
               playerAdapter: playerAdapter,

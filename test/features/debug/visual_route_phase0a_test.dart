@@ -40,6 +40,19 @@ void main() {
       );
     });
 
+    test('M4 24-active 性能 fixture route 可解析并接入 host', () {
+      expect(
+        parseVisualRoute('phase0a_m4_density_profile'),
+        VisualRoute.phase0aM4DensityProfile,
+      );
+      final hostSource = File(
+        'lib/features/debug/presentation/visual_route_host.dart',
+      ).readAsStringSync();
+      expect(hostSource, contains('case VisualRoute.phase0aM4DensityProfile:'));
+      expect(hostSource, contains('loadM4Density'));
+      expect(hostSource, contains('_Phase0aProfilePreview'));
+    });
+
     test('反馈静态验收路由 id 可解析', () {
       const routes = <VisualRoute, String>{
         VisualRoute.phase0aBattleAttackFeedback:

@@ -49,7 +49,8 @@ final class Phase0aEnemyAiAdapter {
       // 不移动、不普攻、不放技能——reducer 另有同口径压制闸为双保险。
       if (enemy.chargingCast != null ||
           enemy.chargeTicksRemaining > 0 ||
-          enemy.staggerTicksRemaining > 0) {
+          enemy.staggerTicksRemaining > 0 ||
+          enemy.gatherControlTicksRemaining > 0) {
         continue;
       }
       final delta = player.position - enemy.position;

@@ -11,6 +11,7 @@ import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
+import '../../../../shared/widgets/wuxia_image.dart';
 import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_numeric_skill_binding.dart';
@@ -44,8 +45,10 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
+    this.basicAttackRange,
     this.botCommandBuilder,
-  }) : assert(feedbackHoldSeconds > 0);
+  }) : assert(feedbackHoldSeconds > 0),
+       assert(basicAttackRange == null || basicAttackRange >= 0);
 
   final Phase0aBattleController controller;
   final bool autoStep;
@@ -56,6 +59,11 @@ final class Phase0aBattleScreen extends StatefulWidget {
   final Future<Phase0aBattleFlow> Function()? retryFlowBuilder;
 
   final Phase0aNumericSkillBindings numericSkillBindings;
+
+  /// Existing data-bound basic attack range. Production hosts pass the value
+  /// from their player adapter so mouse pursuit never copies a tuning number
+  /// into the presentation layer. Null keeps isolated visual fixtures usable.
+  final double? basicAttackRange;
 
   /// Foreground bot input. Commands still enter the same controller/reducer
   /// once per fixed tick; null keeps the existing human input path.
@@ -87,8 +95,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   bool _retryInFlight = false;
   bool _primaryAttackHeld = false;
   bool _primaryAttackKeyHeld = false;
+  bool _primaryPointerDown = false;
+  bool _secondarySkillHeld = false;
+  bool _secondaryPointerDown = false;
+  bool _gatherTargetingArmed = false;
+  bool _contextAttackPending = false;
   final Set<LogicalKeyboardKey> _heldMovementKeys = <LogicalKeyboardKey>{};
   ArenaVector? _pointerAimDirection;
+  ArenaVector? _pointerMoveDestination;
+  String? _contextTargetId;
 
   /// Esc 暂停态(0C):暂停期间帧回调零推进(不记性能样本),
   /// 键鼠指令均不受理;再按 Esc 恢复。
@@ -127,8 +142,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _paused = false;
     _primaryAttackHeld = false;
     _primaryAttackKeyHeld = false;
+    _primaryPointerDown = false;
+    _secondarySkillHeld = false;
+    _secondaryPointerDown = false;
+    _gatherTargetingArmed = false;
+    _contextAttackPending = false;
     _heldMovementKeys.clear();
     _pointerAimDirection = null;
+    _pointerMoveDestination = null;
+    _contextTargetId = null;
   }
 
   @override
@@ -171,47 +193,178 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   ArenaVector? _heldAttackAim() {
-    if (_primaryAttackHeld) return _pointerAimDirection;
     if (_primaryAttackKeyHeld) return _nearestEnemyAim();
     return null;
   }
 
-  void _enqueuePointerAttack() {
-    final aim = _pointerAimDirection;
-    if (!_acceptsBattleInput || aim == null) return;
-    widget.controller.enqueue(
-      Phase0aPlayerCommand(attack: true, attackAimDirection: aim),
-    );
+  Phase0aActor? _enemyAtPointer(Offset localPosition, Phase0aStage stage) {
+    Phase0aActor? selected;
+    var selectedDistance = double.infinity;
+    for (final enemy in widget.controller.state.enemies) {
+      if (!enemy.isAlive) continue;
+      final renderPosition = _actorRenderPosition(enemy);
+      final foot = stage.worldToScreen(renderPosition);
+      final scale = stage.depthScale(renderPosition.y);
+      final width = Phase0aPresentationTokens.actorWidth * scale;
+      final height = Phase0aPresentationTokens.actorHeight * scale;
+      final bounds = Rect.fromLTWH(
+        foot.dx - width / 2,
+        foot.dy - height,
+        width,
+        height,
+      );
+      if (!bounds.contains(localPosition)) continue;
+      final distance = (localPosition - foot).distanceSquared;
+      if (distance < selectedDistance) {
+        selected = enemy;
+        selectedDistance = distance;
+      }
+    }
+    return selected;
+  }
+
+  Phase0aActor? _contextTarget() {
+    final targetId = _contextTargetId;
+    if (targetId == null) return null;
+    for (final enemy in widget.controller.state.enemies) {
+      if (enemy.id == targetId && enemy.isAlive) return enemy;
+    }
+    return null;
+  }
+
+  int? _primaryNumericSkillHotkey() {
+    final equipped = widget.numericSkillBindings.equipped;
+    return equipped.isEmpty ? null : equipped.first.hotkey;
   }
 
   void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
-    if ((event.buttons & kPrimaryMouseButton) == 0 || !_acceptsBattleInput) {
+    if (!_acceptsBattleInput) return;
+    if (_gatherTargetingArmed) {
+      if (_slot(widget.controller.state, 'gather').availability !=
+          Phase0aSkillAvailability.ready) {
+        _gatherTargetingArmed = false;
+        if (mounted) setState(() {});
+        _focusNode.requestFocus();
+        return;
+      }
+      if ((event.buttons & kPrimaryMouseButton) != 0) {
+        final targetPoint = stage.screenToWorld(event.localPosition);
+        _gatherTargetingArmed = false;
+        _primaryPointerDown = false;
+        _primaryAttackHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerMoveDestination = null;
+        _pointerAimDirection = null;
+        widget.controller.enqueue(
+          Phase0aPlayerCommand(gather: true, gatherTargetPoint: targetPoint),
+        );
+        if (mounted) setState(() {});
+      } else if ((event.buttons & kSecondaryMouseButton) != 0) {
+        _gatherTargetingArmed = false;
+        if (mounted) setState(() {});
+      }
+      _focusNode.requestFocus();
       return;
     }
-    _primaryAttackHeld = true;
-    _pointerAimDirection = _pointerAim(event.localPosition, stage);
-    _enqueuePointerAttack();
+    if ((event.buttons & kPrimaryMouseButton) != 0) {
+      _primaryPointerDown = true;
+      final target = _enemyAtPointer(event.localPosition, stage);
+      if (target == null) {
+        _primaryAttackHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerAimDirection = null;
+        _pointerMoveDestination = stage.screenToWorld(event.localPosition);
+      } else {
+        _primaryAttackHeld = true;
+        _contextAttackPending = true;
+        _contextTargetId = target.id;
+        _pointerMoveDestination = null;
+        final delta = target.position - widget.controller.state.player.position;
+        _pointerAimDirection = delta.lengthSquared > 0
+            ? delta.normalized()
+            : widget.controller.state.player.facing;
+      }
+      _enqueueHeldInput();
+      if (mounted) setState(() {});
+    } else if ((event.buttons & kSecondaryMouseButton) != 0) {
+      final hotkey = _primaryNumericSkillHotkey();
+      if (hotkey == null) return;
+      _secondaryPointerDown = true;
+      _secondarySkillHeld = true;
+      _pointerAimDirection = _pointerAim(event.localPosition, stage);
+      _enqueueHeldInput();
+    }
     _focusNode.requestFocus();
   }
 
   void _onStagePointerMove(PointerMoveEvent event, Phase0aStage stage) {
-    if (!_primaryAttackHeld ||
-        (event.buttons & kPrimaryMouseButton) == 0 ||
-        !_acceptsBattleInput) {
-      return;
+    if (!_acceptsBattleInput) return;
+    if (_primaryPointerDown &&
+        (event.buttons & kPrimaryMouseButton) != 0 &&
+        _contextTargetId == null) {
+      _pointerMoveDestination = stage.screenToWorld(event.localPosition);
     }
-    _pointerAimDirection = _pointerAim(event.localPosition, stage);
+    if (_secondaryPointerDown && (event.buttons & kSecondaryMouseButton) != 0) {
+      _pointerAimDirection = _pointerAim(event.localPosition, stage);
+    }
   }
 
-  void _stopPointerAttack() {
+  void _stopHeldPointerActions() {
+    _primaryPointerDown = false;
     _primaryAttackHeld = false;
+    _secondaryPointerDown = false;
+    _secondarySkillHeld = false;
+    if (!_contextAttackPending) {
+      _contextTargetId = null;
+      _pointerAimDirection = null;
+    }
+    if (mounted) setState(() {});
+  }
+
+  void _cancelPointerContext() {
+    _primaryPointerDown = false;
+    _primaryAttackHeld = false;
+    _secondaryPointerDown = false;
+    _secondarySkillHeld = false;
+    _gatherTargetingArmed = false;
+    _contextAttackPending = false;
     _pointerAimDirection = null;
+    _pointerMoveDestination = null;
+    _contextTargetId = null;
   }
 
   void _clearHeldInput() {
     _primaryAttackKeyHeld = false;
     _heldMovementKeys.clear();
-    _stopPointerAttack();
+    _cancelPointerContext();
+  }
+
+  void _toggleGatherTargeting() {
+    if (!_acceptsBattleInput) return;
+    if (_slot(widget.controller.state, 'gather').availability !=
+        Phase0aSkillAvailability.ready) {
+      if (_gatherTargetingArmed) {
+        setState(() => _gatherTargetingArmed = false);
+      }
+      _focusNode.requestFocus();
+      return;
+    }
+    setState(() {
+      _gatherTargetingArmed = !_gatherTargetingArmed;
+      if (_gatherTargetingArmed) {
+        _primaryPointerDown = false;
+        _primaryAttackHeld = false;
+        _secondaryPointerDown = false;
+        _secondarySkillHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerMoveDestination = null;
+        _pointerAimDirection = null;
+      }
+    });
+    _focusNode.requestFocus();
   }
 
   List<Phase0aActor> _currentActors() => <Phase0aActor>[
@@ -343,14 +496,62 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       key == LogicalKeyboardKey.keyW ||
       key == LogicalKeyboardKey.keyS;
 
-  Phase0aPlayerCommand _heldCommand() => Phase0aPlayerCommand(
-    left: _heldMovementKeys.contains(LogicalKeyboardKey.keyA),
-    right: _heldMovementKeys.contains(LogicalKeyboardKey.keyD),
-    up: _heldMovementKeys.contains(LogicalKeyboardKey.keyW),
-    down: _heldMovementKeys.contains(LogicalKeyboardKey.keyS),
-    attack: _primaryAttackKeyHeld || _primaryAttackHeld,
-    attackAimDirection: _heldAttackAim(),
-  );
+  Phase0aPlayerCommand _heldCommand() {
+    final left = _heldMovementKeys.contains(LogicalKeyboardKey.keyA);
+    final right = _heldMovementKeys.contains(LogicalKeyboardKey.keyD);
+    final up = _heldMovementKeys.contains(LogicalKeyboardKey.keyW);
+    final down = _heldMovementKeys.contains(LogicalKeyboardKey.keyS);
+    final keyboardMoving = left || right || up || down;
+    var attack = _primaryAttackKeyHeld;
+    var attackAim = _heldAttackAim();
+    String? attackTargetId;
+    ArenaVector? moveDirection;
+
+    final target = _contextTarget();
+    if (_contextTargetId != null && target == null) {
+      _contextAttackPending = false;
+      _contextTargetId = null;
+      _pointerAimDirection = null;
+    } else if (target != null) {
+      final delta = target.position - widget.controller.state.player.position;
+      final targetAim = delta.lengthSquared > 0
+          ? delta.normalized()
+          : widget.controller.state.player.facing;
+      _pointerAimDirection = targetAim;
+      final attackRange = widget.basicAttackRange ?? double.infinity;
+      if (delta.length > attackRange) {
+        if (!keyboardMoving) moveDirection = targetAim;
+      } else if (_primaryAttackHeld || _contextAttackPending) {
+        attack = true;
+        attackAim = targetAim;
+        attackTargetId = target.id;
+      }
+    } else if (!keyboardMoving && _pointerMoveDestination != null) {
+      final delta =
+          _pointerMoveDestination! - widget.controller.state.player.position;
+      final oneTickDistance =
+          widget.controller.state.player.moveSpeed *
+          widget.controller.fixedDeltaSeconds;
+      if (delta.length <= oneTickDistance) {
+        _pointerMoveDestination = null;
+      } else {
+        moveDirection = delta.normalized();
+      }
+    }
+
+    return Phase0aPlayerCommand(
+      left: left,
+      right: right,
+      up: up,
+      down: down,
+      moveDirection: keyboardMoving ? null : moveDirection,
+      attack: attack,
+      attackAimDirection: attackAim,
+      attackTargetId: attackTargetId,
+      skillHotkey: _secondarySkillHeld ? _primaryNumericSkillHotkey() : null,
+      skillAimDirection: _secondarySkillHeld ? _pointerAimDirection : null,
+    );
+  }
 
   void _enqueueHeldInput() {
     if (!_acceptsBattleInput) return;
@@ -359,23 +560,39 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         command.right ||
         command.up ||
         command.down ||
-        command.attack) {
+        command.moveDirection != null ||
+        command.attack ||
+        command.skillHotkey != null) {
       widget.controller.enqueue(command);
     }
   }
 
   void _refresh() {
     _syncActorRenderTargets(preserveAdvancingSlash: true);
+    final playerId = widget.controller.state.player.id;
+    for (final event in widget.controller.lastEvents) {
+      if (event is Phase0aAttackStarted && event.actor == playerId) {
+        _contextAttackPending = false;
+        if (!_primaryAttackHeld) {
+          _contextTargetId = null;
+          _pointerAimDirection = null;
+        }
+      }
+    }
+    if (_contextTargetId != null && _contextTarget() == null) {
+      _contextAttackPending = false;
+      _contextTargetId = null;
+      _pointerAimDirection = null;
+    }
     if (widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
       _clearHeldInput();
     }
     if (widget.controller.lastEvents.isNotEmpty) {
-      final playerId = widget.controller.state.player.id;
-      for (final event in widget.controller.lastEvents) {
-        final sfxAsset = phase0aSfxAssetForEvent(event, playerId: playerId);
-        if (sfxAsset != null) {
-          SoundManager.instance.playSfxPath(sfxAsset);
-        }
+      for (final sfxAsset in phase0aSfxAssetsForFrame(
+        widget.controller.lastEvents,
+        playerId: playerId,
+      )) {
+        SoundManager.instance.playSfxPath(sfxAsset);
       }
     }
     if (widget.controller.feedback.isNotEmpty) {
@@ -748,7 +965,12 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.handled;
     }
     if (_paused) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.keyQ) {
+      _toggleGatherTargeting();
+      return KeyEventResult.handled;
+    }
     if (_isMovementKey(key)) {
+      _pointerMoveDestination = null;
       _heldMovementKeys.add(key);
       widget.controller.enqueue(_heldCommand());
       return KeyEventResult.handled;
@@ -762,7 +984,6 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       LogicalKeyboardKey.space => const Phase0aPlayerCommand(
         defenseAction: Phase0aDefenseAction.dodge,
       ),
-      LogicalKeyboardKey.keyQ => const Phase0aPlayerCommand(gather: true),
       LogicalKeyboardKey.keyR => const Phase0aPlayerCommand(clear: true),
       LogicalKeyboardKey.digit1 ||
       LogicalKeyboardKey.numpad1 => const Phase0aPlayerCommand(skillHotkey: 1),
@@ -798,6 +1019,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         body: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
+            final typedSurvive = controller.surviveObjectiveProgress;
             final stage = Phase0aStage(
               viewport: size,
               cameraCenter:
@@ -815,52 +1037,60 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               fit: StackFit.expand,
               children: [
                 Positioned.fill(
-                  child: Listener(
-                    key: const ValueKey('phase0a_stage_input_layer'),
-                    behavior: HitTestBehavior.opaque,
-                    onPointerDown: (event) => _onStagePointerDown(event, stage),
-                    onPointerMove: (event) => _onStagePointerMove(event, stage),
-                    onPointerUp: (_) => _stopPointerAttack(),
-                    onPointerCancel: (_) => _stopPointerAttack(),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        RepaintBoundary(
-                          key: const ValueKey('phase0a_static_background'),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Phase0aParallaxBackground(
-                                cameraOffset: stage.cameraWorldRect.center,
-                              ),
-                              const ColoredBox(color: Color(0x380F0E0B)),
-                              const CustomPaint(painter: _StageWashPainter()),
-                            ],
-                          ),
-                        ),
-                        ..._buildActors(controller, stage),
-                        _FeedbackLayer(
-                          controller: controller,
-                          stage: stage,
-                          entries: _heldFeedback,
-                          feedbackFrame: _feedbackFrame,
-                          numericSkillBindings: widget.numericSkillBindings,
-                        ),
-                        if (offscreenIndicators.isNotEmpty)
-                          Positioned.fill(
-                            child: IgnorePointer(
-                              child: CustomPaint(
-                                key: const ValueKey(
-                                  'phase0a_offscreen_indicators',
+                  child: MouseRegion(
+                    key: const ValueKey('phase0a_stage_mouse_region'),
+                    cursor: _gatherTargetingArmed
+                        ? SystemMouseCursors.precise
+                        : SystemMouseCursors.basic,
+                    child: Listener(
+                      key: const ValueKey('phase0a_stage_input_layer'),
+                      behavior: HitTestBehavior.opaque,
+                      onPointerDown: (event) =>
+                          _onStagePointerDown(event, stage),
+                      onPointerMove: (event) =>
+                          _onStagePointerMove(event, stage),
+                      onPointerUp: (_) => _stopHeldPointerActions(),
+                      onPointerCancel: (_) => _cancelPointerContext(),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          RepaintBoundary(
+                            key: const ValueKey('phase0a_static_background'),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Phase0aParallaxBackground(
+                                  cameraOffset: stage.cameraWorldRect.center,
                                 ),
-                                painter: Phase0aOffscreenIndicatorPainter(
-                                  indicators: offscreenIndicators,
-                                  frame: _indicatorFrame,
+                                const ColoredBox(color: Color(0x380F0E0B)),
+                                const CustomPaint(painter: _StageWashPainter()),
+                              ],
+                            ),
+                          ),
+                          ..._buildActors(controller, stage),
+                          _FeedbackLayer(
+                            controller: controller,
+                            stage: stage,
+                            entries: _heldFeedback,
+                            feedbackFrame: _feedbackFrame,
+                            numericSkillBindings: widget.numericSkillBindings,
+                          ),
+                          if (offscreenIndicators.isNotEmpty)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: CustomPaint(
+                                  key: const ValueKey(
+                                    'phase0a_offscreen_indicators',
+                                  ),
+                                  painter: Phase0aOffscreenIndicatorPainter(
+                                    indicators: offscreenIndicators,
+                                    frame: _indicatorFrame,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -870,7 +1100,12 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     controller.state.player.id,
                   ),
                 ),
-                if (controller.state.winCondition?.isSurviveTicks == true)
+                if (typedSurvive != null)
+                  _SurviveConditionBanner(
+                    requiredTicks: typedSurvive.requiredTicks,
+                    currentTick: typedSurvive.elapsedTicks,
+                  )
+                else if (controller.state.winCondition?.isSurviveTicks == true)
                   _SurviveConditionBanner(
                     requiredTicks:
                         controller.state.winCondition!.surviveTicksRequired!,
@@ -905,11 +1140,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     gatherSlot: _displaySlot(controller, 'gather'),
                     clearSlot: _displaySlot(controller, 'clear'),
                     qiCurrent: controller.state.player.qiCurrent,
-                    onGather: _paused
-                        ? () {}
-                        : () => controller.enqueue(
-                            const Phase0aPlayerCommand(gather: true),
-                          ),
+                    onGather: _paused ? () {} : _toggleGatherTargeting,
                     onClear: _paused
                         ? () {}
                         : () => controller.enqueue(
@@ -1028,6 +1259,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                 isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
                 isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
                 isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+                isSelectedTarget: actor.id == _contextTargetId,
                 guardianLabelOffsetX: guardianLabelOffsetX,
               ),
             ),
@@ -1196,6 +1428,7 @@ class _ActorStandee extends StatelessWidget {
     required this.isHitFlashing,
     required this.isHealthEmphasized,
     required this.isActionPulsing,
+    required this.isSelectedTarget,
     required this.guardianWardActive,
     required this.guardianLabelOffsetX,
   });
@@ -1205,6 +1438,7 @@ class _ActorStandee extends StatelessWidget {
   final bool isHitFlashing;
   final bool isHealthEmphasized;
   final bool isActionPulsing;
+  final bool isSelectedTarget;
   final bool guardianWardActive;
   final double guardianLabelOffsetX;
 
@@ -1256,16 +1490,16 @@ class _ActorStandee extends StatelessWidget {
           bottom: 0,
           child: Container(
             key: ValueKey('phase0a_ground_mark_${actor.id}'),
-            width: visual.isElite
+            width: visual.isElite || isSelectedTarget
                 ? Phase0aPresentationTokens.groundMarkEliteWidth
                 : Phase0aPresentationTokens.groundMarkWidth,
             height: Phase0aPresentationTokens.groundMarkHeight,
             decoration: BoxDecoration(
-              color: accent.withValues(
+              color: (isSelectedTarget ? WuxiaUi.gold : accent).withValues(
                 alpha: Phase0aPresentationTokens.groundMarkFillOpacity,
               ),
               border: Border.all(
-                color: accent.withValues(
+                color: (isSelectedTarget ? WuxiaUi.gold : accent).withValues(
                   alpha: Phase0aPresentationTokens.groundMarkBorderOpacity,
                 ),
                 width: Phase0aPresentationTokens.groundMarkBorderWidth,
@@ -1274,6 +1508,9 @@ class _ActorStandee extends StatelessWidget {
                 Phase0aPresentationTokens.groundMarkHeight,
               ),
             ),
+            child: isSelectedTarget
+                ? SizedBox(key: ValueKey('phase0a_selected_target_${actor.id}'))
+                : null,
           ),
         ),
         Positioned(
@@ -1349,11 +1586,7 @@ class _ActorStandee extends StatelessWidget {
                         ),
                         BlendMode.srcATop,
                       ),
-                      child: Image.asset(
-                        visual.assetPath,
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.medium,
-                      ),
+                      child: WuxiaImage(visual.assetPath, fit: BoxFit.contain),
                     ),
                   ),
                 ),
@@ -2424,7 +2657,9 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: Center(
           child: Text(
             outcome == Phase0aBattleOutcome.victory &&
-                    widget.controller.state.winCondition?.isSurviveTicks == true
+                    (widget.controller.surviveObjectiveProgress != null ||
+                        widget.controller.state.winCondition?.isSurviveTicks ==
+                            true)
                 ? UiStrings.battleResultSurvived
                 : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal

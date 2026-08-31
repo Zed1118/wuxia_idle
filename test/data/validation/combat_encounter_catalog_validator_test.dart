@@ -21,6 +21,7 @@ archetypes:
   - id: arch_bandit
     variants:
       - role_id: melee_brute
+        display_name: 近战力士
         attack_token_kind: melee
         hp_multiplier: 1.0
         attack_multiplier: 1.0
@@ -33,6 +34,7 @@ archetypes:
         sfx_group_id: sfx_fixture
         visual_variant_ids: [visual_fixture]
       - role_id: ranged_scout
+        display_name: 远程斥候
         attack_token_kind: ranged
         hp_multiplier: 0.8
         attack_multiplier: 1.2
@@ -97,6 +99,7 @@ void main() {
       expect(archetype.variants, hasLength(2));
       final brute = archetype.variants[0];
       expect(brute.roleId, 'melee_brute');
+      expect(brute.displayName, '近战力士');
       expect(brute.attackTokenKind, 'melee');
       expect(brute.hpMultiplier, 1.0);
       expect(brute.attackMultiplier, 1.0);
@@ -159,6 +162,7 @@ void main() {
               '    hit_points: 10\n'
               '    variants:\n'
               '      - role_id: melee_brute\n'
+              '        display_name: 近战力士\n'
               '        attack_token_kind: melee\n'
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
@@ -268,6 +272,7 @@ void main() {
               '  - id: arch_bandit\n'
               '    variants:\n'
               '      - role_id: melee_brute\n'
+              '        display_name: 近战力士\n'
               '        attack_token_kind: fire\n'
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
@@ -295,6 +300,7 @@ void main() {
               '  - id: arch_bandit\n'
               '    variants:\n'
               '      - role_id: melee_brute\n'
+              '        display_name: 近战力士\n'
               '        attack_token_kind: 3\n'
               '        hp_multiplier: 1.0\n'
               '        attack_multiplier: 1.0\n'
@@ -322,6 +328,7 @@ void main() {
               '  - id: arch_bandit\n'
               '    variants:\n'
               '      - role_id: melee_brute\n'
+              '        display_name: 近战力士\n'
               '        attack_token_kind: melee\n'
               '        hp_multiplier: strong\n'
               '        attack_multiplier: 1.0\n'

@@ -1,0 +1,19 @@
+schema_version: 1
+ticket: p2-m4-sect-ecology-stage-20260830
+base_sha: ab09f692137a737db90abb044d7fceec45f23afb
+head_sha: 0fcc134dddc941bb4ce56ceb25a7c75ae5c16555
+summary: 生产 combat catalog 从第一章单生态契约扩展为第一章与第二章门派生态并存，第一章回归必须按自己的 route 与 archetype 精确闭包，不再把全局 manifest 锁死为一套 archetype。
+
+migrations:
+  - deleted: test('production catalog migrates all five Chapter 1 stages', () async {
+    replacement: production catalog keeps all five Chapter 1 routes beside Ch2
+    reason: 旧标题只表达单生态 catalog；新标题明确第一章五条生产 route 在加入第二章生态后仍完整存在，并由同一用例逐关验证精确 encounter 映射。
+  - deleted: expect(
+    replacement: expected.values.toSet(),
+    reason: 旧用例整体经 dart format 改为多行 test 闭包时该调用起始行被 diff 记录为删除；替代锚仍属于同一集合等值断言，断言主体和 expected 集合均保留。
+  - deleted: expect(assignment?.encounterId, entry.value, reason: entry.key);
+    replacement: expect(assignment?.encounterId, entry.value, reason: entry.key);
+    reason: 该 route 等值断言随用例更名和缩进调整在 diff 中先删后增，head 中逐关精确 encounter 映射断言原样保留。
+  - deleted: expect(roster.visualFor(combatant.actorId).name, expectedName);
+    replacement: expectedNamesByActorId[combatant.actorId],
+    reason: 旧断言把三个不同角色全部钉成关卡基础模板名；替代断言逐生成项从 typed archetype role 解析显示名，并同时核对生产 visual roster 的实际名称集合。

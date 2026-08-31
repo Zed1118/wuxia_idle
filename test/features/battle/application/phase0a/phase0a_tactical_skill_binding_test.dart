@@ -20,13 +20,14 @@ SkillDef tacticalSkill(double cooldownSeconds) => SkillDef(
   phase0aBehavior: Phase0aSkillBehavior(
     geometry: const Phase0aSkillGeometry(
       shape: Phase0aSkillGeometryShape.radial,
-      anchor: Phase0aSkillGeometryAnchor.caster,
+      anchor: Phase0aSkillGeometryAnchor.targetPoint,
       radius: 100,
     ),
     effects: const [
       Phase0aSkillEffect(
         type: Phase0aSkillEffectType.pull,
         destinationRadius: 50,
+        controlTicks: 5,
       ),
     ],
   ),
@@ -60,5 +61,6 @@ void main() {
     );
 
     expect(binding.cooldownSeconds, 0);
+    expect(binding.controlTicks, 5);
   });
 }

@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_survive_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_enemy_roster.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
@@ -270,6 +271,48 @@ const _idle = Phase0aPlayerCommand();
 const _attack = Phase0aPlayerCommand(attack: true);
 
 void main() {
+  test('survive objective exposes a narrow presentation snapshot', () {
+    final tracker = _tracker([
+      ObjectiveClause(
+        id: 'survive',
+        objective: SurviveDurationObjective(const Duration(seconds: 3)),
+      ),
+    ]);
+    final source = _CallbackSource(
+      (frame) => <EncounterObjectiveEvent>[
+        TimeElapsed(
+          Duration(
+            microseconds: (frame.deltaSeconds * Duration.microsecondsPerSecond)
+                .round(),
+          ),
+          eventId: 'survive:${frame.afterArena.tick}',
+        ),
+      ],
+    );
+    final fixture = _Fixture(
+      objectiveTracker: tracker,
+      objectiveEventSource: source,
+    );
+    final Phase0aSurviveObjectiveObservationSource observationSource =
+        fixture.flow;
+
+    expect(
+      observationSource.surviveObjectiveObservation?.requiredDuration,
+      const Duration(seconds: 3),
+    );
+    expect(
+      observationSource.surviveObjectiveObservation?.elapsed,
+      Duration.zero,
+    );
+
+    fixture.flow.advance(deltaSeconds: 1, command: _idle);
+
+    expect(
+      observationSource.surviveObjectiveObservation?.elapsed,
+      const Duration(seconds: 1),
+    );
+  });
+
   test('objective tracker and source must be configured together', () {
     final tracker = _tracker([
       ObjectiveClause(

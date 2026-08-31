@@ -104,6 +104,7 @@ void main() {
           controller: controller,
           autoStep: autoStep,
           feedbackHoldSeconds: feedbackHoldSeconds,
+          basicAttackRange: fixture.playerAdapter.attackRange,
         ),
       ),
     );
@@ -180,13 +181,6 @@ void main() {
       down: delta.y > eps,
       up: delta.y < -eps,
     );
-  }
-
-  double distanceToPlayer(Phase0aArenaState state, String actorId) {
-    final enemy = state.enemies.firstWhere((e) => e.id == actorId);
-    final dx = enemy.position.x - state.player.position.x;
-    final dy = enemy.position.y - state.player.position.y;
-    return dx * dx + dy * dy;
   }
 
   Future<void> expectPainterDrawsPixels(
@@ -572,11 +566,68 @@ void main() {
       expect(afterUpCount, heldCount);
     });
 
-    testWidgets('舞台 primary click 入队一次普攻并按点击方向瞄准', (tester) async {
+    testWidgets('左键点地沿任意方向移动而不误触普攻', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+      final before = controller.state.player.position;
+      const ground = Offset(640, 610);
+
+      await tester.tapAt(ground);
+      final events = controller.step();
+
+      expect(controller.state.player.position.y, greaterThan(before.y));
+      expect(events.whereType<Phase0aAttackStarted>(), isEmpty);
+    });
+
+    testWidgets('点地移动在一拍步长内停止且不会围绕目标振荡', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      final player = stage.worldToScreen(controller.state.player.position);
-      final target = player + const Offset(240, -80);
+      const ground = Offset(640, 610);
+      final initial = controller.state.player.position;
+      final destination = Phase0aStage(
+        viewport: const Size(1280, 720),
+        cameraCenter: initial,
+      ).screenToWorld(ground);
+
+      await tester.tapAt(ground);
+      for (var i = 0; i < 25; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      final stopped = controller.state.player.position;
+      final oneTickDistance =
+          controller.state.player.moveSpeed * controller.fixedDeltaSeconds;
+      expect(
+        (destination - stopped).length,
+        lessThanOrEqualTo(oneTickDistance),
+      );
+
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(controller.state.player.position, stopped);
+    });
+
+    testWidgets('同拍 WASD 覆盖鼠标目的地且抬键后不恢复旧导航', (tester) async {
+      await pumpScreen(tester, autoStep: false);
+      const ground = Offset(640, 610);
+      final before = controller.state.player.position;
+
+      await tester.tapAt(ground);
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyD);
+      controller.step();
+      final keyboardStep = controller.state.player.position;
+      expect(keyboardStep.x, greaterThan(before.x));
+      expect(keyboardStep.y, before.y);
+
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyD);
+      controller.step();
+      expect(controller.state.player.position, keyboardStep);
+    });
+
+    testWidgets('左键点怪入队一次普攻并按目标方向瞄准', (tester) async {
+      await pumpScreen(tester);
+      final targetId = controller.state.enemies.first.id;
+      final target = tester.getCenter(
+        find.byKey(ValueKey('phase0a_actor_visual_$targetId')),
+      );
 
       await tester.tapAt(target);
       await tester.pump();
@@ -588,10 +639,10 @@ void main() {
 
     testWidgets('primary pointer down 持续攻击，pointer up 后停止重复攻击', (tester) async {
       await pumpScreen(tester);
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      final target =
-          stage.worldToScreen(controller.state.player.position) +
-          const Offset(220, 0);
+      const targetId = 'wave1_archer';
+      final target = tester.getCenter(
+        find.byKey(const ValueKey('phase0a_actor_visual_$targetId')),
+      );
       final gesture = await tester.startGesture(
         target,
         kind: PointerDeviceKind.mouse,
@@ -615,6 +666,41 @@ void main() {
           .where((event) => event.actor == 'player')
           .length;
       expect(afterUpCount, heldCount);
+    });
+
+    testWidgets('点击远敌持续追击并优先命中所点目标', (tester) async {
+      await pumpScreen(tester);
+      const targetId = 'wave1_archer';
+      final target = tester.getCenter(
+        find.byKey(const ValueKey('phase0a_actor_visual_$targetId')),
+      );
+      final before = controller.state.player.position;
+      final gesture = await tester.startGesture(
+        target,
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      expect(
+        find.byKey(const ValueKey('phase0a_selected_target_$targetId')),
+        findsOneWidget,
+      );
+      await gesture.up();
+
+      Phase0aHitLanded? firstPlayerHit;
+      for (var i = 0; i < 80 && firstPlayerHit == null; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+        for (final event in controller.events.whereType<Phase0aHitLanded>()) {
+          if (event.actor == controller.state.player.id) {
+            firstPlayerHit = event;
+            break;
+          }
+        }
+      }
+
+      expect(controller.state.player.position, isNot(before));
+      expect(firstPlayerHit, isNotNull);
+      expect(firstPlayerHit!.target, targetId);
     });
 
     testWidgets('非 primary、暂停、终局舞台点击均不产生普攻', (tester) async {
@@ -919,19 +1005,28 @@ void main() {
     });
   });
 
-  group('键盘 Q:涡旋 + 拉拢', () {
-    testWidgets('Q 产生 gatherVortex,被拉目标离玩家距离变小', (tester) async {
+  group('键盘 Q + 左键落点:涡旋 + 拉拢', () {
+    testWidgets('Q 先进入定点态，左键后围绕点击位聚怪且玩家不移动', (tester) async {
       await pumpScreen(tester);
 
       final before = controller.state;
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(before.player.position);
+      const targetPoint = ArenaVector(-560, 0);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      final armedEvents = await stepAndPump(tester);
+      expect(armedEvents.whereType<Phase0aGatherStarted>(), isEmpty);
+      final mouseRegion = tester.widget<MouseRegion>(
+        find.byKey(const ValueKey('phase0a_stage_mouse_region')),
+      );
+      expect(mouseRegion.cursor, SystemMouseCursors.precise);
+
+      await tester.tapAt(stage.worldToScreen(targetPoint));
       final events = await stepAndPump(tester);
 
-      expect(
-        events.whereType<Phase0aGatherStarted>(),
-        hasLength(1),
-        reason: '键盘 Q 必须真实驱动聚怪',
-      );
+      final started = events.whereType<Phase0aGatherStarted>().single;
+      expect(started.centerPosition, targetPoint);
+      expect(controller.state.player.position, before.player.position);
       final applied = events.whereType<Phase0aGatherApplied>().single;
       final pulled = applied.outcomes
           .where((o) => o.statusApplied == Phase0aSkillStatus.pulled)
@@ -944,8 +1039,6 @@ void main() {
         find.byKey(gatherVortexKey),
         label: '聚怪涡旋',
       );
-      final stage = Phase0aStage(viewport: const Size(1280, 720));
-      stage.updateCameraCenter(before.player.position);
       for (final outcome in pulled) {
         final pull = controller.feedback.singleWhere(
           (entry) =>
@@ -969,14 +1062,56 @@ void main() {
                   expectedMidpoint)
               .distance,
           lessThan(2),
-          reason: 'Q 拉拢轨迹必须绑定目标→玩家的事件位置快照',
+          reason: 'Q 拉拢轨迹必须绑定目标→点击位的事件位置快照',
         );
         expect(
-          distanceToPlayer(controller.state, outcome.target),
-          lessThan(distanceToPlayer(before, outcome.target)),
-          reason: '被拉目标 ${outcome.target} 必须向玩家拉近',
+          (outcome.targetPosition! - targetPoint).lengthSquared,
+          lessThan((outcome.sourcePosition! - targetPoint).lengthSquared),
+          reason: '被拉目标 ${outcome.target} 必须向点击位拉近',
         );
       }
+    });
+
+    testWidgets('聚怪冷却中按 Q 不进入定点态，避免点击后静默无效', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(controller.state.player.position);
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.tapAt(stage.worldToScreen(const ArenaVector(80, 0)));
+      final firstCast = await stepAndPump(tester);
+      expect(firstCast.whereType<Phase0aGatherStarted>(), hasLength(1));
+      expect(
+        controller.state.skillSlots
+            .singleWhere((slot) => slot.slot == 'gather')
+            .availability,
+        Phase0aSkillAvailability.cooldown,
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.pump();
+      final mouseRegion = tester.widget<MouseRegion>(
+        find.byKey(const ValueKey('phase0a_stage_mouse_region')),
+      );
+      expect(mouseRegion.cursor, SystemMouseCursors.basic);
+    });
+
+    testWidgets('点击聚怪技能印同样进入定点态，下一次舞台点击才释放', (tester) async {
+      await pumpScreen(tester);
+      final stage = Phase0aStage(viewport: const Size(1280, 720));
+      stage.updateCameraCenter(controller.state.player.position);
+      const targetPoint = ArenaVector(40, 60);
+
+      await tester.tap(find.byKey(gatherSealKey));
+      await tester.pump();
+      expect(controller.step().whereType<Phase0aGatherStarted>(), isEmpty);
+
+      await tester.tapAt(stage.worldToScreen(targetPoint));
+      final events = await stepAndPump(tester);
+      expect(
+        events.whereType<Phase0aGatherStarted>().single.centerPosition,
+        targetPoint,
+      );
     });
   });
 
@@ -1277,8 +1412,10 @@ void main() {
         final stage = Phase0aStage(viewport: const Size(1280, 720));
         stage.updateCameraCenter(controller.state.player.position);
         final safeCenter = stage.safeRect.center;
+        const targetPoint = ArenaVector(80, 0);
 
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+        await tester.tapAt(stage.worldToScreen(targetPoint));
         await stepAndPump(tester);
 
         final vortexEntry = controller.feedback.firstWhere(
@@ -1341,8 +1478,10 @@ void main() {
       final stage = Phase0aStage(viewport: const Size(1440, 900));
       stage.updateCameraCenter(controller.state.player.position);
       final safeCenter = stage.safeRect.center;
+      const targetPoint = ArenaVector(80, 0);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      await tester.tapAt(stage.worldToScreen(targetPoint));
       await stepAndPump(tester);
 
       final vortexEntry = controller.feedback.firstWhere(

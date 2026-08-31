@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -81,7 +82,38 @@ void main() {
           controller: controller,
           autoStep: false,
           numericSkillBindings: mapping.playerAdapter.numericSkillBindings,
+          basicAttackRange: mapping.playerAdapter.attackRange,
         ),
+      ),
+    );
+    await tester.pump();
+
+    final targetId = controller.state.enemies.first.id;
+    final target = tester.getCenter(
+      find.byKey(ValueKey('phase0a_actor_visual_$targetId')),
+    );
+    final secondaryGesture = await tester.startGesture(
+      target,
+      kind: PointerDeviceKind.mouse,
+      buttons: kSecondaryMouseButton,
+    );
+    await secondaryGesture.up();
+    final secondaryEvents = controller.step();
+    expect(
+      secondaryEvents.whereType<Phase0aSkillStarted>().single.skillId,
+      main.id,
+    );
+
+    controller.restart(
+      Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260821),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
       ),
     );
     await tester.pump();

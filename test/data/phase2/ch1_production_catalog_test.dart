@@ -36,30 +36,36 @@ Set<String> _yamlStringSet(Object? value) =>
 
 void main() {
   tearDown(GameRepository.resetForTest);
-  test('production catalog migrates all five Chapter 1 stages', () async {
-    final manifest = await _loadProductionCatalog();
-    const expected = {
-      'stage_01_01': 'ch1_encounter_01_roadbreak',
-      'stage_01_02': 'ch1_encounter_02_stronghold',
-      'stage_01_03': 'ch1_encounter_03_ambush',
-      'stage_01_04': 'ch1_encounter_04_commander',
-      'stage_01_05': 'ch1_encounter_05_commander',
-    };
+  test(
+    'production catalog keeps all five Chapter 1 routes beside Ch2',
+    () async {
+      final manifest = await _loadProductionCatalog();
+      const expected = {
+        'stage_01_01': 'ch1_encounter_01_roadbreak',
+        'stage_01_02': 'ch1_encounter_02_stronghold',
+        'stage_01_03': 'ch1_encounter_03_ambush',
+        'stage_01_04': 'ch1_encounter_04_commander',
+        'stage_01_05': 'ch1_encounter_05_commander',
+      };
 
-    expect(
-      manifest.encounters.map((encounter) => encounter.id).toSet(),
-      expected.values.toSet(),
-    );
-    for (final entry in expected.entries) {
-      final assignment = manifest.assignmentForStage(entry.key);
       expect(
-        assignment?.migrationState,
-        CombatEncounterMigrationState.migrated,
-        reason: entry.key,
+        manifest.encounters
+            .map((encounter) => encounter.id)
+            .where((id) => id.startsWith('ch1_'))
+            .toSet(),
+        expected.values.toSet(),
       );
-      expect(assignment?.encounterId, entry.value, reason: entry.key);
-    }
-  });
+      for (final entry in expected.entries) {
+        final assignment = manifest.assignmentForStage(entry.key);
+        expect(
+          assignment?.migrationState,
+          CombatEncounterMigrationState.migrated,
+          reason: entry.key,
+        );
+        expect(assignment?.encounterId, entry.value, reason: entry.key);
+      }
+    },
+  );
 
   test('stage_01_03 keeps the frozen production composition', () async {
     final manifest = await _loadProductionCatalog();
@@ -87,7 +93,9 @@ void main() {
       'bandit_gong_leader': 2,
     });
     expect(
-      manifest.archetypes.single.variants
+      manifest
+          .archetypeById('ch1_bandits')!
+          .variants
           .map((variant) => variant.roleId)
           .toSet(),
       _canonicalRoles,
@@ -229,7 +237,9 @@ void main() {
           .toList();
       expect(
         attackSets.map((item) => item['id']).toSet(),
-        manifest.archetypes.single.variants
+        manifest
+            .archetypeById('ch1_bandits')!
+            .variants
             .map((variant) => variant.attackSetId)
             .toSet(),
       );
@@ -244,7 +254,9 @@ void main() {
           .toList();
       expect(
         visualVariants.map((item) => item['id']).toSet(),
-        manifest.archetypes.single.variants
+        manifest
+            .archetypeById('ch1_bandits')!
+            .variants
             .expand((variant) => variant.visualVariantIds)
             .toSet(),
       );
@@ -253,18 +265,19 @@ void main() {
       }
 
       final verified = binding['verified_only_references'] as YamlMap;
+      final ch1Variants = manifest.archetypeById('ch1_bandits')!.variants;
       expect(verified['host_consumption'], 'none');
       expect(
         _yamlStringSet(verified['posture_profile_ids']),
-        manifest.referenceIndex.postureProfileIds,
+        ch1Variants.map((variant) => variant.postureProfileId).toSet(),
       );
       expect(
         _yamlStringSet(verified['drop_group_ids']),
-        manifest.referenceIndex.dropGroupIds,
+        ch1Variants.map((variant) => variant.dropGroupId).toSet(),
       );
       expect(
         _yamlStringSet(verified['sfx_group_ids']),
-        manifest.referenceIndex.sfxGroupIds,
+        ch1Variants.map((variant) => variant.sfxGroupId).toSet(),
       );
     },
   );

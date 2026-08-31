@@ -281,6 +281,7 @@ CombatEnemyArchetypeDef _buildArchetype(
       variants.add(
         CombatArchetypeVariant(
           roleId: variant.roleId,
+          displayName: variant.displayName,
           attackTokenKind: CombatAttackTokenKind.values.byName(
             variant.attackTokenKind,
           ),

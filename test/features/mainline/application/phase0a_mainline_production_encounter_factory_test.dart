@@ -294,6 +294,7 @@ void main() {
         ),
       ];
       final assets = <String, String>{};
+      final expectedNamesByActorId = <String, String>{};
       for (var index = 0; index < entries.length; index++) {
         final entry = entries[index];
         final actorId = 'stage_01_04/actor-$index';
@@ -302,6 +303,12 @@ void main() {
           Phase0aCombatantInput(actorId: actorId, snapshot: binding.combatant),
         );
         assets[actorId] = binding.visualAssetPath;
+        expectedNamesByActorId[actorId] = entry.entryId == 'ch1_s04_leader_01'
+            ? repository.getStage('stage_01_04').enemyTeam.single.name
+            : catalog
+                  .archetypeById(entry.archetypeId)!
+                  .variantByRole(entry.roleId)!
+                  .displayName;
       }
 
       final roster = Phase0aVisualRoster.fromCombatants(
@@ -309,18 +316,23 @@ void main() {
         combatants: combatants,
         assetPathByActorId: assets,
       );
-      final expectedName = repository
-          .getStage('stage_01_04')
-          .enemyTeam
-          .single
-          .name;
       for (final combatant in combatants.skip(1)) {
-        expect(roster.visualFor(combatant.actorId).name, expectedName);
+        expect(
+          roster.visualFor(combatant.actorId).name,
+          expectedNamesByActorId[combatant.actorId],
+        );
         expect(
           roster.visualFor(combatant.actorId).name,
           isNot(contains('ch1_s04_')),
         );
       }
+      expect(
+        combatants
+            .skip(1)
+            .map((combatant) => roster.visualFor(combatant.actorId).name)
+            .toSet(),
+        expectedNamesByActorId.values.toSet(),
+      );
     },
   );
 

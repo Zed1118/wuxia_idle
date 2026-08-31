@@ -1,0 +1,195 @@
+# Production Chapter 2 sect ecology vertical slice: 25 total, 10 active.
+encounters:
+  - id: ch2_encounter_02_teahouse
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets:
+      melee: 2
+      ranged: 1
+      charge: 1
+      support: 1
+    spawn_entries:
+      - entry_id: ch2_s02_outer_01
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_01
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_02
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_02
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_03
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_03
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_04
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_04
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_05
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_05
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_06
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_06
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_07
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_07
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_08
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_08
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_09
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_09
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_10
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_10
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_11
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_01
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_12
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_02
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_13
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_03
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_outer_14
+        archetype_id: ch2_sects
+        role_id: sect_outer
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_04
+        behavior_id: ch2_behavior_outer_press
+      - entry_id: ch2_s02_hidden_01
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_05
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_hidden_02
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_06
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_hidden_03
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_07
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_hidden_04
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_08
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_hidden_05
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_09
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_hidden_06
+        archetype_id: ch2_sects
+        role_id: sect_hidden_weapon
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_10
+        behavior_id: ch2_behavior_hidden_offset
+      - entry_id: ch2_s02_lightfoot_01
+        archetype_id: ch2_sects
+        role_id: sect_lightfoot
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_01
+        behavior_id: ch2_behavior_lightfoot_flank
+      - entry_id: ch2_s02_lightfoot_02
+        archetype_id: ch2_sects
+        role_id: sect_lightfoot
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_02
+        behavior_id: ch2_behavior_lightfoot_flank
+      - entry_id: ch2_s02_lightfoot_03
+        archetype_id: ch2_sects
+        role_id: sect_lightfoot
+        entrance_id: ch2_entrance_s02_stairs
+        position_id: ch2_position_s02_slot_03
+        behavior_id: ch2_behavior_lightfoot_flank
+      - entry_id: ch2_s02_lightfoot_04
+        archetype_id: ch2_sects
+        role_id: sect_lightfoot
+        entrance_id: ch2_entrance_s02_courtyard
+        position_id: ch2_position_s02_slot_04
+        behavior_id: ch2_behavior_lightfoot_flank
+      - entry_id: ch2_s02_instructor_01
+        archetype_id: ch2_sects
+        role_id: sect_instructor
+        entrance_id: ch2_entrance_s02_floor
+        position_id: ch2_position_s02_slot_05
+        behavior_id: ch2_behavior_instructor_command
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch2_s02_clear_teahouse
+          kind: defeat_targets
+          target_ids:
+            - ch2_s02_outer_01
+            - ch2_s02_outer_02
+            - ch2_s02_outer_03
+            - ch2_s02_outer_04
+            - ch2_s02_outer_05
+            - ch2_s02_outer_06
+            - ch2_s02_outer_07
+            - ch2_s02_outer_08
+            - ch2_s02_outer_09
+            - ch2_s02_outer_10
+            - ch2_s02_outer_11
+            - ch2_s02_outer_12
+            - ch2_s02_outer_13
+            - ch2_s02_outer_14
+            - ch2_s02_hidden_01
+            - ch2_s02_hidden_02
+            - ch2_s02_hidden_03
+            - ch2_s02_hidden_04
+            - ch2_s02_hidden_05
+            - ch2_s02_hidden_06
+            - ch2_s02_lightfoot_01
+            - ch2_s02_lightfoot_02
+            - ch2_s02_lightfoot_03
+            - ch2_s02_lightfoot_04
+            - ch2_s02_instructor_01

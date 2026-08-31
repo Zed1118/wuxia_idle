@@ -1,0 +1,64 @@
+# Production Chapter 7 army ecology. Multipliers stay inside the established four-role envelope.
+archetypes:
+  - id: ch7_army
+    variants:
+      - role_id: army_shield
+        display_name: 盾兵
+        attack_token_kind: melee
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: ch7_attack_set_shield
+        attack_tag_ids: [ch7_attack_tag_melee]
+        posture_profile_id: ch7_posture_shield
+        drop_group_id: ch7_drop_group_army_encounter
+        sfx_group_id: ch7_sfx_shield
+        visual_variant_ids:
+          - ch7_visual_shield_a
+          - ch7_visual_shield_b
+      - role_id: army_archer
+        display_name: 弓手
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.0
+        defense_multiplier: 0.8
+        speed_multiplier: 1.0
+        attack_set_id: ch7_attack_set_archer
+        attack_tag_ids: [ch7_attack_tag_projectile]
+        posture_profile_id: ch7_posture_archer
+        drop_group_id: ch7_drop_group_army_encounter
+        sfx_group_id: ch7_sfx_archer
+        visual_variant_ids:
+          - ch7_visual_archer_a
+          - ch7_visual_archer_b
+      - role_id: army_spear_charger
+        display_name: 枪骑冲阵兵
+        attack_token_kind: charge
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.1
+        attack_set_id: ch7_attack_set_spear_charger
+        attack_tag_ids: [ch7_attack_tag_charge]
+        posture_profile_id: ch7_posture_spear_charger
+        drop_group_id: ch7_drop_group_army_encounter
+        sfx_group_id: ch7_sfx_spear_charger
+        visual_variant_ids:
+          - ch7_visual_spear_charger_a
+          - ch7_visual_spear_charger_b
+      - role_id: army_standard_officer
+        display_name: 掌旗军官
+        attack_token_kind: support
+        hp_multiplier: 1.3
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: ch7_attack_set_standard_officer
+        attack_tag_ids: [ch7_attack_tag_support]
+        posture_profile_id: ch7_posture_standard_officer
+        drop_group_id: ch7_drop_group_army_encounter
+        sfx_group_id: ch7_sfx_standard_officer
+        visual_variant_ids:
+          - ch7_visual_standard_officer_a
+          - ch7_visual_standard_officer_b

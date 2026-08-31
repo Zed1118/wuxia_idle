@@ -80,4 +80,33 @@ void main() {
 
     expect(intents.whereType<Phase0aAttackIntent>(), isEmpty);
   });
+
+  test('pointer movement keeps its arbitrary world direction', () {
+    const pointerDirection = ArenaVector(3, 4);
+    final intents = adapter.intentsFor(
+      state: state,
+      command: const Phase0aPlayerCommand(
+        moveDirection: pointerDirection,
+        right: true,
+      ),
+    );
+
+    final move = intents.whereType<Phase0aMoveIntent>().single;
+    expect(move.direction.x, closeTo(0.6, 0.0001));
+    expect(move.direction.y, closeTo(0.8, 0.0001));
+  });
+
+  test('gather ground target is preserved by the input adapter', () {
+    const targetPoint = ArenaVector(320, 180);
+    final intents = adapter.intentsFor(
+      state: state,
+      command: const Phase0aPlayerCommand(
+        gather: true,
+        gatherTargetPoint: targetPoint,
+      ),
+    );
+
+    final gather = intents.whereType<Phase0aGatherIntent>().single;
+    expect(gather.targetPoint, targetPoint);
+  });
 }

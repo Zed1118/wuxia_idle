@@ -1,0 +1,64 @@
+# Chapter 4 Xiliang ecology for the first western crossing.
+archetypes:
+  - id: ch4_xiliang
+    variants:
+      - role_id: xiliang_sand_blade
+        display_name: 沙刀骑卒
+        attack_token_kind: melee
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.0
+        attack_set_id: ch4_attack_set_sand_blade
+        attack_tag_ids: [ch4_attack_tag_melee]
+        posture_profile_id: ch4_posture_sand_blade
+        drop_group_id: ch4_drop_group_ecology_encounter
+        sfx_group_id: ch4_sfx_sand_blade
+        visual_variant_ids:
+          - ch4_visual_sand_blade_a
+          - ch4_visual_sand_blade_b
+      - role_id: xiliang_horse_archer
+        display_name: 骑射手
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.0
+        defense_multiplier: 0.8
+        speed_multiplier: 1.0
+        attack_set_id: ch4_attack_set_horse_archer
+        attack_tag_ids: [ch4_attack_tag_projectile]
+        posture_profile_id: ch4_posture_horse_archer
+        drop_group_id: ch4_drop_group_ecology_encounter
+        sfx_group_id: ch4_sfx_horse_archer
+        visual_variant_ids:
+          - ch4_visual_horse_archer_a
+          - ch4_visual_horse_archer_b
+      - role_id: xiliang_heavy_cavalry
+        display_name: 重骑
+        attack_token_kind: charge
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.1
+        attack_set_id: ch4_attack_set_heavy_cavalry
+        attack_tag_ids: [ch4_attack_tag_charge]
+        posture_profile_id: ch4_posture_heavy_cavalry
+        drop_group_id: ch4_drop_group_ecology_encounter
+        sfx_group_id: ch4_sfx_heavy_cavalry
+        visual_variant_ids:
+          - ch4_visual_heavy_cavalry_a
+          - ch4_visual_heavy_cavalry_b
+      - role_id: xiliang_banner
+        display_name: 旗主
+        attack_token_kind: support
+        hp_multiplier: 1.3
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: ch4_attack_set_banner
+        attack_tag_ids: [ch4_attack_tag_support]
+        posture_profile_id: ch4_posture_banner
+        drop_group_id: ch4_drop_group_ecology_encounter
+        sfx_group_id: ch4_sfx_banner
+        visual_variant_ids:
+          - ch4_visual_banner_a
+          - ch4_visual_banner_b

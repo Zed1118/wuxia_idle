@@ -2,6 +2,7 @@ archetypes:
   - id: arch_commander
     variants:
       - role_id: warlord
+        display_name: Warlord
         attack_token_kind: charge
         hp_multiplier: 2.0
         attack_multiplier: 1.8

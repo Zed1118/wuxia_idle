@@ -82,6 +82,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.postureHitKind,
     this.defenseFlags,
     this.behaviorProfile,
+    this.preferredTargetId,
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
@@ -92,6 +93,10 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final double cooldownSeconds;
   final Phase0aMoveKind moveKind;
   final ArenaVector aimDirection;
+
+  /// Optional context-click preference. It never bypasses normal strike
+  /// geometry or protected-target rules.
+  final String? preferredTargetId;
 
   /// Pre-resolved qi delta for this basic attack. Zero preserves existing
   /// fixtures; production mapping supplies the bound basic skill value.
@@ -157,8 +162,10 @@ final class Phase0aGatherIntent extends Phase0aIntent {
     required this.effectRadius,
     required this.qiCost,
     required this.cooldownSeconds,
+    required this.controlTicks,
     required this.postureDamage,
     required this.postureHitKind,
+    this.targetPoint,
     this.skillId = '',
   });
 
@@ -168,11 +175,15 @@ final class Phase0aGatherIntent extends Phase0aIntent {
   final String slot;
   final double ringRadius;
 
+  /// 玩家指定的地面聚拢中心；null 为自动/历史调用兼容路径，回退施放者位置。
+  final ArenaVector? targetPoint;
+
   /// 作用半径:仅距 caster ≤ 该值的存活敌对单位进入结算(闭区间)。
   final double effectRadius;
 
   final int qiCost;
   final double cooldownSeconds;
+  final int controlTicks;
   final double postureDamage;
   final PostureHitKind postureHitKind;
 }

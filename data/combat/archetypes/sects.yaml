@@ -1,0 +1,64 @@
+# Production Chapter 2 sect ecology. Multipliers reuse the established four-role envelope.
+archetypes:
+  - id: ch2_sects
+    variants:
+      - role_id: sect_outer
+        display_name: 外门弟子
+        attack_token_kind: melee
+        hp_multiplier: 1.0
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.0
+        attack_set_id: ch2_attack_set_outer
+        attack_tag_ids: [ch2_attack_tag_melee]
+        posture_profile_id: ch2_posture_outer
+        drop_group_id: ch2_drop_group_sect_encounter
+        sfx_group_id: ch2_sfx_outer
+        visual_variant_ids:
+          - ch2_visual_outer_a
+          - ch2_visual_outer_b
+      - role_id: sect_hidden_weapon
+        display_name: 暗器弟子
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.0
+        defense_multiplier: 0.8
+        speed_multiplier: 1.0
+        attack_set_id: ch2_attack_set_hidden_weapon
+        attack_tag_ids: [ch2_attack_tag_projectile]
+        posture_profile_id: ch2_posture_hidden_weapon
+        drop_group_id: ch2_drop_group_sect_encounter
+        sfx_group_id: ch2_sfx_hidden_weapon
+        visual_variant_ids:
+          - ch2_visual_hidden_weapon_a
+          - ch2_visual_hidden_weapon_b
+      - role_id: sect_lightfoot
+        display_name: 轻功弟子
+        attack_token_kind: charge
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.1
+        attack_set_id: ch2_attack_set_lightfoot
+        attack_tag_ids: [ch2_attack_tag_charge]
+        posture_profile_id: ch2_posture_lightfoot
+        drop_group_id: ch2_drop_group_sect_encounter
+        sfx_group_id: ch2_sfx_lightfoot
+        visual_variant_ids:
+          - ch2_visual_lightfoot_a
+          - ch2_visual_lightfoot_b
+      - role_id: sect_instructor
+        display_name: 教习
+        attack_token_kind: support
+        hp_multiplier: 1.3
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: ch2_attack_set_instructor
+        attack_tag_ids: [ch2_attack_tag_support]
+        posture_profile_id: ch2_posture_instructor
+        drop_group_id: ch2_drop_group_sect_encounter
+        sfx_group_id: ch2_sfx_instructor
+        visual_variant_ids:
+          - ch2_visual_instructor_a
+          - ch2_visual_instructor_b

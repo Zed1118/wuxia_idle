@@ -13,6 +13,7 @@ enum CombatAttackTokenKind { melee, ranged, charge, support }
 final class CombatArchetypeVariant {
   CombatArchetypeVariant({
     required String roleId,
+    required String displayName,
     required this.attackTokenKind,
     required double hpMultiplier,
     required double attackMultiplier,
@@ -25,6 +26,7 @@ final class CombatArchetypeVariant {
     required String sfxGroupId,
     required Iterable<String> visualVariantIds,
   }) : roleId = _checkedId(roleId, 'roleId'),
+       displayName = _checkedDisplayName(displayName),
        hpMultiplier = _checkedPositive(hpMultiplier, 'hpMultiplier'),
        attackMultiplier = _checkedNonNegative(
          attackMultiplier,
@@ -47,6 +49,9 @@ final class CombatArchetypeVariant {
 
   /// Unique within the owning archetype; non-empty and free of whitespace.
   final String roleId;
+
+  /// Player-facing role identity supplied by content data.
+  final String displayName;
 
   /// Token budget kind this role's attacks request at runtime.
   final CombatAttackTokenKind attackTokenKind;
@@ -95,6 +100,20 @@ final class CombatArchetypeVariant {
   static double _checkedPositive(double value, String field) {
     if (!value.isFinite || value <= 0) {
       throw ArgumentError.value(value, field, 'must be finite and positive');
+    }
+    return value;
+  }
+
+  static String _checkedDisplayName(String value) {
+    if (value.trim().isEmpty) {
+      throw ArgumentError.value(value, 'displayName', 'must not be empty');
+    }
+    if (value != value.trim()) {
+      throw ArgumentError.value(
+        value,
+        'displayName',
+        'must not contain leading or trailing whitespace',
+      );
     }
     return value;
   }

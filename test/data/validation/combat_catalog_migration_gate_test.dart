@@ -86,6 +86,7 @@ CombatEnemyArchetypeDef _fixtureArchetype() => CombatEnemyArchetypeDef(
   variants: [
     CombatArchetypeVariant(
       roleId: 'fixture_role',
+      displayName: '验收角色',
       attackTokenKind: CombatAttackTokenKind.melee,
       hpMultiplier: 1,
       attackMultiplier: 1,

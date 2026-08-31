@@ -551,8 +551,8 @@ bool _stringListsEqual(List<String> a, List<String> b) {
 
 /// Q 聚怪力场出现(对齐契约 gather_started)。
 ///
-/// [actorPosition] 为施放时世界坐标快照。生产 reducer 必填;
-/// 手工构造缺省为 null 时,表现层回退自身同步的竞技场状态。
+/// [actorPosition] 为施放者坐标，[centerPosition] 为真实聚拢中心。
+/// 生产 reducer 必填；旧手工构造缺省时表现层回退施放者坐标。
 final class Phase0aGatherStarted extends Phase0aEvent {
   const Phase0aGatherStarted({
     required super.seq,
@@ -560,6 +560,7 @@ final class Phase0aGatherStarted extends Phase0aEvent {
     required this.actor,
     this.skillId = '',
     this.actorPosition,
+    this.centerPosition,
   });
 
   final String actor;
@@ -568,6 +569,9 @@ final class Phase0aGatherStarted extends Phase0aEvent {
   /// 施放者施放时世界坐标。
   final ArenaVector? actorPosition;
 
+  /// 聚拢力场的真实世界坐标中心。
+  final ArenaVector? centerPosition;
+
   @override
   bool operator ==(Object other) =>
       other is Phase0aGatherStarted &&
@@ -575,10 +579,12 @@ final class Phase0aGatherStarted extends Phase0aEvent {
       other.tick == tick &&
       other.actor == actor &&
       other.skillId == skillId &&
-      other.actorPosition == actorPosition;
+      other.actorPosition == actorPosition &&
+      other.centerPosition == centerPosition;
 
   @override
-  int get hashCode => Object.hash(seq, tick, actor, skillId, actorPosition);
+  int get hashCode =>
+      Object.hash(seq, tick, actor, skillId, actorPosition, centerPosition);
 }
 
 /// Q 聚怪结算生效,携带逐目标有序 outcomes(对齐契约 gather_applied)。

@@ -1,6 +1,6 @@
 enum Phase0aSkillGeometryShape { radial }
 
-enum Phase0aSkillGeometryAnchor { caster }
+enum Phase0aSkillGeometryAnchor { caster, targetPoint }
 
 enum Phase0aSkillEffectType { damage, pull, stagger, breakPower }
 
@@ -20,11 +20,13 @@ final class Phase0aSkillEffect {
   const Phase0aSkillEffect({
     required this.type,
     this.destinationRadius,
+    this.controlTicks,
     this.points,
   });
 
   final Phase0aSkillEffectType type;
   final double? destinationRadius;
+  final int? controlTicks;
   final int? points;
 }
 
@@ -57,6 +59,12 @@ final class Phase0aSkillBehavior {
               'Phase0a pull destinationRadius must be within geometry radius',
             );
           }
+          final controlTicks = effect.controlTicks;
+          if (controlTicks == null || controlTicks <= 0) {
+            throw StateError(
+              'Phase0a pull effect requires positive controlTicks',
+            );
+          }
           if (effect.points != null) {
             throw StateError('Phase0a pull effect cannot define points');
           }
@@ -65,13 +73,13 @@ final class Phase0aSkillBehavior {
           if (points == null || points <= 0) {
             throw StateError('Phase0a break effect requires positive points');
           }
-          if (effect.destinationRadius != null) {
-            throw StateError(
-              'Phase0a break effect cannot define destinationRadius',
-            );
+          if (effect.destinationRadius != null || effect.controlTicks != null) {
+            throw StateError('Phase0a break effect has unexpected parameters');
           }
         case Phase0aSkillEffectType.damage || Phase0aSkillEffectType.stagger:
-          if (effect.destinationRadius != null || effect.points != null) {
+          if (effect.destinationRadius != null ||
+              effect.controlTicks != null ||
+              effect.points != null) {
             throw StateError(
               'Phase0a ${effect.type.name} effect has unexpected parameters',
             );
@@ -102,9 +110,11 @@ final class Phase0aSkillBehavior {
     if (rawShape != 'radial') {
       throw StateError('Unsupported Phase0a geometry shape: $rawShape');
     }
-    if (rawAnchor != 'caster') {
-      throw StateError('Unsupported Phase0a geometry anchor: $rawAnchor');
-    }
+    final anchor = switch (rawAnchor) {
+      'caster' => Phase0aSkillGeometryAnchor.caster,
+      'target_point' => Phase0aSkillGeometryAnchor.targetPoint,
+      _ => throw StateError('Unsupported Phase0a geometry anchor: $rawAnchor'),
+    };
     final rawEffects = yaml['effects'];
     if (rawEffects is! List) {
       throw StateError('Phase0a behavior effects must be a list');
@@ -112,7 +122,7 @@ final class Phase0aSkillBehavior {
     return Phase0aSkillBehavior(
       geometry: Phase0aSkillGeometry(
         shape: Phase0aSkillGeometryShape.radial,
-        anchor: Phase0aSkillGeometryAnchor.caster,
+        anchor: anchor,
         radius: (rawGeometry['radius'] as num).toDouble(),
       ),
       effects: [
@@ -131,9 +141,14 @@ final class Phase0aSkillBehavior {
       'break' => Phase0aSkillEffectType.breakPower,
       _ => throw StateError('Unsupported Phase0a effect type: $rawType'),
     };
+    final rawControlTicks = yaml['controlTicks'];
+    if (rawControlTicks != null && rawControlTicks is! int) {
+      throw StateError('Phase0a effect controlTicks must be an integer');
+    }
     return Phase0aSkillEffect(
       type: type,
       destinationRadius: (yaml['destinationRadius'] as num?)?.toDouble(),
+      controlTicks: rawControlTicks as int?,
       points: (yaml['points'] as num?)?.toInt(),
     );
   }

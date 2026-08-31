@@ -557,8 +557,8 @@ phase0a_arena:
     gather_slot: gather
     # 下列 Q/R 尺寸/真气/CD 仅供隔离 legacy fixture fallback；
     # production 从 moves 绑定的 SkillDef.phase0aBehavior 与既有技能字段取值。
-    gather_ring_radius: 120.0
-    gather_effect_radius: 520.0
+    gather_ring_radius: 60.0
+    gather_effect_radius: 1100.0
     gather_qi_cost: 25
     gather_cooldown_seconds: 5.0
     clear_slot: clear

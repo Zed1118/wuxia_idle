@@ -2,6 +2,7 @@ archetypes:
   - id: arch_wolf
     variants:
       - role_id: pack_hunter
+        display_name: Pack Hunter
         attack_token_kind: melee
         hp_multiplier: 0.9
         attack_multiplier: 1.1
@@ -14,6 +15,7 @@ archetypes:
         sfx_group_id: sfx_fixture
         visual_variant_ids: [visual_fixture]
       - role_id: alpha
+        display_name: Alpha Wolf
         attack_token_kind: charge
         hp_multiplier: 1.4
         attack_multiplier: 1.5

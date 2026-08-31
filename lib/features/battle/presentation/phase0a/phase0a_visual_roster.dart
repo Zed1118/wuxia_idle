@@ -32,40 +32,53 @@ final class Phase0aVisualRoster {
   Phase0aVisualRoster({required Map<String, Phase0aActorVisual> visuals})
     : _visuals = Map.unmodifiable(visuals);
 
-  factory Phase0aVisualRoster.debugBattle() => Phase0aVisualRoster(
-    visuals: const {
-      'player': Phase0aActorVisual(
+  factory Phase0aVisualRoster.debugBattle({
+    Iterable<String> extraEnemyIds = const [],
+  }) {
+    final visuals = <String, Phase0aActorVisual>{
+      'player': const Phase0aActorVisual(
         name: UiStrings.battleSampleFounder,
         assetPath: WuxiaUi.battleFounderFallback,
         isElite: false,
       ),
-      'wave1_blade': Phase0aActorVisual(
+      'wave1_blade': const Phase0aActorVisual(
         name: UiStrings.battleSampleBanditBlade,
         assetPath: 'assets/enemies/battle_bandit_blade.png',
         isElite: false,
       ),
-      'wave1_archer': Phase0aActorVisual(
+      'wave1_archer': const Phase0aActorVisual(
         name: UiStrings.battleSampleBanditArcher,
         assetPath: 'assets/enemies/battle_bandit_archer.png',
         isElite: false,
       ),
-      'wave2_bandit_b': Phase0aActorVisual(
+      'wave2_bandit_b': const Phase0aActorVisual(
         name: UiStrings.phase0aDebugBanditB,
         assetPath: 'assets/enemies/battle_bandit_b.png',
         isElite: false,
       ),
-      'wave2_bandit_c': Phase0aActorVisual(
+      'wave2_bandit_c': const Phase0aActorVisual(
         name: UiStrings.phase0aDebugBanditC,
         assetPath: 'assets/enemies/battle_bandit_c.png',
         isElite: false,
       ),
-      'wave2_elite': Phase0aActorVisual(
+      'wave2_elite': const Phase0aActorVisual(
         name: UiStrings.battleSampleHiddenElder,
         assetPath: 'assets/enemies/battle_hidden_elder.png',
         isElite: true,
       ),
-    },
-  );
+    };
+    for (final actorId in extraEnemyIds) {
+      visuals.putIfAbsent(
+        actorId,
+        () => Phase0aActorVisual(
+          name: actorId,
+          assetPath: 'assets/enemies/battle_bandit_blade.png',
+          isElite: false,
+        ),
+      );
+    }
+    return Phase0aVisualRoster(visuals: visuals);
+  }
 
   /// Phase 1 纵切实机接线(拍板 α 灰度门):从主线内容映射结果装配真实 roster。
   ///

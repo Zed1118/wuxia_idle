@@ -1,0 +1,64 @@
+# Chapter 13 temple ecology for the halfway temple examination.
+archetypes:
+  - id: ch13_temple
+    variants:
+      - role_id: temple_staff
+        display_name: 棍僧
+        attack_token_kind: melee
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.0
+        attack_set_id: ch13_attack_set_staff
+        attack_tag_ids: [ch13_attack_tag_melee]
+        posture_profile_id: ch13_posture_staff
+        drop_group_id: ch13_drop_group_ecology_encounter
+        sfx_group_id: ch13_sfx_staff
+        visual_variant_ids:
+          - ch13_visual_staff_a
+          - ch13_visual_staff_b
+      - role_id: temple_thrower
+        display_name: 投掷僧
+        attack_token_kind: ranged
+        hp_multiplier: 0.8
+        attack_multiplier: 1.0
+        defense_multiplier: 0.8
+        speed_multiplier: 1.0
+        attack_set_id: ch13_attack_set_thrower
+        attack_tag_ids: [ch13_attack_tag_projectile]
+        posture_profile_id: ch13_posture_thrower
+        drop_group_id: ch13_drop_group_ecology_encounter
+        sfx_group_id: ch13_sfx_thrower
+        visual_variant_ids:
+          - ch13_visual_thrower_a
+          - ch13_visual_thrower_b
+      - role_id: temple_arhat_charger
+        display_name: 罗汉冲阵
+        attack_token_kind: charge
+        hp_multiplier: 1.1
+        attack_multiplier: 1.0
+        defense_multiplier: 1.0
+        speed_multiplier: 1.1
+        attack_set_id: ch13_attack_set_arhat
+        attack_tag_ids: [ch13_attack_tag_charge]
+        posture_profile_id: ch13_posture_arhat
+        drop_group_id: ch13_drop_group_ecology_encounter
+        sfx_group_id: ch13_sfx_arhat
+        visual_variant_ids:
+          - ch13_visual_arhat_a
+          - ch13_visual_arhat_b
+      - role_id: temple_guard
+        display_name: 护院客僧
+        attack_token_kind: support
+        hp_multiplier: 1.3
+        attack_multiplier: 1.0
+        defense_multiplier: 1.2
+        speed_multiplier: 0.9
+        attack_set_id: ch13_attack_set_guard
+        attack_tag_ids: [ch13_attack_tag_support]
+        posture_profile_id: ch13_posture_guard
+        drop_group_id: ch13_drop_group_ecology_encounter
+        sfx_group_id: ch13_sfx_guard
+        visual_variant_ids:
+          - ch13_visual_guard_a
+          - ch13_visual_guard_b

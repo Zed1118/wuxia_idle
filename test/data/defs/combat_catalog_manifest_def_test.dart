@@ -11,6 +11,7 @@ CombatEnemyArchetypeDef banditArchetype() => CombatEnemyArchetypeDef(
   variants: [
     CombatArchetypeVariant(
       roleId: 'melee_brute',
+      displayName: '近战力士',
       attackTokenKind: CombatAttackTokenKind.melee,
       hpMultiplier: 1.0,
       attackMultiplier: 1.0,
@@ -25,6 +26,7 @@ CombatEnemyArchetypeDef banditArchetype() => CombatEnemyArchetypeDef(
     ),
     CombatArchetypeVariant(
       roleId: 'ranged_archer',
+      displayName: '远程弓手',
       attackTokenKind: CombatAttackTokenKind.ranged,
       hpMultiplier: 0.8,
       attackMultiplier: 1.4,

@@ -255,6 +255,7 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
   final commanderIds = <String>{};
   final anchorIds = <String>{};
   final checkpointIds = <String>{};
+  var projectsSurvivalTime = false;
   for (final clause in encounter.objectives.clauses) {
     switch (clause.primitive) {
       case CombatDefeatTargetsRef(targetIds: final clauseTargetIds):
@@ -265,6 +266,8 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
         anchorIds.addAll(clauseAnchorIds);
       case CombatReachCheckpointRef(checkpointIds: final clauseCheckpointIds):
         checkpointIds.addAll(clauseCheckpointIds);
+      case CombatSurviveDurationRef():
+        projectsSurvivalTime = true;
       default:
         break;
     }
@@ -316,6 +319,17 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
           );
         }
       }
+    });
+  }
+  if (projectsSurvivalTime) {
+    externalProjectors.add((frame) sync* {
+      yield TimeElapsed(
+        Duration(
+          microseconds: (frame.deltaSeconds * Duration.microsecondsPerSecond)
+              .round(),
+        ),
+        eventId: 'phase0a:survive:${frame.afterArena.tick}',
+      );
     });
   }
 

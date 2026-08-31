@@ -45,6 +45,7 @@ CombatArchetypeVariant _variant({
   Iterable<String> visualVariantIds = const ['visual_bandit_blade_a'],
 }) => CombatArchetypeVariant(
   roleId: 'blade',
+  displayName: '刀手',
   attackTokenKind: CombatAttackTokenKind.melee,
   hpMultiplier: 1,
   attackMultiplier: 1,
