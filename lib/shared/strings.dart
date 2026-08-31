@@ -46,6 +46,11 @@ class UiStrings {
   /// 结算标题(surviveTicks 型胜利)：与「击败」区分——赢法不同,说法就不同。
   static const String battleResultSurvived = '守住了';
 
+  static const String pursueTargetWaiting = '追上目标 · 等待现身';
+  static String pursueTargetRemaining(int distance) => '追上目标 · 还差 $distance 步';
+  static const String pursueTargetCaught = '追上目标 · 已截住';
+  static const String battleResultPursued = '追上了';
+
   static const String battleLog = '战斗日志';
   static const String battleLogShort = '日志';
   // H3:战斗暂停(停 tick + 遮罩 + 继续)。

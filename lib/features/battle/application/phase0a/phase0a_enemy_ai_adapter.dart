@@ -148,6 +148,10 @@ final class Phase0aEnemyAiAdapter {
         return (toward + ArenaVector(-toward.y, toward.x)).normalized();
       case Phase0aEnemyMovementPolicy.guardedPosition:
         return inRange ? null : ArenaVector.zero;
+      case Phase0aEnemyMovementPolicy.pursuitEvasion:
+        return delta.lengthSquared > 0
+            ? ArenaVector(-delta.x, -delta.y).normalized()
+            : ArenaVector.zero;
     }
   }
 

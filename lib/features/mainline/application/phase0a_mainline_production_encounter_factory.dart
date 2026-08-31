@@ -112,6 +112,11 @@ Phase0aEncounterHost _assemble({
   final arena = request.numbers.phase0aArena;
   final activeLimit = route.encounter.spawnConfig.activeLimit;
   final positionKeys = <String>[];
+  final pursueTargetEntryIds = <String>{
+    for (final clause in route.encounter.objectives.clauses)
+      if (clause.primitive case CombatPursueTargetRef(:final targetId))
+        targetId,
+  };
   for (var ordinal = 0; ordinal < entries.length; ordinal += 1) {
     final entry = entries[ordinal];
     final binding = bindings[entry.entryId]!;
@@ -150,7 +155,16 @@ Phase0aEncounterHost _assemble({
     skillsByActor[runtimeId] = binding.enemySkillBindings;
     basicQiByActor[runtimeId] = binding.basicQiDelta;
     basicPowerByActor[runtimeId] = binding.basicPowerMultiplier;
-    final behaviorProfile = binding.behaviorProfile;
+    final boundBehaviorProfile = binding.behaviorProfile;
+    final behaviorProfile =
+        boundBehaviorProfile != null &&
+            pursueTargetEntryIds.contains(entry.entryId)
+        ? Phase0aEnemyBehaviorProfile(
+            id: boundBehaviorProfile.id,
+            movementPolicy: Phase0aEnemyMovementPolicy.pursuitEvasion,
+            attackPolicy: boundBehaviorProfile.attackPolicy,
+          )
+        : boundBehaviorProfile;
     if (behaviorProfile != null) {
       behaviorProfilesByActor[runtimeId] = behaviorProfile;
     }
@@ -196,6 +210,7 @@ Phase0aEncounterHost _assemble({
   final objectiveSource = buildPhase0aMainlineObjectiveEventSource(
     encounter: route.encounter,
     roster: plan.roster,
+    pursuitCaptureRange: arena.playerAttackRange,
   );
   AttackTokenRequest? tokenMapper(Phase0aIntent intent) {
     if (intent is Phase0aMoveIntent) {
@@ -250,11 +265,13 @@ _objectiveContinuationCommandBuilder(CombatEncounterDef encounter) {
 Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
   required CombatEncounterDef encounter,
   required Phase0aEncounterRoster roster,
+  double? pursuitCaptureRange,
 }) {
   final targetIds = <String>{};
   final commanderIds = <String>{};
   final anchorIds = <String>{};
   final checkpointIds = <String>{};
+  final pursueTargetIds = <String>{};
   var projectsSurvivalTime = false;
   for (final clause in encounter.objectives.clauses) {
     switch (clause.primitive) {
@@ -268,6 +285,8 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
         checkpointIds.addAll(clauseCheckpointIds);
       case CombatSurviveDurationRef():
         projectsSurvivalTime = true;
+      case CombatPursueTargetRef(:final targetId):
+        pursueTargetIds.add(targetId);
       default:
         break;
     }
@@ -330,6 +349,48 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
         ),
         eventId: 'phase0a:survive:${frame.afterArena.tick}',
       );
+    });
+  }
+  if (pursueTargetIds.isNotEmpty) {
+    final captureRange = pursuitCaptureRange;
+    if (captureRange == null || !captureRange.isFinite || captureRange <= 0) {
+      throw StateError(
+        '${encounter.id} requires a positive pursuit capture range',
+      );
+    }
+    final runtimeTargetIdByEntryId = <String, String>{};
+    for (final targetId in pursueTargetIds) {
+      if (!entryById.containsKey(targetId)) {
+        throw StateError(
+          '${encounter.id} pursue target is not a spawn entry: $targetId',
+        );
+      }
+      final binding = roster.bindingByEntryId(targetId);
+      if (binding == null) {
+        throw StateError(
+          '${encounter.id} pursue target is not in the runtime roster: $targetId',
+        );
+      }
+      runtimeTargetIdByEntryId[targetId] = binding.actorId;
+    }
+    externalProjectors.add((frame) sync* {
+      for (final entry in runtimeTargetIdByEntryId.entries) {
+        Phase0aActor? target;
+        for (final enemy in frame.afterArena.enemies) {
+          if (enemy.id == entry.value) {
+            target = enemy;
+            break;
+          }
+        }
+        if (target == null) continue;
+        final delta = target.position - frame.afterArena.player.position;
+        if (delta.lengthSquared <= captureRange * captureRange) {
+          yield TargetPursued(
+            entry.key,
+            eventId: 'phase0a:pursue:${frame.afterArena.tick}:${entry.key}',
+          );
+        }
+      }
     });
   }
 

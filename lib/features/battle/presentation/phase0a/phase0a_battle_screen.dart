@@ -1020,6 +1020,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
           builder: (context, constraints) {
             final size = constraints.biggest;
             final typedSurvive = controller.surviveObjectiveProgress;
+            final typedPursuit = controller.pursueObjectiveProgress;
             final stage = Phase0aStage(
               viewport: size,
               cameraCenter:
@@ -1111,6 +1112,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                         controller.state.winCondition!.surviveTicksRequired!,
                     currentTick: controller.state.tick,
                   ),
+                if (typedSurvive == null && typedPursuit != null)
+                  _PursueConditionBanner(progress: typedPursuit),
                 if (widget.numericSkillBindings.equipped.isNotEmpty)
                   Positioned(
                     left: Phase0aPresentationTokens.hudInset,
@@ -2661,6 +2664,9 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                         widget.controller.state.winCondition?.isSurviveTicks ==
                             true)
                 ? UiStrings.battleResultSurvived
+                : outcome == Phase0aBattleOutcome.victory &&
+                      widget.controller.pursueObjectiveProgress != null
+                ? UiStrings.battleResultPursued
                 : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal
                 : UiStrings.phase0aDefeatSeal,
@@ -2718,6 +2724,55 @@ final class _SurviveConditionBanner extends StatelessWidget {
                 color: WuxiaUi.ink,
                 fontSize: 16,
                 fontWeight: met ? FontWeight.w700 : FontWeight.w500,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+final class _PursueConditionBanner extends StatelessWidget {
+  const _PursueConditionBanner({required this.progress});
+
+  final Phase0aPursueObjectiveProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final distance = progress.remainingDistance;
+    final label = progress.completed
+        ? UiStrings.pursueTargetCaught
+        : distance == null
+        ? UiStrings.pursueTargetWaiting
+        : UiStrings.pursueTargetRemaining(distance);
+    return Positioned(
+      key: const ValueKey('phase0a_pursue_condition_banner'),
+      top: Phase0aPresentationTokens.hudInset,
+      left: Phase0aPresentationTokens.hudInset,
+      child: Semantics(
+        label: label,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xD9E8D8B8),
+            border: Border.all(
+              color: progress.completed
+                  ? WuxiaUi.gold
+                  : const Color(0xB36D5940),
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 16,
+                fontWeight: progress.completed
+                    ? FontWeight.w700
+                    : FontWeight.w500,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),

@@ -8,6 +8,7 @@ enum Phase0aEnemyMovementPolicy {
   holdDistance,
   lateralFlank,
   guardedPosition,
+  pursuitEvasion,
 }
 
 enum Phase0aEnemyAttackPolicy {

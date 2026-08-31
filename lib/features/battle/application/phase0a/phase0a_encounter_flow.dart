@@ -15,6 +15,7 @@ import 'phase0a_battle_flow.dart';
 import 'phase0a_enemy_intent_gate.dart';
 import 'phase0a_objective_runtime_tracker.dart';
 import 'phase0a_player_input_adapter.dart';
+import 'phase0a_pursue_objective_observation.dart';
 import 'phase0a_spawn_event_adapter.dart';
 import 'phase0a_survive_objective_observation.dart';
 import 'phase0a_wave_battle_flow.dart';
@@ -28,6 +29,7 @@ final class Phase0aEncounterFlow
     implements
         Phase0aBattleFlow,
         Phase0aEncounterRuntimeObservationSource,
+        Phase0aPursueObjectiveObservationSource,
         Phase0aSurviveObjectiveObservationSource {
   Phase0aEncounterFlow.compatibility({required Phase0aWaveBattleFlow legacy})
     : _legacy = legacy,
@@ -142,6 +144,40 @@ final class Phase0aEncounterFlow
       return Phase0aSurviveObjectiveObservation(
         requiredDuration: objective.requiredDuration,
         elapsed: tracker.progress.clauses[index].progress.elapsed,
+      );
+    }
+    return null;
+  }
+
+  @override
+  Phase0aPursueObjectiveObservation? get pursueObjectiveObservation {
+    final tracker = _objectiveTracker;
+    final roster = _roster;
+    if (tracker == null || roster == null) return null;
+    for (var index = 0; index < tracker.controller.clauses.length; index += 1) {
+      final objective = tracker.controller.clauses[index].objective;
+      if (objective is! PursueTargetObjective) continue;
+      final binding = roster.bindingByEntryId(objective.targetId);
+      if (binding == null) {
+        throw StateError(
+          'Pursue target is not present in the encounter roster: '
+          '${objective.targetId}',
+        );
+      }
+      Phase0aActor? target;
+      for (final enemy in state.enemies) {
+        if (enemy.id == binding.actorId) {
+          target = enemy;
+          break;
+        }
+      }
+      return Phase0aPursueObjectiveObservation(
+        targetId: objective.targetId,
+        targetActorId: binding.actorId,
+        distance: target == null
+            ? null
+            : (target.position - state.player.position).length,
+        completed: tracker.progress.clauses[index].completed,
       );
     }
     return null;

@@ -8,7 +8,8 @@ import 'package:wuxia_idle/data/validation/combat_objective_primitive_mapper.dar
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
@@ -200,91 +201,78 @@ void main() {
     },
   );
 
-  test('all 25 production defeat projections complete the objective', () async {
-    final encounter = repository.combatEncounterForStage(_stageId)!;
-    final bundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
-      stageId: _stageId,
-      encounterId: _encounterId,
-      cycleIndex: 1,
-      repository: repository,
-    );
-    final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
-      contentId: _stageId,
-      playerSnapshot: testCombatantSnapshot(includeProductionBasicAttack: true),
-      numbers: repository.numbers,
-    );
-    final source = Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
-      loader:
-          ({
-            required stageId,
-            required encounterId,
-            required cycleIndex,
-          }) async => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
-            stageId: stageId,
-            encounterId: encounterId,
-            cycleIndex: cycleIndex,
-            repository: repository,
-          ),
-    );
-    final host = (await createFreshPhase0aMainlineEncounter(
-      Phase0aMainlineEncounterHostBuildRequest(
-        stage: repository.getStage(_stageId),
-        playerMapping: playerMapping,
+  test(
+    '900 production frame projections complete the survive objective',
+    () async {
+      final encounter = repository.combatEncounterForStage(_stageId)!;
+      final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
+        contentId: _stageId,
+        playerSnapshot: testCombatantSnapshot(
+          includeProductionBasicAttack: true,
+        ),
         numbers: repository.numbers,
-        cycleIndex: 1,
-        rng: Random(7),
-        runtimeBindingSource: source,
-        catalogOverride: repository.combatCatalog,
-      ),
-    ))!;
-    final mapping = host.mapping!;
-    final objectiveEvents =
-        buildPhase0aMainlineObjectiveEventSource(
-          encounter: encounter,
-          roster: mapping.roster,
-        ).eventsFor(
+      );
+      final source = Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+        loader:
+            ({
+              required stageId,
+              required encounterId,
+              required cycleIndex,
+            }) async => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+              stageId: stageId,
+              encounterId: encounterId,
+              cycleIndex: cycleIndex,
+              repository: repository,
+            ),
+      );
+      final host = (await createFreshPhase0aMainlineEncounter(
+        Phase0aMainlineEncounterHostBuildRequest(
+          stage: repository.getStage(_stageId),
+          playerMapping: playerMapping,
+          numbers: repository.numbers,
+          cycleIndex: 1,
+          rng: Random(7),
+          runtimeBindingSource: source,
+          catalogOverride: repository.combatCatalog,
+        ),
+      ))!;
+      final mapping = host.mapping!;
+      final objectiveSource = buildPhase0aMainlineObjectiveEventSource(
+        encounter: encounter,
+        roster: mapping.roster,
+      );
+      final controller = mapCombatObjectiveComposition(
+        encounter.objectives,
+        tickDuration: const Duration(milliseconds: 100),
+      );
+      var progress = controller.initialProgress;
+      Phase0aArenaState atTick(int tick) => Phase0aArenaState(
+        tick: tick,
+        nextSeq: mapping.initialState.nextSeq,
+        player: mapping.initialState.player,
+        enemies: mapping.initialState.enemies,
+        skillSlots: mapping.initialState.skillSlots,
+      );
+      for (var tick = 1; tick <= 900; tick++) {
+        final objectiveEvents = objectiveSource.eventsFor(
           Phase0aEncounterObjectiveFrame(
-            beforeArena: mapping.initialState,
-            afterArena: mapping.initialState,
+            beforeArena: atTick(tick - 1),
+            afterArena: atTick(tick),
             beforeSpawn: mapping.director.state,
             afterSpawn: mapping.director.state,
             directorEvents: const [],
             spawnEvents: const [],
-            combatEvents: [
-              for (
-                var index = 0;
-                index < encounter.spawnEntries.length;
-                index++
-              )
-                Phase0aEnemyDefeated(
-                  seq: index + 1,
-                  tick: 1,
-                  target: mapping.roster
-                      .bindingByEntryId(encounter.spawnEntries[index].entryId)!
-                      .actorId,
-                  defeatKind: bundle
-                      .actorBindingsByEntryId[encounter
-                          .spawnEntries[index]
-                          .entryId]!
-                      .createActor('probe')
-                      .defeatKind,
-                ),
-            ],
+            combatEvents: const [],
             deltaSeconds: 0.1,
             playerMovementDelta: playerMapping.initialPlayer.position * 0,
           ),
         );
-    expect(objectiveEvents, hasLength(25));
-
-    final controller = mapCombatObjectiveComposition(
-      encounter.objectives,
-      tickDuration: const Duration(milliseconds: 100),
-    );
-    var progress = controller.initialProgress;
-    for (final event in objectiveEvents) {
-      progress = controller.advance(progress, event);
-    }
-    expect(progress.completed, isTrue);
-    expect(progress.clauses.single.completed, isTrue);
-  });
+        expect(objectiveEvents, hasLength(1));
+        expect(objectiveEvents.single, isA<TimeElapsed>());
+        progress = controller.advance(progress, objectiveEvents.single);
+      }
+      expect(progress.completed, isTrue);
+      expect(progress.clauses.single.completed, isTrue);
+    },
+  );
 }

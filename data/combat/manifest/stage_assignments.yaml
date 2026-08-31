@@ -21,6 +21,9 @@ stage_assignments:
   - stage_id: stage_07_01
     migration_state: migrated
     encounter_id: ch7_encounter_01_northern_outpost
+  - stage_id: stage_07_04
+    migration_state: migrated
+    encounter_id: ch7_encounter_04_grey_cloak_pursuit
   - stage_id: stage_02_01
     migration_state: migrated
     encounter_id: ch2_encounter_01_poison_escort

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_battle_flow.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
+import '../../application/phase0a/phase0a_pursue_objective_observation.dart';
 import '../../application/phase0a/phase0a_survive_objective_observation.dart';
 import '../../domain/phase0a/combat_event_order.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
@@ -24,6 +25,22 @@ final class Phase0aSurviveObjectiveProgress {
 
   int get remainingTicks => requiredTicks - elapsedTicks;
   bool get completed => elapsedTicks >= requiredTicks;
+}
+
+final class Phase0aPursueObjectiveProgress {
+  const Phase0aPursueObjectiveProgress({
+    required this.targetId,
+    required this.targetActorId,
+    required this.distance,
+    required this.completed,
+  });
+
+  final String targetId;
+  final String targetActorId;
+  final double? distance;
+  final bool completed;
+
+  int? get remainingDistance => distance?.ceil();
 }
 
 final class Phase0aBattleController extends ChangeNotifier {
@@ -82,6 +99,20 @@ final class Phase0aBattleController extends ChangeNotifier {
     return Phase0aSurviveObjectiveProgress(
       requiredTicks: requiredTicks,
       elapsedTicks: elapsedTicks,
+    );
+  }
+
+  Phase0aPursueObjectiveProgress? get pursueObjectiveProgress {
+    final flow = _flow;
+    if (flow is! Phase0aPursueObjectiveObservationSource) return null;
+    final observation = (flow as Phase0aPursueObjectiveObservationSource)
+        .pursueObjectiveObservation;
+    if (observation == null) return null;
+    return Phase0aPursueObjectiveProgress(
+      targetId: observation.targetId,
+      targetActorId: observation.targetActorId,
+      distance: observation.distance,
+      completed: observation.completed,
     );
   }
 

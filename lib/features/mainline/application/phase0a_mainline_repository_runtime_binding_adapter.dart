@@ -80,6 +80,11 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       if (clause.primitive case CombatDefeatCommanderRef(:final commanderId))
         commanderId,
   };
+  final pursueTargetEntryIds = <String>{
+    for (final clause in encounter.objectives.clauses)
+      if (clause.primitive case CombatPursueTargetRef(:final targetId))
+        targetId,
+  };
   final actorBindings = <String, Phase0aEncounterActorRuntimeBinding>{};
   for (var ordinal = 0; ordinal < encounter.spawnEntries.length; ordinal++) {
     final entry = encounter.spawnEntries[ordinal];
@@ -122,7 +127,9 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     _requireMatchingTokenPolicy(variant, binding.behavior);
 
     final preserveBaseBossIdentity =
-        baseSnapshot.isBoss && commanderEntryIds.contains(entry.entryId);
+        baseSnapshot.isBoss &&
+        (commanderEntryIds.contains(entry.entryId) ||
+            pursueTargetEntryIds.contains(entry.entryId));
     final snapshot = _applyVariant(
       base: baseSnapshot,
       variant: variant,

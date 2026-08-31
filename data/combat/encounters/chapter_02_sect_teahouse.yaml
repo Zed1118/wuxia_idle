@@ -165,31 +165,7 @@ encounters:
     objectives:
       completion_rule: all
       clauses:
-        - id: ch2_s02_clear_teahouse
-          kind: defeat_targets
-          target_ids:
-            - ch2_s02_outer_01
-            - ch2_s02_outer_02
-            - ch2_s02_outer_03
-            - ch2_s02_outer_04
-            - ch2_s02_outer_05
-            - ch2_s02_outer_06
-            - ch2_s02_outer_07
-            - ch2_s02_outer_08
-            - ch2_s02_outer_09
-            - ch2_s02_outer_10
-            - ch2_s02_outer_11
-            - ch2_s02_outer_12
-            - ch2_s02_outer_13
-            - ch2_s02_outer_14
-            - ch2_s02_hidden_01
-            - ch2_s02_hidden_02
-            - ch2_s02_hidden_03
-            - ch2_s02_hidden_04
-            - ch2_s02_hidden_05
-            - ch2_s02_hidden_06
-            - ch2_s02_lightfoot_01
-            - ch2_s02_lightfoot_02
-            - ch2_s02_lightfoot_03
-            - ch2_s02_lightfoot_04
-            - ch2_s02_instructor_01
+        - id: ch2_s02_survive_teahouse
+          kind: survive_duration
+          # TUNING candidate: 90 seconds at the shared 0.1-second fixed tick.
+          required_ticks: 900

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_flow.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_objective_runtime_tracker.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_survive_objective_observation.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_pursue_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/objective_controller.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -16,52 +13,48 @@ import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_s
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
-final class _ObservedSurviveFlow
-    implements Phase0aBattleFlow, Phase0aSurviveObjectiveObservationSource {
-  _ObservedSurviveFlow({required int elapsedTicks, required this.outcome})
-    : objectiveController = ObjectiveController(
-        completionRule: ObjectiveCompletionRule.all,
-        clauses: [
-          ObjectiveClause(
-            id: 'survive',
-            objective: SurviveDurationObjective(const Duration(seconds: 3)),
-          ),
-        ],
-      ) {
-    final tracker = Phase0aObjectiveRuntimeTracker(
-      controller: objectiveController,
-    );
-    for (var tick = 1; tick <= elapsedTicks; tick += 1) {
-      tracker.advanceExternal(
-        TimeElapsed(const Duration(seconds: 1), eventId: 'survive:$tick'),
-      );
-    }
-    objectiveProgress = tracker.progress;
-  }
+const _player = Phase0aActor(
+  id: 'player',
+  side: Phase0aSide.player,
+  position: ArenaVector.zero,
+  facing: ArenaVector(1, 0),
+  maxHealth: 100,
+  currentHealth: 100,
+  moveSpeed: 1,
+  qiCurrent: 0,
+  qiMax: 100,
+  attackCooldownRemaining: 0,
+  defeatKind: Phase0aDefeatKind.normal,
+);
 
-  final ObjectiveController objectiveController;
-  late final ObjectiveControllerProgress objectiveProgress;
+final class _ObservedPursuitFlow
+    implements Phase0aBattleFlow, Phase0aPursueObjectiveObservationSource {
+  const _ObservedPursuitFlow({
+    required this.distance,
+    required this.completed,
+    required this.outcome,
+  });
+
+  final double? distance;
+  final bool completed;
 
   @override
   final Phase0aBattleOutcome outcome;
 
   @override
+  Phase0aPursueObjectiveObservation get pursueObjectiveObservation =>
+      Phase0aPursueObjectiveObservation(
+        targetId: 'runner',
+        targetActorId: 'runner-runtime',
+        distance: distance,
+        completed: completed,
+      );
+
+  @override
   Phase0aArenaState get state => const Phase0aArenaState(
     tick: 1,
     nextSeq: 1,
-    player: Phase0aActor(
-      id: 'player',
-      side: Phase0aSide.player,
-      position: ArenaVector.zero,
-      facing: ArenaVector(1, 0),
-      maxHealth: 100,
-      currentHealth: 100,
-      moveSpeed: 1,
-      qiCurrent: 0,
-      qiMax: 100,
-      attackCooldownRemaining: 0,
-      defeatKind: Phase0aDefeatKind.normal,
-    ),
+    player: _player,
     enemies: [],
     skillSlots: [
       Phase0aSkillSlot(
@@ -83,20 +76,13 @@ final class _ObservedSurviveFlow
   List<CombatEventRecord> get lastOrderedEventRecords => const [];
 
   @override
-  Phase0aSurviveObjectiveObservation get surviveObjectiveObservation =>
-      Phase0aSurviveObjectiveObservation(
-        requiredDuration: const Duration(seconds: 3),
-        elapsed: objectiveProgress.clauses.single.progress.elapsed,
-      );
-
-  @override
   List<Phase0aEvent> advance({
     required double deltaSeconds,
     required Phase0aPlayerCommand command,
   }) => const [];
 }
 
-Phase0aBattleController _controller(_ObservedSurviveFlow flow) =>
+Phase0aBattleController _controller(_ObservedPursuitFlow flow) =>
     Phase0aBattleController(
       flow: flow,
       roster: Phase0aVisualRoster(
@@ -108,19 +94,20 @@ Phase0aBattleController _controller(_ObservedSurviveFlow flow) =>
           ),
         },
       ),
-      fixedDeltaSeconds: 1,
+      fixedDeltaSeconds: 0.1,
     );
 
 void main() {
-  testWidgets('typed survive progress drives existing HUD and outcome copy', (
+  testWidgets('typed pursuit progress drives distance HUD and outcome copy', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1280, 720));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     final ongoing = _controller(
-      _ObservedSurviveFlow(
-        elapsedTicks: 1,
+      const _ObservedPursuitFlow(
+        distance: 81.2,
+        completed: false,
         outcome: Phase0aBattleOutcome.ongoing,
       ),
     );
@@ -133,18 +120,16 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('phase0a_survive_condition_banner')),
+      find.byKey(const ValueKey('phase0a_pursue_condition_banner')),
       findsOneWidget,
     );
-    expect(
-      find.text(UiStrings.surviveConditionRemaining(3, 2)),
-      findsOneWidget,
-    );
+    expect(find.text(UiStrings.pursueTargetRemaining(82)), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
     final completed = _controller(
-      _ObservedSurviveFlow(
-        elapsedTicks: 3,
+      const _ObservedPursuitFlow(
+        distance: 0,
+        completed: true,
         outcome: Phase0aBattleOutcome.victory,
       ),
     );
@@ -156,17 +141,18 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text(UiStrings.battleResultSurvived), findsOneWidget);
+    expect(find.text(UiStrings.battleResultPursued), findsOneWidget);
   });
 
-  testWidgets('typed survive HUD remains structurally visible at 1440x900', (
+  testWidgets('pursuit HUD remains structurally visible at 1440x900', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(1440, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final controller = _controller(
-      _ObservedSurviveFlow(
-        elapsedTicks: 1,
+      const _ObservedPursuitFlow(
+        distance: null,
+        completed: false,
         outcome: Phase0aBattleOutcome.ongoing,
       ),
     );
@@ -180,9 +166,10 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byKey(const ValueKey('phase0a_survive_condition_banner')),
+      find.byKey(const ValueKey('phase0a_pursue_condition_banner')),
       findsOneWidget,
     );
+    expect(find.text(UiStrings.pursueTargetWaiting), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

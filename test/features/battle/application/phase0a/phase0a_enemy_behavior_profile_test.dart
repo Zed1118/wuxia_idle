@@ -136,6 +136,43 @@ void main() {
     );
   });
 
+  test('pursuitEvasion moves the target away through the shared reducer', () {
+    const pursuitProfile = Phase0aEnemyBehaviorProfile(
+      id: 'pursuit_target',
+      movementPolicy: Phase0aEnemyMovementPolicy.pursuitEvasion,
+      attackPolicy: Phase0aEnemyAttackPolicy.supportPulse,
+    );
+    final adapter = const Phase0aEnemyAiAdapter(
+      attackRange: 82,
+      attackHalfArcRadians: 0.9,
+      attackCooldownSeconds: 1,
+      postureBasicPowerMultiplier: 1,
+      uniformBasicPowerMultiplier: 1,
+      behaviorProfilesByActor: {'runner': pursuitProfile},
+    );
+    final base = state();
+    final initial = Phase0aArenaState(
+      tick: base.tick,
+      nextSeq: base.nextSeq,
+      player: base.player,
+      enemies: [actor('runner', const ArenaVector(200, 0))],
+      skillSlots: base.skillSlots,
+    );
+    final intent = adapter
+        .intentsFor(state: initial)
+        .whereType<Phase0aMoveIntent>()
+        .single;
+
+    expect(intent.direction, const ArenaVector(1, 0));
+    final result = reducePhase0aTick(
+      state: initial,
+      intents: [intent],
+      deltaSeconds: 1,
+      damageResolver: const _NoDamageResolver(),
+    );
+    expect(result.state.enemies.single.position, const ArenaVector(300, 0));
+  });
+
   test('聚怪控制期间 AI 不生成移动、普攻或技能 intent', () {
     final adapter = const Phase0aEnemyAiAdapter(
       attackRange: 82,
