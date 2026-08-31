@@ -1,7 +1,9 @@
 # Phase 2 U11 渐进解锁与一次性蜡封审计
 
-日期：2026-09-01  
-基线：`77a40e62134098a667850f54fbe5d49f4686fd4c`  
+日期：2026-09-01
+
+基线：`77a40e62134098a667850f54fbe5d49f4686fd4c`
+
 候选分支：`codex/p2-m6-u11-progressive-unlock-20260901`
 
 ## 当前结论
@@ -35,8 +37,10 @@ U11 固定工程门已形成候选 `0/1 → 1/1`：七项生产能力共用 `hid
 - U11 核心恢复：`23/23`。
 - main menu + jianghu map + schema/migration/save-management 受影响集合：`299/299`。
 - `flutter analyze lib test`：`0 issue`。
-- `dart format lib test`：`1601 files / 0 changed`。
-- 持锁 full suite、总 Gate、合并态与精确 SHA CI：待最终收口后回填。
+- `dart format .`：`1698 files / 0 changed`。
+- 持锁 full suite：`5820/5820`，exit `0`，`[E]=0`，末行
+  `05:51 +5820: All tests passed!`，墙钟 `353s`。
+- 总 Gate、合并态与精确 SHA CI：仍须在 READY tip 后执行，不在本文提前冒充通过。
 
 ## 不变项
 

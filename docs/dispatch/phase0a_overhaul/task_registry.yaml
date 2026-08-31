@@ -5139,8 +5139,8 @@ tasks:
     owner: codex_root
     branch: codex/p2-m6-u11-progressive-unlock-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m6-u11-progressive-unlock-20260901
-    status: verification_pending
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 77a40e62134098a667850f54fbe5d49f4686fd4c
     code_candidate_commit: 2f2e701d81248287b8ce1f7f25a30bd37ffaf7e7
     reviewed_candidate_commit: 2f2e701d81248287b8ce1f7f25a30bd37ffaf7e7
@@ -5166,8 +5166,11 @@ tasks:
       affected_route_migration_and_save_tests: 299
       scoped_analyze_issues: 0
       format_changed_files: 0
-      final_full_suite: pending
-      final_gate: pending
+      final_full_suite: 5820
+      final_full_suite_failures: 0
+      final_full_suite_error_blocks: 0
+      final_full_suite_wall_clock_seconds: 353
+      final_gate: must_pass_before_merge
       human_visual_acceptance: deferred_by_user
     owned_files:
       - lib/data/isar_setup.dart
