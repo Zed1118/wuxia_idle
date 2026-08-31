@@ -5162,6 +5162,7 @@ tasks:
       initial_red_test_files: 6
       mutation_red_proofs: 6
       weak_hidden_guard_tests_found_and_hardened: 1
+      test_contract_migration_entries: 2
       restored_u11_tests: 23
       affected_route_migration_and_save_tests: 299
       scoped_analyze_issues: 0
@@ -5191,6 +5192,7 @@ tasks:
       - docs/audit/phase2_u11_progressive_unlock_2026-09-01.md
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m6-u11-progressive-unlock-20260901.yaml
     protected_behavior:
       - tower and disciple scheduling remain open on a fresh save
       - light foot and mass battle remain heard before and open after their existing chapter six configuration gate
