@@ -292,6 +292,11 @@ CombatRuntimeStageBinding _resolveStageBinding({
   final usedPositions = encounter.spawnEntries
       .map((entry) => entry.positionId)
       .toSet();
+  for (final clause in encounter.objectives.clauses) {
+    if (clause.primitive case CombatDefendEntityRef(:final positionId)) {
+      usedPositions.add(positionId);
+    }
+  }
   final usedBehaviors = encounter.spawnEntries
       .map((entry) => entry.behaviorId)
       .toSet();

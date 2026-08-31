@@ -7,6 +7,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/numbers_config.dart';
 import '../../battle/application/phase0a/phase0a_encounter_host.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../battle/domain/phase0a/arena_vector.dart';
 import 'phase0a_mainline_production_encounter_factory.dart';
 import 'phase0a_mainline_repository_runtime_binding_adapter.dart';
 
@@ -83,12 +84,33 @@ final class Phase0aMainlineEncounterRuntimeBindingBundle {
     required this.encounterId,
     required this.tickDuration,
     required this.actorBindingsByEntryId,
+    this.defendedEntity,
   });
 
   final String stageId;
   final String encounterId;
   final Duration tickDuration;
   final Map<String, Phase0aEncounterActorRuntimeBinding> actorBindingsByEntryId;
+  final Phase0aMainlineDefendedEntityRuntimeBinding? defendedEntity;
+}
+
+/// Typed non-persistent runtime closure for one defend_entity clause.
+final class Phase0aMainlineDefendedEntityRuntimeBinding {
+  const Phase0aMainlineDefendedEntityRuntimeBinding({
+    required this.entityId,
+    required this.position,
+    required this.maxDurability,
+    required this.damagePerHit,
+    required this.requiredTicks,
+    required this.attackerEntryIds,
+  });
+
+  final String entityId;
+  final ArenaVector position;
+  final int maxDurability;
+  final int damagePerHit;
+  final int requiredTicks;
+  final Set<String> attackerEntryIds;
 }
 
 /// Adapter consumed by the live host and sweep. The Runtime Loader session

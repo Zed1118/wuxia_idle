@@ -35,4 +35,8 @@ encounters:
         - id: defend_cart
           kind: defend_entity
           entity_id: escorted_cart
+          position_id: position_fixture
+          durability: 100
+          damage_per_hit: 5
           required_ticks: 600
+          attacker_ids: [wolf_pack_a, wolf_pack_b]

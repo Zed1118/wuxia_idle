@@ -1019,6 +1019,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         body: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
+            final typedDefend = controller.defendObjectiveProgress;
             final typedSurvive = controller.surviveObjectiveProgress;
             final typedPursuit = controller.pursueObjectiveProgress;
             final stage = Phase0aStage(
@@ -1069,6 +1070,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                             ),
                           ),
                           ..._buildActors(controller, stage),
+                          if (typedDefend != null)
+                            _positionedDefendedEntity(stage, typedDefend),
                           _FeedbackLayer(
                             controller: controller,
                             stage: stage,
@@ -1101,7 +1104,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     controller.state.player.id,
                   ),
                 ),
-                if (typedSurvive != null)
+                if (typedDefend != null)
+                  _DefendConditionBanner(progress: typedDefend)
+                else if (typedSurvive != null)
                   _SurviveConditionBanner(
                     requiredTicks: typedSurvive.requiredTicks,
                     currentTick: typedSurvive.elapsedTicks,
@@ -1112,7 +1117,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                         controller.state.winCondition!.surviveTicksRequired!,
                     currentTick: controller.state.tick,
                   ),
-                if (typedSurvive == null && typedPursuit != null)
+                if (typedDefend == null &&
+                    typedSurvive == null &&
+                    typedPursuit != null)
                   _PursueConditionBanner(progress: typedPursuit),
                 if (widget.numericSkillBindings.equipped.isNotEmpty)
                   Positioned(
@@ -1215,6 +1222,74 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       for (final actor in actors)
         _positionedActor(controller, stage, actor, renderPositions[actor.id]!),
     ];
+  }
+
+  Widget _positionedDefendedEntity(
+    Phase0aStage stage,
+    Phase0aDefendObjectiveProgress progress,
+  ) {
+    final foot = stage.worldToScreen(progress.position);
+    const width = 92.0;
+    const height = 104.0;
+    final ratio = progress.maxDurability == 0
+        ? 0.0
+        : progress.currentDurability / progress.maxDurability;
+    return Positioned(
+      key: ValueKey('phase0a_defended_entity_${progress.entityId}'),
+      left: foot.dx - width / 2,
+      top: foot.dy - height,
+      width: width,
+      height: height,
+      child: IgnorePointer(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xD9E8D8B8),
+                border: Border.all(
+                  color: progress.destroyed
+                      ? WuxiaUi.jiang
+                      : const Color(0xB36D5940),
+                  width: 2,
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+              ),
+              child: const SizedBox(
+                width: 54,
+                height: 62,
+                child: Center(
+                  child: Text(
+                    UiStrings.defendEntityLabel,
+                    style: TextStyle(
+                      color: WuxiaUi.ink,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: WuxiaUi.ink.withValues(alpha: 0.72),
+                border: Border.all(color: WuxiaUi.paper.withValues(alpha: 0.7)),
+              ),
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: ratio.clamp(0.0, 1.0),
+                child: ColoredBox(
+                  color: progress.destroyed ? WuxiaUi.jiang : WuxiaUi.gold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _positionedActor(
@@ -2660,9 +2735,20 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: Center(
           child: Text(
             outcome == Phase0aBattleOutcome.victory &&
-                    (widget.controller.surviveObjectiveProgress != null ||
-                        widget.controller.state.winCondition?.isSurviveTicks ==
-                            true)
+                    widget.controller.defendObjectiveProgress != null
+                ? UiStrings.battleResultDefended
+                : outcome == Phase0aBattleOutcome.defeat &&
+                      widget.controller.defendObjectiveProgress?.destroyed ==
+                          true
+                ? UiStrings.battleResultWardLost
+                : outcome == Phase0aBattleOutcome.victory &&
+                      (widget.controller.surviveObjectiveProgress != null ||
+                          widget
+                                  .controller
+                                  .state
+                                  .winCondition
+                                  ?.isSurviveTicks ==
+                              true)
                 ? UiStrings.battleResultSurvived
                 : outcome == Phase0aBattleOutcome.victory
                 ? UiStrings.phase0aVictorySeal
@@ -2677,6 +2763,61 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
       ),
     ),
   );
+}
+
+final class _DefendConditionBanner extends StatelessWidget {
+  const _DefendConditionBanner({required this.progress});
+
+  final Phase0aDefendObjectiveProgress progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = progress.completed
+        ? UiStrings.defendConditionMet(
+            progress.currentDurability,
+            progress.maxDurability,
+          )
+        : UiStrings.defendConditionRemaining(
+            progress.currentDurability,
+            progress.maxDurability,
+            progress.remainingTicks,
+          );
+    return Positioned(
+      key: const ValueKey('phase0a_defend_condition_banner'),
+      top: Phase0aPresentationTokens.hudInset,
+      left: Phase0aPresentationTokens.hudInset,
+      child: Semantics(
+        label: label,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xD9E8D8B8),
+            border: Border.all(
+              color: progress.destroyed
+                  ? WuxiaUi.jiang
+                  : progress.completed
+                  ? WuxiaUi.gold
+                  : const Color(0xB36D5940),
+            ),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: WuxiaUi.ink,
+                fontSize: 16,
+                fontWeight: progress.completed
+                    ? FontWeight.w700
+                    : FontWeight.w500,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 final class _SurviveConditionBanner extends StatelessWidget {

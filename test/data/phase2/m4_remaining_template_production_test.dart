@@ -40,6 +40,30 @@ void main() {
     );
   });
 
+  test('stage_02_01 is the real Chapter 2 durable defend-entity stage', () {
+    final assignment = repository.combatCatalog!.assignmentForStage(
+      'stage_02_01',
+    );
+    final encounter = repository.combatEncounterForStage('stage_02_01')!;
+
+    expect(assignment?.encounterId, 'ch2_encounter_01_poison_escort');
+    expect(encounter.objectives.clauses, hasLength(1));
+    final primitive = encounter.objectives.clauses.single.primitive;
+    expect(primitive, isA<CombatDefendEntityRef>());
+    final defend = primitive as CombatDefendEntityRef;
+    expect(defend.entityId, 'ch2p_s01_ward');
+    expect(defend.positionId, 'ch2p_position_s01_ward');
+    expect(defend.durability, 300);
+    expect(defend.damagePerHit, 5);
+    expect(defend.requiredTicks, 600);
+    expect(defend.attackerIds, {
+      'ch2p_s01_blood_blade_01',
+      'ch2p_s01_blood_blade_02',
+      'ch2p_s01_dart_01',
+      'ch2p_s01_dart_02',
+    });
+  });
+
   test('stage_07_04 is the real Chapter 7 pursue-target stage', () {
     final assignment = repository.combatCatalog!.assignmentForStage(
       'stage_07_04',
@@ -59,7 +83,7 @@ void main() {
     );
   });
 
-  test('production catalog closes six executable objective families', () {
+  test('production catalog closes all seven executable objective families', () {
     final kinds = <String>{
       for (final encounter in repository.combatCatalog!.encounters)
         for (final clause in encounter.objectives.clauses)
@@ -78,17 +102,11 @@ void main() {
     expect(kinds, {
       'defeat_targets',
       'destroy_anchors',
+      'defend_entity',
       'survive_duration',
       'reach_checkpoint',
       'pursue_target',
       'defeat_commander',
     });
-    expect(
-      kinds,
-      isNot(contains('defend_entity')),
-      reason:
-          'defend_entity cannot enter production until a durable positioned '
-          'objective entity has an authoritative runtime owner',
-    );
   });
 }

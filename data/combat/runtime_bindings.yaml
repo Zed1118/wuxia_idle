@@ -137,6 +137,8 @@ runtime_bindings:
         world_position: {x: -120, y: 0}
       - id: ch2p_position_s01_slot_10
         world_position: {x: 120, y: 0}
+      - id: ch2p_position_s01_ward
+        world_position: {x: 0, y: 40} # TUNING candidate: central, reachable objective.
     behaviors:
       - id: ch2p_behavior_blood_blade
         ai_profile_id: ai_ch2p_blood_blade

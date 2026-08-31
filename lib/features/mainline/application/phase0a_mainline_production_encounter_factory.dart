@@ -109,6 +109,7 @@ Phase0aEncounterHost _assemble({
   final behaviorProfilesByActor = <String, Phase0aEnemyBehaviorProfile>{};
   final tokensByActor = <String, Phase0aEncounterTokenBinding>{};
   final visualAssetPathByActorId = <String, String>{};
+  final defendedEntityTargetIdByActor = <String, String>{};
   final arena = request.numbers.phase0aArena;
   final activeLimit = route.encounter.spawnConfig.activeLimit;
   final positionKeys = <String>[];
@@ -171,6 +172,18 @@ Phase0aEncounterHost _assemble({
     tokensByActor[runtimeId] = binding.token;
     visualAssetPathByActorId[runtimeId] = binding.visualAssetPath;
   }
+  final defendedBinding = runtime.defendedEntity;
+  if (defendedBinding != null) {
+    for (final attackerEntryId in defendedBinding.attackerEntryIds) {
+      final runtimeActorId = runtimeIds[attackerEntryId];
+      if (runtimeActorId == null) {
+        throw StateError(
+          'defend attacker is not in the runtime roster: $attackerEntryId',
+        );
+      }
+      defendedEntityTargetIdByActor[runtimeActorId] = defendedBinding.entityId;
+    }
+  }
   final enemyAi = Phase0aEnemyAiAdapter(
     attackRange: arena.enemyAttackRange,
     attackHalfArcRadians: arena.enemyAttackHalfArcRadians,
@@ -181,6 +194,7 @@ Phase0aEncounterHost _assemble({
     basicPowerMultiplierByActor: basicPowerByActor,
     postureBasicPowerMultiplier: arena.basicPowerMultiplier,
     behaviorProfilesByActor: behaviorProfilesByActor,
+    defendedEntityTargetIdByActor: defendedEntityTargetIdByActor,
     defenseTuning: player.defenseTuning,
   );
   final plan = buildPhase0aMigratedEncounterPlan(
@@ -201,6 +215,15 @@ Phase0aEncounterHost _assemble({
       player: player.initialPlayer,
       enemies: const [],
       skillSlots: player.skillSlots,
+      defendedEntity: defendedBinding == null
+          ? null
+          : Phase0aDefendedEntityState(
+              id: defendedBinding.entityId,
+              position: defendedBinding.position,
+              maxDurability: defendedBinding.maxDurability,
+              currentDurability: defendedBinding.maxDurability,
+              damagePerHit: defendedBinding.damagePerHit,
+            ),
     ),
     combatants: combatants,
     moveBindings: player.moveBindings,
@@ -273,6 +296,7 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
   final checkpointIds = <String>{};
   final pursueTargetIds = <String>{};
   var projectsSurvivalTime = false;
+  final defendEntityIds = <String>{};
   for (final clause in encounter.objectives.clauses) {
     switch (clause.primitive) {
       case CombatDefeatTargetsRef(targetIds: final clauseTargetIds):
@@ -285,6 +309,8 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
         checkpointIds.addAll(clauseCheckpointIds);
       case CombatSurviveDurationRef():
         projectsSurvivalTime = true;
+      case CombatDefendEntityRef(:final entityId):
+        defendEntityIds.add(entityId);
       case CombatPursueTargetRef(:final targetId):
         pursueTargetIds.add(targetId);
       default:
@@ -348,6 +374,25 @@ Phase0aExplicitObjectiveEventSource buildPhase0aMainlineObjectiveEventSource({
               .round(),
         ),
         eventId: 'phase0a:survive:${frame.afterArena.tick}',
+      );
+    });
+  }
+  if (defendEntityIds.isNotEmpty) {
+    externalProjectors.add((frame) sync* {
+      final defended = frame.afterArena.defendedEntity;
+      if (defended == null || !defended.isAlive) return;
+      if (!defendEntityIds.contains(defended.id)) {
+        throw StateError(
+          '${encounter.id} runtime defend entity does not match catalog',
+        );
+      }
+      yield EntityDefended(
+        defended.id,
+        Duration(
+          microseconds: (frame.deltaSeconds * Duration.microsecondsPerSecond)
+              .round(),
+        ),
+        eventId: 'phase0a:defend:${frame.afterArena.tick}:${defended.id}',
       );
     });
   }

@@ -4,8 +4,10 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_objective_event_source.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_pursue_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_survive_objective_observation.dart';
@@ -72,12 +74,14 @@ Phase0aArenaState _arena({
   required int tick,
   required Phase0aActor player,
   required List<Phase0aActor> enemies,
+  Phase0aDefendedEntityState? defendedEntity,
 }) => Phase0aArenaState(
   tick: tick,
   nextSeq: 1,
   player: player,
   enemies: enemies,
   skillSlots: const [],
+  defendedEntity: defendedEntity,
 );
 
 void main() {
@@ -91,6 +95,149 @@ void main() {
     );
   });
   tearDownAll(GameRepository.resetForTest);
+
+  test(
+    'production defend stage owns one ward and designated attackers target it',
+    () async {
+      final host = await _host(
+        repository,
+        'stage_02_01',
+        maxHp: 20000,
+        attack: 2000,
+        defense: 0.8,
+      );
+      final mapping = host.mapping!;
+      final ward = mapping.initialState.defendedEntity!;
+
+      expect(ward.id, 'ch2p_s01_ward');
+      expect(ward.position, const ArenaVector(0, 40));
+      expect(ward.maxDurability, 300);
+      expect(ward.damagePerHit, 5);
+
+      final designated = mapping.roster.bindingByEntryId(
+        'ch2p_s01_blood_blade_01',
+      )!;
+      final ordinary = mapping.roster.bindingByEntryId(
+        'ch2p_s01_blood_blade_03',
+      )!;
+      expect(
+        mapping.enemyAiAdapter.defendedEntityTargetIdByActor[designated
+            .actorId],
+        ward.id,
+      );
+      expect(
+        mapping.enemyAiAdapter.defendedEntityTargetIdByActor[ordinary.actorId],
+        isNull,
+      );
+
+      final designatedNearWard = designated.actor.copyWith(
+        position: const ArenaVector(70, 40),
+        attackCooldownRemaining: 0,
+      );
+      final ordinaryNearPlayer = ordinary.actor.copyWith(
+        position: const ArenaVector(-70, -200),
+        attackCooldownRemaining: 0,
+      );
+      final player = mapping.initialState.player.copyWith(
+        position: const ArenaVector(0, -200),
+      );
+      final intents = mapping.enemyAiAdapter.intentsFor(
+        state: _arena(
+          tick: 1,
+          player: player,
+          enemies: [designatedNearWard, ordinaryNearPlayer],
+          defendedEntity: ward,
+        ),
+      );
+      final designatedAttack = intents
+          .whereType<Phase0aAttackIntent>()
+          .singleWhere((intent) => intent.actorId == designated.actorId);
+      final ordinaryAttack = intents
+          .whereType<Phase0aAttackIntent>()
+          .singleWhere((intent) => intent.actorId == ordinary.actorId);
+      expect(designatedAttack.preferredTargetId, ward.id);
+      expect(ordinaryAttack.preferredTargetId, isNull);
+    },
+  );
+
+  test(
+    'production defend stage wins at duration and fails when ward is destroyed',
+    () async {
+      final winning = await _host(
+        repository,
+        'stage_02_01',
+        maxHp: 20000,
+        attack: 2000,
+        defense: 0.8,
+      );
+      final winFlow = winning.flow as Phase0aEncounterFlow;
+      final source = buildPhase0aMainlineObjectiveEventSource(
+        encounter: repository.combatEncounterForStage('stage_02_01')!,
+        roster: winning.mapping!.roster,
+      );
+      final projected = source.eventsFor(
+        Phase0aEncounterObjectiveFrame(
+          beforeArena: winning.flow.state,
+          afterArena: winning.flow.state,
+          beforeSpawn: winning.mapping!.director.state,
+          afterSpawn: winning.mapping!.director.state,
+          directorEvents: const [],
+          spawnEvents: const [],
+          combatEvents: const [],
+          deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+          playerMovementDelta: ArenaVector.zero,
+        ),
+      );
+      expect(projected.whereType<EntityDefended>(), hasLength(1));
+      winning.flow.advance(
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+        command: const Phase0aPlayerCommand(),
+      );
+      expect(
+        winFlow.objectiveProgress?.clauses.single.progress.elapsed,
+        const Duration(milliseconds: 100),
+      );
+      final winResult = winning.runHeadless(
+        bot: Phase0aPlayerBotAdapter(
+          playerAdapter: winning.mapping!.playerAdapter,
+        ),
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+        maxTicks: 600,
+      );
+      expect(
+        winResult.outcome,
+        Phase0aBattleOutcome.victory,
+        reason:
+            'ticks=${winResult.ticks} stateTick=${winResult.finalState.tick} '
+            'ward=${winResult.finalState.defendedEntity?.currentDurability} '
+            'objective=${winFlow.objectiveProgress?.clauses.single.progress.elapsed}',
+      );
+      expect(winResult.ticks, 599);
+      expect(winResult.finalState.tick, 600);
+      expect(winResult.finalState.defendedEntity?.isAlive, isTrue);
+
+      final failing = await _host(
+        repository,
+        'stage_02_01',
+        maxHp: 20000,
+        attack: 1,
+        defense: 0.8,
+      );
+      var ticks = 0;
+      while (failing.flow.outcome == Phase0aBattleOutcome.ongoing &&
+          ticks < 601) {
+        failing.flow.advance(
+          deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+          command: const Phase0aPlayerCommand(),
+        );
+        ticks += 1;
+      }
+      expect(failing.flow.outcome, Phase0aBattleOutcome.defeat);
+      expect(failing.flow.state.player.isAlive, isTrue);
+      expect(failing.flow.state.defendedEntity?.isDestroyed, isTrue);
+      expect(ticks, lessThan(600));
+    },
+  );
 
   test(
     'production survive stage exposes 900 ticks and wins on the same core',

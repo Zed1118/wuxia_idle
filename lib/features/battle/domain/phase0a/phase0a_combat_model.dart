@@ -589,6 +589,57 @@ final class Phase0aWinCondition {
   int get hashCode => Object.hash(type, surviveTicksRequired);
 }
 
+/// Runtime-only durable world objective owned by the encounter flow.
+///
+/// It is deliberately not a combat actor: it cannot move, attack, receive
+/// player buffs, enter posture/defense states, or leak into persisted saves.
+/// Designated enemy basic attacks use the normal reducer geometry/cooldown
+/// path and then apply the authored fixed durability cost.
+final class Phase0aDefendedEntityState {
+  const Phase0aDefendedEntityState({
+    required this.id,
+    required this.position,
+    required this.maxDurability,
+    required this.currentDurability,
+    required this.damagePerHit,
+  }) : assert(id != ''),
+       assert(maxDurability > 0),
+       assert(currentDurability >= 0),
+       assert(currentDurability <= maxDurability),
+       assert(damagePerHit > 0);
+
+  final String id;
+  final ArenaVector position;
+  final int maxDurability;
+  final int currentDurability;
+  final int damagePerHit;
+
+  bool get isAlive => currentDurability > 0;
+  bool get isDestroyed => !isAlive;
+
+  Phase0aDefendedEntityState copyWith({int? currentDurability}) =>
+      Phase0aDefendedEntityState(
+        id: id,
+        position: position,
+        maxDurability: maxDurability,
+        currentDurability: currentDurability ?? this.currentDurability,
+        damagePerHit: damagePerHit,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aDefendedEntityState &&
+      other.id == id &&
+      other.position == position &&
+      other.maxDurability == maxDurability &&
+      other.currentDurability == currentDurability &&
+      other.damagePerHit == damagePerHit;
+
+  @override
+  int get hashCode =>
+      Object.hash(id, position, maxDurability, currentDurability, damagePerHit);
+}
+
 final class Phase0aArenaState {
   const Phase0aArenaState({
     required this.tick,
@@ -596,6 +647,7 @@ final class Phase0aArenaState {
     required this.player,
     required this.enemies,
     required this.skillSlots,
+    this.defendedEntity,
     this.winCondition,
   });
 
@@ -608,6 +660,9 @@ final class Phase0aArenaState {
   final Phase0aActor player;
   final List<Phase0aActor> enemies;
   final List<Phase0aSkillSlot> skillSlots;
+
+  /// Optional encounter-owned world objective. Never persisted.
+  final Phase0aDefendedEntityState? defendedEntity;
 
   /// 当前关卡终局条件；null 与 [Phase0aWinConditionType.defeatAll] 等价。
   final Phase0aWinCondition? winCondition;
@@ -627,6 +682,7 @@ final class Phase0aArenaState {
       other.player == player &&
       _listEquals(other.enemies, enemies) &&
       _listEquals(other.skillSlots, skillSlots) &&
+      other.defendedEntity == defendedEntity &&
       other.winCondition == winCondition;
 
   @override
@@ -636,6 +692,7 @@ final class Phase0aArenaState {
     player,
     _listHash(enemies),
     _listHash(skillSlots),
+    defendedEntity,
     winCondition,
   );
 }

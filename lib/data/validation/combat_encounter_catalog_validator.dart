@@ -36,7 +36,14 @@ const Set<String> combatObjectiveCompletionRuleNames = {'all', 'any'};
 const Map<String, List<String>> _objectiveParamKeys = {
   'defeat_targets': ['target_ids'],
   'destroy_anchors': ['anchor_ids'],
-  'defend_entity': ['entity_id', 'required_ticks'],
+  'defend_entity': [
+    'entity_id',
+    'position_id',
+    'durability',
+    'damage_per_hit',
+    'required_ticks',
+    'attacker_ids',
+  ],
   'survive_duration': ['required_ticks'],
   'reach_checkpoint': ['checkpoint_ids'],
   'touch_markers': ['marker_ids'],
@@ -208,13 +215,22 @@ final class ParsedCombatObjective {
     required this.kind,
     List<String> idList = const [],
     this.singleId,
+    this.positionId,
+    this.durability,
+    this.damagePerHit,
+    List<String> attackerIds = const [],
     this.requiredTicks,
-  }) : idList = List.unmodifiable(idList);
+  }) : idList = List.unmodifiable(idList),
+       attackerIds = List.unmodifiable(attackerIds);
 
   /// Raw enum name, already validated against [combatObjectiveKindNames].
   final String kind;
   final List<String> idList;
   final String? singleId;
+  final String? positionId;
+  final int? durability;
+  final int? damagePerHit;
+  final List<String> attackerIds;
   final int? requiredTicks;
 }
 
@@ -727,9 +743,29 @@ ParsedCombatObjective _parseObjective(
           '$path.entity_id',
           sourceName,
         ),
+        positionId: _requireString(
+          map['position_id'],
+          '$path.position_id',
+          sourceName,
+        ),
+        durability: _requireInt(
+          map['durability'],
+          '$path.durability',
+          sourceName,
+        ),
+        damagePerHit: _requireInt(
+          map['damage_per_hit'],
+          '$path.damage_per_hit',
+          sourceName,
+        ),
         requiredTicks: _requireInt(
           map['required_ticks'],
           '$path.required_ticks',
+          sourceName,
+        ),
+        attackerIds: _requireIdList(
+          map['attacker_ids'],
+          '$path.attacker_ids',
           sourceName,
         ),
       );

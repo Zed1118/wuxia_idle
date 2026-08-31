@@ -85,6 +85,13 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       if (clause.primitive case CombatPursueTargetRef(:final targetId))
         targetId,
   };
+  final defendRefs = <CombatDefendEntityRef>[
+    for (final clause in encounter.objectives.clauses)
+      if (clause.primitive case final CombatDefendEntityRef defend) defend,
+  ];
+  if (defendRefs.length > 1) {
+    throw StateError('$stageId supports exactly one defend entity at runtime');
+  }
   final actorBindings = <String, Phase0aEncounterActorRuntimeBinding>{};
   for (var ordinal = 0; ordinal < encounter.spawnEntries.length; ordinal++) {
     final entry = encounter.spawnEntries[ordinal];
@@ -256,6 +263,30 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     encounterId: encounterId,
     tickDuration: tickDuration,
     actorBindingsByEntryId: Map.unmodifiable(actorBindings),
+    defendedEntity: defendRefs.isEmpty
+        ? null
+        : _resolveDefendedEntityRuntimeBinding(runtime, defendRefs.single),
+  );
+}
+
+Phase0aMainlineDefendedEntityRuntimeBinding
+_resolveDefendedEntityRuntimeBinding(
+  CombatRuntimeStageBinding runtime,
+  CombatDefendEntityRef defend,
+) {
+  final position = runtime.positions[defend.positionId];
+  if (position == null) {
+    throw StateError(
+      '${runtime.stageId} defend position is unresolved: ${defend.positionId}',
+    );
+  }
+  return Phase0aMainlineDefendedEntityRuntimeBinding(
+    entityId: defend.entityId,
+    position: ArenaVector(position.x, position.y),
+    maxDurability: defend.durability,
+    damagePerHit: defend.damagePerHit,
+    requiredTicks: defend.requiredTicks,
+    attackerEntryIds: Set<String>.unmodifiable(defend.attackerIds),
   );
 }
 

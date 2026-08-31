@@ -113,6 +113,7 @@ reference_index:
     - ch2p_position_s01_slot_08
     - ch2p_position_s01_slot_09
     - ch2p_position_s01_slot_10
+    - ch2p_position_s01_ward
     - ch4_position_s01_slot_01
     - ch4_position_s01_slot_02
     - ch4_position_s01_slot_03
@@ -539,7 +540,8 @@ reference_index:
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
-  objective_entity_ids: []
+  objective_entity_ids:
+    - ch2p_s01_ward
   objective_checkpoint_ids:
     - ch1_s01_checkpoint_exit
   objective_marker_ids: []
