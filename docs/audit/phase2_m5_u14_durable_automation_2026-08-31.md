@@ -46,7 +46,8 @@
 - `dart format .`：`1674 files / 0 changed`。
 - remove implementation：删除 `CharacterOccupancyService` 的 durable 聚合后，统一占用与 service 用例实测 `2 FAIL`；精确还原。
 - force degenerate value：让 `alreadyCleared` 门恒不拒绝后，policy 用例实测 `1 FAIL`；精确还原。
-- 最终全量、独立 Gate 与合并态结果待候选冻结后执行，不能由本段预写为 PASS。
+- 带锁全量：退出码 0，`5774/5774 PASS`，末行 `All tests passed!`，`[E]` 0；锁已精确释放。
+- 独立 Gate 与合并态结果待 `[READY]` tip 冻结后执行，不能由本段预写为 PASS。
 
 ## 红线与挂账
 
