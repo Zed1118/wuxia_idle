@@ -19,9 +19,30 @@ void main() {
       final mainlineStages = repository.stageDefs.values
           .where((stage) => stage.stageType == StageType.mainline)
           .toList(growable: false);
+      final expectedStageIds = {
+        for (var chapter = 1; chapter <= 21; chapter++)
+          for (var stage = 1; stage <= 5; stage++)
+            'stage_${chapter.toString().padLeft(2, '0')}_'
+                '${stage.toString().padLeft(2, '0')}',
+      };
 
       expect(mainlineStages, hasLength(105));
+      expect(
+        mainlineStages.map((stage) => stage.id).toSet(),
+        expectedStageIds,
+        reason:
+            'U12 guards the exact Ch1-21 x five-stage topology, not a count',
+      );
       expect(mainlineStages.where((stage) => stage.isBossStage), hasLength(42));
+      for (final stage in mainlineStages) {
+        expect(stage.narrativeOpeningId, '${stage.id}_opening');
+        expect(stage.narrativeVictoryId, '${stage.id}_victory');
+        expect(
+          stage.narrativeDefeatId,
+          stage.isBossStage ? '${stage.id}_defeat' : isNull,
+          reason: stage.id,
+        );
+      }
       expect(
         mainlineStages.every(
           (stage) => !shouldAutomaticallyPresentStageNarratives(stage),
