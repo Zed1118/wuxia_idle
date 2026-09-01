@@ -67,6 +67,7 @@ final class PlayerCombatantSnapshotAssembler {
         for (final entry in occupancy.entries)
           if (entry.kind == ActivityKind.expedition ||
               entry.kind == ActivityKind.bossGauntlet ||
+              entry.kind == ActivityKind.tower ||
               entry.kind == ActivityKind.lightFoot ||
               entry.kind == ActivityKind.massBattle)
             ...entry.characterIds,

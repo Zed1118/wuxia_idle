@@ -47,6 +47,7 @@ class CharacterOccupancyService {
     for (final run in await _isar.durableActivityCombatRuns.where().findAll()) {
       if (run.phase == DurableActivityPhase.closed) continue;
       final kind = switch (run.kind) {
+        DurableActivityKind.tower => ActivityKind.tower,
         DurableActivityKind.lightFoot => ActivityKind.lightFoot,
         DurableActivityKind.massBattle => ActivityKind.massBattle,
       };

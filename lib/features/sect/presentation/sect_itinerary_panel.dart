@@ -99,6 +99,7 @@ class _SectItineraryContent extends StatelessWidget {
     ActivityKind.retreat => UiStrings.sectItineraryActivityRetreat,
     ActivityKind.expedition => UiStrings.sectItineraryActivityExpedition,
     ActivityKind.bossGauntlet => UiStrings.sectItineraryActivityGauntlet,
+    ActivityKind.tower => UiStrings.mainMenuTower,
     ActivityKind.lightFoot => UiStrings.mainMenuLightFoot,
     ActivityKind.massBattle => UiStrings.mainMenuMassBattle,
   };

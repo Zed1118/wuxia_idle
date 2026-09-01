@@ -1668,8 +1668,8 @@ class UiStrings {
       '进入塔层后逐次选择 · 可用 $count 人';
   static const String towerLocationEntryModeLabel = '进入方式';
   static const String towerLocationOccupancyLabel = '预计占用';
-  static const String towerLocationEntryModeDirect = '亲自挑战，不可派遣';
-  static const String towerLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String towerLocationEntryModeDirect = '首次亲自挑战；已通层可差遣历练';
+  static const String towerLocationExpectedOccupancy = '差遣期间锁定所选角色及其装配';
   static const String towerParticipantTitle = '选择挑战者';
   static const String towerParticipantBody = '每次挑战单独选择一名空闲掌门或门人。';
   static const String towerParticipantAvailable = '可亲战';
@@ -2063,6 +2063,7 @@ class UiStrings {
   static const String towerReplayTitle = '已通关';
   static const String towerReplayBody = '已通关，是否重打？（重打不发奖）';
   static const String towerReplayConfirm = '重打';
+  static const String towerDispatchButton = '差遣历练';
   static const String towerReplayCancel = '取消';
 
   static const String towerEntryPlaceholder = '爬塔进入流程待 T43 接入';

@@ -266,6 +266,36 @@ void main() {
     expect(result.settlement?.playerCharacterId, participantId);
   });
 
+  test('九霄塔 durable admission 进入真实 mapTower 同核 runner 并产终局', () async {
+    final isar = IsarSetup.instance;
+    final save = (await isar.saveDatas.get(0))!;
+    final participantId = save.founderCharacterId!;
+    final floor = GameRepository.instance.getTowerFloor(1);
+    final request = towerDurableDispatchRequest(
+      floorIndex: floor.floorIndex,
+      characterId: participantId,
+    );
+    final service = DurableActivityAutomationService(isar);
+    final runId = await service.startTower(
+      floor: floor,
+      cycleIndex: 1,
+      request: request,
+    );
+    final admission = await service.admitTower(runId: runId, floor: floor);
+    final result = await Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: GameRepository.instance.numbers,
+      rng: Random(admission.run.seed),
+      botPolicy: const Phase0aBotTacticPolicy.assault(),
+    ).runTowerDurable(floor: floor, admission: admission);
+
+    expect(result.timedOut, isFalse);
+    expect(result.settlement?.isFinished, isTrue);
+    expect(result.expectedParticipantId, participantId);
+    expect(result.participantName, admission.snapshot.name);
+    expect(result.settlement?.playerCharacterId, participantId);
+  });
+
   test('真实 Ch1 快速 headless 重演返回当前掌门身份报告', () async {
     final isar = IsarSetup.instance;
     final save = await isar.saveDatas.get(0);

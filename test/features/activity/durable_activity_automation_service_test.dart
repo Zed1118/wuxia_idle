@@ -15,6 +15,8 @@ import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -49,6 +51,17 @@ void main() {
       }.toList();
       progress.clearedAt = List.of(progress.clearedAt);
       await IsarSetup.instance.mainlineProgress.put(progress);
+      final towerRows = await IsarSetup.instance.towerProgress
+          .where()
+          .findAll();
+      final tower = towerRows.firstOrNull ?? TowerProgress();
+      tower
+        ..saveDataId = save.slotId
+        ..highestClearedFloor = 1
+        ..highestClearedAt = DateTime.utc(2026, 8, 31)
+        ..createdAt = DateTime.utc(2026, 8, 31)
+        ..currentCycleIndex = 1;
+      await IsarSetup.instance.towerProgress.put(tower);
     });
     service = DurableActivityAutomationService(IsarSetup.instance);
   });
@@ -237,6 +250,98 @@ void main() {
         request: replayRequest,
       ),
       throwsA(isA<DurableActivityAutomationRejectedException>()),
+    );
+  });
+
+  test('九霄塔已通层差遣落既有 durable run，并按 tower 占用与装配重验', () async {
+    final floor = GameRepository.instance.towerFloors.firstWhere(
+      (value) => value.floorIndex == 1,
+    );
+    final request = towerDurableDispatchRequest(
+      floorIndex: floor.floorIndex,
+      characterId: leader.id,
+    );
+    final startedAt = DateTime.utc(2026, 9, 1, 1);
+    final runId = await service.startTower(
+      floor: floor,
+      cycleIndex: 1,
+      request: request,
+      now: startedAt,
+    );
+    final run = (await service.runById(runId))!;
+    expect(run.kind, DurableActivityKind.tower);
+    expect(run.request, request);
+    expect(run.seed, runId);
+    expect(
+      run.startedAt.millisecondsSinceEpoch,
+      startedAt.millisecondsSinceEpoch,
+    );
+    expect(run.members.single.characterId, leader.id);
+    expect(run.members.single.reservedTechniqueIds, isNotEmpty);
+    expect(
+      (await CharacterOccupancyService(
+        IsarSetup.instance,
+      ).snapshot()).activityOf(leader.id),
+      ActivityKind.tower,
+    );
+
+    final admission = await service.admitTower(
+      runId: runId,
+      floor: floor,
+      now: startedAt.add(const Duration(minutes: 3)),
+    );
+    expect(admission.request, request);
+    expect(admission.snapshot.characterId, leader.id);
+    expect(
+      admission.run.lastAdvancedAt.millisecondsSinceEpoch,
+      startedAt.add(const Duration(minutes: 3)).millisecondsSinceEpoch,
+    );
+
+    await IsarSetup.instance.writeTxn(() async {
+      final character = (await IsarSetup.instance.characters.get(leader.id))!;
+      character.assistTechniqueIds = [999999];
+      await IsarSetup.instance.characters.put(character);
+    });
+    await expectLater(
+      service.admitTower(runId: runId, floor: floor),
+      throwsStateError,
+    );
+  });
+
+  test('九霄塔未通层与 sweep tuple 不得创建 durable 差遣', () async {
+    final first = GameRepository.instance.towerFloors.firstWhere(
+      (value) => value.floorIndex == 1,
+    );
+    final second = GameRepository.instance.towerFloors.firstWhere(
+      (value) => value.floorIndex == 2,
+    );
+    await expectLater(
+      service.startTower(
+        floor: second,
+        cycleIndex: 1,
+        request: towerDurableDispatchRequest(
+          floorIndex: second.floorIndex,
+          characterId: leader.id,
+        ),
+      ),
+      throwsA(isA<TowerAutomationRejectedException>()),
+    );
+    final sweep = ActivityParticipationRequest(
+      contentId: towerAutomationContentId(first.floorIndex),
+      contentKind: ActivityContentKind.tower,
+      characterId: leader.id,
+      loadoutPlanId: towerAutomationLoadoutPlanId(
+        floorIndex: first.floorIndex,
+        characterId: leader.id,
+      ),
+      participation: ActivityParticipationMode.direct,
+      controller: ActivityController.playerBot,
+      clock: ActivityClock.headless,
+      entryKind: ActivityEntryKind.sweep,
+    );
+    await expectLater(
+      service.startTower(floor: first, cycleIndex: 1, request: sweep),
+      throwsStateError,
     );
   });
 }

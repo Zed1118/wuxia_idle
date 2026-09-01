@@ -25,21 +25,29 @@ void main() {
     entryKind: entryKind,
   );
 
-  test(
-    'only direct playerBot headless sweep of an already-cleared floor passes',
-    () {
+  test('已通层精确允许 sweep 与 durable dispatch 两条不同 tuple', () {
+    final allowed = [
+      request(),
+      towerDurableDispatchRequest(floorIndex: 7, characterId: 42),
+    ];
+
+    for (final value in allowed) {
       final decision = TowerAutomationPolicy.evaluate(
-        request: request(),
+        request: value,
         floorIndex: 7,
         highestClearedFloor: 7,
       );
-
       expect(decision.allowed, isTrue);
       expect(decision.rejectionReason, isNull);
-    },
-  );
+    }
+    final dispatch = allowed.last;
+    expect(dispatch.participation, ActivityParticipationMode.dispatch);
+    expect(dispatch.controller, ActivityController.playerBot);
+    expect(dispatch.clock, ActivityClock.headless);
+    expect(dispatch.entryKind, ActivityEntryKind.offlineResume);
+  });
 
-  test('first-clear, visible bot, dispatch, and wrong content fail closed', () {
+  test('first-clear、混合 tuple、visible bot 与错内容 fail closed', () {
     final cases =
         <
           ({
@@ -56,8 +64,15 @@ void main() {
             reason: TowerAutomationRejectionReason.visibleRealtimePlayerBot,
           ),
           (
-            request: request(participation: ActivityParticipationMode.dispatch),
-            reason: TowerAutomationRejectionReason.unsupportedParticipation,
+            request: request(
+              participation: ActivityParticipationMode.dispatch,
+              entryKind: ActivityEntryKind.sweep,
+            ),
+            reason: TowerAutomationRejectionReason.unsupportedEntryKind,
+          ),
+          (
+            request: request(entryKind: ActivityEntryKind.offlineResume),
+            reason: TowerAutomationRejectionReason.unsupportedEntryKind,
           ),
           (
             request: request(contentKind: ActivityContentKind.mainline),

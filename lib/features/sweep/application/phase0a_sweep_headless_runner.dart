@@ -24,6 +24,7 @@ import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import '../../tower/application/tower_automation_admission.dart';
+import '../../tower/domain/tower_automation_policy.dart';
 import '../../activity/application/durable_activity_automation_service.dart';
 import '../../activity/domain/durable_activity_combat_run.dart';
 
@@ -174,6 +175,31 @@ final class Phase0aSweepHeadlessRunner {
       expectedParticipantId: admission.participantCharacterId,
       participantName: admission.snapshot.name,
       towerAutomationAdmission: admission,
+    );
+  }
+
+  Future<Phase0aSweepRunResult> runTowerDurable({
+    required TowerFloorDef floor,
+    required DurableActivityAutomationAdmission admission,
+  }) async {
+    if (admission.run.kind != DurableActivityKind.tower ||
+        admission.run.stageId != towerAutomationContentId(floor.floorIndex) ||
+        admission.request.participation != ActivityParticipationMode.dispatch ||
+        admission.request.controller != ActivityController.playerBot ||
+        admission.request.clock != ActivityClock.headless ||
+        admission.request.entryKind != ActivityEntryKind.offlineResume) {
+      throw StateError('Tower durable admission does not match floor');
+    }
+    final mapping = Phase0aStageContentMapper.mapTower(
+      floor: floor,
+      playerSnapshot: admission.snapshot,
+      numbers: numbers,
+      cycleIndex: admission.run.cycleIndex,
+    );
+    return _run(
+      mapping,
+      expectedParticipantId: admission.snapshot.characterId,
+      participantName: admission.snapshot.name,
     );
   }
 

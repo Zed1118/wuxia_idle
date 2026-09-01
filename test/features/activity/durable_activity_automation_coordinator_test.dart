@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -21,6 +22,11 @@ import 'package:wuxia_idle/features/mainline/presentation/stage_entry_flow.dart'
     show DurableActivityCombatSettlementDependencies;
 import 'package:wuxia_idle/features/tutorial/application/tutorial_providers.dart';
 import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
+import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
 import 'package:wuxia_idle/shared/utils/math_random.dart';
 import 'package:wuxia_idle/shared/utils/rng_provider.dart';
@@ -60,6 +66,19 @@ void main() {
       }.toList();
       progress.clearedAt = List.of(progress.clearedAt);
       await IsarSetup.instance.mainlineProgress.put(progress);
+      final towerRows = await IsarSetup.instance.towerProgress
+          .where()
+          .findAll();
+      final tower = towerRows.firstOrNull ?? TowerProgress();
+      tower
+        ..saveDataId = save.slotId
+        ..highestClearedFloor = 1
+        ..highestClearedAt = DateTime.utc(2026, 9, 1)
+        ..createdAt = DateTime.utc(2026, 9, 1)
+        ..currentCycleIndex = 1
+        ..totalAttempts = 0
+        ..totalDefeats = 0;
+      await IsarSetup.instance.towerProgress.put(tower);
     });
     service = DurableActivityAutomationService(IsarSetup.instance);
   });
@@ -235,5 +254,91 @@ void main() {
           .toSet(),
       {RewardContentKind.lightFoot},
     );
+  });
+
+  testWidgets('真实九霄塔差遣消费 durable run、塔 runner 与原子结算', (tester) async {
+    final floor = GameRepository.instance.towerFloors.firstWhere(
+      (value) => value.floorIndex == 1,
+    );
+    final request = towerDurableDispatchRequest(
+      floorIndex: floor.floorIndex,
+      characterId: leader.id,
+    );
+    final runId = (await tester.runAsync(
+      () => service.startTower(
+        floor: floor,
+        cycleIndex: 1,
+        request: request,
+      ),
+    ))!;
+
+    late WidgetRef widgetRef;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Consumer(
+            builder: (context, ref, child) {
+              widgetRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    final result = await tester.runAsync(
+      () => executeTowerDurableActivityAutomation(
+        ref: widgetRef,
+        floor: floor,
+        runId: runId,
+        runnerForTest: (admission) async {
+          final snapshot = admission.snapshot;
+          return Phase0aSweepRunResult.terminal(
+            CombatSettlementSnapshot(
+              result: BattleResult.leftWin,
+              totalTicks: 37,
+              hadActions: true,
+              playerCharacterId: snapshot.characterId,
+              participants: [
+                CombatParticipantSnapshot(
+                  characterId: snapshot.characterId,
+                  currentHp: snapshot.maxHp,
+                  maxHp: snapshot.maxHp,
+                ),
+              ],
+              skillCasts: const [],
+              totalDamage: 456,
+              criticalCount: 3,
+              damageByCharacterId: {snapshot.characterId: 456},
+            ),
+            expectedParticipantId: snapshot.characterId,
+            participantName: snapshot.name,
+          );
+        },
+      ),
+    );
+
+    expect(result, isNotNull);
+    expect(result!.outcome, isNot(DurableActivityExecutionOutcome.timeout));
+    expect(result.run.kind, DurableActivityKind.tower);
+    expect(result.run.request, request);
+    expect(result.run.phase, DurableActivityPhase.settlementApplied);
+    expect(result.run.settlementAppliedAt, isNotNull);
+    await tester.runAsync(() async {
+      final progress = (await IsarSetup.instance.towerProgress
+          .where()
+          .findFirst())!;
+      expect(progress.totalAttempts, 1);
+      if (result.outcome == DurableActivityExecutionOutcome.victory) {
+        expect(
+          (await IsarSetup.instance.rewardClaimReceipts.where().findAll())
+              .map((receipt) => receipt.contentKind)
+              .toSet(),
+          {RewardContentKind.tower},
+        );
+      } else {
+        expect(progress.totalDefeats, 1);
+      }
+    });
   });
 }

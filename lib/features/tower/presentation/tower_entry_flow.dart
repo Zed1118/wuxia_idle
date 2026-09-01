@@ -65,6 +65,8 @@ import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
+import '../../activity/application/durable_activity_automation_service.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
 import 'phase0a_tower_battle_host.dart';
 
 typedef TowerBattleExit = ({
@@ -482,6 +484,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   required int elapsedMs,
   CombatSettlementSnapshot? settlementSnapshot,
   String? rewardOccurrenceId,
+  DurableActivitySettlementContext? durableActivitySettlement,
   @visibleForTesting Future<void> Function()? afterProgressInTxnForTest,
 }) async {
   final isar = ref.read(isarProvider);
@@ -540,60 +543,84 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   late TowerClearResult clearResult;
   late TowerCombatResolution resolution;
   var skillDrop = SkillDropResult.none;
-  final disposition = await DurableRewardClaimService(isar).claimBatch(
-    keys: keys,
-    sourceSettlementId: occurrenceId,
-    at: now,
-    applyInTxn: () async {
-      clearResult = await progressService.recordClearInTxn(
-        floorIndex: floor.floorIndex,
-        now: now,
-        elapsedMs: elapsedMs,
-        maxFloor: maxFloor,
-      );
-      if (clearResult.isFirstClear != isFirstClear) {
-        throw StateError(
-          'Tower first-clear snapshot changed during settlement',
-        );
-      }
-      await afterProgressInTxnForTest?.call();
-      resolution = await applyTowerCombatResolution(
-        ref: ref,
+  final rewardClaims = DurableRewardClaimService(isar);
+  Future<void> applyInTxn() async {
+    clearResult = await progressService.recordClearInTxn(
+      floorIndex: floor.floorIndex,
+      now: now,
+      elapsedMs: elapsedMs,
+      maxFloor: maxFloor,
+    );
+    if (clearResult.isFirstClear != isFirstClear) {
+      throw StateError('Tower first-clear snapshot changed during settlement');
+    }
+    await afterProgressInTxnForTest?.call();
+    resolution = await applyTowerCombatResolution(
+      ref: ref,
+      floor: floor,
+      grantsFirstClearExperience: isFirstClear,
+      expectedParticipantId: participantId,
+      settlementSnapshot: settlementSnapshot,
+      transactionOwned: true,
+    );
+    if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
+      skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
         floor: floor,
-        grantsFirstClearExperience: isFirstClear,
-        expectedParticipantId: participantId,
-        settlementSnapshot: settlementSnapshot,
-        transactionOwned: true,
+        svc: SkillUnlockService(
+          isar,
+          fragmentThreshold:
+              GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
+        ),
+        towerFragmentDropProb:
+            GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
+        rng: ref.read(mathRandomProvider),
       );
-      if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
-        skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
-          floor: floor,
-          svc: SkillUnlockService(
-            isar,
-            fragmentThreshold:
-                GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
-          ),
-          towerFragmentDropProb:
-              GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-          rng: ref.read(mathRandomProvider),
+    }
+    await _persistTowerDropsInTxn(
+      isar: isar,
+      drops: drops,
+      floor: floor,
+      now: now,
+    );
+    await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
+      saveDataId: IsarSetup.currentSlotId,
+      defIds: [for (final equipment in drops.equipments) equipment.defId],
+      from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
+      now: now,
+    );
+  }
+
+  if (durableActivitySettlement == null) {
+    final disposition = await rewardClaims.claimBatch(
+      keys: keys,
+      sourceSettlementId: occurrenceId,
+      at: now,
+      applyInTxn: applyInTxn,
+    );
+    if (disposition != RewardClaimDisposition.applied) {
+      throw StateError('Tower reward settlement was already applied');
+    }
+  } else {
+    final disposition = await durableActivitySettlement.service
+        .commitSettlement(
+          runId: durableActivitySettlement.runId,
+          outcome: DurableActivityOutcome.victory,
+          now: now,
+          applyInTxn: () async {
+            final rewardDisposition = await rewardClaims.claimBatchInTxn(
+              keys: keys,
+              sourceSettlementId: occurrenceId,
+              at: now,
+              applyInTxn: applyInTxn,
+            );
+            if (rewardDisposition != RewardClaimDisposition.applied) {
+              throw StateError('Tower reward settlement was already applied');
+            }
+          },
         );
-      }
-      await _persistTowerDropsInTxn(
-        isar: isar,
-        drops: drops,
-        floor: floor,
-        now: now,
-      );
-      await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
-        saveDataId: IsarSetup.currentSlotId,
-        defIds: [for (final equipment in drops.equipments) equipment.defId],
-        from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
-        now: now,
-      );
-    },
-  );
-  if (disposition != RewardClaimDisposition.applied) {
-    throw StateError('Tower reward settlement was already applied');
+    if (disposition != DurableActivitySettlementDisposition.applied) {
+      throw StateError('Tower durable settlement was already applied');
+    }
   }
   return (
     clearResult: clearResult,
@@ -624,7 +651,7 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
   required bool grantsFirstClearExperience,
   int? expectedParticipantId,
   CombatSettlementSnapshot? settlementSnapshot,
-  @visibleForTesting bool transactionOwned = false,
+  bool transactionOwned = false,
 }) async {
   const empty = (
     advancements: <AdvancementEntry>[],

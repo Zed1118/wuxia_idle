@@ -32,19 +32,7 @@ void main() {
 
     final allowedByKind = <ActivityContentKind, bool>{
       ActivityContentKind.tower: TowerAutomationPolicy.evaluate(
-        request: ActivityParticipationRequest(
-          contentId: towerAutomationContentId(1),
-          contentKind: ActivityContentKind.tower,
-          characterId: 7,
-          loadoutPlanId: towerAutomationLoadoutPlanId(
-            floorIndex: 1,
-            characterId: 7,
-          ),
-          participation: ActivityParticipationMode.direct,
-          controller: ActivityController.playerBot,
-          clock: ActivityClock.headless,
-          entryKind: ActivityEntryKind.sweep,
-        ),
+        request: towerDurableDispatchRequest(floorIndex: 1, characterId: 7),
         floorIndex: 1,
         highestClearedFloor: 1,
       ).allowed,

@@ -278,18 +278,21 @@ class TowerProgressService {
 
   /// 战败：只增 totalAttempts + totalDefeats，不影响 highestClearedFloor。
   Future<void> recordDefeat({required DateTime now}) async {
-    await isar.writeTxn(() async {
-      final progress = await isar.towerProgress
-          .filter()
-          .saveDataIdEqualTo(IsarSetup.currentSlotId)
-          .findFirst();
-      if (progress == null) {
-        throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordDefeat 前调用');
-      }
-      progress.totalAttempts += 1;
-      progress.totalDefeats += 1;
-      await isar.towerProgress.put(progress);
-    });
+    await isar.writeTxn(() => recordDefeatInTxn(now: now));
+  }
+
+  /// [recordDefeat] 的 caller-owned transaction 形态。
+  Future<void> recordDefeatInTxn({required DateTime now}) async {
+    final progress = await isar.towerProgress
+        .filter()
+        .saveDataIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    if (progress == null) {
+      throw StateError('TowerProgress 未初始化：getOrCreate 未在 recordDefeat 前调用');
+    }
+    progress.totalAttempts += 1;
+    progress.totalDefeats += 1;
+    await isar.towerProgress.put(progress);
   }
 
   /// 推进到下一周目（问鼎轮回）。

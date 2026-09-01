@@ -318,6 +318,7 @@ void main() {
 
     expect(find.byType(PaperDialog), findsOneWidget);
     expect(find.text(UiStrings.towerReplayBody), findsOneWidget);
+    expect(find.text(UiStrings.towerDispatchButton), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.towerReplayConfirm));
     await tester.pumpAndSettle();
@@ -327,5 +328,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('战斗准备失败'), findsOneWidget);
+  });
+
+  testWidgets('已通层差遣入口逐次选人并提交真实 durable service', (tester) async {
+    final progress = mkProgress(highest: 1, attempts: 1);
+    await pumpScreen(
+      tester,
+      progress: progress,
+      surfaceSize: const Size(1024, 7500),
+    );
+
+    await tester.tap(find.text(UiStrings.towerFloorLabel(1)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.towerDispatchButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.towerParticipantTitle), findsOneWidget);
+    await tester.tap(find.text('测试掌门'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(UiStrings.discipleSchedulingUnavailable), findsOneWidget);
   });
 }

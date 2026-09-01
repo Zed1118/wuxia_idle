@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
@@ -17,6 +18,8 @@ import '../../mainline/presentation/stage_entry_flow.dart'
 import '../../tutorial/application/tutorial_providers.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../sweep/application/phase0a_sweep_headless_runner.dart';
+import '../../tower/application/tower_progress_service.dart';
+import '../../tower/presentation/tower_entry_flow.dart';
 import '../domain/durable_activity_combat_run.dart';
 import 'durable_activity_automation_providers.dart';
 import 'durable_activity_automation_service.dart';
@@ -77,6 +80,9 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
     botPolicy: const Phase0aBotTacticPolicy.production(),
   );
   final result = switch (admission.run.kind) {
+    DurableActivityKind.tower => throw StateError(
+      'tower uses executeTowerDurableActivityAutomation',
+    ),
     DurableActivityKind.lightFoot => await runner.runLightFoot(
       stage: stage,
       admission: admission,
@@ -144,4 +150,92 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
     outcome: executionOutcome,
     run: current,
   );
+}
+
+/// Resumes one persisted tower dispatch through the existing tower mapper,
+/// Phase 0A headless runner and tower settlement owners.
+Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
+  required WidgetRef ref,
+  required TowerFloorDef floor,
+  required int runId,
+  Future<Phase0aSweepRunResult> Function(
+    DurableActivityAutomationAdmission admission,
+  )?
+  runnerForTest,
+}) async {
+  final service = ref.read(durableActivityAutomationServiceProvider);
+  if (service == null) {
+    throw StateError('Tower durable dispatch storage is unavailable');
+  }
+  final admission = await service.admitTower(runId: runId, floor: floor);
+  final runner = Phase0aSweepHeadlessRunner(
+    isar: IsarSetup.instance,
+    numbers: ref.read(numbersConfigProvider),
+    rng: newMathRandom(seed: admission.run.seed),
+    botPolicy: const Phase0aBotTacticPolicy.production(),
+  );
+  final result = runnerForTest == null
+      ? await runner.runTowerDurable(floor: floor, admission: admission)
+      : await runnerForTest(admission);
+  if (result.timedOut) {
+    final current = await service.runById(runId);
+    if (current == null) {
+      throw StateError('Timed-out tower durable run disappeared');
+    }
+    return DurableActivityExecutionResult(
+      outcome: DurableActivityExecutionOutcome.timeout,
+      run: current,
+    );
+  }
+  final settlement = result.settlement;
+  if (settlement == null ||
+      !settlement.isFinished ||
+      settlement.playerCharacterId != admission.snapshot.characterId) {
+    throw StateError('Tower durable dispatch produced invalid settlement');
+  }
+  final context = DurableActivitySettlementContext(
+    service: service,
+    runId: admission.run.id,
+  );
+  final outcome = settlement.result == BattleResult.leftWin
+      ? DurableActivityExecutionOutcome.victory
+      : DurableActivityExecutionOutcome.defeat;
+  if (outcome == DurableActivityExecutionOutcome.victory) {
+    final elapsed = DateTime.now().difference(admission.run.startedAt);
+    await applyTowerVictorySettlement(
+      ref: ref,
+      floor: floor,
+      participantId: admission.snapshot.characterId,
+      elapsedMs: elapsed.inMilliseconds,
+      settlementSnapshot: settlement,
+      rewardOccurrenceId: 'tower_durable_run_${admission.run.id}',
+      durableActivitySettlement: context,
+    );
+  } else {
+    final progress = TowerProgressService(isar: IsarSetup.instance);
+    final disposition = await service.commitSettlement(
+      runId: admission.run.id,
+      outcome: DurableActivityOutcome.defeat,
+      applyInTxn: () async {
+        await applyTowerCombatResolution(
+          ref: ref,
+          floor: floor,
+          grantsFirstClearExperience: false,
+          expectedParticipantId: admission.snapshot.characterId,
+          settlementSnapshot: settlement,
+          transactionOwned: true,
+        );
+        await progress.recordDefeatInTxn(now: DateTime.now());
+      },
+    );
+    if (disposition != DurableActivitySettlementDisposition.applied) {
+      throw StateError('Tower durable defeat was already applied');
+    }
+  }
+  final current = await service.runById(runId);
+  if (current == null ||
+      current.phase != DurableActivityPhase.settlementApplied) {
+    throw StateError('Tower durable receipt was not persisted');
+  }
+  return DurableActivityExecutionResult(outcome: outcome, run: current);
 }

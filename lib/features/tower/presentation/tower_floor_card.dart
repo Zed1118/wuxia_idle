@@ -27,6 +27,7 @@ class TowerFloorCard extends StatelessWidget {
     super.key,
     required this.entry,
     required this.onChallenge,
+    this.onDispatch,
     this.stepSide = TowerFloorStepSide.left,
     this.currentRealm,
   });
@@ -37,6 +38,9 @@ class TowerFloorCard extends StatelessWidget {
   /// 发起挑战回调（available 直接调用；cleared 用户确认重打后调用）。
   /// 屏幕层据此 push 进入 TowerEntryFlow。
   final VoidCallback onChallenge;
+
+  /// 已通层的持久差遣入口；有其它 durable run 时由上层传 null。
+  final VoidCallback? onDispatch;
 
   /// 宽屏塔身布局中的石阶方向；窄屏会自动退回单列。
   final TowerFloorStepSide stepSide;
@@ -121,6 +125,14 @@ class TowerFloorCard extends StatelessWidget {
               label: UiStrings.towerReplayCancel,
               onTap: () => Navigator.of(ctx).pop(false),
             ),
+            if (onDispatch != null)
+              PlaqueButton(
+                label: UiStrings.towerDispatchButton,
+                onTap: () {
+                  Navigator.of(ctx).pop(false);
+                  onDispatch!();
+                },
+              ),
             PlaqueButton(
               label: UiStrings.towerReplayConfirm,
               primary: true,

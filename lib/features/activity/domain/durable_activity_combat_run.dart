@@ -6,15 +6,17 @@ import 'activity_member_snapshot.dart';
 
 part 'durable_activity_combat_run.g.dart';
 
-/// 轻功/守城共用的持久差遣种类。
-enum DurableActivityKind { lightFoot, massBattle }
+/// 九霄塔/轻功/守城共用的持久差遣种类。
+///
+/// 枚举按 name 写入既有 string 字段；新增 tower 不改变 collection 字段 schema。
+enum DurableActivityKind { tower, lightFoot, massBattle }
 
 /// 差遣会话只在关卡边界持久化，不序列化战斗逐 tick 状态。
 enum DurableActivityPhase { active, settlementApplied, closed }
 
 enum DurableActivityOutcome { none, victory, defeat }
 
-/// 轻功与守城的共用 durable run / settlement receipt。
+/// 九霄塔、轻功与守城的共用 durable run / settlement receipt。
 ///
 /// 一条 active 记录先于 headless 战斗落库；崩溃后以同一 [seed]、参与者装配和
 /// 守城阵型重跑。业务结算与 `settlementApplied` 在同一 Isar 事务提交，恢复时

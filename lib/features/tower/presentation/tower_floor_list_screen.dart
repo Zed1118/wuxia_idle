@@ -8,6 +8,9 @@ import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../data/isar_setup.dart';
+import '../../activity/application/durable_activity_automation_providers.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
+import '../../activity/presentation/durable_activity_automation_ui.dart';
 import '../../sweep/application/sweep_unit.dart';
 import '../../sweep/domain/sweep_eligibility.dart';
 import '../../sweep/presentation/sweep_screen.dart';
@@ -18,6 +21,7 @@ import '../../../data/defs/tower_floor_def.dart';
 import '../domain/tower_progress.dart';
 import 'leaderboard_screen.dart';
 import 'tower_entry_flow.dart';
+import 'tower_durable_automation_ui.dart';
 import 'tower_floor_card.dart';
 
 /// 爬塔层列表屏幕（Phase 3 T42）。
@@ -105,6 +109,9 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
   Widget build(BuildContext context) {
     final progressAsync = ref.watch(towerProgressProvider);
     final floorListAsync = ref.watch(towerFloorListProvider);
+    final automationAsync = ref.watch(
+      durableActivityRunProvider(DurableActivityKind.tower),
+    );
 
     return Scaffold(
       backgroundColor: WuxiaColors.background,
@@ -143,6 +150,16 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
             ),
             data: (entries) {
               _maybeScrollToAvailable(entries);
+              final automationRun = automationAsync.value;
+              final automationFloor = automationRun == null
+                  ? null
+                  : entries
+                        .where(
+                          (entry) =>
+                              'tower_${entry.def.floorIndex}' ==
+                              automationRun.stageId,
+                        )
+                        .firstOrNull;
               final summary = TowerProgressSummary.from(
                 progress: progress,
                 entries: entries,
@@ -170,6 +187,19 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                   return Column(
                     children: [
                       _ProgressCard(progress: progress, summary: summary),
+                      if (automationRun != null && automationFloor != null)
+                        DurableActivityRunCard(
+                          run: automationRun,
+                          stageName: UiStrings.towerFloorLabel(
+                            automationFloor.def.floorIndex,
+                          ),
+                          onPressed: () => resumeTowerDurableDispatch(
+                            context: context,
+                            ref: ref,
+                            floor: automationFloor.def,
+                            runId: automationRun.id,
+                          ),
+                        ),
                       Center(
                         child: ConstrainedBox(
                           constraints: BoxConstraints(maxWidth: contentWidth),
@@ -231,6 +261,31 @@ class _TowerFloorListScreenState extends ConsumerState<TowerFloorListScreen> {
                                     : TowerFloorStepSide.right,
                                 onChallenge: () =>
                                     _onChallenge(context, entries[i].def),
+                                onDispatch:
+                                    entries[i].status ==
+                                            TowerFloorStatus.cleared &&
+                                        automationAsync.hasValue &&
+                                        automationRun == null
+                                    ? () async {
+                                        final participantId =
+                                            await selectTowerParticipant(
+                                              context: context,
+                                              ref: ref,
+                                            );
+                                        if (participantId == null ||
+                                            !context.mounted) {
+                                          return;
+                                        }
+                                        await startTowerDurableDispatch(
+                                          context: context,
+                                          ref: ref,
+                                          floor: entries[i].def,
+                                          cycleIndex:
+                                              progress.currentCycleIndex,
+                                          participantId: participantId,
+                                        );
+                                      }
+                                    : null,
                                 currentRealm: currentRealm,
                               ),
                             ),

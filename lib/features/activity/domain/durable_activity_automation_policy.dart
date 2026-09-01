@@ -7,7 +7,16 @@ String durableActivityLoadoutPlanId({
   required DurableActivityKind kind,
   required String stageId,
   required int characterId,
-}) => '${kind.name}:$stageId:character:$characterId';
+}) {
+  if (kind == DurableActivityKind.tower) {
+    throw ArgumentError.value(
+      kind,
+      'kind',
+      'tower uses towerAutomationLoadoutPlanId',
+    );
+  }
+  return '${kind.name}:$stageId:character:$characterId';
+}
 
 enum DurableActivityAutomationMode { visibleReplay, headlessReplay, dispatch }
 
@@ -19,6 +28,11 @@ ActivityParticipationRequest durableActivityAutomationRequest({
 }) => ActivityParticipationRequest(
   contentId: stageId,
   contentKind: switch (kind) {
+    DurableActivityKind.tower => throw ArgumentError.value(
+      kind,
+      'kind',
+      'tower uses towerDurableDispatchRequest',
+    ),
     DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
     DurableActivityKind.massBattle => ActivityContentKind.massBattle,
   },
@@ -41,6 +55,7 @@ ActivityParticipationRequest durableActivityAutomationRequest({
 );
 
 enum DurableActivityAutomationRejectionReason {
+  unsupportedKind,
   wrongStageType,
   wrongContentKind,
   wrongContentId,
@@ -88,11 +103,22 @@ final class DurableActivityAutomationPolicy {
     required bool alreadyCleared,
     required Formation? formation,
   }) {
+    if (kind == DurableActivityKind.tower) {
+      return const DurableActivityAutomationDecision.rejected(
+        DurableActivityAutomationRejectionReason.unsupportedKind,
+      );
+    }
     final expectedStageType = switch (kind) {
+      DurableActivityKind.tower => throw StateError(
+        'tower must use TowerAutomationPolicy',
+      ),
       DurableActivityKind.lightFoot => StageType.lightFoot,
       DurableActivityKind.massBattle => StageType.massBattle,
     };
     final expectedContentKind = switch (kind) {
+      DurableActivityKind.tower => throw StateError(
+        'tower must use TowerAutomationPolicy',
+      ),
       DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
       DurableActivityKind.massBattle => ActivityContentKind.massBattle,
     };

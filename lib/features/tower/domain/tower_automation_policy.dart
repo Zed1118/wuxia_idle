@@ -9,6 +9,23 @@ String towerAutomationLoadoutPlanId({
   required int characterId,
 }) => 'tower:$floorIndex:character:$characterId';
 
+ActivityParticipationRequest towerDurableDispatchRequest({
+  required int floorIndex,
+  required int characterId,
+}) => ActivityParticipationRequest(
+  contentId: towerAutomationContentId(floorIndex),
+  contentKind: ActivityContentKind.tower,
+  characterId: characterId,
+  loadoutPlanId: towerAutomationLoadoutPlanId(
+    floorIndex: floorIndex,
+    characterId: characterId,
+  ),
+  participation: ActivityParticipationMode.dispatch,
+  controller: ActivityController.playerBot,
+  clock: ActivityClock.headless,
+  entryKind: ActivityEntryKind.offlineResume,
+);
+
 enum TowerAutomationRejectionReason {
   wrongContentKind,
   wrongContentId,
@@ -43,11 +60,11 @@ final class TowerAutomationRejectedException extends StateError {
   final TowerAutomationRejectionReason reason;
 }
 
-/// Frozen allowlist for the existing player-reachable tower sweep runner.
+/// Frozen allowlist for tower automation.
 ///
-/// This policy creates no runner and chooses no character. It only admits the
-/// exact direct + playerBot + headless + sweep tuple for a floor that current
-/// persisted tower progress already marks cleared.
+/// This policy creates no runner and chooses no character. It admits exactly
+/// the existing immediate sweep tuple or the durable dispatch tuple, and only
+/// for a floor that current persisted tower progress already marks cleared.
 final class TowerAutomationPolicy {
   const TowerAutomationPolicy._();
 
@@ -75,11 +92,6 @@ final class TowerAutomationPolicy {
         TowerAutomationRejectionReason.wrongLoadoutPlan,
       );
     }
-    if (request.participation != ActivityParticipationMode.direct) {
-      return const TowerAutomationDecision.rejected(
-        TowerAutomationRejectionReason.unsupportedParticipation,
-      );
-    }
     if (request.controller == ActivityController.playerBot &&
         request.clock == ActivityClock.realtime) {
       return const TowerAutomationDecision.rejected(
@@ -96,7 +108,19 @@ final class TowerAutomationPolicy {
         TowerAutomationRejectionReason.unsupportedClock,
       );
     }
-    if (request.entryKind != ActivityEntryKind.sweep) {
+    final isSweep =
+        request.participation == ActivityParticipationMode.direct &&
+        request.entryKind == ActivityEntryKind.sweep;
+    final isDispatch =
+        request.participation == ActivityParticipationMode.dispatch &&
+        request.entryKind == ActivityEntryKind.offlineResume;
+    if (!isSweep && !isDispatch) {
+      if (request.participation != ActivityParticipationMode.direct &&
+          request.participation != ActivityParticipationMode.dispatch) {
+        return const TowerAutomationDecision.rejected(
+          TowerAutomationRejectionReason.unsupportedParticipation,
+        );
+      }
       return const TowerAutomationDecision.rejected(
         TowerAutomationRejectionReason.unsupportedEntryKind,
       );

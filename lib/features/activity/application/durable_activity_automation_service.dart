@@ -6,6 +6,7 @@ import '../../../core/domain/equipment.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/defs/stage_def.dart';
+import '../../../data/defs/tower_floor_def.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
@@ -13,6 +14,9 @@ import '../../light_foot/application/light_foot_participant_service.dart';
 import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../mass_battle/application/mass_battle_participant_service.dart';
+import '../../tower/application/tower_providers.dart';
+import '../../tower/domain/tower_automation_policy.dart';
+import '../../tower/domain/tower_progress.dart';
 import '../domain/activity_member_snapshot.dart';
 import '../domain/activity_occupancy.dart';
 import '../domain/durable_activity_automation_policy.dart';
@@ -43,7 +47,7 @@ final class DurableActivitySettlementContext {
   final int runId;
 }
 
-/// 轻功/守城共用的 durable session、occupancy、离线游标与 receipt owner。
+/// 九霄塔/轻功/守城共用的 durable session、occupancy、离线游标与 receipt owner。
 final class DurableActivityAutomationService {
   const DurableActivityAutomationService(this._isar);
 
@@ -96,6 +100,11 @@ final class DurableActivityAutomationService {
     );
 
     final snapshot = switch (kind) {
+      DurableActivityKind.tower => throw ArgumentError.value(
+        kind,
+        'kind',
+        'tower uses startTower',
+      ),
       DurableActivityKind.lightFoot =>
         await resolveLightFootParticipantSnapshot(
           isar: _isar,
@@ -173,6 +182,104 @@ final class DurableActivityAutomationService {
     });
   }
 
+  /// Starts a tower dispatch in the existing durable activity collection.
+  ///
+  /// Tower keeps its own first-clear policy and progress owner; this service
+  /// owns only the durable identity, exact loadout reservation and cursor.
+  Future<int> startTower({
+    required TowerFloorDef floor,
+    required int cycleIndex,
+    required ActivityParticipationRequest request,
+    DateTime? now,
+  }) async {
+    if (cycleIndex < 1) {
+      throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be >= 1');
+    }
+    final save = await _isar.saveDatas.get(0);
+    if (save == null) {
+      throw StateError('Tower durable dispatch requires a save');
+    }
+    final progress = await _towerProgressFor(save.slotId);
+    if (progress.currentCycleIndex != cycleIndex) {
+      throw StateError('Tower durable dispatch cycle changed');
+    }
+    TowerAutomationPolicy.requireAllowed(
+      request: request,
+      floorIndex: floor.floorIndex,
+      highestClearedFloor: progress.highestClearedFloor,
+    );
+    _requireTowerDispatchRequest(request);
+    final snapshot = await resolveTowerParticipantSnapshot(
+      isar: _isar,
+      requestedParticipantId: request.characterId,
+    );
+    final startedAt = now ?? DateTime.now();
+
+    return _isar.writeTxn(() async {
+      final currentSave = await _isar.saveDatas.get(0);
+      if (currentSave == null || currentSave.id != save.id) {
+        throw StateError('Tower durable dispatch save identity changed');
+      }
+      final outstanding =
+          (await _isar.durableActivityCombatRuns.where().findAll())
+              .where(
+                (run) =>
+                    run.saveDataId == save.id &&
+                    run.phase != DurableActivityPhase.closed,
+              )
+              .toList(growable: false);
+      if (outstanding.isNotEmpty) {
+        throw StateError('Another durable activity automation run is active');
+      }
+      final currentProgress = await _towerProgressFor(currentSave.slotId);
+      if (currentProgress.currentCycleIndex != cycleIndex) {
+        throw StateError('Tower durable dispatch cycle changed');
+      }
+      TowerAutomationPolicy.requireAllowed(
+        request: request,
+        floorIndex: floor.floorIndex,
+        highestClearedFloor: currentProgress.highestClearedFloor,
+      );
+      _requireTowerDispatchRequest(request);
+      final scheduling = await loadDiscipleSchedulingSummary(_isar);
+      final scheduled = scheduling.members
+          .where((member) => member.characterId == request.characterId)
+          .toList(growable: false);
+      if (scheduled.length != 1 ||
+          !scheduled.single.isAlive ||
+          scheduled.single.activity != null) {
+        throw StateError('Tower durable participant is not available');
+      }
+      final character = await _requireCharacter(request.characterId);
+      final member = await _validatedMember(character, snapshot: snapshot);
+      final run = DurableActivityCombatRun()
+        ..saveDataId = save.id
+        ..kind = DurableActivityKind.tower
+        ..contentId = request.contentId
+        ..loadoutPlanId = request.loadoutPlanId
+        ..stageId = request.contentId
+        ..cycleIndex = cycleIndex
+        ..seed = 0
+        ..contentKind = request.contentKind
+        ..participation = request.participation
+        ..controller = request.controller
+        ..clock = request.clock
+        ..entryKind = request.entryKind
+        ..members = [member]
+        ..participantCreatedAt = character.createdAt
+        ..participantName = snapshot.name
+        ..formation = null
+        ..phase = DurableActivityPhase.active
+        ..outcome = DurableActivityOutcome.none
+        ..startedAt = startedAt
+        ..lastAdvancedAt = startedAt;
+      final runId = await _isar.durableActivityCombatRuns.put(run);
+      run.seed = runId;
+      await _isar.durableActivityCombatRuns.put(run);
+      return runId;
+    });
+  }
+
   Future<DurableActivityAutomationAdmission> admit({
     required int runId,
     required StageDef stage,
@@ -201,6 +308,7 @@ final class DurableActivityAutomationService {
       formation: run.formation,
     );
     final activityKind = switch (run.kind) {
+      DurableActivityKind.tower => throw StateError('tower uses admitTower'),
       DurableActivityKind.lightFoot => ActivityKind.lightFoot,
       DurableActivityKind.massBattle => ActivityKind.massBattle,
     };
@@ -257,6 +365,101 @@ final class DurableActivityAutomationService {
     final refreshed = await _isar.durableActivityCombatRuns.get(run.id);
     if (refreshed == null) {
       throw StateError('Durable activity run disappeared');
+    }
+    return DurableActivityAutomationAdmission(
+      run: refreshed,
+      request: refreshed.request,
+      snapshot: snapshots.single,
+    );
+  }
+
+  /// Revalidates a persisted tower run before each headless execution.
+  Future<DurableActivityAutomationAdmission> admitTower({
+    required int runId,
+    required TowerFloorDef floor,
+    DateTime? now,
+  }) async {
+    final run = await _isar.durableActivityCombatRuns.get(runId);
+    if (run == null ||
+        run.kind != DurableActivityKind.tower ||
+        run.phase != DurableActivityPhase.active) {
+      throw StateError('Tower durable dispatch run is not active');
+    }
+    if (run.stageId != towerAutomationContentId(floor.floorIndex) ||
+        run.contentId != run.stageId ||
+        run.members.length != 1) {
+      throw StateError('Tower durable dispatch identity changed');
+    }
+    final save = await _isar.saveDatas.get(0);
+    if (save == null || save.id != run.saveDataId) {
+      throw StateError('Tower durable dispatch save identity changed');
+    }
+    final progress = await _towerProgressFor(save.slotId);
+    if (progress.currentCycleIndex != run.cycleIndex) {
+      throw StateError('Tower durable dispatch cycle changed');
+    }
+    TowerAutomationPolicy.requireAllowed(
+      request: run.request,
+      floorIndex: floor.floorIndex,
+      highestClearedFloor: progress.highestClearedFloor,
+    );
+    _requireTowerDispatchRequest(run.request);
+    final occupancy = await CharacterOccupancyService(
+      _isar,
+    ).snapshot(excludingKind: ActivityKind.tower, excludingRunId: run.id);
+    final member = run.members.single;
+    if (occupancy.isCharacterOccupied(member.characterId) ||
+        member.reservedEquipmentIds.any(
+          occupancy.reservedEquipmentIds.contains,
+        ) ||
+        member.reservedTechniqueIds.any(
+          occupancy.reservedTechniqueIds.contains,
+        )) {
+      throw StateError('Tower durable participant loadout is occupied');
+    }
+    final scheduling = await loadDiscipleSchedulingSummary(_isar);
+    final scheduled = scheduling.members
+        .where((value) => value.characterId == member.characterId)
+        .toList(growable: false);
+    final character = await _requireCharacter(member.characterId);
+    if (scheduled.length != 1 ||
+        !scheduled.single.isAlive ||
+        scheduled.single.activity != ActivityKind.tower ||
+        character.createdAt != run.participantCreatedAt) {
+      throw StateError('Tower durable participant identity changed');
+    }
+    final currentMember = await _validatedMember(character);
+    if (!_sameIds(
+          currentMember.reservedEquipmentIds,
+          member.reservedEquipmentIds,
+        ) ||
+        !_sameIds(
+          currentMember.reservedTechniqueIds,
+          member.reservedTechniqueIds,
+        )) {
+      throw StateError('Tower durable participant loadout changed');
+    }
+    final snapshots = await PlayerCombatantSnapshotAssembler(
+      isar: _isar,
+    ).loadExactRoster([member.characterId]);
+    if (snapshots.length != 1 ||
+        snapshots.single.characterId != member.characterId) {
+      throw StateError('Tower durable participant snapshot mismatch');
+    }
+    final advancedAt = now ?? DateTime.now();
+    await _isar.writeTxn(() async {
+      final current = await _isar.durableActivityCombatRuns.get(run.id);
+      if (current == null ||
+          current.kind != DurableActivityKind.tower ||
+          current.phase != DurableActivityPhase.active) {
+        throw StateError('Tower durable run changed before execution');
+      }
+      current.lastAdvancedAt = advancedAt;
+      await _isar.durableActivityCombatRuns.put(current);
+    });
+    final refreshed = await _isar.durableActivityCombatRuns.get(run.id);
+    if (refreshed == null) {
+      throw StateError('Tower durable run disappeared');
     }
     return DurableActivityAutomationAdmission(
       run: refreshed,
@@ -322,6 +525,27 @@ final class DurableActivityAutomationService {
       throw StateError('Durable activity requires one progress record');
     }
     return matches.single;
+  }
+
+  Future<TowerProgress> _towerProgressFor(int saveDataId) async {
+    final matches = (await _isar.towerProgress.where().findAll())
+        .where((progress) => progress.saveDataId == saveDataId)
+        .toList(growable: false);
+    if (matches.length != 1) {
+      throw StateError('Tower durable dispatch requires one progress record');
+    }
+    return matches.single;
+  }
+
+  static void _requireTowerDispatchRequest(
+    ActivityParticipationRequest request,
+  ) {
+    if (request.participation != ActivityParticipationMode.dispatch ||
+        request.controller != ActivityController.playerBot ||
+        request.clock != ActivityClock.headless ||
+        request.entryKind != ActivityEntryKind.offlineResume) {
+      throw StateError('Tower durable run requires the dispatch tuple');
+    }
   }
 
   Future<Character> _requireCharacter(int characterId) async {
