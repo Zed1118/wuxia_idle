@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation
 import 'package:wuxia_idle/features/expedition/application/expedition_combat.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_combat_runner.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_milestone_record.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
@@ -154,6 +155,54 @@ void main() {
     expect(run, isNotNull);
     expect(run!.members.single.characterId, id);
     expect(run.members.single.reservedTechniqueIds, hasLength(1));
+  });
+
+  test('待亲战险关未处理时 production dispatch 原子拒绝且不消费 serial', () async {
+    final id = await putFounder();
+    final recordKey = ExpeditionMilestoneRecord.canonicalKey(
+      saveDataId: IsarSetup.currentSlotId,
+      routeId: ExpeditionService.contentId,
+      milestoneId: 'expedition_elite_blade_v1',
+    );
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.expeditionMilestoneRecords.put(
+        ExpeditionMilestoneRecord()
+          ..recordKey = recordKey
+          ..saveDataId = IsarSetup.currentSlotId
+          ..routeId = ExpeditionService.contentId
+          ..milestoneId = 'expedition_elite_blade_v1'
+          ..nodeIndex = 5
+          ..nodeSeed = 15
+          ..cycleIndex = 1
+          ..sourceRunId = 9
+          ..sourceParticipantId = id
+          ..discoveredAt = DateTime(2026, 8, 25, 9),
+      );
+    });
+
+    await expectLater(
+      ExpeditionService(IsarSetup.instance).dispatchRequest(
+        request: ExpeditionService.dispatchRequestFor(characterId: id),
+        policy: ExpeditionPolicy.yiZhanLiXing,
+      ),
+      throwsStateError,
+    );
+    expect(await IsarSetup.instance.expeditionRuns.count(), 0);
+    expect((await IsarSetup.instance.saveDatas.get(0))!.expeditionRunSerial, 0);
+
+    await IsarSetup.instance.writeTxn(() async {
+      final cleared =
+          (await IsarSetup.instance.expeditionMilestoneRecords.getByRecordKey(
+            recordKey,
+          ))!..manualClearedAt = DateTime(2026, 8, 25, 10);
+      await IsarSetup.instance.expeditionMilestoneRecords.put(cleared);
+    });
+    final runId = await ExpeditionService(IsarSetup.instance).dispatchRequest(
+      request: ExpeditionService.dispatchRequestFor(characterId: id),
+      policy: ExpeditionPolicy.yiZhanLiXing,
+    );
+    expect(await IsarSetup.instance.expeditionRuns.get(runId), isNotNull);
+    expect((await IsarSetup.instance.saveDatas.get(0))!.expeditionRunSerial, 1);
   });
 
   test('伪造 request 语义 fail closed 且不消费 serial', () async {

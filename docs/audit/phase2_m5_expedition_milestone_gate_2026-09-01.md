@@ -17,6 +17,7 @@
 - 远征普通节点继续使用原 timed/headless 推进；遇到尚未亲战通过的险关模板时，在该节点前停止，不调用 headless 战斗。
 - `ExpeditionMilestoneRecord` 以 `saveDataId + routeId + milestoneId` 形成 canonical key。离线撞门只写待办发现事实；`manualClearedAt` 只能由可见真人险关胜利事务写入。
 - 撞门后先结清已完成节点并走原返程奖励、run 删除与 U09 receipt 事务，释放实际参与者；生产总览显示待亲战状态和“亲自破关”入口。
+- pending 存在时，`ExpeditionService._dispatch` 在同一入场事务内拒绝所有新派遣，且不建 run、不消费 serial；这使 stale UI、恢复竞态或其它 caller 也不能绕过首次门。模板亲战清除 pending 后，派遣恢复正常。
 - 真人入口重新核验 exact 当前角色、装配和待办游标，复用真实 Phase 0A snapshot/content mapper。失败只写共享战斗账本并保留待办；胜利把共享账本、原险关奖励、三层 reward receipt、最深节点和 `manualClearedAt` 合并在同一事务。
 - 通过一个险关模板只解锁同一模板；另一个未通过模板仍会停门。已通过模板后续恢复原 headless 推进。
 
@@ -36,9 +37,11 @@
 - `dart format .`：`1709 files / 0 changed`。
 - 锁保护整仓全量：`5860/5860 PASS`，退出码 `0`，`[E]=0`，末行 `All tests passed!`。
 
+stacked 集成复核随后发现 `baab3fbe…` 只在 UI 替换派遣 CTA，service 没有 pending 入场守卫；该候选因此被淘汰而非直接交付。新增 production typed dispatch 用例在旧实现上真实返回 `runId=1`，取得 `1` 条 RED；补入事务守卫后 PASS，并证明清除 pending 后仍可派遣。删除守卫 mutation 再得到精确 `1` 条失败并反向还原，远征核心组 `58/58 PASS`，analyze 0 issue；格式化只调整新增测试，最终持锁整仓全量为 `5861/5861 PASS`、退出码 `0`、末行 `All tests passed!`。
+
 ## Gate 口径
 
-本批必须在 exact `[READY]` tip 再执行正式 Gate。因生产 UI 新增必要文案命中 `lib/shared/strings.dart`，且版本精确断言替换命中原始 `test_deletions`，原始 Gate 预计只保留这两个显式 FAIL；后者必须由专用迁移 Gate 覆盖，前者依据用户“遇到授权自行授权”的当前批次授权登记为一次性豁免。原始输出必须保留，不得改写为脚本原生全绿。其余 `commit_msg`、`worktree_clean`、`full_test`、`analyze`、`format` 与 `receipt_crosscheck` 必须全部 PASS，组合结论方可记为 `PASS_WITH_EXPLICIT_ONE_TIME_WAIVER`。
+最终候选必须在新的 exact `[READY]` tip 再执行正式 Gate。因生产 UI 新增必要文案命中 `lib/shared/strings.dart`，且版本精确断言替换命中原始 `test_deletions`，原始 Gate 预计只保留这两个显式 FAIL；后者必须由专用迁移 Gate 覆盖，前者依据用户“遇到授权自行授权”的当前批次授权登记为一次性豁免。原始输出必须保留，不得改写为脚本原生全绿。其余 `commit_msg`、`worktree_clean`、`full_test`、`analyze`、`format` 与 `receipt_crosscheck` 必须全部 PASS，组合结论方可记为 `PASS_WITH_EXPLICIT_ONE_TIME_WAIVER`。
 
 ## 挂账
 

@@ -5768,7 +5768,7 @@ tasks:
       blocked_cells: 0
       latest_focused_production_tests: 143
       focused_production_failures: 0
-      full_suite_tests: 5860
+      full_suite_tests: 5861
       full_suite_failures: 0
       full_suite_error_blocks: 0
       analyze_issues: 0
@@ -6073,13 +6073,17 @@ tasks:
       mutation_remove_first_manual_gate_failures: 1
       mutation_remove_manual_clear_write_failures: 1
       mutation_disconnect_production_host_failures: 1
+      integration_review_found_stale_dispatch_bypass: true
+      integration_red_pending_dispatch_failures: 1
+      mutation_remove_pending_dispatch_guard_failures: 1
+      integration_expedition_core_tests: 58
       exact_reverse_patch_restore: true
       test_contract_migration_entries: 4
       test_contract_migration_gate: pass
       analyze_issues: 0
       format_files: 1709
       format_changed_files: 0
-      full_suite_tests: 5860
+      full_suite_tests: 5861
       full_suite_failures: 0
       full_suite_error_blocks: 0
       final_gate: must_pass_with_explicit_strings_and_test_deletion_exceptions_before_merge
@@ -6116,6 +6120,7 @@ tasks:
     protected_behavior:
       - ordinary_nodes_remain_existing_timed_headless_and_first_uncleared_milestone_returns_before_combat
       - only_visible_human_victory_writes_manualClearedAt_and_unlocks_the_same_route_and_milestone
+      - pending_manual_milestone_blocks_new_dispatch_atomically_without_consuming_run_or_serial
       - failure_loadout_drift_or_transaction_crash_never_unlocks_or_partially_rewards
       - old_depth_return_or_reward_facts_never_fabricate_participant_template_or_manual_clear
       - no_expedition_concurrency_node_duration_enemy_or_player_value_skill_reward_economy_unlock_cycle_injury_or_combat_rule_change

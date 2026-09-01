@@ -51,6 +51,8 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮百草岭首次险关亲战新增版本化 `ExpeditionMilestoneRecord` 和 `0.45.0` 纯加法迁移；离线推进遇未亲战模板先结清既有节点并返程，生产待办 CTA 进入真实 Phase 0A Host，胜利把共享账本、原险关奖励、三层 receipt、深度与 `manualClearedAt` 合并同一事务。实现前 RED `1` 条，扩展定向 `143/143 PASS`，三向 mutation 各精确得到 `1` 条失败并反向还原；测试契约迁移 Gate 对 `expect 删 3 / 增 36、用例删 1 / 增 9、登记 4 条` 输出 PASS。analyze 0 issue，整仓 format `1709 files / 0 changed`，锁保护全量 `5860/5860 PASS`、退出码 0、`[E]=0`。旧档不猜模板、不回填亲战事实。该批候选净增两格至 `42/42`，exact-tip 原始 Gate 与一次性文案豁免组合结论由最终 receipt 单独绑定。
 
+随后 stacked 集成复核淘汰 `baab3fbe…`：页面虽隐藏派遣，但 service 仍可在 pending 未处理时建立新 run。新增 typed production 用例在旧实现真实返回 `runId=1`，取得 `1` 条 RED；现由 `_dispatch` 入场事务原子拒绝，run/serial 零写，清除 pending 后恢复派遣。删除守卫 mutation 再得到精确 `1` 条失败并反向还原；远征核心 `58/58 PASS`，analyze 0 issue，整仓 format `1709 files`，持锁全量更新为 `5861/5861 PASS`。这次修复强化原两格的 production admission，不增加 42 格分子。
+
 上一轮九霄塔 durable 候选的最终工程检查：
 
 - exact final tip：`62d6df2aea62d54bb1abf8f730fe8e6cb100f572`；

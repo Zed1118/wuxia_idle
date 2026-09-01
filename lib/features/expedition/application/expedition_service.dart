@@ -146,6 +146,27 @@ class ExpeditionService {
         throw StateError('远征派遣：已有进行中的远征，需先召回/结束');
       }
 
+      // 页面会把派遣动作替换为“亲自破关”，但服务层仍须在同一入场事务中
+      // fail closed：stale UI、恢复竞态或其它 caller 都不能绕过首次险关门，
+      // 否则可能建立第二条远征并撞出多个 pending 事实。
+      final milestoneRecords = await _isar.expeditionMilestoneRecords
+          .where()
+          .findAll();
+      final pendingMilestones = milestoneRecords.where(
+        (record) =>
+            record.saveDataId == IsarSetup.currentSlotId &&
+            record.routeId == contentId &&
+            record.manualClearedAt == null,
+      );
+      if (pendingMilestones.isNotEmpty) {
+        for (final record in pendingMilestones) {
+          record.validateIdentity();
+        }
+        throw StateError(
+          'Expedition dispatch is blocked by a pending manual milestone',
+        );
+      }
+
       final occupancy = await CharacterOccupancyService(_isar).snapshot();
       final scheduling = strictRequest == null
           ? null
