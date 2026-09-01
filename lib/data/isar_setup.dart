@@ -24,6 +24,7 @@ import '../core/domain/save_data.dart';
 import '../core/domain/skill_unlock_entry.dart';
 import '../core/domain/technique.dart';
 import '../features/tower/domain/tower_progress.dart';
+import '../features/tower/domain/tower_personal_record.dart';
 import '../features/jianghu/domain/reputation.dart';
 import '../features/jianghu/domain/npc_relation.dart';
 import '../features/sect/domain/sect.dart';
@@ -123,6 +124,7 @@ class IsarSetup {
     MainlineProgressSchema,
     MainlineSettlementJournalSchema,
     TowerProgressSchema,
+    TowerPersonalRecordSchema,
     RetreatSessionSchema,
     EncounterProgressSchema,
     ReputationSchema,
@@ -219,7 +221,9 @@ class IsarSetup {
   // 旧档只从已有通关/领取事实建防重墓碑，绝不补发或伪造奖励。
   // 0.43.0 渐进解锁：新增 ProgressiveUnlockReceipt collection；旧档首次观察
   // 只建立现状基线，不伪造待确认蜡封，也不改变任何模式的既有解锁门槛。
-  static const _currentSaveVersion = '0.43.0';
+  // 0.44.0 九霄塔个人记录：新增 TowerPersonalRecord collection；旧档无法证明
+  // 历史实际参与者，故保持空集合，不从存档级塔进度或奖励 receipt 猜测回填。
+  static const _currentSaveVersion = '0.44.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -554,6 +558,13 @@ class IsarSetup {
       // 新 collection 对旧档天然为空；首次生产观察负责建立安静基线，迁移本身
       // 不推测历史玩家何时听闻/开放，也不补造待确认题签。
       if (_compareVersion(fromVersion, '0.43.0') < 0) {
+        // 无显式迁移动作(纯可加)。
+      }
+
+      // --- 段 14(0.44.0 九霄塔个人记录)---
+      // 新 collection 对旧档天然为空。TowerProgress 只证明存档级通关，不能证明
+      // 实际参与角色；奖励 receipt 也不覆盖所有历史入口，故不得猜人回填个人记录。
+      if (_compareVersion(fromVersion, '0.44.0') < 0) {
         // 无显式迁移动作(纯可加)。
       }
 

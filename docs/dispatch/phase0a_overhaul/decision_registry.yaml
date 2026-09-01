@@ -114,6 +114,33 @@ decisions:
     approved_at: "2026-08-31"
     approval_basis: '当前 Codex 会话：用户明确授权版本化 Isar RewardClaimReceipt、schemaVersion/saveVersion 提升、canonical RewardClaimKey 扩展、七类内容事务合并与仅按旧档已证事实建立防重墓碑'
 
+  - id: TOWER-PERSONAL-RECORD-01
+    status: frozen_implementation_authorized
+    summary: 九霄塔按实际参与者持久记录个人最高层与有效耗时中的最好成绩
+    persistence:
+      collection: TowerPersonalRecord
+      migration_kind: additive
+      save_version: 0.44.0
+      unique_by_save_and_participant: true
+    production_writers:
+      - manual_victory
+      - sweep_victory
+      - durable_dispatch_victory
+    transaction_owner: applyTowerVictorySettlement
+    historical_migration:
+      participant_backfill: false
+      reason: global_tower_history_cannot_prove_participant
+    forbidden_changes:
+      - tower_rewards
+      - player_values
+      - skills
+      - unlock_rules
+      - cycles
+      - combat_rules
+    owner_task: P2-M5-TOWER-PERSONAL-RECORD
+    approved_at: "2026-09-01"
+    approval_basis: '当前 Codex 会话：用户明确授权 TowerPersonalRecord、saveVersion 0.44.0、三类胜利原结算事务写入，以及旧档不猜人不回填'
+
   - id: MAINLINE-PARTICIPANT-01
     status: frozen
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed

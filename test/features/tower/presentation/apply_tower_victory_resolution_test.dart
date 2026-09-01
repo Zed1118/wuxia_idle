@@ -13,6 +13,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_entry_flow.dart';
 import 'package:wuxia_idle/features/tower/application/tower_progress_service.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_personal_record.dart';
 import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
@@ -339,6 +340,7 @@ void main() {
       expect(progress.totalAttempts, 0);
       expect(character!.experience, 0);
       expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 0);
+      expect(await IsarSetup.instance.towerPersonalRecords.where().count(), 0);
 
       final applied = await applyTowerVictorySettlement(
         ref: ref,
@@ -355,6 +357,12 @@ void main() {
       expect(progress.totalAttempts, 1);
       expect(character!.experience, floor.baseExpReward);
       expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
+      final personal =
+          (await IsarSetup.instance.towerPersonalRecords.where().findAll())
+              .single;
+      expect(personal.participantId, founderId);
+      expect(personal.highestClearedFloor, floor.floorIndex);
+      expect(personal.bestClearTimeMs, 1234);
 
       await expectLater(
         applyTowerVictorySettlement(
@@ -372,6 +380,120 @@ void main() {
       expect(progress!.totalAttempts, 1);
       expect(character!.experience, floor.baseExpReward);
       expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
+      expect(await IsarSetup.instance.towerPersonalRecords.where().count(), 1);
+    });
+  });
+
+  testWidgets('塔个人最高层与最好成绩按实际参与者隔离并单调更新', (tester) async {
+    final ids = (await tester.runAsync(() async {
+      final founderId = await insertCharacter('掌门');
+      final discipleId = await insertCharacter(
+        '门人',
+        lineageRole: LineageRole.disciple,
+      );
+      await writeSave(founderId, discipleId);
+      await TowerProgressService(
+        isar: IsarSetup.instance,
+      ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      return (founderId, discipleId);
+    }))!;
+    final floor = GameRepository.instance.getTowerFloor(1);
+
+    CombatSettlementSnapshot settlementFor(int participantId) {
+      return CombatSettlementSnapshot(
+        result: BattleResult.leftWin,
+        totalTicks: 10,
+        hadActions: true,
+        playerCharacterId: participantId,
+        participants: [
+          CombatParticipantSnapshot(
+            characterId: participantId,
+            currentHp: 7900,
+            maxHp: 8000,
+          ),
+        ],
+        skillCasts: const [],
+        totalDamage: 100,
+        criticalCount: 0,
+        damageByCharacterId: {participantId: 100},
+      );
+    }
+
+    late WidgetRef ref;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Consumer(
+            builder: (_, value, _) {
+              ref = value;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.runAsync(() async {
+      await expectLater(
+        applyTowerVictorySettlement(
+          ref: ref,
+          floor: floor,
+          participantId: ids.$1,
+          elapsedMs: 4000,
+          settlementSnapshot: settlementFor(ids.$2),
+          rewardOccurrenceId: 'tower-personal-mismatched-participant',
+        ),
+        throwsStateError,
+      );
+      expect(await IsarSetup.instance.towerPersonalRecords.where().count(), 0);
+
+      await applyTowerVictorySettlement(
+        ref: ref,
+        floor: floor,
+        participantId: ids.$1,
+        elapsedMs: 5000,
+        settlementSnapshot: settlementFor(ids.$1),
+        rewardOccurrenceId: 'tower-personal-founder-1',
+      );
+      await applyTowerVictorySettlement(
+        ref: ref,
+        floor: floor,
+        participantId: ids.$2,
+        elapsedMs: 3000,
+        settlementSnapshot: settlementFor(ids.$2),
+        rewardOccurrenceId: 'tower-personal-disciple-1',
+      );
+      await applyTowerVictorySettlement(
+        ref: ref,
+        floor: floor,
+        participantId: ids.$1,
+        elapsedMs: 2000,
+        settlementSnapshot: settlementFor(ids.$1),
+        rewardOccurrenceId: 'tower-personal-founder-2',
+      );
+      await applyTowerVictorySettlement(
+        ref: ref,
+        floor: GameRepository.instance.getTowerFloor(2),
+        participantId: ids.$1,
+        elapsedMs: 4000,
+        settlementSnapshot: settlementFor(ids.$1),
+        rewardOccurrenceId: 'tower-personal-founder-floor-2',
+      );
+
+      final records = await IsarSetup.instance.towerPersonalRecords
+          .where()
+          .findAll();
+      expect(records, hasLength(2));
+      final founder = records.singleWhere(
+        (record) => record.participantId == ids.$1,
+      );
+      final disciple = records.singleWhere(
+        (record) => record.participantId == ids.$2,
+      );
+      expect(founder.highestClearedFloor, 2);
+      expect(founder.bestClearTimeMs, 2000);
+      expect(disciple.highestClearedFloor, 1);
+      expect(disciple.bestClearTimeMs, 3000);
     });
   });
 }

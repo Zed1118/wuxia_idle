@@ -25,6 +25,7 @@ import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_personal_record.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
@@ -326,6 +327,11 @@ void main() {
           .findFirst())!;
       expect(progress.totalAttempts, 1);
       if (result.outcome == DurableActivityExecutionOutcome.victory) {
+        final personal =
+            (await IsarSetup.instance.towerPersonalRecords.where().findAll())
+                .single;
+        expect(personal.participantId, leader.id);
+        expect(personal.highestClearedFloor, floor.floorIndex);
         expect(
           (await IsarSetup.instance.rewardClaimReceipts.where().findAll())
               .map((receipt) => receipt.contentKind)

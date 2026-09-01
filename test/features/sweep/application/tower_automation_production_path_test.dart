@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_settlement.dart';
 import 'package:wuxia_idle/features/sweep/application/sweep_unit.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
+import 'package:wuxia_idle/features/tower/domain/tower_personal_record.dart';
 import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
@@ -117,6 +118,16 @@ void main() {
           .expand((technique) => technique.skillUsageCount)
           .fold<int>(0, (sum, entry) => sum + entry.count);
       expect(usageAfter, greaterThan(usageBefore));
+      final personal = await tester.runAsync(
+        () => IsarSetup.instance.towerPersonalRecords.where().findFirst(),
+      );
+      expect(personal!.participantId, leaderId);
+      expect(personal.highestClearedFloor, unit.floor.floorIndex);
+      expect(
+        personal.bestClearTimeMs,
+        isNull,
+        reason: '即时扫荡没有真实墙钟耗时，不得伪造个人最好成绩',
+      );
     },
   );
 

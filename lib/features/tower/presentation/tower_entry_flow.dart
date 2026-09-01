@@ -58,6 +58,7 @@ import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../application/tower_progress_service.dart';
+import '../application/tower_personal_record_service.dart';
 import '../application/tower_providers.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
@@ -491,7 +492,13 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   if (isar == null) {
     throw StateError('Tower reward settlement storage is unavailable');
   }
+  if (settlementSnapshot == null ||
+      !settlementSnapshot.isFinished ||
+      settlementSnapshot.playerCharacterId != participantId) {
+    throw StateError('Tower victory participant cannot be proven');
+  }
   final progressService = TowerProgressService(isar: isar);
+  final personalRecordService = TowerPersonalRecordService(isar: isar);
   final progress = await progressService.getOrCreate(
     saveDataId: IsarSetup.currentSlotId,
   );
@@ -554,6 +561,13 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
     if (clearResult.isFirstClear != isFirstClear) {
       throw StateError('Tower first-clear snapshot changed during settlement');
     }
+    await personalRecordService.recordVictoryInTxn(
+      saveDataId: IsarSetup.currentSlotId,
+      participantId: participantId,
+      floorIndex: floor.floorIndex,
+      elapsedMs: elapsedMs,
+      now: now,
+    );
     await afterProgressInTxnForTest?.call();
     resolution = await applyTowerCombatResolution(
       ref: ref,
