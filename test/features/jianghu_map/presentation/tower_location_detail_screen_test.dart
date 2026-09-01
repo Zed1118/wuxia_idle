@@ -86,6 +86,9 @@ void main() {
     );
     expect(find.text(UiStrings.towerLocationEntryModeDirect), findsOneWidget);
     expect(find.text(UiStrings.towerLocationExpectedOccupancy), findsOneWidget);
+    expect(find.text('首次亲自挑战；已通层可差遣历练'), findsOneWidget);
+    expect(find.text('差遣期间锁定所选角色及其装配'), findsOneWidget);
+    expect(find.text('亲自挑战，不可派遣'), findsNothing);
     expect(find.text(UiStrings.towerLocationEnter), findsOneWidget);
     expect(find.textContaining(value.enemies.first.name), findsOneWidget);
   });

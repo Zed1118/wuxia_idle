@@ -1668,8 +1668,8 @@ class UiStrings {
       '进入塔层后逐次选择 · 可用 $count 人';
   static const String towerLocationEntryModeLabel = '进入方式';
   static const String towerLocationOccupancyLabel = '预计占用';
-  static const String towerLocationEntryModeDirect = '亲自挑战，不可派遣';
-  static const String towerLocationExpectedOccupancy = '仅本次亲战过程，不建立长期派遣占用';
+  static const String towerLocationEntryModeDirect = '首次亲自挑战；已通层可差遣历练';
+  static const String towerLocationExpectedOccupancy = '差遣期间锁定所选角色及其装配';
   static const String towerParticipantTitle = '选择挑战者';
   static const String towerParticipantBody = '每次挑战单独选择一名空闲掌门或门人。';
   static const String towerParticipantAvailable = '可亲战';
@@ -1682,6 +1682,7 @@ class UiStrings {
   static const String towerLocationEnter = '进入九霄塔';
   static const String towerLocationEnterHint = '查看塔层并选择可挑战层';
   static const String towerLocationEnterReplayHint = '查看塔层并重打已通层';
+  static const String towerDispatchButton = '差遣历练';
   static const String lightFootLocationDetailTitle = '轻功试炼 · 地点详情';
   static const String lightFootLocationUnavailable = '试炼情报暂不可核实，暂不能进入';
   static const String lightFootLocationProgressLabel = '当前进度';
