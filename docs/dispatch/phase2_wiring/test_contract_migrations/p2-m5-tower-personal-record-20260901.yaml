@@ -1,0 +1,14 @@
+schema_version: 1
+ticket: p2-m5-tower-personal-record-20260901
+base_sha: b530d804940930628ea1b61e83b188416bc0b1d2
+head_sha: 632cd45f79bc12b5eeeb8ce25a2305af23afa559
+summary: 存档当前版本由 0.43.0 加法迁至 0.44.0；四处旧版本期望更新为新精确值，不删除迁移场景或降低断言数量。
+
+migrations:
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.43.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.44.0');
+    reason: TowerPersonalRecord 注册和迁移段 14 要求当前版本精确提升到 0.44.0；替代断言继续按原注释钉死字面版本，强制后续升版复核整套版本门。
+
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.43.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.44.0');
+    reason: 0.39 旧档经过全部加法迁移后的唯一合法当前版本已变为 0.44.0；替代断言保留旧档升至当前且不伪造 journal/run/receipt 的原合同。
