@@ -37,8 +37,8 @@
 
 ## 当前恢复点
 
-- 状态：工程修复与风险匹配验证完成，准备冻结提交并运行 final Gate。
+- 状态：工程修复与风险匹配验证完成；实现检查点 `3b616d84bc2a85647b0b560da8e21f87ad0002bb` 已冻结，准备运行 final Gate。
 - 最后完成：当前错误实现取得地点详情 `1` 条、塔层列表 `2` 条有效 RED；恢复专用文案/按钮后定向 `8/8 + 14/14 PASS`；两向 mutation 分别精确 `1`、`2` 条失败并反向还原；M5 final Gate 和 U11/U12 审查深度口径已校正。
-- 下一步：提交实现检查点，回填迁移登记的实现 SHA，冻结 final tip，生成 receipt，并执行测试契约迁移 Gate 与项目 Gate。
+- 下一步：冻结 `[BLOCKED]` final tip，生成 receipt，并执行测试契约迁移 Gate 与项目 Gate；除非项目 Gate 的 `strings.dart` 静态禁令由人类治理调整，否则不得自行标记 READY。
 - 已跑验证：地点详情 `8/8 PASS`（含 1280×720、1440×900）；塔层列表 `14/14 PASS`；analyze `No issues found!`；整仓 format `1700 files / 0 changed`；锁保护全量 `5840/5840 PASS`、`[E]=0`；两向 mutation RED 已确认。
 - 阻塞项：通用项目 Gate 将本单获用户明确要求的 `lib/shared/strings.dart` 仍静态列为 forbidden，且没有授权参数。不得修改或绕过 Gate；最终需如实记录该边界。

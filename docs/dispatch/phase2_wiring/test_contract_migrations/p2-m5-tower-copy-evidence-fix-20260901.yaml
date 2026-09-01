@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m5-tower-copy-evidence-fix-20260901
 base_sha: 62d6df2aea62d54bb1abf8f730fe8e6cb100f572
-head_sha: pending_implementation_commit
+head_sha: 3b616d84bc2a85647b0b560da8e21f87ad0002bb
 summary: 九霄塔已通层差遣按钮由误用百草岭“前往派遣”迁为专用“差遣历练”；旧的存在性断言必须改为明确拒绝跨玩法文案复用。
 
 migrations:
