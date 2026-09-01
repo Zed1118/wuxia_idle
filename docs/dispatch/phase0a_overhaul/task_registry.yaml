@@ -6178,8 +6178,11 @@ tasks:
   - id: P2-M3-WEAPON-COMBAT-DEPTH-GATE
     milestone: M3
     owner: codex_root
-    status: planned
+    branch: codex/p2-m3-product-contract-rebase-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m3-product-contract-rebase-20260901
+    status: blocked
     current_authoritative_wip: false
+    base_commit: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
     completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
     acceptance_target: 5_weapon_profiles_each_pass_clear_elite_and_boss_scenarios_with_three_distinct_modifiers
     acceptance_result: 0_of_5_weapon_profiles
@@ -6187,8 +6190,24 @@ tasks:
       - P2-PHASE2-TRUTH-REFRESH
     blockers:
       - reconcile_the_authoritative_phase2_weapon_chain_wording_with_the_later_approved_single_smooth_ranged_basic_attack_product_direction
+      - choose_whether_M3_keeps_five_single_attack_weapon_profiles_or_replaces_the_five_weapon_denominator
+      - authorize_a_non_persistent_equipment_weapon_archetype_source_and_new_single_attack_profile_candidates_if_five_weapons_remain
+    evidence:
+      production_weapon_profiles: 0
+      production_modifier_consumers: 0
+      production_action_timeline_consumers: 0
+      production_bot_tactics: 3
+      per_weapon_clear_elite_boss_scenarios: 0_of_15
+      later_single_ranged_attack_commit: b653852e28607129b52fa485d1869857c17072c5
+      later_single_ranged_attack_ready_commit: 3e589284
+      human_desktop_acceptance: deferred_by_user
+    owned_files:
+      - docs/superpowers/plans/2026-09-01-p2-m3-product-contract-rebase.md
+      - docs/audit/phase2_m3_product_contract_rebase_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
     protected_behavior:
       - do_not_reintroduce_the_removed_three_hit_basic_attack_chain_without_an_explicit_product_decision
+      - keep_single_ranged_basic_attack_without_attack_displacement_and_keep_Space_as_the_only_player_defense_entry
       - guard_against_multi_hit_qi_exploit_infinite_chase_infinite_control_and_boss_reflect_kill
 
   - id: P2-M4-ENGINEERING-AND-HUMAN-GATE
