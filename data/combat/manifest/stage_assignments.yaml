@@ -18,6 +18,15 @@ stage_assignments:
   - stage_id: stage_02_02
     migration_state: migrated
     encounter_id: ch2_encounter_02_teahouse
+  - stage_id: stage_02_03
+    migration_state: migrated
+    encounter_id: ch2_encounter_03_springwater_hall
+  - stage_id: stage_02_04
+    migration_state: migrated
+    encounter_id: ch2_encounter_04_drill_ground
+  - stage_id: stage_02_05
+    migration_state: migrated
+    encounter_id: ch2_encounter_05_rainy_alley
   - stage_id: stage_07_01
     migration_state: migrated
     encounter_id: ch7_encounter_01_northern_outpost

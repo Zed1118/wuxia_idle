@@ -11,6 +11,7 @@ encounter_sources:
   - data/combat/encounters/chapter_01_templates.yaml
   - data/combat/encounters/black_wind_ridge.yaml
   - data/combat/encounters/chapter_02_sect_teahouse.yaml
+  - data/combat/encounters/chapter_02_remaining.yaml
   - data/combat/encounters/chapter_07_army_outpost.yaml
   - data/combat/encounters/chapter_02_poison_escort.yaml
   - data/combat/encounters/chapter_04_xiliang_crossing.yaml
@@ -437,6 +438,36 @@ reference_index:
     - ch2_s02_lightfoot_03
     - ch2_s02_lightfoot_04
     - ch2_s02_instructor_01
+    - ch2_s03_outer_01
+    - ch2_s03_outer_02
+    - ch2_s03_outer_03
+    - ch2_s03_outer_04
+    - ch2_s03_outer_05
+    - ch2_s03_outer_06
+    - ch2_s03_outer_07
+    - ch2_s03_outer_08
+    - ch2_s03_outer_09
+    - ch2_s03_outer_10
+    - ch2_s03_outer_11
+    - ch2_s03_outer_12
+    - ch2_s03_outer_13
+    - ch2_s03_outer_14
+    - ch2_s03_hidden_01
+    - ch2_s03_hidden_02
+    - ch2_s03_hidden_03
+    - ch2_s03_hidden_04
+    - ch2_s03_hidden_05
+    - ch2_s03_hidden_06
+    - ch2_s03_lightfoot_01
+    - ch2_s03_lightfoot_02
+    - ch2_s03_lightfoot_03
+    - ch2_s03_lightfoot_04
+    - ch2_s03_instructor_01
+    - ch2_s04_outer_01
+    - ch2_s04_lightfoot_01
+    - ch2_s04_instructor_01
+    - ch2_s05_outer_01
+    - ch2_s05_instructor_01
     - ch7_s01_shield_01
     - ch7_s01_shield_02
     - ch7_s01_shield_03
