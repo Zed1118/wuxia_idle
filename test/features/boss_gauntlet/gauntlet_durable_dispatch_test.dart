@@ -223,6 +223,10 @@ void main() {
       cycleIndex: 1,
       request: gauntletDurableDispatchRequest(characterId: participant.id),
     );
+    final lastAdvancedAtBefore =
+        (await IsarSetup.instance.durableActivityCombatRuns.get(
+          started.durableRunId,
+        ))!.lastAdvancedAt;
     await IsarSetup.instance.writeTxn(() async {
       final current = (await IsarSetup.instance.characters.get(
         participant.id,
@@ -244,6 +248,11 @@ void main() {
     ))!;
     expect(durable.phase, DurableActivityPhase.active);
     expect(durable.outcome, DurableActivityOutcome.none);
+    expect(
+      durable.lastAdvancedAt,
+      lastAdvancedAtBefore,
+      reason: '装配漂移必须在更新推进游标或进入战斗前失败',
+    );
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 1);
   });
 
