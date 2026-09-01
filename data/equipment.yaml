@@ -26,6 +26,7 @@ equipment:
     name: 铁剑
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 100
     baseAttackMax: 150
@@ -43,6 +44,7 @@ equipment:
     name: 折刀
     tier: xunChang
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 100
     baseAttackMax: 150
@@ -60,6 +62,7 @@ equipment:
     name: 软鞭
     tier: xunChang
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 100
     baseAttackMax: 150
@@ -108,6 +111,7 @@ equipment:
     name: 钢刀
     tier: xiangYang
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 180
     baseAttackMax: 280
@@ -125,6 +129,7 @@ equipment:
     name: 长剑
     tier: xiangYang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 180
     baseAttackMax: 280
@@ -142,6 +147,7 @@ equipment:
     name: 九节鞭
     tier: xiangYang
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 180
     baseAttackMax: 280
@@ -190,6 +196,7 @@ equipment:
     name: 青锋剑
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 320
     baseAttackMax: 450
@@ -207,6 +214,7 @@ equipment:
     name: 玄花斧
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 320
     baseAttackMax: 450
@@ -224,6 +232,7 @@ equipment:
     name: 缠丝索
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 320
     baseAttackMax: 450
@@ -273,6 +282,7 @@ equipment:
     name: 龙泉剑
     tier: liQi
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 480
     baseAttackMax: 650
@@ -291,6 +301,7 @@ equipment:
     name: 盘龙刀
     tier: liQi
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 480
     baseAttackMax: 650
@@ -308,6 +319,7 @@ equipment:
     name: 链子鞭
     tier: liQi
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 480
     baseAttackMax: 650
@@ -357,6 +369,7 @@ equipment:
     tagline: "八十二斤，压住一辈子火气。"
     tier: zhongQi
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 700
     baseAttackMax: 950
@@ -375,6 +388,7 @@ equipment:
     tagline: "轻到极致，才是重。"
     tier: zhongQi
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 700
     baseAttackMax: 950
@@ -393,6 +407,7 @@ equipment:
     tagline: "只麻不杀，疼者跑，停者听。"
     tier: zhongQi
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 700
     baseAttackMax: 950
@@ -444,6 +459,7 @@ equipment:
     tagline: "天高地厚，斧到山开。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -462,6 +478,7 @@ equipment:
     tagline: "我叫它虹，它就应。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -480,6 +497,7 @@ equipment:
     tagline: "血藤有记忆，不认第四种手。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -531,6 +549,7 @@ equipment:
     tagline: "陨铁嵌锋一线白，它不劈，只是「过」。"
     tier: shenWu
     slot: weapon
+    weaponArchetype: heavy
     schoolBias: gangMeng
     baseAttackMin: 1500
     baseAttackMax: 2000
@@ -549,6 +568,7 @@ equipment:
     tagline: "剑身刻十七问，皆问天而天未答。"
     tier: shenWu
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 1500
     baseAttackMax: 2000
@@ -567,6 +587,7 @@ equipment:
     tagline: "四十九香熏鞭身，闻者难辨醒梦。"
     tier: shenWu
     slot: weapon
+    weaponArchetype: flexible
     schoolBias: yinRou
     baseAttackMin: 1500
     baseAttackMax: 2000
@@ -622,6 +643,7 @@ equipment:
     name: 柴刀
     tier: xunChang
     slot: weapon
+    weaponArchetype: dual
     schoolBias: gangMeng
     baseAttackMin: 100
     baseAttackMax: 150
@@ -639,6 +661,7 @@ equipment:
     name: 飞石
     tier: xunChang
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: yinRou
     baseAttackMin: 100
     baseAttackMax: 150
@@ -718,6 +741,7 @@ equipment:
     name: 柳叶刀
     tier: xiangYang
     slot: weapon
+    weaponArchetype: dual
     schoolBias: lingQiao
     baseAttackMin: 180
     baseAttackMax: 280
@@ -735,6 +759,7 @@ equipment:
     name: 袖箭
     tier: xiangYang
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: gangMeng
     baseAttackMin: 180
     baseAttackMax: 280
@@ -814,6 +839,7 @@ equipment:
     name: 鸳鸯钺
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: dual
     schoolBias: yinRou
     baseAttackMin: 320
     baseAttackMax: 450
@@ -831,6 +857,7 @@ equipment:
     name: 梅花镖
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: lingQiao
     baseAttackMin: 320
     baseAttackMax: 450
@@ -910,6 +937,7 @@ equipment:
     name: 虎头钩
     tier: liQi
     slot: weapon
+    weaponArchetype: dual
     schoolBias: gangMeng
     baseAttackMin: 480
     baseAttackMax: 650
@@ -927,6 +955,7 @@ equipment:
     name: 梨花针
     tier: liQi
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: yinRou
     baseAttackMin: 480
     baseAttackMax: 650
@@ -1007,6 +1036,7 @@ equipment:
     tagline: "剩下七指，比别人十指还灵。"
     tier: zhongQi
     slot: weapon
+    weaponArchetype: dual
     schoolBias: lingQiao
     baseAttackMin: 700
     baseAttackMax: 950
@@ -1025,6 +1055,7 @@ equipment:
     tagline: "火候到了，连石头都穿。"
     tier: zhongQi
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: gangMeng
     baseAttackMin: 700
     baseAttackMax: 950
@@ -1109,6 +1140,7 @@ equipment:
     tagline: "阴阳相冲，神仙也救不回。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: dual
     schoolBias: yinRou
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -1127,6 +1159,7 @@ equipment:
     tagline: "够冷的针，扎进去是冰。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: lingQiao
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -1211,6 +1244,7 @@ equipment:
     tagline: "不讲招式只讲力，巧妙在力前皆纸。"
     tier: shenWu
     slot: weapon
+    weaponArchetype: dual
     schoolBias: gangMeng
     baseAttackMin: 1500
     baseAttackMax: 2000
@@ -1229,6 +1263,7 @@ equipment:
     tagline: "出手如天女散花，三丈内无死角。"
     tier: shenWu
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: yinRou
     baseAttackMin: 1500
     baseAttackMax: 2000
@@ -1313,6 +1348,7 @@ equipment:
     tagline: "等待本身，就是它的名字。"
     tier: baoWu
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 1000
     baseAttackMax: 1400
@@ -1362,6 +1398,7 @@ equipment:
     name: 锁脉囊
     tier: haoJiaHuo
     slot: weapon
+    weaponArchetype: hidden
     schoolBias: lingQiao
     baseAttackMin: 360
     baseAttackMax: 490
@@ -1406,4 +1443,3 @@ equipment:
     dropSourceTags: ["gauntlet_duanhun"]
     iconPath: assets/equipment/accessory_haojiahuo_she_hun_ling.png
     detailPath: assets/equipment/accessory_haojiahuo_she_hun_ling_detail.png
-

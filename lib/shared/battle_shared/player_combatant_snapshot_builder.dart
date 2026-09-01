@@ -71,6 +71,27 @@ final class PlayerCombatantSnapshotBuilder {
     }
 
     final repository = GameRepository.instance;
+    final equippedWeapons = equipped
+        .where((equipment) => equipment.slot == EquipmentSlot.weapon)
+        .toList(growable: false);
+    if (equippedWeapons.length > 1) {
+      throw StateError(
+        'PlayerCombatantSnapshotBuilder: ${character.name} 同时装备了 '
+        '${equippedWeapons.length} 件武器',
+      );
+    }
+    WeaponArchetype? weaponArchetype;
+    if (equippedWeapons case [final weapon]) {
+      final definition = repository.getEquipment(weapon.defId);
+      if (definition.slot != EquipmentSlot.weapon ||
+          definition.weaponArchetype == null) {
+        throw StateError(
+          'PlayerCombatantSnapshotBuilder: ${character.name} 的武器 '
+          '${weapon.defId} 缺有效 weaponArchetype',
+        );
+      }
+      weaponArchetype = definition.weaponArchetype;
+    }
     final techniqueDef = repository.getTechnique(mainTechnique.defId);
     final qiConfig = numbers.combat.qi;
     final profile = techniqueDef.qiProfile;
@@ -220,6 +241,7 @@ final class PlayerCombatantSnapshotBuilder {
       defenseRate: defenseRate,
       totalEquipmentAttack: totalEquipmentAttack,
       mainCultivationLayer: mainTechnique.cultivationLayer,
+      weaponArchetype: weaponArchetype,
       availableSkills: skills,
       openingSkillCooldowns: const {},
       skillUses: {

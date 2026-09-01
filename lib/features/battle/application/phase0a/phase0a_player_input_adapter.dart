@@ -1,3 +1,4 @@
+import '../../../../core/domain/enums.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/basic_attack_chain.dart';
 import '../../domain/phase0a/basic_attack_geometry_registry.dart';
@@ -82,6 +83,7 @@ final class Phase0aPlayerInputAdapter {
     required this.attackQiDelta,
     required this.postureBasicPowerMultiplier,
     required this.attackPowerMultiplier,
+    this.weaponArchetype,
     required this.gatherPowerMultiplier,
     required this.clearPowerMultiplier,
     required this.gatherSlot,
@@ -109,6 +111,7 @@ final class Phase0aPlayerInputAdapter {
   final int attackQiDelta;
   final int postureBasicPowerMultiplier;
   final int attackPowerMultiplier;
+  final WeaponArchetype? weaponArchetype;
   final int gatherPowerMultiplier;
   final int clearPowerMultiplier;
   final String gatherSlot;

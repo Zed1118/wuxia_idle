@@ -175,7 +175,7 @@ void main() {
       );
     });
 
-    test('开锋槽 3：36 件 weapon 使用真正专属技候选 / 44 件 armor+accessory 留空', () async {
+    test('37 件 weapon 均有显式五类身份，且开锋槽 3 使用真正专属技候选', () async {
       final repo = await GameRepository.loadAllDefs(loader: fileLoader);
       final weapons = repo.equipmentDefs.values
           .where((e) => e.slot == EquipmentSlot.weapon)
@@ -189,6 +189,26 @@ void main() {
         nonWeapons.length,
         46,
         reason: '7 阶 × (armor 3 + accessory 3) + 2 特殊 + 断魂庄镇岳铁衣/摄魂铃',
+      );
+      expect(
+        {
+          for (final archetype in WeaponArchetype.values)
+            archetype: weapons
+                .where((weapon) => weapon.weaponArchetype == archetype)
+                .length,
+        },
+        {
+          WeaponArchetype.sword: 8,
+          WeaponArchetype.heavy: 7,
+          WeaponArchetype.flexible: 7,
+          WeaponArchetype.dual: 7,
+          WeaponArchetype.hidden: 8,
+        },
+      );
+      expect(
+        nonWeapons.where((item) => item.weaponArchetype != null),
+        isEmpty,
+        reason: '护甲和饰品不得伪装成武器画像来源',
       );
 
       for (final w in weapons) {
@@ -847,6 +867,7 @@ equipment:
     name: 越界武器
     tier: shenWu
     slot: weapon
+    weaponArchetype: heavy
     baseAttackMin: 100
     baseAttackMax: 9999
     baseHealthMin: 0
@@ -882,6 +903,7 @@ equipment:
     name: 孤剑
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 100
     baseAttackMax: 150
@@ -987,6 +1009,7 @@ equipment:
     name: 剑甲
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 100
     baseAttackMax: 150
@@ -1001,6 +1024,7 @@ equipment:
     name: 剑乙
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: lingQiao
     baseAttackMin: 100
     baseAttackMax: 150

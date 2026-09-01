@@ -50,6 +50,7 @@ CombatantSnapshot makeCh1Player(NumbersConfig numbers) => testCombatantSnapshot(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0.0,
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
+  weaponArchetype: WeaponArchetype.heavy,
   skillLoadout: CombatantSkillLoadout(
     basicAttack:
         GameRepository.instance.skillDefs['skill_gangmeng_jichu_basic'],
@@ -128,6 +129,12 @@ void main() {
       // 固定三 kind 全覆盖；Q/R 已由真实数据技能绑定，fixture 无数字槽。
       expect(mapping.moveBindings.keys, hasLength(3));
       expect(mapping.playerAdapter.numericSkillBindings.equipped, isEmpty);
+      expect(mapping.playerAdapter.weaponArchetype, WeaponArchetype.heavy);
+      expect(
+        mapping.playerAdapter.basicAttackChain,
+        isNull,
+        reason: '五类身份不得恢复被否决的三段普攻链',
+      );
       expect(mapping.moveBindings[Phase0aDamageKind.basic], isNotNull);
       expect(
         mapping.moveBindings[Phase0aDamageKind.gather]?.id,

@@ -21,6 +21,7 @@ CombatantSnapshot fixture({
   required List<SkillDef> skills,
   required List<List<SkillDef>> unlocks,
   List<BossPhaseDef>? phases,
+  WeaponArchetype? weaponArchetype,
 }) => CombatantSnapshot(
   characterId: -1,
   name: 'enemy',
@@ -41,6 +42,7 @@ CombatantSnapshot fixture({
   defenseRate: 0,
   totalEquipmentAttack: 1,
   mainCultivationLayer: CultivationLayer.chuKui,
+  weaponArchetype: weaponArchetype,
   availableSkills: skills,
   openingSkillCooldowns: {'x': 1},
   skillUses: {'x': 2},
@@ -66,7 +68,11 @@ CombatantSnapshot fixture({
 
 void main() {
   test('copyWith 可独立续传当前生命与真气且保留上限', () {
-    final original = fixture(skills: [skill('a')], unlocks: const []);
+    final original = fixture(
+      skills: [skill('a')],
+      unlocks: const [],
+      weaponArchetype: WeaponArchetype.flexible,
+    );
 
     final continued = original.copyWith(currentHp: 41, currentQi: 7);
 
@@ -74,6 +80,7 @@ void main() {
     expect(continued.currentQi, 7);
     expect(continued.maxHp, original.maxHp);
     expect(continued.maxQi, original.maxQi);
+    expect(continued.weaponArchetype, WeaponArchetype.flexible);
     expect(
       original.currentHp,
       original.maxHp,

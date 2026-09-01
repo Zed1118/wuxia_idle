@@ -6178,10 +6178,10 @@ tasks:
   - id: P2-M3-WEAPON-COMBAT-DEPTH-GATE
     milestone: M3
     owner: codex_root
-    branch: codex/p2-m3-product-contract-rebase-20260901
-    worktree: /Users/a10506/.codex/worktrees/p2-m3-product-contract-rebase-20260901
-    status: blocked
-    current_authoritative_wip: false
+    branch: codex/p2-m3-single-attack-weapon-archetypes-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m3-single-attack-weapon-archetypes-20260901
+    status: in_progress
+    current_authoritative_wip: true
     base_commit: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
     completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
     acceptance_target: 5_weapon_profiles_each_pass_clear_elite_and_boss_scenarios_with_three_distinct_modifiers
@@ -6189,9 +6189,9 @@ tasks:
     dependencies:
       - P2-PHASE2-TRUTH-REFRESH
     blockers:
-      - reconcile_the_authoritative_phase2_weapon_chain_wording_with_the_later_approved_single_smooth_ranged_basic_attack_product_direction
-      - choose_whether_M3_keeps_five_single_attack_weapon_profiles_or_replaces_the_five_weapon_denominator
-      - authorize_a_non_persistent_equipment_weapon_archetype_source_and_new_single_attack_profile_candidates_if_five_weapons_remain
+      - select_exact_production_geometry_cadence_and_presentation_values_after_candidate_evidence
+      - connect_the_selected_single_attack_profiles_to_the_real_combat_path_and_close_15_scenarios
+      - perform_deferred_human_desktop_acceptance
     evidence:
       production_weapon_profiles: 0
       production_modifier_consumers: 0
@@ -6203,8 +6203,12 @@ tasks:
       later_single_ranged_attack_commit: b653852e28607129b52fa485d1869857c17072c5
       later_single_ranged_attack_ready_commit: 3e589284
       human_desktop_acceptance: deferred_by_user
+      approved_product_contract: five_single_stage_hold_to_repeat_weapon_profiles_without_attack_displacement
+      approved_non_persistent_weapon_archetype_source: true
+      production_profile_values_selected: false
     owned_files:
       - docs/superpowers/plans/2026-09-01-p2-m3-product-contract-rebase.md
+      - docs/superpowers/plans/2026-09-01-p2-m3-single-attack-weapon-archetypes.md
       - docs/audit/phase2_m3_product_contract_rebase_2026-09-01.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
     protected_behavior:

@@ -129,6 +129,7 @@ final class Phase0aStageContentMapper {
         tacticalSkillBindings: tactical,
         attackQiDelta: playerBasicSkill.qiDelta,
         attackPowerMultiplier: playerBasicSkill.powerMultiplier,
+        weaponArchetype: playerSnapshot.weaponArchetype,
         defenseTuning: defenseTuning,
       ),
     );
@@ -371,6 +372,7 @@ final class Phase0aStageContentMapper {
       defenseRate: playerSnapshot.defenseRate,
       totalEquipmentAttack: attack,
       mainCultivationLayer: playerSnapshot.mainCultivationLayer,
+      weaponArchetype: playerSnapshot.weaponArchetype,
       skillLoadout: playerSnapshot.skillLoadout,
       availableSkills: skills,
       openingSkillCooldowns: const {},
@@ -1182,6 +1184,7 @@ final class Phase0aStageContentMapper {
     required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
     required int attackPowerMultiplier,
+    WeaponArchetype? weaponArchetype,
     Phase0aDefenseTuning? defenseTuning,
   }) {
     final gather = tacticalSkillBindings.gather;
@@ -1194,6 +1197,7 @@ final class Phase0aStageContentMapper {
       attackQiDelta: attackQiDelta,
       postureBasicPowerMultiplier: arena.basicPowerMultiplier,
       attackPowerMultiplier: attackPowerMultiplier,
+      weaponArchetype: weaponArchetype,
       gatherPowerMultiplier: gather.skill.powerMultiplier,
       clearPowerMultiplier: clear.skill.powerMultiplier,
       gatherSlot: gather.slot,

@@ -15,6 +15,7 @@ void main() {
         'name': '青锋剑',
         'tier': 'liQi',
         'slot': 'weapon',
+        'weaponArchetype': 'sword',
         'schoolBias': 'lingQiao',
         'baseAttackMin': 600,
         'baseAttackMax': 750,
@@ -33,6 +34,7 @@ void main() {
       expect(def.name, '青锋剑');
       expect(def.tier, EquipmentTier.liQi);
       expect(def.slot, EquipmentSlot.weapon);
+      expect(def.weaponArchetype, WeaponArchetype.sword);
       expect(def.schoolBias, TechniqueSchool.lingQiao);
       expect(def.baseAttackMin, 600);
       expect(def.baseAttackMax, 750);
@@ -73,6 +75,7 @@ void main() {
         'name': '示例武器',
         'tier': 'xunChang',
         'slot': 'weapon',
+        'weaponArchetype': 'sword',
         'schoolBias': 'lingQiao',
         'baseAttackMin': 100,
         'baseAttackMax': 150,
@@ -101,6 +104,7 @@ void main() {
         'name': '传家剑',
         'tier': 'liQi',
         'slot': 'weapon',
+        'weaponArchetype': 'sword',
         'baseAttackMin': 500,
         'baseAttackMax': 700,
         'baseHealthMin': 0,
@@ -120,6 +124,7 @@ void main() {
         'name': '示例',
         'tier': 'haoJiaHuo',
         'slot': 'weapon',
+        'weaponArchetype': 'hidden',
         'baseAttackMin': 100.0,
         'baseAttackMax': 200,
         'baseHealthMin': 0,
@@ -134,6 +139,45 @@ void main() {
       expect(def.baseAttackMin, 100);
       expect(def.baseAttackMax, 200);
       expect(def.baseSpeedMax, 20);
+    });
+
+    test('weapon 缺显式 weaponArchetype 时 fail closed', () {
+      expect(
+        () => EquipmentDef.fromYaml({
+          'id': 'weapon_missing_archetype',
+          'name': '无类别武器',
+          'tier': 'xunChang',
+          'slot': 'weapon',
+          'baseAttackMin': 100,
+          'baseAttackMax': 150,
+          'baseHealthMin': 0,
+          'baseHealthMax': 0,
+          'baseSpeedMin': 0,
+          'baseSpeedMax': 10,
+          'iconPath': 'x.png',
+        }),
+        throwsStateError,
+      );
+    });
+
+    test('非 weapon 不得携带 weaponArchetype', () {
+      expect(
+        () => EquipmentDef.fromYaml({
+          'id': 'armor_wrong_archetype',
+          'name': '错误护甲',
+          'tier': 'xunChang',
+          'slot': 'armor',
+          'weaponArchetype': 'heavy',
+          'baseAttackMin': 0,
+          'baseAttackMax': 0,
+          'baseHealthMin': 100,
+          'baseHealthMax': 150,
+          'baseSpeedMin': 0,
+          'baseSpeedMax': 5,
+          'iconPath': 'x.png',
+        }),
+        throwsStateError,
+      );
     });
   });
 

@@ -8,6 +8,7 @@ class EquipmentDef {
   final String name;
   final EquipmentTier tier;
   final EquipmentSlot slot;
+  final WeaponArchetype? weaponArchetype;
   final TechniqueSchool? schoolBias;
   final int baseAttackMin;
   final int baseAttackMax;
@@ -47,6 +48,7 @@ class EquipmentDef {
     required this.name,
     required this.tier,
     required this.slot,
+    this.weaponArchetype,
     this.schoolBias,
     required this.baseAttackMin,
     required this.baseAttackMax,
@@ -64,11 +66,26 @@ class EquipmentDef {
   });
 
   factory EquipmentDef.fromYaml(Map<String, dynamic> y) {
+    final slot = EquipmentSlot.values.byName(y['slot'] as String);
+    final weaponArchetype = y['weaponArchetype'] == null
+        ? null
+        : WeaponArchetype.values.byName(y['weaponArchetype'] as String);
+    if (slot == EquipmentSlot.weapon && weaponArchetype == null) {
+      throw StateError(
+        'EquipmentDef ${y['id']} is a weapon without weaponArchetype',
+      );
+    }
+    if (slot != EquipmentSlot.weapon && weaponArchetype != null) {
+      throw StateError(
+        'EquipmentDef ${y['id']} is not a weapon but has weaponArchetype',
+      );
+    }
     return EquipmentDef(
       id: y['id'] as String,
       name: y['name'] as String,
       tier: EquipmentTier.values.byName(y['tier'] as String),
-      slot: EquipmentSlot.values.byName(y['slot'] as String),
+      slot: slot,
+      weaponArchetype: weaponArchetype,
       schoolBias: y['schoolBias'] == null
           ? null
           : TechniqueSchool.values.byName(y['schoolBias'] as String),
@@ -98,5 +115,6 @@ class EquipmentDef {
 
   @override
   String toString() =>
-      'EquipmentDef(id=$id, name=$name, tier=${tier.name}, slot=${slot.name})';
+      'EquipmentDef(id=$id, name=$name, tier=${tier.name}, slot=${slot.name}, '
+      'weaponArchetype=${weaponArchetype?.name})';
 }

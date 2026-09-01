@@ -86,6 +86,18 @@ enum EquipmentSlot {
   accessory, // 饰品
 }
 
+/// 非持久化装备定义中的五类武器身份。
+///
+/// 只由 `EquipmentDef` YAML 提供并进入战斗运行时快照；不写入 Isar，禁止
+/// 根据装备名称、id、流派或数值在运行时猜测。
+enum WeaponArchetype {
+  sword, // 剑
+  heavy, // 重兵
+  flexible, // 软兵
+  dual, // 双持
+  hidden, // 暗器
+}
+
 /// 开锋槽位类型（+10 / +15 / +19 解锁，GDD §6.5）。
 enum ForgingSlotType {
   attack, // 攻击强化

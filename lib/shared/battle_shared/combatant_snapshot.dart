@@ -25,6 +25,7 @@ final class CombatantSnapshot {
     required this.defenseRate,
     required this.totalEquipmentAttack,
     required this.mainCultivationLayer,
+    this.weaponArchetype,
     this.skillLoadout = const CombatantSkillLoadout.empty(),
     required List<SkillDef> availableSkills,
     required Map<String, int> openingSkillCooldowns,
@@ -88,6 +89,7 @@ final class CombatantSnapshot {
   final double criticalRate, evasionRate, defenseRate;
   final int totalEquipmentAttack;
   final CultivationLayer mainCultivationLayer;
+  final WeaponArchetype? weaponArchetype;
   final CombatantSkillLoadout skillLoadout;
   final List<SkillDef> availableSkills;
   final Map<String, int> openingSkillCooldowns, skillUses;
@@ -144,6 +146,7 @@ final class CombatantSnapshot {
     defenseRate: defenseRate ?? this.defenseRate,
     totalEquipmentAttack: totalEquipmentAttack ?? this.totalEquipmentAttack,
     mainCultivationLayer: mainCultivationLayer,
+    weaponArchetype: weaponArchetype,
     skillLoadout: skillLoadout ?? this.skillLoadout,
     availableSkills: availableSkills ?? this.availableSkills,
     openingSkillCooldowns: openingSkillCooldowns ?? this.openingSkillCooldowns,
