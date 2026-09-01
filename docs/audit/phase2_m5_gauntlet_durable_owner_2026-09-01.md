@@ -37,7 +37,9 @@
 - 共享 activity/occupancy：`20/20 PASS`；
 - `flutter analyze --no-pub lib test tool`：`No issues found!`；
 - 测试契约迁移：旧“仅一条 direct replay”矩阵和生产 CTA 的 direct/replay 字段迁为“两条精确 allowlist + 生产 durable dispatch”；`expect 删 4 / 增 46，用例删 2 / 增 10，登记 6 条`，专用 Gate `PASS`；
-- 锁保护整仓全量、整仓 format 与 exact-tip 项目 Gate 必须在最终候选提交后执行，不在执行前预写 PASS。
+- `dart format .`：`1705 files / 0 changed`；
+- 锁保护整仓全量：`5852/5852 PASS`，退出码 `0`，`[E]=0`，末行 `07:16 +5852: All tests passed!`，锁已精确释放；
+- exact-tip 项目 Gate 必须在最终候选提交后执行，不在执行前预写 PASS。
 
 ## 范围
 

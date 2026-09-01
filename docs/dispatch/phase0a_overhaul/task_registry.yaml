@@ -5974,6 +5974,77 @@ tasks:
       - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
       - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
 
+  - id: P2-M5-GAUNTLET-DURABLE-OWNER
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-gauntlet-durable-owner-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-gauntlet-durable-owner-20260901
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: 72b0190320177ebb5ce9e6dfd80db10f42d11624
+    code_candidate_commit: 59f4178e7fa22514869ecfdfee8e611d8870b60f
+    reviewed_candidate_commit: 82e7a41a9186ef76c4b54d8618c2c63a823c7f86
+    ready_marker: "[READY][CODEX][P2-M5-GAUNTLET-DURABLE-OWNER] 接通断魂庄持久差遣与原子恢复凭据"
+    completion_scope: reuse_boss_checkpoint_and_unified_durable_receipt_for_exact_participant_gauntlet_dispatch
+    acceptance_baseline: 39_of_42_M5_engineering_cells
+    acceptance_target: 40_of_42_M5_engineering_cells
+    acceptance_result: 40_of_42_M5_engineering_cells_and_0_of_1_authoritative_M5_gate
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+      - P2-M5-GAUNTLET-HEADLESS-PRODUCTION-WIRING
+      - P2-M5-U14-DURABLE-AUTOMATION
+    evidence:
+      focused_production_tests: 29
+      gauntlet_feature_tests: 199
+      shared_activity_tests: 20
+      focused_failures: 0
+      mutation_remove_durable_owner_failures: 4
+      mutation_remove_pre_execution_loadout_guard_failures: 1
+      mutation_remove_terminal_receipt_failures: 2
+      mutation_disconnect_production_resume_failures: 1
+      false_green_guard_test_found_and_strengthened: true
+      exact_reverse_patch_restore: true
+      test_contract_migration_entries: 6
+      test_contract_migration_gate: pass
+      analyze_issues: 0
+      schema_changed: false
+      save_version_changed: false
+      format_files: 1705
+      format_changed_files: 0
+      full_suite_tests: 5852
+      full_suite_failures: 0
+      full_suite_error_blocks: 0
+      final_gate: must_pass_before_merge
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    owned_files:
+      - lib/features/activity/application/character_occupancy_service.dart
+      - lib/features/activity/application/durable_activity_automation_coordinator.dart
+      - lib/features/activity/application/durable_activity_automation_service.dart
+      - lib/features/activity/domain/durable_activity_automation_policy.dart
+      - lib/features/activity/domain/durable_activity_combat_run.dart
+      - lib/features/boss_gauntlet/application/gauntlet_service.dart
+      - lib/features/boss_gauntlet/domain/gauntlet_automation_policy.dart
+      - lib/features/boss_gauntlet/presentation/gauntlet_loadout_screen.dart
+      - test/features/boss_gauntlet/gauntlet_automation_policy_test.dart
+      - test/features/boss_gauntlet/gauntlet_durable_dispatch_test.dart
+      - test/features/boss_gauntlet/gauntlet_loadout_screen_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m5-gauntlet-durable-owner.md
+      - docs/audit/phase2_m5_gauntlet_durable_owner_2026-09-01.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m5-gauntlet-durable-owner-20260901.yaml
+    protected_behavior:
+      - first_clear_remains_human_and_only_exact_cleared_gauntlet_membership_allows_automation
+      - ticket_escrow_boss_session_and_durable_owner_share_one_atomic_entry_transaction
+      - exact_participant_identity_and_loadout_drift_fail_before_cursor_advance_or_combat
+      - victory_stops_at_existing_three_choice_and_never_auto_selects_or_changes_rewards
+      - victory_or_defeat_business_settlement_and_durable_receipt_share_one_transaction
+      - BossGauntletRun_remains_the_single_occupancy_owner_and_durable_row_does_not_double_lock_it
+      - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
+      - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
     owner: codex_root

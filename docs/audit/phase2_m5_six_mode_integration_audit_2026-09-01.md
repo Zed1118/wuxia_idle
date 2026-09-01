@@ -48,7 +48,7 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮塔个人记录新增 `TowerPersonalRecord` 和 0.44 加法迁移，只从真实胜利结算写入；手动、扫荡、持久差遣共用原事务。扩展定向 `164/164 PASS`，三向 mutation 分别得到 `4`、`2`、`1` 条失败并精确还原；其中旧档夹具先发现无角色导致伪回填假绿，补成“有角色但无参战证明”后才获得有效 RED。analyze 0 issue，整仓 format `1704 files / 0 changed`。首轮锁保护全量另捕获四条仍写死 `0.43.0` 的旧迁移断言，更新到精确 `0.44.0` 后相关迁移集 `10/10 PASS` 并进入测试契约迁移登记；修复后锁保护整仓复跑 `5844/5844 PASS`、退出码 0、`[E]=0`。exact READY tip Gate 由本任务最终 receipt 单独绑定，不在执行前预写 PASS。该批净增一格至 `39/42`。
 
-本轮断魂庄持久差遣复用 `BossGauntletRun` 检查点和既有 `DurableActivityCombatRun`，不新增 schema/saveVersion。扣帖、补给、Boss 会话和 durable owner 同事务创建；胜败结算与 receipt 同事务提交，生产恢复卡消费同一 owner，胜利只到既有三选一。核心生产 `29/29 PASS`、断魂庄全域 `199/199 PASS`、共享 activity `20/20 PASS`、analyze 0 issue。四向 mutation 分别得到 `4`、`1`、`2`、`1` 条失败；其中装配漂移用例初次暴露“更晚异常替代早期守卫”的假绿，补强 `lastAdvancedAt` 不变断言后才获得有效 RED。测试契约迁移 Gate 对 `expect 删 4 / 增 46、用例删 2 / 增 10、登记 6 条` 输出 PASS；exact-tip 全量与项目 Gate 在最终提交后执行。该批净增一格至 `40/42`。
+本轮断魂庄持久差遣复用 `BossGauntletRun` 检查点和既有 `DurableActivityCombatRun`，不新增 schema/saveVersion。扣帖、补给、Boss 会话和 durable owner 同事务创建；胜败结算与 receipt 同事务提交，生产恢复卡消费同一 owner，胜利只到既有三选一。核心生产 `29/29 PASS`、断魂庄全域 `199/199 PASS`、共享 activity `20/20 PASS`、analyze 0 issue。四向 mutation 分别得到 `4`、`1`、`2`、`1` 条失败；其中装配漂移用例初次暴露“更晚异常替代早期守卫”的假绿，补强 `lastAdvancedAt` 不变断言后才获得有效 RED。测试契约迁移 Gate 对 `expect 删 4 / 增 46、用例删 2 / 增 10、登记 6 条` 输出 PASS；整仓 format `1705 files / 0 changed`，锁保护全量 `5852/5852 PASS`、`[E]=0`。项目 Gate 在最终提交后执行。该批净增一格至 `40/42`。
 
 上一轮九霄塔 durable 候选的最终工程检查：
 
