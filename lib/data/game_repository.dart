@@ -30,7 +30,9 @@ import 'defs/combat_catalog_manifest_def.dart';
 import 'defs/combat_encounter_def.dart';
 import 'defs/combat_enemy_archetype_def.dart';
 import 'defs/combat_runtime_binding_def.dart';
+import 'defs/weapon_attack_profile_def.dart';
 import 'combat_runtime_binding_loader.dart';
+import 'weapon_attack_profile_loader.dart';
 import 'lore_loader.dart';
 import '../core/domain/enums.dart';
 import 'numbers_config.dart';
@@ -165,6 +167,7 @@ class GameRepository {
   final BossGauntletConfig? bossGauntletConfig;
   final CombatCatalogManifestDef? combatCatalog;
   final CombatRuntimeBindingCatalog? combatRuntimeBindings;
+  final WeaponAttackProfileCatalog? weaponAttackProfiles;
 
   GameRepository._({
     required this.numbers,
@@ -193,6 +196,7 @@ class GameRepository {
     this.bossGauntletConfig,
     this.combatCatalog,
     this.combatRuntimeBindings,
+    this.weaponAttackProfiles,
   });
 
   /// 启动时一次性加载全部 yaml 配置。
@@ -486,6 +490,9 @@ class GameRepository {
             ),
             assetExists: resolvedAssetExists,
           );
+    final weaponAttackProfiles = combatCatalog == null
+        ? null
+        : await loadProductionWeaponAttackProfiles(load: load);
 
     final repo = GameRepository._(
       numbers: numbers,
@@ -514,6 +521,7 @@ class GameRepository {
       bossGauntletConfig: bossGauntletConfig,
       combatCatalog: combatCatalog,
       combatRuntimeBindings: combatRuntimeBindings,
+      weaponAttackProfiles: weaponAttackProfiles,
     );
     repo._enforceRedLines();
     await _validatePresetLoreReferences(equipmentDefs, load);

@@ -80,6 +80,8 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     required this.qiDelta,
     required this.postureDamage,
     required this.postureHitKind,
+    this.weaponArchetype,
+    this.visualSchool,
     this.defenseFlags,
     this.behaviorProfile,
     this.preferredTargetId,
@@ -103,6 +105,8 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   final int qiDelta;
   final double postureDamage;
   final PostureHitKind postureHitKind;
+  final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? visualSchool;
   final AttackDefenseFlags? defenseFlags;
   final Phase0aEnemyBehaviorProfile? behaviorProfile;
 

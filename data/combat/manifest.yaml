@@ -17,6 +17,7 @@ encounter_sources:
   - data/combat/encounters/chapter_13_temple_pass.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
+player_attack_profiles_source: data/combat/player_attack_profiles.yaml
 reference_index:
   entrance_ids:
     - ch1_entrance_s01_road_west

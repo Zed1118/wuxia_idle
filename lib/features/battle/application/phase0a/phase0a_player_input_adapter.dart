@@ -84,6 +84,7 @@ final class Phase0aPlayerInputAdapter {
     required this.postureBasicPowerMultiplier,
     required this.attackPowerMultiplier,
     this.weaponArchetype,
+    this.attackVisualSchool,
     required this.gatherPowerMultiplier,
     required this.clearPowerMultiplier,
     required this.gatherSlot,
@@ -112,6 +113,7 @@ final class Phase0aPlayerInputAdapter {
   final int postureBasicPowerMultiplier;
   final int attackPowerMultiplier;
   final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? attackVisualSchool;
   final int gatherPowerMultiplier;
   final int clearPowerMultiplier;
   final String gatherSlot;
@@ -189,6 +191,8 @@ final class Phase0aPlayerInputAdapter {
             basicPowerMultiplier: postureBasicPowerMultiplier,
           ),
           postureHitKind: PostureHitKind.light,
+          weaponArchetype: weaponArchetype,
+          visualSchool: attackVisualSchool,
           defenseFlags: defenseTuning?.basicAttackFlags,
           basicAttackChain: basicAttackChain,
           basicAttackGeometryRegistry: basicAttackGeometryRegistry,

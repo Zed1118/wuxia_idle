@@ -35,7 +35,10 @@ import '../../../../support/test_data.dart';
 /// ③ headless 全链:Ch1 五关 bot 驾驶全部 victory(P3 双跑口径地基);
 /// ④ 确定性:同 seed 两次运行 ticks/终局/末态玩家 HP 全等。
 
-CombatantSnapshot makeCh1Player(NumbersConfig numbers) => testCombatantSnapshot(
+CombatantSnapshot makeCh1Player(
+  NumbersConfig numbers, {
+  WeaponArchetype? weaponArchetype = WeaponArchetype.heavy,
+}) => testCombatantSnapshot(
   characterId: 1,
   name: '纵切玩家',
   realmTier: RealmTier.xueTu,
@@ -50,7 +53,7 @@ CombatantSnapshot makeCh1Player(NumbersConfig numbers) => testCombatantSnapshot(
   defenseRate: numbers.defenseRateByTier[RealmTier.xueTu] ?? 0.0,
   totalEquipmentAttack: 130,
   mainCultivationLayer: CultivationLayer.chuKui,
-  weaponArchetype: WeaponArchetype.heavy,
+  weaponArchetype: weaponArchetype,
   skillLoadout: CombatantSkillLoadout(
     basicAttack:
         GameRepository.instance.skillDefs['skill_gangmeng_jichu_basic'],
@@ -107,6 +110,72 @@ void main() {
             contains('lacks a real basic skill'),
           ),
         ),
+      );
+    });
+
+    test('五类实际武器从生产 catalog 修饰单段普攻且无武器保持基线', () {
+      final numbers = repo.numbers;
+      final catalog = repo.weaponAttackProfiles!;
+      for (final archetype in WeaponArchetype.values) {
+        final profile = catalog.profileFor(archetype);
+        final mapping = Phase0aStageContentMapper.mapPlayerOnly(
+          contentId: 'm3_${archetype.name}',
+          playerSnapshot: makeCh1Player(numbers, weaponArchetype: archetype),
+          numbers: numbers,
+        );
+        expect(
+          mapping.playerAdapter.attackRange,
+          closeTo(
+            numbers.phase0aArena.playerAttackRange * profile.rangeFactor,
+            0.000001,
+          ),
+        );
+        expect(
+          mapping.playerAdapter.attackHalfArcRadians,
+          closeTo(
+            numbers.phase0aArena.playerAttackHalfArcRadians *
+                profile.halfArcFactor,
+            0.000001,
+          ),
+        );
+        expect(
+          mapping.playerAdapter.attackCooldownSeconds,
+          closeTo(
+            numbers.phase0aArena.playerAttackCooldownSeconds *
+                profile.cooldownFactor,
+            0.000001,
+          ),
+        );
+        expect(
+          mapping.playerAdapter.attackPowerMultiplier,
+          (mapping.moveBindings[Phase0aDamageKind.basic]!.powerMultiplier *
+                  profile.postureDamageFactor)
+              .round(),
+        );
+        expect(mapping.playerAdapter.basicAttackChain, isNull);
+        expect(mapping.playerAdapter.weaponArchetype, archetype);
+        expect(
+          mapping.playerAdapter.attackVisualSchool,
+          TechniqueSchool.gangMeng,
+        );
+      }
+
+      final unarmed = Phase0aStageContentMapper.mapPlayerOnly(
+        contentId: 'm3_unarmed',
+        playerSnapshot: makeCh1Player(numbers, weaponArchetype: null),
+        numbers: numbers,
+      );
+      expect(
+        unarmed.playerAdapter.attackRange,
+        numbers.phase0aArena.playerAttackRange,
+      );
+      expect(
+        unarmed.playerAdapter.attackHalfArcRadians,
+        numbers.phase0aArena.playerAttackHalfArcRadians,
+      );
+      expect(
+        unarmed.playerAdapter.attackCooldownSeconds,
+        numbers.phase0aArena.playerAttackCooldownSeconds,
       );
     });
 

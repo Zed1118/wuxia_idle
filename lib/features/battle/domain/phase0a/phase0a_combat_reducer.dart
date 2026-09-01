@@ -369,6 +369,8 @@ Phase0aStepResult reducePhase0aTick({
     required PostureHitKind postureHitKind,
     required int breakPower,
     BasicAttackSegment? basicAttackSegment,
+    WeaponArchetype? weaponArchetype,
+    TechniqueSchool? visualSchool,
   }) {
     if (!resolved.isHit) return;
     DefenseResult? defense;
@@ -463,6 +465,8 @@ Phase0aStepResult reducePhase0aTick({
         actorPosition: attacker.position,
         targetPosition: target.position,
         basicAttackSegment: basicAttackSegment,
+        weaponArchetype: weaponArchetype,
+        visualSchool: visualSchool,
       ),
     );
     var updated = target.copyWith(currentHealth: remaining);
@@ -889,6 +893,8 @@ Phase0aStepResult reducePhase0aTick({
             actor: actorId,
             moveKind: intent.moveKind,
             basicAttackSegment: basicAttackSegment,
+            weaponArchetype: intent.weaponArchetype,
+            visualSchool: intent.visualSchool,
           ),
         );
         final preferredDefendedEntity =
@@ -984,6 +990,8 @@ Phase0aStepResult reducePhase0aTick({
             postureHitKind: intent.postureHitKind,
             breakPower: _noBreakPower,
             basicAttackSegment: basicAttackSegment,
+            weaponArchetype: intent.weaponArchetype,
+            visualSchool: intent.visualSchool,
           );
         }
         final aimDirection = resolvedAimDirection.lengthSquared > 0

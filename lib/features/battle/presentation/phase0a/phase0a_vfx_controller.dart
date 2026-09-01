@@ -1,3 +1,4 @@
+import '../../../../core/domain/enums.dart';
 import '../../domain/phase0a/arena_vector.dart';
 import '../../domain/phase0a/phase0a_combat_events.dart';
 import '../../domain/phase0a/phase0a_combat_model.dart';
@@ -106,6 +107,8 @@ final class Phase0aVfxEntry {
     this.source,
     this.vfxTarget,
     this.basicAttackSegmentId,
+    this.weaponArchetype,
+    this.visualSchool,
   });
 
   final Phase0aVfxKind kind;
@@ -145,6 +148,8 @@ final class Phase0aVfxEntry {
   /// Typed basic-chain segment copied from the settled event. Presentation
   /// must not infer it from actor ids, hit distance or local counters.
   final String? basicAttackSegmentId;
+  final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? visualSchool;
 }
 
 /// 普通群怪伤害显示聚合器。
@@ -616,6 +621,8 @@ final class Phase0aVfxController {
           isCritical: event.isCritical,
           source: actorPosition,
           vfxTarget: targetPosition,
+          weaponArchetype: event.weaponArchetype,
+          visualSchool: event.visualSchool,
         ),
       );
       return;
@@ -630,6 +637,8 @@ final class Phase0aVfxController {
           source: actorPosition,
           vfxTarget: targetPosition,
           basicAttackSegmentId: segmentId,
+          weaponArchetype: event.weaponArchetype,
+          visualSchool: event.visualSchool,
         ),
       );
       return;
@@ -643,6 +652,8 @@ final class Phase0aVfxController {
           isCritical: event.isCritical,
           anchor: targetPosition,
           basicAttackSegmentId: segmentId,
+          weaponArchetype: event.weaponArchetype,
+          visualSchool: event.visualSchool,
         ),
       );
       return;
@@ -656,6 +667,8 @@ final class Phase0aVfxController {
           isCritical: event.isCritical,
           anchor: targetPosition,
           basicAttackSegmentId: segmentId,
+          weaponArchetype: event.weaponArchetype,
+          visualSchool: event.visualSchool,
         ),
       );
       return;
@@ -669,6 +682,8 @@ final class Phase0aVfxController {
         source: actorPosition,
         vfxTarget: targetPosition,
         basicAttackSegmentId: segmentId,
+        weaponArchetype: event.weaponArchetype,
+        visualSchool: event.visualSchool,
       ),
     );
   }

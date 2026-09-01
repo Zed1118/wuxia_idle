@@ -1,0 +1,43 @@
+# Five production single-stage weapon identities. These values multiply the
+# existing Phase 0A player basic-attack baseline; they never replace the bound
+# skill damage formula. All profiles remain single-target and displacement-free.
+player_attack_profiles:
+  - archetype: sword
+    range_factor: 1.00
+    half_arc_factor: 0.75
+    cooldown_factor: 1.00
+    posture_damage_factor: 1.00
+    max_targets: 1
+    attack_displacement: 0.0
+
+  - archetype: heavy
+    range_factor: 0.82
+    half_arc_factor: 1.35
+    cooldown_factor: 1.35
+    posture_damage_factor: 1.60
+    max_targets: 1
+    attack_displacement: 0.0
+
+  - archetype: flexible
+    range_factor: 1.15
+    half_arc_factor: 1.10
+    cooldown_factor: 1.12
+    posture_damage_factor: 1.15
+    max_targets: 1
+    attack_displacement: 0.0
+
+  - archetype: dual
+    range_factor: 0.88
+    half_arc_factor: 0.88
+    cooldown_factor: 0.78
+    posture_damage_factor: 0.80
+    max_targets: 1
+    attack_displacement: 0.0
+
+  - archetype: hidden
+    range_factor: 1.25
+    half_arc_factor: 0.50
+    cooldown_factor: 1.05
+    posture_damage_factor: 0.90
+    max_targets: 1
+    attack_displacement: 0.0

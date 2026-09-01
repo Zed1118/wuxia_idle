@@ -1,3 +1,4 @@
+import '../../../../core/domain/enums.dart';
 import 'arena_vector.dart';
 import 'basic_attack_chain.dart';
 import 'defense_resolution.dart';
@@ -25,11 +26,15 @@ final class Phase0aAttackStarted extends Phase0aEvent {
     required this.actor,
     required this.moveKind,
     this.basicAttackSegment,
+    this.weaponArchetype,
+    this.visualSchool,
   });
 
   final String actor;
   final Phase0aMoveKind moveKind;
   final BasicAttackSegment? basicAttackSegment;
+  final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? visualSchool;
 
   @override
   bool operator ==(Object other) =>
@@ -38,11 +43,20 @@ final class Phase0aAttackStarted extends Phase0aEvent {
       other.tick == tick &&
       other.actor == actor &&
       other.moveKind == moveKind &&
-      other.basicAttackSegment == basicAttackSegment;
+      other.basicAttackSegment == basicAttackSegment &&
+      other.weaponArchetype == weaponArchetype &&
+      other.visualSchool == visualSchool;
 
   @override
-  int get hashCode =>
-      Object.hash(seq, tick, actor, moveKind, basicAttackSegment);
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    moveKind,
+    basicAttackSegment,
+    weaponArchetype,
+    visualSchool,
+  );
 }
 
 /// 普攻命中且结算完成(对齐契约 hit_landed)。
@@ -67,6 +81,8 @@ final class Phase0aHitLanded extends Phase0aEvent {
     this.actorPosition,
     this.targetPosition,
     this.basicAttackSegment,
+    this.weaponArchetype,
+    this.visualSchool,
   });
 
   final String actor;
@@ -83,6 +99,8 @@ final class Phase0aHitLanded extends Phase0aEvent {
   /// 被命中目标结算时世界坐标。
   final ArenaVector? targetPosition;
   final BasicAttackSegment? basicAttackSegment;
+  final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? visualSchool;
 
   @override
   bool operator ==(Object other) =>
@@ -98,7 +116,9 @@ final class Phase0aHitLanded extends Phase0aEvent {
       other.remainingHealth == remainingHealth &&
       other.actorPosition == actorPosition &&
       other.targetPosition == targetPosition &&
-      other.basicAttackSegment == basicAttackSegment;
+      other.basicAttackSegment == basicAttackSegment &&
+      other.weaponArchetype == weaponArchetype &&
+      other.visualSchool == visualSchool;
 
   @override
   int get hashCode => Object.hash(
@@ -114,6 +134,8 @@ final class Phase0aHitLanded extends Phase0aEvent {
     actorPosition,
     targetPosition,
     basicAttackSegment,
+    weaponArchetype,
+    visualSchool,
   );
 }
 

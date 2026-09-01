@@ -130,6 +130,7 @@ final class Phase0aStageContentMapper {
         attackQiDelta: playerBasicSkill.qiDelta,
         attackPowerMultiplier: playerBasicSkill.powerMultiplier,
         weaponArchetype: playerSnapshot.weaponArchetype,
+        attackVisualSchool: playerSnapshot.school,
         defenseTuning: defenseTuning,
       ),
     );
@@ -1185,19 +1186,35 @@ final class Phase0aStageContentMapper {
     required int attackQiDelta,
     required int attackPowerMultiplier,
     WeaponArchetype? weaponArchetype,
+    TechniqueSchool? attackVisualSchool,
     Phase0aDefenseTuning? defenseTuning,
   }) {
     final gather = tacticalSkillBindings.gather;
     final clear = tacticalSkillBindings.clear;
+    final profile = weaponArchetype == null
+        ? null
+        : GameRepository.instance.weaponAttackProfiles?.profileFor(
+            weaponArchetype,
+          );
+    if (weaponArchetype != null && profile == null) {
+      throw StateError(
+        'Phase0a player weapon ${weaponArchetype.name} lacks a production '
+        'single-attack profile',
+      );
+    }
     return Phase0aPlayerInputAdapter(
       playerId: playerId,
-      attackRange: arena.playerAttackRange,
-      attackHalfArcRadians: arena.playerAttackHalfArcRadians,
-      attackCooldownSeconds: arena.playerAttackCooldownSeconds,
+      attackRange: arena.playerAttackRange * (profile?.rangeFactor ?? 1),
+      attackHalfArcRadians:
+          arena.playerAttackHalfArcRadians * (profile?.halfArcFactor ?? 1),
+      attackCooldownSeconds:
+          arena.playerAttackCooldownSeconds * (profile?.cooldownFactor ?? 1),
       attackQiDelta: attackQiDelta,
       postureBasicPowerMultiplier: arena.basicPowerMultiplier,
-      attackPowerMultiplier: attackPowerMultiplier,
+      attackPowerMultiplier:
+          (attackPowerMultiplier * (profile?.postureDamageFactor ?? 1)).round(),
       weaponArchetype: weaponArchetype,
+      attackVisualSchool: attackVisualSchool,
       gatherPowerMultiplier: gather.skill.powerMultiplier,
       clearPowerMultiplier: clear.skill.powerMultiplier,
       gatherSlot: gather.slot,

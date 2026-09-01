@@ -2533,10 +2533,15 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: Transform.rotate(
           angle: angle,
           child: KeyedSubtree(
-            key: entry.basicAttackSegmentId == null
+            key: entry.basicAttackSegmentId != null
+                ? ValueKey(
+                    'phase0a_sword_segment_${entry.basicAttackSegmentId}',
+                  )
+                : entry.weaponArchetype == null
                 ? null
                 : ValueKey(
-                    'phase0a_sword_segment_${entry.basicAttackSegmentId}',
+                    'phase0a_weapon_${entry.weaponArchetype!.name}_'
+                    '${entry.visualSchool?.name ?? 'neutral'}',
                   ),
             child: CustomPaint(
               key: const ValueKey('phase0a_palm_trail'),
@@ -2546,6 +2551,8 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 progress: held.progress,
                 isCritical: entry.isCritical,
                 basicAttackSegmentId: entry.basicAttackSegmentId,
+                weaponArchetype: entry.weaponArchetype,
+                visualSchool: entry.visualSchool,
               ),
             ),
           ),
@@ -2687,6 +2694,8 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 progress: held.progress,
                 isCritical: entry.isCritical,
                 basicAttackSegmentId: entry.basicAttackSegmentId,
+                weaponArchetype: entry.weaponArchetype,
+                visualSchool: entry.visualSchool,
               ),
             ),
           ),
@@ -3214,6 +3223,8 @@ class _InkEffectPainter extends CustomPainter {
     this.progress = 1,
     this.isCritical = false,
     this.basicAttackSegmentId,
+    this.weaponArchetype,
+    this.visualSchool,
   });
 
   final _InkEffect effect;
@@ -3221,6 +3232,8 @@ class _InkEffectPainter extends CustomPainter {
   final double progress;
   final bool isCritical;
   final String? basicAttackSegmentId;
+  final WeaponArchetype? weaponArchetype;
+  final TechniqueSchool? visualSchool;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3230,17 +3243,23 @@ class _InkEffectPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth;
+    final accent = switch (visualSchool) {
+      TechniqueSchool.gangMeng => WuxiaUi.jiang,
+      TechniqueSchool.lingQiao => WuxiaUi.gold,
+      TechniqueSchool.yinRou => WuxiaUi.qing,
+      null => WuxiaUi.jiang,
+    };
     final wash = Paint()
-      ..color = WuxiaUi.jiang.withValues(alpha: 0.30)
+      ..color = accent.withValues(alpha: 0.30)
       ..style = PaintingStyle.stroke
       ..strokeWidth = Phase0aPresentationTokens.vfxThinStrokeWidth;
     final reveal = Phase0aPresentationTokens.vfxReveal(progress);
     final fade = Phase0aPresentationTokens.vfxFade(progress);
     final strokeAlpha = Phase0aPresentationTokens.vfxStrokeAlpha(progress);
     ink.color = WuxiaUi.ink.withValues(alpha: 0.72 * strokeAlpha);
-    wash.color = WuxiaUi.jiang.withValues(alpha: 0.30 * strokeAlpha);
+    wash.color = accent.withValues(alpha: 0.30 * strokeAlpha);
     final washFill = Paint()
-      ..color = WuxiaUi.qing.withValues(
+      ..color = accent.withValues(
         alpha: Phase0aPresentationTokens.vfxInkWashMaxOpacity * fade,
       );
     final splat = Paint()
@@ -3251,6 +3270,16 @@ class _InkEffectPainter extends CustomPainter {
       canvas: canvas,
       size: size,
       center: center,
+      reveal: reveal,
+      ink: ink,
+      wash: wash,
+      washFill: washFill,
+    )) {
+      return;
+    }
+    if (_paintWeaponArchetype(
+      canvas: canvas,
+      size: size,
       reveal: reveal,
       ink: ink,
       wash: wash,
@@ -3551,13 +3580,98 @@ class _InkEffectPainter extends CustomPainter {
     }
   }
 
+  bool _paintWeaponArchetype({
+    required Canvas canvas,
+    required Size size,
+    required double reveal,
+    required Paint ink,
+    required Paint wash,
+    required Paint washFill,
+  }) {
+    if (effect != _InkEffect.palm) return false;
+    final archetype = weaponArchetype;
+    if (archetype == null) return false;
+    final startX = size.width * 0.08;
+    final endX = size.width * (0.18 + 0.76 * reveal);
+    switch (archetype) {
+      case WeaponArchetype.sword:
+        final spineY = size.height * 0.48;
+        canvas.drawLine(Offset(startX, spineY), Offset(endX, spineY), ink);
+        canvas.drawLine(
+          Offset(startX, spineY + size.height * 0.14),
+          Offset(endX - size.width * 0.08, spineY + size.height * 0.06),
+          wash,
+        );
+      case WeaponArchetype.heavy:
+        final body = Path()
+          ..moveTo(startX, size.height * 0.68)
+          ..quadraticBezierTo(
+            size.width * 0.48,
+            size.height * 0.12,
+            endX,
+            size.height * 0.34,
+          )
+          ..lineTo(endX - size.width * 0.03, size.height * 0.62)
+          ..quadraticBezierTo(
+            size.width * 0.46,
+            size.height * 0.82,
+            startX,
+            size.height * 0.68,
+          )
+          ..close();
+        canvas.drawPath(body, washFill);
+        canvas.drawPath(body, ink);
+      case WeaponArchetype.flexible:
+        final ribbon = Path()
+          ..moveTo(startX, size.height * 0.58)
+          ..cubicTo(
+            size.width * 0.30,
+            size.height * 0.10,
+            size.width * 0.62,
+            size.height * 0.90,
+            endX,
+            size.height * 0.38,
+          );
+        canvas.drawPath(ribbon, ink);
+        canvas.save();
+        canvas.translate(0, size.height * 0.12);
+        canvas.drawPath(ribbon, wash);
+        canvas.restore();
+      case WeaponArchetype.dual:
+        canvas.drawLine(
+          Offset(startX, size.height * 0.36),
+          Offset(endX, size.height * 0.44),
+          ink,
+        );
+        canvas.drawLine(
+          Offset(startX, size.height * 0.68),
+          Offset(endX, size.height * 0.54),
+          wash,
+        );
+      case WeaponArchetype.hidden:
+        final centerY = size.height * 0.50;
+        canvas.drawLine(Offset(startX, centerY), Offset(endX, centerY), wash);
+        final travel = endX - startX;
+        for (var index = 1; index <= 4; index++) {
+          canvas.drawCircle(
+            Offset(startX + travel * index / 5, centerY),
+            Phase0aPresentationTokens.vfxInkSplatRadius * 0.55,
+            ink,
+          );
+        }
+    }
+    return true;
+  }
+
   @override
   bool shouldRepaint(covariant _InkEffectPainter oldDelegate) =>
       oldDelegate.effect != effect ||
       oldDelegate.defeatKind != defeatKind ||
       oldDelegate.progress != progress ||
       oldDelegate.isCritical != isCritical ||
-      oldDelegate.basicAttackSegmentId != basicAttackSegmentId;
+      oldDelegate.basicAttackSegmentId != basicAttackSegmentId ||
+      oldDelegate.weaponArchetype != weaponArchetype ||
+      oldDelegate.visualSchool != visualSchool;
 }
 
 class _GatherPullPainter extends CustomPainter {

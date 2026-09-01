@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -296,6 +297,39 @@ void main() {
         containsAll(['far', 'near']),
       );
       expect(slashes, isEmpty);
+    });
+
+    test('五类武器与三主修身份从已结算事件原样进入生产 VFX entry', () {
+      for (final archetype in WeaponArchetype.values) {
+        for (final school in TechniqueSchool.values) {
+          final controller = Phase0aVfxController()
+            ..syncActors(
+              _state(enemies: [_actor('target', Phase0aSide.enemy, 200, 0)]),
+            );
+          final entries = controller.consume([
+            Phase0aHitLanded(
+              seq: 1,
+              tick: 1,
+              actor: 'player',
+              target: 'target',
+              moveKind: Phase0aMoveKind.light,
+              isCritical: false,
+              isUltimate: false,
+              resolvedDamage: 10,
+              remainingHealth: 90,
+              actorPosition: ArenaVector.zero,
+              targetPosition: const ArenaVector(200, 0),
+              weaponArchetype: archetype,
+              visualSchool: school,
+            ),
+          ]);
+          final trail = entries.singleWhere(
+            (entry) => entry.kind == Phase0aVfxKind.palmTrail,
+          );
+          expect(trail.weaponArchetype, archetype);
+          expect(trail.visualSchool, school);
+        }
+      }
     });
 
     test('普攻 critical 语义透传到墨痕,表现层不重算', () {

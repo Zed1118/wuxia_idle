@@ -6180,24 +6180,25 @@ tasks:
     owner: codex_root
     branch: codex/p2-m3-single-attack-weapon-archetypes-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m3-single-attack-weapon-archetypes-20260901
-    status: blocked
-    current_authoritative_wip: false
+    status: in_progress
+    current_authoritative_wip: true
     base_commit: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
     completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
-    acceptance_target: 5_weapon_profiles_each_pass_clear_elite_and_boss_scenarios_with_three_distinct_modifiers
-    acceptance_result: 0_of_5_weapon_profiles
+    acceptance_target: 5_weapon_profiles_each_pass_3_schools_x_clear_elite_boss_scenarios
+    acceptance_result: 5_of_5_engineering_profiles_human_acceptance_deferred
     dependencies:
       - P2-PHASE2-TRUTH-REFRESH
     blockers:
-      - select_exact_production_geometry_cadence_and_presentation_values_after_candidate_evidence
-      - connect_the_selected_single_attack_profiles_to_the_real_combat_path_and_close_15_scenarios
+      - close_mutation_full_suite_exact_tip_gate_and_main_integration
       - perform_deferred_human_desktop_acceptance
     evidence:
-      production_weapon_profiles: 0
-      production_modifier_consumers: 0
+      production_weapon_profiles: 5_of_5
+      parked_applyCombatModifiers_consumers: 0
+      canonical_school_damage_consumers: 3_of_3
       production_action_timeline_consumers: 0
       production_bot_tactics: 3
-      per_weapon_clear_elite_boss_scenarios: 0_of_15
+      per_weapon_clear_elite_boss_scenarios: 15_of_15
+      production_weapon_school_scenario_matrix: 45_of_45
       targeted_behavior_tests: 24
       targeted_behavior_failures: 0
       later_single_ranged_attack_commit: b653852e28607129b52fa485d1869857c17072c5
@@ -6205,12 +6206,13 @@ tasks:
       human_desktop_acceptance: deferred_by_user
       approved_product_contract: five_single_stage_hold_to_repeat_weapon_profiles_without_attack_displacement
       approved_non_persistent_weapon_archetype_source: true
-      production_profile_values_selected: false
+      production_profile_values_selected: true
       explicit_weapon_archetypes: 5_of_5
       production_weapon_defs_categorized: 37_of_37
       production_snapshot_and_adapter_identity_wiring: true
       candidate_clear_elite_boss_scenarios: 15_of_15
-      candidate_profiles_written_to_production: false
+      production_profiles_catalog_connected: true
+      candidate_absolute_values_written_to_production: false
       combined_targeted_tests: 125_of_125
       mutation_directions_confirmed: 4_of_4
       mutation_failures_each: 1
