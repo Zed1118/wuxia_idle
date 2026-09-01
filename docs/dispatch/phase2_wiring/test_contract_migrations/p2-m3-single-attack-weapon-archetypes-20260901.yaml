@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m3-single-attack-weapon-archetypes-20260901
+base_sha: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
+head_sha: 1cbb65d6d5cb6ac67e97b4d528316773eeb7ca0d
+summary: 武器目录合同由只校验开锋专属技迁为同时要求 37 件生产武器显式归入五类；旧标题必须由包含完整分类分母的新标题替代，原专属技断言继续保留。
+
+migrations:
+  - deleted: test('开锋槽 3：36 件 weapon 使用真正专属技候选 / 44 件 armor+accessory 留空', () async {
+    replacement: test('37 件 weapon 均有显式五类身份，且开锋槽 3 使用真正专属技候选', () async {
+    reason: 旧标题只表达开锋候选且使用旧装备分母；新标题把 37 件生产武器的显式五类身份加入同一仓库合同，并继续逐件验证武器专属技与非武器空候选，未删除原业务断言。
