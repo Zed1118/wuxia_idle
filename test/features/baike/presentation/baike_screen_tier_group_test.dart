@@ -124,6 +124,7 @@ String _buildEquipmentYaml() {
     name: 测$t$s
     tier: $t
     slot: weapon
+    weaponArchetype: sword
     schoolBias: $s
     baseAttackMin: 10
     baseAttackMax: 100
@@ -179,6 +180,7 @@ String _buildEquipmentYaml() {
     name: 零段测试件
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: yinRou
     baseAttackMin: 5
     baseAttackMax: 50
@@ -195,6 +197,7 @@ String _buildEquipmentYaml() {
     name: 一段测试件
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: yinRou
     baseAttackMin: 5
     baseAttackMax: 50
@@ -210,6 +213,7 @@ String _buildEquipmentYaml() {
     name: 三段测试件
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: yinRou
     baseAttackMin: 5
     baseAttackMax: 50
@@ -225,6 +229,7 @@ String _buildEquipmentYaml() {
     name: 五段测试件
     tier: xunChang
     slot: weapon
+    weaponArchetype: sword
     schoolBias: yinRou
     baseAttackMin: 5
     baseAttackMax: 50

@@ -131,7 +131,7 @@ void main() {
     await IsarSetup.instance.writeTxn(() async {
       final equipmentId = await IsarSetup.instance.equipments.put(
         Equipment.create(
-          defId: 'equipment_expedition_ledger_test',
+          defId: 'weapon_xunchang_tie_jian',
           tier: EquipmentTier.xunChang,
           slot: EquipmentSlot.weapon,
           obtainedAt: departed,

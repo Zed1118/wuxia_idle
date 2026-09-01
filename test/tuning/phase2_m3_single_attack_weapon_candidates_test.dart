@@ -8,7 +8,6 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
-import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_damage_kind.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 
 typedef SingleAttackWeaponCandidate = ({

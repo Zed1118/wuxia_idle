@@ -6180,8 +6180,8 @@ tasks:
     owner: codex_root
     branch: codex/p2-m3-single-attack-weapon-archetypes-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m3-single-attack-weapon-archetypes-20260901
-    status: in_progress
-    current_authoritative_wip: true
+    status: blocked
+    current_authoritative_wip: false
     base_commit: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
     completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
     acceptance_target: 5_weapon_profiles_each_pass_clear_elite_and_boss_scenarios_with_three_distinct_modifiers
@@ -6206,10 +6206,24 @@ tasks:
       approved_product_contract: five_single_stage_hold_to_repeat_weapon_profiles_without_attack_displacement
       approved_non_persistent_weapon_archetype_source: true
       production_profile_values_selected: false
+      explicit_weapon_archetypes: 5_of_5
+      production_weapon_defs_categorized: 37_of_37
+      production_snapshot_and_adapter_identity_wiring: true
+      candidate_clear_elite_boss_scenarios: 15_of_15
+      candidate_profiles_written_to_production: false
+      combined_targeted_tests: 125_of_125
+      mutation_directions_confirmed: 4_of_4
+      mutation_failures_each: 1
+      application_analyze_issues: 0
+      whole_repository_format_changed_files: 0
+      full_test_initial_fixture_contract_failures: 2
+      full_test_after_fixture_correction: 5868_of_5868
+      full_test_error_blocks_after_fixture_correction: 0
     owned_files:
       - docs/superpowers/plans/2026-09-01-p2-m3-product-contract-rebase.md
       - docs/superpowers/plans/2026-09-01-p2-m3-single-attack-weapon-archetypes.md
       - docs/audit/phase2_m3_product_contract_rebase_2026-09-01.md
+      - docs/spec/phase2_m3_single_attack_weapon_candidates_20260901.md
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
     protected_behavior:
       - do_not_reintroduce_the_removed_three_hit_basic_attack_chain_without_an_explicit_product_decision

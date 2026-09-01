@@ -1,4 +1,4 @@
-# M3 产品合同重定向审计
+# M3 产品合同重定向与单段候选收口审计
 
 ## 结论
 
@@ -48,3 +48,47 @@ M3 不能按旧方案直接施工。旧方案要求剑“直刺 → 横扫 → �
 - 真人目检：挂账
 - Phase 2 正式里程碑：仍为 `1/10`
 - M4/M7/M8/M9：不因本审计开启或通过
+
+## 授权后的结构交付
+
+用户已授权保留五类武器身份，并把基础普攻合同统一为“单段、按住连发、无攻击位移”。本候选据此完成以下结构门，但没有选择或写入正式战斗数值：
+
+- 新增唯一非持久化 `WeaponArchetype`：`sword`、`heavy`、`flexible`、`dual`、`hidden`。
+- `EquipmentDef.fromYaml` 对武器缺类别、非武器携带类别均 fail closed；运行时不按名称、ID、流派或属性猜测类别。
+- `data/equipment.yaml` 的 37 件生产武器全部显式分类：剑 8、重兵 7、软兵 7、双持 7、暗器 8。
+- 实际装备类别贯通 `EquipmentDef -> CombatantSnapshot -> Phase0aPlayerInputAdapter`；复制、心魔镜像与生产 stage mapper 均保留该字段。
+- 无装备时保持既有掌风基线；多武器、悬空 def 或 slot 不一致继续 fail closed。
+- 生产 mapper 仍保持 `basicAttackChain == null`，没有恢复三段链、进步斩、攻击位移、shield/parry 或 `Z`。
+
+## 五类候选而非生产值
+
+候选值及 `5 x 3` reducer 模拟在 `docs/spec/phase2_m3_single_attack_weapon_candidates_20260901.md`。15/15 受控场景均完成，且每拍最多命中 1 个目标、无链段身份、无玩家位移、一次出手只结算一次候选产气。
+
+这些结果只证明五类差异可以在同一单段 reducer 合同中成立，不证明正式清杂、精英、Boss 画像已通过。候选尚未写入生产配置或表现层；正式分母仍为 `0/5` 与 `0/15`。
+
+## 破坏证红
+
+以下四个变异均在提交后的候选上执行，每次只改一个方向、得到精确 `1` 个失败，再用反向补丁原样还原：
+
+1. 删除一件生产武器的 `weaponArchetype`：仓库全量分类合同变红。
+2. 删除快照 builder 的类别赋值：实际装备来源合同变红。
+3. 删除生产 mapper 的类别透传：生产适配器接线合同变红。
+4. 把重兵候选 `maxTargets` 从 `1` 改为 `2`：单次最多一目标合同变红。
+
+这四项分别证明 YAML schema、实际装备来源、生产 mapper 与候选单目标红线不是恒真断言；所有变异均已精确还原。
+
+## 验证
+
+- 官方应用分析：`flutter analyze --no-pub lib test tool`，`0 issue`。
+- 整仓格式：`dart format .`，`1711 files / 0 changed`。
+- 联合定向：结构、候选、M2 防回退、远征与百科 fixture 共 `125/125 PASS`。
+- 首轮全量：`5863 pass / 2 fail`；两项均为新 fail-closed 合同暴露的旧测试 fixture 缺口——远征使用不存在的假装备 def，百科临时武器缺类别。
+- fixture 修正：远征改用真实生产武器 def；百科的五类临时武器显式写 `weaponArchetype: sword`。没有放松生产守卫。
+- 修正后完整全量：`5868/5868 PASS`，退出码 `0`，原始 reporter 尾行 `All tests passed!`，`[E]` 为 `0`。
+- `git diff --check`：通过；未修改 `numbers.yaml`、Isar、版本号、玩家数值、技能、奖励、经济或解锁。
+
+## 收口判断
+
+- 本分支定位：`BLOCKED` 候选，等待产品选择正式几何、节奏与表现值。
+- M3 工程 Gate：仍为 `0/1 BLOCKED`；五类正式生产画像 `0/5`；正式三场矩阵 `0/15`。
+- 下一步必须先由用户选择或调整候选，再接入真实生产值、重跑真实资源/战斗 Gate，并进行桌面真人手感验收。
