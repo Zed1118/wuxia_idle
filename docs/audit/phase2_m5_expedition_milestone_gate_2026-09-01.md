@@ -32,7 +32,7 @@
 - 实现前 RED：未解锁险关仍从节点 `4` 越到 `5`，`1` 条真实失败。
 - 扩展定向：`143/143 PASS`。
 - 破坏证红并精确反向还原：移除首次门得到 `1` 条失败；移除 `manualClearedAt` 胜利写入得到 `1` 条失败；断开生产 UI 到真人 Host 得到 `1` 条失败。
-- 测试契约迁移：`expect` 删除 `3` / 新增 `36`，用例删除 `1` / 新增 `9`，登记 `4` 条，专用 Gate `PASS: test_contract_migration`。
+- 测试契约迁移：`expect` 删除 `3` / 新增 `40`，用例删除 `1` / 新增 `10`，登记 `4` 条，专用 Gate `PASS: test_contract_migration`。
 - `flutter analyze --no-pub lib test tool`：`0` issue。
 - `dart format .`：`1709 files / 0 changed`。
 - 锁保护整仓全量：`5860/5860 PASS`，退出码 `0`，`[E]=0`，末行 `All tests passed!`。

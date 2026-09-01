@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m5-expedition-milestone-gate-20260901
 base_sha: 73eedc7a7a7e114d224032afdb5a7712ad867263
-head_sha: 80d95a1415c73f168786836a7de28eb474f32e08
+head_sha: 9a054514fa7f19156512ed002cab314181f2b507
 summary: 存档当前版本由 0.44.0 加法迁至 0.45.0；旧版本断言改为精确新版本，并保留塔个人记录集合的跨后续迁移注册合同。
 
 migrations:
