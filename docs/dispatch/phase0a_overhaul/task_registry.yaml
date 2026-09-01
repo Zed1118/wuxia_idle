@@ -6198,6 +6198,8 @@ tasks:
       production_action_timeline_consumers: 0
       production_bot_tactics: 3
       per_weapon_clear_elite_boss_scenarios: 0_of_15
+      targeted_behavior_tests: 24
+      targeted_behavior_failures: 0
       later_single_ranged_attack_commit: b653852e28607129b52fa485d1869857c17072c5
       later_single_ranged_attack_ready_commit: 3e589284
       human_desktop_acceptance: deferred_by_user
