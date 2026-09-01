@@ -47,7 +47,7 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮九霄塔持久差遣新增真实塔层入口、exact participant/loadout durable owner、`mapTower` headless 和双层 receipt 原子结算；扩展定向 `79/79 PASS`。三向 mutation 分别得到 `4`、`1`、`1` 条失败并精确反向还原，证明 dispatch allowlist、生产入口与 durable settlement receipt 不是恒真守卫。最终测试树相对基线删除行数为 `0`，旧 sweep 与拒绝契约原样保留，durable 守卫纯增量加入，无需测试契约迁移登记；实现候选阶段 full analyze 0 issue，整仓 format `1700 files / 1 changed`，锁保护全量 `5838/5838 PASS`、`[E]=0`。随后 exact `[READY]` tip `62d6df2aea62d54bb1abf8f730fe8e6cb100f572` 的正式 Gate 重新执行整仓测试并得到 `5840/5840 PASS`；前一数字是候选阶段记录，不是 final-tip Gate 分母。未改 Isar collection 字段、schemaVersion/saveVersion、YAML、数值、奖励或战斗规则；该批净增一格至 `38/42`。
 
-本轮塔个人记录新增 `TowerPersonalRecord` 和 0.44 加法迁移，只从真实胜利结算写入；手动、扫荡、持久差遣共用原事务。扩展定向 `164/164 PASS`，三向 mutation 分别得到 `4`、`2`、`1` 条失败并精确还原；其中旧档夹具先发现无角色导致伪回填假绿，补成“有角色但无参战证明”后才获得有效 RED。analyze 0 issue，整仓 format `1704 files / 0 changed`。首轮锁保护全量另捕获四条仍写死 `0.43.0` 的旧迁移断言，更新到精确 `0.44.0` 后相关迁移集 `10/10 PASS` 并进入测试契约迁移登记；整仓复跑与 exact READY tip Gate 由本任务最终 receipt 单独绑定，不在执行前预写 PASS。该批净增一格至 `39/42`。
+本轮塔个人记录新增 `TowerPersonalRecord` 和 0.44 加法迁移，只从真实胜利结算写入；手动、扫荡、持久差遣共用原事务。扩展定向 `164/164 PASS`，三向 mutation 分别得到 `4`、`2`、`1` 条失败并精确还原；其中旧档夹具先发现无角色导致伪回填假绿，补成“有角色但无参战证明”后才获得有效 RED。analyze 0 issue，整仓 format `1704 files / 0 changed`。首轮锁保护全量另捕获四条仍写死 `0.43.0` 的旧迁移断言，更新到精确 `0.44.0` 后相关迁移集 `10/10 PASS` 并进入测试契约迁移登记；修复后锁保护整仓复跑 `5844/5844 PASS`、退出码 0、`[E]=0`。exact READY tip Gate 由本任务最终 receipt 单独绑定，不在执行前预写 PASS。该批净增一格至 `39/42`。
 
 上一轮九霄塔 durable 候选的最终工程检查：
 

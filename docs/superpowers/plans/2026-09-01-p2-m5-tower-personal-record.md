@@ -30,8 +30,8 @@
 
 ## 当前恢复点
 
-- 状态：实现与扩展定向已完成；首轮全量发现的四处旧版本断言已修复，等待全量复跑与最终 Gate。
-- 最后完成：0.44 collection/service/共享事务接线、授权登记、M5 `39/42` 审计；四处迁移版本期望已更新并登记测试契约迁移。
-- 下一步：运行测试契约迁移 Gate、analyze/format 复核、锁保护整仓复跑、READY tip、receipt 与最终 Gate。
-- 已跑验证：初始 RED 有效；mutation `4 + 2 + 1`；扩展定向 `164/164 PASS`；analyze 0 issue；整仓 format `1704 files / 0 changed`；首轮 full 为 `5840 pass / 4 fail`，四条均为旧 `0.43.0` 期望，修复后相关迁移集 `10/10 PASS`。
+- 状态：实现、扩展定向、版本断言修复与锁保护整仓复跑已完成，等待 READY tip、receipt 与最终 Gate。
+- 最后完成：0.44 collection/service/共享事务接线、授权登记、M5 `39/42` 审计；四处迁移版本期望已更新并登记测试契约迁移；整仓复跑 `5844/5844 PASS`。
+- 下一步：冻结 READY tip，生成精确 tip receipt，运行测试契约迁移 Gate 与最终 Gate。
+- 已跑验证：初始 RED 有效；mutation `4 + 2 + 1`；扩展定向 `164/164 PASS`；analyze 0 issue；整仓 format `1704 files / 0 changed`；首轮 full 为 `5840 pass / 4 fail`，四条均为旧 `0.43.0` 期望；修复后相关迁移集 `10/10 PASS`，整仓复跑 `5844/5844 PASS`、退出码 0、`[E]=0`。
 - 阻塞项：无。用户已明确授权新增 collection 与 `saveVersion 0.44.0`；前一单 `strings.dart` 一次性豁免不适用于本任务。

@@ -39,8 +39,9 @@
 - `flutter analyze --no-pub lib test tool`：`No issues found!`。
 - `dart format .`：`1704 files / 0 changed`。
 - 首轮锁保护全量推进到 `5840` 个通过项并发现 `4` 条失败；四条均为既有迁移测试仍把当前版本写死成 `0.43.0`，没有业务、奖励或个人记录失败。更新为精确 `0.44.0` 后相关迁移集 `10/10 PASS`。
+- 修复后锁保护整仓复跑：`5844/5844 PASS`，退出码 `0`，`[E]=0`，末行 `07:56 +5844: All tests passed!`；原始日志位于忽略目录 `build/m5_tower_personal_record_full_rerun.log`。
 - 塔个人记录测试本身只增不删；另有四处版本值替换为 `4` 增 / `4` 删。两条单行 load-bearing `expect` 已登记测试契约迁移；另外两处仅替换多行 `expect` 的值行，不被专用 Gate 计为断言删除。
-- 锁保护整仓全量和 exact READY tip Gate 必须在最终提交后由 receipt 绑定；本文不在执行前预写 PASS。
+- exact READY tip Gate 必须在最终提交后由 receipt 绑定；本文不在执行前预写 PASS。
 
 ## 范围
 
