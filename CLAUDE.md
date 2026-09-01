@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.98**
+> **版本:v1.99**
+>
+> v1.99 变更摘要(2026-09-01 二阶段 M5 九霄塔持久差遣):已通塔层在真实层列表新增“差遣历练”，按玩家逐次选择的 exact participant 建立既有 `DurableActivityCombatRun`，冻结 `dispatch + playerBot + headless + offlineResume`，复用统一占用、exact 装配、`mapTower`、Phase 0A headless、塔进度/战斗结算与 U09 receipt；胜败业务写入与 durable receipt 同一事务，timeout 保留 active、阅报后 close。只扩展既有 name 枚举值域，不新增 Isar collection/字段或提升 schema/saveVersion。三向 mutation 精确 `4+1+1` 条失败并反向还原，扩展定向 `79/79`、scoped analyze 0 issue。有效矩阵由 `37/42` 推至 `38/42`，顶层 M5 仍 `0/1 BLOCKED`；塔个人最好成绩、断魂庄 durable owner、百草岭首次手动里程碑合同继续开放，真人桌面/Windows 挂账，不改 YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >
 > v1.98 变更摘要(2026-09-01 二阶段 M5 断魂庄自动化生产资格修复):复查发现已发布 `37/42` 将只有 policy/service/driver、没有 `lib/` 真实入口的断魂庄自动化误计为 PASS，严格基线暂回 `36/42`。现已在首通后的真实整备页复用通用“快速重演”入口文案，按玩家选定 exact participant 提交 `direct + playerBot + headless + replay`；入场与既有 driver 复用同一 request，自动化准入、门票扣减与 run 创建处于同一事务边界，胜利停在既有奖励选择，不代选或改变奖励。生产 RED `2`、核心定向 `40/40`、断魂庄目录 `192/192`，三组 mutation 各精确 `1` 条失败并反向还原，全量 `5833/5833`、analyze 0 issue。有效矩阵恢复 `37/42`、顶层 M5 仍 `0/1 BLOCKED`；direct replay 不冒充 durable dispatch，真人桌面/Windows 继续挂账，不改 schema/saveVersion、YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >

@@ -265,11 +265,7 @@ void main() {
       characterId: leader.id,
     );
     final runId = (await tester.runAsync(
-      () => service.startTower(
-        floor: floor,
-        cycleIndex: 1,
-        request: request,
-      ),
+      () => service.startTower(floor: floor, cycleIndex: 1, request: request),
     ))!;
 
     late WidgetRef widgetRef;
