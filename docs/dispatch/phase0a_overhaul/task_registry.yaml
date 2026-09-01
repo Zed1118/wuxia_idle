@@ -1,7 +1,16 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
-base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
+base_commit: e10cdcc528a14d8a35dc2d836ee45d714bf0ce30
 updated_at: "2026-09-01"
+
+formal_milestone_gate:
+  denominator: 10
+  closed: 1
+  report: 1_of_10
+  weighting: unapproved
+  closed_milestones:
+    - M1
+  rule: candidate_ready_or_engineering_green_never_substitutes_for_formal_milestone_acceptance
 
 resource_locks:
   full_flutter_test: 1
@@ -5759,7 +5768,7 @@ tasks:
     completion_scope: requalify_the_six_mode_by_seven_contract_M5_denominator_against_real_production_owners
     acceptance_baseline: 0_of_1_authoritative_M5_engineering_gate
     acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
-    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_candidate_gate
+    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate_integrated_to_main
     evidence:
       modes: 6
       contracts_per_mode: 7
@@ -5780,8 +5789,11 @@ tasks:
       tower_personal_record_ready_tip: 72b0190320177ebb5ce9e6dfd80db10f42d11624
       gauntlet_durable_owner_ready_tip: 73eedc7a7a7e114d224032afdb5a7712ad867263
       expedition_milestone_code_candidate: 80d95a1415c73f168786836a7de28eb474f32e08
-      exact_tip_gate: must_pass_before_merge
-      merge_and_exact_sha_ci: pending
+      exact_tip_gate: pass_with_authorized_strings_and_registered_test_contract_migration_exceptions
+      integrated_main_commit: e10cdcc528a14d8a35dc2d836ee45d714bf0ce30
+      merge_and_push: complete
+      exact_sha_ci_run: 33512497821
+      exact_sha_ci_conclusion: success
     blockers: []
     owned_files:
       - docs/superpowers/plans/2026-09-01-p2-m5-six-mode-integration-audit.md
@@ -6061,7 +6073,7 @@ tasks:
     completion_scope: connect_first_uncleared_expedition_milestone_to_visible_human_phase0a_and_unlock_later_headless_by_route_and_milestone
     acceptance_baseline: 40_of_42_M5_engineering_cells
     acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
-    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_candidate_gate
+    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate_integrated_to_main
     dependencies:
       - P2-M5-ENGINEERING-INTEGRATION-AUDIT
       - P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
@@ -6089,7 +6101,10 @@ tasks:
       final_gate: must_pass_with_explicit_strings_and_test_deletion_exceptions_before_merge
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
-      merge_and_push: not_authorized_for_automatic_execution
+      integrated_main_commit: e10cdcc528a14d8a35dc2d836ee45d714bf0ce30
+      merge_and_push: complete
+      exact_sha_ci_run: 33512497821
+      exact_sha_ci_conclusion: success
     owned_files:
       - lib/data/defs/expedition_config.dart
       - lib/data/isar_setup.dart
@@ -6125,7 +6140,183 @@ tasks:
       - old_depth_return_or_reward_facts_never_fabricate_participant_template_or_manual_clear
       - no_expedition_concurrency_node_duration_enemy_or_player_value_skill_reward_economy_unlock_cycle_injury_or_combat_rule_change
       - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
-      - M3_and_M4_remain_not_started
+      - formal_M3_is_not_started_and_formal_M4_human_and_Windows_acceptance_remains_open
+
+  - id: P2-M0-DECISION-TUNING-CLOSEOUT
+    milestone: M0
+    owner: codex_root
+    status: blocked
+    current_authoritative_wip: false
+    completion_scope: close_remaining_phase2_decisions_without_inventing_product_values_or_rules
+    acceptance_target: 1_of_1_formal_M0_gate
+    acceptance_result: 0_of_1_formal_M0_gate
+    evidence:
+      tuning_decisions_open: 20
+      deferred_pending_matrix_open: 1
+      partially_reopened_open: 1
+    blockers:
+      - human_tuning_or_product_decisions_and_required_acceptance_evidence
+    protected_behavior:
+      - no_open_decision_is_treated_as_approved_by_elapsed_time_or_engineering_convenience
+
+  - id: P2-M2-HUMAN-G2-ACCEPTANCE
+    milestone: M2
+    owner: human
+    status: deferred_by_user
+    current_authoritative_wip: false
+    completion_scope: perform_the_deferred_real_desktop_G2_playtest_against_the_integrated_build
+    acceptance_target: 1_of_1_formal_M2_gate
+    acceptance_result: 0_of_1_formal_M2_gate
+    evidence:
+      engineering_candidate_integrated: true
+      human_desktop_acceptance: deferred_by_user
+    blockers:
+      - real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff
+    protected_behavior:
+      - automated_driving_screenshots_or_test_results_do_not_replace_human_control_feel
+
+  - id: P2-M3-WEAPON-COMBAT-DEPTH-GATE
+    milestone: M3
+    owner: codex_root
+    status: planned
+    current_authoritative_wip: false
+    completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
+    acceptance_target: 5_weapon_profiles_each_pass_clear_elite_and_boss_scenarios_with_three_distinct_modifiers
+    acceptance_result: 0_of_5_weapon_profiles
+    dependencies:
+      - P2-PHASE2-TRUTH-REFRESH
+    blockers:
+      - reconcile_the_authoritative_phase2_weapon_chain_wording_with_the_later_approved_single_smooth_ranged_basic_attack_product_direction
+    protected_behavior:
+      - do_not_reintroduce_the_removed_three_hit_basic_attack_chain_without_an_explicit_product_decision
+      - guard_against_multi_hit_qi_exploit_infinite_chase_infinite_control_and_boss_reflect_kill
+
+  - id: P2-M4-ENGINEERING-AND-HUMAN-GATE
+    milestone: M4
+    owner: codex_root
+    status: blocked
+    current_authoritative_wip: false
+    completion_scope: unify_ecology_template_LOD_audio_performance_and_human_visual_acceptance
+    acceptance_target: 1_of_1_formal_M4_gate
+    acceptance_result: 0_of_1_formal_M4_gate
+    evidence:
+      major_engineering_subgates_integrated: true
+      active_entity_profile_target: 24
+      macos_profile_runs_passed: 6
+      macos_profile_runs_total: 6
+      worst_observed_p99_total_ms: 10.569
+      human_visual_audio_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    blockers:
+      - unified_M4_audit_human_visual_audio_acceptance_and_Windows_profile
+    protected_behavior:
+      - engineering_subgates_and_Mac_profile_do_not_substitute_for_formal_M4_acceptance
+
+  - id: P2-M5-HUMAN-ACCEPTANCE-GATE
+    milestone: M5
+    owner: human
+    status: deferred_by_user
+    current_authoritative_wip: false
+    completion_scope: human_acceptance_for_all_six_integrated_side_activity_modes
+    acceptance_target: 1_of_1_formal_M5_gate
+    acceptance_result: 0_of_1_formal_M5_gate
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+    evidence:
+      engineering_cells_integrated: 42
+      engineering_cells_total: 42
+      integrated_main_commit: e10cdcc528a14d8a35dc2d836ee45d714bf0ce30
+      exact_sha_ci_run: 33512497821
+      exact_sha_ci_conclusion: success
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    protected_behavior:
+      - engineering_completion_does_not_claim_formal_M5_or_overall_Phase2_completion
+
+  - id: P2-M6-HUMAN-ACCEPTANCE-GATE
+    milestone: M6
+    owner: human
+    status: deferred_by_user
+    current_authoritative_wip: false
+    completion_scope: human_navigation_interaction_and_report_acceptance_for_the_integrated_M6_production_routes
+    acceptance_target: 1_of_1_formal_M6_gate
+    acceptance_result: 0_of_1_formal_M6_gate
+    dependencies:
+      - P2-M6-ENGINEERING-INTEGRATION-GATE
+    evidence:
+      engineering_gate_integrated: 1_of_1
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+    protected_behavior:
+      - engineering_integration_does_not_claim_formal_M6_or_overall_Phase2_completion
+
+  - id: P2-M7-CONTENT-MIGRATION-GATE
+    milestone: M7
+    owner: codex_root
+    status: planned
+    current_authoritative_wip: false
+    completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
+    acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
+    acceptance_result: not_started
+    dependencies:
+      - P2-M2-HUMAN-G2-ACCEPTANCE
+      - P2-M3-WEAPON-COMBAT-DEPTH-GATE
+      - P2-M4-ENGINEERING-AND-HUMAN-GATE
+      - P2-M5-HUMAN-ACCEPTANCE-GATE
+      - P2-M6-HUMAN-ACCEPTANCE-GATE
+    protected_behavior:
+      - content_count_or_fixture_coverage_without_production_runtime_consumption_is_not_acceptance
+
+  - id: P2-M8-RELEASE-QUALITY-GATE
+    milestone: M8
+    owner: codex_root
+    status: planned
+    current_authoritative_wip: false
+    completion_scope: close_release_performance_migration_economy_and_Windows_quality
+    acceptance_target: 1_of_1_formal_M8_gate
+    acceptance_result: not_started
+    dependencies:
+      - P2-M7-CONTENT-MIGRATION-GATE
+    protected_behavior:
+      - Mac_only_or_test_only_evidence_does_not_close_the_release_quality_gate
+
+  - id: P2-M9-RELEASE-CLOSEOUT-GATE
+    milestone: M9
+    owner: codex_root
+    status: planned
+    current_authoritative_wip: false
+    completion_scope: produce_and_accept_the_phase2_release_candidate
+    acceptance_target: 1_of_1_formal_M9_gate
+    acceptance_result: not_started
+    dependencies:
+      - P2-M0-DECISION-TUNING-CLOSEOUT
+      - P2-M2-HUMAN-G2-ACCEPTANCE
+      - P2-M3-WEAPON-COMBAT-DEPTH-GATE
+      - P2-M4-ENGINEERING-AND-HUMAN-GATE
+      - P2-M5-HUMAN-ACCEPTANCE-GATE
+      - P2-M6-HUMAN-ACCEPTANCE-GATE
+      - P2-M7-CONTENT-MIGRATION-GATE
+      - P2-M8-RELEASE-QUALITY-GATE
+    protected_behavior:
+      - RC_or_release_claim_requires_all_predecessor_gates_and_human_signoff
+
+  - id: P2-PHASE2-TRUTH-REFRESH
+    milestone: governance
+    owner: codex_root
+    branch: codex/p2-phase2-truth-refresh-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-phase2-truth-refresh-20260901
+    status: ready_reviewed
+    current_authoritative_wip: false
+    base_commit: e10cdcc528a14d8a35dc2d836ee45d714bf0ce30
+    completion_scope: align_progress_and_task_registry_with_exact_integrated_main_and_formal_gate_truth
+    acceptance_target: M0_through_M9_top_level_coverage_and_exact_M5_integration_evidence
+    acceptance_result: M0_through_M9_covered_and_formal_gate_remains_1_of_10
+    owned_files:
+      - PROGRESS.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/superpowers/plans/2026-09-01-p2-phase2-truth-refresh.md
+    protected_behavior:
+      - no_candidate_engineering_or_historical_evidence_is_promoted_to_human_or_formal_acceptance
 
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance
