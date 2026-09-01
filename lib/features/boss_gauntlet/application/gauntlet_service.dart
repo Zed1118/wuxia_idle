@@ -21,6 +21,8 @@ import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/rng.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
+import '../../activity/domain/activity_occupancy.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
@@ -130,6 +132,8 @@ final class GauntletAutomationDriveResult {
   final GauntletDefeatSummary? defeatSummary;
 }
 
+typedef GauntletDurableDispatchStart = ({int gauntletRunId, int durableRunId});
+
 /// 断魂庄应用服务（spec §5.1/§9.2）。
 ///
 /// C2.1 入场扣帖 + 补给会话托管；C2.2 整备页用药 + 关闭返还（守恒）。均单 `writeTxn`。
@@ -172,6 +176,44 @@ class GauntletService {
     int cycleIndex = 1,
     ActivityParticipationRequest? automationRequest,
   }) async {
+    final result = await _enter(
+      characterIds: characterIds,
+      supplies: supplies,
+      supplyCap: supplyCap,
+      cycleIndex: cycleIndex,
+      automationRequest: automationRequest,
+    );
+    return result.gauntletRunId;
+  }
+
+  /// 已首通后的完整持久差遣入口。扣帖、补给托管、Boss 会话与 durable
+  /// identity/receipt 在同一事务创建；任何一步失败都不得遗留半条会话。
+  Future<GauntletDurableDispatchStart> enterDurableDispatch({
+    required List<int> characterIds,
+    Map<String, int> supplies = const {},
+    required int supplyCap,
+    int cycleIndex = 1,
+    required ActivityParticipationRequest request,
+    DateTime? now,
+  }) => _enter(
+    characterIds: characterIds,
+    supplies: supplies,
+    supplyCap: supplyCap,
+    cycleIndex: cycleIndex,
+    automationRequest: request,
+    persistDurableDispatch: true,
+    now: now,
+  );
+
+  Future<GauntletDurableDispatchStart> _enter({
+    required List<int> characterIds,
+    required Map<String, int> supplies,
+    required int supplyCap,
+    required int cycleIndex,
+    required ActivityParticipationRequest? automationRequest,
+    bool persistDurableDispatch = false,
+    DateTime? now,
+  }) async {
     if (characterIds.length != 1) {
       throw StateError('断魂庄入场：路线 C 只允许单人，got ${characterIds.length}');
     }
@@ -202,6 +244,20 @@ class GauntletService {
           throw StateError(
             'Gauntlet automation participant does not match entry member',
           );
+        }
+      }
+      if (persistDurableDispatch) {
+        final request = automationRequest;
+        if (request == null) {
+          throw StateError('Gauntlet durable dispatch requires a request');
+        }
+        _requireDurableDispatchRequest(request);
+        final outstanding =
+            (await _isar.durableActivityCombatRuns.where().findAll())
+                .where((run) => run.phase != DurableActivityPhase.closed)
+                .toList(growable: false);
+        if (outstanding.isNotEmpty) {
+          throw StateError('Another durable activity automation run is active');
         }
       }
 
@@ -310,8 +366,96 @@ class GauntletService {
         ..escrowLoadedQty = escrowLoaded
         ..escrowUsedQty = escrowUsed;
 
-      return _isar.bossGauntletRuns.put(run);
+      final gauntletRunId = await _isar.bossGauntletRuns.put(run);
+      if (!persistDurableDispatch) {
+        return (gauntletRunId: gauntletRunId, durableRunId: 0);
+      }
+
+      final request = automationRequest!;
+      final character = (await _isar.characters.get(request.characterId))!;
+      final startedAt = now ?? DateTime.now();
+      final durable = DurableActivityCombatRun()
+        ..saveDataId = save.id
+        ..kind = DurableActivityKind.gauntlet
+        ..contentId = request.contentId
+        ..loadoutPlanId = request.loadoutPlanId
+        ..stageId = gauntletDurableStageId(gauntletRunId)
+        ..cycleIndex = cycleIndex
+        ..seed = run.seed
+        ..contentKind = request.contentKind
+        ..participation = request.participation
+        ..controller = request.controller
+        ..clock = request.clock
+        ..entryKind = request.entryKind
+        ..members = [_copyMember(run.members.single)]
+        ..participantCreatedAt = character.createdAt
+        ..participantName = character.name
+        ..formation = null
+        ..phase = DurableActivityPhase.active
+        ..outcome = DurableActivityOutcome.none
+        ..startedAt = startedAt
+        ..lastAdvancedAt = startedAt;
+      final durableRunId = await _isar.durableActivityCombatRuns.put(durable);
+      return (gauntletRunId: gauntletRunId, durableRunId: durableRunId);
     });
+  }
+
+  /// 从统一 durable owner 恢复 exact participant 的既有三连战 driver。
+  /// 已到三选一时只提交 victory receipt；奖励候选与选择权仍留在 Boss 会话。
+  Future<GauntletAutomationDriveResult> resumeDurableDispatch({
+    required int durableRunId,
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+    DateTime? now,
+  }) async {
+    final durable = await _requireActiveDurableDispatch(durableRunId);
+    final gauntletRunId = gauntletRunIdFromDurableStageId(durable.stageId);
+    final admission = await GauntletAutomationAdmissionService(
+      _isar,
+    ).admit(request: durable.request);
+    if (admission.runId != gauntletRunId ||
+        admission.memberCharacterId != durable.members.single.characterId) {
+      throw StateError('Gauntlet durable owner does not match Boss session');
+    }
+    await _revalidateDurableParticipant(durable, gauntletRunId);
+    final advancedAt = now ?? DateTime.now();
+    await _isar.writeTxn(() async {
+      final current = await _isar.durableActivityCombatRuns.get(durableRunId);
+      if (current == null ||
+          current.kind != DurableActivityKind.gauntlet ||
+          current.phase != DurableActivityPhase.active ||
+          current.stageId != durable.stageId) {
+        throw StateError('Gauntlet durable owner changed before execution');
+      }
+      current.lastAdvancedAt = advancedAt;
+      await _isar.durableActivityCombatRuns.put(current);
+    });
+
+    if (admission.sessionPhase == GauntletPhase.awaitingRewardChoice) {
+      await _isar.writeTxn(() async {
+        final boss = await _isar.bossGauntletRuns.get(gauntletRunId);
+        if (boss == null ||
+            boss.sessionPhase != GauntletPhase.awaitingRewardChoice) {
+          throw StateError('Gauntlet reward-choice boundary changed');
+        }
+        await _commitDurableDispatchInTxn(
+          durableRunId: durableRunId,
+          gauntletRunId: gauntletRunId,
+          outcome: DurableActivityOutcome.victory,
+          at: advancedAt,
+        );
+      });
+      return const GauntletAutomationDriveResult(
+        terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
+        stagesCompleted: 0,
+      );
+    }
+    return driveHeadlessReplayToRewardChoice(
+      request: durable.request,
+      config: config,
+      numbers: numbers,
+      durableRunId: durableRunId,
+    );
   }
 
   /// 整备页用药：单 `writeTxn` 只减托管 `escrowUsedQty`（**不碰普通库存**·§5.1）。
@@ -436,6 +580,7 @@ class GauntletService {
     required GauntletAutomationAdmission admission,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
+    int? durableRunId,
   }) async {
     await GauntletAutomationAdmissionService(_isar).revalidate(admission);
     final plan = await preparePhase0aStage(config: config);
@@ -456,6 +601,7 @@ class GauntletService {
       result: result.settlement,
       config: config,
       numbers: numbers,
+      durableRunId: durableRunId,
     );
     return result;
   }
@@ -493,6 +639,7 @@ class GauntletService {
     required GauntletStageSettlement result,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
+    int? durableRunId,
   }) async {
     await _isar.writeTxn(() async {
       final save = await _isar.saveDatas.get(0);
@@ -530,6 +677,15 @@ class GauntletService {
         alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
       );
       await _isar.bossGauntletRuns.put(run);
+      if (durableRunId != null &&
+          run.sessionPhase == GauntletPhase.awaitingRewardChoice) {
+        await _commitDurableDispatchInTxn(
+          durableRunId: durableRunId,
+          gauntletRunId: run.id,
+          outcome: DurableActivityOutcome.victory,
+          at: DateTime.now(),
+        );
+      }
     });
   }
 
@@ -539,6 +695,7 @@ class GauntletService {
     required ActivityParticipationRequest request,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
+    int? durableRunId,
   }) async {
     final admissionService = GauntletAutomationAdmissionService(_isar);
     final initialAdmission = await admissionService.admit(request: request);
@@ -559,6 +716,7 @@ class GauntletService {
             admission: admission,
             config: config,
             numbers: numbers,
+            durableRunId: durableRunId,
           );
           if (!result.leftWin) {
             final defeatAdmission = await admissionService.admit(
@@ -576,6 +734,7 @@ class GauntletService {
               config: config,
               numbers: numbers,
               automationAdmission: defeatAdmission,
+              durableRunId: durableRunId,
             );
             return GauntletAutomationDriveResult(
               terminal: GauntletAutomationDriveTerminal.defeated,
@@ -973,6 +1132,7 @@ class GauntletService {
     DateTime? now,
     bool applyInjuries = true,
     GauntletAutomationAdmission? automationAdmission,
+    int? durableRunId,
   }) async {
     final save0 = await _isar.saveDatas.get(0);
     if (save0 == null) return GauntletDefeatSummary.empty; // 幂等：无存档
@@ -1092,6 +1252,14 @@ class GauntletService {
 
       // ③ 返还托管补给（已用不返·§6.3）+ 关会话。
       await _returnEscrow(run);
+      if (durableRunId != null) {
+        await _commitDurableDispatchInTxn(
+          durableRunId: durableRunId,
+          gauntletRunId: run.id,
+          outcome: DurableActivityOutcome.defeat,
+          at: now ?? DateTime.now(),
+        );
+      }
       await _isar.bossGauntletRuns.delete(run.id);
     });
 
@@ -1183,6 +1351,145 @@ class GauntletService {
       if (r.saveDataId == saveId) return r;
     }
     return null;
+  }
+
+  Future<DurableActivityCombatRun> _requireActiveDurableDispatch(
+    int durableRunId,
+  ) async {
+    final run = await _isar.durableActivityCombatRuns.get(durableRunId);
+    if (run == null ||
+        run.kind != DurableActivityKind.gauntlet ||
+        run.phase != DurableActivityPhase.active ||
+        run.members.length != 1) {
+      throw StateError('Gauntlet durable dispatch is not active');
+    }
+    _requireDurableDispatchRequest(run.request);
+    gauntletRunIdFromDurableStageId(run.stageId);
+    return run;
+  }
+
+  Future<void> _revalidateDurableParticipant(
+    DurableActivityCombatRun durable,
+    int gauntletRunId,
+  ) async {
+    final save = await _isar.saveDatas.get(0);
+    final boss = await _isar.bossGauntletRuns.get(gauntletRunId);
+    if (save == null ||
+        save.id != durable.saveDataId ||
+        boss == null ||
+        boss.saveDataId != save.id ||
+        boss.members.length != 1) {
+      throw StateError('Gauntlet durable save or Boss session changed');
+    }
+    GauntletAutomationPolicy.requireAllowed(
+      request: durable.request,
+      clearedGauntletIds: save.clearedGauntletIds.toSet(),
+    );
+    final frozen = durable.members.single;
+    final bossMember = boss.members.single;
+    if (bossMember.characterId != frozen.characterId ||
+        !_sameIds(
+          bossMember.reservedEquipmentIds,
+          frozen.reservedEquipmentIds,
+        ) ||
+        !_sameIds(
+          bossMember.reservedTechniqueIds,
+          frozen.reservedTechniqueIds,
+        )) {
+      throw StateError('Gauntlet durable member changed');
+    }
+    final character = await _isar.characters.get(frozen.characterId);
+    if (character == null ||
+        !character.isAlive ||
+        character.createdAt != durable.participantCreatedAt ||
+        character.name != durable.participantName ||
+        character.mainTechniqueId == null) {
+      throw StateError('Gauntlet durable participant identity changed');
+    }
+    final equipmentIds = <int>[
+      ?character.equippedWeaponId,
+      ?character.equippedArmorId,
+      ?character.equippedAccessoryId,
+    ];
+    final techniqueIds = <int>[
+      character.mainTechniqueId!,
+      ...character.assistTechniqueIds,
+    ];
+    if (!_sameIds(equipmentIds, frozen.reservedEquipmentIds) ||
+        !_sameIds(techniqueIds, frozen.reservedTechniqueIds)) {
+      throw StateError('Gauntlet durable participant loadout changed');
+    }
+    final occupancy = await CharacterOccupancyService(_isar).snapshot(
+      excludingKind: ActivityKind.bossGauntlet,
+      excludingRunId: gauntletRunId,
+    );
+    if (occupancy.isCharacterOccupied(frozen.characterId) ||
+        frozen.reservedEquipmentIds.any(
+          occupancy.reservedEquipmentIds.contains,
+        ) ||
+        frozen.reservedTechniqueIds.any(
+          occupancy.reservedTechniqueIds.contains,
+        )) {
+      throw StateError('Gauntlet durable participant loadout is occupied');
+    }
+  }
+
+  Future<void> _commitDurableDispatchInTxn({
+    required int durableRunId,
+    required int gauntletRunId,
+    required DurableActivityOutcome outcome,
+    required DateTime at,
+  }) async {
+    final run = await _isar.durableActivityCombatRuns.get(durableRunId);
+    if (run == null ||
+        run.kind != DurableActivityKind.gauntlet ||
+        run.phase != DurableActivityPhase.active ||
+        run.stageId != gauntletDurableStageId(gauntletRunId) ||
+        run.outcome != DurableActivityOutcome.none) {
+      throw StateError('Gauntlet durable receipt state changed');
+    }
+    run
+      ..phase = DurableActivityPhase.settlementApplied
+      ..outcome = outcome
+      ..settlementAppliedAt = at
+      ..lastAdvancedAt = at;
+    await _isar.durableActivityCombatRuns.put(run);
+  }
+
+  static void _requireDurableDispatchRequest(
+    ActivityParticipationRequest request,
+  ) {
+    if (request.contentKind != ActivityContentKind.gauntlet ||
+        request.contentId != gauntletId ||
+        request.loadoutPlanId !=
+            gauntletAutomationLoadoutPlanId(request.characterId) ||
+        request.participation != ActivityParticipationMode.dispatch ||
+        request.controller != ActivityController.playerBot ||
+        request.clock != ActivityClock.headless ||
+        request.entryKind != ActivityEntryKind.offlineResume) {
+      throw StateError('Gauntlet durable dispatch tuple is invalid');
+    }
+  }
+
+  static ActivityMemberSnapshot _copyMember(ActivityMemberSnapshot source) =>
+      ActivityMemberSnapshot()
+        ..characterId = source.characterId
+        ..reservedEquipmentIds = List.of(source.reservedEquipmentIds)
+        ..reservedTechniqueIds = List.of(source.reservedTechniqueIds)
+        ..currentHp = source.currentHp
+        ..currentQi = source.currentQi
+        ..isDowned = source.isDowned
+        ..maxHp = source.maxHp
+        ..maxQi = source.maxQi
+        ..skillCooldownKeys = List.of(source.skillCooldownKeys)
+        ..skillCooldownTurns = List.of(source.skillCooldownTurns);
+
+  static bool _sameIds(List<int> left, List<int> right) {
+    if (left.length != right.length) return false;
+    for (var index = 0; index < left.length; index++) {
+      if (left[index] != right[index]) return false;
+    }
+    return true;
   }
 
   ActivityMemberSnapshot? _memberOf(BossGauntletRun run, int characterId) {

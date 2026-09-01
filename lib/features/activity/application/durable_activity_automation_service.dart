@@ -105,6 +105,11 @@ final class DurableActivityAutomationService {
         'kind',
         'tower uses startTower',
       ),
+      DurableActivityKind.gauntlet => throw ArgumentError.value(
+        kind,
+        'kind',
+        'gauntlet uses GauntletService.enterDurableDispatch',
+      ),
       DurableActivityKind.lightFoot =>
         await resolveLightFootParticipantSnapshot(
           isar: _isar,
@@ -309,6 +314,9 @@ final class DurableActivityAutomationService {
     );
     final activityKind = switch (run.kind) {
       DurableActivityKind.tower => throw StateError('tower uses admitTower'),
+      DurableActivityKind.gauntlet => throw StateError(
+        'gauntlet uses GauntletService.resumeDurableDispatch',
+      ),
       DurableActivityKind.lightFoot => ActivityKind.lightFoot,
       DurableActivityKind.massBattle => ActivityKind.massBattle,
     };

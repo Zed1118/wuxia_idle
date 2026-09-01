@@ -23,43 +23,48 @@ ActivityParticipationRequest _request({
 void main() {
   const cleared = {GauntletAutomationPolicy.gauntletId};
 
-  test('only direct playerBot headless replay is admitted among 32 shapes', () {
-    var allowed = 0;
-    for (final participation in ActivityParticipationMode.values) {
-      for (final controller in ActivityController.values) {
-        for (final clock in ActivityClock.values) {
-          for (final entryKind in ActivityEntryKind.values) {
-            final decision = GauntletAutomationPolicy.evaluate(
-              request: _request(
-                participation: participation,
-                controller: controller,
-                clock: clock,
-                entryKind: entryKind,
-              ),
-              clearedGauntletIds: cleared,
-            );
-            final exactTuple =
-                participation == ActivityParticipationMode.direct &&
-                controller == ActivityController.playerBot &&
-                clock == ActivityClock.headless &&
-                entryKind == ActivityEntryKind.replay;
-            expect(
-              decision.allowed,
-              exactTuple,
-              reason: _request(
-                participation: participation,
-                controller: controller,
-                clock: clock,
-                entryKind: entryKind,
-              ).toString(),
-            );
-            if (decision.allowed) allowed += 1;
+  test(
+    'only direct replay and durable dispatch are admitted among 32 shapes',
+    () {
+      var allowed = 0;
+      for (final participation in ActivityParticipationMode.values) {
+        for (final controller in ActivityController.values) {
+          for (final clock in ActivityClock.values) {
+            for (final entryKind in ActivityEntryKind.values) {
+              final decision = GauntletAutomationPolicy.evaluate(
+                request: _request(
+                  participation: participation,
+                  controller: controller,
+                  clock: clock,
+                  entryKind: entryKind,
+                ),
+                clearedGauntletIds: cleared,
+              );
+              final exactTuple =
+                  controller == ActivityController.playerBot &&
+                  clock == ActivityClock.headless &&
+                  ((participation == ActivityParticipationMode.direct &&
+                          entryKind == ActivityEntryKind.replay) ||
+                      (participation == ActivityParticipationMode.dispatch &&
+                          entryKind == ActivityEntryKind.offlineResume));
+              expect(
+                decision.allowed,
+                exactTuple,
+                reason: _request(
+                  participation: participation,
+                  controller: controller,
+                  clock: clock,
+                  entryKind: entryKind,
+                ).toString(),
+              );
+              if (decision.allowed) allowed += 1;
+            }
           }
         }
       }
-    }
-    expect(allowed, 1);
-  });
+      expect(allowed, 2);
+    },
+  );
 
   test('wrong content kinds are all rejected', () {
     for (final kind in ActivityContentKind.values) {
@@ -108,6 +113,18 @@ void main() {
       expect(request.entryKind, ActivityEntryKind.replay);
     },
   );
+
+  test('durable request builder freezes exact participant dispatch tuple', () {
+    final request = gauntletDurableDispatchRequest(characterId: 42);
+    expect(request.contentKind, ActivityContentKind.gauntlet);
+    expect(request.contentId, GauntletAutomationPolicy.gauntletId);
+    expect(request.characterId, 42);
+    expect(request.loadoutPlanId, 'gauntlet-plan-42');
+    expect(request.participation, ActivityParticipationMode.dispatch);
+    expect(request.controller, ActivityController.playerBot);
+    expect(request.clock, ActivityClock.headless);
+    expect(request.entryKind, ActivityEntryKind.offlineResume);
+  });
 
   test('loadout plan must bind the exact participant', () {
     final decision = GauntletAutomationPolicy.evaluate(

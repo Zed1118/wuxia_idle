@@ -11,6 +11,9 @@ import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../shared/widgets/cycle_select_control.dart';
+import '../../activity/application/durable_activity_automation_providers.dart';
+import '../../activity/domain/durable_activity_combat_run.dart';
+import '../../activity/presentation/durable_activity_automation_ui.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/gauntlet_service.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
@@ -64,27 +67,39 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     if (headlessReplay && (config == null || numbers == null)) return;
     final participantId = _selected.single;
     final automationRequest = headlessReplay
-        ? gauntletHeadlessReplayRequest(characterId: participantId)
+        ? gauntletDurableDispatchRequest(characterId: participantId)
         : null;
     setState(() => _submitting = true);
     try {
-      await service.enter(
-        characterIds: [participantId],
-        supplies: {
-          for (final e in _supplyLoad.entries)
-            if (e.value > 0) e.key: e.value,
-        },
-        supplyCap: _supplyCap,
-        cycleIndex: cycleIndex,
-        automationRequest: automationRequest,
-      );
+      final supplies = {
+        for (final e in _supplyLoad.entries)
+          if (e.value > 0) e.key: e.value,
+      };
+      final durableStart = headlessReplay
+          ? await service.enterDurableDispatch(
+              characterIds: [participantId],
+              supplies: supplies,
+              supplyCap: _supplyCap,
+              cycleIndex: cycleIndex,
+              request: automationRequest!,
+            )
+          : null;
+      if (!headlessReplay) {
+        await service.enter(
+          characterIds: [participantId],
+          supplies: supplies,
+          supplyCap: _supplyCap,
+          cycleIndex: cycleIndex,
+        );
+      }
       if (!mounted) return;
       ref.invalidate(activeGauntletProvider);
       ref.invalidate(gauntletCandidatesProvider);
       ref.invalidate(gauntletLoadoutInfoProvider);
+      ref.invalidate(durableActivityRunProvider(DurableActivityKind.gauntlet));
       if (headlessReplay) {
-        final result = await service.driveHeadlessReplayToRewardChoice(
-          request: automationRequest!,
+        final result = await service.resumeDurableDispatch(
+          durableRunId: durableStart!.durableRunId,
           config: config!,
           numbers: numbers!,
         );
@@ -92,6 +107,9 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
         ref.invalidate(activeGauntletProvider);
         ref.invalidate(gauntletCandidatesProvider);
         ref.invalidate(gauntletLoadoutInfoProvider);
+        ref.invalidate(
+          durableActivityRunProvider(DurableActivityKind.gauntlet),
+        );
         switch (result.terminal) {
           case GauntletAutomationDriveTerminal.awaitingRewardChoice:
             // 自动战斗只推进到现有三选一边界，选择权仍由玩家本人处理。
@@ -107,6 +125,12 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
               ),
             );
         }
+        await ref
+            .read(durableActivityAutomationServiceProvider)
+            ?.close(runId: durableStart.durableRunId);
+        ref.invalidate(
+          durableActivityRunProvider(DurableActivityKind.gauntlet),
+        );
       } else {
         // 入庄成功 → 逐关战斗流（#1 wiring Task 5）；终局（选奖 / 离庄 / 认输）
         // 返回后 pop 本屏回主菜单（镜像 tower 花名册 → runTowerFlow）。
@@ -133,6 +157,13 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     if (service == null) return; // 测试旁路：未 init Isar
     setState(() => _submitting = true);
     try {
+      final durable = await ref.read(
+        durableActivityRunProvider(DurableActivityKind.gauntlet).future,
+      );
+      if (durable != null) {
+        await _resumeDurable(durable, service);
+        return;
+      }
       final outcome = await service.recover(
         config: ref.read(gauntletConfigProvider),
       );
@@ -186,11 +217,83 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     }
   }
 
+  Future<void> _resumeDurable(
+    DurableActivityCombatRun durable,
+    GauntletService service,
+  ) async {
+    var current = durable;
+    GauntletAutomationDriveResult? driveResult;
+    if (current.phase == DurableActivityPhase.active) {
+      final config = ref.read(gauntletConfigProvider);
+      final numbers = GameRepository.instanceOrNull?.numbers;
+      if (config == null || numbers == null) return;
+      driveResult = await service.resumeDurableDispatch(
+        durableRunId: current.id,
+        config: config,
+        numbers: numbers,
+      );
+      final persisted = await ref
+          .read(durableActivityAutomationServiceProvider)
+          ?.runById(current.id);
+      if (persisted == null) {
+        throw StateError('Gauntlet durable receipt disappeared after resume');
+      }
+      current = persisted;
+    }
+    ref.invalidate(activeGauntletProvider);
+    ref.invalidate(gauntletCandidatesProvider);
+    ref.invalidate(gauntletLoadoutInfoProvider);
+    ref.invalidate(durableActivityRunProvider(DurableActivityKind.gauntlet));
+    if (!mounted || current.phase != DurableActivityPhase.settlementApplied) {
+      return;
+    }
+    if (current.outcome == DurableActivityOutcome.victory) {
+      await runGauntletFlow(context: context, ref: ref);
+    } else {
+      final summary = driveResult?.defeatSummary;
+      if (summary != null) {
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => GauntletDefeatScreen(summary: summary),
+          ),
+        );
+      } else {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text(UiStrings.stageVictoryReportTitle),
+            content: Text(
+              [
+                UiStrings.gauntletName,
+                UiStrings.stageReportParticipant(current.participantName),
+                UiStrings.mainlineNarrativeDefeatLabel,
+              ].join(UiStrings.offlineRecapDetailSeparator),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text(UiStrings.stageVictoryConfirm),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    await ref
+        .read(durableActivityAutomationServiceProvider)
+        ?.close(runId: current.id);
+    ref.invalidate(durableActivityRunProvider(DurableActivityKind.gauntlet));
+  }
+
   @override
   Widget build(BuildContext context) {
     final candidatesAsync = ref.watch(gauntletCandidatesProvider);
     final infoAsync = ref.watch(gauntletLoadoutInfoProvider);
     final activeAsync = ref.watch(activeGauntletProvider);
+    final durableAsync = ref.watch(
+      durableActivityRunProvider(DurableActivityKind.gauntlet),
+    );
     final config = ref.watch(gauntletConfigProvider);
 
     return Scaffold(
@@ -215,8 +318,13 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
               error: e,
               onRetry: () => ref.invalidate(gauntletLoadoutInfoProvider),
             ),
-            data: (info) =>
-                _buildBody(candidates, info, config, activeAsync.asData?.value),
+            data: (info) => _buildBody(
+              candidates,
+              info,
+              config,
+              activeAsync.asData?.value,
+              durableAsync.asData?.value,
+            ),
           ),
         ),
       ),
@@ -228,6 +336,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     GauntletLoadoutInfo info,
     BossGauntletConfig? config,
     BossGauntletRun? activeRun,
+    DurableActivityCombatRun? durableRun,
   ) {
     // 防御：清掉已不可入庄的旧选择。
     final selectableIds = {
@@ -242,7 +351,7 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
     }
 
     // 断线续战：有 active 会话时 enter 必抛，顶部改显恢复区并禁用新建交互。
-    final resuming = activeRun != null;
+    final resuming = activeRun != null || durableRun != null;
     final hasTicket = info.ticketCount >= 1;
     final canEnter =
         !resuming && _selected.length == 1 && hasTicket && !_submitting;
@@ -288,11 +397,18 @@ class _GauntletLoadoutScreenState extends ConsumerState<GauntletLoadoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (resuming) ...[
+              if (activeRun != null) ...[
                 _RecoveryBanner(
                   run: activeRun,
                   submitting: _submitting,
                   onResume: _resume,
+                ),
+                const SizedBox(height: 14),
+              ] else if (durableRun != null) ...[
+                DurableActivityRunCard(
+                  run: durableRun,
+                  stageName: UiStrings.gauntletName,
+                  onPressed: _resume,
                 ),
                 const SizedBox(height: 14),
               ],

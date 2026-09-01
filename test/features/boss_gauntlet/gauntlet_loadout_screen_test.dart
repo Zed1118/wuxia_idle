@@ -11,6 +11,9 @@ import 'package:wuxia_idle/data/defs/boss_gauntlet_config.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
+import 'package:wuxia_idle/features/activity/application/durable_activity_automation_providers.dart';
+import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
+import 'package:wuxia_idle/features/activity/presentation/durable_activity_automation_ui.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_providers.dart';
 import 'package:wuxia_idle/features/boss_gauntlet/application/gauntlet_service.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
@@ -81,6 +84,7 @@ Future<void> _pump(
   required List<GauntletCandidate> candidates,
   GauntletLoadoutInfo info = _info,
   BossGauntletRun? activeRun,
+  DurableActivityCombatRun? durableRun,
   GauntletService? service,
 }) async {
   tester.view.physicalSize = size;
@@ -94,6 +98,9 @@ Future<void> _pump(
         gauntletCandidatesProvider.overrideWith((ref) async => candidates),
         gauntletLoadoutInfoProvider.overrideWith((ref) async => info),
         activeGauntletProvider.overrideWith((ref) async => activeRun),
+        durableActivityRunProvider(
+          DurableActivityKind.gauntlet,
+        ).overrideWith((ref) async => durableRun),
       ],
       child: const MaterialApp(home: GauntletLoadoutScreen()),
     ),
@@ -109,12 +116,36 @@ BossGauntletRun _fakeRun({required GauntletPhase phase, int stage = 2}) =>
       ..currentStage = stage
       ..sessionPhase = phase;
 
+DurableActivityCombatRun _fakeDurableRun({
+  DurableActivityPhase phase = DurableActivityPhase.settlementApplied,
+}) => DurableActivityCombatRun()
+  ..id = 88
+  ..saveDataId = 0
+  ..kind = DurableActivityKind.gauntlet
+  ..contentId = 'duanhunzhuang'
+  ..loadoutPlanId = 'gauntlet-plan-1'
+  ..stageId = 'gauntlet_run_77'
+  ..cycleIndex = 1
+  ..seed = 77
+  ..contentKind = ActivityContentKind.gauntlet
+  ..participation = ActivityParticipationMode.dispatch
+  ..controller = ActivityController.playerBot
+  ..clock = ActivityClock.headless
+  ..entryKind = ActivityEntryKind.offlineResume
+  ..participantCreatedAt = DateTime(2026, 7, 17)
+  ..participantName = '沈青'
+  ..phase = phase
+  ..outcome = DurableActivityOutcome.defeat
+  ..startedAt = DateTime(2026, 9, 1)
+  ..lastAdvancedAt = DateTime(2026, 9, 1);
+
 class _SpyGauntletService extends GauntletService {
   _SpyGauntletService(super.isar);
 
   List<int>? enteredCharacterIds;
   ActivityParticipationRequest? entryAutomationRequest;
   ActivityParticipationRequest? driveAutomationRequest;
+  int? resumedDurableRunId;
 
   @override
   Future<int> enter({
@@ -134,12 +165,41 @@ class _SpyGauntletService extends GauntletService {
     required ActivityParticipationRequest request,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
+    int? durableRunId,
   }) async {
     driveAutomationRequest = request;
     return const GauntletAutomationDriveResult(
       terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
       stagesCompleted: 3,
     );
+  }
+
+  @override
+  Future<GauntletDurableDispatchStart> enterDurableDispatch({
+    required List<int> characterIds,
+    Map<String, int> supplies = const {},
+    required int supplyCap,
+    int cycleIndex = 1,
+    required ActivityParticipationRequest request,
+    DateTime? now,
+  }) async {
+    enteredCharacterIds = List.of(characterIds);
+    entryAutomationRequest = request;
+    return (gauntletRunId: 77, durableRunId: 88);
+  }
+
+  @override
+  Future<GauntletAutomationDriveResult> resumeDurableDispatch({
+    required int durableRunId,
+    required BossGauntletConfig config,
+    required NumbersConfig numbers,
+    DateTime? now,
+  }) async {
+    resumedDurableRunId = durableRunId;
+    driveAutomationRequest = entryAutomationRequest;
+    // 接线用例只验证整备页把同一 exact request 交给 durable resume。
+    // 不进入真人三选一导航，否则 pumpAndSettle 会按产品语义等待玩家操作。
+    throw StateError('stop after durable dispatch wiring capture');
   }
 
   @override
@@ -299,6 +359,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Boss 会话已结算删除但 durable receipt 仍提供恢复卡', (tester) async {
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      durableRun: _fakeDurableRun(),
+    );
+
+    expect(find.byType(DurableActivityRunCard), findsOneWidget);
+    expect(find.text(UiStrings.battleResume), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('active durable 恢复卡调用断魂庄专用 resume owner', (tester) async {
+    final service = _SpyGauntletService(IsarSetup.instance);
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      candidates: candidates,
+      durableRun: _fakeDurableRun(phase: DurableActivityPhase.active),
+      service: service,
+    );
+
+    await tester.tap(find.text(UiStrings.battleResume));
+    await tester.pumpAndSettle();
+
+    expect(service.resumedDurableRunId, 88);
+    expect(find.text(UiStrings.gauntletResumeFailed), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('完整首通后生产整备入口才开放快速推演', (tester) async {
     await _pump(tester, const Size(1280, 720), candidates: candidates);
     expect(
@@ -327,9 +418,7 @@ void main() {
     expect(button.onTap, isNull, reason: '未选择实际参与者时必须 fail closed');
   });
 
-  testWidgets('快速推演从生产整备页提交 exact participant 的 headless replay', (
-    tester,
-  ) async {
+  testWidgets('生产整备页提交 exact participant 的 durable dispatch', (tester) async {
     final service = _SpyGauntletService(IsarSetup.instance);
     await _pump(
       tester,
@@ -360,10 +449,10 @@ void main() {
     expect(request.contentId, GauntletService.gauntletId);
     expect(request.characterId, 1);
     expect(request.loadoutPlanId, 'gauntlet-plan-1');
-    expect(request.participation, ActivityParticipationMode.direct);
+    expect(request.participation, ActivityParticipationMode.dispatch);
     expect(request.controller, ActivityController.playerBot);
     expect(request.clock, ActivityClock.headless);
-    expect(request.entryKind, ActivityEntryKind.replay);
+    expect(request.entryKind, ActivityEntryKind.offlineResume);
     expect(tester.takeException(), isNull);
   });
 

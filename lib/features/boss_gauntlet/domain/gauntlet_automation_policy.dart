@@ -35,6 +35,38 @@ ActivityParticipationRequest gauntletHeadlessReplayRequest({
   entryKind: ActivityEntryKind.replay,
 );
 
+ActivityParticipationRequest gauntletDurableDispatchRequest({
+  required int characterId,
+}) => ActivityParticipationRequest(
+  contentId: GauntletAutomationPolicy.gauntletId,
+  contentKind: ActivityContentKind.gauntlet,
+  characterId: characterId,
+  loadoutPlanId: gauntletAutomationLoadoutPlanId(characterId),
+  participation: ActivityParticipationMode.dispatch,
+  controller: ActivityController.playerBot,
+  clock: ActivityClock.headless,
+  entryKind: ActivityEntryKind.offlineResume,
+);
+
+String gauntletDurableStageId(int gauntletRunId) {
+  if (gauntletRunId <= 0) {
+    throw ArgumentError.value(gauntletRunId, 'gauntletRunId', 'must be > 0');
+  }
+  return 'gauntlet_run_$gauntletRunId';
+}
+
+int gauntletRunIdFromDurableStageId(String stageId) {
+  const prefix = 'gauntlet_run_';
+  if (!stageId.startsWith(prefix)) {
+    throw StateError('Gauntlet durable stage identity is invalid');
+  }
+  final runId = int.tryParse(stageId.substring(prefix.length));
+  if (runId == null || runId <= 0) {
+    throw StateError('Gauntlet durable run identity is invalid');
+  }
+  return runId;
+}
+
 /// Pure policy result. Application code must fail closed on every rejection.
 final class GauntletAutomationDecision {
   const GauntletAutomationDecision._({
@@ -62,8 +94,9 @@ final class GauntletAutomationRejectedException extends StateError {
 
 /// Pure domain policy for the currently admitted gauntlet automation shape.
 ///
-/// This is intentionally a one-tuple allowlist. It does not infer a controller,
-/// participant, entry kind, or content identity from any other field.
+/// This is intentionally a two-tuple allowlist: immediate replay and persisted
+/// dispatch. It does not infer a controller, participant, entry kind, or content
+/// identity from any other field.
 final class GauntletAutomationPolicy {
   const GauntletAutomationPolicy._();
 
@@ -90,11 +123,6 @@ final class GauntletAutomationPolicy {
         GauntletAutomationRejectionReason.wrongLoadoutPlan,
       );
     }
-    if (request.participation != ActivityParticipationMode.direct) {
-      return const GauntletAutomationDecision.rejected(
-        GauntletAutomationRejectionReason.unsupportedParticipation,
-      );
-    }
     if (request.controller == ActivityController.playerBot &&
         request.clock == ActivityClock.realtime) {
       return const GauntletAutomationDecision.rejected(
@@ -111,10 +139,19 @@ final class GauntletAutomationPolicy {
         GauntletAutomationRejectionReason.unsupportedClock,
       );
     }
-    if (request.entryKind != ActivityEntryKind.replay) {
-      return const GauntletAutomationDecision.rejected(
-        GauntletAutomationRejectionReason.unsupportedEntryKind,
-      );
+    switch (request.participation) {
+      case ActivityParticipationMode.direct:
+        if (request.entryKind != ActivityEntryKind.replay) {
+          return const GauntletAutomationDecision.rejected(
+            GauntletAutomationRejectionReason.unsupportedEntryKind,
+          );
+        }
+      case ActivityParticipationMode.dispatch:
+        if (request.entryKind != ActivityEntryKind.offlineResume) {
+          return const GauntletAutomationDecision.rejected(
+            GauntletAutomationRejectionReason.unsupportedEntryKind,
+          );
+        }
     }
     if (!clearedGauntletIds.contains(gauntletId)) {
       return const GauntletAutomationDecision.rejected(

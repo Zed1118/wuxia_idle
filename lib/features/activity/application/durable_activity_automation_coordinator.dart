@@ -83,6 +83,9 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
     DurableActivityKind.tower => throw StateError(
       'tower uses executeTowerDurableActivityAutomation',
     ),
+    DurableActivityKind.gauntlet => throw StateError(
+      'gauntlet uses GauntletService.resumeDurableDispatch',
+    ),
     DurableActivityKind.lightFoot => await runner.runLightFoot(
       stage: stage,
       admission: admission,

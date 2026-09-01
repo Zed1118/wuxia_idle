@@ -39,17 +39,29 @@ class CharacterOccupancyService {
     }
 
     for (final run in await _isar.expeditionRuns.where().findAll()) {
+      if (excludingKind == ActivityKind.expedition &&
+          run.id == excludingRunId) {
+        continue;
+      }
       entries.add(_fromMembers(ActivityKind.expedition, run.id, run.members));
     }
     for (final run in await _isar.bossGauntletRuns.where().findAll()) {
+      if (excludingKind == ActivityKind.bossGauntlet &&
+          run.id == excludingRunId) {
+        continue;
+      }
       entries.add(_fromMembers(ActivityKind.bossGauntlet, run.id, run.members));
     }
     for (final run in await _isar.durableActivityCombatRuns.where().findAll()) {
       if (run.phase == DurableActivityPhase.closed) continue;
+      // 断魂庄 durable row 是 BossGauntletRun 的恢复/receipt 伴随记录；实际
+      // 角色与装配占用仍由上面的 Boss 会话唯一持有，避免同一活动重复占用自己。
+      if (run.kind == DurableActivityKind.gauntlet) continue;
       final kind = switch (run.kind) {
         DurableActivityKind.tower => ActivityKind.tower,
         DurableActivityKind.lightFoot => ActivityKind.lightFoot,
         DurableActivityKind.massBattle => ActivityKind.massBattle,
+        DurableActivityKind.gauntlet => ActivityKind.bossGauntlet,
       };
       if (kind == excludingKind && run.id == excludingRunId) continue;
       entries.add(_fromMembers(kind, run.id, run.members));

@@ -8,11 +8,12 @@ String durableActivityLoadoutPlanId({
   required String stageId,
   required int characterId,
 }) {
-  if (kind == DurableActivityKind.tower) {
+  if (kind == DurableActivityKind.tower ||
+      kind == DurableActivityKind.gauntlet) {
     throw ArgumentError.value(
       kind,
       'kind',
-      'tower uses towerAutomationLoadoutPlanId',
+      'kind uses its content-specific loadout plan',
     );
   }
   return '${kind.name}:$stageId:character:$characterId';
@@ -32,6 +33,11 @@ ActivityParticipationRequest durableActivityAutomationRequest({
       kind,
       'kind',
       'tower uses towerDurableDispatchRequest',
+    ),
+    DurableActivityKind.gauntlet => throw ArgumentError.value(
+      kind,
+      'kind',
+      'gauntlet uses gauntletDurableDispatchRequest',
     ),
     DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
     DurableActivityKind.massBattle => ActivityContentKind.massBattle,
@@ -103,7 +109,8 @@ final class DurableActivityAutomationPolicy {
     required bool alreadyCleared,
     required Formation? formation,
   }) {
-    if (kind == DurableActivityKind.tower) {
+    if (kind == DurableActivityKind.tower ||
+        kind == DurableActivityKind.gauntlet) {
       return const DurableActivityAutomationDecision.rejected(
         DurableActivityAutomationRejectionReason.unsupportedKind,
       );
@@ -112,12 +119,18 @@ final class DurableActivityAutomationPolicy {
       DurableActivityKind.tower => throw StateError(
         'tower must use TowerAutomationPolicy',
       ),
+      DurableActivityKind.gauntlet => throw StateError(
+        'gauntlet must use GauntletAutomationPolicy',
+      ),
       DurableActivityKind.lightFoot => StageType.lightFoot,
       DurableActivityKind.massBattle => StageType.massBattle,
     };
     final expectedContentKind = switch (kind) {
       DurableActivityKind.tower => throw StateError(
         'tower must use TowerAutomationPolicy',
+      ),
+      DurableActivityKind.gauntlet => throw StateError(
+        'gauntlet must use GauntletAutomationPolicy',
       ),
       DurableActivityKind.lightFoot => ActivityContentKind.lightFoot,
       DurableActivityKind.massBattle => ActivityContentKind.massBattle,
