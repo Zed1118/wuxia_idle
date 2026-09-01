@@ -18,7 +18,12 @@ import 'package:wuxia_idle/features/expedition/application/expedition_combat_sel
 import 'package:wuxia_idle/features/expedition/application/phase0a_expedition_combat_runner.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_milestone_record.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_seed.dart';
+import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
+import 'package:wuxia_idle/shared/battle_shared/battle_result.dart';
+import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -238,5 +243,125 @@ void main() {
             firstEnemy.realmLayer.index,
       ),
     );
+  });
+
+  test('可见真人险关胜利才写 route+milestone 解锁并与奖励 receipt 同事务', () async {
+    final config = GameRepository.instance.expeditionConfig!;
+    final nodeSeed = ExpeditionSeed.forNode(saveId: 0, runSerial: 1, node: 5);
+    final milestoneId = config.teamForNode(nodeSeed: nodeSeed, elite: true).id;
+    final recordKey = ExpeditionMilestoneRecord.canonicalKey(
+      saveDataId: 1,
+      routeId: ExpeditionService.contentId,
+      milestoneId: milestoneId,
+    );
+    await IsarSetup.instance.writeTxn(() async {
+      final character = (await IsarSetup.instance.characters.get(1))!
+        ..isFounder = true
+        ..lineageRole = LineageRole.founder;
+      await IsarSetup.instance.characters.put(character);
+      final save = (await IsarSetup.instance.saveDatas.get(0))!
+        ..founderCharacterId = 1;
+      await IsarSetup.instance.saveDatas.put(save);
+      await IsarSetup.instance.expeditionMilestoneRecords.put(
+        ExpeditionMilestoneRecord()
+          ..recordKey = recordKey
+          ..saveDataId = 1
+          ..routeId = ExpeditionService.contentId
+          ..milestoneId = milestoneId
+          ..nodeIndex = 5
+          ..nodeSeed = nodeSeed
+          ..cycleIndex = 1
+          ..sourceRunId = 99
+          ..sourceParticipantId = 1
+          ..discoveredAt = DateTime.utc(2026, 9, 1),
+      );
+    });
+    final service = ExpeditionService(IsarSetup.instance);
+    final plan = await service.prepareManualMilestone(
+      request: ExpeditionService.manualMilestoneRequestFor(
+        milestoneId: milestoneId,
+        characterId: 1,
+      ),
+    );
+    final lost = await service.completeManualMilestone(
+      plan: plan,
+      settlement: CombatSettlementSnapshot(
+        result: BattleResult.rightWin,
+        totalTicks: 20,
+        hadActions: true,
+        playerCharacterId: 1,
+        participants: [
+          CombatParticipantSnapshot(
+            characterId: 1,
+            currentHp: 0,
+            maxHp: plan.playerSnapshot.maxHp,
+          ),
+        ],
+        skillCasts: const [],
+        totalDamage: 1,
+        criticalCount: 0,
+        damageByCharacterId: const {1: 1},
+      ),
+      now: DateTime.utc(2026, 9, 1, 0, 30),
+    );
+    expect(lost, isFalse);
+    expect(
+      (await IsarSetup.instance.expeditionMilestoneRecords.getByRecordKey(
+        recordKey,
+      ))?.manualClearedAt,
+      isNull,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 0);
+
+    final winningSettlement = CombatSettlementSnapshot(
+      result: BattleResult.leftWin,
+      totalTicks: 20,
+      hadActions: true,
+      playerCharacterId: 1,
+      participants: [
+        CombatParticipantSnapshot(
+          characterId: 1,
+          currentHp: plan.playerSnapshot.maxHp,
+          maxHp: plan.playerSnapshot.maxHp,
+        ),
+      ],
+      skillCasts: const [],
+      totalDamage: 10,
+      criticalCount: 0,
+      damageByCharacterId: const {1: 10},
+    );
+    await expectLater(
+      service.completeManualMilestone(
+        plan: plan,
+        settlement: winningSettlement,
+        now: DateTime.utc(2026, 9, 1, 0, 45),
+        afterRewardsInTxnForTest: () async => throw StateError('crash'),
+      ),
+      throwsA(isA<StateError>()),
+    );
+    expect(
+      (await IsarSetup.instance.expeditionMilestoneRecords.getByRecordKey(
+        recordKey,
+      ))?.manualClearedAt,
+      isNull,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 0);
+    expect((await IsarSetup.instance.saveDatas.get(0))!.baicaoMaxDepth, 0);
+
+    final won = await service.completeManualMilestone(
+      plan: plan,
+      settlement: winningSettlement,
+      now: DateTime.utc(2026, 9, 1, 1),
+    );
+
+    expect(won, isTrue);
+    final stored = await IsarSetup.instance.expeditionMilestoneRecords
+        .getByRecordKey(recordKey);
+    expect(
+      stored?.manualClearedAt?.millisecondsSinceEpoch,
+      DateTime.utc(2026, 9, 1, 1).millisecondsSinceEpoch,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 3);
+    expect((await IsarSetup.instance.saveDatas.get(0))!.baicaoMaxDepth, 5);
   });
 }

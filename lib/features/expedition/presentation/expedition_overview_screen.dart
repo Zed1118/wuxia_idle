@@ -18,7 +18,9 @@ import '../application/expedition_service.dart';
 import '../application/expedition_startup.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_run.dart';
+import '../domain/expedition_milestone_record.dart';
 import 'expedition_recap_screen.dart';
+import 'phase0a_expedition_milestone_battle_host.dart';
 
 /// 江湖远行总览（§7.1 · Phase B2.4）。百草岭卡两态：
 /// - 无 active 远征 → **派遣态**（择单人 + 三方针 + 拔营出发）；
@@ -102,20 +104,67 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
     }
   }
 
+  Future<void> _runManualMilestone(ExpeditionMilestoneRecord milestone) async {
+    if (_selected.length != 1 || _submitting) return;
+    setState(() => _submitting = true);
+    bool? completed;
+    try {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => Phase0aExpeditionMilestoneBattleHost(
+            request: ExpeditionService.manualMilestoneRequestFor(
+              milestoneId: milestone.milestoneId,
+              characterId: _selected.single,
+            ),
+            onCompleted: (won) => completed = won,
+          ),
+        ),
+      );
+      if (!mounted) return;
+      ref.invalidate(pendingExpeditionMilestoneProvider);
+      ref.invalidate(expeditionCandidatesProvider);
+      ref.invalidate(expeditionMaxDepthProvider);
+      if (completed != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              completed!
+                  ? UiStrings.expeditionManualMilestoneVictory
+                  : UiStrings.expeditionManualMilestoneDefeat,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final candidatesAsync = ref.watch(expeditionCandidatesProvider);
-    return candidatesAsync.when(
+    final pendingAsync = ref.watch(pendingExpeditionMilestoneProvider);
+    return pendingAsync.when(
       loading: () => const Center(child: InkLoadingIndicator()),
       error: (e, _) => ErrorFallback(
         error: e,
-        onRetry: () => ref.invalidate(expeditionCandidatesProvider),
+        onRetry: () => ref.invalidate(pendingExpeditionMilestoneProvider),
       ),
-      data: _buildBody,
+      data: (pending) => candidatesAsync.when(
+        loading: () => const Center(child: InkLoadingIndicator()),
+        error: (e, _) => ErrorFallback(
+          error: e,
+          onRetry: () => ref.invalidate(expeditionCandidatesProvider),
+        ),
+        data: (candidates) => _buildBody(candidates, pending: pending),
+      ),
     );
   }
 
-  Widget _buildBody(List<ExpeditionCandidate> candidates) {
+  Widget _buildBody(
+    List<ExpeditionCandidate> candidates, {
+    required ExpeditionMilestoneRecord? pending,
+  }) {
     // 防御：清掉已不可派遣的旧选择（候选刷新后占用/主修态可能变）。
     final dispatchableIds = {
       for (final c in candidates)
@@ -175,6 +224,33 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _BaicaoHeader(),
+              if (pending != null) ...[
+                const SizedBox(height: 14),
+                const InkListCard(
+                  padding: EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        UiStrings.expeditionManualMilestoneTitle,
+                        style: TextStyle(
+                          color: WuxiaUi.gold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        UiStrings.expeditionManualMilestoneBody,
+                        style: TextStyle(
+                          color: WuxiaColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 18),
               const _SectionLabel(UiStrings.expeditionDispatchTeamSection),
               const SizedBox(height: 4),
@@ -214,20 +290,22 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
                   fontSize: 12,
                 ),
               ),
-              const SizedBox(height: 16),
-              const _SectionLabel(UiStrings.expeditionDispatchPolicySection),
-              const SizedBox(height: 8),
-              for (final p in ExpeditionPolicy.values) ...[
-                _PolicyOption(
-                  policy: p,
-                  selected: _policy == p,
-                  onTap: () => setState(() => _policy = p),
-                ),
+              if (pending == null) ...[
+                const SizedBox(height: 16),
+                const _SectionLabel(UiStrings.expeditionDispatchPolicySection),
                 const SizedBox(height: 8),
+                for (final p in ExpeditionPolicy.values) ...[
+                  _PolicyOption(
+                    policy: p,
+                    selected: _policy == p,
+                    onTap: () => setState(() => _policy = p),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ],
               // 批 B：周目选择（达成首个深度里程碑起显；未达恒 cycle1 不渲染，
               // 沿 CycleSelectControl「highest==0 → 空占位」体例）。
-              if (cleared >= 1) ...[
+              if (pending == null && cleared >= 1) ...[
                 const SizedBox(height: 16),
                 CycleSelectLayout(
                   highestCleared: cleared,
@@ -241,9 +319,15 @@ class _DispatchViewState extends ConsumerState<_DispatchView> {
               Align(
                 alignment: Alignment.center,
                 child: PlaqueButton(
-                  label: UiStrings.expeditionDispatchButton,
+                  label: pending == null
+                      ? UiStrings.expeditionDispatchButton
+                      : UiStrings.expeditionManualMilestoneButton,
                   primary: true,
-                  onTap: canDispatch ? () => _dispatch(selectedCycle) : null,
+                  onTap: canDispatch
+                      ? () => pending == null
+                            ? _dispatch(selectedCycle)
+                            : _runManualMilestone(pending)
+                      : null,
                 ),
               ),
             ],
@@ -465,6 +549,7 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       // 期间已成熟但未启动追平的节点须先入暂存再返程，否则被直接丢弃；
       // settle 报战败则按战败返程（兑现伤势，P1-5.2 召回路径缓解）。
       var defeated = false;
+      ExpeditionReturnResult? automaticReturn;
       final isar = ref.read(isarProvider);
       final config = ref.read(expeditionConfigProvider);
       if (isar != null && config != null && run.members.length == 1) {
@@ -479,8 +564,10 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
           now: ref.read(systemClockProvider).now(),
         );
         defeated = settle.defeated;
+        automaticReturn = settle.automaticReturn;
       }
-      final result = await service.recall(defeated: defeated);
+      final result =
+          automaticReturn ?? await service.recall(defeated: defeated);
       if (!mounted) return;
       if (!result.returned) {
         // 并发冲突（P1-5.4 cursor 守卫放弃）：未发奖未关会话。此前直接

@@ -59,6 +59,7 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
     await retireLegacyMultiplayerExpeditionOnOpen(service: service);
     ref.invalidate(activeExpeditionProvider);
     ref.invalidate(expeditionCandidatesProvider);
+    ref.invalidate(pendingExpeditionMilestoneProvider);
     return;
   }
   await settleActiveExpeditionOnOpen(
@@ -73,4 +74,5 @@ Future<void> maybeSettleExpedition(WidgetRef ref, {DateTime? now}) async {
   );
   ref.invalidate(activeExpeditionProvider);
   ref.invalidate(expeditionCandidatesProvider);
+  ref.invalidate(pendingExpeditionMilestoneProvider);
 }

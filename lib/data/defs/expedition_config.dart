@@ -172,11 +172,11 @@ class ExpeditionConfig {
     required bool elite,
   }) {
     final curve = depthCurve;
+    final team = teamForNode(nodeSeed: nodeSeed, elite: elite);
     final pool = elite ? eliteEnemyTeams : normalEnemyTeams;
     if (curve == null || pool.isEmpty) {
       throw StateError('expeditions: combat 配置未加载');
     }
-    final team = pool[nodeSeed.abs() % pool.length];
     return [
       for (final enemy in team.enemies)
         EnemyDef(
@@ -200,5 +200,18 @@ class ExpeditionConfig {
           cycleVulnerability: enemy.cycleVulnerability,
         ),
     ];
+  }
+
+  /// 与 [enemiesForNode] 共用的稳定模板选择。模板 id 同时是首次亲战门的
+  /// `milestoneId`，因此选择逻辑只能有这一份。
+  ExpeditionEnemyTeam teamForNode({
+    required int nodeSeed,
+    required bool elite,
+  }) {
+    final pool = elite ? eliteEnemyTeams : normalEnemyTeams;
+    if (pool.isEmpty) {
+      throw StateError('expeditions: combat 敌队池未加载');
+    }
+    return pool[nodeSeed.abs() % pool.length];
   }
 }

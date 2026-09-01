@@ -10,6 +10,7 @@ import '../../../data/defs/expedition_config.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../domain/expedition_run.dart';
+import '../domain/expedition_milestone_record.dart';
 import 'expedition_service.dart';
 
 part 'expedition_providers.g.dart';
@@ -34,6 +35,14 @@ Future<ExpeditionRun?> activeExpedition(Ref ref) async {
   final service = ref.watch(expeditionServiceProvider);
   if (service == null) return null;
   return service.activeRun();
+}
+
+/// 离线撞门后留下的唯一待亲战险关；胜利或自动返程写入后由 caller 失效。
+@riverpod
+Future<ExpeditionMilestoneRecord?> pendingExpeditionMilestone(Ref ref) async {
+  final service = ref.watch(expeditionServiceProvider);
+  if (service == null) return null;
+  return service.pendingManualMilestone();
 }
 
 /// 百草岭配置（§8.2）。经 provider watch 而非在 widget 构造期直读单例，避开

@@ -13,6 +13,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
+import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../activity/application/character_occupancy_service.dart';
 import '../../activity/domain/activity_member_snapshot.dart';
 import '../../../shared/battle_shared/cycle_realm_gate.dart';
@@ -29,9 +30,12 @@ import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
+import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../../data/defs/expedition_config.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_seed.dart';
+import '../domain/expedition_milestone_record.dart';
+import '../domain/expedition_node.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_combat.dart';
 import 'phase0a_expedition_combat_runner.dart';
@@ -58,6 +62,21 @@ class ExpeditionService {
     participation: ActivityParticipationMode.dispatch,
     controller: ActivityController.playerBot,
     clock: ActivityClock.headless,
+    entryKind: ActivityEntryKind.firstClear,
+  );
+
+  static ActivityParticipationRequest manualMilestoneRequestFor({
+    required String milestoneId,
+    required int characterId,
+  }) => ActivityParticipationRequest(
+    contentId: '$contentId:$milestoneId',
+    contentKind: ActivityContentKind.expedition,
+    characterId: characterId,
+    loadoutPlanId:
+        'expedition:baicao:manual-milestone:$milestoneId:character:$characterId',
+    participation: ActivityParticipationMode.direct,
+    controller: ActivityController.human,
+    clock: ActivityClock.realtime,
     entryKind: ActivityEntryKind.firstClear,
   );
 
@@ -370,6 +389,233 @@ class ExpeditionService {
     return true;
   }
 
+  /// 当前待亲战险关。首版全局只允许一条 active 远征，入口也只允许一个待办；
+  /// 多条未清记录表示持久事实漂移，必须 fail closed。
+  Future<ExpeditionMilestoneRecord?> pendingManualMilestone() async {
+    final records = await _isar.expeditionMilestoneRecords.where().findAll();
+    final pending = records
+        .where(
+          (record) =>
+              record.saveDataId == IsarSetup.currentSlotId &&
+              record.routeId == contentId &&
+              record.manualClearedAt == null,
+        )
+        .toList(growable: false);
+    if (pending.length > 1) {
+      throw StateError('Multiple expedition manual milestones are pending');
+    }
+    final record = pending.singleOrNull;
+    record?.validateIdentity();
+    return record;
+  }
+
+  /// 为百草岭生产入口准备一场可见、真人控制的险关战斗。
+  Future<ExpeditionManualMilestonePlan> prepareManualMilestone({
+    required ActivityParticipationRequest request,
+  }) async {
+    final pending = await pendingManualMilestone();
+    if (pending == null) {
+      throw StateError('No expedition manual milestone is pending');
+    }
+    final expected = manualMilestoneRequestFor(
+      milestoneId: pending.milestoneId,
+      characterId: request.characterId,
+    );
+    if (request != expected) {
+      throw StateError(
+        'Expedition manual milestone request semantics mismatch',
+      );
+    }
+    if (await activeRun() != null) {
+      throw StateError('Expedition manual milestone requires no active run');
+    }
+
+    final scheduling = await loadDiscipleSchedulingSummary(_isar);
+    final scheduled = scheduling.members
+        .where((member) => member.characterId == request.characterId)
+        .toList(growable: false);
+    if (scheduled.length != 1 || !scheduled.single.isAlive) {
+      throw StateError('Expedition manual milestone participant is stale');
+    }
+    if (scheduled.single.activity != null) {
+      throw StateError('Expedition manual milestone participant is occupied');
+    }
+    final character = await _isar.characters.get(request.characterId);
+    if (character == null ||
+        !character.isAlive ||
+        character.injuryHoursRemaining > 0) {
+      throw StateError(
+        'Expedition manual milestone participant is unavailable',
+      );
+    }
+
+    final snapshots = await PlayerCombatantSnapshotAssembler(
+      isar: _isar,
+    ).loadExactRoster([character.id]);
+    final refreshed = await _isar.characters.get(character.id);
+    if (refreshed == null) {
+      throw StateError('Expedition manual milestone participant disappeared');
+    }
+    final member = await _validatedMemberSnapshot(refreshed);
+    return ExpeditionManualMilestonePlan(
+      recordKey: pending.recordKey,
+      routeId: pending.routeId,
+      milestoneId: pending.milestoneId,
+      nodeIndex: pending.nodeIndex,
+      nodeSeed: pending.nodeSeed,
+      cycleIndex: pending.cycleIndex,
+      member: member,
+      playerSnapshot: snapshots.single,
+    );
+  }
+
+  /// 提交可见亲战终局。只有胜利会在节点原奖励与共享战斗账本同一事务中
+  /// 写 [ExpeditionMilestoneRecord.manualClearedAt]；失败只记共享战斗账本，待办保留。
+  Future<bool> completeManualMilestone({
+    required ExpeditionManualMilestonePlan plan,
+    required CombatSettlementSnapshot settlement,
+    DateTime? now,
+    @visibleForTesting Future<void> Function()? afterRewardsInTxnForTest,
+  }) async {
+    final participant = settlement.participantFor(plan.member.characterId);
+    if (!settlement.isFinished ||
+        settlement.playerCharacterId != plan.member.characterId ||
+        participant == null) {
+      throw StateError('Expedition manual milestone settlement drifted');
+    }
+    final at = now ?? DateTime.now();
+    final won = settlement.result == BattleResult.leftWin;
+
+    if (!won) {
+      await _isar.writeTxn(() async {
+        final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
+          plan.recordKey,
+        );
+        if (record == null || record.manualClearedAt != null) {
+          throw StateError('Expedition manual milestone is no longer pending');
+        }
+        await _applySharedCombatLedger(
+          member: plan.member,
+          settlement: settlement,
+        );
+      });
+      return false;
+    }
+
+    final claimKeys = RewardClaimPlan.forSettlement(
+      contentKind: RewardContentKind.expedition,
+      contentId: '${plan.routeId}:${plan.milestoneId}',
+      saveDataId: IsarSetup.currentSlotId,
+      participantId: plan.member.characterId,
+      occurrenceId: plan.recordKey,
+      includesFirstClear: true,
+    );
+    final disposition = await DurableRewardClaimService(_isar).claimBatch(
+      keys: claimKeys,
+      sourceSettlementId: 'expedition-manual-milestone:${plan.recordKey}',
+      at: at,
+      applyInTxn: () async {
+        final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
+          plan.recordKey,
+        );
+        if (record == null || record.manualClearedAt != null) {
+          throw StateError('Expedition manual milestone is no longer pending');
+        }
+        record.validateIdentity();
+        if (record.routeId != plan.routeId ||
+            record.milestoneId != plan.milestoneId ||
+            record.nodeIndex != plan.nodeIndex ||
+            record.nodeSeed != plan.nodeSeed ||
+            record.cycleIndex != plan.cycleIndex) {
+          throw StateError('Expedition manual milestone plan is stale');
+        }
+        await _applySharedCombatLedger(
+          member: plan.member,
+          settlement: settlement,
+        );
+        await _applyManualMilestoneRewardsInTxn(plan: plan, at: at);
+        record.manualClearedAt = at;
+        await _isar.expeditionMilestoneRecords.put(record);
+        final save = await _isar.saveDatas.get(0);
+        if (save != null && plan.nodeIndex > save.baicaoMaxDepth) {
+          save.baicaoMaxDepth = plan.nodeIndex;
+          await _isar.saveDatas.put(save);
+        }
+        await afterRewardsInTxnForTest?.call();
+      },
+    );
+    if (disposition != RewardClaimDisposition.applied) {
+      throw StateError('Expedition manual milestone reward already settled');
+    }
+    return true;
+  }
+
+  Future<void> _applyManualMilestoneRewardsInTxn({
+    required ExpeditionManualMilestonePlan plan,
+    required DateTime at,
+  }) async {
+    final rewards = scaleRewardsForCycle(
+      ExpeditionRules.rewardsForNode(
+        node: ExpeditionNode(
+          index: plan.nodeIndex,
+          type: ExpeditionNodeType.xianGuan,
+          durationMinutes:
+              GameRepository.instance.expeditionConfig!.eliteNodeMinutes,
+        ),
+        saveId: 0,
+        runSerial: plan.nodeSeed,
+        baseExpPerBattle:
+            GameRepository.instance.expeditionConfig!.baseExpPerBattle,
+      ),
+      plan.cycleIndex,
+    );
+    final character = await _isar.characters.get(plan.member.characterId);
+    if (character == null) {
+      throw StateError('Expedition manual milestone participant disappeared');
+    }
+    final exp = rewards.quantityOf('exp');
+    if (exp > 0) {
+      final progress = await _isar.mainlineProgress
+          .filter()
+          .saveDataIdEqualTo(IsarSetup.currentSlotId)
+          .findFirst();
+      final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+      final numbers = GameRepository.instance.numbers;
+      CharacterAdvancementService.applyExperience(
+        character,
+        exp,
+        realmLookup: GameRepository.instance.getRealm,
+        isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
+          nextTier: tier,
+          nextLayer: layer,
+          releaseCap: numbers.progressionReleaseCap,
+          realmLookup: GameRepository.instance.getRealm,
+          innerDemonDef: numbers.innerDemon,
+          clearedStageIds: clearedSet,
+        ),
+      );
+      await _isar.characters.put(character);
+    }
+    for (final reward in rewards) {
+      if (reward.rewardKey == 'exp' || reward.quantity <= 0) continue;
+      final existing = await _isar.inventoryItems.getByDefId(reward.rewardKey);
+      if (existing != null) {
+        existing.quantity += reward.quantity;
+        existing.lastObtainedAt = at;
+        await _isar.inventoryItems.put(existing);
+      } else {
+        await _isar.inventoryItems.put(
+          InventoryItem()
+            ..defId = reward.rewardKey
+            ..itemType = ItemType.fromDefId(reward.rewardKey)
+            ..quantity = reward.quantity
+            ..firstObtainedAt = at
+            ..lastObtainedAt = at,
+        );
+      }
+    }
+  }
+
   /// 单批离线结算允许的最大节点数（禁数十节点一事务，§4.4）。
   // TODO(batch3-probe): 探针定案后可下沉 expeditions.yaml。
   static const int defaultMaxNodesPerBatch = 24;
@@ -479,6 +725,7 @@ class ExpeditionService {
     final combatSettlements = <CombatSettlementSnapshot>[];
     var node = startNode;
     var defeated = false;
+    ExpeditionManualMilestoneGate? manualMilestoneGate;
     while (node < batchEnd) {
       final index = node + 1;
       final genNode = ExpeditionRules.generateNode(
@@ -489,6 +736,38 @@ class ExpeditionService {
         normalMinutes: config.normalNodeMinutes,
         eliteMinutes: config.eliteNodeMinutes,
       );
+      final nodeSeed = ExpeditionSeed.forNode(
+        saveId: run.saveDataId,
+        runSerial: run.seed,
+        node: index,
+      );
+      if (genNode.type == ExpeditionNodeType.xianGuan &&
+          config.eliteEnemyTeams.isNotEmpty) {
+        final milestoneId = config
+            .teamForNode(nodeSeed: nodeSeed, elite: true)
+            .id;
+        final recordKey = ExpeditionMilestoneRecord.canonicalKey(
+          saveDataId: IsarSetup.currentSlotId,
+          routeId: contentId,
+          milestoneId: milestoneId,
+        );
+        final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
+          recordKey,
+        );
+        if (record?.manualClearedAt == null) {
+          manualMilestoneGate = ExpeditionManualMilestoneGate(
+            recordKey: recordKey,
+            routeId: contentId,
+            milestoneId: milestoneId,
+            nodeIndex: index,
+            nodeSeed: nodeSeed,
+            cycleIndex: run.cycleIndex,
+            sourceRunId: run.id,
+            sourceParticipantId: run.members.single.characterId,
+          );
+          break;
+        }
+      }
       if (genNode.isBattle) {
         final alive = <int, ExpeditionMemberVital>{
           for (final e in vitals.entries)
@@ -497,11 +776,7 @@ class ExpeditionService {
         final outcome = await combat.fight(
           node: genNode,
           memberStates: alive,
-          nodeSeed: ExpeditionSeed.forNode(
-            saveId: run.saveDataId,
-            runSerial: run.seed,
-            node: index,
-          ),
+          nodeSeed: nodeSeed,
           cycleIndex: run.cycleIndex,
         );
         final sharedSettlement = outcome.combatSettlement;
@@ -602,14 +877,16 @@ class ExpeditionService {
         currentNode: startNode,
         caughtUp: false,
         defeated: false,
+        manualMilestoneGate: manualMilestoneGate,
       );
     }
 
     return ExpeditionSettlementResult(
       nodesSettled: settledCount,
       currentNode: node,
-      caughtUp: defeated || node >= targetNode,
+      caughtUp: defeated || manualMilestoneGate != null || node >= targetNode,
       defeated: defeated,
+      manualMilestoneGate: manualMilestoneGate,
     );
   }
 
@@ -640,6 +917,30 @@ class ExpeditionService {
       );
       total += r.nodesSettled;
       last = r;
+      final gate = r.manualMilestoneGate;
+      if (gate != null) {
+        final automaticReturn = await recall(
+          manualMilestoneGate: gate,
+          now: now,
+        );
+        if (!automaticReturn.returned) {
+          return ExpeditionSettlementResult(
+            nodesSettled: total,
+            currentNode: r.currentNode,
+            caughtUp: false,
+            defeated: false,
+            manualMilestoneGate: gate,
+          );
+        }
+        return ExpeditionSettlementResult(
+          nodesSettled: total,
+          currentNode: r.currentNode,
+          caughtUp: true,
+          defeated: false,
+          manualMilestoneGate: gate,
+          automaticReturn: automaticReturn,
+        );
+      }
       if (r.caughtUp) break;
       if (r.nodesSettled == 0) break; // 无进展（并发弃批）→ 不空转
     }
@@ -648,6 +949,8 @@ class ExpeditionService {
       currentNode: last.currentNode,
       caughtUp: last.caughtUp,
       defeated: last.defeated,
+      manualMilestoneGate: last.manualMilestoneGate,
+      automaticReturn: last.automaticReturn,
     );
   }
 
@@ -669,6 +972,7 @@ class ExpeditionService {
   /// 调用方（UI 已防重）可安全重试。
   Future<ExpeditionReturnResult> recall({
     bool defeated = false,
+    ExpeditionManualMilestoneGate? manualMilestoneGate,
     DateTime? now,
     @visibleForTesting Future<void> Function()? beforeCommitForTest,
     @visibleForTesting Future<void> Function()? afterRewardsInTxnForTest,
@@ -695,6 +999,13 @@ class ExpeditionService {
     final participantCharacterId = memberIds.length == 1
         ? memberIds.single
         : null;
+    if (manualMilestoneGate != null &&
+        (manualMilestoneGate.routeId != contentId ||
+            manualMilestoneGate.sourceRunId != run.id ||
+            participantCharacterId !=
+                manualMilestoneGate.sourceParticipantId)) {
+      throw StateError('Expedition manual milestone gate drifted from run');
+    }
     String? participantName;
     final downedIds = run.members
         .where((m) => m.isDowned)
@@ -839,6 +1150,35 @@ class ExpeditionService {
                 save.baicaoMaxDepth = deepest;
                 await _isar.saveDatas.put(save);
               }
+              final gate = manualMilestoneGate;
+              if (gate != null) {
+                final existing = await _isar.expeditionMilestoneRecords
+                    .getByRecordKey(gate.recordKey);
+                if (existing == null) {
+                  final record = ExpeditionMilestoneRecord()
+                    ..recordKey = gate.recordKey
+                    ..saveDataId = IsarSetup.currentSlotId
+                    ..routeId = gate.routeId
+                    ..milestoneId = gate.milestoneId
+                    ..nodeIndex = gate.nodeIndex
+                    ..nodeSeed = gate.nodeSeed
+                    ..cycleIndex = gate.cycleIndex
+                    ..sourceRunId = gate.sourceRunId
+                    ..sourceParticipantId = gate.sourceParticipantId
+                    ..discoveredAt = at;
+                  record.validateIdentity();
+                  await _isar.expeditionMilestoneRecords.put(record);
+                } else {
+                  existing.validateIdentity();
+                  if (existing.manualClearedAt != null ||
+                      existing.routeId != gate.routeId ||
+                      existing.milestoneId != gate.milestoneId) {
+                    throw StateError(
+                      'Expedition manual milestone record conflicts with gate',
+                    );
+                  }
+                }
+              }
               await afterRewardsInTxnForTest?.call();
             },
           );
@@ -866,6 +1206,7 @@ class ExpeditionService {
       grantedRewards: granted,
       downedCount: downedIds.length,
       defeated: isDefeated,
+      manualMilestoneGate: manualMilestoneGate,
     );
   }
 
@@ -948,6 +1289,29 @@ class ExpeditionService {
   }
 }
 
+/// 可见险关战斗的冻结输入；生产 Host 与胜利事务共用同一份 exact participant。
+final class ExpeditionManualMilestonePlan {
+  const ExpeditionManualMilestonePlan({
+    required this.recordKey,
+    required this.routeId,
+    required this.milestoneId,
+    required this.nodeIndex,
+    required this.nodeSeed,
+    required this.cycleIndex,
+    required this.member,
+    required this.playerSnapshot,
+  });
+
+  final String recordKey;
+  final String routeId;
+  final String milestoneId;
+  final int nodeIndex;
+  final int nodeSeed;
+  final int cycleIndex;
+  final ActivityMemberSnapshot member;
+  final CombatantSnapshot playerSnapshot;
+}
+
 /// 单批离线结算结果（B2.2）。
 class ExpeditionSettlementResult {
   const ExpeditionSettlementResult({
@@ -955,6 +1319,8 @@ class ExpeditionSettlementResult {
     required this.currentNode,
     required this.caughtUp,
     required this.defeated,
+    this.manualMilestoneGate,
+    this.automaticReturn,
   });
 
   /// 本批完成节点数。
@@ -968,6 +1334,36 @@ class ExpeditionSettlementResult {
 
   /// 战败即停（§4.2）。
   final bool defeated;
+
+  /// 首次未解锁险关。非 null 时 headless 已停在该节点前，caller 必须执行
+  /// 自动返程并留下可见亲战待办，不能把 [caughtUp] 当作普通追平。
+  final ExpeditionManualMilestoneGate? manualMilestoneGate;
+
+  /// 仅在离线/在途追平撞到首次亲战门并已原子返程时存在。
+  final ExpeditionReturnResult? automaticReturn;
+}
+
+/// 一次离线推进遇到的首次亲战边界；只承载稳定身份，不承载奖励数值。
+final class ExpeditionManualMilestoneGate {
+  const ExpeditionManualMilestoneGate({
+    required this.recordKey,
+    required this.routeId,
+    required this.milestoneId,
+    required this.nodeIndex,
+    required this.nodeSeed,
+    required this.cycleIndex,
+    required this.sourceRunId,
+    required this.sourceParticipantId,
+  });
+
+  final String recordKey;
+  final String routeId;
+  final String milestoneId;
+  final int nodeIndex;
+  final int nodeSeed;
+  final int cycleIndex;
+  final int sourceRunId;
+  final int sourceParticipantId;
 }
 
 /// 召回 / 战败返程结果（B2.3）。
@@ -980,6 +1376,7 @@ class ExpeditionReturnResult {
     required this.grantedRewards,
     required this.downedCount,
     required this.defeated,
+    this.manualMilestoneGate,
   });
 
   /// 有 active 远征被返程关闭；false = 无远征、无操作。
@@ -1000,4 +1397,7 @@ class ExpeditionReturnResult {
 
   /// 是否战败返程（true）或主动召回（false）。
   final bool defeated;
+
+  /// 非 null 表示因首次险关亲战门自动返程，而非玩家主动召回/战败。
+  final ExpeditionManualMilestoneGate? manualMilestoneGate;
 }

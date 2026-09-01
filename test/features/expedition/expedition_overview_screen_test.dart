@@ -15,8 +15,10 @@ import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_milestone_record.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_overview_screen.dart';
 import 'package:wuxia_idle/features/expedition/presentation/expedition_recap_screen.dart';
+import 'package:wuxia_idle/features/expedition/presentation/phase0a_expedition_milestone_battle_host.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/shared/widgets/portrait_frame.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ui/ink_archive_chrome.dart';
@@ -33,6 +35,9 @@ class _FixedClock extends SystemClock {
 
 final class _RecordingExpeditionService implements ExpeditionService {
   ActivityParticipationRequest? request;
+
+  @override
+  Future<ExpeditionMilestoneRecord?> pendingManualMilestone() async => null;
 
   @override
   Future<int> dispatchRequest({
@@ -253,6 +258,49 @@ void main() {
     expect(service.request!.participation, ActivityParticipationMode.dispatch);
     expect(service.request!.controller, ActivityController.playerBot);
     expect(service.request!.clock, ActivityClock.headless);
+  });
+
+  testWidgets('待亲战险关替换派遣动作并进入可见真人 Phase0a Host', (tester) async {
+    final pending = ExpeditionMilestoneRecord()
+      ..recordKey = ExpeditionMilestoneRecord.canonicalKey(
+        saveDataId: 1,
+        routeId: ExpeditionService.contentId,
+        milestoneId: 'baicao_elite_fog_pass',
+      )
+      ..saveDataId = 1
+      ..routeId = ExpeditionService.contentId
+      ..milestoneId = 'baicao_elite_fog_pass'
+      ..nodeIndex = 5
+      ..nodeSeed = 55
+      ..cycleIndex = 1
+      ..sourceRunId = 7
+      ..sourceParticipantId = 9
+      ..discoveredAt = DateTime(2026, 9, 1);
+    final leader = _cand(_char(9, '当代掌门', mainTechniqueId: 9, isFounder: true));
+    await _pump(
+      tester,
+      const Size(1280, 720),
+      ProviderScope(
+        overrides: [
+          activeExpeditionProvider.overrideWith((ref) async => null),
+          pendingExpeditionMilestoneProvider.overrideWith(
+            (ref) async => pending,
+          ),
+          expeditionCandidatesProvider.overrideWith((ref) async => [leader]),
+        ],
+        child: const MaterialApp(home: ExpeditionOverviewScreen()),
+      ),
+    );
+
+    expect(find.text(UiStrings.expeditionManualMilestoneTitle), findsOneWidget);
+    expect(find.text(UiStrings.expeditionDispatchButton), findsNothing);
+    await tester.tap(find.text('当代掌门'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(UiStrings.expeditionManualMilestoneButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byType(Phase0aExpeditionMilestoneBattleHost), findsOneWidget);
   });
 
   testWidgets('路线 C 派遣只允许选一人', (tester) async {

@@ -34,6 +34,7 @@ import '../features/pvp/domain/pvp_snapshot.dart';
 import '../features/battle_record/domain/boss_memory.dart';
 import '../features/weapon_codex/domain/equipment_catalog_entry.dart';
 import '../features/expedition/domain/expedition_run.dart';
+import '../features/expedition/domain/expedition_milestone_record.dart';
 import '../features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import '../features/activity/domain/durable_activity_combat_run.dart';
 import '../features/reward/domain/reward_claim_receipt.dart';
@@ -136,6 +137,7 @@ class IsarSetup {
     BossMemorySchema,
     EquipmentCatalogEntrySchema,
     ExpeditionRunSchema,
+    ExpeditionMilestoneRecordSchema,
     BossGauntletRunSchema,
     DurableActivityCombatRunSchema,
     RewardClaimReceiptSchema,
@@ -223,7 +225,9 @@ class IsarSetup {
   // 只建立现状基线，不伪造待确认蜡封，也不改变任何模式的既有解锁门槛。
   // 0.44.0 九霄塔个人记录：新增 TowerPersonalRecord collection；旧档无法证明
   // 历史实际参与者，故保持空集合，不从存档级塔进度或奖励 receipt 猜测回填。
-  static const _currentSaveVersion = '0.44.0';
+  // 0.45.0 百草岭首次亲战里程碑：新增 ExpeditionMilestoneRecord collection；
+  // 旧档深度不能证明具体险关模板，不猜测 route/milestone 解锁事实。
+  static const _currentSaveVersion = '0.45.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -565,6 +569,13 @@ class IsarSetup {
       // 新 collection 对旧档天然为空。TowerProgress 只证明存档级通关，不能证明
       // 实际参与角色；奖励 receipt 也不覆盖所有历史入口，故不得猜人回填个人记录。
       if (_compareVersion(fromVersion, '0.44.0') < 0) {
+        // 无显式迁移动作(纯可加)。
+      }
+
+      // --- 段 15(0.45.0 百草岭首次亲战里程碑)---
+      // 新 collection 对旧档天然为空。baicaoMaxDepth 只能证明曾越过某些险关，
+      // 不能证明具体敌队模板由玩家亲战通过，故不得猜测 route/milestone 回填。
+      if (_compareVersion(fromVersion, '0.45.0') < 0) {
         // 无显式迁移动作(纯可加)。
       }
 

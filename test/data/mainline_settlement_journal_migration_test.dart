@@ -38,7 +38,7 @@ void main() {
     await IsarSetup.close();
 
     await IsarSetup.init(directory: tempDir, inspector: false);
-    expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.44.0');
+    expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.45.0');
     expect(await IsarSetup.instance.mainlineSettlementJournals.count(), 0);
     expect(await IsarSetup.instance.durableActivityCombatRuns.count(), 0);
     expect(await IsarSetup.instance.rewardClaimReceipts.count(), 0);

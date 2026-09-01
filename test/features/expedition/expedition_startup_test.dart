@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -16,6 +17,8 @@ import 'package:wuxia_idle/features/expedition/application/expedition_service.da
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_milestone_record.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_rules.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -123,6 +126,43 @@ void main() {
     // 已持久化。
     final run = await service.activeRun();
     expect(run!.currentNode, 3);
+  });
+
+  test('离线撞到未解锁险关会自动返程并留下可恢复亲战待办', () async {
+    final service = ExpeditionService(IsarSetup.instance);
+    late int cid;
+    await IsarSetup.instance.writeTxn(() async {
+      cid = await IsarSetup.instance.characters.put(_disciple());
+    });
+    await service.dispatch(
+      characterIds: [cid],
+      policy: ExpeditionPolicy.yanJingCaiYao,
+      now: departedAt,
+    );
+    final config = GameRepository.instance.expeditionConfig!;
+    final elapsed = ExpeditionRules.cumulativeMinutesToCompleteNode(
+      5,
+      normalMinutes: config.normalNodeMinutes,
+      eliteMinutes: config.eliteNodeMinutes,
+    );
+
+    final result = await settleActiveExpeditionOnOpen(
+      service: service,
+      combat: _FakeCombat(),
+      config: config,
+      now: departedAt.add(Duration(minutes: elapsed)),
+    );
+
+    expect(result.currentNode, 4);
+    expect(result.automaticReturn?.returned, isTrue);
+    expect(result.automaticReturn?.manualMilestoneGate, isNotNull);
+    expect(await service.activeRun(), isNull, reason: '撞门后必须释放远征占用');
+    final records = await IsarSetup.instance.expeditionMilestoneRecords
+        .where()
+        .findAll();
+    expect(records, hasLength(1));
+    expect(records.single.manualClearedAt, isNull);
+    expect(records.single.sourceParticipantId, cid);
   });
 
   test('无 active 远征：settle-on-open no-op', () async {

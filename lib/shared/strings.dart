@@ -4291,6 +4291,13 @@ class UiStrings {
   static const String expeditionCandidateNoMainTag = '未修主修';
   static const String expeditionNoCandidates = '暂无可出征角色。请先结束占用或研习主修。';
   static const String expeditionDispatchFailed = '出征受阻，稍后再试。';
+  static const String expeditionManualMilestoneTitle = '险关待亲战';
+  static const String expeditionManualMilestoneBody =
+      '远征队已在首次险关前携战果返程。亲自通过后，同类险关才可交由差遣自动处理。';
+  static const String expeditionManualMilestoneButton = '亲自破关';
+  static const String expeditionManualMilestoneVictory = '险关已破，今后同类险关可自动处理。';
+  static const String expeditionManualMilestoneDefeat = '险关未破，亲战待办仍保留。';
+  static const String expeditionManualMilestoneUnavailable = '险关亲战状态暂不可用';
   // active 态
   static const String expeditionActiveSection = '远征在途';
   static String expeditionActiveDepth(int node) => '当前深入第 $node 处险境';

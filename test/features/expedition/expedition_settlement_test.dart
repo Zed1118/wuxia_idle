@@ -10,7 +10,10 @@ import 'package:wuxia_idle/features/expedition/application/expedition_combat.dar
 import 'package:wuxia_idle/features/expedition/application/expedition_service.dart';
 import 'package:wuxia_idle/data/defs/expedition_config.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_node.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_milestone_record.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_rules.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/expedition/domain/expedition_seed.dart';
 
 import '../../support/isar_test_support.dart';
 
@@ -56,6 +59,81 @@ ExpeditionConfig _config({int baseExp = 170}) => ExpeditionConfig(
   zhangshiPctPerLayer: 0.05,
   baseExpPerBattle: baseExp,
 );
+
+ExpeditionConfig _configWithManualMilestone() => ExpeditionConfig.fromYaml({
+  'normal_node_minutes': 90,
+  'elite_node_minutes': 180,
+  'hp_recover_pct_per_node': 0.10,
+  'qi_recover_pct_per_node': 0.25,
+  'zhangshi_pct_per_layer': 0.05,
+  'combat': {
+    'depth_curve': {
+      'first_node': 1,
+      'base_multiplier': 1.0,
+      'hp_growth_per_node': 0.0,
+      'attack_growth_per_node': 0.0,
+      'hp_multiplier_cap': 1.0,
+      'attack_multiplier_cap': 1.0,
+      'hp_value_cap': 60000,
+      'attack_value_cap': 2000,
+    },
+    'normal_enemy_teams': [
+      {
+        'id': 'normal_a',
+        'enemies': [
+          {
+            'id': 'enemy_normal_a',
+            'name': '普通敌',
+            'realmTier': 'sanLiu',
+            'realmLayer': 'shuLian',
+            'school': 'gangMeng',
+            'baseHp': 100,
+            'baseAttack': 10,
+            'baseSpeed': 100,
+            'skillIds': ['skill_gangmeng_jichu_basic'],
+            'iconPath': '',
+          },
+        ],
+      },
+    ],
+    'elite_enemy_teams': [
+      {
+        'id': 'elite_manual_a',
+        'enemies': [
+          {
+            'id': 'enemy_elite_a',
+            'name': '险关敌',
+            'realmTier': 'sanLiu',
+            'realmLayer': 'jingTong',
+            'school': 'lingQiao',
+            'baseHp': 100,
+            'baseAttack': 10,
+            'baseSpeed': 100,
+            'skillIds': ['skill_lingqiao_jichu_basic'],
+            'iconPath': '',
+          },
+        ],
+      },
+      {
+        'id': 'elite_manual_b',
+        'enemies': [
+          {
+            'id': 'enemy_elite_b',
+            'name': '另一险关敌',
+            'realmTier': 'sanLiu',
+            'realmLayer': 'jingTong',
+            'school': 'yinRou',
+            'baseHp': 100,
+            'baseAttack': 10,
+            'baseSpeed': 100,
+            'skillIds': ['skill_yinrou_jichu_basic'],
+            'iconPath': '',
+          },
+        ],
+      },
+    ],
+  },
+});
 
 void main() {
   late Directory tempDir;
@@ -153,6 +231,134 @@ void main() {
     expect(result.defeated, isFalse);
     expect(result.caughtUp, isTrue);
     expect(run.stagedRewards, isNotEmpty);
+  });
+
+  test('未解锁险关首次必须停在节点前且不得调用 headless 战斗', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final svc = ExpeditionService(IsarSetup.instance);
+    final combat = _FakeCombat();
+
+    final result = await svc.settle(
+      combat: combat,
+      config: _configWithManualMilestone(),
+      now: departedAt.add(const Duration(minutes: 540)),
+    );
+
+    expect(result.currentNode, 4);
+    expect((await readRun(runId)).currentNode, 4);
+    expect(combat.foughtNodes, isNot(contains(5)));
+  });
+
+  test('同 route+milestone 已亲战通过后才允许后续 headless 越门', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final run = await readRun(runId);
+    final config = _configWithManualMilestone();
+    final nodeSeed = ExpeditionSeed.forNode(
+      saveId: run.saveDataId,
+      runSerial: run.seed,
+      node: 5,
+    );
+    final milestoneId = config.teamForNode(nodeSeed: nodeSeed, elite: true).id;
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.expeditionMilestoneRecords.put(
+        ExpeditionMilestoneRecord()
+          ..recordKey = ExpeditionMilestoneRecord.canonicalKey(
+            saveDataId: 1,
+            routeId: ExpeditionService.contentId,
+            milestoneId: milestoneId,
+          )
+          ..saveDataId = 1
+          ..routeId = ExpeditionService.contentId
+          ..milestoneId = milestoneId
+          ..nodeIndex = 5
+          ..nodeSeed = nodeSeed
+          ..cycleIndex = 1
+          ..sourceRunId = run.id
+          ..sourceParticipantId = run.members.single.characterId
+          ..discoveredAt = departedAt
+          ..manualClearedAt = departedAt,
+      );
+    });
+    final combat = _FakeCombat();
+
+    final result = await ExpeditionService(IsarSetup.instance).settle(
+      combat: combat,
+      config: config,
+      now: departedAt.add(const Duration(minutes: 540)),
+    );
+
+    expect(result.currentNode, 5);
+    expect(combat.foughtNodes, contains(5));
+  });
+
+  test('已通过一种险关模板不能越过另一种首次模板', () async {
+    final runId = await dispatch(ExpeditionPolicy.yiZhanLiXing);
+    final run = await readRun(runId);
+    final config = _configWithManualMilestone();
+    final firstSeed = ExpeditionSeed.forNode(
+      saveId: run.saveDataId,
+      runSerial: run.seed,
+      node: 5,
+    );
+    final firstMilestone = config
+        .teamForNode(nodeSeed: firstSeed, elite: true)
+        .id;
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.expeditionMilestoneRecords.put(
+        ExpeditionMilestoneRecord()
+          ..recordKey = ExpeditionMilestoneRecord.canonicalKey(
+            saveDataId: 1,
+            routeId: ExpeditionService.contentId,
+            milestoneId: firstMilestone,
+          )
+          ..saveDataId = 1
+          ..routeId = ExpeditionService.contentId
+          ..milestoneId = firstMilestone
+          ..nodeIndex = 5
+          ..nodeSeed = firstSeed
+          ..cycleIndex = 1
+          ..sourceRunId = run.id
+          ..sourceParticipantId = run.members.single.characterId
+          ..discoveredAt = departedAt
+          ..manualClearedAt = departedAt,
+      );
+    });
+    final expectedOtherNode = [for (var node = 10; node <= 100; node += 5) node]
+        .firstWhere(
+          (node) =>
+              config
+                  .teamForNode(
+                    nodeSeed: ExpeditionSeed.forNode(
+                      saveId: run.saveDataId,
+                      runSerial: run.seed,
+                      node: node,
+                    ),
+                    elite: true,
+                  )
+                  .id !=
+              firstMilestone,
+        );
+    final combat = _FakeCombat();
+
+    final result = await ExpeditionService(IsarSetup.instance).settle(
+      combat: combat,
+      config: config,
+      now: departedAt.add(
+        Duration(
+          minutes: ExpeditionRules.cumulativeMinutesToCompleteNode(
+            expectedOtherNode,
+            normalMinutes: config.normalNodeMinutes,
+            eliteMinutes: config.eliteNodeMinutes,
+          ),
+        ),
+      ),
+      maxNodesPerBatch: expectedOtherNode,
+    );
+
+    expect(result.manualMilestoneGate?.nodeIndex, expectedOtherNode);
+    expect(result.manualMilestoneGate?.milestoneId, isNot(firstMilestone));
+    expect(result.currentNode, expectedOtherNode - 1);
+    expect(combat.foughtNodes, isNot(contains(expectedOtherNode)));
   });
 
   test('结算 exp 奖励随 config.baseExpPerBattle 缩放（batch3 wire）', () async {
