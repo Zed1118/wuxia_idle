@@ -6180,8 +6180,8 @@ tasks:
     owner: codex_root
     branch: codex/p2-m3-single-attack-weapon-archetypes-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m3-single-attack-weapon-archetypes-20260901
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready
+    current_authoritative_wip: false
     base_commit: 9b05f44a97d3a7d31a645e62d0be9615fdb122dd
     completion_scope: close_weapon_identity_defense_bot_tactics_and_boss_response_on_the_real_combat_path
     acceptance_target: 5_weapon_profiles_each_pass_3_schools_x_clear_elite_boss_scenarios
@@ -6189,7 +6189,6 @@ tasks:
     dependencies:
       - P2-PHASE2-TRUTH-REFRESH
     blockers:
-      - close_mutation_full_suite_exact_tip_gate_and_main_integration
       - perform_deferred_human_desktop_acceptance
     evidence:
       production_weapon_profiles: 5_of_5
@@ -6199,6 +6198,7 @@ tasks:
       production_bot_tactics: 3
       per_weapon_clear_elite_boss_scenarios: 15_of_15
       production_weapon_school_scenario_matrix: 45_of_45
+      final_targeted_tests: 128_of_128
       targeted_behavior_tests: 24
       targeted_behavior_failures: 0
       later_single_ranged_attack_commit: b653852e28607129b52fa485d1869857c17072c5
@@ -6221,6 +6221,17 @@ tasks:
       full_test_initial_fixture_contract_failures: 2
       full_test_after_fixture_correction: 5868_of_5868
       full_test_error_blocks_after_fixture_correction: 0
+      production_mutation_directions_confirmed: 4_of_4
+      production_mutation_failures_each: 1
+      production_mutations_restored_exactly: true
+      final_application_analyze_issues: 0
+      final_whole_repository_format_files: 1715
+      final_whole_repository_format_changed_files: 0
+      final_full_test: 5874_of_5874
+      final_full_test_error_blocks: 0
+      final_full_test_reporter_tail: All_tests_passed
+      test_contract_migration_gate: pass
+      engineering_gate_status: ready_for_main_integration
     owned_files:
       - docs/superpowers/plans/2026-09-01-p2-m3-product-contract-rebase.md
       - docs/superpowers/plans/2026-09-01-p2-m3-single-attack-weapon-archetypes.md

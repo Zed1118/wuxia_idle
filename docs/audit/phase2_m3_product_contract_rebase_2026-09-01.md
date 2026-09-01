@@ -108,3 +108,22 @@ M3 不能按旧方案直接施工。旧方案要求剑“直刺 → 横扫 → �
 生产清杂/精英/Boss Gate 不再使用候选自造 damage resolver：测试从真实 `GameRepository` 读取画像，经过 production mapper、`Phase0aBattleSnapshotFactory`、`Phase0aDamageCalculatorAdapter` 与 reducer；五类 × 三流派 × 三场景共 45 格首轮全部胜利。每拍最多 1 次命中、玩家位置不变、一次已接受普攻只结算一次正式 `qiDelta`，且武器与流派身份贯通事件和 VFX。
 
 这里的三流派消费沿用真实伤害计算器已有的刚猛/灵巧/阴柔克制与技能绑定；没有把 parked `applyCombatModifiers` 伪报为生产消费者。真人桌面可读性、节奏与手感仍按用户要求挂账，不能由 45 格自动矩阵代签。
+
+### 正式画像破坏证红与最终回归
+
+在生产画像提交 `9ae5f78d` 上逐项施加四个单变量破坏，每次运行对应精确用例后都得到 `0 pass / 1 fail`，随后用精确反向补丁还原，并确认 worktree 与提交完全一致：
+
+1. mapper 不再消费画像射程因子：五类实际武器生产修饰合同红 1 项，重兵实际值从期望 `344.4` 回退为基线 `420.0`。
+2. 重兵 `max_targets` 从 `1` 改为 `2`：生产 catalog 加载合同红 1 项，命中单目标守卫。
+3. 暗器 `attack_displacement` 从 `0.0` 改为 `1.0`：生产 catalog 加载合同红 1 项，命中零攻击位移守卫。
+4. VFX controller 不再复制武器/流派身份：五类 × 三流派事件到 VFX 合同红 1 项，实际身份变为 `null`。
+
+还原后的最终结果：
+
+- 八个独立定向文件累计 `128/128 PASS`；其中一个参数化生产矩阵测试实际遍历 `5 × 3 × 3 = 45` 格。
+- `dart format .`：`1715 files / 0 changed`。
+- `flutter analyze --no-pub lib test tool`：`0 issue`。
+- 锁保护 `flutter test --no-pub`：`5874/5874 PASS`，退出码 `0`，reporter 尾行 `All tests passed!`，`[E]` 为 `0`。
+- 测试删除迁移门：`expect 删 0 / 增 61；用例删 1 / 增 14；登记 1`，`PASS`。旧 Gate 的零删除检查仍会报告已登记的 4 行删除，必须与迁移门联合判读。
+
+工程画像因此可进入 main 集成；真人桌面手感仍是 `deferred_by_user`，正式 M3 与 Phase 2 总里程碑不由本自动证据代签。
