@@ -6052,11 +6052,11 @@ tasks:
     owner: codex_root
     branch: codex/p2-m5-expedition-milestone-gate-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m5-expedition-milestone-gate-20260901
-    status: ready
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 73eedc7a7a7e114d224032afdb5a7712ad867263
     code_candidate_commit: 80d95a1415c73f168786836a7de28eb474f32e08
-    reviewed_candidate_commit: pending_final_ready_commit
+    reviewed_candidate_commit: f7c008c6f34a63da7d5a9e728075c8fab3d7ba6b
     ready_marker: "[READY][CODEX][P2-M5-EXPEDITION-MILESTONE-GATE] 收口百草岭首次险关亲战"
     completion_scope: connect_first_uncleared_expedition_milestone_to_visible_human_phase0a_and_unlock_later_headless_by_route_and_milestone
     acceptance_baseline: 40_of_42_M5_engineering_cells
