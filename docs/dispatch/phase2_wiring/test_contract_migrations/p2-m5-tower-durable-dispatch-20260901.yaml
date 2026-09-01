@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m5-tower-durable-dispatch-20260901
 base_sha: 09533ce357344559e6bf0b7594084b18ad107562
-head_sha: pending
+head_sha: 2fa570aac591f35c187532d79c8e363ced50341c
 summary: 九霄塔自动化由仅允许已通层即时 sweep 迁为保留 sweep 并新增 exact durable dispatch；旧标题与多行 test 声明由两条更明确的 allowlist/拒绝契约替代。
 
 migrations:

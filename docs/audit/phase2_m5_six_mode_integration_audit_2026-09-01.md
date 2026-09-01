@@ -46,14 +46,14 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮断魂庄资格修复先取得生产 widget RED `2` 条失败，再完成核心定向 `40/40 PASS`、断魂庄全目录 `192/192 PASS`；强开首通前入口、破坏 exact request、移除原子准入三组 mutation 各精确得到 `1` 条失败并反向还原。`flutter analyze --no-pub lib test tool` 0 issue，`dart format .` 1699 files / 0 changed，锁保护整仓全量 `5833/5833 PASS`。最终测试树相对基线删除行数为 `0`，无需测试契约迁移登记。该批只修复原 `37/42` 中一格的生产资格，不增加分子。
 
-本轮九霄塔持久差遣新增真实塔层入口、exact participant/loadout durable owner、`mapTower` headless 和双层 receipt 原子结算；扩展定向 `79/79 PASS`。三向 mutation 分别得到 `4`、`1`、`1` 条失败并精确反向还原，证明 dispatch allowlist、生产入口与 durable settlement receipt 不是恒真守卫。未改 Isar collection 字段、schemaVersion/saveVersion、YAML、数值、奖励或战斗规则；该批净增一格至 `38/42`。
+本轮九霄塔持久差遣新增真实塔层入口、exact participant/loadout durable owner、`mapTower` headless 和双层 receipt 原子结算；扩展定向 `79/79 PASS`。三向 mutation 分别得到 `4`、`1`、`1` 条失败并精确反向还原，证明 dispatch allowlist、生产入口与 durable settlement receipt 不是恒真守卫。测试契约迁移 Gate PASS，full analyze 0 issue，整仓 format `1700 files / 1 changed`，锁保护全量 `5838/5838 PASS`、`[E]=0`。未改 Isar collection 字段、schemaVersion/saveVersion、YAML、数值、奖励或战斗规则；该批净增一格至 `38/42`。
 
 最终工程检查：
 
 - `flutter analyze`：0 issue，末行 `No issues found!`；
-- `dart format .`：`1699 files / 0 changed`；
-- 锁保护整仓全量：`5833/5833 PASS`，退出码 0，`[E]=0`，末行 `04:59 +5833: All tests passed!`；
-- 最终测试树删除行数：`0`，本批不需要测试契约迁移登记；
+- `dart format .`：`1700 files / 1 changed`（新测试机械换行已提交）；
+- 锁保护整仓全量：`5838/5838 PASS`，退出码 0，`[E]=0`，末行 `04:58 +5838: All tests passed!`；
+- 测试契约迁移 Gate：expect 删 `0` / 增 `31`、用例声明删 `2` / 增 `7`、登记 `2` 条，`PASS`；
 - 项目 Gate 必须在最终干净 `[READY]` tip 上全项 PASS 后才允许合并。
 
 ## 推荐施工顺序

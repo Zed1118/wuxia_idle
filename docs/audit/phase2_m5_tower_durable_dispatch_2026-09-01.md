@@ -36,8 +36,12 @@
 - 扩展定向：activity/occupancy、塔 policy/service/coordinator/UI、真实 `mapTower` runner、结算、宗门行止与门人调度共 `79/79 PASS`。
 - 独立真实 runner：durable tower admission 进入 `mapTower` 并产生 exact participant 终局，`1/1 PASS`。
 - 原子结算：durable tower 胜利落 `settlementApplied` 与 tower reward receipt，`1/1 PASS`。
-- scoped analyze：`No issues found!`。
-- 最终整仓 format、锁保护全量、项目 Gate 与精确 SHA CI 在最终 READY tip 记录。
+- `flutter analyze --no-pub lib test tool`：`No issues found!`。
+- `dart format .`：`1700 files / 1 changed`；唯一变化是新测试的机械换行，已纳入最终提交。
+- 测试契约迁移 Gate：expect 删 `0` / 增 `31`，用例声明删 `2` / 增 `7`，登记 `2` 条，`PASS`。
+- 锁保护整仓全量：`5838/5838 PASS`，退出码 `0`，`[E]=0`、失败标记 `0`，末行 `04:58 +5838: All tests passed!`。
+- 全量退出钩子误用了本机不存在的 `/usr/bin/unlink`；进程结束后先核对锁内容确属本次 PID/分支，再用 `/bin/unlink` 精确释放，最终锁不存在。该次集成返工如实保留，不影响测试结果。
+- 项目 Gate 与精确 SHA CI 在最终 READY tip 记录。
 
 ## 范围
 
