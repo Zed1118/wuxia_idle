@@ -38,3 +38,16 @@
 
 - 生产文案和专用按钮已进入独立候选：当前错误实现先取得地点详情 `1` 条、塔层列表 `2` 条 RED，修复后定向 `8/8 + 14/14 PASS`；回退说明与复用百草岭文案的两向 mutation 分别精确 `1`、`2` 条失败并反向还原。是否可合仍服从 final Gate。
 - M5 继续保持 `38/42`、顶层 `0/1 BLOCKED`；真人桌面与 Windows 实机目检继续挂账。
+
+## 本单 Gate 豁免与组合结论
+
+用户于 2026-09-01 在当前任务中明确授权：本单对 `lib/shared/strings.dart` 做一次性 Gate 豁免。授权不修改通用 Gate，不向其他文件、任务或未来批次扩张，也不抹除原始 Gate 输出。
+
+本单组合门禁只有在以下事实同时成立时才可放行：
+
+1. exact-tip 原始 Gate 除 `strings.dart` 和已登记的 `test_deletions` 外全部 PASS；
+2. `test_contract_migration_gate.sh` 对删除断言逐条登记并 PASS；
+3. full test、analyze、format、receipt crosscheck、commit message 与 worktree clean 均 PASS；
+4. 原始 Gate FAIL 日志与一次性用户豁免同时保留，不得改写为脚本原生全绿。
+
+满足上述条件时，本候选记为 `PASS_WITH_EXPLICIT_ONE_TIME_WAIVER`；这只关闭本次塔 UI 文案回退的交付门，不改变 M5 `38/42`、顶层 `0/1 BLOCKED` 或真人目检挂账。
