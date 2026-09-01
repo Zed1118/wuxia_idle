@@ -6302,6 +6302,51 @@ tasks:
     protected_behavior:
       - engineering_integration_does_not_claim_formal_M6_or_overall_Phase2_completion
 
+  - id: P2-M7-CH2-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch2-content-migration-20260902
+    worktree: /Users/a10506/.codex/worktrees/p2-m7-ch2-content-migration-20260902
+    status: ready
+    current_authoritative_wip: false
+    base_commit: f3076cef045145cc17cc2d4098f5fba0161998e1
+    code_candidate_commit: 136b467d
+    completion_scope: migrate_remaining_chapter_2_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_2_5_of_5_and_mainline_catalog_14_of_105
+    acceptance_result: engineering_candidate_ready_formal_M7_open
+    evidence:
+      mainline_catalog_before: 11_of_105
+      mainline_catalog_candidate: 14_of_105
+      chapter_2_before: 2_of_5
+      chapter_2_candidate: 5_of_5
+      new_production_routes: 3
+      initial_red_failures: 4
+      remove_assignment_mutation_failures: 1
+      wrong_commander_mutation_failures: 2
+      focused_tests: 5_of_5
+      focused_and_adjacent_tests: 20_of_20
+      expanded_regression_tests: 292_of_292
+      analyze: no_issues_found
+      format: 1716_files_0_changed
+      full_test: 5879_of_5879
+      full_test_error_blocks: 0
+      standard_gate: pending_exact_final_tip
+      human_desktop_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_02_remaining.yaml
+      - test/data/phase2/ch2_remaining_content_migration_test.dart
+      - docs/superpowers/plans/2026-09-02-p2-m7-ch2-content-migration.md
+      - docs/audit/phase2_m7_ch2_content_migration_2026-09-02.md
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+    protected_behavior:
+      - keep_stage_enemy_stats_rewards_drops_unlocks_and_settlement_owners_unchanged
+      - only_the_authored_commander_retains_boss_identity
+      - engineering_candidate_does_not_close_formal_M7_or_human_acceptance
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
