@@ -5750,7 +5750,7 @@ tasks:
     owner: codex_root
     branch: codex/p2-m5-six-mode-integration-gate-20260901
     worktree: /Users/a10506/.codex/worktrees/p2-m5-six-mode-integration-gate-20260901
-    status: blocked
+    status: ready_reviewed
     current_authoritative_wip: false
     base_commit: 22afa6d3831b4dfb0d20df7d6694f6f7c13ff968
     code_candidate_commit: 8d9b806dd2f006d9c556aaf969c14a1d93aad84d
@@ -5759,16 +5759,16 @@ tasks:
     completion_scope: requalify_the_six_mode_by_seven_contract_M5_denominator_against_real_production_owners
     acceptance_baseline: 0_of_1_authoritative_M5_engineering_gate
     acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
-    acceptance_result: 37_of_42_cells_and_0_of_1_authoritative_M5_engineering_gate
+    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_candidate_gate
     evidence:
       modes: 6
       contracts_per_mode: 7
       denominator_cells: 42
-      production_proven_cells: 37
-      blocked_cells: 5
-      focused_production_tests: 565
+      production_proven_cells: 42
+      blocked_cells: 0
+      latest_focused_production_tests: 143
       focused_production_failures: 0
-      full_suite_tests: 5828
+      full_suite_tests: 5860
       full_suite_failures: 0
       full_suite_error_blocks: 0
       analyze_issues: 0
@@ -5776,12 +5776,13 @@ tasks:
       false_green_integration_test_added: false
       human_desktop_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
-    blockers:
-      - tower_personal_floor_record
-      - tower_durable_assignment_or_dispatch
-      - gauntlet_durable_dispatch
-      - expedition_manual_first_milestone_takeover
-      - expedition_route_and_milestone_automation_unlock_record
+      stacked_candidate_base: b530d804940930628ea1b61e83b188416bc0b1d2
+      tower_personal_record_ready_tip: 72b0190320177ebb5ce9e6dfd80db10f42d11624
+      gauntlet_durable_owner_ready_tip: 73eedc7a7a7e114d224032afdb5a7712ad867263
+      expedition_milestone_code_candidate: 80d95a1415c73f168786836a7de28eb474f32e08
+      exact_tip_gate: must_pass_before_merge
+      merge_and_exact_sha_ci: pending
+    blockers: []
     owned_files:
       - docs/superpowers/plans/2026-09-01-p2-m5-six-mode-integration-audit.md
       - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
@@ -5789,7 +5790,8 @@ tasks:
     protected_behavior:
       - do not infer M5 from historical READY tasks U09 U10 U14 or the M6 engineering candidate
       - every PASS cell must name a real production owner and behavior test
-      - missing personal persistence or automation channels remain BLOCKED rather than being represented by constants
+      - all 42 PASS cells name a production owner and must remain connected after stacked integration
+      - engineering candidate completeness does not replace merge exact_SHA_CI human visual interaction or Windows evidence
       - no schema save_version player_value skill reward economy unlock YAML tuning combat_rule reducer headless_kernel settlement_owner or direct main checkout write in this audit
       - human visual interaction and Windows evidence remain deferred and do not claim formal M5 or overall Phase2 completion
 
@@ -6044,6 +6046,81 @@ tasks:
       - BossGauntletRun_remains_the_single_occupancy_owner_and_durable_row_does_not_double_lock_it
       - no_schema_save_version_player_value_skill_reward_economy_unlock_yaml_tuning_combat_rule_or_main_checkout_write
       - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+
+  - id: P2-M5-EXPEDITION-MILESTONE-GATE
+    milestone: M5
+    owner: codex_root
+    branch: codex/p2-m5-expedition-milestone-gate-20260901
+    worktree: /Users/a10506/.codex/worktrees/p2-m5-expedition-milestone-gate-20260901
+    status: ready
+    current_authoritative_wip: true
+    base_commit: 73eedc7a7a7e114d224032afdb5a7712ad867263
+    code_candidate_commit: 80d95a1415c73f168786836a7de28eb474f32e08
+    reviewed_candidate_commit: pending_final_ready_commit
+    ready_marker: "[READY][CODEX][P2-M5-EXPEDITION-MILESTONE-GATE] 收口百草岭首次险关亲战"
+    completion_scope: connect_first_uncleared_expedition_milestone_to_visible_human_phase0a_and_unlock_later_headless_by_route_and_milestone
+    acceptance_baseline: 40_of_42_M5_engineering_cells
+    acceptance_target: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_gate
+    acceptance_result: 42_of_42_cells_and_1_of_1_authoritative_M5_engineering_candidate_gate
+    dependencies:
+      - P2-M5-ENGINEERING-INTEGRATION-AUDIT
+      - P2-M6-U09-REWARD-LAYERS-PRODUCTION-WIRING
+      - P2-M5-GAUNTLET-DURABLE-OWNER
+    evidence:
+      preimplementation_red_failures: 1
+      focused_production_tests: 143
+      focused_production_failures: 0
+      mutation_remove_first_manual_gate_failures: 1
+      mutation_remove_manual_clear_write_failures: 1
+      mutation_disconnect_production_host_failures: 1
+      exact_reverse_patch_restore: true
+      test_contract_migration_entries: 4
+      test_contract_migration_gate: pass
+      analyze_issues: 0
+      format_files: 1709
+      format_changed_files: 0
+      full_suite_tests: 5860
+      full_suite_failures: 0
+      full_suite_error_blocks: 0
+      final_gate: must_pass_with_explicit_strings_and_test_deletion_exceptions_before_merge
+      human_desktop_acceptance: deferred_by_user
+      windows_profile_acceptance: deferred
+      merge_and_push: not_authorized_for_automatic_execution
+    owned_files:
+      - lib/data/defs/expedition_config.dart
+      - lib/data/isar_setup.dart
+      - lib/features/expedition/application/expedition_providers.dart
+      - lib/features/expedition/application/expedition_service.dart
+      - lib/features/expedition/application/expedition_startup.dart
+      - lib/features/expedition/domain/expedition_milestone_record.dart
+      - lib/features/expedition/presentation/expedition_overview_screen.dart
+      - lib/features/expedition/presentation/phase0a_expedition_milestone_battle_host.dart
+      - lib/shared/strings.dart
+      - test/data/expedition_milestone_record_migration_test.dart
+      - test/data/mainline_settlement_journal_migration_test.dart
+      - test/data/progressive_unlock_migration_test.dart
+      - test/data/reward_claim_receipt_migration_test.dart
+      - test/data/save_migration_version_gate_test.dart
+      - test/data/tower_personal_record_migration_test.dart
+      - test/features/expedition/expedition_overview_screen_test.dart
+      - test/features/expedition/expedition_settlement_test.dart
+      - test/features/expedition/expedition_startup_test.dart
+      - test/features/expedition/phase0a_expedition_combat_runner_test.dart
+      - docs/superpowers/plans/2026-09-01-p2-m5-expedition-milestone-gate.md
+      - docs/audit/phase2_m5_expedition_milestone_gate_2026-09-01.md
+      - docs/audit/phase2_m5_six_mode_integration_audit_2026-09-01.md
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m5-expedition-milestone-gate-20260901.yaml
+      - CLAUDE.md
+    protected_behavior:
+      - ordinary_nodes_remain_existing_timed_headless_and_first_uncleared_milestone_returns_before_combat
+      - only_visible_human_victory_writes_manualClearedAt_and_unlocks_the_same_route_and_milestone
+      - failure_loadout_drift_or_transaction_crash_never_unlocks_or_partially_rewards
+      - old_depth_return_or_reward_facts_never_fabricate_participant_template_or_manual_clear
+      - no_expedition_concurrency_node_duration_enemy_or_player_value_skill_reward_economy_unlock_cycle_injury_or_combat_rule_change
+      - human_visual_interaction_and_Windows_evidence_remain_deferred_and_do_not_claim_formal_M5_or_overall_Phase2_completion
+      - M3_and_M4_remain_not_started
 
   - id: P2-CANDIDATE-STABILIZATION
     milestone: governance

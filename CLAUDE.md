@@ -4,7 +4,9 @@
 > 任何细节冲突时，以 [`GDD.md`](./GDD.md) 为准；本文件提供操作层指引。
 > 内容文案规范见 GDD §6.6 装备典故 / §10.2 江湖见闻录 / `data/lore/_templates/` 既有体例(原 `WINDOWS_DEEPSEEK_GUIDE.md` 已归档 `docs/_archive/`,2026-05-19 协作模式切换 Mac+Opus 单端接管文案后退役)。
 >
-> **版本:v1.99**
+> **版本:v2.00**
+>
+> v2.00 变更摘要(2026-09-01 二阶段 M5 百草岭首次险关亲战):普通节点继续既有 timed/headless；离线推进遇到尚未亲战通过的险关模板时先停在节点前，结清已完成节点并原子返程，在生产总览留下可恢复“亲自破关”待办。新增版本化 `ExpeditionMilestoneRecord`，以 `saveDataId + routeId + milestoneId` 区分有限稳定险关模板，`saveVersion 0.44.0 → 0.45.0` 纯加法且旧档不猜模板、不回填亲战事实。真人从真实百草岭入口进入可见 Phase 0A Host；失败保留待办，胜利把共享战斗账本、原险关奖励、三层 receipt、最深节点与 `manualClearedAt` 合并同一事务，同模板后续才恢复 headless。实现前 RED `1`，定向 `143/143`，三向 mutation 各 `1` 条失败并反向还原，测试契约迁移 Gate PASS，analyze 0 issue，整仓 format `1709/0`，锁保护全量 `5860/5860`。stacked M5 工程候选由 `40/42` 达到 `42/42`、顶层候选 `1/1`；exact-tip Gate、合并/main CI、真人桌面与 Windows 仍独立挂账，不改节点时长、敌人数值、玩家属性、技能、奖励金额/概率、经济、解锁、周目、伤势或战斗规则，不启动 M3/M4。
 >
 > v1.99 变更摘要(2026-09-01 二阶段 M5 九霄塔持久差遣):已通塔层在真实层列表新增派遣入口，按玩家逐次选择的 exact participant 建立既有 `DurableActivityCombatRun`，冻结 `dispatch + playerBot + headless + offlineResume`，复用统一占用、exact 装配、`mapTower`、Phase 0A headless、塔进度/战斗结算与 U09 receipt；胜败业务写入与 durable receipt 同一事务，timeout 保留 active、阅报后 close。只扩展既有 name 枚举值域，不新增 Isar collection/字段或提升 schema/saveVersion。三向 mutation 精确 `4+1+1` 条失败并反向还原，扩展定向 `79/79`、full analyze 0 issue、最终测试树零删除行、锁保护全量 `5838/5838`。有效矩阵由 `37/42` 推至 `38/42`，顶层 M5 仍 `0/1 BLOCKED`；塔个人最好成绩、断魂庄 durable owner、百草岭首次手动里程碑合同继续开放，真人桌面/Windows 挂账，不改 YAML、TUNING、数值、技能、奖励、经济、解锁阈值或战斗规则。
 >

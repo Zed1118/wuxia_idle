@@ -174,6 +174,45 @@ decisions:
     approved_at: "2026-09-01"
     approval_basis: '当前 Codex 会话：用户授权挂机工作流在既定二阶段边界内自行决策和授权，真人目检挂账；本项不改 schema、数值、奖励或战斗规则'
 
+  - id: EXPEDITION-MILESTONE-AUTOMATION-01
+    status: frozen_implementation_authorized
+    summary: 百草岭普通节点保持 headless，首次未通过险关模板必须返程并由真人从生产入口亲战，通过后才解锁同模板后续自动推进
+    persistence:
+      collection: ExpeditionMilestoneRecord
+      migration_kind: additive
+      save_version: 0.45.0
+      canonical_key: saveDataId_plus_routeId_plus_milestoneId
+      route_id: baicao_expedition
+      pending_and_cleared_share_one_row: true
+    first_manual_gate:
+      ordinary_nodes: existing_timed_headless
+      uncleared_milestone: auto_return_before_node_and_leave_pending_record
+      visible_host: Phase0aExpeditionMilestoneBattleHost
+      defeat: keep_pending_without_unlock
+      victory: write_manualClearedAt_and_unlock_same_template
+      different_template_remains_locked: true
+    transaction_boundaries:
+      encounter_return: completed_node_rewards_run_delete_and_return_receipt
+      manual_victory: shared_combat_ledger_original_elite_reward_three_reward_receipts_depth_and_manualClearedAt
+    historical_migration:
+      participant_or_template_backfill: false
+      reason: old_depth_return_and_reward_facts_cannot_prove_manual_template_clear
+    forbidden_changes:
+      - expedition_concurrency
+      - node_durations
+      - enemy_values
+      - player_values
+      - skills
+      - reward_amounts_or_probabilities
+      - economy
+      - unlock_rules
+      - cycles
+      - injuries
+      - combat_rules
+    owner_task: P2-M5-EXPEDITION-MILESTONE-GATE
+    approved_at: "2026-09-01"
+    approval_basis: '当前 Codex 会话：用户授权挂机工作流在既定二阶段边界内自行决策和授权，真人目检挂账；本项为 M5 既定 42 格最后两格的加法持久事实，不改数值奖励或战斗规则'
+
   - id: MAINLINE-PARTICIPANT-01
     status: frozen
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed

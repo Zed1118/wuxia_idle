@@ -1,0 +1,22 @@
+schema_version: 1
+ticket: p2-m5-expedition-milestone-gate-20260901
+base_sha: 73eedc7a7a7e114d224032afdb5a7712ad867263
+head_sha: 80d95a1415c73f168786836a7de28eb474f32e08
+summary: 存档当前版本由 0.44.0 加法迁至 0.45.0；旧版本断言改为精确新版本，并保留塔个人记录集合的跨后续迁移注册合同。
+
+migrations:
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.44.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.45.0');
+    reason: MainlineSettlementJournal 的 0.39 旧档现在必须经过新增段 15 升至 0.45.0；替代断言继续钉死最终版本且仍检查不伪造 journal、run 与 receipt。
+
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.44.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.45.0');
+    reason: 版本门必须精确反映新增 ExpeditionMilestoneRecord 的 0.45.0 加法迁移，继续强制每次升版复核全部迁移段。
+
+  - deleted: test('tower personal record migration advances saveVersion to 0.44.0', () {
+    replacement: test('tower personal record remains registered after saveVersion 0.45.0', () {
+    reason: TowerPersonalRecord 已在前一迁移建立，本单验证它经过后续 0.45.0 迁移仍注册，不再把 0.44.0 冒充当前终点。
+
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.44.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.45.0');
+    reason: 塔个人记录迁移套件的精确当前版本同步到 0.45.0，同时保留集合注册与旧档不猜参与者的原断言。
