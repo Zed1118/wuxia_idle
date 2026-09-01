@@ -9,7 +9,7 @@
 
 ## 生产合同
 
-1. 首通继续只能真人亲战；只有当前周目真实已通层显示“差遣历练”。
+1. 首通继续只能真人亲战；只有当前周目真实已通层显示派遣入口。
 2. request 固定为 exact `tower_<floor>`、exact participant/loadout 与 `dispatch + playerBot + headless + offlineResume`；不得与既有 direct sweep 混用。
 3. 开始时在同一事务重验当前存档、周目、已通层、唯一 outstanding durable run、角色可用性与 exact 装备/心法，并先落 active run/seed/离线游标。
 4. 恢复时重验同一参与者代际与装配、统一占用及塔层身份；真实 `Phase0aStageContentMapper.mapTower` 与 Phase 0A headless 内核不得另造 reducer/runner。

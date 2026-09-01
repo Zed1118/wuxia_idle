@@ -318,7 +318,7 @@ void main() {
 
     expect(find.byType(PaperDialog), findsOneWidget);
     expect(find.text(UiStrings.towerReplayBody), findsOneWidget);
-    expect(find.text(UiStrings.towerDispatchButton), findsOneWidget);
+    expect(find.text(UiStrings.expeditionLocationEnter), findsOneWidget);
 
     await tester.tap(find.text(UiStrings.towerReplayConfirm));
     await tester.pumpAndSettle();
@@ -340,7 +340,7 @@ void main() {
 
     await tester.tap(find.text(UiStrings.towerFloorLabel(1)));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(UiStrings.towerDispatchButton));
+    await tester.tap(find.text(UiStrings.expeditionLocationEnter));
     await tester.pumpAndSettle();
 
     expect(find.text(UiStrings.towerParticipantTitle), findsOneWidget);

@@ -115,6 +115,12 @@ final class TowerAutomationPolicy {
         request.participation == ActivityParticipationMode.dispatch &&
         request.entryKind == ActivityEntryKind.offlineResume;
     if (!isSweep && !isDispatch) {
+      if (request.participation == ActivityParticipationMode.dispatch &&
+          request.entryKind == ActivityEntryKind.sweep) {
+        return const TowerAutomationDecision.rejected(
+          TowerAutomationRejectionReason.unsupportedParticipation,
+        );
+      }
       if (request.participation != ActivityParticipationMode.direct &&
           request.participation != ActivityParticipationMode.dispatch) {
         return const TowerAutomationDecision.rejected(

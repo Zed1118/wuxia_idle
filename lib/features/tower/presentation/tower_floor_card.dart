@@ -127,7 +127,7 @@ class TowerFloorCard extends StatelessWidget {
             ),
             if (onDispatch != null)
               PlaqueButton(
-                label: UiStrings.towerDispatchButton,
+                label: UiStrings.expeditionLocationEnter,
                 onTap: () {
                   Navigator.of(ctx).pop(false);
                   onDispatch!();

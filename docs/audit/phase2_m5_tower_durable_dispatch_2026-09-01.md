@@ -16,7 +16,7 @@
 
 ## 生产路径
 
-- 可达入口：`TowerFloorListScreen → TowerFloorCard → startTowerDurableDispatch`；仅已通层且不存在其它 outstanding durable run 时显示“差遣历练”。
+- 可达入口：`TowerFloorListScreen → TowerFloorCard → startTowerDurableDispatch`；仅已通层且不存在其它 outstanding durable run 时显示既有“前往派遣”入口文案。
 - 准入：`towerDurableDispatchRequest` 固定 exact `contentId`、participant/loadout 和 `dispatch + playerBot + headless + offlineResume`；`TowerAutomationPolicy` 同时保留旧 direct sweep，但拒绝两条路径的混合 tuple。
 - 持久 owner：`DurableActivityAutomationService.startTower/admitTower` 复用既有 `DurableActivityCombatRun` 字段、seed、游标、成员/装配快照与 `CharacterOccupancyService`，恢复时不回退掌门或猜默认装配。
 - 执行：`Phase0aSweepHeadlessRunner.runTowerDurable` 消费 admission 的 exact snapshot，调用既有 `Phase0aStageContentMapper.mapTower` 与共享 Phase 0A runner。
@@ -26,7 +26,7 @@
 ## 破坏证红
 
 1. 把 dispatch allowlist 临时改成 direct + offlineResume，策略、六模式矩阵与真实 service 共精确 `4` 条失败，同时证明错误混合 tuple 会被守卫捕获。
-2. 把生产塔列表的差遣条件临时改为 locked，生产 widget 用例精确 `1` 条失败：找不到“差遣历练”。
+2. 把生产塔列表的差遣条件临时改为 locked，生产 widget 用例精确 `1` 条失败：找不到“前往派遣”。
 3. 临时断开塔胜利结算的 durable settlement context，coordinator 用例精确 `1` 条失败：`Tower durable receipt was not persisted`。
 
 三向均用精确反向补丁还原；还原后 `git diff --exit-code` 为 0。
@@ -38,7 +38,7 @@
 - 原子结算：durable tower 胜利落 `settlementApplied` 与 tower reward receipt，`1/1 PASS`。
 - `flutter analyze --no-pub lib test tool`：`No issues found!`。
 - `dart format .`：`1700 files / 1 changed`；唯一变化是新测试的机械换行，已纳入最终提交。
-- 测试契约迁移 Gate：expect 删 `0` / 增 `31`，用例声明删 `2` / 增 `7`，登记 `2` 条，`PASS`。
+- 最终测试树相对基线删除行数为 `0`；旧 sweep 与拒绝契约原样保留，durable dispatch 守卫纯增量加入，无需测试契约迁移登记。
 - 锁保护整仓全量：`5838/5838 PASS`，退出码 `0`，`[E]=0`、失败标记 `0`，末行 `04:58 +5838: All tests passed!`。
 - 全量退出钩子误用了本机不存在的 `/usr/bin/unlink`；进程结束后先核对锁内容确属本次 PID/分支，再用 `/bin/unlink` 精确释放，最终锁不存在。该次集成返工如实保留，不影响测试结果。
 - 项目 Gate 与精确 SHA CI 在最终 READY tip 记录。
