@@ -10,9 +10,9 @@
 
 ## 结论
 
-M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为完成。九霄塔 durable dispatch 将有效矩阵推进到 `38/42`；本轮再新增按 actual participant 隔离的版本化个人记录，并由手动、扫荡、持久差遣共用胜利事务写入。当前有效矩阵为 `39/42`，仍有 `3/42 BLOCKED`，顶层 M5 工程 Gate 保持 `0/1 BLOCKED`。
+M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为完成。九霄塔 durable dispatch 和 actual-participant 个人记录先把有效矩阵推进到 `39/42`；本轮再为断魂庄接入 exact participant/loadout 的可恢复持久差遣 owner。当前有效矩阵为 `40/42`，仍有 `2/42 BLOCKED`，顶层 M5 工程 Gate 保持 `0/1 BLOCKED`。
 
-轻功与守城现在只在已首通后开放三条精确通道：可见 `direct + playerBot + realtime + replay`、快速推演 `direct + playerBot + headless + replay`、既有差遣 `dispatch + playerBot + headless + offlineResume`。它们复用真实 Host、headless runner、durable receipt 与共享 settlement；首通仍为人控。心魔个人进度复用 U09 胜利事务已落的 personal-scope receipt，角色面板与关卡列表不再继承其他角色的存档级心魔事实。其余缺口涉及断魂庄 durable owner 和百草岭首次关键节点手动接管，不能由本批外推。
+轻功与守城现在只在已首通后开放三条精确通道：可见 `direct + playerBot + realtime + replay`、快速推演 `direct + playerBot + headless + replay`、既有差遣 `dispatch + playerBot + headless + offlineResume`。它们复用真实 Host、headless runner、durable receipt 与共享 settlement；首通仍为人控。心魔个人进度复用 U09 胜利事务已落的 personal-scope receipt，角色面板与关卡列表不再继承其他角色的存档级心魔事实。断魂庄现复用 Boss 会话检查点和统一 durable receipt，自动战斗仍停在玩家三选一。其余缺口只剩百草岭首次关键节点手动接管及其 route/milestone 自动化记录，不能由本批外推。
 
 ## 42 格生产映射
 
@@ -22,18 +22,17 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 | 轻功 | PASS `LightFootScreen → runStageFlow` | PASS `LightFootService` 路线链 | PASS 已通路线 durable dispatch | PASS 共享 stage/durable receipt | PASS 通用伤势归 exact participant | PASS `MainlineProgress` 路线通关 + 个人战斗账本 | PASS 已首通后三通道精确接入前台 bot、即时 headless 与既有差遣 | 7/7 |
 | 守城 | PASS `MassBattleScreen → runStageFlow` | PASS `MassBattleService` 关卡链 | PASS 已通关 durable dispatch | PASS 共享 stage/durable receipt | PASS 通用伤势归 exact participant | PASS `MainlineProgress` 守城通关 + 个人战斗账本 | PASS 已首通后三通道精确接入；headless 持久化本次阵型 | 7/7 |
 | 心魔 | PASS 角色突破页本人进入 `InnerDemonScreen` | PASS 每次均本人手动 | PASS 自动化全禁的 fail-closed 策略 | PASS personal-scope receipt | PASS 只结内息紊乱、无物理伤势 | PASS `innerDemonProgressProvider(characterId)` 消费 U09 personal receipt；角色面板与关卡链按本人隔离 | PASS direct + human + realtime，其他组合全拒绝 | 7/7 |
-| 断魂庄 | PASS `GauntletLoadoutScreen → GauntletService` | PASS 首次完整通关手动 | PASS 已首通整备页提交 exact participant 的 direct headless replay，入场与 driver 复用同一 request | PASS `chooseReward` 原子奖励与 receipt | PASS 会话末统一伤势/部分收益 | PASS durable run、通关事实与战报 | **BLOCKED** direct headless replay 不是方案中的完整首通后差遣，仍缺 durable owner | 6/7 |
+| 断魂庄 | PASS `GauntletLoadoutScreen → GauntletService` | PASS 首次完整通关手动 | PASS 已首通整备页保留 direct replay policy，并提交 exact participant 的 durable dispatch | PASS `chooseReward` 原子奖励；胜败业务结算与 durable receipt 同事务 | PASS 会话末统一伤势/部分收益 | PASS Boss 检查点 + unified durable owner/receipt + 通关事实与战报 | PASS `dispatch + playerBot + headless + offlineResume` 可恢复，胜利仍停在玩家三选一 | 7/7 |
 | 百草岭 | PASS `ExpeditionOverviewScreen → ExpeditionService.dispatchRequest` | **BLOCKED** 普通/险关均由 headless runner 推进，未实现首次关键里程碑手动接管 | **BLOCKED** 没有 `routeId + milestoneId` 的手动已通过记录与后续自动门 | PASS 暂存账本 + return receipt | PASS 实际参与者伤势并保留已完成节点 | PASS durable run、深度、返程报告 | PASS 核心形态为单人 dispatch + headless + offline | 5/7 |
 
-合计：`7 + 7 + 7 + 7 + 6 + 5 = 39/42`。
+合计：`7 + 7 + 7 + 7 + 7 + 5 = 40/42`。
 
-## 三个真实阻塞
+## 两个真实阻塞
 
-1. 断魂庄缺完整首通后的差遣/离线 durable owner；现有 headless replay 是 direct，不占用真实世界时长。
-2. 百草岭没有首次关键里程碑必须手动的接管边界。
-3. 百草岭没有 `routeId + milestoneId` 的自动化解锁记录，因而也无法证明“首次手动、以后自动”。
+1. 百草岭没有首次关键里程碑必须手动的接管边界。
+2. 百草岭没有 `routeId + milestoneId` 的自动化解锁记录，因而也无法证明“首次手动、以后自动”。
 
-其中 1 需要新的或扩展的持久 owner；2、3 还需要生产 UI/恢复状态机与离线遇门自动返程。它们不是本次“集成守卫”可以诚实补齐的测试缺口。
+两项需要共同的 route/milestone 持久事实、生产 UI/恢复状态机与离线遇门自动返程。它们不是本次“集成守卫”可以诚实补齐的测试缺口。
 
 ## 已重跑的生产基线
 
@@ -49,6 +48,8 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 本轮塔个人记录新增 `TowerPersonalRecord` 和 0.44 加法迁移，只从真实胜利结算写入；手动、扫荡、持久差遣共用原事务。扩展定向 `164/164 PASS`，三向 mutation 分别得到 `4`、`2`、`1` 条失败并精确还原；其中旧档夹具先发现无角色导致伪回填假绿，补成“有角色但无参战证明”后才获得有效 RED。analyze 0 issue，整仓 format `1704 files / 0 changed`。首轮锁保护全量另捕获四条仍写死 `0.43.0` 的旧迁移断言，更新到精确 `0.44.0` 后相关迁移集 `10/10 PASS` 并进入测试契约迁移登记；修复后锁保护整仓复跑 `5844/5844 PASS`、退出码 0、`[E]=0`。exact READY tip Gate 由本任务最终 receipt 单独绑定，不在执行前预写 PASS。该批净增一格至 `39/42`。
 
+本轮断魂庄持久差遣复用 `BossGauntletRun` 检查点和既有 `DurableActivityCombatRun`，不新增 schema/saveVersion。扣帖、补给、Boss 会话和 durable owner 同事务创建；胜败结算与 receipt 同事务提交，生产恢复卡消费同一 owner，胜利只到既有三选一。核心生产 `29/29 PASS`、断魂庄全域 `199/199 PASS`、共享 activity `20/20 PASS`、analyze 0 issue。四向 mutation 分别得到 `4`、`1`、`2`、`1` 条失败；其中装配漂移用例初次暴露“更晚异常替代早期守卫”的假绿，补强 `lastAdvancedAt` 不变断言后才获得有效 RED。测试契约迁移 Gate 对 `expect 删 4 / 增 46、用例删 2 / 增 10、登记 6 条` 输出 PASS；exact-tip 全量与项目 Gate 在最终提交后执行。该批净增一格至 `40/42`。
+
 上一轮九霄塔 durable 候选的最终工程检查：
 
 - exact final tip：`62d6df2aea62d54bb1abf8f730fe8e6cb100f572`；
@@ -61,7 +62,6 @@ M5 不能从历史纵切 READY 或已经关闭的 M6 工程接线直接推导为
 
 ## 后续推荐施工顺序
 
-1. 先补断魂庄长时 owner；冻结 durable session/占用/奖励选择边界后再做迁移。
-2. 再补百草岭手动里程碑接管和 `routeId + milestoneId` 自动化记录；它跨离线推进、可见战斗、返程报告和恢复，是剩余三项中风险最高的一组。
+1. 补百草岭手动里程碑接管和 `routeId + milestoneId` 自动化记录；两格共用同一事实 owner，应作为一个受控迁移推进，范围跨离线推进、可见战斗、返程报告和恢复。
 
 每批都必须独立分支/worktree、可编译破坏证红、targeted、analyze、format、锁保护全量、Gate、合并 push 与精确 SHA CI。真人桌面和 Windows 实机继续挂账，不能替代工程门，也不被工程门替代。

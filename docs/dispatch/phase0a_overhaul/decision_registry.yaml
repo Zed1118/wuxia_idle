@@ -141,6 +141,39 @@ decisions:
     approved_at: "2026-09-01"
     approval_basis: '当前 Codex 会话：用户明确授权 TowerPersonalRecord、saveVersion 0.44.0、三类胜利原结算事务写入，以及旧档不猜人不回填'
 
+  - id: GAUNTLET-DURABLE-DISPATCH-01
+    status: frozen_implementation_authorized
+    summary: 断魂庄完整首通后以实际选中角色建立可恢复持久差遣，胜利仍停在玩家三选一
+    persistence:
+      checkpoint_owner: BossGauntletRun
+      automation_receipt_owner: DurableActivityCombatRun
+      migration_kind: existing_name_enum_extension
+      schema_changed: false
+      save_version_changed: false
+      duplicate_occupancy_owner: false
+    request_tuple:
+      participation: dispatch
+      controller: playerBot
+      clock: headless
+      entry_kind: offlineResume
+    transaction_boundaries:
+      entry: ticket_escrow_boss_run_and_durable_owner
+      victory: boss_reward_choice_boundary_and_victory_receipt
+      defeat: existing_defeat_settlement_boss_close_and_defeat_receipt
+    forbidden_changes:
+      - automatic_reward_choice
+      - gauntlet_rewards
+      - ticket_or_supply_economy
+      - player_values
+      - skills
+      - unlock_rules
+      - cycles
+      - combat_rules
+      - YAML_tuning
+    owner_task: P2-M5-GAUNTLET-DURABLE-OWNER
+    approved_at: "2026-09-01"
+    approval_basis: '当前 Codex 会话：用户授权挂机工作流在既定二阶段边界内自行决策和授权，真人目检挂账；本项不改 schema、数值、奖励或战斗规则'
+
   - id: MAINLINE-PARTICIPANT-01
     status: frozen
     summary: 主线首次推进使用 founderCharacterId 所指当前掌门，无效指针 fail closed

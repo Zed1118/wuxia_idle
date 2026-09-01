@@ -1,0 +1,30 @@
+schema_version: 1
+ticket: p2-m5-gauntlet-durable-owner-20260901
+base_sha: 72b0190320177ebb5ce9e6dfd80db10f42d11624
+head_sha: 59f4178e7fa22514869ecfdfee8e611d8870b60f
+summary: 断魂庄首通后自动化从仅 direct headless replay 迁为保留 replay 并新增可恢复 durable dispatch；生产整备页改为提交差遣 tuple，首通门和三选一边界保持不变。
+
+migrations:
+  - deleted: test('only direct playerBot headless replay is admitted among 32 shapes', () {
+    replacement: only direct replay and durable dispatch are admitted among 32 shapes
+    reason: 旧矩阵只允许即时 replay，无法表达本单新增的持久差遣；新用例穷举 32 种组合并且只允许既有 replay 与新增 dispatch 两条精确 tuple。
+
+  - deleted: expect(
+    replacement: expect(allowed, 2);
+    reason: 旧多行断言属于只允许单一 replay 的循环；替代矩阵继续逐组合比较 expected tuple，并以精确允许数 2 收紧边界。
+
+  - deleted: expect(allowed, 1);
+    replacement: expect(allowed, 2);
+    reason: 产品合同从一条即时 replay 扩展为 replay 和 durable dispatch 两条，替代断言拒绝其余 30 种混合 tuple。
+
+  - deleted: testWidgets('快速推演从生产整备页提交 exact participant 的 headless replay', (
+    replacement: testWidgets('生产整备页提交 exact participant 的 durable dispatch', (tester) async {
+    reason: 真实整备页从不可恢复的即时 request 迁到持久差遣入口；新用例仍钉 exact participant 和同一 request 快照，并验证恢复 owner。
+
+  - deleted: expect(request.participation, ActivityParticipationMode.direct);
+    replacement: expect(request.participation, ActivityParticipationMode.dispatch);
+    reason: 生产 CTA 现创建持久 owner，参与方式必须从 direct 改为 dispatch；替代断言精确锁定该字段。
+
+  - deleted: expect(request.entryKind, ActivityEntryKind.replay);
+    replacement: expect(request.entryKind, ActivityEntryKind.offlineResume);
+    reason: 新 owner 必须可在中断后恢复，入口原因从即时 replay 改为 offlineResume；替代断言精确锁定该字段。
