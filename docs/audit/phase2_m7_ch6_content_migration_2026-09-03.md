@@ -42,6 +42,6 @@
 
 本批实现 commit 为 `b7a2fdf5ca2ad35107193d5a62a0f8b2e99df0a`，基线为 `c75a57c76fde3752f9030b4fd8b44af49ba0ffc5`。标准 `gate.sh` 已在精确区间独立复跑：`forbidden_files`、full test（`5905/5905`、`[E]` `0`）、analyze 和 format 全部 PASS；`receipt_crosscheck` 按零 `lib/` 改动规则 SKIP。实现 tip 当时尚未 `[READY]` 且治理尾尚未提交，原始 Gate 因 `test_deletions=1`、`commit_msg` 和 `worktree_clean` 暂红；其中测试删除由契约迁移门逐条覆盖。
 
-治理尾提交后，最终分支 tip 为 `[READY] b63a81555439e10aa117e4c3ff1704828554a777` 且 worktree clean；完整区间复跑再次确认 full/analyze/format/commit_msg/worktree_clean 通过，但原生 `forbidden_files` 如实命中 `PROGRESS.md`（项目要求的进度更新）与 `test_deletions=1`。为对撞实现范围，使用同树临时 `[READY]` tip `a49151c7bf7ca1df59fa6d819cacdd010605ddaa` 对 `c75..a491` 运行 `--skip-full`：`forbidden_files`、`commit_msg`、`worktree_clean`、analyze、format 通过，full 明确标记 SKIP；该 tip 与 `b7` 树完全一致，full 已由同树先前的独立 Gate 运行通过。
+治理尾 `b63a8155` 的完整区间复跑确认 full/analyze/format/commit_msg/worktree_clean 通过，但原生 `forbidden_files` 如实命中项目要求更新的 `PROGRESS.md`，并仍有已登记的 `test_deletions=1`；所以该轮原始判决是 `FAIL: forbidden_files,test_deletions`，不得改写成脚本原生 PASS。后续 `e357c4c3` 仅补写收据说明，未取得 exact-tip Gate；当前 tip 必须在评审时用 `git rev-parse` 实时解析，本文不再写死会被下一次文档提交立即作废的“最终 tip”。
 
 本审计不把工程候选、自动化测试、READY 或 c75 的历史 CI 当成正式 M7 或人类验收。正式 Phase 2 仍为 `1/10`；塔为 `0/49`，legacy runtime consumer 退役仍开放。未经用户授权不 merge、不 push；真人桌面、视觉/音频/手感和 Windows 继续 `DEFERRED`。
