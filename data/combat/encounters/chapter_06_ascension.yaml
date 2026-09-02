@@ -1,0 +1,83 @@
+# Chapter 6 Ascension authored three-opponent encounters. Existing StageDef values remain authoritative.
+encounters:
+  - id: ch6_encounter_01_lunjian_departure
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch6_s01_patrol_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch6_s01_volunteer_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch6_s01_watch_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_instructor_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch6_s01_defeat_all, kind: defeat_targets, target_ids: [ch6_s01_patrol_01, ch6_s01_volunteer_01, ch6_s01_watch_01]}
+
+  - id: ch6_encounter_02_songshan_return
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch6_s02_guard_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch6_s02_scout_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch6_s02_warden_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_instructor_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch6_s02_defeat_all, kind: defeat_targets, target_ids: [ch6_s02_guard_01, ch6_s02_scout_01, ch6_s02_warden_01]}
+
+  - id: ch6_encounter_03_yellow_river_source
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch6_s03_fisher_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_left, position_id: ch4_position_s01_slot_01, behavior_id: ch4_behavior_sand_blade}
+      - {entry_id: ch6_s03_poleman_01, archetype_id: ch4_xiliang, role_id: xiliang_heavy_cavalry, entrance_id: ch4_entrance_s01_upper, position_id: ch4_position_s01_slot_02, behavior_id: ch4_behavior_heavy_cavalry}
+      - {entry_id: ch6_s03_patrol_01, archetype_id: ch4_xiliang, role_id: xiliang_banner, entrance_id: ch4_entrance_s01_right, position_id: ch4_position_s01_slot_03, behavior_id: ch4_behavior_banner}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch6_s03_defeat_all, kind: defeat_targets, target_ids: [ch6_s03_fisher_01, ch6_s03_poleman_01, ch6_s03_patrol_01]}
+
+  - id: ch6_encounter_04_kunlun_outer_gate
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 1, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch6_s04_commander_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_left, position_id: ch4_position_s01_slot_01, behavior_id: ch4_behavior_sand_blade}
+      - {entry_id: ch6_s04_sword_guard_01, archetype_id: ch4_xiliang, role_id: xiliang_heavy_cavalry, entrance_id: ch4_entrance_s01_upper, position_id: ch4_position_s01_slot_02, behavior_id: ch4_behavior_heavy_cavalry}
+      - {entry_id: ch6_s04_evasive_guard_01, archetype_id: ch4_xiliang, role_id: xiliang_horse_archer, entrance_id: ch4_entrance_s01_right, position_id: ch4_position_s01_slot_03, behavior_id: ch4_behavior_horse_archer}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch6_s04_defeat_commander, kind: defeat_commander, commander_id: ch6_s04_commander_01}
+        - {id: ch6_s04_defeat_guards, kind: defeat_targets, target_ids: [ch6_s04_sword_guard_01, ch6_s04_evasive_guard_01]}
+
+  - id: ch6_encounter_05_kunlun_summit
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 2, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch6_s05_gangmeng_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch6_s05_lingqiao_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch6_s05_commander_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_right, position_id: ch4_position_s01_slot_03, behavior_id: ch4_behavior_sand_blade}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch6_s05_defeat_commander, kind: defeat_commander, commander_id: ch6_s05_commander_01}
+        - {id: ch6_s05_defeat_companions, kind: defeat_targets, target_ids: [ch6_s05_gangmeng_01, ch6_s05_lingqiao_01]}

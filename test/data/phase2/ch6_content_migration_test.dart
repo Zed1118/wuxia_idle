@@ -23,23 +23,23 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_05_01': ('ch5_encounter_01_weishui_crossing', 3, 3),
-  'stage_05_02': ('ch5_encounter_02_songshan_temple', 3, 3),
-  'stage_05_03': ('ch5_encounter_03_yellow_river_ferry', 3, 3),
-  'stage_05_04': ('ch5_encounter_04_zhongzhou_tournament', 3, 3),
-  'stage_05_05': ('ch5_encounter_05_songshan_finale', 3, 3),
+  'stage_06_01': ('ch6_encounter_01_lunjian_departure', 3, 3),
+  'stage_06_02': ('ch6_encounter_02_songshan_return', 3, 3),
+  'stage_06_03': ('ch6_encounter_03_yellow_river_source', 3, 3),
+  'stage_06_04': ('ch6_encounter_04_kunlun_outer_gate', 3, 3),
+  'stage_06_05': ('ch6_encounter_05_kunlun_summit', 3, 3),
 };
 
 const _bossCases = {
-  'stage_05_04': (
-    'ch5_encounter_04_zhongzhou_tournament',
-    'ch5_s04_commander_01',
-    ['ch5_s04_outer_01', 'ch5_s04_lightfoot_01'],
+  'stage_06_04': (
+    'ch6_encounter_04_kunlun_outer_gate',
+    'ch6_s04_commander_01',
+    ['ch6_s04_sword_guard_01', 'ch6_s04_evasive_guard_01'],
   ),
-  'stage_05_05': (
-    'ch5_encounter_05_songshan_finale',
-    'ch5_s05_commander_01',
-    ['ch5_s05_zhongzhou_01', 'ch5_s05_songshan_01'],
+  'stage_06_05': (
+    'ch6_encounter_05_kunlun_summit',
+    'ch6_s05_commander_01',
+    ['ch6_s05_gangmeng_01', 'ch6_s05_lingqiao_01'],
   ),
 };
 
@@ -55,9 +55,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 5 exposes five of five migrated production routes', () {
+  test('Chapter 6 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 5)
+        .where((stage) => stage.chapterIndex == 6)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -79,10 +79,10 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(28));
+    expect(migratedMainlineCount, 33);
   });
 
-  test('Chapter 5 routes close catalog and runtime identities', () {
+  test('Chapter 6 routes close catalog and runtime identities', () {
     for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
       final stage = repository.getStage(stageId);
       final assignment = repository.combatAssignmentForStage(stageId);
@@ -114,7 +114,7 @@ void main() {
     }
   });
 
-  test('Chapter 5 routes construct through the real factory', () async {
+  test('Chapter 6 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -139,8 +139,8 @@ void main() {
     }
   });
 
-  test('Chapter 5 objectives require every authored opponent', () {
-    for (final stageId in ['stage_05_01', 'stage_05_02', 'stage_05_03']) {
+  test('Chapter 6 objectives require every authored opponent', () {
+    for (final stageId in ['stage_06_01', 'stage_06_02', 'stage_06_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -181,7 +181,7 @@ void main() {
     }
   });
 
-  test('only authored Chapter 5 commanders retain Boss identity', () {
+  test('only authored Chapter 6 commanders retain Boss identity', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -216,7 +216,7 @@ void main() {
   });
 
   test(
-    'all five Chapter 5 routes reach real dynamic victory without stalls',
+    'all five Chapter 6 routes reach real dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -233,7 +233,7 @@ void main() {
             ),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026090500 + index),
+            rng: Random(2026090600 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),

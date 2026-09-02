@@ -84,3 +84,18 @@ stage_assignments:
   - stage_id: stage_05_05
     migration_state: migrated
     encounter_id: ch5_encounter_05_songshan_finale
+  - stage_id: stage_06_01
+    migration_state: migrated
+    encounter_id: ch6_encounter_01_lunjian_departure
+  - stage_id: stage_06_02
+    migration_state: migrated
+    encounter_id: ch6_encounter_02_songshan_return
+  - stage_id: stage_06_03
+    migration_state: migrated
+    encounter_id: ch6_encounter_03_yellow_river_source
+  - stage_id: stage_06_04
+    migration_state: migrated
+    encounter_id: ch6_encounter_04_kunlun_outer_gate
+  - stage_id: stage_06_05
+    migration_state: migrated
+    encounter_id: ch6_encounter_05_kunlun_summit

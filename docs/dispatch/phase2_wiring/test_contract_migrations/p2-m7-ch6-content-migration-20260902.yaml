@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch6-content-migration-20260902
+base_sha: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
+head_sha: pending
+summary: 第五章测试保留已集成的 28 条主线下限；第六章迁移测试独立精确守住 33 条总水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 28);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(28));
+    reason: 第五章测试只应守住本批完成的 28 条下限，继续写死全局总数会阻断第六章及后续章节迁移；第六章新测试另以精确等于 33 防止本批少接或多接。
