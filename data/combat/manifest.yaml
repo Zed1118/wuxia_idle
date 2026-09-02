@@ -628,6 +628,39 @@ reference_index:
     - ch3_s04_commander_01
     - ch3_s05_outer_01
     - ch3_s05_commander_01
+    - ch4_s02_sand_blade_01
+    - ch4_s02_heavy_cavalry_01
+    - ch4_s02_banner_01
+    - ch4_s03_sand_blade_01
+    - ch4_s03_sand_blade_02
+    - ch4_s03_sand_blade_03
+    - ch4_s03_sand_blade_04
+    - ch4_s03_sand_blade_05
+    - ch4_s03_sand_blade_06
+    - ch4_s03_sand_blade_07
+    - ch4_s03_sand_blade_08
+    - ch4_s03_sand_blade_09
+    - ch4_s03_sand_blade_10
+    - ch4_s03_sand_blade_11
+    - ch4_s03_sand_blade_12
+    - ch4_s03_horse_archer_01
+    - ch4_s03_horse_archer_02
+    - ch4_s03_horse_archer_03
+    - ch4_s03_horse_archer_04
+    - ch4_s03_horse_archer_05
+    - ch4_s03_horse_archer_06
+    - ch4_s03_heavy_cavalry_01
+    - ch4_s03_heavy_cavalry_02
+    - ch4_s03_heavy_cavalry_03
+    - ch4_s03_heavy_cavalry_04
+    - ch4_s03_heavy_cavalry_05
+    - ch4_s03_banner_01
+    - ch4_s03_banner_02
+    - ch4_s04_sand_blade_01
+    - ch4_s04_heavy_cavalry_01
+    - ch4_s04_commander_01
+    - ch4_s05_sand_blade_01
+    - ch4_s05_commander_01
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

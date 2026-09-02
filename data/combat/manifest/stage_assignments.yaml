@@ -39,6 +39,18 @@ stage_assignments:
   - stage_id: stage_04_01
     migration_state: migrated
     encounter_id: ch4_encounter_01_xiliang_crossing
+  - stage_id: stage_04_02
+    migration_state: migrated
+    encounter_id: ch4_encounter_02_yumen_caravan
+  - stage_id: stage_04_03
+    migration_state: migrated
+    encounter_id: ch4_encounter_03_desert_maze
+  - stage_id: stage_04_04
+    migration_state: migrated
+    encounter_id: ch4_encounter_04_xiliang_duel
+  - stage_id: stage_04_05
+    migration_state: migrated
+    encounter_id: ch4_encounter_05_yangguan_finale
   - stage_id: stage_13_02
     migration_state: migrated
     encounter_id: ch13_encounter_02_halfway_temple
