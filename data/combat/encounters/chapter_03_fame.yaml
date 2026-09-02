@@ -1,0 +1,131 @@
+# Chapter 3 production routes reuse frozen sect, temple, and bandit ecology.
+encounters:
+  - id: ch3_encounter_01_martial_gathering
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets: {melee: 2, ranged: 1, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch3_s01_outer_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_02, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_03, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_04, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_04, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_05, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_05, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_06, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_06, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_07, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_07, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_08, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_08, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_09, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_09, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_10, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_10, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_11, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_12, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_13, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_outer_14, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_04, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s01_hidden_01, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_05, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_hidden_02, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_06, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_hidden_03, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_07, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_hidden_04, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_08, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_hidden_05, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_09, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_hidden_06, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_10, behavior_id: ch2_behavior_hidden_offset}
+      - {entry_id: ch3_s01_lightfoot_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch3_s01_lightfoot_02, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch3_s01_lightfoot_03, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch3_s01_lightfoot_04, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_04, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch3_s01_instructor_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_05, behavior_id: ch2_behavior_instructor_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch3_s01_defeat_all
+          kind: defeat_targets
+          target_ids: [ch3_s01_outer_01, ch3_s01_outer_02, ch3_s01_outer_03, ch3_s01_outer_04, ch3_s01_outer_05, ch3_s01_outer_06, ch3_s01_outer_07, ch3_s01_outer_08, ch3_s01_outer_09, ch3_s01_outer_10, ch3_s01_outer_11, ch3_s01_outer_12, ch3_s01_outer_13, ch3_s01_outer_14, ch3_s01_hidden_01, ch3_s01_hidden_02, ch3_s01_hidden_03, ch3_s01_hidden_04, ch3_s01_hidden_05, ch3_s01_hidden_06, ch3_s01_lightfoot_01, ch3_s01_lightfoot_02, ch3_s01_lightfoot_03, ch3_s01_lightfoot_04, ch3_s01_instructor_01]
+
+  - id: ch3_encounter_02_xuchang_arena
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch3_s02_outer_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s02_lightfoot_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch3_s02_instructor_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_instructor_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch3_s02_defeat_all
+          kind: defeat_targets
+          target_ids: [ch3_s02_outer_01, ch3_s02_lightfoot_01, ch3_s02_instructor_01]
+
+  - id: ch3_encounter_03_night_temple
+    spawn_config:
+      active_limit: 10
+      reinforcement_threshold: 2
+      entry_warning_ticks: 24
+      attack_grace_ticks: 12
+    token_budgets: {melee: 2, ranged: 1, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch3_s03_staff_01, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_01, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_02, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_02, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_03, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_03, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_04, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_04, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_05, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_05, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_06, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_06, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_07, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_07, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_08, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_08, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_09, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_09, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_10, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_10, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_11, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_01, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_staff_12, archetype_id: ch13_temple, role_id: temple_staff, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_02, behavior_id: ch13_behavior_staff}
+      - {entry_id: ch3_s03_thrower_01, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_03, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_thrower_02, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_04, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_thrower_03, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_05, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_thrower_04, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_06, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_thrower_05, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_07, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_thrower_06, archetype_id: ch13_temple, role_id: temple_thrower, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_08, behavior_id: ch13_behavior_thrower}
+      - {entry_id: ch3_s03_arhat_01, archetype_id: ch13_temple, role_id: temple_arhat_charger, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_09, behavior_id: ch13_behavior_arhat}
+      - {entry_id: ch3_s03_arhat_02, archetype_id: ch13_temple, role_id: temple_arhat_charger, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_10, behavior_id: ch13_behavior_arhat}
+      - {entry_id: ch3_s03_arhat_03, archetype_id: ch13_temple, role_id: temple_arhat_charger, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_01, behavior_id: ch13_behavior_arhat}
+      - {entry_id: ch3_s03_arhat_04, archetype_id: ch13_temple, role_id: temple_arhat_charger, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_02, behavior_id: ch13_behavior_arhat}
+      - {entry_id: ch3_s03_arhat_05, archetype_id: ch13_temple, role_id: temple_arhat_charger, entrance_id: ch13_entrance_s02_upper, position_id: ch13_position_s02_slot_03, behavior_id: ch13_behavior_arhat}
+      - {entry_id: ch3_s03_guard_01, archetype_id: ch13_temple, role_id: temple_guard, entrance_id: ch13_entrance_s02_right, position_id: ch13_position_s02_slot_04, behavior_id: ch13_behavior_guard}
+      - {entry_id: ch3_s03_guard_02, archetype_id: ch13_temple, role_id: temple_guard, entrance_id: ch13_entrance_s02_left, position_id: ch13_position_s02_slot_05, behavior_id: ch13_behavior_guard}
+    objectives:
+      completion_rule: all
+      clauses:
+        - id: ch3_s03_defeat_all
+          kind: defeat_targets
+          target_ids: [ch3_s03_staff_01, ch3_s03_staff_02, ch3_s03_staff_03, ch3_s03_staff_04, ch3_s03_staff_05, ch3_s03_staff_06, ch3_s03_staff_07, ch3_s03_staff_08, ch3_s03_staff_09, ch3_s03_staff_10, ch3_s03_staff_11, ch3_s03_staff_12, ch3_s03_thrower_01, ch3_s03_thrower_02, ch3_s03_thrower_03, ch3_s03_thrower_04, ch3_s03_thrower_05, ch3_s03_thrower_06, ch3_s03_arhat_01, ch3_s03_arhat_02, ch3_s03_arhat_03, ch3_s03_arhat_04, ch3_s03_arhat_05, ch3_s03_guard_01, ch3_s03_guard_02]
+
+  - id: ch3_encounter_04_yanmen_past
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    spawn_entries:
+      - {entry_id: ch3_s04_blade_01, archetype_id: ch1_bandits, role_id: bandit_blade, entrance_id: ch1_entrance_s04_duel_court, position_id: ch1_position_s04_guard_left, behavior_id: ch1_behavior_blade_press}
+      - {entry_id: ch3_s04_rope_01, archetype_id: ch1_bandits, role_id: bandit_rope_raider, entrance_id: ch1_entrance_s04_duel_court, position_id: ch1_position_s04_guard_right, behavior_id: ch1_behavior_rope_flank}
+      - {entry_id: ch3_s04_commander_01, archetype_id: ch1_bandits, role_id: bandit_gong_leader, entrance_id: ch1_entrance_s04_duel_court, position_id: ch1_position_s04_commander_center, behavior_id: ch1_behavior_gong_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch3_s04_defeat_commander, kind: defeat_commander, commander_id: ch3_s04_commander_01}
+        - {id: ch3_s04_defeat_adds, kind: defeat_targets, target_ids: [ch3_s04_blade_01, ch3_s04_rope_01]}
+
+  - id: ch3_encounter_05_named_sword
+    spawn_config:
+      active_limit: 2
+      reinforcement_threshold: 0
+      entry_warning_ticks: 30
+      attack_grace_ticks: 15
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 1}
+    spawn_entries:
+      - {entry_id: ch3_s05_outer_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch3_s05_commander_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_instructor_command}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch3_s05_defeat_commander, kind: defeat_commander, commander_id: ch3_s05_commander_01}

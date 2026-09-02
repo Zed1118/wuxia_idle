@@ -1,4 +1,4 @@
-# Migrated mainline routes: all Chapter 1 stages plus the Chapter 2 sect and Chapter 7 army slices.
+# Migrated mainline routes include complete Chapters 1-3 plus selected later ecology slices.
 stage_assignments:
   - stage_id: stage_01_01
     migration_state: migrated
@@ -42,3 +42,18 @@ stage_assignments:
   - stage_id: stage_13_02
     migration_state: migrated
     encounter_id: ch13_encounter_02_halfway_temple
+  - stage_id: stage_03_01
+    migration_state: migrated
+    encounter_id: ch3_encounter_01_martial_gathering
+  - stage_id: stage_03_02
+    migration_state: migrated
+    encounter_id: ch3_encounter_02_xuchang_arena
+  - stage_id: stage_03_03
+    migration_state: migrated
+    encounter_id: ch3_encounter_03_night_temple
+  - stage_id: stage_03_04
+    migration_state: migrated
+    encounter_id: ch3_encounter_04_yanmen_past
+  - stage_id: stage_03_05
+    migration_state: migrated
+    encounter_id: ch3_encounter_05_named_sword

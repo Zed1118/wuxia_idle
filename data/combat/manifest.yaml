@@ -16,6 +16,7 @@ encounter_sources:
   - data/combat/encounters/chapter_02_poison_escort.yaml
   - data/combat/encounters/chapter_04_xiliang_crossing.yaml
   - data/combat/encounters/chapter_13_temple_pass.yaml
+  - data/combat/encounters/chapter_03_fame.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -569,6 +570,64 @@ reference_index:
     - ch13_s02_arhat_05
     - ch13_s02_guard_01
     - ch13_s02_guard_02
+    - ch3_s01_outer_01
+    - ch3_s01_outer_02
+    - ch3_s01_outer_03
+    - ch3_s01_outer_04
+    - ch3_s01_outer_05
+    - ch3_s01_outer_06
+    - ch3_s01_outer_07
+    - ch3_s01_outer_08
+    - ch3_s01_outer_09
+    - ch3_s01_outer_10
+    - ch3_s01_outer_11
+    - ch3_s01_outer_12
+    - ch3_s01_outer_13
+    - ch3_s01_outer_14
+    - ch3_s01_hidden_01
+    - ch3_s01_hidden_02
+    - ch3_s01_hidden_03
+    - ch3_s01_hidden_04
+    - ch3_s01_hidden_05
+    - ch3_s01_hidden_06
+    - ch3_s01_lightfoot_01
+    - ch3_s01_lightfoot_02
+    - ch3_s01_lightfoot_03
+    - ch3_s01_lightfoot_04
+    - ch3_s01_instructor_01
+    - ch3_s02_outer_01
+    - ch3_s02_lightfoot_01
+    - ch3_s02_instructor_01
+    - ch3_s03_staff_01
+    - ch3_s03_staff_02
+    - ch3_s03_staff_03
+    - ch3_s03_staff_04
+    - ch3_s03_staff_05
+    - ch3_s03_staff_06
+    - ch3_s03_staff_07
+    - ch3_s03_staff_08
+    - ch3_s03_staff_09
+    - ch3_s03_staff_10
+    - ch3_s03_staff_11
+    - ch3_s03_staff_12
+    - ch3_s03_thrower_01
+    - ch3_s03_thrower_02
+    - ch3_s03_thrower_03
+    - ch3_s03_thrower_04
+    - ch3_s03_thrower_05
+    - ch3_s03_thrower_06
+    - ch3_s03_arhat_01
+    - ch3_s03_arhat_02
+    - ch3_s03_arhat_03
+    - ch3_s03_arhat_04
+    - ch3_s03_arhat_05
+    - ch3_s03_guard_01
+    - ch3_s03_guard_02
+    - ch3_s04_blade_01
+    - ch3_s04_rope_01
+    - ch3_s04_commander_01
+    - ch3_s05_outer_01
+    - ch3_s05_commander_01
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

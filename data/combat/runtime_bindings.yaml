@@ -106,6 +106,196 @@ runtime_bindings:
         - ch1_sfx_crossbow
         - ch1_sfx_rope_raider
         - ch1_sfx_gong_leader
+  - stage_id: stage_03_01
+    encounter_id: ch3_encounter_01_martial_gathering
+    base_enemy_id: enemy_erLiu_master_a
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+      - {id: ch2_entrance_s02_stairs, spawn_position: {x: 0, y: -120}}
+      - {id: ch2_entrance_s02_courtyard, spawn_position: {x: 520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -360, y: 120}}
+      - {id: ch2_position_s02_slot_02, world_position: {x: -240, y: 140}}
+      - {id: ch2_position_s02_slot_03, world_position: {x: -120, y: 120}}
+      - {id: ch2_position_s02_slot_04, world_position: {x: 0, y: 140}}
+      - {id: ch2_position_s02_slot_05, world_position: {x: 120, y: 120}}
+      - {id: ch2_position_s02_slot_06, world_position: {x: 240, y: 140}}
+      - {id: ch2_position_s02_slot_07, world_position: {x: 360, y: 120}}
+      - {id: ch2_position_s02_slot_08, world_position: {x: -360, y: 0}}
+      - {id: ch2_position_s02_slot_09, world_position: {x: -120, y: 0}}
+      - {id: ch2_position_s02_slot_10, world_position: {x: 120, y: 0}}
+    behaviors:
+      - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_hidden_offset, ai_profile_id: ai_sect_hidden_offset, token_policy: ranged, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_instructor_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+      - {id: ai_sect_hidden_offset, target_policy: nearest_player, movement_policy: hold_distance, attack_policy: ranged_pressure}
+      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+      - {id: ai_sect_instructor_command, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
+    attack_sets:
+      - {id: ch2_attack_set_outer, skill_ids: [skill_gangmeng_jichu_basic]}
+      - {id: ch2_attack_set_hidden_weapon, skill_ids: [skill_lingqiao_jichu_basic]}
+      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+      - {id: ch2_attack_set_instructor, skill_ids: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]}
+    visual_variants:
+      - {id: ch2_visual_outer_a, asset_path: assets/enemies/battle_black_killer.png}
+      - {id: ch2_visual_outer_b, asset_path: assets/enemies/battle_shaonian.png}
+      - {id: ch2_visual_hidden_weapon_a, asset_path: assets/enemies/battle_hidden_elder.png}
+      - {id: ch2_visual_hidden_weapon_b, asset_path: assets/enemies/battle_hidden_elder_sample_v2.png}
+      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
+      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+      - {id: ch2_visual_instructor_a, asset_path: assets/enemies/battle_elder_grey.png}
+      - {id: ch2_visual_instructor_b, asset_path: assets/enemies/battle_guntou_zhu.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+  - stage_id: stage_03_02
+    encounter_id: ch3_encounter_02_xuchang_arena
+    base_enemy_id: enemy_erLiu_guntou_zhu
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+      - {id: ch2_entrance_s02_stairs, spawn_position: {x: 0, y: -120}}
+      - {id: ch2_entrance_s02_courtyard, spawn_position: {x: 520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+      - {id: ch2_position_s02_slot_02, world_position: {x: 120, y: 120}}
+      - {id: ch2_position_s02_slot_03, world_position: {x: 0, y: -40}}
+    behaviors:
+      - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_instructor_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+      - {id: ai_sect_instructor_command, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
+    attack_sets:
+      - {id: ch2_attack_set_outer, skill_ids: [skill_gangmeng_jichu_basic]}
+      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+      - {id: ch2_attack_set_instructor, skill_ids: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]}
+    visual_variants:
+      - {id: ch2_visual_outer_a, asset_path: assets/enemies/battle_black_killer.png}
+      - {id: ch2_visual_outer_b, asset_path: assets/enemies/battle_shaonian.png}
+      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
+      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+      - {id: ch2_visual_instructor_a, asset_path: assets/enemies/battle_elder_grey.png}
+      - {id: ch2_visual_instructor_b, asset_path: assets/enemies/battle_guntou_zhu.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+  - stage_id: stage_03_03
+    encounter_id: ch3_encounter_03_night_temple
+    base_enemy_id: enemy_erLiu_seng_huiyi
+    entrances:
+      - {id: ch13_entrance_s02_left, spawn_position: {x: -520, y: 80}}
+      - {id: ch13_entrance_s02_upper, spawn_position: {x: 0, y: -120}}
+      - {id: ch13_entrance_s02_right, spawn_position: {x: 520, y: 80}}
+    positions:
+      - {id: ch13_position_s02_slot_01, world_position: {x: -360, y: 120}}
+      - {id: ch13_position_s02_slot_02, world_position: {x: -240, y: 140}}
+      - {id: ch13_position_s02_slot_03, world_position: {x: -120, y: 120}}
+      - {id: ch13_position_s02_slot_04, world_position: {x: 0, y: 140}}
+      - {id: ch13_position_s02_slot_05, world_position: {x: 120, y: 120}}
+      - {id: ch13_position_s02_slot_06, world_position: {x: 240, y: 140}}
+      - {id: ch13_position_s02_slot_07, world_position: {x: 360, y: 120}}
+      - {id: ch13_position_s02_slot_08, world_position: {x: -360, y: 0}}
+      - {id: ch13_position_s02_slot_09, world_position: {x: -120, y: 0}}
+      - {id: ch13_position_s02_slot_10, world_position: {x: 120, y: 0}}
+    behaviors:
+      - {id: ch13_behavior_staff, ai_profile_id: ai_ch13_staff, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch13_behavior_thrower, ai_profile_id: ai_ch13_thrower, token_policy: ranged, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch13_behavior_arhat, ai_profile_id: ai_ch13_arhat, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch13_behavior_guard, ai_profile_id: ai_ch13_guard, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_ch13_staff, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: close_range}
+      - {id: ai_ch13_thrower, target_policy: nearest_player, movement_policy: hold_distance, attack_policy: ranged_pressure}
+      - {id: ai_ch13_arhat, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+      - {id: ai_ch13_guard, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
+    attack_sets:
+      - {id: ch13_attack_set_staff, skill_ids: [skill_gangmeng_jianghu_basic]}
+      - {id: ch13_attack_set_thrower, skill_ids: [skill_lingqiao_jianghu_basic]}
+      - {id: ch13_attack_set_arhat, skill_ids: [skill_gangmeng_jianghu_basic]}
+      - {id: ch13_attack_set_guard, skill_ids: [skill_lingqiao_jianghu_basic, skill_lingqiao_jianghu_skill]}
+    visual_variants:
+      - {id: ch13_visual_staff_a, asset_path: assets/enemies/battle_seng_huiyi.png}
+      - {id: ch13_visual_staff_b, asset_path: assets/enemies/battle_songshan_daozong_dizi.png}
+      - {id: ch13_visual_thrower_a, asset_path: assets/enemies/battle_hidden_elder.png}
+      - {id: ch13_visual_thrower_b, asset_path: assets/enemies/battle_hidden_elder_sample_v2.png}
+      - {id: ch13_visual_arhat_a, asset_path: assets/enemies/battle_kunlun_waimen_shouguan.png}
+      - {id: ch13_visual_arhat_b, asset_path: assets/enemies/battle_songshan_shouguan.png}
+      - {id: ch13_visual_guard_a, asset_path: assets/enemies/battle_elder_grey.png}
+      - {id: ch13_visual_guard_b, asset_path: assets/enemies/battle_mingmen_a.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch13_posture_staff, ch13_posture_thrower, ch13_posture_arhat, ch13_posture_guard]
+      drop_group_ids: [ch13_drop_group_ecology_encounter]
+      sfx_group_ids: [ch13_sfx_staff, ch13_sfx_thrower, ch13_sfx_arhat, ch13_sfx_guard]
+  - stage_id: stage_03_04
+    encounter_id: ch3_encounter_04_yanmen_past
+    base_enemy_id: enemy_erLiu_balian
+    entrances:
+      - {id: ch1_entrance_s04_duel_court, spawn_position: {x: 520, y: 80}}
+    positions:
+      - {id: ch1_position_s04_guard_left, world_position: {x: -120, y: 120}}
+      - {id: ch1_position_s04_guard_right, world_position: {x: 120, y: 120}}
+      - {id: ch1_position_s04_commander_center, world_position: {x: 0, y: -40}}
+    behaviors:
+      - {id: ch1_behavior_blade_press, ai_profile_id: ai_bandit_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch1_behavior_rope_flank, ai_profile_id: ai_rope_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch1_behavior_gong_command, ai_profile_id: ai_gong_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_bandit_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+      - {id: ai_rope_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+      - {id: ai_gong_command, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
+    attack_sets:
+      - {id: ch1_attack_set_blade, skill_ids: [skill_gangmeng_jichu_basic]}
+      - {id: ch1_attack_set_rope_raider, skill_ids: [skill_yinrou_jichu_basic]}
+      - {id: ch1_attack_set_gong_leader, skill_ids: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]}
+    visual_variants:
+      - {id: ch1_visual_blade_a, asset_path: assets/enemies/battle_bandit_blade.png}
+      - {id: ch1_visual_blade_b, asset_path: assets/enemies/battle_bandit_blade_sample_v2.png}
+      - {id: ch1_visual_rope_raider_a, asset_path: assets/enemies/battle_ruffian_a.png}
+      - {id: ch1_visual_rope_raider_b, asset_path: assets/enemies/battle_thug_a.png}
+      - {id: ch1_visual_gong_leader_a, asset_path: assets/enemies/battle_guntou_zhu.png}
+      - {id: ch1_visual_gong_leader_b, asset_path: assets/enemies/battle_fu_zhaizhu.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch1_posture_blade, ch1_posture_crossbow, ch1_posture_rope_raider, ch1_posture_gong_leader]
+      drop_group_ids: [ch1_drop_group_bandit_encounter]
+      sfx_group_ids: [ch1_sfx_blade, ch1_sfx_crossbow, ch1_sfx_rope_raider, ch1_sfx_gong_leader]
+  - stage_id: stage_03_05
+    encounter_id: ch3_encounter_05_named_sword
+    base_enemy_id: enemy_erLiu_huiyi
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+      - {id: ch2_entrance_s02_courtyard, spawn_position: {x: 520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+      - {id: ch2_position_s02_slot_02, world_position: {x: 0, y: -40}}
+    behaviors:
+      - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_instructor_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+      - {id: ai_sect_instructor_command, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
+    attack_sets:
+      - {id: ch2_attack_set_outer, skill_ids: [skill_gangmeng_jichu_basic]}
+      - {id: ch2_attack_set_instructor, skill_ids: [skill_gangmeng_jichu_basic, skill_gangmeng_jichu_skill]}
+    visual_variants:
+      - {id: ch2_visual_outer_a, asset_path: assets/enemies/battle_black_killer.png}
+      - {id: ch2_visual_outer_b, asset_path: assets/enemies/battle_shaonian.png}
+      - {id: ch2_visual_instructor_a, asset_path: assets/enemies/battle_elder_grey.png}
+      - {id: ch2_visual_instructor_b, asset_path: assets/enemies/battle_guntou_zhu.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
   - stage_id: stage_02_01
     encounter_id: ch2_encounter_01_poison_escort
     base_enemy_id: enemy_sanLiu_thief_a
