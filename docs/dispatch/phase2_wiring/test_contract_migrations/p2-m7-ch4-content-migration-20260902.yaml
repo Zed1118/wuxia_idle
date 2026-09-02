@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch4-content-migration-20260902
+base_sha: 9efcdeb6f7147070be891b2c2e08138651267317
+head_sha: 55a87d3097cb9735b0a7c9c886d16c0967ccbbd0
+summary: 第三章旧守卫把全局主线迁移水位写死为 19；第四章接入后改为保留第三章 19 条下限，并由第四章合同独立精确守住 23 条总水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 19);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(19));
+    reason: 第三章测试只应守住自身形成的 19 条下限，继续写死全局总数会阻断后续章节迁移；替代断言保留第三章水位且允许增长，第四章新测试另以精确等于 23 防止本批少接或多接。
