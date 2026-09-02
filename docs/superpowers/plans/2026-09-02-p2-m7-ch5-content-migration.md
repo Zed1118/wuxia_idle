@@ -32,5 +32,6 @@
 - 状态：第五章 `stage_05_01..05` 已形成 `5/5` 独立工程候选；全主线集成分子仍为 `23/105`，候选分子为 `28/105`。正式 M7 与 Phase 2 仍分别开放、`1/10`。
 - 实现提交：`1b7f0c95` 接入五条生产路由；`021e3b0f` 把第四章全局写死水位改为保留 `23` 条下限；`a2529c7a` 登记唯一测试合同迁移。
 - 验证：有效初始 RED `0/6`；两向 mutation 分别精确 `1` / `1` 条失败，并以反向补丁和 SHA-256 还原；定向 `6/6`、主线应用 `183/183`、Phase 2 相邻 `90/90`、analyze 0 issue、整仓 format `1719` files/0 changed、持锁全量 `5899/5899` 且 `[E]` 0。
-- 下一步：冻结精确 Gate tip，运行测试合同迁移校验与标准 Gate；通过后再更新治理台账和审计。
+- 标准 Gate：精确范围 `04276bdc..440defc1` 在独立 detached worktree 复跑 full `5899/5899`、analyze 0 issue、format `1719` files/0 changed；原始 Gate 唯一失败项为已登记的 `test_deletions=1`。专用迁移校验输出 `[migration] expect 删 1 / 增 36;用例 删 0 / 增 6;登记 1 条` 与 `PASS: test_contract_migration`，因此按唯一例外口径 Gate 通过。
+- 交付边界：PROGRESS、registry、第四章远端事实与第五章审计治理尾已完成，待最终 `[READY]` tip 冻结；未经用户再次授权，不 merge、不 push。
 - 阻塞项：真人桌面、普通存档平衡/手感、视觉、音频与 Windows 继续挂账；`stage_02_05` 高基础随从风险未处理。

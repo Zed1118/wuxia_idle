@@ -4,7 +4,7 @@
 
 - 开工前复核 `main == origin/main == 9efcdeb6f7147070be891b2c2e08138651267317` 且主 checkout clean；第三章 exact-SHA CI run `33630424378` 为 `completed/success`。
 - 有时限只读审计确认按主线顺序第一个不完整章节是第四章，而不是直接假定下一章：`stage_04_01` 已迁移，`stage_04_02..05` 的 `StageDef` 完整但 assignment、encounter 与 runtime binding 为 `0/4`，生产 factory 返回 null 后落回 legacy mapper。
-- 本候选把第四章从 `1/5` 推至 `5/5`，全主线 typed production catalog 候选从 `19/105` 达 `23/105`；`origin/main` 的集成事实仍为 `19/105`，塔仍为 `0/49`。正式 M7 继续开放，Phase 2 仍为 `1/10`。
+- 本批把第四章从 `1/5` 推至 `5/5`，全主线 typed production catalog 从 `19/105` 达 `23/105`，现已进入 `origin/main`；塔仍为 `0/49`。正式 M7 继续开放，Phase 2 仍为 `1/10`。
 - 只复用已集成的 `ch4_xiliang` 生态、production factory、runtime binding、目标原语和 Phase 0A reducer/flow；没有修改 `stages.yaml`、`numbers.yaml`、生产 Dart、敌人/玩家数值、Boss 招式、掉落、奖励、经济、叙事、解锁、周目、结算 owner、Isar、`schemaVersion` 或 `saveVersion`。
 
 ## 生产路径证据
@@ -40,7 +40,7 @@
 
 ## 状态边界与挂账
 
-- 已实现、已验证不等于已进入 main/origin。本候选位于 `codex/p2-m7-ch4-content-migration-20260902`；未经用户再次授权不 merge、不 push，因此没有第四章候选的远端 CI。
-- 第三章 exact-SHA CI 成功只闭合第三章工程集成，不替代第四章候选 CI。
+- 经用户授权，第四章最终 `[READY]` tip 已快进进入 `main/origin`，精确 SHA 为 `04276bdcebc33d123a3baafdd3cdbd5a7da81a17`，主 checkout clean。
+- exact-SHA CI run `33636410141`（head `04276bdcebc33d123a3baafdd3cdbd5a7da81a17`）为 `completed/success`；`macos-build`、格式、analyze、coverage tests、coverage ratchet 与 artifact upload 均成功。Node 20 deprecated 注记不是产品失败。
 - 普通存档平衡、真人手感、视觉、音频、桌面操作与 Windows 全部 `DEFERRED`；`stage_02_05` 高基础随从风险继续挂账，本候选未处理。
 - M7 目标仍为主线 `105/105`、塔 `49/49`、legacy runtime consumers `0`；第四章 `5/5` 仅增加候选分子，不关闭正式 M7，也不改变 Phase 2 `1/10`。

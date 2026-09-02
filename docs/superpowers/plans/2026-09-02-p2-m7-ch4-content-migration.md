@@ -29,9 +29,9 @@
 
 - 分支：`codex/p2-m7-ch4-content-migration-20260902`。
 - worktree：`/Users/a10506/.codex/worktrees/p2-m7-ch4-content-migration-20260902`。
-- 状态：第四章 `stage_04_01..05` 已形成 `5/5` 独立工程候选；全主线集成分子仍为 `19/105`，候选分子为 `23/105`。正式 M7 与 Phase 2 仍分别开放、`1/10`。
+- 状态：第四章 `stage_04_01..05` 已由用户授权快进进入 `main/origin`；全主线集成分子为 `23/105`。正式 M7 与 Phase 2 仍分别开放、`1/10`。
 - 实现提交：`218d902d` 接入四条生产路由；`55a87d30` 把第三章全局写死水位改为保留 `19` 条下限，第四章合同独立精确守住 `23`；`7cded518` 冻结精确 Gate tip。
 - 验证：有效初始 RED `0/6`；两向 mutation 分别精确 `1` / `2` 条失败，并以反向补丁和 SHA-256 还原；定向 `6/6`、主线应用 `183/183`、Phase 2 相邻 `84/84`、analyze 0 issue、整仓 format `1718` files/0 changed、持锁全量 `5893/5893` 且 `[E]` 0。
 - 标准 Gate：精确范围 `9efcdeb6..7cded518` 在独立 detached worktree 复跑 full `5893/5893`、analyze 0 issue、format `1718` files/0 changed；原始 Gate 唯一失败项为已登记的 `test_deletions=1`。专用迁移校验输出 `[migration] expect 删 1 / 增 38;用例 删 0 / 增 6;登记 1 条` 与 `PASS: test_contract_migration`，因此按唯一例外口径 Gate 通过。
-- 交付边界：PROGRESS、registry 与审计治理尾已完成，由最终 `[READY]` tip 冻结；未经用户再次授权，不 merge、不 push。
-- 阻塞项：第四章候选尚未进入 main/origin，因而没有候选 exact-SHA CI；真人桌面、普通存档平衡/手感、视觉、音频与 Windows 继续挂账；`stage_02_05` 高基础随从风险未处理。
+- 远端闭环：最终 `[READY]` tip 与 `main == origin/main == 04276bdcebc33d123a3baafdd3cdbd5a7da81a17`；exact-SHA CI run `33636410141` 为 `completed/success`，`macos-build`、格式、analyze、coverage tests、coverage ratchet 与 artifact upload 均成功。
+- 阻塞项：真人桌面、普通存档平衡/手感、视觉、音频与 Windows 继续挂账；`stage_02_05` 高基础随从风险未处理。
