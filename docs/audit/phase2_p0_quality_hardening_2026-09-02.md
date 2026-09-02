@@ -15,7 +15,7 @@
 - 三次临时破坏均以精确反向补丁恢复，并用生产文件 SHA-256 与零 diff 复核；恢复后联合定向再次 `8/8`。
 - `flutter analyze --no-pub lib test tool`：`No issues found!`；`dart format .`：`1716 files (0 changed)`；`git diff --check` 通过。
 - 持锁整仓 `flutter test --no-pub -r expanded`：`5881/5881`、`[E]` 块 `0`、退出码 `0`；锁已释放。
-- 无测试删除、无生产 Dart/YAML/asset 变更；`CLAUDE.md §8.2` 标准 Gate 通过。候选仍须由独立评审决定是否合入 main。
+- 无测试删除、无生产 Dart/YAML/asset 变更；`CLAUDE.md §8.2` 标准 Gate 通过。候选 `e867e00d` 已通过独立审查并快进进入本地主分支；远端 push 与 exact-SHA CI 仍待完成。
 
 ## 第二章有效角色参数事实
 

@@ -6388,13 +6388,13 @@ tasks:
     owner: codex_root
     branch: codex/p2-p0-quality-hardening-20260902
     worktree: /Users/a10506/.codex/worktrees/p2-p0-quality-hardening-20260902
-    status: ready
+    status: integrated_local_main_remote_pending
     current_authoritative_wip: false
     base_commit: 1c0eaa3ae8c2b77730cd4ab0844e54fd15939991
     completion_scope: close_post_integration_truth_matrix_and_effective_combat_quality_gaps_without_expanding_content
     acceptance_baseline: 0_of_3_P0_quality_subgates
     acceptance_target: 3_of_3_P0_quality_subgates
-    acceptance_result: 3_of_3_P0_quality_subgates_candidate_ready
+    acceptance_result: 3_of_3_P0_quality_subgates_integrated_local_main_remote_pending
     evidence:
       authoritative_truth_refresh: pass
       M3_real_enemy_AI_survival_timing_matrix: 45_of_45_real_production_encounter_control_matrix
@@ -6414,6 +6414,11 @@ tasks:
       standard_gate: pass
       production_code_or_data_changed: false
       formal_phase2_gate: 1_of_10_unchanged
+      reviewed_candidate_commit: e867e00d8dd5eebfacadb921883d77b901b60393
+      independent_merge_review: pass
+      local_main_integration: true
+      origin_main_integration: pending_user_authorization
+      exact_sha_ci: pending_remote_push
       human_desktop_acceptance: deferred_by_user
       windows_acceptance: deferred
     owned_files:
