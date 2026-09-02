@@ -2,7 +2,7 @@
 
 ## 核心结论
 
-- 基线：`main == origin/main == 1c0eaa3ae8c2b77730cd4ab0844e54fd15939991`；M3 精确 SHA CI `33530794272` 成功，M7 第二章精确 SHA CI `33533824877` 成功。
+- 最终远端事实：`main == origin/main == 52a4255fd74d1c7d86f43f846a536e52cfdec1b6`；P0 exact-SHA CI run `33578580680` 已实时复核为 `completed/success`。其中 `macos-build`、格式检查、analyze、coverage tests 与 coverage ratchet 均成功。
 - 权威事实已订正：M3 五类单段普攻工程画像已集成；M7 第二章 `5/5`、全主线 typed catalog `14/105` 已集成，塔 `0/49`；正式 Phase 2 仍为 `1/10`。
 - M3 原 45 格静止合成敌人测试已替换为真实 `stage_02_03/04/05` encounter。五武器 × 三流派 × 清杂/精英/Boss 共 45 格均经过 production factory、director、enemy AI、objective、reducer 与姿态结算，并检查终局、超时、敌方 intent、玩家受击/存活和单拍单目标。
 - 第二章五关均增加真实动态 headless 验证：使用红线封顶控制玩家，`stage_02_01..05` 均在生产最大拍数前胜利；守阵实体存活，生存关至少运行 900 拍，无空转、超时或错误终局。
@@ -15,7 +15,7 @@
 - 三次临时破坏均以精确反向补丁恢复，并用生产文件 SHA-256 与零 diff 复核；恢复后联合定向再次 `8/8`。
 - `flutter analyze --no-pub lib test tool`：`No issues found!`；`dart format .`：`1716 files (0 changed)`；`git diff --check` 通过。
 - 持锁整仓 `flutter test --no-pub -r expanded`：`5881/5881`、`[E]` 块 `0`、退出码 `0`；锁已释放。
-- 无测试删除、无生产 Dart/YAML/asset 变更；`CLAUDE.md §8.2` 标准 Gate 通过。候选 `e867e00d` 已通过独立审查并快进进入本地主分支；远端 push 与 exact-SHA CI 仍待完成。
+- 无测试删除、无生产 Dart/YAML/asset 变更；`CLAUDE.md §8.2` 标准 Gate 通过。候选 `e867e00d` 已通过独立审查，并由同步提交 `52a4255fd74d1c7d86f43f846a536e52cfdec1b6` 进入 `origin/main`；exact-SHA CI run `33578580680` 成功，原远端 pending 台账已闭环。
 
 ## 第二章有效角色参数事实
 

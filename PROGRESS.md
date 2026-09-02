@@ -3,16 +3,16 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-### 二阶段结果仪表盘（2026-09-02 P0 本地集成收口）
+### 二阶段结果仪表盘（2026-09-02 M7 第三章工程候选）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
-- **精确工程集成基线**：本地主分支已吸收 P0 质量候选且 clean；`origin/main` 仍为 `1c0eaa3ae8c2b77730cd4ab0844e54fd15939991`，P0 远端 push 与 exact-SHA CI 未执行。既有 M3 集成 `f3076cef045145cc17cc2d4098f5fba0161998e1`、CI run `33530794272` 成功，M7 第二章集成 `1c0eaa3ae8c2b77730cd4ab0844e54fd15939991`、CI run `33533824877` 成功。
-- **工程门**：M3 五类单段普攻生产画像 `5/5` 已集成；M7 第二章 `5/5`、全主线 typed catalog `14/105` 已集成，塔仍为 `0/49`；台账、M3 真实生产遭遇矩阵、第二章有效画像/动态终局共 `3/3` P0 质量子门已通过独立审查并进入本地主分支，远端集成仍待完成；M5 六模式七合同 `42/42`、M6 顶层生产入口/身份/结算合同 `1/1` 已集成。
-- **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互及 M7 第二章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前权威顺序**：先完成 P0 的远端 push 与 exact-SHA CI，再继续 M7 按章迁移；M8 发布质量与 M9 RC 不提前启动。任何下游 READY 均不反推上游正式通过。
+- **精确工程集成基线**：开局复核 `main == origin/main == 52a4255fd74d1c7d86f43f846a536e52cfdec1b6` 且主 checkout clean；P0 exact-SHA CI run `33578580680` 已实时确认为 `completed/success`，其 `macos-build`、格式、analyze、coverage tests 与 ratchet 均成功。
+- **工程门**：M3 五类单段普攻生产画像 `5/5` 已集成；P0 三项质量子门 `3/3` 已进入 `origin/main`。M7 第二章 `5/5`、全主线 typed catalog `14/105` 已集成；第三章 `stage_03_01..05` 为 `5/5` 独立分支候选，使候选 catalog 达 `19/105`，尚未进入 main/origin；塔仍为 `0/49`，legacy runtime retirement 仍开放。M5 `42/42`、M6 `1/1` 既有工程结果不变。
+- **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及 M7 第二/三章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
+- **当前唯一权威任务**：继续 M7 内容迁移；本批仅第三章五关，不重做 P0、不处理 `stage_02_05` 高基础随从风险、不启动 M8/M9。任何候选、READY 或测试数量均不反推正式通过。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
-- **前三阻塞**：① P0 本地已集成但远端 push/exact-SHA CI 待授权；② M2–M7 真人/Windows 挂账仍未关闭；③ M7 主线 `91`、塔 `49` 个迁移缺口仍未关闭。
+- **前三阻塞**：① 第三章候选尚未进入 main/origin，M7 集成口径仍为主线 `14/105`；② 即使第三章候选计入，M7 仍余主线 `86`、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。
-- **详细证据**：P0 质量收口见 `docs/superpowers/plans/2026-09-02-p2-p0-quality-hardening.md` 与 `docs/audit/phase2_p0_quality_hardening_2026-09-02.md`；P0 本地集成不替代尚未发生的远端 CI，M3/M7 精确 SHA CI run `33530794272` / `33533824877` 仍只证明既有远端 main 集成。
+- **详细证据**：P0 远端闭环见 `docs/superpowers/plans/2026-09-02-p2-p0-quality-hardening.md` 与 `docs/audit/phase2_p0_quality_hardening_2026-09-02.md`；第三章候选见 `docs/superpowers/plans/2026-09-02-p2-m7-ch3-content-migration.md` 与 `docs/audit/phase2_m7_ch3_content_migration_2026-09-02.md`。第三章没有远端 CI，P0 的成功 CI 不替代本候选 CI。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。

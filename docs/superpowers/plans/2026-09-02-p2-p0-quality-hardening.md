@@ -35,7 +35,8 @@
 
 - 分支：`codex/p2-p0-quality-hardening-20260902`
 - worktree：`/Users/a10506/.codex/worktrees/p2-p0-quality-hardening-20260902`
-- 状态：`3/3` P0 质量子门已通过独立审查并快进进入本地主分支；正式 Phase 2 仍为 `1/10`，远端未 push、exact-SHA CI 未运行。
-- 下一步：获得远端写入授权后 push 并核对 exact-SHA CI；完成前不启动新的 M7 写入，M8/M9 不提前启动。
+- 状态：`3/3` P0 质量子门已通过独立审查并由 `52a4255fd74d1c7d86f43f846a536e52cfdec1b6` 进入 `origin/main`；正式 Phase 2 仍为 `1/10`。
+- 远端验证：exact-SHA CI run `33578580680` 已实时复核为 `completed/success`；`macos-build`、格式检查、analyze、coverage tests 与 coverage ratchet 均成功。
+- 下一步：P0 不再重做；唯一权威任务继续 M7 按章迁移，M8/M9 不提前启动。
 - 已跑验证：直接定向 `8/8`、相邻回归 `88/88`、三向 mutation 各精确 `1` 条失败并精确还原、analyze 0 issue、整仓 format 1716 files/0 changed、持锁全量 `5881/5881`、`[E]` 块 0、标准 Gate PASS。
-- 阻塞项：远端 push 尚未授权；自动化不能批准普通存档平衡、真人武器手感、二章实际节奏、视觉/音频或 Windows；`stage_02_05` 随从继承章末高基敌参数的产品合理性仍待后续决定，本批只披露不改值。
+- 阻塞项：自动化不能批准普通存档平衡、真人武器手感、二章实际节奏、视觉/音频或 Windows；`stage_02_05` 随从继承章末高基敌参数的产品合理性仍待用户另行决定，后续 M7 迁移不顺带改值。

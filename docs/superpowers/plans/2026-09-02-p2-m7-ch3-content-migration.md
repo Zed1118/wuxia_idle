@@ -29,7 +29,8 @@
 
 - 分支：`codex/p2-m7-ch3-content-migration-20260902`。
 - worktree：`/Users/a10506/.codex/worktrees/p2-m7-ch3-content-migration-20260902`。
-- 状态：已完成只读审计，准备建立初始 RED；项目文件尚未实现第三章迁移。
-- 下一步：运行新增生产合同测试取得初始 RED，再补 assignment、encounter、manifest reference 与 runtime binding。
-- 已跑验证：exact-SHA CI run `33578580680` 实时 `completed/success`；主 checkout clean。
-- 阻塞项：正式 M7、真人桌面与 Windows 仍开放；未经用户授权不 merge、不 push。
+- 状态：第三章 `5/5` 生产迁移已形成独立工程候选，全主线候选分子 `14/105 → 19/105`；正式 M7 与 Phase 2 仍分别开放、`1/10`。
+- 下一步：冻结 `[READY]` tip，等待用户另行授权后才可评审、merge 或 push；M8/M9 不启动。
+- 已跑验证：初始 RED `6`；两向 mutation 分别精确 `1` / `2` 条失败并以反向补丁和 SHA-256 还原；定向 `6/6`、Phase 2 相邻 `78/78`、主线应用 `183/183`、analyze 0 issue、整仓 format `1717` files/0 changed、持锁全量 `5887/5887` 且 `[E]` 0、锁已释放。
+- 标准 Gate：对精确六文件实现范围 `52a4255f..f979e82a` 在独立 detached worktree 全量复跑 `5887/5887`，analyze 0 issue、format `1717` files/0 changed、receipt matched，最终 `PASS`。用户明确要求的 `PROGRESS.md` / registry / P0 远端事实属于随后治理尾提交；因 Gate 内建 `forbidden_files` 规则排除 `PROGRESS.md`，不伪称这部分在自动 Gate 范围内。
+- 阻塞项：本候选尚未进入 main/origin，也没有本候选 CI；真人桌面、平衡/手感、视觉、音频与 Windows 继续挂账；`stage_02_05` 高基础随从风险未处理。
