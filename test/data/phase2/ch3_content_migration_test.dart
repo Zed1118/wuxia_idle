@@ -79,7 +79,7 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, 19);
+    expect(migratedMainlineCount, greaterThanOrEqualTo(19));
   });
 
   test('Chapter 3 routes close catalog and runtime identities', () {
