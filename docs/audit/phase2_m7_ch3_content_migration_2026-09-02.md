@@ -4,7 +4,7 @@
 
 - 开局只读复核：`main == origin/main == 52a4255fd74d1c7d86f43f846a536e52cfdec1b6`，主 checkout clean；P0 exact-SHA CI run `33578580680` 为 `completed/success`。
 - 实时分母：第二章 `5/5`、全主线 typed production catalog `14/105`、塔 `0/49`。只读审计确认第一个按主线顺序完整未迁移的章节是第三章：`stage_03_01..05` 的 `StageDef` 均存在，但 assignment、encounter 与 runtime binding 为 `0/5`，生产 factory 返回 null 后由 legacy mapper 消费。
-- 本候选把第三章推进至 `5/5`，候选 catalog 达 `19/105`；`origin/main` 的正式集成事实仍是 `14/105`。M7 仍开放，Phase 2 仍为 `1/10`。
+- 本批把第三章推进至 `5/5`；随后经用户授权快进合入并 push，`main == origin/main == 9efcdeb6f7147070be891b2c2e08138651267317`，全主线 typed catalog 的集成事实为 `19/105`。M7 仍开放，Phase 2 仍为 `1/10`。
 - 五关只复用现有门派、寺院、山匪生态与既有目标原语；没有修改 `stages.yaml`、`numbers.yaml`、生产 Dart、玩家/敌人数值、Boss 招式、掉落、奖励、经济、叙事、解锁、周目、结算 owner、Isar、`schemaVersion` 或 `saveVersion`。
 
 ## 生产路径证据
@@ -40,7 +40,7 @@
 
 ## 状态边界与挂账
 
-- 已实现不等于已进入 main/origin；本候选位于 `codex/p2-m7-ch3-content-migration-20260902`，未经用户授权不 merge、不 push，因此没有本候选的远端 CI。
-- P0 的 exact-SHA CI 成功只闭合 P0 远端台账，不替代第三章候选 CI。
+- 第三章已进入 main/origin：精确 SHA 为 `9efcdeb6f7147070be891b2c2e08138651267317`；exact-SHA CI run `33630424378` 已实时确认为 `completed/success`，`macos-build`、格式、analyze、coverage tests 与 ratchet 均成功。
+- 上述集成与 CI 只闭合第三章工程事实，不替代后续章节候选 CI，也不代签真人验收。
 - 普通存档平衡、真人手感、视觉、音频、桌面操作与 Windows 全部 `DEFERRED`；`stage_02_05` 高基础随从风险继续挂账，本候选未处理。
 - M7 的验收目标仍为主线 `105/105`、塔 `49/49`、legacy runtime consumers `0`；第三章 `5/5` 仅增加候选分子，不关闭正式 M7，也不改变 Phase 2 `1/10`。
