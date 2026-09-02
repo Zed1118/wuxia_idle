@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch5-content-migration-20260902
+base_sha: 04276bdcebc33d123a3baafdd3cdbd5a7da81a17
+head_sha: 021e3b0fd55e26d227df132de122bd6b0ccbae17
+summary: 第四章旧守卫把全局主线迁移水位写死为 23；第五章接入后改为保留第四章 23 条下限，并由第五章合同独立精确守住 28 条总水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 23);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(23));
+    reason: 第四章测试只应守住自身形成的 23 条下限，继续写死全局总数会阻断后续章节迁移；替代断言保留第四章水位且允许增长，第五章新测试另以精确等于 28 防止本批少接或多接。
