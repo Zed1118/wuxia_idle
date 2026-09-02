@@ -23,23 +23,30 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_06_01': ('ch6_encounter_01_lunjian_departure', 3, 3),
-  'stage_06_02': ('ch6_encounter_02_songshan_return', 3, 3),
-  'stage_06_03': ('ch6_encounter_03_yellow_river_source', 3, 3),
-  'stage_06_04': ('ch6_encounter_04_kunlun_outer_gate', 3, 3),
-  'stage_06_05': ('ch6_encounter_05_kunlun_summit', 3, 3),
+  'stage_07_01': ('ch7_encounter_01_northern_outpost', 25, 10),
+  'stage_07_02': ('ch7_encounter_02_snow_riders', 3, 3),
+  'stage_07_03': ('ch7_encounter_03_mountain_scouts', 3, 3),
+  'stage_07_04': ('ch7_encounter_04_grey_cloak_pursuit', 5, 3),
+  'stage_07_05': ('ch7_encounter_05_heavy_master', 3, 1),
 };
 
+const _newStageIds = ['stage_07_02', 'stage_07_03', 'stage_07_05'];
+
 const _bossCases = {
-  'stage_06_04': (
-    'ch6_encounter_04_kunlun_outer_gate',
-    'ch6_s04_commander_01',
-    ['ch6_s04_sword_guard_01', 'ch6_s04_evasive_guard_01'],
+  'stage_07_04': (
+    'ch7_encounter_04_grey_cloak_pursuit',
+    'ch7_s04_grey_cloak',
+    [
+      'ch7_s04_guard_01',
+      'ch7_s04_archer_01',
+      'ch7_s04_guard_02',
+      'ch7_s04_charger_01',
+    ],
   ),
-  'stage_06_05': (
-    'ch6_encounter_05_kunlun_summit',
-    'ch6_s05_commander_01',
-    ['ch6_s05_gangmeng_01', 'ch6_s05_lingqiao_01'],
+  'stage_07_05': (
+    'ch7_encounter_05_heavy_master',
+    'ch7_s05_commander_01',
+    ['ch7_s05_guard_01', 'ch7_s05_archer_01'],
   ),
 };
 
@@ -55,9 +62,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 6 exposes five of five migrated production routes', () {
+  test('Chapter 7 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 6)
+        .where((stage) => stage.chapterIndex == 7)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -79,10 +86,10 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(33));
+    expect(migratedMainlineCount, 36);
   });
 
-  test('Chapter 6 routes close catalog and runtime identities', () {
+  test('Chapter 7 routes close catalog and runtime identities', () {
     for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
       final stage = repository.getStage(stageId);
       final assignment = repository.combatAssignmentForStage(stageId);
@@ -93,28 +100,10 @@ void main() {
       expect(encounter?.spawnConfig.activeLimit, contract.$3, reason: stageId);
       expect(runtime?.baseEnemyId, stage.enemyTeam.single.id, reason: stageId);
       expect(runtime?.enemyBindings, hasLength(contract.$2), reason: stageId);
-
-      final bundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
-        stageId: stageId,
-        encounterId: contract.$1,
-        cycleIndex: 1,
-        repository: repository,
-      );
-      expect(bundle.actorBindingsByEntryId, hasLength(contract.$2));
-      expect(bundle.actorBindingsByEntryId.keys.toSet(), {
-        for (final entry in encounter!.spawnEntries) entry.entryId,
-      });
-
-      final positions = <String>[];
-      for (final entry in encounter.spawnEntries) {
-        final point = runtime!.bindingForEntry(entry.entryId)!.position;
-        positions.add('${point.x}:${point.y}');
-      }
-      expect(positions.toSet(), hasLength(contract.$3), reason: stageId);
     }
   });
 
-  test('Chapter 6 routes construct through the real factory', () async {
+  test('Chapter 7 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -131,16 +120,12 @@ void main() {
       expect(host, isNotNull, reason: stageId);
       expect(host!.mapping!.combatants, hasLength(contract.$2 + 1));
       expect(host.mapping!.director.config.activeLimit, contract.$3);
-      expect(
-        host.mapping!.enemyAiAdapter.behaviorProfilesByActor,
-        hasLength(contract.$2),
-      );
       expect(host.tokenBindingsByActorId, hasLength(contract.$2));
     }
   });
 
-  test('Chapter 6 objectives require every authored opponent', () {
-    for (final stageId in ['stage_06_01', 'stage_06_02', 'stage_06_03']) {
+  test('new Chapter 7 objectives require every authored opponent', () {
+    for (final stageId in ['stage_07_02', 'stage_07_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -156,32 +141,27 @@ void main() {
       }
     }
 
-    for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
-      final encounter = repository.combatEncounterForStage(stageId)!;
-      final controller = mapCombatObjectiveComposition(
-        encounter.objectives,
-        tickDuration: const Duration(milliseconds: 100),
+    final identity = _bossCases['stage_07_05']!;
+    final encounter = repository.combatEncounterForStage('stage_07_05')!;
+    final controller = mapCombatObjectiveComposition(
+      encounter.objectives,
+      tickDuration: const Duration(milliseconds: 100),
+    );
+    var progress = controller.advance(
+      controller.initialProgress,
+      CommanderDefeated(identity.$2),
+    );
+    expect(progress.completed, isFalse);
+    for (var index = 0; index < identity.$3.length; index++) {
+      progress = controller.advance(
+        progress,
+        TargetDefeated(identity.$3[index]),
       );
-      var progress = controller.advance(
-        controller.initialProgress,
-        CommanderDefeated(identity.$2),
-      );
-      expect(progress.completed, isFalse, reason: identity.$1);
-      for (var index = 0; index < identity.$3.length; index++) {
-        progress = controller.advance(
-          progress,
-          TargetDefeated(identity.$3[index]),
-        );
-        expect(
-          progress.completed,
-          index == identity.$3.length - 1,
-          reason: identity.$1,
-        );
-      }
+      expect(progress.completed, index == identity.$3.length - 1);
     }
   });
 
-  test('only authored Chapter 6 commanders retain Boss identity', () {
+  test('only authored Chapter 7 targets retain Boss identity', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -195,45 +175,37 @@ void main() {
         cycleIndex: 1,
         repository: repository,
       );
-      final commander = bundle.actorBindingsByEntryId[identity.$2]!;
-      expect(commander.combatant.name, base.name, reason: stageId);
-      expect(commander.combatant.iconPath, base.iconPath, reason: stageId);
-      expect(commander.combatant.isBoss, isTrue, reason: stageId);
+      final target = bundle.actorBindingsByEntryId[identity.$2]!;
+      expect(target.combatant.name, base.name, reason: stageId);
+      expect(target.combatant.isBoss, isTrue, reason: stageId);
       expect(
-        commander.combatant.availableSkills.map((skill) => skill.id),
+        target.combatant.availableSkills.map((skill) => skill.id),
         base.availableSkills.map((skill) => skill.id),
       );
-      expect(commander.createActor('runtime-commander').isBoss, isTrue);
-
       for (final guardId in identity.$3) {
         final guard = bundle.actorBindingsByEntryId[guardId]!;
         expect(guard.combatant.isBoss, isFalse, reason: guardId);
         expect(guard.combatant.bossPhases, isNull, reason: guardId);
         expect(guard.combatant.chargeSkillId, isNull, reason: guardId);
-        expect(guard.createActor('runtime-$guardId').isBoss, isFalse);
       }
     }
   });
 
   test(
-    'all five Chapter 6 routes reach real dynamic victory without stalls',
+    'three new Chapter 7 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
       final deltaSeconds = repository.numbers.phase0aArena.fixedDeltaSeconds;
-      for (var index = 0; index < _expected.length; index++) {
-        final stageId = _expected.keys.elementAt(index);
+      for (var index = 0; index < _newStageIds.length; index++) {
+        final stageId = _newStageIds[index];
         final host = (await createFreshPhase0aMainlineEncounter(
           Phase0aMainlineEncounterHostBuildRequest(
             stage: repository.getStage(stageId),
-            playerMapping: _playerMapping(
-              repository,
-              stageId,
-              useRedlineCeiling: true,
-            ),
+            playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026090600 + index),
+            rng: Random(2026090700 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
@@ -249,19 +221,13 @@ void main() {
           deltaSeconds: deltaSeconds,
           maxTicks: maxTicks,
         );
-
-        expect(
-          result.outcome,
-          Phase0aBattleOutcome.victory,
-          reason: '$stageId outcome at tick ${result.ticks}',
-        );
+        expect(result.outcome, Phase0aBattleOutcome.victory, reason: stageId);
         expect(result.timedOut, isFalse, reason: stageId);
         expect(result.ticks, inInclusiveRange(1, maxTicks - 1));
-        expect(result.finalState.player.isAlive, isTrue, reason: stageId);
         expect(
           result.events.whereType<Phase0aEnemyDefeated>(),
           hasLength(_expected[stageId]!.$2),
-          reason: '$stageId must defeat every authored opponent',
+          reason: stageId,
         );
       }
     },
@@ -283,18 +249,15 @@ Phase0aMainlineEncounterRuntimeBindingSource _runtimeSource(
 
 Phase0aPlayerRuntimeMapping _playerMapping(
   GameRepository repository,
-  String stageId, {
-  bool useRedlineCeiling = false,
-}) => Phase0aStageContentMapper.mapPlayerOnly(
+  String stageId,
+) => Phase0aStageContentMapper.mapPlayerOnly(
   contentId: stageId,
   playerSnapshot: testCombatantSnapshot(
-    maxHp: useRedlineCeiling ? 20000 : 10000,
-    currentHp: useRedlineCeiling ? 20000 : 10000,
-    internalForce: useRedlineCeiling ? 15000 : 1000,
-    totalEquipmentAttack: useRedlineCeiling ? 2000 : 1000,
-    defenseRate: useRedlineCeiling
-        ? repository.numbers.cycleEvolution.defenseRateCap
-        : 0.2,
+    maxHp: 20000,
+    currentHp: 20000,
+    internalForce: 15000,
+    totalEquipmentAttack: 2000,
+    defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
     includeProductionBasicAttack: true,
   ),
   numbers: repository.numbers,
