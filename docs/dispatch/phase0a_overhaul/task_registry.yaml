@@ -6618,6 +6618,12 @@ tasks:
       standard_gate_pass_items: forbidden_files_full_test_analyze_format
       standard_gate_skipped_items: scope_whitelist_receipt_crosscheck_zero_lib_changes
       standard_gate_only_failures: test_deletions_1_commit_msg_tip_not_ready_worktree_clean_current_governance_tail
+      final_ready_tip: b63a81555439e10aa117e4c3ff1704828554a777
+      final_ready_worktree_clean: true
+      implementation_ready_evaluation_tip: a49151c7bf7ca1df59fa6d819cacdd010605ddaa
+      implementation_ready_gate_pass_items: forbidden_files_commit_msg_worktree_clean_analyze_format
+      implementation_ready_gate_full_test: same_tree_prior_independent_gate_5905_of_5905_error_blocks_0
+      implementation_ready_gate_only_failure: test_deletions_1
       test_contract_migration: pass_expect_deleted_1_added_36_cases_deleted_0_added_6_registered_1
       combined_gate_result: pass_under_test_contract_migration_only_exception_after_ready_clean_tail
       main_integration: false
