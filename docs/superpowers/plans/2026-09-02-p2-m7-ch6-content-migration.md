@@ -33,3 +33,11 @@
 - 生产缺口证据：`stage_06_01..05` 在 `data/stages.yaml` 及叙事 manifest 有完整身份，但 assignment、encounter、runtime binding 均为 `0/5`。
 - 实施策略：新增一份第六章 encounter catalog，复用 `ch2_sects` / `ch4_xiliang` 已冻结的 entrances、positions、behaviors、attack sets、visual variants 和 verified-only references；不新增玩法语义或数值。
 - 交付边界：未经用户再次授权，不 merge、不 push；真人桌面、普通存档平衡/手感、视觉、音频与 Windows 继续挂账。
+
+## 收口结果（2026-09-03）
+
+- 初始有效 RED：`0/6`（环境缺依赖与生成文件的首次失败未计入产品 RED）；恢复后第六章专测 `6/6`。
+- 生产接线：五个 assignment、encounter、runtime binding 均为 `5/5`；真实 factory 路由与动态 headless 胜利均为 `5/5`，第六章候选主线水位 `28/105 → 33/105`。
+- 破坏证红：删除 `stage_06_03` assignment 与篡改 `stage_06_05.base_enemy_id` 各造成一次 fail-closed；反向补丁后 SHA-256 分别恢复为 `0150329fd6cfaae7ebd76a84efa0ce07890b7ba4633cb282037f5a3ab61d4aa3` 与 `681aee7c9bac89025e36d72c0c45f1548d08936466e6c45c927526b440c02e80`。
+- 回归：Phase 2 数据 `96/96`、mainline application `183/183`、整仓持锁全量 `5905/5905`，reporter `[E]` `0` 且锁已释放；`flutter analyze --no-pub lib test tool` 无问题，`dart format .` `1720 files (0 changed)`。
+- 状态边界：标准 Gate 已在 `c75a57c7..b7a2fdf5` 独立复跑；`forbidden_files`、full `5905/5905`、analyze、format 通过，零 `lib/` 改动故 `receipt_crosscheck` 跳过。原始实现 tip 的 `test_deletions=1` 由测试契约迁移门通过覆盖，`commit_msg/worktree_clean` 随治理尾 `[READY]` 收口。候选分支不进入 main/origin，不关闭正式 M7/Phase 2；真人桌面、视觉/音频/手感和 Windows 继续 `DEFERRED`。

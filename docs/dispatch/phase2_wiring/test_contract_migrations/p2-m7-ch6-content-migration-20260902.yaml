@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m7-ch6-content-migration-20260902
 base_sha: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
-head_sha: pending
+head_sha: b7a2fdf5ca2ad35107193d5a62a0f8b2e99df0a
 summary: 第五章测试保留已集成的 28 条主线下限；第六章迁移测试独立精确守住 33 条总水位。
 
 migrations:

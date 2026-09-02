@@ -6512,7 +6512,7 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch5-content-migration-20260902
     worktree: /Users/a10506/.codex/worktrees/p2-m7-ch5-content-migration-20260902
-    status: engineering_candidate_ready
+    status: integrated_origin_main_ci_success
     current_authoritative_wip: false
     base_commit: 04276bdcebc33d123a3baafdd3cdbd5a7da81a17
     implementation_commit: 1b7f0c951dd7e6066f2a692c9d95533d94358f94
@@ -6522,9 +6522,9 @@ tasks:
     ready_marker: "[READY] 收口第五章生产内容迁移"
     completion_scope: migrate_chapter_5_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_5_5_of_5_and_mainline_catalog_candidate_28_of_105
-    acceptance_result: chapter_5_5_of_5_candidate_and_mainline_catalog_28_of_105_candidate_formal_M7_open
+    acceptance_result: chapter_5_5_of_5_and_mainline_catalog_28_of_105_integrated_origin_main_ci_success_formal_M7_open
     evidence:
-      mainline_catalog_integrated: 23_of_105
+      mainline_catalog_integrated: 28_of_105
       mainline_catalog_candidate: 28_of_105
       chapter_5_before: 0_of_5
       chapter_5_candidate: 5_of_5
@@ -6550,9 +6550,13 @@ tasks:
       standard_gate_only_failure: test_deletions_1
       test_contract_migration: pass_expect_deleted_1_added_36_cases_deleted_0_added_6_registered_1
       combined_gate_result: pass_under_test_contract_migration_only_exception
-      main_integration: false
-      origin_main_integration: false
-      exact_sha_ci: not_available_without_push
+      integration_commit: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
+      main_integration: true
+      origin_main_integration: true
+      exact_sha_ci_run: 33645109247
+      exact_sha_ci_url: https://github.com/Zed1118/wuxia_idle/actions/runs/33645109247
+      exact_sha_ci_head: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
+      exact_sha_ci_conclusion: completed_success
       human_desktop_acceptance: deferred_by_user
       windows_acceptance: deferred
     owned_files:
@@ -6576,6 +6580,70 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH6-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch6-content-migration-20260902
+    worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
+    status: engineering_candidate_ready
+    current_authoritative_wip: false
+    base_commit: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
+    implementation_commit: b7a2fdf5ca2ad35107193d5a62a0f8b2e99df0a
+    ready_marker: "[READY] 收口第六章生产内容迁移"
+    completion_scope: migrate_chapter_6_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_6_5_of_5_and_mainline_catalog_candidate_33_of_105
+    acceptance_result: chapter_6_5_of_5_candidate_and_mainline_catalog_33_of_105_candidate_formal_M7_open
+    evidence:
+      mainline_catalog_integrated: 28_of_105
+      mainline_catalog_candidate: 33_of_105
+      chapter_6_before: 0_of_5
+      chapter_6_candidate: 5_of_5
+      new_production_assignments: 5_of_5
+      new_production_encounters: 5_of_5
+      new_runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      initial_environment_failure_not_counted_as_red: true
+      initial_valid_red_failures: 6
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      focused_tests: 6_of_6
+      phase2_adjacent_tests: 96_of_96
+      mainline_application_tests: 183_of_183
+      analyze: no_issues_found_lib_test_tool
+      format: 1720_files_0_changed
+      locked_full_test: 5905_of_5905_error_blocks_0_lock_released
+      standard_gate_range: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5_to_b7a2fdf5ca2ad35107193d5a62a0f8b2e99df0a
+      standard_gate_pass_items: forbidden_files_full_test_analyze_format
+      standard_gate_skipped_items: scope_whitelist_receipt_crosscheck_zero_lib_changes
+      standard_gate_only_failures: test_deletions_1_commit_msg_tip_not_ready_worktree_clean_current_governance_tail
+      test_contract_migration: pass_expect_deleted_1_added_36_cases_deleted_0_added_6_registered_1
+      combined_gate_result: pass_under_test_contract_migration_only_exception_after_ready_clean_tail
+      main_integration: false
+      origin_main_integration: false
+      exact_sha_ci: not_available_without_push
+      human_desktop_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - PROGRESS.md
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_06_ascension.yaml
+      - test/data/phase2/ch5_content_migration_test.dart
+      - test/data/phase2/ch6_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch6-content-migration-20260902.yaml
+      - docs/superpowers/plans/2026-09-02-p2-m7-ch6-content-migration.md
+      - docs/audit/phase2_m7_ch6_content_migration_2026-09-03.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_stage_02_05_risk_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
@@ -6583,7 +6651,7 @@ tasks:
     current_authoritative_wip: true
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_23_of_105_integrated_28_of_105_candidate_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_28_of_105_integrated_33_of_105_candidate_tower_0_of_49_legacy_runtime_retirement_open
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE
