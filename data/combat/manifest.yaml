@@ -17,6 +17,7 @@ encounter_sources:
   - data/combat/encounters/chapter_04_xiliang_crossing.yaml
   - data/combat/encounters/chapter_13_temple_pass.yaml
   - data/combat/encounters/chapter_03_fame.yaml
+  - data/combat/encounters/chapter_05_zhengdong.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -661,6 +662,21 @@ reference_index:
     - ch4_s04_commander_01
     - ch4_s05_sand_blade_01
     - ch4_s05_commander_01
+    - ch5_s01_guard_01
+    - ch5_s01_blade_01
+    - ch5_s01_boatman_01
+    - ch5_s02_disciple_01
+    - ch5_s02_swordsman_01
+    - ch5_s02_heir_01
+    - ch5_s03_helmsman_01
+    - ch5_s03_bandit_01
+    - ch5_s03_swordsman_01
+    - ch5_s04_outer_01
+    - ch5_s04_lightfoot_01
+    - ch5_s04_commander_01
+    - ch5_s05_zhongzhou_01
+    - ch5_s05_songshan_01
+    - ch5_s05_commander_01
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

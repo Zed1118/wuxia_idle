@@ -69,3 +69,18 @@ stage_assignments:
   - stage_id: stage_03_05
     migration_state: migrated
     encounter_id: ch3_encounter_05_named_sword
+  - stage_id: stage_05_01
+    migration_state: migrated
+    encounter_id: ch5_encounter_01_weishui_crossing
+  - stage_id: stage_05_02
+    migration_state: migrated
+    encounter_id: ch5_encounter_02_songshan_temple
+  - stage_id: stage_05_03
+    migration_state: migrated
+    encounter_id: ch5_encounter_03_yellow_river_ferry
+  - stage_id: stage_05_04
+    migration_state: migrated
+    encounter_id: ch5_encounter_04_zhongzhou_tournament
+  - stage_id: stage_05_05
+    migration_state: migrated
+    encounter_id: ch5_encounter_05_songshan_finale
