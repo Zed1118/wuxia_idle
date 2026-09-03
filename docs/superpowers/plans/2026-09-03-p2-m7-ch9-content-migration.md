@@ -33,8 +33,8 @@
 
 ## 当前恢复点
 
-- 状态：基线已建立，第九章为唯一权威 WIP；尚未修改生产实现。
-- 最后完成：确认 `09_01..05` StageDef 与 13 份正文完整，typed production assignment/encounter/runtime binding 均为 `0/5`。
-- 下一步：逐份语义复核并冻结 09-01/02 的保守角色集合，然后建立生产合同 RED。
-- 已跑验证：第八章 exact-main CI run `33714277377` 全绿；第九章当前仅完成只读缺口审计，不把审计计为进度。
-- 阻塞项：五条 typed production 闭环尚未建立；真人、视觉/音频/手感与 Windows 继续挂账。
+- 状态：第九章五条 typed production 路由已形成工程候选；主线候选水位 `46/105`，尚未独立评审或进入 main。
+- 最后完成：冻结正文角色数 `4/3/1/1/1`，接通 assignment、encounter、runtime binding、真实 factory/objective/reducer；两名 Boss 保留 StageDef 全身份。
+- 下一步：冻结 `[READY]` exact tip，执行标准 Gate；随后由独立复核决定是否受控集成，不在本候选内自合并或 push。
+- 已跑验证：初始 RED `0/6`；三向 mutation 均命中并按 SHA-256 恢复；Ch8/Ch9 各 `6/6`、Phase 2 data `114/114`、mainline application `183/183`、analyze 0 issue、format `1723/0`、持锁全量 `5923/5923`；测试契约门 `PASS`。
+- 阻塞项：正式 M7 仍需主线余下内容、塔 `49` 条、legacy runtime retirement 与真人/视觉/音频/手感/Windows 验收；本候选还需独立复核和集成。
