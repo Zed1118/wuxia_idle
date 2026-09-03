@@ -25,6 +25,7 @@ encounter_sources:
   - data/combat/encounters/chapter_11_mingmen.yaml
   - data/combat/encounters/chapter_12_mingxia.yaml
   - data/combat/encounters/chapter_14_shanwai.yaml
+  - data/combat/encounters/chapter_15_guanshan.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -755,6 +756,11 @@ reference_index:
     - ch14_s03_swordsman
     - ch14_s04_deputy
     - ch14_s05_mounted_master
+    - ch15_s01_companion
+    - ch15_s02_night_guest
+    - ch15_s03_monk
+    - ch15_s04_chieftain
+    - ch15_s05_old_general
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

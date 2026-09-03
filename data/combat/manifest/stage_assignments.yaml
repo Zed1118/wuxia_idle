@@ -198,3 +198,18 @@ stage_assignments:
   - stage_id: stage_14_05
     migration_state: migrated
     encounter_id: ch14_encounter_05_peak_mounted_master
+  - stage_id: stage_15_01
+    migration_state: migrated
+    encounter_id: ch15_encounter_01_mountain_companion
+  - stage_id: stage_15_02
+    migration_state: migrated
+    encounter_id: ch15_encounter_02_ferry_night_guest
+  - stage_id: stage_15_03
+    migration_state: migrated
+    encounter_id: ch15_encounter_03_grotto_monk
+  - stage_id: stage_15_04
+    migration_state: migrated
+    encounter_id: ch15_encounter_04_desert_chieftain
+  - stage_id: stage_15_05
+    migration_state: migrated
+    encounter_id: ch15_encounter_05_pass_old_general
