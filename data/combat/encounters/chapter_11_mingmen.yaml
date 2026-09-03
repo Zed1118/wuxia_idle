@@ -1,0 +1,71 @@
+# Production Chapter 11 Zhongzhou renowned-school routes. Authored combat is five duels.
+encounters:
+  - id: ch11_encounter_01_xudu_swordsman
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch11_s01_swordsman, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch11_s01_defeat_swordsman, kind: defeat_targets, target_ids: [ch11_s01_swordsman]}
+
+  - id: ch11_encounter_02_jinding_disciple
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch11_s02_disciple, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch11_s02_defeat_disciple, kind: defeat_targets, target_ids: [ch11_s02_disciple]}
+
+  - id: ch11_encounter_03_luoyang_merchant
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch11_s03_merchant, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch11_s03_defeat_merchant, kind: defeat_targets, target_ids: [ch11_s03_merchant]}
+
+  - id: ch11_encounter_04_yujing_swordmaster
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch11_s04_swordmaster, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch11_s04_defeat_swordmaster, kind: defeat_commander, commander_id: ch11_s04_swordmaster}
+
+  - id: ch11_encounter_05_liujin_master
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch11_s05_liujin_master, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch11_s05_defeat_liujin_master, kind: defeat_commander, commander_id: ch11_s05_liujin_master}

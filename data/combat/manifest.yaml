@@ -22,6 +22,7 @@ encounter_sources:
   - data/combat/encounters/chapter_08_frontier.yaml
   - data/combat/encounters/chapter_09_qibei.yaml
   - data/combat/encounters/chapter_10_zhongzhou.yaml
+  - data/combat/encounters/chapter_11_mingmen.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -737,6 +738,11 @@ reference_index:
     - ch10_s03_reflection
     - ch10_s04_gatekeeper
     - ch10_s05_stillwater_master
+    - ch11_s01_swordsman
+    - ch11_s02_disciple
+    - ch11_s03_merchant
+    - ch11_s04_swordmaster
+    - ch11_s05_liujin_master
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
