@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch16-content-migration-20260904
+base_sha: bf60ec04e28a5bab09163f749613d9aeab26bce7
+head_sha: c551832b69cb834a7e4b28e6e52ac76aa015ab67
+summary: 第十五章测试保留已集成的 71 条主线下限；第十六章测试独立精确守住 76 条候选水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 71);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(71));
+    reason: 第十五章测试只守住已集成的 71 条下限，不能阻断第十六章五关及后续章节；第十六章新测试另以精确等于 76 防止本批少接或多接。

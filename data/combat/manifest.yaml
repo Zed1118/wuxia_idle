@@ -26,6 +26,7 @@ encounter_sources:
   - data/combat/encounters/chapter_12_mingxia.yaml
   - data/combat/encounters/chapter_14_shanwai.yaml
   - data/combat/encounters/chapter_15_guanshan.yaml
+  - data/combat/encounters/chapter_16_liangzhou.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -761,6 +762,11 @@ reference_index:
     - ch15_s03_monk
     - ch15_s04_chieftain
     - ch15_s05_old_general
+    - ch16_s01_veteran
+    - ch16_s02_mirror_keeper
+    - ch16_s03_traveler
+    - ch16_s04_cavalry_general
+    - ch16_s05_gatekeeper
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
