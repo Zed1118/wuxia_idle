@@ -24,7 +24,7 @@ Future<String> _fileLoader(String path) async =>
 
 const _expected = {
   'stage_09_01': ('ch9_encounter_01_pass_bandits', 4, 3),
-  'stage_09_02': ('ch9_encounter_02_bone_dunes', 3, 1),
+  'stage_09_02': ('ch9_encounter_02_bone_dunes', 3, 3),
   'stage_09_03': ('ch9_encounter_03_mirage', 1, 1),
   'stage_09_04': ('ch9_encounter_04_cliff_guardian', 1, 1),
   'stage_09_05': ('ch9_encounter_05_old_master', 1, 1),
@@ -104,6 +104,24 @@ void main() {
       expect(runtime?.baseEnemyId, stage.enemyTeam.single.id, reason: stageId);
       expect(runtime?.enemyBindings, hasLength(contract.$2), reason: stageId);
     }
+
+    final duneEncounter = repository.combatEncounterForStage('stage_09_02')!;
+    expect(duneEncounter.spawnConfig.activeLimit, 3);
+    expect(duneEncounter.spawnConfig.attackGraceTicks, 30);
+    expect(duneEncounter.tokenBudgets.melee, 1);
+
+    final mirageBundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+      stageId: 'stage_09_03',
+      encounterId: 'ch9_encounter_03_mirage',
+      cycleIndex: 1,
+      repository: repository,
+    );
+    final mirage = mirageBundle.actorBindingsByEntryId['ch9_s03_mirage']!;
+    expect(mirage.combatant.school, TechniqueSchool.yinRou);
+    expect(mirage.attackSet, 'ch2_attack_set_lightfoot');
+    expect(mirage.combatant.availableSkills.map((skill) => skill.id), [
+      'skill_yinrou_jichu_basic',
+    ]);
   });
 
   test('Chapter 9 routes construct through the real factory', () async {

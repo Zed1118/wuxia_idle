@@ -19,11 +19,11 @@ encounters:
 
   - id: ch9_encounter_02_bone_dunes
     spawn_config:
-      active_limit: 1
+      active_limit: 3
       reinforcement_threshold: 0
       entry_warning_ticks: 18
-      attack_grace_ticks: 10
-    token_budgets: {melee: 3, ranged: 0, charge: 0, support: 0}
+      attack_grace_ticks: 30
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
     spawn_entries:
       - {entry_id: ch9_s02_leader_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_left, position_id: ch4_position_s01_slot_01, behavior_id: ch4_behavior_sand_blade}
       - {entry_id: ch9_s02_flank_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_upper, position_id: ch4_position_s01_slot_02, behavior_id: ch4_behavior_sand_blade}
@@ -39,9 +39,9 @@ encounters:
       reinforcement_threshold: 0
       entry_warning_ticks: 20
       attack_grace_ticks: 10
-    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
     spawn_entries:
-      - {entry_id: ch9_s03_mirage, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch9_s03_mirage, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
     objectives:
       completion_rule: all
       clauses:

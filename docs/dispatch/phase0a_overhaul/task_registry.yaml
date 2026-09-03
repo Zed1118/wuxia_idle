@@ -6818,7 +6818,7 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch9-content-migration-20260903
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: ready
+    status: ready_reviewed
     current_authoritative_wip: false
     base_commit: 972bc6d413b7c7d2dbf911467b076bdb5c4781b7
     completion_scope: migrate_chapter_9_mainline_stages_to_typed_production_catalog_and_runtime
@@ -6837,35 +6837,39 @@ tasks:
       production_factory_routes: 5_of_5
       dynamic_headless_victories: 5_of_5
       authored_cast_sizes: 4_3_1_1_1
-      production_active_limits: 3_1_1_1_1
+      production_active_limits: 3_3_1_1_1
+      stage_09_02_melee_token_budget: 1
+      stage_09_02_attack_grace_ticks: 30
+      stage_09_03_runtime_school: yinRou
       semantic_roster_freeze: conservative_minimum_from_all_13_authored_narratives
       single_target_routes: stage_09_03_stage_09_04_stage_09_05
       boss_identity_routes: stage_09_04_and_stage_09_05
       boss_identity_preserved: stage_09_04_and_stage_09_05
       initial_valid_red_tests: 0_of_6
       first_implementation_result: 5_of_6_stage_09_01_dynamic_defeat
-      concurrency_probe_result: stage_09_01_passes_at_3_of_4_stage_09_02_lightfoot_fails_at_3_2_1_sand_blade_fails_at_3_2_and_passes_at_1_of_3
+      concurrency_probe_result: stage_09_01_passes_at_3_of_4_stage_09_02_final_passes_with_3_present_melee_token_1_attack_grace_30
+      merge_review_finding: P1_stage_09_02_authored_concurrency_mismatch_fixed_and_stage_09_03_school_alignment_hardened
       remove_assignment_mutation_failures: 1
       wrong_base_enemy_mutation_failures: 1
       semantic_cast_mutation_failures: 1
       mutations_restored_by_exact_reverse_patch_and_sha256: true
       restored_manifest_sha256: 95c487e2a5cc3f54061f3a0852804efcbb123b0cd8e67d38c641fff6cfea23f4
       restored_stage_assignment_sha256: bc644dec9c40923103456081c05e831c0eb79f1286fcc496b28958f89f5ef34e
-      restored_encounter_sha256: 0c6a375f86c36693cbce20d6e62cd56be09bcd28e27ba161b49a1bd8a06f3a49
-      restored_runtime_binding_sha256: 3f751bc4d8ae38838d12f79a15d2fd6c590a8f3750bd7889a6950f9e9dddff8a
-      restored_test_sha256: 41bd765b4c89718bb550f7d68af9f4753c0e8fd862ff0b7b9042da540692305d
+      restored_encounter_sha256: bfd0856bb2f59d803041a51650ae81c5efa4f913ff232f777bfb842537aec68d
+      restored_runtime_binding_sha256: 6d68f76b50421d01b17457f6e2d987ffd2e10b85e14b362fe6557f098cd3054f
+      restored_test_sha256: 9f8d30b597a57be5568565d9574289b589eb4a7b071ec7d11d9714af215424d2
       focused_tests: 6_of_6
       chapter_8_and_9_adjacent_tests: 12_of_12
       phase2_adjacent_tests: 114_of_114
       mainline_application_tests: 183_of_183
       analyze: no_issues_found_lib_test_tool
       format: 1723_files_0_changed
-      locked_full_test: 5923_of_5923_all_tests_passed_lock_released
+      locked_full_test: post_review_fix_5923_of_5923_error_blocks_0_all_tests_passed_lock_released
       test_contract_migration: pass_expect_deleted_1_added_29_cases_deleted_0_added_6_registered_1
       content_implementation_commit: 2d3e31a37029941afe9c4a4065205143aec3e9c4
       test_contract_commit: 43243b339dd7ee480d275a7277557dfcf4de2d3b
       ready_tip_resolution: resolve_branch_tip_live_at_review_time
-      independent_review: pending
+      independent_review: codex_root_separate_merge_review_lane_passed_after_1_P1_fix_no_separate_agent_claim
       main_integration: false
       origin_main_integration: false
       baseline_exact_sha_ci_run: 33714277377
