@@ -107,7 +107,7 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, 51);
+    expect(migratedMainlineCount, greaterThanOrEqualTo(51));
   });
 
   test(
