@@ -30,7 +30,7 @@
 
 ## 当前恢复点
 
-- 状态：生产接线提交 `8bbad897`、旧合同迁移 `e44b2f85`、测试契约登记 `d1fcfef7` 与格式收口 `3a239a69` 已完成，候选水位为 `71/105`，尚未进入 `main`。
-- 已跑验证：有效初始 RED `0/6`；删除 assignment、错绑基敌与闭包内 actor/objective 改名三向 mutation 分别精确转红 `1/1/2` 并恢复；第十五章 `6/6`；第十四/十五章 `12/12`；Phase 2 data `144/144`；mainline application `183/183`；analyze 0 issue；整仓 format `1728/0`；持锁全量 `5953/5953`、异常块 `0`；测试契约迁移 Gate 原文为 `[migration] expect 删 1 / 增 32;用例 删 0 / 增 6;登记 1 条` 与 `PASS: test_contract_migration`。
-- 下一步：复核最终 diff，冻结 `[READY]` 候选并生成 receipt；标准 Gate 原始结果必须如实记录。
+- 状态：第十五章生产接线已由候选 `f26ffc82` 经 no-ff merge `8976362a` 进入 `main` 与 `origin/main`，全主线集成水位为 `71/105`；merge exact-SHA CI run `33800564328` 为 `completed/success`。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并按反向补丁与 SHA-256 恢复；第十五章 `6/6`；第十四/十五章 `12/12`；Phase 2 data `144/144`；mainline application `183/183`；analyze 0 issue；整仓 format `1728/0`；持锁全量 `5953/5953`、异常块 `0`；测试契约迁移 Gate `PASS`；标准 Gate 原始终行仅 `FAIL: test_deletions`，其余项 PASS；合入后定向/analyze/format/持锁全量及 exact-SHA CI 全部通过。
+- 下一步：本治理尾进入 `origin/main` 并核 exact-SHA CI 后，只对下一非竞争章节做限时只读审计；第十三章 25-actor 合同冲突继续隔离。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。

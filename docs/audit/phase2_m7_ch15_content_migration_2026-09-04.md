@@ -2,9 +2,9 @@
 
 ## 当前结论
 
-第十五章 `stage_15_01..05` 的 StageDef、13 份正文（1 个 chapter 文件、12 个 stage 文件）与 5 个敌人图标原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 候选水位由 `66/105 → 71/105`。
+第十五章 `stage_15_01..05` 的 StageDef、13 份正文（1 个 chapter 文件、12 个 stage 文件）与 5 个敌人图标原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 集成水位由 `66/105 → 71/105`。
 
-当前仍是分支候选，不冒充 `main`/`origin/main` 集成。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
+内容候选 `f26ffc827f96906f59e151c1c5a2e56f7942f3a0` 已经 no-ff merge `8976362aa93a701abc3590e738a7b03227b2bc45` 进入 `main` 与 `origin/main`，exact-SHA CI run `33800564328` 为 `completed/success`，全部 jobs 与 steps 成功。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
 
 ## 审计选择与生产接线
 
@@ -41,10 +41,12 @@
 | `dart format .` | `1728 files (0 changed)` |
 | 持锁整仓 `flutter test --no-pub` | `5953/5953`，异常块 `0`，`All tests passed!`，锁已释放 |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
-| 标准 Gate | 待候选冻结后运行 |
+| exact-tip 标准 Gate | full/analyze/format/commit/clean/receipt 均 PASS；原始终行严格为 `FAIL: test_deletions` |
+| main 合入后 | 第十五章 `6/6`、analyze 0 issue、format `1729/0`、持锁全量 `5953/5953` |
+| merge exact-SHA CI | run `33800564328`，head `8976362aa93a701abc3590e738a7b03227b2bc45`，全部 jobs/steps 成功 |
 
-第十四章旧测试的全局精确水位 `66` 改为已集成下限 `>=66`，第十五章新测试精确守住候选水位 `71`。删除登记在 `p2-m7-ch15-content-migration-20260904.yaml`；标准 Gate 将按原始结果如实记录。
+第十四章旧测试的全局精确水位 `66` 改为已集成下限 `>=66`，第十五章新测试精确守住集成水位 `71`。删除已登记在 `p2-m7-ch15-content-migration-20260904.yaml`。标准 Gate 的原始 `test_deletions` 失败没有隐藏，由专用测试契约迁移 Gate 的 PASS 形成放行证据。
 
 ## 提交与验收边界
 
-内容实现为 `8bbad897`，旧合同迁移为 `e44b2f85`，测试契约登记为 `d1fcfef7`，格式收口为 `3a239a69`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界，当前无已知 P0/P1；分支内绿色测试或 `[READY]` 都不等于正式 M7、Phase 2 或真人验收。
+内容实现为 `8bbad897`，旧合同迁移为 `e44b2f85`，测试契约登记为 `d1fcfef7`，格式收口为 `3a239a69`，候选冻结为 `f26ffc82`，内容合并为 `8976362a`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界，当前无已知 P0/P1；这不冒充正式 M7 或真人验收。
