@@ -6910,6 +6910,89 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH10-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch10-content-migration-20260903
+    worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
+    status: ready_reviewed_pending_gate_and_integration
+    current_authoritative_wip: true
+    base_commit: 7c5517e8863a19f10adfd53735e710a61759675b
+    content_implementation_commit: d74d600e
+    test_contract_commit: 8117398f
+    semantic_review_fix_commit: 950e83a5d8e93ce10b34ca1df4137272be8d0c91
+    completion_scope: migrate_chapter_10_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_10_5_of_5_and_mainline_catalog_integrated_51_of_105
+    acceptance_result: chapter_10_5_of_5_and_mainline_catalog_candidate_51_of_105_pending_gate_and_integration
+    evidence:
+      mainline_catalog_integrated: 46_of_105
+      mainline_catalog_candidate: 51_of_105
+      chapter_10_before: 0_of_5
+      production_stage_defs: 5_of_5
+      authored_narratives: 13_files_complete
+      frozen_design: five_authored_singleton_encounters
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      authored_cast_sizes: 1_1_1_1_1
+      production_active_limits: 1_1_1_1_1
+      single_target_routes: stage_10_01_stage_10_02_stage_10_03
+      boss_identity_routes: stage_10_04_and_stage_10_05
+      boss_identity_preserved: stage_10_04_and_stage_10_05
+      initial_valid_red_tests: 0_of_6
+      merge_review_finding: P1_stage_10_05_authored_guarded_behavior_mismatch_fixed_with_army_shield_role
+      final_review_result: no_remaining_P0_or_P1
+      exact_behavior_role_contracts: 5_of_5
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 1
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      restored_manifest_sha256: 13d1f37a9e0108af0d9515a122c31339c7bf9f43ec51b8eccfd6ba6fc61eb91f
+      restored_stage_assignment_sha256: 2a23b62dd24eddf5ccc09736a299f7e2a853d855513d192403a05236416f2f19
+      final_encounter_sha256: fc05a867f5111ca00171b1c26cc5db735e961efaf4ff7443b80eaf00f889bad5
+      final_runtime_binding_sha256: 808c2273b38ada57066e5b3b9fbb6a038bf7799ffaeff7398635828854864ed6
+      final_test_sha256: adf030b436b02f6737e64039dfee3c8364a4844b2d08cb6636608a5d1044584d
+      focused_tests: 6_of_6
+      chapter_9_and_10_adjacent_tests: 12_of_12
+      phase2_adjacent_tests: 120_of_120
+      mainline_application_tests: 183_of_183
+      analyze: no_issues_found_lib_test_tool
+      format: 1724_files_0_changed
+      locked_full_test: post_review_fix_5929_of_5929_error_blocks_0_all_tests_passed_lock_released
+      test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
+      independent_review: codex_root_separate_merge_review_lane_passed_after_1_P1_fix_no_separate_agent_claim
+      ready_tip_resolution: freeze_after_governance_commit
+      exact_tip_standard_gate: pending
+      main_integration: false
+      origin_main_integration: false
+      exact_sha_ci_run: pending
+      baseline_exact_sha_ci_run: 33729258734
+      baseline_exact_sha_ci_head: 7c5517e8863a19f10adfd53735e710a61759675b
+      baseline_exact_sha_ci_conclusion: completed_success
+      human_desktop_acceptance: deferred_by_user
+      visual_audio_feel_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - PROGRESS.md
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_10_zhongzhou.yaml
+      - test/data/phase2/ch9_content_migration_test.dart
+      - test/data/phase2/ch10_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch10-content-migration-20260903.yaml
+      - docs/superpowers/plans/2026-09-03-p2-m7-ch10-content-migration.md
+      - docs/audit/phase2_m7_ch10_content_migration_2026-09-03.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_stage_02_05_risk_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
@@ -6917,7 +7000,7 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_46_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_46_of_105_integrated_origin_main_and_51_of_105_candidate_tower_0_of_49_legacy_runtime_retirement_open
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE
