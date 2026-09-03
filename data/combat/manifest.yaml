@@ -19,6 +19,7 @@ encounter_sources:
   - data/combat/encounters/chapter_03_fame.yaml
   - data/combat/encounters/chapter_05_zhengdong.yaml
   - data/combat/encounters/chapter_06_ascension.yaml
+  - data/combat/encounters/chapter_08_frontier.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -697,6 +698,28 @@ reference_index:
     - ch6_s05_gangmeng_01
     - ch6_s05_lingqiao_01
     - ch6_s05_commander_01
+    - ch8_s01_leader_01
+    - ch8_s01_blade_02
+    - ch8_s01_blade_03
+    - ch8_s01_charger_01
+    - ch8_s01_charger_02
+    - ch8_s01_charger_03
+    - ch8_s01_charger_04
+    - ch8_s01_charger_05
+    - ch8_s01_archer_01
+    - ch8_s01_archer_02
+    - ch8_s01_archer_03
+    - ch8_s01_archer_04
+    - ch8_s02_leader_01
+    - ch8_s02_flank_01
+    - ch8_s02_flank_02
+    - ch8_s03_grey_cloak
+    - ch8_s04_veteran_01
+    - ch8_s04_guard_01
+    - ch8_s04_guard_02
+    - ch8_s04_guard_03
+    - ch8_s04_guard_04
+    - ch8_s05_grey_cloak
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

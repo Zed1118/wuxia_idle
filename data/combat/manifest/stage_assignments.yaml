@@ -108,3 +108,18 @@ stage_assignments:
   - stage_id: stage_06_05
     migration_state: migrated
     encounter_id: ch6_encounter_05_kunlun_summit
+  - stage_id: stage_08_01
+    migration_state: migrated
+    encounter_id: ch8_encounter_01_frontier_riders
+  - stage_id: stage_08_02
+    migration_state: migrated
+    encounter_id: ch8_encounter_02_desert_skirmishers
+  - stage_id: stage_08_03
+    migration_state: migrated
+    encounter_id: ch8_encounter_03_grey_cloak_night
+  - stage_id: stage_08_04
+    migration_state: migrated
+    encounter_id: ch8_encounter_04_garrison_gate
+  - stage_id: stage_08_05
+    migration_state: migrated
+    encounter_id: ch8_encounter_05_grey_cloak_final
