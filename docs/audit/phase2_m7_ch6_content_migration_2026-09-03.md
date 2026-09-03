@@ -9,7 +9,7 @@
 | stage | encounter | StageDef 基敌 | authored objective | 阵容/上限 |
 | --- | --- | --- | --- | --- |
 | `stage_06_01` | `ch6_encounter_01_lunjian_departure` | `enemy_zongShi_lunjian_sanchang_xunluo` | `all` | 3 / 3 |
-| `stage_06_02` | `ch6_encounter_02_songshan_return` | `enemy_zongShi_songshan_shouguan` | `all` | 3 / 3 |
+| `stage_06_02` | `ch6_encounter_02_songshan_return` | `enemy_zongShi_songshan_shouguan` | `all` | 2 / 2 |
 | `stage_06_03` | `ch6_encounter_03_yellow_river_source` | `enemy_zongShi_huanghe_yuantou_yufu` | `all` | 3 / 3 |
 | `stage_06_04` | `ch6_encounter_04_kunlun_outer_gate` | `enemy_zongShi_kunlun_waimen_shouguan` | commander + guards | 3 / 3 |
 | `stage_06_05` | `ch6_encounter_05_kunlun_summit` | `enemy_wuSheng_xiliang_bazhu` | commander + companions | 3 / 3 |
@@ -18,12 +18,17 @@
 
 真实生产路径由 repository → catalog/factory → runtime adapter → enemy generation/AI/director → objective/终局 reducer 消费；第六章五条 factory route 与五条动态 headless victory 均通过，未落回 legacy mapper。
 
+## 集成前语义复核与修复
+
+独立于原实施清单重新阅读全文后，发现 `stage_06_02` opening/victory 明确只有“守关 + 巡山人”两名对手，候选却额外生成了第三名 instructor。集成前已删除该非叙事角色及其 encounter/runtime 引用，把阵容和同时上限收回 `2 / 2`；新增 exact actor-id 断言，锁住 `ch6_s02_guard_01 + ch6_s02_scout_01`。未改 `stages.yaml`、正文、敌人数值、掉落、奖励或规则。
+
 ## 证据与破坏证红
 
 - 初始有效 RED 为 `0/6`：assignment、encounter/runtime、factory、objective、runtime base enemy 与 dynamic host 缺失各有守卫；首次环境依赖/生成文件失败不计产品 RED。
 - 删除 `stage_06_03` assignment 后，setUpAll 以 `encounter ... is not assigned to any stage` fail-closed。
 - 将 `stage_06_05.base_enemy_id` 改成 `stage_06_01` 基敌后，setUpAll 以 exact single `StageDef.enemyTeam` mismatch fail-closed。
 - 反向补丁后恢复 SHA-256：`stage_assignments.yaml` = `0150329fd6cfaae7ebd76a84efa0ce07890b7ba4633cb282037f5a3ab61d4aa3`；`runtime_bindings.yaml` = `681aee7c9bac89025e36d72c0c45f1548d08936466e6c45c927526b440c02e80`。
+- 集成前语义变异把 `stage_06_02` 的巡山人 ID 替换成未获正文支持的 warden；loader 正常闭包，但 exact narrative cast 断言按预期单点转红，反向恢复后再次 `12/12`。修复态 SHA-256：encounter `3760a91f0a0c976676de9e6273c89de3f8741f46dfcdd57d30037e8d4508892f`、runtime `fe914b0c30d296f3d1774a3117d6ad321c4aa1b54f24063995b8b2e164ebf5cf`、test `a9e687fe37d9075d8c5fd62abafe8d1ac4416fcab1e2ccc87028f1929a6f2113`。
 
 ## 验证结果
 

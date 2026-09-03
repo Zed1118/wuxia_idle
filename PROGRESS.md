@@ -8,7 +8,7 @@
 - **精确工程集成基线**：`main == origin/main == c75a57c76fde3752f9030b4fd8b44af49ba0ffc5` 且主 checkout clean；第五章已进入该基线，exact-SHA CI run `33645109247` 为 `completed/success`，其 `macos-build`、格式、analyze、coverage tests 与 ratchet 均成功。P0 exact-SHA CI run `33578580680` 的既有成功结论不变。
 - **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第五章各 `5/5` 已集成，全主线 typed catalog 为 `28/105`；本分支叠加第六章 `5/5` 与第七章剩余三关，第七章由 `2/5 → 5/5`，候选 catalog 由 `33/105 → 36/105`，尚未进入 main/origin。塔仍为 `0/49`，legacy runtime retirement 仍开放。M5 `42/42`、M6 `1/1` 既有工程结果不变。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及 M7 第二至第七章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前唯一权威任务**：继续 M7 内容迁移；本批仅第七章真实缺口 `stage_07_02/03/05`，不重做 P0、不处理 `stage_02_05` 高基础随从风险、不启动 M8/M9。任何候选、READY 或测试数量均不反推正式通过。
+- **当前唯一权威任务**：第六、七章叠加候选的集成前语义复核与受控吸收；复核已纠正 `06_02` 多造一人、`07_02` 多造两人及 `07_05` 多造两人的叙事偏差，待 exact-tip 回归后才允许进入 main。不重做 P0、不处理 `stage_02_05` 高基础随从风险、不启动 M8/M9。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
 - **前三阻塞**：① 第六、第七章叠加候选尚未进入 main/origin，M7 集成口径仍为主线 `28/105`；② 即使叠加候选计入，M7 仍余主线 `69`、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。

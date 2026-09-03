@@ -24,10 +24,14 @@ Future<String> _fileLoader(String path) async =>
 
 const _expected = {
   'stage_06_01': ('ch6_encounter_01_lunjian_departure', 3, 3),
-  'stage_06_02': ('ch6_encounter_02_songshan_return', 3, 3),
+  'stage_06_02': ('ch6_encounter_02_songshan_return', 2, 2),
   'stage_06_03': ('ch6_encounter_03_yellow_river_source', 3, 3),
   'stage_06_04': ('ch6_encounter_04_kunlun_outer_gate', 3, 3),
   'stage_06_05': ('ch6_encounter_05_kunlun_summit', 3, 3),
+};
+
+const _narrativeActorIds = {
+  'stage_06_02': {'ch6_s02_guard_01', 'ch6_s02_scout_01'},
 };
 
 const _bossCases = {
@@ -91,6 +95,14 @@ void main() {
       expect(assignment?.encounterId, contract.$1, reason: stageId);
       expect(encounter?.spawnEntries, hasLength(contract.$2), reason: stageId);
       expect(encounter?.spawnConfig.activeLimit, contract.$3, reason: stageId);
+      final expectedActorIds = _narrativeActorIds[stageId];
+      if (expectedActorIds != null) {
+        expect(
+          encounter!.spawnEntries.map((entry) => entry.entryId).toSet(),
+          expectedActorIds,
+          reason: '$stageId must match the authored narrative cast',
+        );
+      }
       expect(runtime?.baseEnemyId, stage.enemyTeam.single.id, reason: stageId);
       expect(runtime?.enemyBindings, hasLength(contract.$2), reason: stageId);
 
@@ -199,6 +211,36 @@ void main() {
       expect(commander.combatant.name, base.name, reason: stageId);
       expect(commander.combatant.iconPath, base.iconPath, reason: stageId);
       expect(commander.combatant.isBoss, isTrue, reason: stageId);
+      expect(
+        commander.combatant.chargeSkillId,
+        base.chargeSkillId,
+        reason: stageId,
+      );
+      expect(
+        commander.combatant.bossPhases
+            ?.map(
+              (phase) => (
+                phase.hpThresholdPct,
+                phase.unlockSkillIds.join(','),
+                phase.aiMode,
+                phase.onEnterMechanic,
+                phase.titleKey,
+              ),
+            )
+            .toList(),
+        base.bossPhases
+            ?.map(
+              (phase) => (
+                phase.hpThresholdPct,
+                phase.unlockSkillIds.join(','),
+                phase.aiMode,
+                phase.onEnterMechanic,
+                phase.titleKey,
+              ),
+            )
+            .toList(),
+        reason: stageId,
+      );
       expect(
         commander.combatant.availableSkills.map((skill) => skill.id),
         base.availableSkills.map((skill) => skill.id),

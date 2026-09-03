@@ -6589,7 +6589,7 @@ tasks:
     current_authoritative_wip: false
     base_commit: c75a57c76fde3752f9030b4fd8b44af49ba0ffc5
     implementation_commit: b7a2fdf5ca2ad35107193d5a62a0f8b2e99df0a
-    ready_marker: "[READY] 收口第六章生产内容迁移"
+    ready_marker: "[READY] 修正第六七章叙事编排"
     completion_scope: migrate_chapter_6_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_6_5_of_5_and_mainline_catalog_candidate_33_of_105
     acceptance_result: chapter_6_5_of_5_candidate_and_mainline_catalog_33_of_105_candidate_formal_M7_open
@@ -6603,6 +6603,12 @@ tasks:
       new_runtime_bindings: 5_of_5
       production_factory_routes: 5_of_5
       dynamic_headless_victories: 5_of_5
+      semantic_review_initial_result: blocked_stage_06_02_extra_instructor_not_supported_by_narrative
+      semantic_review_repair: stage_06_02_exact_guard_and_scout_cast_2_of_2
+      semantic_cast_mutation_failures: 1
+      semantic_repair_encounter_sha256: 3760a91f0a0c976676de9e6273c89de3f8741f46dfcdd57d30037e8d4508892f
+      semantic_repair_runtime_sha256: fe914b0c30d296f3d1774a3117d6ad321c4aa1b54f24063995b8b2e164ebf5cf
+      semantic_repair_test_sha256: a9e687fe37d9075d8c5fd62abafe8d1ac4416fcab1e2ccc87028f1929a6f2113
       initial_environment_failure_not_counted_as_red: true
       initial_valid_red_failures: 6
       remove_assignment_mutation_failures: 1
@@ -6674,7 +6680,13 @@ tasks:
       production_factory_routes: 5_of_5
       dynamic_headless_victories_new_routes: 3_of_3
       boss_identity_preserved: stage_07_04_and_stage_07_05
-      stage_07_05_serialized_boss_template_entries: active_limit_1_without_stage_or_numbers_change
+      semantic_review_initial_result: blocked_stage_07_02_extra_archer_officer_and_stage_07_05_extra_guards
+      semantic_review_repair: stage_07_02_single_rider_and_stage_07_05_single_boss
+      semantic_cast_mutation_failures: 1
+      semantic_repair_manifest_sha256: 8b764b8d275f564037f44c384b62b0113e72b891b23d5f742a96415c4e11b5f5
+      semantic_repair_encounter_sha256: 4194d9f881e113217799c7d37afff11bf64dbb8a9979dc10fb14a2126bea1c40
+      semantic_repair_runtime_sha256: fe914b0c30d296f3d1774a3117d6ad321c4aa1b54f24063995b8b2e164ebf5cf
+      semantic_repair_test_sha256: e6ea815d22f8d16c261ec997431cd94fa1f44224bb959934d69a792623bd7df2
       initial_valid_red_tests: 0_of_6
       first_implementation_result: 5_of_6_stage_07_05_dynamic_defeat
       remove_assignment_mutation_failures: 1

@@ -31,3 +31,4 @@
 - 验证：第六+第七章 `12/12`，Phase 2 data `102/102`，mainline application `183/183`，analyze 零问题，format `1721` 文件零变更，持锁全量 `5911/5911`、`[E] 0`、锁已释放。
 - 测试契约迁移门：删除旧精确计数断言 1 条，新增断言 28 条、用例 6 条，登记 1 条，原生 `PASS: test_contract_migration`。
 - 实现 commit：`1d5b9f8ab6997940e332d563e9fdb1bfcd0bdf42`。标准 Gate 在最终 READY 治理提交后对 exact tip 执行，原始结果不在本文预判。
+- 集成前语义复核否决了 `07_02/07_05` 的扩写敌组：两关分别按正文/spec 收回单骑与单 Boss，删除未获 canon 支持的四名衍生角色；exact actor-id、Boss 名称/原图/技能/蓄力/阶段断言及两向语义变异通过后再进入集成评审，主线分母仍为 `36/105`。

@@ -11,22 +11,23 @@
 | stage | encounter | StageDef 基敌 | 目标 | 阵容 / 同时上限 |
 | --- | --- | --- | --- | --- |
 | `stage_07_01` | `ch7_encounter_01_northern_outpost` | `enemy_erLiu_beidi_shuzu` | defeat all | 25 / 10 |
-| `stage_07_02` | `ch7_encounter_02_snow_riders` | `enemy_erLiu_fengxue_shaoqi` | defeat all | 3 / 3 |
+| `stage_07_02` | `ch7_encounter_02_snow_riders` | `enemy_erLiu_fengxue_shaoqi` | defeat rider | 1 / 1 |
 | `stage_07_03` | `ch7_encounter_03_mountain_scouts` | `enemy_erLiu_beipai_youshao` | defeat all | 3 / 3 |
 | `stage_07_04` | `ch7_encounter_04_grey_cloak_pursuit` | `enemy_erLiu_huiyi_beijing` | pursue target | 5 / 3 |
-| `stage_07_05` | `ch7_encounter_05_heavy_master` | `enemy_erLiu_beipai_zongjiang` | commander + guards | 3 / 1 |
+| `stage_07_05` | `ch7_encounter_05_heavy_master` | `enemy_erLiu_beipai_zongjiang` | defeat commander | 1 / 1 |
 
 三个新 assignment、encounter 和 runtime binding 均唯一；`base_enemy_id` 与各自 `StageDef.enemyTeam.single` 精确一致。入口、位置、行为、AI、攻击集、视觉变体与 verified-only 引用全部复用已有 `ch7_army` 生态，未新增玩法 ID。
 
-`stage_07_05` 的三个 actor 会从章末 Boss StageDef 生成基础战斗属性；首轮三人并发编排使红线上限角色也在动态测试中战败。修正为 `active_limit: 1` 依次入场后取得真实 victory；保留三名敌人、Boss 身份/技能/阶段与全部目标，不修改 `stages.yaml`、`numbers.yaml`、奖励或规则。
+集成前逐段复核设计稿和正文后，否决了最初的“三人编排”：`stage_07_02` 正文只有当先一骑下场，`stage_07_05` spec/正文锁定单一北派重手宗匠。现分别收回 `1 / 1`，章末仅保留宗匠本人；Boss 名称、原图、技能、蓄力技、阶段与目标均沿 `StageDef` 保留。新增 exact actor-id 与 Boss 完整身份断言，不修改 `stages.yaml`、`numbers.yaml`、正文、奖励或规则。
 
 ## RED 与变异证明
 
 - 初始产品 RED 为 `0/6`：缺 assignment/runtime/factory/objective/Boss 身份与动态闭环均被真实 loader 或断言拒绝。
-- 首次实现为 `5/6`，唯一失败是 `stage_07_05` 实战判负；串行章末编排后为 `6/6`。
+- 首次实现为 `5/6`，唯一失败是 `stage_07_05` 三个 Boss 基模 actor 并发判负；当时用串行三人取得 `6/6`，但该方案在集成前语义复核中因偏离单 Boss canon 被否决并替换为单宗匠编排。
 - 删除 `stage_07_03` assignment，loader 以 `encounter ... is not assigned to any stage` fail-closed。
 - 将 `stage_07_05.base_enemy_id` 改绑为 `stage_07_02` 基敌，loader 以 exact single `StageDef.enemyTeam` mismatch fail-closed。
 - 反向补丁后 SHA-256 恢复：`stage_assignments.yaml` = `ccc79d0c3dfbb94fd39adfc984524d6ef797a92099e158e8499030ae73123d4d`；`runtime_bindings.yaml` = `3b394ce500876d9f8c155826160f91564633ed30e797477014118c6cd78ffdc0`。
+- 集成前语义变异把 `stage_07_05` 宗匠 ID 替换成 guard；loader 仍能闭包，但角色、目标与 Boss 身份断言精确转红，反向恢复后再次 `12/12`。修复态 SHA-256：manifest `8b764b8d275f564037f44c384b62b0113e72b891b23d5f742a96415c4e11b5f5`、encounter `4194d9f881e113217799c7d37afff11bf64dbb8a9979dc10fb14a2126bea1c40`、runtime `fe914b0c30d296f3d1774a3117d6ad321c4aa1b54f24063995b8b2e164ebf5cf`、test `e6ea815d22f8d16c261ec997431cd94fa1f44224bb959934d69a792623bd7df2`。
 
 ## 验证结果
 

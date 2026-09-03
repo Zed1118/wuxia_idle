@@ -18,19 +18,18 @@ encounters:
 
   - id: ch6_encounter_02_songshan_return
     spawn_config:
-      active_limit: 3
+      active_limit: 2
       reinforcement_threshold: 0
       entry_warning_ticks: 20
       attack_grace_ticks: 10
-    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 1}
+    token_budgets: {melee: 1, ranged: 0, charge: 1, support: 0}
     spawn_entries:
       - {entry_id: ch6_s02_guard_01, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
       - {entry_id: ch6_s02_scout_01, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_stairs, position_id: ch2_position_s02_slot_02, behavior_id: ch2_behavior_lightfoot_flank}
-      - {entry_id: ch6_s02_warden_01, archetype_id: ch2_sects, role_id: sect_instructor, entrance_id: ch2_entrance_s02_courtyard, position_id: ch2_position_s02_slot_03, behavior_id: ch2_behavior_instructor_command}
     objectives:
       completion_rule: all
       clauses:
-        - {id: ch6_s02_defeat_all, kind: defeat_targets, target_ids: [ch6_s02_guard_01, ch6_s02_scout_01, ch6_s02_warden_01]}
+        - {id: ch6_s02_defeat_all, kind: defeat_targets, target_ids: [ch6_s02_guard_01, ch6_s02_scout_01]}
 
   - id: ch6_encounter_03_yellow_river_source
     spawn_config:

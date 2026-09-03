@@ -41,3 +41,4 @@
 - 破坏证红：删除 `stage_06_03` assignment 与篡改 `stage_06_05.base_enemy_id` 各造成一次 fail-closed；反向补丁后 SHA-256 分别恢复为 `0150329fd6cfaae7ebd76a84efa0ce07890b7ba4633cb282037f5a3ab61d4aa3` 与 `681aee7c9bac89025e36d72c0c45f1548d08936466e6c45c927526b440c02e80`。
 - 回归：Phase 2 数据 `96/96`、mainline application `183/183`、整仓持锁全量 `5905/5905`，reporter `[E]` `0` 且锁已释放；`flutter analyze --no-pub lib test tool` 无问题，`dart format .` `1720 files (0 changed)`。
 - 状态边界：`b63a8155` 的标准 Gate 复跑中 full `5905/5905`、analyze、format、commit message、worktree clean 通过，原始判决仍因 `PROGRESS.md` forbidden 与已登记 `test_deletions=1` 为 FAIL；后续 `e357c4c3` 没有 exact-tip Gate。因此本批只记工程证据完整，不记标准 Gate 通过；评审必须实时解析分支 tip。候选不进入 main/origin，不关闭正式 M7/Phase 2；真人桌面、视觉/音频/手感和 Windows 继续 `DEFERRED`。
+- 集成前语义复核纠正一项实施偏差：`stage_06_02` 按正文从三人收回“守关 + 巡山人”两人，并用 exact actor-id 断言和一轮错误身份变异锁定；第六章仍为 `5/5`，分母不变。

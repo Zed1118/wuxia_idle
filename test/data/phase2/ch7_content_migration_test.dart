@@ -24,13 +24,18 @@ Future<String> _fileLoader(String path) async =>
 
 const _expected = {
   'stage_07_01': ('ch7_encounter_01_northern_outpost', 25, 10),
-  'stage_07_02': ('ch7_encounter_02_snow_riders', 3, 3),
+  'stage_07_02': ('ch7_encounter_02_snow_riders', 1, 1),
   'stage_07_03': ('ch7_encounter_03_mountain_scouts', 3, 3),
   'stage_07_04': ('ch7_encounter_04_grey_cloak_pursuit', 5, 3),
-  'stage_07_05': ('ch7_encounter_05_heavy_master', 3, 1),
+  'stage_07_05': ('ch7_encounter_05_heavy_master', 1, 1),
 };
 
 const _newStageIds = ['stage_07_02', 'stage_07_03', 'stage_07_05'];
+
+const _narrativeActorIds = {
+  'stage_07_02': {'ch7_s02_charger_01'},
+  'stage_07_05': {'ch7_s05_commander_01'},
+};
 
 const _bossCases = {
   'stage_07_04': (
@@ -46,7 +51,7 @@ const _bossCases = {
   'stage_07_05': (
     'ch7_encounter_05_heavy_master',
     'ch7_s05_commander_01',
-    ['ch7_s05_guard_01', 'ch7_s05_archer_01'],
+    <String>[],
   ),
 };
 
@@ -98,6 +103,14 @@ void main() {
       expect(assignment?.encounterId, contract.$1, reason: stageId);
       expect(encounter?.spawnEntries, hasLength(contract.$2), reason: stageId);
       expect(encounter?.spawnConfig.activeLimit, contract.$3, reason: stageId);
+      final expectedActorIds = _narrativeActorIds[stageId];
+      if (expectedActorIds != null) {
+        expect(
+          encounter!.spawnEntries.map((entry) => entry.entryId).toSet(),
+          expectedActorIds,
+          reason: '$stageId must match the authored narrative cast',
+        );
+      }
       expect(runtime?.baseEnemyId, stage.enemyTeam.single.id, reason: stageId);
       expect(runtime?.enemyBindings, hasLength(contract.$2), reason: stageId);
     }
@@ -151,7 +164,7 @@ void main() {
       controller.initialProgress,
       CommanderDefeated(identity.$2),
     );
-    expect(progress.completed, isFalse);
+    expect(progress.completed, isTrue);
     for (var index = 0; index < identity.$3.length; index++) {
       progress = controller.advance(
         progress,
@@ -177,11 +190,43 @@ void main() {
       );
       final target = bundle.actorBindingsByEntryId[identity.$2]!;
       expect(target.combatant.name, base.name, reason: stageId);
+      expect(target.combatant.iconPath, base.iconPath, reason: stageId);
       expect(target.combatant.isBoss, isTrue, reason: stageId);
+      expect(
+        target.combatant.chargeSkillId,
+        base.chargeSkillId,
+        reason: stageId,
+      );
+      expect(
+        target.combatant.bossPhases
+            ?.map(
+              (phase) => (
+                phase.hpThresholdPct,
+                phase.unlockSkillIds.join(','),
+                phase.aiMode,
+                phase.onEnterMechanic,
+                phase.titleKey,
+              ),
+            )
+            .toList(),
+        base.bossPhases
+            ?.map(
+              (phase) => (
+                phase.hpThresholdPct,
+                phase.unlockSkillIds.join(','),
+                phase.aiMode,
+                phase.onEnterMechanic,
+                phase.titleKey,
+              ),
+            )
+            .toList(),
+        reason: stageId,
+      );
       expect(
         target.combatant.availableSkills.map((skill) => skill.id),
         base.availableSkills.map((skill) => skill.id),
       );
+      expect(target.createActor('runtime-target').isBoss, isTrue);
       for (final guardId in identity.$3) {
         final guard = bundle.actorBindingsByEntryId[guardId]!;
         expect(guard.combatant.isBoss, isFalse, reason: guardId);
