@@ -46,8 +46,9 @@
 | `flutter analyze --no-pub lib test tool` | `No issues found` |
 | `dart format .` | `1729 files (0 changed)` |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
-| 持锁整仓 / 标准 Gate | 待运行 |
+| 持锁整仓 | `5959/5959`，错误块 `0`，`All tests passed`，锁已释放 |
+| 标准 Gate | 待运行 |
 
 ## 验收边界
 
-内容实现为 `7e41f106`，旧合同迁移为 `c551832b`，测试契约登记为 `511d8e9d`。当前绿色证据是分支候选，不冒充 `main`/`origin/main` 集成、正式 M7、Phase 2 或真人验收。
+内容实现为 `7e41f106`，旧合同迁移为 `c551832b`，测试契约登记为 `511d8e9d`。持锁整仓已在当前已提交候选上通过 `5959/5959`，错误块为 `0`，测试锁已释放。当前绿色证据仍是分支候选，不冒充 `main`/`origin/main` 集成、正式 M7、Phase 2 或真人验收。

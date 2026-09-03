@@ -7378,7 +7378,7 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch16-content-migration-20260904
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: implementation_verified_pending_full_gate
+    status: full_verified_pending_standard_gate
     current_authoritative_wip: true
     base_commit: bf60ec04e28a5bab09163f749613d9aeab26bce7
     content_implementation_commit: 7e41f106
@@ -7424,7 +7424,7 @@ tasks:
       test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
       analyze: no_issues_found_lib_test_tool
       format: 1729_files_0_changed
-      locked_full_test: pending
+      locked_full_test: 5959_of_5959_error_blocks_0_all_tests_passed_lock_released
       standard_gate: pending
       existing_task_overlap: 0
       chapter_16_04_narrative_riders: scene_context_not_combat_roster
