@@ -23,49 +23,46 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_11_01': (
-    'ch11_encounter_01_xudu_swordsman',
-    'ch11_s01_swordsman',
+  'stage_12_01': (
+    'ch12_encounter_01_hanjiang_boatman',
+    'ch12_s01_boatman',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_11_02': (
-    'ch11_encounter_02_jinding_disciple',
-    'ch11_s02_disciple',
+  'stage_12_02': (
+    'ch12_encounter_02_huaixiang_boxer',
+    'ch12_s02_boxer',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
     'sect_outer',
   ),
-  'stage_11_03': (
-    'ch11_encounter_03_luoyang_merchant',
-    'ch11_s03_merchant',
+  'stage_12_03': (
+    'ch12_encounter_03_qiushan_porter',
+    'ch12_s03_porter',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_11_04': (
-    'ch11_encounter_04_yujing_swordmaster',
-    'ch11_s04_swordmaster',
-    TechniqueSchool.gangMeng,
-    'ch2_attack_set_outer',
-    'sect_outer',
+  'stage_12_04': (
+    'ch12_encounter_04_laotie_blacksmith',
+    'ch12_s04_blacksmith',
+    TechniqueSchool.lingQiao,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
   ),
-  'stage_11_05': (
-    'ch11_encounter_05_liujin_master',
-    'ch11_s05_liujin_master',
-    TechniqueSchool.gangMeng,
-    'ch2_attack_set_outer',
-    'sect_outer',
+  'stage_12_05': (
+    'ch12_encounter_05_huangcun_nameless',
+    'ch12_s05_nameless',
+    TechniqueSchool.yinRou,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
   ),
 };
 
 const _bossCases = {
-  'stage_11_04': (
-    'ch11_encounter_04_yujing_swordmaster',
-    'ch11_s04_swordmaster',
-  ),
-  'stage_11_05': ('ch11_encounter_05_liujin_master', 'ch11_s05_liujin_master'),
+  'stage_12_04': ('ch12_encounter_04_laotie_blacksmith', 'ch12_s04_blacksmith'),
+  'stage_12_05': ('ch12_encounter_05_huangcun_nameless', 'ch12_s05_nameless'),
 };
 
 void main() {
@@ -80,9 +77,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 11 exposes five of five migrated production routes', () {
+  test('Chapter 12 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 11)
+        .where((stage) => stage.chapterIndex == 12)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -104,11 +101,11 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(56));
+    expect(migratedMainlineCount, 61);
   });
 
   test(
-    'Chapter 11 routes retain authored singleton identities and reviewed roles',
+    'Chapter 12 routes retain authored singleton identities and reviewed roles',
     () {
       for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
         final stage = repository.getStage(stageId);
@@ -140,7 +137,7 @@ void main() {
     },
   );
 
-  test('Chapter 11 routes construct through the real factory', () async {
+  test('Chapter 12 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -161,8 +158,8 @@ void main() {
     }
   });
 
-  test('Chapter 11 objectives require the authored singleton opponent', () {
-    for (final stageId in ['stage_11_01', 'stage_11_02', 'stage_11_03']) {
+  test('Chapter 12 objectives require the authored singleton opponent', () {
+    for (final stageId in ['stage_12_01', 'stage_12_02', 'stage_12_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -189,7 +186,7 @@ void main() {
     }
   });
 
-  test('both authored Chapter 11 targets retain Boss identity', () {
+  test('both authored Chapter 12 targets retain Boss identity', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -243,7 +240,7 @@ void main() {
   });
 
   test(
-    'all five Chapter 11 routes reach dynamic victory without stalls',
+    'all five Chapter 12 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -256,7 +253,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026091100 + index),
+            rng: Random(2026091200 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
