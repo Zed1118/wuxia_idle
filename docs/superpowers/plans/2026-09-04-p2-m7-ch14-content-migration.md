@@ -30,7 +30,7 @@
 
 ## 当前恢复点
 
-- 状态：第十四章生产接线完成，候选水位 `66/105`；主线集成水位仍为 `61/105`。
-- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并按反向补丁与 SHA-256 恢复；第十四章定向 `6/6`；第十二/十四章 `12/12`；Phase 2 data `138/138`；mainline application `183/183`；analyze 0 issue；整仓 format `1727/0`；持锁全量 `5947/5947`、异常块 `0`；测试契约迁移 Gate `PASS`。
-- 下一步：冻结 exact-tip READY、生成收据并运行标准 Gate；未发生的 merge、push 与 CI 不预写。
+- 状态：第十四章生产接线已由候选 `3f853894` 经 no-ff merge `4b976cdd` 进入 `main` 与 `origin/main`，全主线集成水位为 `66/105`；merge exact-SHA CI run `33791901269` 为 `completed/success`。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并按反向补丁与 SHA-256 恢复；第十四章定向 `6/6`；第十二/十四章 `12/12`；Phase 2 data `138/138`；mainline application `183/183`；analyze 0 issue；整仓 format `1727/0`；持锁全量 `5947/5947`、异常块 `0`；测试契约迁移 Gate `PASS`；标准 Gate 原始终行仅 `FAIL: test_deletions`，其余项 PASS；合入后定向/analyze/format/持锁全量及 exact-SHA CI 全部通过。
+- 下一步：本治理尾进入 `origin/main` 并核 exact-SHA CI 后，第十五章可按已完成的只读风险审计建立独立结果合同；第十三章 25-actor 合同冲突继续隔离。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。

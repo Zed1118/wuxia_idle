@@ -7195,17 +7195,17 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch14-content-migration-20260904
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: implementation_verified_pending_exact_tip_gate
-    current_authoritative_wip: true
+    status: integrated_origin_main_ci_success
+    current_authoritative_wip: false
     base_commit: c997911b6879d121205d5710ef583f430b266164
     content_implementation_commit: 248473c4
     test_contract_commit: b96592c1
     test_contract_ledger_commit: e7115b9b
     completion_scope: migrate_chapter_14_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_14_5_of_5_and_mainline_catalog_integrated_66_of_105
-    acceptance_result: chapter_14_5_of_5_candidate_targeted_verified_mainline_integrated_61_of_105_candidate_66_of_105
+    acceptance_result: chapter_14_5_of_5_and_mainline_catalog_66_of_105_integrated_origin_main_ci_success_formal_M7_open
     evidence:
-      mainline_catalog_integrated: 61_of_105
+      mainline_catalog_integrated: 66_of_105
       mainline_catalog_candidate: 66_of_105
       chapter_14_before: 0_of_5
       production_stage_defs: 5_of_5
@@ -7243,9 +7243,19 @@ tasks:
       analyze: no_issues_found_lib_test_tool
       format: 1727_files_0_changed
       locked_full_test: 5947_of_5947_error_blocks_0_all_tests_passed_lock_released
-      standard_gate: pending
-      main_integration: false
-      origin_main_integration: false
+      standard_gate: fail_test_deletions_only_full_5947_analyze_format_commit_clean_and_receipt_crosscheck_pass
+      test_contract_migration_and_standard_gate_combined_result: accepted_registered_test_contract_migration
+      exact_candidate_head: 3f8538949968c93cecaf47c84cf3ce9957b3dbb6
+      main_integration: true
+      origin_main_integration: true
+      content_merge_commit: 4b976cdd9a4ea11bd197b305df17eefc7c8830aa
+      postmerge_chapter_14_tests: 6_of_6
+      postmerge_analyze: no_issues_found_lib_test_tool
+      postmerge_format: 1728_files_0_changed
+      postmerge_locked_full_test: 5947_of_5947_all_tests_passed_lock_released
+      content_exact_sha_ci_run: 33791901269
+      content_exact_sha_ci_head: 4b976cdd9a4ea11bd197b305df17eefc7c8830aa
+      content_exact_sha_ci_conclusion: completed_success_all_jobs_and_steps
       baseline_exact_sha_ci_run: 33785911994
       baseline_exact_sha_ci_head: c997911b6879d121205d5710ef583f430b266164
       baseline_exact_sha_ci_conclusion: completed_success
@@ -7278,7 +7288,7 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_61_of_105_integrated_origin_main_chapter_14_candidate_66_of_105_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_66_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE
