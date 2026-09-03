@@ -7373,6 +7373,87 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH16-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch16-content-migration-20260904
+    worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
+    status: implementation_verified_pending_full_gate
+    current_authoritative_wip: true
+    base_commit: bf60ec04e28a5bab09163f749613d9aeab26bce7
+    content_implementation_commit: 7e41f106
+    test_contract_commit: c551832b
+    test_contract_ledger_commit: 511d8e9d
+    completion_scope: migrate_chapter_16_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_16_5_of_5_and_mainline_catalog_integrated_76_of_105
+    acceptance_result: chapter_16_5_of_5_candidate_targeted_verified_mainline_integrated_71_of_105_candidate_76_of_105
+    evidence:
+      mainline_catalog_integrated: 71_of_105
+      mainline_catalog_candidate_target: 76_of_105
+      chapter_16_before: 0_of_5
+      production_stage_defs: 5_of_5
+      authored_narratives: 13_files_complete_including_1_chapter_and_12_stage_files
+      authored_enemy_icons: 5_of_5_present
+      frozen_design: five_authored_singleton_encounters
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      authored_cast_sizes: 1_1_1_1_1
+      production_active_limits: 1_1_1_1_1
+      single_target_routes: stage_16_01_stage_16_02_stage_16_03
+      boss_identity_routes: stage_16_04_and_stage_16_05
+      chapter_16_05_charge_skill_and_two_phases_preserved: true
+      initial_valid_red_tests: 0_of_6
+      exact_behavior_role_contracts: 5_of_5
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 2
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      restored_manifest_sha256: d4b8fd5bb409b5d74585e17b5530d05f3885352854919d584a684fed07da3732
+      restored_stage_assignment_sha256: 59e71eacbfe6a38def378e6f9a1627dd1b546946814ca67644ef963468b6919c
+      final_encounter_sha256: 6c8311a4c7782e9073d7b561803a1d5c4b44815abbb0bdaa7b81bc15b8a0ab9f
+      final_runtime_binding_sha256: 1dfc7cc1328038d933d6f47c75a3764cd33094df0eeb74f9b4ee10af7ddfb10e
+      final_test_sha256: a01eae88ae5e9de731e1a3a4d29b42e3755c00db11492bba2c8722ecf3922e60
+      focused_tests: 6_of_6
+      chapter_15_and_16_adjacent_tests: 12_of_12
+      mutation_status: three_directions_red_confirmed_and_exactly_restored
+      phase2_adjacent_tests: 150_of_150
+      mainline_application_tests: 183_of_183
+      test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
+      analyze: no_issues_found_lib_test_tool
+      format: 1729_files_0_changed
+      locked_full_test: pending
+      standard_gate: pending
+      existing_task_overlap: 0
+      chapter_16_04_narrative_riders: scene_context_not_combat_roster
+      chapter_16_05_phase_risk: charge_skill_and_two_boss_phases_must_be_preserved
+      baseline_exact_sha_ci_run: 33803760075
+      baseline_exact_sha_ci_head: bf60ec04e28a5bab09163f749613d9aeab26bce7
+      baseline_exact_sha_ci_conclusion: completed_success_all_jobs_and_steps
+      human_desktop_acceptance: deferred_by_user
+      visual_audio_feel_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_16_liangzhou.yaml
+      - test/data/phase2/ch15_content_migration_test.dart
+      - test/data/phase2/ch16_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch16-content-migration-20260904.yaml
+      - docs/superpowers/plans/2026-09-04-p2-m7-ch16-content-migration.md
+      - docs/audit/phase2_m7_ch16_content_migration_2026-09-04.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - preserve_chapter_16_05_charge_skill_two_phase_snapshot_and_on_enter_charge_counter
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_chapter_13_or_chapter_17_and_later_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
