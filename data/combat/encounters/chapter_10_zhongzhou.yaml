@@ -62,9 +62,9 @@ encounters:
       reinforcement_threshold: 0
       entry_warning_ticks: 20
       attack_grace_ticks: 10
-    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
     spawn_entries:
-      - {entry_id: ch10_s05_stillwater_master, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch10_s05_stillwater_master, archetype_id: ch7_army, role_id: army_shield, entrance_id: ch7_entrance_s01_gate, position_id: ch7_position_s01_slot_01, behavior_id: ch7_behavior_shield_wall}
     objectives:
       completion_rule: all
       clauses:

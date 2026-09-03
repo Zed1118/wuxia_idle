@@ -317,23 +317,23 @@ runtime_bindings:
     encounter_id: ch10_encounter_05_stillwater_master
     base_enemy_id: enemy_yiLiu_zhongzhou_shouzhuo_weng
     entrances:
-      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+      - {id: ch7_entrance_s01_gate, spawn_position: {x: -520, y: 80}}
     positions:
-      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+      - {id: ch7_position_s01_slot_01, world_position: {x: -120, y: 120}}
     behaviors:
-      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch7_behavior_shield_wall, ai_profile_id: ai_army_shield_wall, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
-      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+      - {id: ai_army_shield_wall, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: close_range}
     attack_sets:
-      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+      - {id: ch7_attack_set_shield, skill_ids: [skill_gangmeng_mingjia_basic]}
     visual_variants:
-      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
-      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+      - {id: ch7_visual_shield_a, asset_path: assets/enemies/battle_massbattle_guanqi_c.png}
+      - {id: ch7_visual_shield_b, asset_path: assets/enemies/battle_tongguan_shoujiang.png}
     verified_only_references:
       host_consumption: none
-      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
-      drop_group_ids: [ch2_drop_group_sect_encounter]
-      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+      posture_profile_ids: [ch7_posture_shield, ch7_posture_archer, ch7_posture_spear_charger, ch7_posture_standard_officer]
+      drop_group_ids: [ch7_drop_group_army_encounter]
+      sfx_group_ids: [ch7_sfx_shield, ch7_sfx_archer, ch7_sfx_spear_charger, ch7_sfx_standard_officer]
   - stage_id: stage_08_01
     encounter_id: ch8_encounter_01_frontier_riders
     base_enemy_id: enemy_erLiu_monan_mazei

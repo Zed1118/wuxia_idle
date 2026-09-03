@@ -28,30 +28,35 @@ const _expected = {
     'ch10_s01_swordsman',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
+    'sect_outer',
   ),
   'stage_10_02': (
     'ch10_encounter_02_yanmen_wanderer',
     'ch10_s02_wanderer',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_hidden_weapon',
+    'sect_hidden_weapon',
   ),
   'stage_10_03': (
     'ch10_encounter_03_luoshui_reflection',
     'ch10_s03_reflection',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
   ),
   'stage_10_04': (
     'ch10_encounter_04_songyang_gatekeeper',
     'ch10_s04_gatekeeper',
     TechniqueSchool.gangMeng,
     'ch7_attack_set_shield',
+    'army_shield',
   ),
   'stage_10_05': (
     'ch10_encounter_05_stillwater_master',
     'ch10_s05_stillwater_master',
     TechniqueSchool.yinRou,
-    'ch2_attack_set_lightfoot',
+    'ch7_attack_set_shield',
+    'army_shield',
   ),
 };
 
@@ -120,6 +125,11 @@ void main() {
           encounter?.spawnEntries.single.entryId,
           contract.$2,
           reason: '$stageId must match the authored singleton opponent',
+        );
+        expect(
+          encounter?.spawnEntries.single.roleId,
+          contract.$5,
+          reason: '$stageId must retain the reviewed behavior role',
         );
         expect(
           runtime?.baseEnemyId,
