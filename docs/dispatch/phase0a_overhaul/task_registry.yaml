@@ -24,7 +24,7 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m0-coordination-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-coordination
-    status: integrated_local_main
+    status: integrated_origin_main_ci_success
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -6741,9 +6741,9 @@ tasks:
     base_commit: 56cf00224c5d72360f629255338c2b8d4e0995c9
     completion_scope: migrate_chapter_8_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_8_5_of_5_and_mainline_catalog_candidate_41_of_105
-    acceptance_result: chapter_8_5_of_5_and_mainline_catalog_41_of_105_integrated_local_main
+    acceptance_result: chapter_8_5_of_5_and_mainline_catalog_41_of_105_integrated_origin_main_exact_sha_ci_success
     evidence:
-      mainline_catalog_integrated: 36_of_105
+      mainline_catalog_integrated: 41_of_105
       mainline_catalog_candidate: 41_of_105
       chapter_8_before: 0_of_5
       production_stage_defs: 5_of_5
@@ -6781,8 +6781,13 @@ tasks:
       integration_content_commit: 758a1cd6734399a33b9c611c893e3df289c9f4d1
       independent_review: no_P0_or_P1_blocker
       main_integration: true
-      origin_main_integration: resolve_live_after_governance_push
-      exact_sha_ci: resolve_live_after_governance_push
+      integration_governance_commit: 972bc6d413b7c7d2dbf911467b076bdb5c4781b7
+      origin_main_integration: true
+      exact_sha_ci_run: 33714277377
+      exact_sha_ci_head: 972bc6d413b7c7d2dbf911467b076bdb5c4781b7
+      exact_sha_ci_conclusion: completed_success
+      exact_sha_ci_macos_build: success
+      exact_sha_ci_test_coverage_ratchet_upload: success
       baseline_exact_sha_ci_run: 33707737979
       baseline_exact_sha_ci_head: 56cf00224c5d72360f629255338c2b8d4e0995c9
       baseline_exact_sha_ci_conclusion: completed_success
@@ -6801,6 +6806,54 @@ tasks:
       - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch8-content-migration-20260903.yaml
       - docs/superpowers/plans/2026-09-03-p2-m7-ch8-content-migration.md
       - docs/audit/phase2_m7_ch8_content_migration_2026-09-03.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_stage_02_05_risk_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
+  - id: P2-M7-CH9-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch9-content-migration-20260903
+    worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
+    status: in_progress
+    current_authoritative_wip: true
+    base_commit: 972bc6d413b7c7d2dbf911467b076bdb5c4781b7
+    completion_scope: migrate_chapter_9_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_9_5_of_5_and_mainline_catalog_candidate_46_of_105
+    acceptance_result: chapter_9_0_of_5_and_mainline_catalog_integrated_41_of_105
+    evidence:
+      mainline_catalog_integrated: 41_of_105
+      chapter_9_before: 0_of_5
+      production_stage_defs: 5_of_5
+      authored_narratives: 13_files_complete
+      frozen_design: A_plan_erLiu_closure
+      production_assignments: 0_of_5
+      production_encounters: 0_of_5
+      runtime_bindings: 0_of_5
+      semantic_roster_blocker: stage_09_01_and_09_02_plural_cast_counts_require_conservative_freeze
+      single_target_routes: stage_09_03_stage_09_04_stage_09_05
+      boss_identity_routes: stage_09_04_and_stage_09_05
+      baseline_exact_sha_ci_run: 33714277377
+      baseline_exact_sha_ci_head: 972bc6d413b7c7d2dbf911467b076bdb5c4781b7
+      baseline_exact_sha_ci_conclusion: completed_success
+      human_desktop_acceptance: deferred_by_user
+      visual_audio_feel_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - PROGRESS.md
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_09_qibei.yaml
+      - test/data/phase2/ch8_content_migration_test.dart
+      - test/data/phase2/ch9_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch9-content-migration-20260903.yaml
+      - docs/superpowers/plans/2026-09-03-p2-m7-ch9-content-migration.md
+      - docs/audit/phase2_m7_ch9_content_migration_2026-09-03.md
     protected_behavior:
       - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
       - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
