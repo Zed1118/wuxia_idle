@@ -33,8 +33,8 @@
 
 ## 当前恢复点
 
-- 状态：实施中，第八章为唯一权威 WIP。
-- 最后完成：已确认 `08_01..05` 的 StageDef 与正文完整，typed production assignment/encounter/runtime binding 均为 `0/5`；已建立 6 项生产合同测试。
-- 下一步：增加五条 assignment、一个 encounter source 与五组 runtime binding，使 targeted 由红转绿。
-- 已跑验证：基线 exact-SHA CI `33707737979` 全绿；初始有效 RED `0/6`，分别因 assignment/runtime/factory/objective/Boss identity/dynamic host 缺失失败。
-- 阻塞项：尚未建立第八章 typed production 闭环；真人、视觉/音频/手感与 Windows 继续挂账。
+- 状态：`[READY]` 候选已冻结；第八章 `5/5`、全主线候选 `41/105`，但 main 集成水位仍为 `36/105`。
+- 最后完成：五条 assignment、一个 encounter source、五组 runtime binding 与真实 factory/objective/reducer 动态闭环已建立；正文角色集合及两名灰衣 Boss 完整身份已锁定。
+- 下一步：对分支 exact tip 做独立 diff/Gate 复核；通过后才可 `--ff-only` 受控集成并跑 exact-main CI。本计划不自行 merge/push。
+- 已跑验证：targeted `6/6`；第七、八章各 `6/6`；Phase 2 data `108/108`；mainline application `183/183`；analyze 零问题；format `1722` 文件零变更；持锁全量 `5917/5917`、`[E] 0`、锁已释放；测试契约门 `PASS`。标准 Gate 的 full/analyze/format/commit/clean 通过，原始终行仅为 `FAIL: forbidden_files,test_deletions`。三向 mutation 均精确转红并按 SHA-256 恢复。
+- 阻塞项：候选尚未进入 main/CI；真人桌面、视觉/音频/手感与 Windows 继续挂账，正式 M7/Phase 2 不关闭。

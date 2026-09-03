@@ -6736,21 +6736,50 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch8-content-migration-20260903
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: in_progress
-    current_authoritative_wip: true
+    status: ready_reviewed
+    current_authoritative_wip: false
     base_commit: 56cf00224c5d72360f629255338c2b8d4e0995c9
     completion_scope: migrate_chapter_8_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_8_5_of_5_and_mainline_catalog_candidate_41_of_105
-    acceptance_result: chapter_8_0_of_5_and_mainline_catalog_integrated_36_of_105
+    acceptance_result: chapter_8_candidate_5_of_5_and_mainline_catalog_candidate_41_of_105_integrated_remains_36_of_105
     evidence:
       mainline_catalog_integrated: 36_of_105
+      mainline_catalog_candidate: 41_of_105
       chapter_8_before: 0_of_5
       production_stage_defs: 5_of_5
       authored_narratives: 13_files_complete
-      production_assignments: 0_of_5
-      production_encounters: 0_of_5
-      runtime_bindings: 0_of_5
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      authored_cast_sizes: 12_3_1_5_1
+      production_active_limits: 2_2_1_1_1
+      boss_identity_preserved: stage_08_03_and_stage_08_05
       initial_valid_red_tests: 0_of_6
+      first_loader_result: rejected_missing_objective_target_references
+      concurrency_probe_result: stage_08_01_and_08_02_pass_at_2_stage_08_04_requires_1
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 1
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      restored_manifest_sha256: 11bbad788062ff1aecaf27e6a58ccabadcdd48657b1132c7cf34b3d99cc1fbf5
+      restored_stage_assignment_sha256: 16c38d8bf0f0c5cd157b6bac85178a7196d718a021401c62867156e97559e8e0
+      restored_encounter_sha256: 61e127adc03e39292fb2dbead0c223c374fbaf00976b68746e2c3d6cb318d4b1
+      restored_runtime_binding_sha256: 1e52ef9ffbf29ef7d327514a898c3fce540590b33d67d7e0cec0756e6323bb5f
+      restored_test_sha256: 99459ee4f2a87754ba47c82b645987b906a7f7fba8117b78f5a43d54406cd6d5
+      focused_tests: 6_of_6
+      chapter_7_and_8_adjacent_tests: 12_of_12
+      phase2_adjacent_tests: 108_of_108
+      mainline_application_tests: 183_of_183
+      analyze: no_issues_found_lib_test_tool
+      format: 1722_files_0_changed
+      locked_full_test: 5917_of_5917_error_blocks_0_lock_released
+      test_contract_migration: pass_expect_deleted_1_added_29_cases_deleted_0_added_6_registered_1
+      ready_tip_resolution: resolve_branch_tip_live_at_review_time
+      exact_tip_standard_gate: fail_forbidden_files_PROGRESS_md_and_registered_test_deletions_1_other_items_pass_or_expected_skip
+      main_integration: false
+      origin_main_integration: false
       baseline_exact_sha_ci_run: 33707737979
       baseline_exact_sha_ci_head: 56cf00224c5d72360f629255338c2b8d4e0995c9
       baseline_exact_sha_ci_conclusion: completed_success
