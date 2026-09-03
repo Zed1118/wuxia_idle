@@ -7378,18 +7378,20 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch16-content-migration-20260904
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: full_verified_pending_standard_gate
-    current_authoritative_wip: true
+    status: integrated_origin_main_ci_success
+    current_authoritative_wip: false
     base_commit: bf60ec04e28a5bab09163f749613d9aeab26bce7
     content_implementation_commit: 7e41f106
     test_contract_commit: c551832b
     test_contract_ledger_commit: 511d8e9d
+    candidate_commit: 5f5c80069acaf14c209f3967850856bb48a5e510
+    merge_commit: 8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b
     completion_scope: migrate_chapter_16_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_16_5_of_5_and_mainline_catalog_integrated_76_of_105
-    acceptance_result: chapter_16_5_of_5_candidate_targeted_verified_mainline_integrated_71_of_105_candidate_76_of_105
+    acceptance_result: chapter_16_5_of_5_and_mainline_catalog_76_of_105_integrated_origin_main_ci_success_formal_M7_open
     evidence:
-      mainline_catalog_integrated: 71_of_105
-      mainline_catalog_candidate_target: 76_of_105
+      mainline_catalog_integrated: 76_of_105
+      mainline_catalog_candidate: 76_of_105
       chapter_16_before: 0_of_5
       production_stage_defs: 5_of_5
       authored_narratives: 13_files_complete_including_1_chapter_and_12_stage_files
@@ -7425,7 +7427,16 @@ tasks:
       analyze: no_issues_found_lib_test_tool
       format: 1729_files_0_changed
       locked_full_test: 5959_of_5959_error_blocks_0_all_tests_passed_lock_released
-      standard_gate: pending
+      standard_gate: fail_test_deletions_only_full_5959_analyze_format_forbidden_whitelist_commit_clean_and_receipt_crosscheck_pass
+      candidate_commit: 5f5c80069acaf14c209f3967850856bb48a5e510
+      merge_commit: 8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b
+      postmerge_focused_tests: 6_of_6
+      postmerge_analyze: no_issues_found_lib_test_tool
+      postmerge_format: 1730_files_0_changed
+      postmerge_locked_full_test: 5959_of_5959_error_blocks_0_all_tests_passed_lock_released
+      merge_exact_sha_ci_run: 33809487636
+      merge_exact_sha_ci_head: 8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b
+      merge_exact_sha_ci_conclusion: completed_success_all_jobs_and_steps
       existing_task_overlap: 0
       chapter_16_04_narrative_riders: scene_context_not_combat_roster
       chapter_16_05_phase_risk: charge_skill_and_two_boss_phases_must_be_preserved
@@ -7461,7 +7472,7 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_71_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_76_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE

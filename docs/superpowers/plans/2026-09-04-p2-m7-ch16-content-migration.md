@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：生产接线 `7e41f106`、旧合同迁移 `c551832b` 与测试契约登记 `511d8e9d` 已完成，候选水位为 `76/105`。
-- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并恢复；第十六章 `6/6`；第十五/十六章 `12/12`；Phase 2 data `150/150`；mainline application `183/183`；analyze 0 issue；整仓 format `1729/0`；测试契约迁移 Gate `PASS`；持锁整仓 `5959/5959`、错误块 `0`、锁已释放。
-- 下一步：冻结候选、生成 receipt 并运行标准 Gate；原始结果必须如实记录。
+- 状态：生产接线 `7e41f106`、旧合同迁移 `c551832b` 与测试契约登记 `511d8e9d` 已完成，候选 `5f5c8006` 经 no-ff merge `8c5d9fdb` 进入 `main` 与 `origin/main`，集成水位为 `76/105`。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并恢复；第十六章 `6/6`；第十五/十六章 `12/12`；Phase 2 data `150/150`；mainline application `183/183`；analyze 0 issue；整仓 format `1729/0`；测试契约迁移 Gate `PASS`；候选与合并后持锁整仓均 `5959/5959`；标准 Gate 原始结论仅 `FAIL: test_deletions`，其余子项全通过；merge exact-SHA CI run `33809487636` 全部 jobs/steps 成功。
+- 下一步：同步治理状态并推送精确 SHA CI；完成后只做下一非竞争 M7 缺口的限时只读审计。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。

@@ -4,7 +4,7 @@
 
 第十六章 `stage_16_01..05` 的 StageDef、13 份正文（1 个 chapter 文件、12 个 stage 文件）与 5 个敌人图标均完整，但 production assignment、encounter 与 runtime binding 原为 `0/5`。本批已把真实缺口由 `0/5 → 5/5`，全主线 typed catalog 候选水位由 `71/105 → 76/105`。
 
-当前仍是分支候选，不冒充 `main`/`origin/main` 集成。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
+候选 `5f5c80069acaf14c209f3967850856bb48a5e510` 已经 no-ff merge `8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b` 进入 `main` 与 `origin/main`，全主线 typed catalog 工程集成水位为 `76/105`。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
 
 ## 审计选择与生产接线
 
@@ -46,9 +46,12 @@
 | `flutter analyze --no-pub lib test tool` | `No issues found` |
 | `dart format .` | `1729 files (0 changed)` |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
-| 持锁整仓 | `5959/5959`，错误块 `0`，`All tests passed`，锁已释放 |
-| 标准 Gate | 待运行 |
+| 候选持锁整仓 | `5959/5959`，错误块 `0`，`All tests passed`，锁已释放 |
+| 候选标准 Gate | 原始结论 `FAIL: test_deletions`；其余 forbidden files、whitelist、commit、clean、full `5959`、analyze、format、receipt 全通过 |
+| 合并后候选 targeted / analyze / format | `6/6` / `No issues found` / `1730 files (0 changed)` |
+| 合并后持锁整仓 | `5959/5959`，错误块 `0`，`All tests passed`，锁已释放 |
+| merge exact-SHA CI | run `33809487636`，head `8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b`，全部 jobs/steps 成功 |
 
 ## 验收边界
 
-内容实现为 `7e41f106`，旧合同迁移为 `c551832b`，测试契约登记为 `511d8e9d`。持锁整仓已在当前已提交候选上通过 `5959/5959`，错误块为 `0`，测试锁已释放。当前绿色证据仍是分支候选，不冒充 `main`/`origin/main` 集成、正式 M7、Phase 2 或真人验收。
+内容实现为 `7e41f106`，旧合同迁移为 `c551832b`，测试契约登记为 `511d8e9d`，候选冻结为 `5f5c8006`。标准 Gate 对旧第十五章精确水位迁移原样报 `test_deletions`；专用测试契约迁移门已核对“预期删 1 / 增 32、用例删 0 / 增 6、登记 1”并 `PASS`，不改写标准 Gate 原始结论。工程内容已集成并通过精确 SHA CI，但不冒充正式 M7、Phase 2 或真人验收。
