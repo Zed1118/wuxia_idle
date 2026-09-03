@@ -20,12 +20,19 @@
 
 五关冻结为单敌 `1 / 1 / 1 / 1 / 1`。复用层只提供 AI、姿态与表现资源；StageDef 的姓名、原图、流派与全技能保持原值，14-04/05 的 Boss 身份、蓄力技与阶段由精确合同守住。本批未改 `stages.yaml`、`numbers.yaml`、技能、掉落、奖励、经济、正文、解锁、周目或结算 owner。
 
-## RED 与当前验证
+## RED、变异与恢复
 
 - 初始有效 RED 为 `0/6`：assignment、runtime、factory、objective、Boss identity 与 dynamic host 均真实缺失。
+- 删除 `stage_14_01` assignment，loader 精确拒绝无 stage 引用的 encounter（1 条红）。
+- 将 `stage_14_05.base_enemy_id` 错绑为 14-04 基敌，runtime loader 精确拒绝与唯一 StageDef enemy template 不一致（1 条红）。
+- 将 14-03 actor ID 在 manifest、spawn 与 objective 中同步改名，结构保持闭包，但 exact actor 与 objective 语义合同精确 2 条红。
+- 三次均以反向补丁恢复；最终 SHA-256：manifest `8af30037b1b484d4a5f3fcfdbe2419a718b66b08a1f10ed89f8698fbacc0c789`、assignments `55e65d9ba946569475a16d631c02e918045d56a348e42ee7f74fabd0f332c1cd`、encounter `c1f383937bf2b04fe60894308cbd2ddce15b1be7c36ae28be4156f5ad2b9c1ea`、runtime `7d736a6bd70b5465a95543ac4b63755550cfc2a026f22a80ab5d8dfcab4f5b7d`、test `fa09f91cfc4096c2a28411a3257a6b3c2f82d72f1a218b4952c12d973541a02b`。
+
+## 当前验证
+
 - production 接线后第十四章 targeted `6/6`，第十二/十四章 adjacent `12/12`；测试契约迁移 Gate 为 `PASS`（expect 删 1/增 32、用例删 0/增 6、登记 1 条）。
-- mutation、Phase 2 data、mainline application、analyze、format、持锁全量、标准 Gate 与受控集成仍待执行；未发生的结果不预写。
+- Phase 2 data、mainline application、analyze、format、持锁全量、标准 Gate 与受控集成仍待执行；未发生的结果不预写。
 
 ## 提交与验收边界
 
-内容实现为 `248473c4`，旧合同迁移为 `b96592c1`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界；当前候选不冒充 main/origin/main 集成、正式 M7 或真人验收。
+内容实现为 `248473c4`，旧合同迁移为 `b96592c1`，测试契约登记为 `e7115b9b`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界；当前候选不冒充 main/origin/main 集成、正式 M7 或真人验收。

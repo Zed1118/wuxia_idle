@@ -7195,11 +7195,12 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch14-content-migration-20260904
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: production_wiring_targeted_verified_pending_mutation_and_batch_checks
+    status: mutation_verified_pending_batch_checks
     current_authoritative_wip: true
     base_commit: c997911b6879d121205d5710ef583f430b266164
     content_implementation_commit: 248473c4
     test_contract_commit: b96592c1
+    test_contract_ledger_commit: e7115b9b
     completion_scope: migrate_chapter_14_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_14_5_of_5_and_mainline_catalog_integrated_66_of_105
     acceptance_result: chapter_14_5_of_5_candidate_targeted_verified_mainline_integrated_61_of_105_candidate_66_of_105
@@ -7222,9 +7223,19 @@ tasks:
       boss_identity_routes: stage_14_04_and_stage_14_05
       boss_identity_preserved: stage_14_04_and_stage_14_05
       initial_valid_red_tests: 0_of_6
+      exact_behavior_role_contracts: 5_of_5
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 2
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      restored_manifest_sha256: 8af30037b1b484d4a5f3fcfdbe2419a718b66b08a1f10ed89f8698fbacc0c789
+      restored_stage_assignment_sha256: 55e65d9ba946569475a16d631c02e918045d56a348e42ee7f74fabd0f332c1cd
+      final_encounter_sha256: c1f383937bf2b04fe60894308cbd2ddce15b1be7c36ae28be4156f5ad2b9c1ea
+      final_runtime_binding_sha256: 7d736a6bd70b5465a95543ac4b63755550cfc2a026f22a80ab5d8dfcab4f5b7d
+      final_test_sha256: fa09f91cfc4096c2a28411a3257a6b3c2f82d72f1a218b4952c12d973541a02b
       focused_tests: 6_of_6
       chapter_12_and_14_adjacent_tests: 12_of_12
-      mutation_status: pending
+      mutation_status: three_directions_red_confirmed_and_exactly_restored
       phase2_adjacent_tests: pending
       mainline_application_tests: pending
       test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
