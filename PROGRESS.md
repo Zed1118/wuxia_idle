@@ -5,14 +5,14 @@
 ## 当前阶段
 ### 二阶段结果仪表盘（2026-09-03 M7 第九章工程迁移）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
-- **精确工程集成基线**：`main == origin/main == 972bc6d413b7c7d2dbf911467b076bdb5c4781b7` 且主 checkout clean；第八章内容 tip `758a1cd6` 与治理尾已集成，exact-SHA CI run `33714277377` 为 `completed/success`，macOS build、codegen、格式、analyze、coverage tests、ratchet 与上传均成功。
-- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第八章各 `5/5` 已集成，全主线 typed catalog 工程集成水位为 `41/105`；第九章五条真实生产路由已形成 `5/5` 工程候选，使候选水位达到 `46/105`，合入复核发现的 1 个 P1 已修复，但尚未进入 main。塔仍为 `0/49`，legacy runtime retirement 仍开放。
+- **精确工程集成基线**：第九章内容 tip `b353002df3cf95aa58144890e20c5d0a9f738af3` 已进入 `main` 与 `origin/main`；exact-SHA CI run `33726947681` 为 `completed/success`，macOS build、codegen、格式、analyze、coverage tests、ratchet 与上传均成功。随后治理尾只同步已发生事实，其 exact-SHA CI 需在推送后实时核验。
+- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第九章各 `5/5` 已集成，全主线 typed catalog 工程集成水位为 `46/105`；第九章合入复核发现的 1 个 P1 已修复且无剩余 P0/P1。塔仍为 `0/49`，legacy runtime retirement 仍开放。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及 M7 第二至第九章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前唯一权威任务**：重新冻结第九章复核修复 tip，复跑标准 Gate 后受控集成；候选仅补 typed assignment/encounter/runtime binding 与生产合同测试，未改既有 StageDef、基础数值、技能定义、Boss、掉落、正文或规则。
+- **当前唯一权威任务**：收口第九章治理尾并核其 exact-SHA CI；完成前不启动第十章。第九章只补 typed assignment/encounter/runtime binding 与生产合同测试，未改既有 StageDef、基础数值、技能定义、Boss、掉落、正文或规则。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
-- **前三阻塞**：① 第九章 `46/105` 复核修复 tip 尚待标准 Gate 与 main 集成；② main 的 M7 仍余主线 `64`（候选集成后为 `59`）、塔 `49` 与 legacy consumer 退役；③ 真人桌面、视觉/音频/手感及 Windows 继续挂账。
+- **前三阻塞**：① 第九章治理尾尚待 push 与 exact-SHA CI；② M7 仍余主线 `59`、塔 `49` 与 legacy consumer 退役；③ 真人桌面、视觉/音频/手感及 Windows 继续挂账。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。
-- **详细证据**：第八章见 `docs/audit/phase2_m7_ch8_content_migration_2026-09-03.md` 与 CI run `33714277377`；第九章见 `docs/audit/phase2_m7_ch9_content_migration_2026-09-03.md` 与执行合同 `docs/superpowers/plans/2026-09-03-p2-m7-ch9-content-migration.md`。
+- **详细证据**：第八章见 `docs/audit/phase2_m7_ch8_content_migration_2026-09-03.md` 与 CI run `33714277377`；第九章见 `docs/audit/phase2_m7_ch9_content_migration_2026-09-03.md`、执行合同 `docs/superpowers/plans/2026-09-03-p2-m7-ch9-content-migration.md` 与 CI run `33726947681`。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。

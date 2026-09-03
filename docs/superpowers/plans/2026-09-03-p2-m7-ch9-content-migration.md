@@ -33,8 +33,8 @@
 
 ## 当前恢复点
 
-- 状态：第九章五条 typed production 路由已形成工程候选；主线候选水位 `46/105`，合入复核发现的 1 个 P1 已修复，尚未进入 main。
+- 状态：第九章五条 typed production 路由已进入 `main` 与 `origin/main`，全主线工程集成水位 `46/105`；合入复核发现的 1 个 P1 已修复，复核后无剩余 P0/P1。
 - 最后完成：冻结正文角色数 `4/3/1/1/1`，接通 assignment、encounter、runtime binding、真实 factory/objective/reducer；09-02 保持三人同场且只授予一个近战攻击令牌，09-03 保持阴柔流派，两名 Boss 保留 StageDef 全身份。
-- 下一步：冻结修复后的 `[READY]` exact tip并重跑标准 Gate；无剩余 P0/P1 后受控集成。
-- 已跑验证：初始 RED `0/6`；三向 mutation 均命中并按 SHA-256 恢复；修复后 Ch8/Ch9 各 `6/6`、Phase 2 data `114/114`、mainline application `183/183`、analyze 0 issue、format `1723/0`、持锁全量 `5923/5923` 且 `[E] 0`；标准 Gate 待修复 tip 重新冻结后复跑，不沿用旧 tip 结果。
-- 阻塞项：正式 M7 仍需主线余下内容、塔 `49` 条、legacy runtime retirement 与真人/视觉/音频/手感/Windows 验收；本候选还需独立复核和集成。
+- 下一步：推送仅含事实同步的治理尾并核 exact-SHA CI；完成前不启动第十章。
+- 已跑验证：初始 RED `0/6`；三向 mutation 均命中并按 SHA-256 恢复；修复后 Ch8/Ch9 各 `6/6`、Phase 2 data `114/114`、mainline application `183/183`、analyze 0 issue、format `1723/0`、持锁全量 `5923/5923` 且 `[E] 0`；exact-tip 标准 Gate 的 full/analyze/format/commit/clean 通过，原始终行保留 `FAIL: forbidden_files,test_deletions`；专用迁移门 PASS。内容 tip `b353002d` 的 CI run `33726947681` 为 `completed/success`。
+- 阻塞项：正式 M7 仍需主线余下 `59` 条、塔 `49` 条、legacy runtime retirement 与真人/视觉/音频/手感/Windows 验收；治理尾 exact-SHA CI 需实时核验。

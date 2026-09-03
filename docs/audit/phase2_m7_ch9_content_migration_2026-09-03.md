@@ -2,9 +2,9 @@
 
 ## 结论
 
-第九章 `stage_09_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批将实际缺口由 `0/5 → 5/5`，接入真实 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链，全主线 typed catalog 形成 `41/105 → 46/105` 的工程候选。
+第九章 `stage_09_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批将实际缺口由 `0/5 → 5/5`，接入真实 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链，全主线 typed catalog 工程集成水位由 `41/105 → 46/105`。
 
-候选尚未独立复核、未合并、未 push；main 与 origin/main 仍为 `972bc6d413b7c7d2dbf911467b076bdb5c4781b7`，工程集成水位仍是 `41/105`。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
+修复后内容 tip `b353002df3cf95aa58144890e20c5d0a9f738af3` 已 fast-forward 进入 `main` 与 `origin/main`；exact-SHA CI run `33726947681` 明确为 `completed/success`。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
 
 ## 生产接线与语义边界
 
@@ -48,8 +48,8 @@
 
 ## Gate 与挂账
 
-实现提交为 `2d3e31a37029941afe9c4a4065205143aec3e9c4`，相邻测试契约提交为 `43243b339dd7ee480d275a7277557dfcf4de2d3b`。最终 `[READY]` tip 必须在评审时由 `git rev-parse HEAD` 实时解析，并以该 exact tip 复跑标准 Gate；文档不会预写尚未发生的 PASS。
+实现提交为 `2d3e31a37029941afe9c4a4065205143aec3e9c4`，相邻测试契约提交为 `43243b339dd7ee480d275a7277557dfcf4de2d3b`，修复后 `[READY]` 内容 tip 为 `b353002df3cf95aa58144890e20c5d0a9f738af3`。
 
-预计标准 Gate 原生会拒绝项目要求更新的 `PROGRESS.md` 与已由专用门登记的单条测试断言删除；原始判决必须保留，不能改写为脚本原生 PASS。只有 full test、analyze、format、commit message、clean 等其余项全部通过，测试删除才能按项目唯一例外单独组合判断。
+该 exact tip 的标准 Gate 实测 full `5923/5923`、`[E] 0`、analyze、format、commit message 与 clean 均通过，receipt 因零 `lib/` 改动按规则跳过；原始终行如实为 `FAIL: forbidden_files,test_deletions`，分别对应项目要求更新的 `PROGRESS.md` 与已由专用门登记的单条测试断言删除，不改写成脚本原生 PASS。专用迁移门为 `PASS`。内容 tip 的 exact-SHA CI run `33726947681` 中 test、macOS build 及所有子步骤均成功；随后治理尾只同步已发生事实，其 exact-SHA CI 必须在推送后实时核验。
 
 合入复核结论：发现 1 个 P1 叙事并发偏差并在候选内修复，复核后无剩余 P0/P1；本轮为主代理的独立审计维度复核，未冒充独立 agent 或真人验收。工程候选不等于正式 M7；桌面实战、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
