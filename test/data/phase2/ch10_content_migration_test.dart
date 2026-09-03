@@ -143,7 +143,7 @@ void main() {
 
   test('Chapter 10 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
-    for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
+    for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
         Phase0aMainlineEncounterHostBuildRequest(
           stage: repository.getStage(stageId),
@@ -306,17 +306,20 @@ Phase0aMainlineEncounterRuntimeBindingSource _runtimeSource(
 Phase0aPlayerRuntimeMapping _playerMapping(
   GameRepository repository,
   String stageId,
-) => Phase0aStageContentMapper.mapPlayerOnly(
-  contentId: stageId,
-  playerSnapshot: testCombatantSnapshot(
-    realmTier: RealmTier.yiLiu,
-    realmLayer: RealmLayer.shuLian,
-    maxHp: 20000,
-    currentHp: 20000,
-    internalForce: 15000,
-    totalEquipmentAttack: 2000,
-    defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
-    includeProductionBasicAttack: true,
-  ),
-  numbers: repository.numbers,
-);
+) {
+  final enemy = repository.getStage(stageId).enemyTeam.single;
+  return Phase0aStageContentMapper.mapPlayerOnly(
+    contentId: stageId,
+    playerSnapshot: testCombatantSnapshot(
+      realmTier: enemy.realmTier,
+      realmLayer: enemy.realmLayer,
+      maxHp: 20000,
+      currentHp: 20000,
+      internalForce: 15000,
+      totalEquipmentAttack: 2000,
+      defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
+      includeProductionBasicAttack: true,
+    ),
+    numbers: repository.numbers,
+  );
+}
