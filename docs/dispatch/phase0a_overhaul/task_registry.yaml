@@ -6915,18 +6915,18 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch10-content-migration-20260903
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: ready_reviewed_pending_gate_and_integration
-    current_authoritative_wip: true
+    status: integrated_origin_main_ci_success
+    current_authoritative_wip: false
     base_commit: 7c5517e8863a19f10adfd53735e710a61759675b
     content_implementation_commit: d74d600e
     test_contract_commit: 8117398f
     semantic_review_fix_commit: 950e83a5d8e93ce10b34ca1df4137272be8d0c91
     completion_scope: migrate_chapter_10_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_10_5_of_5_and_mainline_catalog_integrated_51_of_105
-    acceptance_result: chapter_10_5_of_5_and_mainline_catalog_candidate_51_of_105_pending_gate_and_integration
+    acceptance_result: chapter_10_5_of_5_and_mainline_catalog_integrated_origin_main_51_of_105_ci_success
     evidence:
-      mainline_catalog_integrated: 46_of_105
-      mainline_catalog_candidate: 51_of_105
+      mainline_catalog_integrated: 51_of_105
+      mainline_catalog_candidate: none_after_integration
       chapter_10_before: 0_of_5
       production_stage_defs: 5_of_5
       authored_narratives: 13_files_complete
@@ -6963,11 +6963,25 @@ tasks:
       locked_full_test: post_review_fix_5929_of_5929_error_blocks_0_all_tests_passed_lock_released
       test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
       independent_review: codex_root_separate_merge_review_lane_passed_after_1_P1_fix_no_separate_agent_claim
-      ready_tip_resolution: freeze_after_governance_commit
-      exact_tip_standard_gate: pending
-      main_integration: false
-      origin_main_integration: false
-      exact_sha_ci_run: pending
+      ready_tip_resolution: cad1791ca30612243a6a9dd3f151e29ed502f02e
+      exact_tip_standard_gate: fail_forbidden_files_PROGRESS_md_and_registered_test_deletions_1_full_5929_analyze_format_commit_clean_pass
+      main_post_merge_analyze: no_issues_found_lib_test_tool
+      main_post_merge_format: 1725_files_0_changed
+      main_post_merge_locked_full_test: 5929_of_5929_error_blocks_0_all_tests_passed_lock_released
+      main_integration: true
+      origin_main_integration: true
+      integration_merge_commit: 9ccb70390a1698181852125fac9ce58cdaf4c825
+      exact_sha_ci_run: 33756976238
+      exact_sha_ci_head: 9ccb70390a1698181852125fac9ce58cdaf4c825
+      exact_sha_ci_conclusion: completed_success
+      macos_build: success
+      codegen: success
+      format_check: success
+      analyze_ci: success
+      coverage_tests: success
+      coverage_ratchet: success
+      coverage_upload: success
+      governance_tail_exact_sha_ci: verify_live_after_push
       baseline_exact_sha_ci_run: 33729258734
       baseline_exact_sha_ci_head: 7c5517e8863a19f10adfd53735e710a61759675b
       baseline_exact_sha_ci_conclusion: completed_success
@@ -7000,7 +7014,7 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_46_of_105_integrated_origin_main_and_51_of_105_candidate_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_51_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE

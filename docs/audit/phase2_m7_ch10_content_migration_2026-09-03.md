@@ -2,9 +2,9 @@
 
 ## 结论
 
-第十章 `stage_10_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批将该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链。候选合入后，全主线 typed catalog 工程集成水位将由 `46/105 → 51/105`。
+第十章 `stage_10_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批将该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链。内容候选 `cad1791ca30612243a6a9dd3f151e29ed502f02e` 经 no-ff merge `9ccb70390a1698181852125fac9ce58cdaf4c825` 已进入 `main` 与 `origin/main`，全主线 typed catalog 工程集成水位由 `46/105 → 51/105`。
 
-本文档在候选冻结前登记：当前 `main/origin/main` 仍是基线 `7c5517e8863a19f10adfd53735e710a61759675b`，不把分支候选写成已集成。标准 Gate、受控合入与 exact-SHA CI 将在后续治理尾回填。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
+该 merge 的 exact-SHA CI run `33756976238` 为 `completed/success`，test 与 macOS build 两条 job 以及 codegen、format、analyze、coverage tests、coverage ratchet 与上传均成功。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
 
 ## 生产接线与语义边界
 
@@ -41,11 +41,14 @@
 | 持锁整仓 `flutter test --no-pub` | P1 修复后 `5929/5929`，异常块 `0`，`All tests passed!` |
 | full-test lock | 独占执行后已释放 |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`；`PASS` |
+| 本地 main 合入后 | analyze 通过；format `1725 files (0 changed)`；持锁全量 `5929/5929`、异常块 `0` |
 
 第九章旧测试的全局精确水位 `46` 改为已集成下限 `>=46`，第十章新测试以精确 `51` 守住本批增量。删除已登记在 `p2-m7-ch10-content-migration-20260903.yaml`，专用机器门核对通过。
 
 ## Gate 与挂账
 
-实现提交为 `d74d600e`，测试契约与加固提交为 `6135123a` / `8117398f` / `64ba35cd`，P1 语义修正提交为 `950e83a5`。`[READY]` tip、标准 Gate 原始结果、主线集成提交与 exact-SHA CI 尚待后续治理尾实时回填，不预写 PASS。
+实现提交为 `d74d600e`，测试契约与加固提交为 `6135123a` / `8117398f` / `64ba35cd`，P1 语义修正提交为 `950e83a5`，`[READY]` tip 为 `cad1791ca30612243a6a9dd3f151e29ed502f02e`。
 
-本轮复核是主代理的受控合入复核，不冒充独立 agent 或真人验收。工程候选不等于正式 M7；桌面实战、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
+该 exact tip 的标准 Gate 实测 full `5929/5929`、异常块 `0`、analyze、format、commit message 与 clean 均通过，receipt 因零 `lib/` 改动按规则跳过；原始终行如实为 `FAIL: forbidden_files,test_deletions`，分别对应项目要求更新的 `PROGRESS.md` 与已由专用门登记的单条测试断言删除，不改写成脚本原生 PASS。专用迁移门为 `PASS`。内容 merge `9ccb70390a1698181852125fac9ce58cdaf4c825` 的 exact-SHA CI run `33756976238` 为 `completed/success`。
+
+本轮复核是主代理的受控合入复核，不冒充独立 agent 或真人验收。工程集成不等于正式 M7；桌面实战、视觉、音频、手感与 Windows 均继续 `DEFERRED`。

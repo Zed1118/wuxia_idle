@@ -38,8 +38,8 @@
 
 ## 当前恢复点
 
-- 状态：第十章生产迁移与主代理合入复核已完成，候选水位 `51/105`；尚未进入 `main`，不计集成水位。
-- 最后完成：修复 10-05 守拙翁从轻功突进型偏离到军阵守势型，并以精确角色契约防回归；修复后定向 `6/6`、全量 `5929/5929`。
-- 下一步：冻结 `[READY]` tip，运行测试迁移门与标准 Gate，然后受控合入并核对 exact-SHA CI。
-- 已跑验证：有效 RED `0/6`；定向 `6/6`；Phase 2 data `120/120`；mainline application `183/183`；analyze 无问题；format `1724 files (0 changed)`；修复后持锁全量 `5929/5929`、异常块 `0`、锁已释放；测试迁移门 `PASS`。
+- 状态：第十章生产迁移已经 merge `9ccb70390a1698181852125fac9ce58cdaf4c825` 进入 `main` 与 `origin/main`，集成水位 `51/105`；正式 M7 仍开放。
+- 最后完成：内容 merge exact-SHA CI run `33756976238` 为 `completed/success`，test、macOS build 及全部子步骤均成功。
+- 下一步：提交并推送只包含已发生事实的治理尾，再核对治理尾自身 exact-SHA CI；不启动第十一章。
+- 已跑验证：有效 RED `0/6`；定向 `6/6`；Phase 2 data `120/120`；mainline application `183/183`；候选 Gate full `5929/5929`、analyze/format/commit/clean 通过，原始终行仅 `forbidden_files,test_deletions`；专用迁移门 `PASS`；本地 main 合入后 analyze/format 通过、持锁全量 `5929/5929`、异常块 `0`；内容 merge exact-SHA CI `completed/success`。
 - 阻塞项：当前无须人类拍板；真人桌面、视觉、音频、手感与 Windows 按用户要求挂账。
