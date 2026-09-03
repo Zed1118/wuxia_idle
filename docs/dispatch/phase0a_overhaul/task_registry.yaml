@@ -7149,9 +7149,9 @@ tasks:
       phase2_adjacent_tests: 132_of_132
       mainline_application_tests: 183_of_183
       test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
-      analyze: pending
-      format: pending
-      locked_full_test: pending
+      analyze: no_issues_found_lib_test_tool
+      format: 1726_files_0_changed
+      locked_full_test: 5941_of_5941_error_blocks_0_all_tests_passed_lock_released
       standard_gate: pending
       main_integration: false
       origin_main_integration: false

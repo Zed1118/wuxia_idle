@@ -36,9 +36,12 @@
 | 第十一、十二章 adjacent | `12/12` |
 | Phase 2 data | `132/132` |
 | mainline application | `183/183` |
+| `flutter analyze --no-pub lib test tool` | `No issues found` |
+| `dart format .` | `1726 files (0 changed)` |
+| 持锁整仓 `flutter test --no-pub` | `5941/5941`，异常块 `0`，`All tests passed!`，锁已释放 |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
 
-第十一章旧测试的全局精确水位 `56` 改为已集成下限 `>=56`，第十二章新测试精确守住候选 `61`。删除已登记在 `p2-m7-ch12-content-migration-20260904.yaml`。analyze、format、持锁全量、标准 Gate 与受控集成仍待执行；未发生的结果不预写。
+第十一章旧测试的全局精确水位 `56` 改为已集成下限 `>=56`，第十二章新测试精确守住候选 `61`。删除已登记在 `p2-m7-ch12-content-migration-20260904.yaml`。标准 Gate 与受控集成仍待执行；未发生的结果不预写。
 
 ## 提交与验收边界
 

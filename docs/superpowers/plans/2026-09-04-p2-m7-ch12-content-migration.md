@@ -31,6 +31,6 @@
 ## 当前恢复点
 
 - 状态：第十二章生产接线和三向变异恢复完成，候选水位 `61/105`；主线集成水位仍为 `56/105`。
-- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十一/十二章 `12/12`；Phase 2 data `132/132`；mainline application `183/183`；测试契约迁移门 `PASS`。
-- 下一步：完成 analyze、format、持锁全量、治理证据与 exact-tip 标准 Gate；未发生的 merge、push 与 CI 不预写。
+- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十一/十二章 `12/12`；Phase 2 data `132/132`；mainline application `183/183`；analyze/format 通过；持锁全量 `5941/5941`、异常块 `0`；测试契约迁移门 `PASS`。
+- 下一步：冻结 exact-tip READY、生成收据并运行标准 Gate；未发生的 merge、push 与 CI 不预写。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
