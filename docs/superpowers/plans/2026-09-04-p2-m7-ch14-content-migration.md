@@ -31,6 +31,6 @@
 ## 当前恢复点
 
 - 状态：第十四章生产接线完成，候选水位 `66/105`；主线集成水位仍为 `61/105`。
-- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并按反向补丁与 SHA-256 恢复；第十四章定向 `6/6`；第十二/十四章 `12/12`；测试契约迁移 Gate `PASS`。
-- 下一步：完成 Phase 2 data、mainline application、analyze、format、持锁全量、收据与 exact-tip Gate，再决定是否进入受控集成。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确转红 `1/1/2` 并按反向补丁与 SHA-256 恢复；第十四章定向 `6/6`；第十二/十四章 `12/12`；Phase 2 data `138/138`；mainline application `183/183`；analyze 0 issue；整仓 format `1727/0`；持锁全量 `5947/5947`、异常块 `0`；测试契约迁移 Gate `PASS`。
+- 下一步：冻结 exact-tip READY、生成收据并运行标准 Gate；未发生的 merge、push 与 CI 不预写。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。

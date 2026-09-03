@@ -30,8 +30,18 @@
 
 ## 当前验证
 
-- production 接线后第十四章 targeted `6/6`，第十二/十四章 adjacent `12/12`；测试契约迁移 Gate 为 `PASS`（expect 删 1/增 32、用例删 0/增 6、登记 1 条）。
-- Phase 2 data、mainline application、analyze、format、持锁全量、标准 Gate 与受控集成仍待执行；未发生的结果不预写。
+| 门 | 结果 |
+| --- | --- |
+| 第十四章 targeted | `6/6` |
+| 第十二、十四章 adjacent | `12/12` |
+| Phase 2 data | `138/138`，异常块 `0` |
+| mainline application | `183/183` |
+| `flutter analyze --no-pub lib test tool` | `No issues found` |
+| `dart format .` | `1727 files (0 changed)` |
+| 持锁整仓 `flutter test --no-pub` | `5947/5947`，异常块 `0`，`All tests passed!`，锁已释放 |
+| 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
+
+第十二章旧测试的全局精确水位 `61` 改为已集成下限 `>=61`，第十四章新测试精确守住候选 `66`。删除已登记在 `p2-m7-ch14-content-migration-20260904.yaml`。标准 Gate 与受控集成仍待执行；未发生的结果不预写。
 
 ## 提交与验收边界
 
