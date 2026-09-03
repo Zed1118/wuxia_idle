@@ -5,7 +5,7 @@
 - 单一结果：把既有 `stage_12_01..05` 五关接入 typed production catalog、runtime binding 与 production encounter factory，第十二章工程水位 `0/5 → 5/5`。
 - 固定分母：全主线 typed production catalog `56/105 → 61/105`；塔保持 `0/49`，legacy runtime retirement 仍开放，正式 Phase 2 保持 `1/10`。
 - 实时基线：分支 `codex/p2-m7-ch12-content-migration-20260904` 建于 `main == origin/main == 273c0fcb55029df32a6d0fa16deb41058b37291c`；该 SHA 的 CI run `33775826982` 为 `completed/success`。
-- 关键阻塞：五关 StageDef 与 13 份正文完整，但 assignment、encounter、runtime binding 与 factory route 均缺失。
+- 关键阻塞：五关 StageDef 与 12 份正文完整，但 assignment、encounter、runtime binding 与 factory route 均缺失。
 - 成本上限：只处理本章 5 条真实缺口；约 90 分钟无 `56 → 61` 可验证增量则停线重评。
 
 ## 审计选择依据
@@ -30,7 +30,7 @@
 
 ## 当前恢复点
 
-- 状态：第十二章生产接线和三向变异恢复完成，候选水位 `61/105`；主线集成水位仍为 `56/105`。
-- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十一/十二章 `12/12`；Phase 2 data `132/132`；mainline application `183/183`；analyze/format 通过；持锁全量 `5941/5941`、异常块 `0`；测试契约迁移门 `PASS`。
-- 下一步：冻结 exact-tip READY、生成收据并运行标准 Gate；未发生的 merge、push 与 CI 不预写。
+- 状态：第十二章生产接线已由候选 `5ae0aec0` 经 no-ff merge `834fff10` 进入 `main` 与 `origin/main`，全主线集成水位为 `61/105`；merge exact-SHA CI run `33782711336` 为 `completed/success`。
+- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十一/十二章 `12/12`；Phase 2 data `132/132`；mainline application `183/183`；analyze/format 通过；持锁全量 `5941/5941`、异常块 `0`；测试契约迁移门 `PASS`；标准 Gate 原始终行仅 `FAIL: test_deletions`，其余项 PASS；合入后定向/analyze/format/持锁全量及 exact-SHA CI 全部通过。
+- 下一步：本治理尾进入 `origin/main` 并核 exact-SHA CI 后，第十四章可按已完成的只读风险审计建立独立结果合同；第十三章 25-actor 合同冲突继续隔离。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
