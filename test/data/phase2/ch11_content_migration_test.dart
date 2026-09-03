@@ -23,52 +23,49 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_10_01': (
-    'ch10_encounter_01_hetao_swordsman',
-    'ch10_s01_swordsman',
+  'stage_11_01': (
+    'ch11_encounter_01_xudu_swordsman',
+    'ch11_s01_swordsman',
+    TechniqueSchool.lingQiao,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
+  ),
+  'stage_11_02': (
+    'ch11_encounter_02_jinding_disciple',
+    'ch11_s02_disciple',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
     'sect_outer',
   ),
-  'stage_10_02': (
-    'ch10_encounter_02_yanmen_wanderer',
-    'ch10_s02_wanderer',
-    TechniqueSchool.lingQiao,
-    'ch2_attack_set_hidden_weapon',
-    'sect_hidden_weapon',
-  ),
-  'stage_10_03': (
-    'ch10_encounter_03_luoshui_reflection',
-    'ch10_s03_reflection',
+  'stage_11_03': (
+    'ch11_encounter_03_luoyang_merchant',
+    'ch11_s03_merchant',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_10_04': (
-    'ch10_encounter_04_songyang_gatekeeper',
-    'ch10_s04_gatekeeper',
+  'stage_11_04': (
+    'ch11_encounter_04_yujing_swordmaster',
+    'ch11_s04_swordmaster',
     TechniqueSchool.gangMeng,
-    'ch7_attack_set_shield',
-    'army_shield',
+    'ch2_attack_set_outer',
+    'sect_outer',
   ),
-  'stage_10_05': (
-    'ch10_encounter_05_stillwater_master',
-    'ch10_s05_stillwater_master',
-    TechniqueSchool.yinRou,
-    'ch7_attack_set_shield',
-    'army_shield',
+  'stage_11_05': (
+    'ch11_encounter_05_liujin_master',
+    'ch11_s05_liujin_master',
+    TechniqueSchool.gangMeng,
+    'ch2_attack_set_outer',
+    'sect_outer',
   ),
 };
 
 const _bossCases = {
-  'stage_10_04': (
-    'ch10_encounter_04_songyang_gatekeeper',
-    'ch10_s04_gatekeeper',
+  'stage_11_04': (
+    'ch11_encounter_04_yujing_swordmaster',
+    'ch11_s04_swordmaster',
   ),
-  'stage_10_05': (
-    'ch10_encounter_05_stillwater_master',
-    'ch10_s05_stillwater_master',
-  ),
+  'stage_11_05': ('ch11_encounter_05_liujin_master', 'ch11_s05_liujin_master'),
 };
 
 void main() {
@@ -83,9 +80,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 10 exposes five of five migrated production routes', () {
+  test('Chapter 11 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 10)
+        .where((stage) => stage.chapterIndex == 11)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -107,11 +104,11 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(51));
+    expect(migratedMainlineCount, 56);
   });
 
   test(
-    'Chapter 10 routes retain authored singleton identities and ecology',
+    'Chapter 11 routes retain authored singleton identities and reviewed roles',
     () {
       for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
         final stage = repository.getStage(stageId);
@@ -126,17 +123,9 @@ void main() {
           contract.$2,
           reason: '$stageId must match the authored singleton opponent',
         );
-        expect(
-          encounter?.spawnEntries.single.roleId,
-          contract.$5,
-          reason: '$stageId must retain the reviewed behavior role',
-        );
-        expect(
-          runtime?.baseEnemyId,
-          stage.enemyTeam.single.id,
-          reason: stageId,
-        );
-        expect(runtime?.enemyBindings, hasLength(1), reason: stageId);
+        expect(encounter?.spawnEntries.single.roleId, contract.$5);
+        expect(runtime?.baseEnemyId, stage.enemyTeam.single.id);
+        expect(runtime?.enemyBindings, hasLength(1));
 
         final bundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
           stageId: stageId,
@@ -151,7 +140,7 @@ void main() {
     },
   );
 
-  test('Chapter 10 routes construct through the real factory', () async {
+  test('Chapter 11 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -172,8 +161,8 @@ void main() {
     }
   });
 
-  test('Chapter 10 objectives require the authored singleton opponent', () {
-    for (final stageId in ['stage_10_01', 'stage_10_02', 'stage_10_03']) {
+  test('Chapter 11 objectives require the authored singleton opponent', () {
+    for (final stageId in ['stage_11_01', 'stage_11_02', 'stage_11_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -200,7 +189,7 @@ void main() {
     }
   });
 
-  test('both authored Chapter 10 targets retain Boss identity', () {
+  test('both authored Chapter 11 targets retain Boss identity', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -218,11 +207,7 @@ void main() {
       expect(target.combatant.name, base.name, reason: stageId);
       expect(target.combatant.iconPath, base.iconPath, reason: stageId);
       expect(target.combatant.isBoss, isTrue, reason: stageId);
-      expect(
-        target.combatant.chargeSkillId,
-        base.chargeSkillId,
-        reason: stageId,
-      );
+      expect(target.combatant.chargeSkillId, base.chargeSkillId);
       expect(
         target.combatant.availableSkills.map((skill) => skill.id),
         base.availableSkills.map((skill) => skill.id),
@@ -258,7 +243,7 @@ void main() {
   });
 
   test(
-    'all five Chapter 10 routes reach dynamic victory without stalls',
+    'all five Chapter 11 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -271,7 +256,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026091000 + index),
+            rng: Random(2026091100 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
