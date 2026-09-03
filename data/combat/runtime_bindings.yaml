@@ -664,6 +664,116 @@ runtime_bindings:
       posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
       drop_group_ids: [ch2_drop_group_sect_encounter]
       sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+  - stage_id: stage_15_01
+    encounter_id: ch15_encounter_01_mountain_companion
+    base_enemy_id: enemy_jueDing_guanshanyicheng_songxing_tongdao
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+    behaviors:
+      - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+    attack_sets:
+      - {id: ch2_attack_set_outer, skill_ids: [skill_gangmeng_jichu_basic]}
+    visual_variants:
+      - {id: ch2_visual_outer_a, asset_path: assets/enemies/battle_black_killer.png}
+      - {id: ch2_visual_outer_b, asset_path: assets/enemies/battle_shaonian.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+
+  - stage_id: stage_15_02
+    encounter_id: ch15_encounter_02_ferry_night_guest
+    base_enemy_id: enemy_jueDing_guanshanyicheng_dukou_yeke
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+    behaviors:
+      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+    attack_sets:
+      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+    visual_variants:
+      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
+      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+
+  - stage_id: stage_15_03
+    encounter_id: ch15_encounter_03_grotto_monk
+    base_enemy_id: enemy_jueDing_guanshanyicheng_xingjiao_seng
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+    behaviors:
+      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+    attack_sets:
+      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+    visual_variants:
+      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
+      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+
+  - stage_id: stage_15_04
+    encounter_id: ch15_encounter_04_desert_chieftain
+    base_enemy_id: enemy_jueDing_guanshanyicheng_shahai_zongpiao
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+    behaviors:
+      - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
+    attack_sets:
+      - {id: ch2_attack_set_outer, skill_ids: [skill_gangmeng_jichu_basic]}
+    visual_variants:
+      - {id: ch2_visual_outer_a, asset_path: assets/enemies/battle_black_killer.png}
+      - {id: ch2_visual_outer_b, asset_path: assets/enemies/battle_shaonian.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+
+  - stage_id: stage_15_05
+    encounter_id: ch15_encounter_05_pass_old_general
+    base_enemy_id: enemy_jueDing_guanshanyicheng_shouguan_laojiang
+    entrances:
+      - {id: ch2_entrance_s02_floor, spawn_position: {x: -520, y: 80}}
+    positions:
+      - {id: ch2_position_s02_slot_01, world_position: {x: -120, y: 120}}
+    behaviors:
+      - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+    ai_profiles:
+      - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
+    attack_sets:
+      - {id: ch2_attack_set_lightfoot, skill_ids: [skill_yinrou_jichu_basic]}
+    visual_variants:
+      - {id: ch2_visual_lightfoot_a, asset_path: assets/enemies/battle_shiye.png}
+      - {id: ch2_visual_lightfoot_b, asset_path: assets/enemies/battle_guntou.png}
+    verified_only_references:
+      host_consumption: none
+      posture_profile_ids: [ch2_posture_outer, ch2_posture_hidden_weapon, ch2_posture_lightfoot, ch2_posture_instructor]
+      drop_group_ids: [ch2_drop_group_sect_encounter]
+      sfx_group_ids: [ch2_sfx_outer, ch2_sfx_hidden_weapon, ch2_sfx_lightfoot, ch2_sfx_instructor]
+
   - stage_id: stage_08_01
     encounter_id: ch8_encounter_01_frontier_riders
     base_enemy_id: enemy_erLiu_monan_mazei
