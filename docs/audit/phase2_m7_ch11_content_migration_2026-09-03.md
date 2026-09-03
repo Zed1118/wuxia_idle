@@ -2,9 +2,9 @@
 
 ## 当前结论
 
-第十一章 `stage_11_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批已在候选分支把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 候选水位由 `51/105 → 56/105`。
+第十一章 `stage_11_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 工程集成水位由 `51/105 → 56/105`。
 
-当前仅是工程候选：主线集成水位仍为 `51/105`，正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
+候选 `584600c55f431adaa667ba2bdeb4e98658d80dcc` 已经 no-ff merge `37688ea908ca6dad17ac12c738b06577f0ec0f76` 进入 `main` 与 `origin/main`，merge exact-SHA CI run `33772898042` 为 `completed/success`。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
 
 ## 审计选择与生产接线
 
@@ -40,9 +40,13 @@
 | `dart format .` | `1725 files (0 changed)` |
 | 持锁整仓 `flutter test --no-pub` | `5935/5935`，异常块 `0`，`All tests passed!`，锁已释放 |
 | 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
+| exact-tip 标准 Gate | 原生终判仅 `FAIL: test_deletions`；full `5935/5935`、analyze、format、禁改文件、中文提交、clean 与 receipt 均 `PASS` |
+| main 合入后 analyze / format | `No issues found`；`1726 files (0 changed)` |
+| main 合入后持锁整仓 | `5935/5935`，`All tests passed!`，锁已释放 |
+| merge exact-SHA CI | run `33772898042`，head `37688ea908ca6dad17ac12c738b06577f0ec0f76`，`completed/success` |
 
-第十章旧测试的全局精确水位 `51` 改为已集成下限 `>=51`，第十一章新测试精确守住候选 `56`。删除已登记在 `p2-m7-ch11-content-migration-20260903.yaml`。标准 Gate 与受控集成仍待本审计之后执行；未发生的结果不预写。
+第十章旧测试的全局精确水位 `51` 改为已集成下限 `>=51`，第十一章新测试精确守住 `56`。该 1 行 expect 删除已登记在 `p2-m7-ch11-content-migration-20260903.yaml`，专用迁移门通过；标准 Gate 的原始 `test_deletions` 结论不被改写，其余门全部通过后才执行受控集成。
 
 ## 提交与验收边界
 
-内容实现为 `f5359335c5b92a4f03d47cc2347d25f84cefef2b`，旧合同迁移为 `e14c57d120fde1f3ae81f2e8db548446ee50937e`，登记表为 `b2d8c5b89329b09e99f53b7812ad70e634d56112`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与正文单敌边界，当前无已知 P0/P1；这不冒充独立 agent 或真人验收。
+内容实现为 `f5359335c5b92a4f03d47cc2347d25f84cefef2b`，旧合同迁移为 `e14c57d120fde1f3ae81f2e8db548446ee50937e`，登记表为 `b2d8c5b89329b09e99f53b7812ad70e634d56112`，冻结候选为 `584600c55f431adaa667ba2bdeb4e98658d80dcc`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与正文单敌边界，当前无已知 P0/P1；这不冒充独立 agent 或真人验收。

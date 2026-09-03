@@ -37,7 +37,8 @@
 
 ## 当前恢复点
 
-- 状态：第十一章候选已完成生产接线、变异恢复与批末自动化验证；main 集成水位仍为 `51/105`，候选为 `56/105`。
+- 状态：第十一章候选 `584600c55f431adaa667ba2bdeb4e98658d80dcc` 已经 merge `37688ea908ca6dad17ac12c738b06577f0ec0f76` 进入 `main` 与 `origin/main`；工程集成水位为 `56/105`。
 - 已跑验证：有效 RED `0/6`；定向 `6/6`；第十/十一章 `12/12`；Phase 2 data `126/126`；mainline application `183/183`；analyze/format 通过；持锁全量 `5935/5935`、异常块 `0`；测试契约迁移门 `PASS`。
-- 下一步：提交当前治理证据，运行 exact-tip 标准 Gate；未发生的 merge、push 与 CI 不预写。
+- Gate 与集成：标准 Gate 原生终判仅 `FAIL: test_deletions`，对应已登记的专用测试契约迁移门 `PASS`，其余标准门全部通过；合入后 analyze、format、持锁 `5935/5935` 通过，merge exact-SHA CI run `33772898042` 为 `completed/success`。
+- 下一步：以新的 clean `origin/main` 为基线做有时限审计，选择一个不竞争的 M7 完整章节门；不按章节顺序盲选。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
