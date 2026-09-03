@@ -3,16 +3,16 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-### 二阶段结果仪表盘（2026-09-03 M7 第六、七章工程集成）
+### 二阶段结果仪表盘（2026-09-03 M7 第八章工程迁移）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
-- **精确工程集成基线**：第六、七章修正后内容 commit `afb5e013d5a17c24819b15d991c02930521ca874` 已 `--ff-only` 进入本地 `main`；最终治理 commit、`origin/main` 与 exact-SHA CI 必须在收口时实时解析，不在会自指失效的文档中预写。上一已集成基线 `c75a57c7` 的 CI run `33645109247` 为 `completed/success`，但不替代本次终态 CI。
-- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第七章各 `5/5` 已进入本地 `main`，全主线 typed catalog 工程集成水位由 `28/105 → 36/105`；待同 tip 回归、push 与 exact-SHA CI 成功后，再把第八章真实缺口设为唯一 WIP。塔仍为 `0/49`，legacy runtime retirement 仍开放。M5 `42/42`、M6 `1/1` 既有工程结果不变。
+- **精确工程集成基线**：`main == origin/main == 56cf00224c5d72360f629255338c2b8d4e0995c9` 且主 checkout clean；第六、七章修正后内容 commit `afb5e013` 与治理尾已集成，exact-SHA CI run `33707737979` 为 `completed/success`，`macos-build`、格式、analyze、coverage tests 与 ratchet 均成功。
+- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第七章各 `5/5` 已集成，全主线 typed catalog 工程集成水位为 `36/105`；第八章五关 StageDef/正文完整，但 typed assignment/encounter/runtime binding 为 `0/5`，本批目标 `36/105 → 41/105`。塔仍为 `0/49`，legacy runtime retirement 仍开放。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及 M7 第二至第七章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前唯一权威任务**：第六、七章受控集成收口；语义复核已纠正 `06_02` 多造一人、`07_02` 多造两人及 `07_05` 多造两人的叙事偏差。只在最终 `main` 回归、push 与同 SHA CI 全部收口后转入第八章有界审计；不重做 P0、不处理 `stage_02_05` 高基础随从风险、不启动 M8/M9。
+- **当前唯一权威任务**：第八章五条真实生产路由迁移；只复用已有西凉/门派/军阵 typed 生态，不改 `stages.yaml`、数值、技能、Boss、掉落、正文或规则；不重做 P0、不处理 `stage_02_05` 风险、不启动 M8/M9。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
-- **前三阻塞**：① 第六、七章已进本地 `main`，但本次 `origin/main` 和 exact-SHA CI 尚待同链收口；② M7 仍余主线 `69`、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
+- **前三阻塞**：① 第八章 typed production 为 `0/5`，尚落回 legacy mapper；② M7 按已集成口径仍余主线 `69`、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。
-- **详细证据**：P0 远端闭环见 `docs/superpowers/plans/2026-09-02-p2-p0-quality-hardening.md` 与 `docs/audit/phase2_p0_quality_hardening_2026-09-02.md`；第四、第五章集成见各自审计，第六、七章实施、语义修正与集成边界见 `docs/audit/phase2_m7_ch6_content_migration_2026-09-03.md` 与 `docs/audit/phase2_m7_ch7_content_migration_2026-09-03.md` 及同名计划。最终远端 CI 必须以本次最终 `main` SHA 现场查证。
+- **详细证据**：第六、七章集成见 `docs/audit/phase2_m7_ch6_content_migration_2026-09-03.md`、`docs/audit/phase2_m7_ch7_content_migration_2026-09-03.md` 与 CI run `33707737979`；第八章执行合同见 `docs/superpowers/plans/2026-09-03-p2-m7-ch8-content-migration.md`。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。
