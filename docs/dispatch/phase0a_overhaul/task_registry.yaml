@@ -7120,7 +7120,7 @@ tasks:
       mainline_catalog_candidate: 61_of_105
       chapter_12_before: 0_of_5
       production_stage_defs: 5_of_5
-      authored_narratives: 12_files_complete
+      authored_narratives: 13_files_complete_including_1_chapter_and_12_stage_files
       frozen_design: five_authored_singleton_encounters
       production_assignments: 5_of_5
       production_encounters: 5_of_5

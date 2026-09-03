@@ -5,7 +5,7 @@
 - 单一结果：把既有 `stage_12_01..05` 五关接入 typed production catalog、runtime binding 与 production encounter factory，第十二章工程水位 `0/5 → 5/5`。
 - 固定分母：全主线 typed production catalog `56/105 → 61/105`；塔保持 `0/49`，legacy runtime retirement 仍开放，正式 Phase 2 保持 `1/10`。
 - 实时基线：分支 `codex/p2-m7-ch12-content-migration-20260904` 建于 `main == origin/main == 273c0fcb55029df32a6d0fa16deb41058b37291c`；该 SHA 的 CI run `33775826982` 为 `completed/success`。
-- 关键阻塞：五关 StageDef 与 12 份正文完整，但 assignment、encounter、runtime binding 与 factory route 均缺失。
+- 关键阻塞：五关 StageDef 与 13 份正文完整（1 个 chapter 文件、12 个 stage 文件），但 assignment、encounter、runtime binding 与 factory route 均缺失。
 - 成本上限：只处理本章 5 条真实缺口；约 90 分钟无 `56 → 61` 可验证增量则停线重评。
 
 ## 审计选择依据

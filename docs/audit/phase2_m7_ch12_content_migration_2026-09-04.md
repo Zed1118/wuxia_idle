@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-第十二章 `stage_12_01..05` 的 StageDef 与 12 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 集成水位由 `56/105 → 61/105`。
+第十二章 `stage_12_01..05` 的 StageDef 与 13 份正文原已完整（1 个 chapter 文件、12 个 stage 文件），但 production assignment、encounter 与 runtime binding 均缺失。本批把该章真实缺口由 `0/5 → 5/5`，接入 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链；全主线 typed catalog 集成水位由 `56/105 → 61/105`。
 
 内容候选 `5ae0aec00819430a13c0b8c56110b7b3c67a3498` 已经 no-ff merge `834fff105dd534bc1eb15a111a7bc914741ac5a8` 进入 `main` 与 `origin/main`，exact-SHA CI run `33782711336` 为 `completed/success`，全部 jobs 与 steps 成功。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
 
