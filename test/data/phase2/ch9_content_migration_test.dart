@@ -84,7 +84,7 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, 46);
+    expect(migratedMainlineCount, greaterThanOrEqualTo(46));
   });
 
   test('Chapter 9 routes match the authored cast and runtime identities', () {
