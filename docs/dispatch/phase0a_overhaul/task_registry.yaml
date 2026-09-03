@@ -24,7 +24,7 @@ tasks:
     owner: codex_root
     branch: codex/phase2-m0-coordination-20260823
     worktree: /Users/a10506/Desktop/Projects/挂机武侠-phase2-coordination
-    status: ready_reviewed
+    status: integrated_local_main
     owned_files:
       - docs/dispatch/phase0a_overhaul/decision_registry.yaml
       - docs/dispatch/phase0a_overhaul/task_registry.yaml
@@ -6741,7 +6741,7 @@ tasks:
     base_commit: 56cf00224c5d72360f629255338c2b8d4e0995c9
     completion_scope: migrate_chapter_8_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_8_5_of_5_and_mainline_catalog_candidate_41_of_105
-    acceptance_result: chapter_8_candidate_5_of_5_and_mainline_catalog_candidate_41_of_105_integrated_remains_36_of_105
+    acceptance_result: chapter_8_5_of_5_and_mainline_catalog_41_of_105_integrated_local_main
     evidence:
       mainline_catalog_integrated: 36_of_105
       mainline_catalog_candidate: 41_of_105
@@ -6778,8 +6778,11 @@ tasks:
       test_contract_migration: pass_expect_deleted_1_added_29_cases_deleted_0_added_6_registered_1
       ready_tip_resolution: resolve_branch_tip_live_at_review_time
       exact_tip_standard_gate: fail_forbidden_files_PROGRESS_md_and_registered_test_deletions_1_other_items_pass_or_expected_skip
-      main_integration: false
-      origin_main_integration: false
+      integration_content_commit: 758a1cd6734399a33b9c611c893e3df289c9f4d1
+      independent_review: no_P0_or_P1_blocker
+      main_integration: true
+      origin_main_integration: resolve_live_after_governance_push
+      exact_sha_ci: resolve_live_after_governance_push
       baseline_exact_sha_ci_run: 33707737979
       baseline_exact_sha_ci_head: 56cf00224c5d72360f629255338c2b8d4e0995c9
       baseline_exact_sha_ci_conclusion: completed_success

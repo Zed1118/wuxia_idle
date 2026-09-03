@@ -5,12 +5,12 @@
 ## 当前阶段
 ### 二阶段结果仪表盘（2026-09-03 M7 第八章工程迁移）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
-- **精确工程集成基线**：`main == origin/main == 56cf00224c5d72360f629255338c2b8d4e0995c9` 且主 checkout clean；第六、七章修正后内容 commit `afb5e013` 与治理尾已集成，exact-SHA CI run `33707737979` 为 `completed/success`，`macos-build`、格式、analyze、coverage tests 与 ratchet 均成功。
-- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第七章各 `5/5` 已集成，全主线 typed catalog 工程集成水位为 `36/105`；第八章五关已形成独立 `[READY]` 候选 `5/5`，候选水位 `41/105`，尚未合并不得计入集成水位。塔仍为 `0/49`，legacy runtime retirement 仍开放。
+- **精确工程集成基线**：第八章内容 tip `758a1cd6734399a33b9c611c893e3df289c9f4d1` 已 `--ff-only` 进入本地 `main` 且主 checkout clean；最终治理 tip、`origin/main` 与 exact-SHA CI 必须在推送后实时核验，不以本段预写猜测。
+- **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第八章各 `5/5` 已进入 main 受控集成链，全主线 typed catalog 本地工程集成水位为 `41/105`；塔仍为 `0/49`，legacy runtime retirement 仍开放。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及 M7 第二至第八章实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前唯一权威候选**：第八章五条真实生产路由已冻结等待 exact-tip 复核与受控集成；只复用已有西凉/门派/军阵 typed 生态，未改 `stages.yaml`、数值、技能、Boss、掉落、正文或规则；不重做 P0、不处理 `stage_02_05` 风险、不启动 M8/M9。
+- **当前唯一权威任务**：收口第八章 main 治理尾、推送与 exact-SHA CI；成功前不启动第九章施工，只做后续缺口基线准备。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
-- **前三阻塞**：① 第八章 `41/105` 仍是分支候选，未进入 main/CI；② M7 按已集成口径仍余主线 `69`（若候选集成则余 `64`）、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
+- **前三阻塞**：① 第八章本地 `41/105` 尚待治理尾、push 与 exact-SHA CI；② M7 仍余主线 `64`、塔 `49` 与 legacy consumer 退役；③ M2–M7 真人/Windows 挂账仍未关闭。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。
 - **详细证据**：第六、七章集成见 `docs/audit/phase2_m7_ch6_content_migration_2026-09-03.md`、`docs/audit/phase2_m7_ch7_content_migration_2026-09-03.md` 与 CI run `33707737979`；第八章候选见 `docs/audit/phase2_m7_ch8_content_migration_2026-09-03.md` 与执行合同 `docs/superpowers/plans/2026-09-03-p2-m7-ch8-content-migration.md`。
 

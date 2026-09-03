@@ -33,8 +33,8 @@
 
 ## 当前恢复点
 
-- 状态：`[READY]` 候选已冻结；第八章 `5/5`、全主线候选 `41/105`，但 main 集成水位仍为 `36/105`。
+- 状态：`[READY]` 内容 tip `758a1cd6734399a33b9c611c893e3df289c9f4d1` 已 `--ff-only` 进入本地 main；第八章 `5/5`、全主线本地集成水位 `41/105`，等待治理尾、push 与 exact-SHA CI。
 - 最后完成：五条 assignment、一个 encounter source、五组 runtime binding 与真实 factory/objective/reducer 动态闭环已建立；正文角色集合及两名灰衣 Boss 完整身份已锁定。
-- 下一步：对分支 exact tip 做独立 diff/Gate 复核；通过后才可 `--ff-only` 受控集成并跑 exact-main CI。本计划不自行 merge/push。
+- 下一步：提交 main 治理尾，复核 exact tip 后 push 并等待 exact-SHA CI；CI 成功后才建立第九章实时缺口基线。
 - 已跑验证：targeted `6/6`；第七、八章各 `6/6`；Phase 2 data `108/108`；mainline application `183/183`；analyze 零问题；format `1722` 文件零变更；持锁全量 `5917/5917`、`[E] 0`、锁已释放；测试契约门 `PASS`。标准 Gate 的 full/analyze/format/commit/clean 通过，原始终行仅为 `FAIL: forbidden_files,test_deletions`。三向 mutation 均精确转红并按 SHA-256 恢复。
-- 阻塞项：候选尚未进入 main/CI；真人桌面、视觉/音频/手感与 Windows 继续挂账，正式 M7/Phase 2 不关闭。
+- 阻塞项：本地 main 尚未推送并完成 exact-SHA CI；真人桌面、视觉/音频/手感与 Windows 继续挂账，正式 M7/Phase 2 不关闭。

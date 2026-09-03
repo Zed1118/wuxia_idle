@@ -4,7 +4,7 @@
 
 第八章 `stage_08_01..05` 的 StageDef 与 13 份正文原已完整，但 production assignment、encounter 与 runtime binding 均缺失。本批将实际缺口由 `0/5 → 5/5`，接入真实 repository、factory、runtime adapter、AI/director、objective 与 reducer 终局链，全主线 typed catalog 形成 `36/105 → 41/105` 的独立工程候选。
 
-该候选尚未进入 main/CI，因此集成水位仍为 `36/105`。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
+独立复核未发现 P0/P1 阻断后，内容 tip `758a1cd6734399a33b9c611c893e3df289c9f4d1` 已 `--ff-only` 进入本地 main，使本地工程集成水位达到 `41/105`；最终治理 tip、远端与 exact-SHA CI 需实时核验。正式 M7 仍开放，Phase 2 仍 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
 
 ## 生产接线与语义边界
 
@@ -49,4 +49,4 @@
 
 评审时必须以 `git rev-parse HEAD` 实时解析 exact tip。标准 Gate 原生拒绝了必须更新的 `PROGRESS.md` 与已由专用契约门登记的旧精确计数断言删除，原始终行为 `FAIL: forbidden_files,test_deletions`，不得改写为标准 Gate PASS；同轮 full test `5917/5917`、analyze、format、commit message 与 clean 均通过，scope whitelist 与 audit receipt 按规则跳过。最终 exact tip 仍须现场复核同一组结果。
 
-本分支按计划不自行 merge/push。工程候选不等于正式 M7 或真人验收；桌面实战、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
+内容候选经独立复核后已进入本地 main 受控集成链，push 与 CI 结论以最终 exact tip 的实时结果为准。工程集成不等于正式 M7 或真人验收；桌面实战、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
