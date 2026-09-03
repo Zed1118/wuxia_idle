@@ -62,10 +62,7 @@ const _expected = {
 
 const _bossCases = {
   'stage_15_04': ('ch15_encounter_04_desert_chieftain', 'ch15_s04_chieftain'),
-  'stage_15_05': (
-    'ch15_encounter_05_pass_old_general',
-    'ch15_s05_old_general',
-  ),
+  'stage_15_05': ('ch15_encounter_05_pass_old_general', 'ch15_s05_old_general'),
 };
 
 void main() {
