@@ -7286,11 +7286,13 @@ tasks:
     owner: codex_root
     branch: codex/p2-m7-ch15-content-migration-20260904
     worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
-    status: in_progress_candidate
+    status: implementation_verified_pending_exact_tip_gate
     current_authoritative_wip: true
     base_commit: ede300351fea236d29cd6cf1a8e83403f59ef415
     content_implementation_commit: 8bbad897
     test_contract_commit: e44b2f85
+    test_contract_ledger_commit: d1fcfef7
+    format_commit: 3a239a69
     completion_scope: migrate_chapter_15_mainline_stages_to_typed_production_catalog_and_runtime
     acceptance_target: chapter_15_5_of_5_and_mainline_catalog_integrated_71_of_105
     acceptance_result: chapter_15_5_of_5_candidate_targeted_verified_mainline_integrated_66_of_105_candidate_71_of_105
@@ -7314,6 +7316,7 @@ tasks:
       boss_identity_preserved: stage_15_04_and_stage_15_05
       initial_valid_red_tests: 0_of_6
       exact_behavior_role_contracts: 5_of_5
+      final_review_result: no_known_P0_or_P1
       remove_assignment_mutation_failures: 1
       wrong_base_enemy_mutation_failures: 1
       semantic_cast_mutation_failures: 2
@@ -7322,16 +7325,16 @@ tasks:
       restored_stage_assignment_sha256: 019403a558707523f3a86ff2b68c489ce2408d82a919936ed97b9bb2b180d2e5
       final_encounter_sha256: 1471eea2f077242fa22405e9a918a2066e4f7b701022a74031020525758c1778
       final_runtime_binding_sha256: 8817141110cbbd1ca99c806b6d7edd126bf943d827401217d7efadd6e4778736
-      final_test_sha256: 35d3e152834a10203e3be9f4ca02de7855598457e1d07b291a4ec7d636194fde
+      final_test_sha256: 650337ccb1d81aca01e60dab4b43caebfe7b2d554c2089680a1f1d04ff03e9cd
       focused_tests: 6_of_6
       chapter_14_and_15_adjacent_tests: 12_of_12
       mutation_status: three_directions_red_confirmed_and_exactly_restored
-      phase2_adjacent_tests: pending
-      mainline_application_tests: pending
-      test_contract_migration: pending
-      analyze: pending
-      format: pending
-      locked_full_test: pending
+      phase2_adjacent_tests: 144_of_144
+      mainline_application_tests: 183_of_183
+      test_contract_migration: pass_expect_deleted_1_added_32_cases_deleted_0_added_6_registered_1
+      analyze: no_issues_found_lib_test_tool
+      format: 1728_files_0_changed
+      locked_full_test: 5953_of_5953_error_blocks_0_all_tests_passed_lock_released
       standard_gate: pending
       human_desktop_acceptance: deferred_by_user
       visual_audio_feel_acceptance: deferred_by_user

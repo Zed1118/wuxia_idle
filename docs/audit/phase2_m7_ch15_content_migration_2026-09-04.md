@@ -26,7 +26,7 @@
 - 删除 `stage_15_01` assignment，loader 精确拒绝无 stage 引用的 encounter（1 条红）。
 - 将 `stage_15_05.base_enemy_id` 错绑为 15-04 基敌，runtime loader 精确拒绝与唯一 StageDef enemy template 不一致（1 条红）。
 - 将 15-03 actor ID 在 manifest、spawn 与 objective 中同步改名，结构保持闭包，但 exact actor 与 objective 语义合同精确 2 条红。
-- 三次均以反向补丁恢复；最终 SHA-256：manifest `08a4ace91bae22997804047fb04156691e4e8e4ee70b839e42883e7fa2528853`、assignments `019403a558707523f3a86ff2b68c489ce2408d82a919936ed97b9bb2b180d2e5`、encounter `1471eea2f077242fa22405e9a918a2066e4f7b701022a74031020525758c1778`、runtime `8817141110cbbd1ca99c806b6d7edd126bf943d827401217d7efadd6e4778736`、test `35d3e152834a10203e3be9f4ca02de7855598457e1d07b291a4ec7d636194fde`。
+- 三次均以反向补丁恢复；最终 SHA-256：manifest `08a4ace91bae22997804047fb04156691e4e8e4ee70b839e42883e7fa2528853`、assignments `019403a558707523f3a86ff2b68c489ce2408d82a919936ed97b9bb2b180d2e5`、encounter `1471eea2f077242fa22405e9a918a2066e4f7b701022a74031020525758c1778`、runtime `8817141110cbbd1ca99c806b6d7edd126bf943d827401217d7efadd6e4778736`、test `650337ccb1d81aca01e60dab4b43caebfe7b2d554c2089680a1f1d04ff03e9cd`。
 
 ## 当前验证
 
@@ -35,10 +35,16 @@
 | 第十五章 targeted | `6/6` |
 | 第十四、十五章 adjacent | `12/12` |
 | 三向 mutation | `1/1/2` 条精确转红，全部恢复 |
-| Phase 2 data / mainline application / analyze / format / full / Gate | 待批末验证 |
+| Phase 2 data | `144/144`，异常块 `0` |
+| mainline application | `183/183` |
+| `flutter analyze --no-pub lib test tool` | `No issues found` |
+| `dart format .` | `1728 files (0 changed)` |
+| 持锁整仓 `flutter test --no-pub` | `5953/5953`，异常块 `0`，`All tests passed!`，锁已释放 |
+| 测试契约迁移门 | `expect 删 1 / 增 32；用例删 0 / 增 6；登记 1`，`PASS` |
+| 标准 Gate | 待候选冻结后运行 |
 
 第十四章旧测试的全局精确水位 `66` 改为已集成下限 `>=66`，第十五章新测试精确守住候选水位 `71`。删除登记在 `p2-m7-ch15-content-migration-20260904.yaml`；标准 Gate 将按原始结果如实记录。
 
 ## 提交与验收边界
 
-内容实现为 `8bbad897`，旧合同迁移为 `e44b2f85`。主代理将继续复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界；分支内绿色测试或 `[READY]` 都不等于正式 M7、Phase 2 或真人验收。
+内容实现为 `8bbad897`，旧合同迁移为 `e44b2f85`，测试契约登记为 `d1fcfef7`，格式收口为 `3a239a69`。主代理已复核实际 diff、五组 production consumer、StageDef 基敌与冻结 spec 单敌边界，当前无已知 P0/P1；分支内绿色测试或 `[READY]` 都不等于正式 M7、Phase 2 或真人验收。
