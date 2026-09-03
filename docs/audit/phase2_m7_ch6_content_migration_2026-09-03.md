@@ -2,7 +2,7 @@
 
 ## 结论
 
-第六章 `stage_06_01..05` 已在候选分支接入真实 typed production catalog、encounter factory、runtime binding、enemy AI/director、objective 与 reducer 终局链。候选水位由全主线 `28/105` 提升至 `33/105`；第六章五关为工程候选 `5/5`，正式 M7 仍开放，未进入 `main`/`origin/main`，未声称真人、视觉、音频、手感或 Windows 验收。
+第六章 `stage_06_01..05` 已接入真实 typed production catalog、encounter factory、runtime binding、enemy AI/director、objective 与 reducer 终局链，并随第七章叠加修正 commit `afb5e013d5a17c24819b15d991c02930521ca874` 以 `--ff-only` 进入本地 `main`。全主线工程集成水位由 `28/105` 提升至 `36/105`；正式 M7 仍开放，未声称真人、视觉、音频、手感或 Windows 验收。
 
 ## 生产接线核对
 
@@ -49,4 +49,6 @@
 
 治理尾 `b63a8155` 的完整区间复跑确认 full/analyze/format/commit_msg/worktree_clean 通过，但原生 `forbidden_files` 如实命中项目要求更新的 `PROGRESS.md`，并仍有已登记的 `test_deletions=1`；所以该轮原始判决是 `FAIL: forbidden_files,test_deletions`，不得改写成脚本原生 PASS。后续 `e357c4c3` 仅补写收据说明，未取得 exact-tip Gate；当前 tip 必须在评审时用 `git rev-parse` 实时解析，本文不再写死会被下一次文档提交立即作废的“最终 tip”。
 
-本审计不把工程候选、自动化测试、READY 或 c75 的历史 CI 当成正式 M7 或人类验收。正式 Phase 2 仍为 `1/10`；塔为 `0/49`，legacy runtime consumer 退役仍开放。未经用户授权不 merge、不 push；真人桌面、视觉/音频/手感和 Windows 继续 `DEFERRED`。
+用户已授权按建议顺序受控集成。修正后候选的 exact-tip 标准 Gate 完整通过 full test（`5911/5911`、`[E] 0`）、analyze、format、commit message 与 worktree clean；原始终行仍是 `FAIL: forbidden_files,test_deletions`，分别对应必更新的 `PROGRESS.md` 与已由专用契约门登记的旧精确计数断言删除，不将其改写为标准 Gate PASS。
+
+工程集成不等于正式 M7 或人类验收。正式 Phase 2 仍为 `1/10`；塔为 `0/49`，legacy runtime consumer 退役仍开放；真人桌面、视觉/音频/手感和 Windows 继续 `DEFERRED`。最终 `origin/main` 与 exact-SHA CI 在收口时实时核验，不用历史 c75 CI 代替。

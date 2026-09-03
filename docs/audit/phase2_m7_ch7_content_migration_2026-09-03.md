@@ -2,9 +2,9 @@
 
 ## 结论
 
-第七章原有 `stage_07_01/04` 两条 typed production route；本批将实际缺口 `stage_07_02/03/05` 接入 production catalog、encounter factory、runtime binding、enemy AI/director、objective 与 reducer 终局链，使本章候选水位由 `2/5 → 5/5`，全主线候选由 `33/105 → 36/105`。
+第七章原有 `stage_07_01/04` 两条 typed production route；本批将实际缺口 `stage_07_02/03/05` 接入 production catalog、encounter factory、runtime binding、enemy AI/director、objective 与 reducer 终局链，使本章由 `2/5 → 5/5`。叠加第六章的语义修正 commit `afb5e013d5a17c24819b15d991c02930521ca874` 已 `--ff-only` 进入本地 `main`，全主线工程集成水位由 `28/105 → 36/105`。
 
-这是叠加在第六章之上的本地工程候选；`main == origin/main == c75a57c7` 的已集成口径仍为 `28/105`。正式 M7 仍开放，Phase 2 仍为 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
+正式 M7 仍开放，Phase 2 仍为 `1/10`，塔 `0/49`，legacy runtime consumer 退役未完成。
 
 ## 生产接线
 
@@ -47,4 +47,6 @@
 
 本批实现 commit 为 `1d5b9f8ab6997940e332d563e9fdb1bfcd0bdf42`，基线为第六章证据纠偏 commit `5aac9f5c5d2a6215e37f9030e87beb83d4bc5c96`。治理文档不写死会被下一次提交立即作废的“最终 tip”；评审时必须用 `git rev-parse HEAD` 实时解析，并查看该 exact tip 的标准 Gate 原始终行。项目 Gate 会原生拒绝必须更新的 `PROGRESS.md` 以及已被专用契约门登记的旧精确计数断言删除；若命中，必须按原始 `FAIL` 报告，不得改写为脚本 PASS。
 
-本审计只支持工程候选结论。未 merge、未 push、无远端 exact-SHA CI；真人桌面实战、视觉、音频、手感和 Windows 均继续 `DEFERRED`。
+用户已授权按建议顺序受控集成。修正后候选的 exact-tip 标准 Gate 完整通过 full test（`5911/5911`、`[E] 0`）、analyze、format、commit message 与 worktree clean；原始终行仍是 `FAIL: forbidden_files,test_deletions`，分别对应必更新的 `PROGRESS.md` 与已由专用契约门登记的旧精确计数断言删除，不将其改写为标准 Gate PASS。
+
+工程集成不等于正式 M7 或人类验收。最终 `origin/main` 与 exact-SHA CI 在收口时实核；真人桌面实战、视觉、音频、手感和 Windows 均继续 `DEFERRED`。
