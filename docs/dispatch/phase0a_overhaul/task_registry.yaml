@@ -7469,10 +7469,19 @@ tasks:
     milestone: M7
     owner: codex_root
     status: in_progress
-    current_authoritative_wip: false
+    current_authoritative_wip: true
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
     acceptance_result: mainline_76_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
+    evidence:
+      next_complete_mainline_batch: chapter_17_stage_17_01_through_17_05
+      next_mainline_target: 81_of_105
+      remaining_sequence_after_chapter_17: chapter_18_chapter_19_chapter_20_chapter_21_then_chapter_13_decision_audit
+      chapter_13_status: isolated_pending_ecology_boundary_decision
+      tower_foundation_before_denominator_increment: multi_enemy_runtime_binding_guardian_id_translation_and_three_production_entrypoints
+      tower_foundation_counts_as_migrated_floor: false
+      legacy_production_seams: two_mainline_null_fallbacks_and_three_tower_direct_mapper_paths
+      next_batch_audit: docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE

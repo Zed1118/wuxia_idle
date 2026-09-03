@@ -8,11 +8,11 @@
 - **精确工程集成基线**：第十六章内容候选 `5f5c80069acaf14c209f3967850856bb48a5e510` 经 no-ff merge `8c5d9fdb5e4e534a6b185588d206bc5aafd72d3b` 进入 `main` 与 `origin/main`；该 merge exact-SHA CI run `33809487636` 为 `completed/success`，test、macOS build、codegen、格式、analyze、coverage tests、ratchet 与上传均成功。
 - **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 均已进入 `origin/main`。M7 第二至第十二章、第十四至第十六章各 `5/5`、第十三章 `1/5` 已集成，全主线 typed catalog 工程集成水位为 `76/105`。塔仍为 `0/49`，legacy runtime retirement 仍开放。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及已迁移主线实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜。
-- **当前唯一权威任务**：第十六章工程迁移已收口；下一步只做非竞争章节的限时只读审计，不按章节顺序盲选。第十三章既有 25-actor 路径与正文冲突继续隔离。本批未改既有 StageDef、基础数值、技能定义、Boss、掉落、正文或规则。
+- **当前唯一权威任务**：下一完整工程门固定为第十七章 `stage_17_01..05`，目标 `76/105 → 81/105`；其后按 `18 → 19 → 20 → 21` 推进。第十三章既有 25-actor 路径与其余单敌合同的生态边界继续隔离；塔须先关闭多敌绑定、护法 ID 翻译与三生产入口同源的基础门，该基础门不增加 `0/49` 分子。
 - **M0 开放决策**：decision registry 仍有 20 条 `tuning`、1 条 `deferred_pending_matrix`、1 条 `partially_reopened`；涉及生产战斗数值或规则时仍按授权边界处理。
 - **前三阻塞**：① M7 仍余主线 `29`；② 塔 `49` 与 legacy consumer 退役仍未完成；③ 真人桌面、视觉/音频/手感及 Windows 继续挂账。
 - **治理约束**：正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计；工程候选、测试数量、文档与 READY 不计正式里程碑。
-- **详细证据**：第十五章见 `docs/audit/phase2_m7_ch15_content_migration_2026-09-04.md` 与 CI run `33800564328`；第十六章见 `docs/audit/phase2_m7_ch16_content_migration_2026-09-04.md`、执行合同 `docs/superpowers/plans/2026-09-04-p2-m7-ch16-content-migration.md` 与 CI run `33809487636`。
+- **详细证据**：第十六章见 `docs/audit/phase2_m7_ch16_content_migration_2026-09-04.md`、执行合同 `docs/superpowers/plans/2026-09-04-p2-m7-ch16-content-migration.md` 与治理尾 CI run `33811930886`；下一批排序、塔基础门与五处 legacy 接缝见 `docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md`。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。
