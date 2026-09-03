@@ -183,3 +183,18 @@ stage_assignments:
   - stage_id: stage_12_05
     migration_state: migrated
     encounter_id: ch12_encounter_05_huangcun_nameless
+  - stage_id: stage_14_01
+    migration_state: migrated
+    encounter_id: ch14_encounter_01_mountain_messenger
+  - stage_id: stage_14_02
+    migration_state: migrated
+    encounter_id: ch14_encounter_02_inn_vanguard
+  - stage_id: stage_14_03
+    migration_state: migrated
+    encounter_id: ch14_encounter_03_forest_swordsman
+  - stage_id: stage_14_04
+    migration_state: migrated
+    encounter_id: ch14_encounter_04_drill_deputy
+  - stage_id: stage_14_05
+    migration_state: migrated
+    encounter_id: ch14_encounter_05_peak_mounted_master
