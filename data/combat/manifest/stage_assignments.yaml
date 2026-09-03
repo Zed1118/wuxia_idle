@@ -168,3 +168,18 @@ stage_assignments:
   - stage_id: stage_11_05
     migration_state: migrated
     encounter_id: ch11_encounter_05_liujin_master
+  - stage_id: stage_12_01
+    migration_state: migrated
+    encounter_id: ch12_encounter_01_hanjiang_boatman
+  - stage_id: stage_12_02
+    migration_state: migrated
+    encounter_id: ch12_encounter_02_huaixiang_boxer
+  - stage_id: stage_12_03
+    migration_state: migrated
+    encounter_id: ch12_encounter_03_qiushan_porter
+  - stage_id: stage_12_04
+    migration_state: migrated
+    encounter_id: ch12_encounter_04_laotie_blacksmith
+  - stage_id: stage_12_05
+    migration_state: migrated
+    encounter_id: ch12_encounter_05_huangcun_nameless

@@ -23,6 +23,7 @@ encounter_sources:
   - data/combat/encounters/chapter_09_qibei.yaml
   - data/combat/encounters/chapter_10_zhongzhou.yaml
   - data/combat/encounters/chapter_11_mingmen.yaml
+  - data/combat/encounters/chapter_12_mingxia.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -743,6 +744,11 @@ reference_index:
     - ch11_s03_merchant
     - ch11_s04_swordmaster
     - ch11_s05_liujin_master
+    - ch12_s01_boatman
+    - ch12_s02_boxer
+    - ch12_s03_porter
+    - ch12_s04_blacksmith
+    - ch12_s05_nameless
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
