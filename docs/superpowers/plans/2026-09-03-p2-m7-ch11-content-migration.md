@@ -34,3 +34,10 @@
 2. 增加五条 assignment、一个 encounter source 与五组 runtime binding，只复用既有 typed 生态。
 3. 跑 targeted、语义变异、相邻回归和批末验证。
 4. 刷新治理证据；仅在集成授权边界持续成立时受控合入并核 exact-SHA CI。
+
+## 当前恢复点
+
+- 状态：第十一章候选已完成生产接线、变异恢复与批末自动化验证；main 集成水位仍为 `51/105`，候选为 `56/105`。
+- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十/十一章 `12/12`；Phase 2 data `126/126`；mainline application `183/183`；analyze/format 通过；持锁全量 `5935/5935`、异常块 `0`；测试契约迁移门 `PASS`。
+- 下一步：提交当前治理证据，运行 exact-tip 标准 Gate；未发生的 merge、push 与 CI 不预写。
+- 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
