@@ -213,3 +213,18 @@ stage_assignments:
   - stage_id: stage_15_05
     migration_state: migrated
     encounter_id: ch15_encounter_05_pass_old_general
+  - stage_id: stage_16_01
+    migration_state: migrated
+    encounter_id: ch16_encounter_01_farewell_veteran
+  - stage_id: stage_16_02
+    migration_state: migrated
+    encounter_id: ch16_encounter_02_blackstone_keeper
+  - stage_id: stage_16_03
+    migration_state: migrated
+    encounter_id: ch16_encounter_03_xiliang_traveler
+  - stage_id: stage_16_04
+    migration_state: migrated
+    encounter_id: ch16_encounter_04_desert_cavalry_general
+  - stage_id: stage_16_05
+    migration_state: migrated
+    encounter_id: ch16_encounter_05_frontier_gatekeeper
