@@ -7281,6 +7281,80 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH15-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch15-content-migration-20260904
+    worktree: /Users/a10506/.codex/worktrees/728d/挂机武侠
+    status: in_progress_candidate
+    current_authoritative_wip: true
+    base_commit: ede300351fea236d29cd6cf1a8e83403f59ef415
+    content_implementation_commit: 8bbad897
+    test_contract_commit: e44b2f85
+    completion_scope: migrate_chapter_15_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_15_5_of_5_and_mainline_catalog_integrated_71_of_105
+    acceptance_result: chapter_15_5_of_5_candidate_targeted_verified_mainline_integrated_66_of_105_candidate_71_of_105
+    evidence:
+      mainline_catalog_integrated: 66_of_105
+      mainline_catalog_candidate: 71_of_105
+      chapter_15_before: 0_of_5
+      production_stage_defs: 5_of_5
+      authored_narratives: 13_files_complete_including_1_chapter_and_12_stage_files
+      authored_enemy_icons: 5_of_5_present
+      frozen_design: five_authored_singleton_encounters
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      authored_cast_sizes: 1_1_1_1_1
+      production_active_limits: 1_1_1_1_1
+      single_target_routes: stage_15_01_stage_15_02_stage_15_03
+      boss_identity_routes: stage_15_04_and_stage_15_05
+      boss_identity_preserved: stage_15_04_and_stage_15_05
+      initial_valid_red_tests: 0_of_6
+      exact_behavior_role_contracts: 5_of_5
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 2
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      restored_manifest_sha256: 08a4ace91bae22997804047fb04156691e4e8e4ee70b839e42883e7fa2528853
+      restored_stage_assignment_sha256: 019403a558707523f3a86ff2b68c489ce2408d82a919936ed97b9bb2b180d2e5
+      final_encounter_sha256: 1471eea2f077242fa22405e9a918a2066e4f7b701022a74031020525758c1778
+      final_runtime_binding_sha256: 8817141110cbbd1ca99c806b6d7edd126bf943d827401217d7efadd6e4778736
+      final_test_sha256: 35d3e152834a10203e3be9f4ca02de7855598457e1d07b291a4ec7d636194fde
+      focused_tests: 6_of_6
+      chapter_14_and_15_adjacent_tests: 12_of_12
+      mutation_status: three_directions_red_confirmed_and_exactly_restored
+      phase2_adjacent_tests: pending
+      mainline_application_tests: pending
+      test_contract_migration: pending
+      analyze: pending
+      format: pending
+      locked_full_test: pending
+      standard_gate: pending
+      human_desktop_acceptance: deferred_by_user
+      visual_audio_feel_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - PROGRESS.md
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_15_guanshan.yaml
+      - test/data/phase2/ch14_content_migration_test.dart
+      - test/data/phase2/ch15_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch15-content-migration-20260904.yaml
+      - docs/superpowers/plans/2026-09-04-p2-m7-ch15-content-migration.md
+      - docs/audit/phase2_m7_ch15_content_migration_2026-09-04.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_chapter_13_or_chapter_16_and_later_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
