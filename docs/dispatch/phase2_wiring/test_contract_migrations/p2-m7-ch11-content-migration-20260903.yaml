@@ -1,7 +1,7 @@
 schema_version: 1
 ticket: p2-m7-ch11-content-migration-20260903
 base_sha: 0172263ed25dba8ad83fa75de3c766d8a87e6c15
-head_sha: 5743f0e4fb776c8d4ccd66639405668782041e9a
+head_sha: e14c57d120fde1f3ae81f2e8db548446ee50937e
 summary: 第十章测试保留已集成的 51 条主线下限；第十一章测试独立精确守住 56 条候选水位。
 
 migrations:

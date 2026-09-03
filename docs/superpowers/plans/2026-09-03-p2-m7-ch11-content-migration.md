@@ -4,7 +4,7 @@
 
 - 单一结果：把既有 `stage_11_01..05` 五关接入 typed production catalog、runtime binding 与 production encounter factory，第十一章工程水位 `0/5 → 5/5`。
 - 固定分母：全主线 typed production catalog `51/105 → 56/105`；塔保持 `0/49`，legacy runtime retirement 仍开放，正式 Phase 2 保持 `1/10`。
-- 实时基线：分支 `codex/p2-m7-ch11-content-migration-20260903` 建于 `main == origin/main == 0172263ed25dba8ad83fa75de3c766d8a87e6c15`；该 SHA 的 CI run `33760236939` 为 `completed/success`。
+- 实时基线：分支 `codex/p2-m7-ch11-content-migration-20260903-cn` 建于 `main == origin/main == 0172263ed25dba8ad83fa75de3c766d8a87e6c15`；该 SHA 的 CI run `33760236939` 为 `completed/success`。
 - 关键阻塞：五关 StageDef 与 13 份正文完整，但 assignment、encounter、runtime binding 与 factory route 均缺失。
 - 成本上限：只处理本章 5 条真实缺口；约 90 分钟无 `51 → 56` 可验证增量则停线重评。
 
@@ -34,3 +34,10 @@
 2. 增加五条 assignment、一个 encounter source 与五组 runtime binding，只复用既有 typed 生态。
 3. 跑 targeted、语义变异、相邻回归和批末验证。
 4. 刷新治理证据；仅在集成授权边界持续成立时受控合入并核 exact-SHA CI。
+
+## 当前恢复点
+
+- 状态：第十一章候选已完成生产接线、变异恢复与批末自动化验证；main 集成水位仍为 `51/105`，候选为 `56/105`。
+- 已跑验证：有效 RED `0/6`；定向 `6/6`；第十/十一章 `12/12`；Phase 2 data `126/126`；mainline application `183/183`；analyze/format 通过；持锁全量 `5935/5935`、异常块 `0`；测试契约迁移门 `PASS`。
+- 下一步：提交当前治理证据，运行 exact-tip 标准 Gate；未发生的 merge、push 与 CI 不预写。
+- 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
