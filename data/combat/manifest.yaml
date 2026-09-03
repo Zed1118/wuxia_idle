@@ -20,6 +20,7 @@ encounter_sources:
   - data/combat/encounters/chapter_05_zhengdong.yaml
   - data/combat/encounters/chapter_06_ascension.yaml
   - data/combat/encounters/chapter_08_frontier.yaml
+  - data/combat/encounters/chapter_09_qibei.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -720,6 +721,16 @@ reference_index:
     - ch8_s04_guard_03
     - ch8_s04_guard_04
     - ch8_s05_grey_cloak
+    - ch9_s01_leader_01
+    - ch9_s01_companion_01
+    - ch9_s01_companion_02
+    - ch9_s01_companion_03
+    - ch9_s02_leader_01
+    - ch9_s02_flank_01
+    - ch9_s02_flank_02
+    - ch9_s03_mirage
+    - ch9_s04_gatekeeper
+    - ch9_s05_old_master
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

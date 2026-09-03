@@ -1,0 +1,76 @@
+# Production Chapter 9 Qibei routes. Cast sizes follow the authored prose.
+encounters:
+  - id: ch9_encounter_01_pass_bandits
+    spawn_config:
+      active_limit: 3
+      reinforcement_threshold: 0
+      entry_warning_ticks: 18
+      attack_grace_ticks: 10
+    token_budgets: {melee: 4, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch9_s01_leader_01, archetype_id: ch1_bandits, role_id: bandit_blade, entrance_id: ch1_entrance_s01_road_west, position_id: ch1_position_s01_slot_01, behavior_id: ch1_behavior_blade_press}
+      - {entry_id: ch9_s01_companion_01, archetype_id: ch1_bandits, role_id: bandit_blade, entrance_id: ch1_entrance_s01_road_ridge, position_id: ch1_position_s01_slot_02, behavior_id: ch1_behavior_blade_press}
+      - {entry_id: ch9_s01_companion_02, archetype_id: ch1_bandits, role_id: bandit_blade, entrance_id: ch1_entrance_s01_road_exit, position_id: ch1_position_s01_slot_03, behavior_id: ch1_behavior_blade_press}
+      - {entry_id: ch9_s01_companion_03, archetype_id: ch1_bandits, role_id: bandit_blade, entrance_id: ch1_entrance_s01_road_west, position_id: ch1_position_s01_slot_04, behavior_id: ch1_behavior_blade_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch9_s01_defeat_bandits, kind: defeat_targets, target_ids: [ch9_s01_leader_01, ch9_s01_companion_01, ch9_s01_companion_02, ch9_s01_companion_03]}
+
+  - id: ch9_encounter_02_bone_dunes
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 18
+      attack_grace_ticks: 10
+    token_budgets: {melee: 3, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch9_s02_leader_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_left, position_id: ch4_position_s01_slot_01, behavior_id: ch4_behavior_sand_blade}
+      - {entry_id: ch9_s02_flank_01, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_upper, position_id: ch4_position_s01_slot_02, behavior_id: ch4_behavior_sand_blade}
+      - {entry_id: ch9_s02_flank_02, archetype_id: ch4_xiliang, role_id: xiliang_sand_blade, entrance_id: ch4_entrance_s01_right, position_id: ch4_position_s01_slot_03, behavior_id: ch4_behavior_sand_blade}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch9_s02_defeat_raiders, kind: defeat_targets, target_ids: [ch9_s02_leader_01, ch9_s02_flank_01, ch9_s02_flank_02]}
+
+  - id: ch9_encounter_03_mirage
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch9_s03_mirage, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch9_s03_dispel_mirage, kind: defeat_targets, target_ids: [ch9_s03_mirage]}
+
+  - id: ch9_encounter_04_cliff_guardian
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch9_s04_gatekeeper, archetype_id: ch7_army, role_id: army_shield, entrance_id: ch7_entrance_s01_gate, position_id: ch7_position_s01_slot_01, behavior_id: ch7_behavior_shield_wall}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch9_s04_defeat_gatekeeper, kind: defeat_commander, commander_id: ch9_s04_gatekeeper}
+
+  - id: ch9_encounter_05_old_master
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch9_s05_old_master, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch9_s05_defeat_old_master, kind: defeat_commander, commander_id: ch9_s05_old_master}

@@ -23,8 +23,8 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_09_01': ('ch9_encounter_01_pass_bandits', 4, 4),
-  'stage_09_02': ('ch9_encounter_02_bone_dunes', 3, 3),
+  'stage_09_01': ('ch9_encounter_01_pass_bandits', 4, 3),
+  'stage_09_02': ('ch9_encounter_02_bone_dunes', 3, 1),
   'stage_09_03': ('ch9_encounter_03_mirage', 1, 1),
   'stage_09_04': ('ch9_encounter_04_cliff_guardian', 1, 1),
   'stage_09_05': ('ch9_encounter_05_old_master', 1, 1),

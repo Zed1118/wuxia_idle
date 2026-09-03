@@ -123,3 +123,18 @@ stage_assignments:
   - stage_id: stage_08_05
     migration_state: migrated
     encounter_id: ch8_encounter_05_grey_cloak_final
+  - stage_id: stage_09_01
+    migration_state: migrated
+    encounter_id: ch9_encounter_01_pass_bandits
+  - stage_id: stage_09_02
+    migration_state: migrated
+    encounter_id: ch9_encounter_02_bone_dunes
+  - stage_id: stage_09_03
+    migration_state: migrated
+    encounter_id: ch9_encounter_03_mirage
+  - stage_id: stage_09_04
+    migration_state: migrated
+    encounter_id: ch9_encounter_04_cliff_guardian
+  - stage_id: stage_09_05
+    migration_state: migrated
+    encounter_id: ch9_encounter_05_old_master
