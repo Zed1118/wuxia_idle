@@ -42,7 +42,7 @@
 | `dart format .` | `1723 files (0 changed)` |
 | 持锁整仓 `flutter test --no-pub -r expanded` | 合入复核修复后重跑 `5923/5923`，`[E] 0`，`All tests passed!` |
 | full-test lock | 修复后以独占目录锁执行并自动释放，结束后确认锁不存在 |
-| 测试契约迁移门 | `expect 删 1 / 增 29；用例删 0 / 增 6；登记 1`；`PASS` |
+| 测试契约迁移门 | `expect 删 1 / 增 35；用例删 0 / 增 6；登记 1`；`PASS` |
 
 第八章旧测试的全局精确水位 `41` 改为已集成下限 `>=41`，第九章新测试以精确 `46` 守住本批增量。删除已逐条登记在 `p2-m7-ch9-content-migration-20260903.yaml`，专用机器门核对通过。
 

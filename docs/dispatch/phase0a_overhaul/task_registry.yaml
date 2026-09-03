@@ -6775,7 +6775,7 @@ tasks:
       analyze: no_issues_found_lib_test_tool
       format: 1722_files_0_changed
       locked_full_test: 5917_of_5917_error_blocks_0_lock_released
-      test_contract_migration: pass_expect_deleted_1_added_29_cases_deleted_0_added_6_registered_1
+      test_contract_migration: pass_expect_deleted_1_added_35_cases_deleted_0_added_6_registered_1
       ready_tip_resolution: resolve_branch_tip_live_at_review_time
       exact_tip_standard_gate: fail_forbidden_files_PROGRESS_md_and_registered_test_deletions_1_other_items_pass_or_expected_skip
       integration_content_commit: 758a1cd6734399a33b9c611c893e3df289c9f4d1
