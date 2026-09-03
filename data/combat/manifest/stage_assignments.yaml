@@ -153,3 +153,18 @@ stage_assignments:
   - stage_id: stage_10_05
     migration_state: migrated
     encounter_id: ch10_encounter_05_stillwater_master
+  - stage_id: stage_11_01
+    migration_state: migrated
+    encounter_id: ch11_encounter_01_xudu_swordsman
+  - stage_id: stage_11_02
+    migration_state: migrated
+    encounter_id: ch11_encounter_02_jinding_disciple
+  - stage_id: stage_11_03
+    migration_state: migrated
+    encounter_id: ch11_encounter_03_luoyang_merchant
+  - stage_id: stage_11_04
+    migration_state: migrated
+    encounter_id: ch11_encounter_04_yujing_swordmaster
+  - stage_id: stage_11_05
+    migration_state: migrated
+    encounter_id: ch11_encounter_05_liujin_master
