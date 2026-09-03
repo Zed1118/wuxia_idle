@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch10-content-migration-20260903
+base_sha: 7c5517e8863a19f10adfd53735e710a61759675b
+head_sha: 6135123a82d38df31c817c65e68d8ac84d693d3b
+summary: 第九章测试保留已集成的 46 条主线下限；第十章测试独立精确守住 51 条候选水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 46);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(46));
+    reason: 第九章测试只守住已集成的 46 条下限，不能阻断第十章五关及后续章节；第十章新测试另以精确等于 51 防止本批少接或多接。

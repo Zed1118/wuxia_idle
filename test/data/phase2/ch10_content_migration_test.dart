@@ -23,29 +23,52 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_09_01': ('ch9_encounter_01_pass_bandits', 4, 3),
-  'stage_09_02': ('ch9_encounter_02_bone_dunes', 3, 3),
-  'stage_09_03': ('ch9_encounter_03_mirage', 1, 1),
-  'stage_09_04': ('ch9_encounter_04_cliff_guardian', 1, 1),
-  'stage_09_05': ('ch9_encounter_05_old_master', 1, 1),
-};
-
-const _narrativeActorIds = {
-  'stage_09_01': {
-    'ch9_s01_leader_01',
-    'ch9_s01_companion_01',
-    'ch9_s01_companion_02',
-    'ch9_s01_companion_03',
-  },
-  'stage_09_02': {'ch9_s02_leader_01', 'ch9_s02_flank_01', 'ch9_s02_flank_02'},
-  'stage_09_03': {'ch9_s03_mirage'},
-  'stage_09_04': {'ch9_s04_gatekeeper'},
-  'stage_09_05': {'ch9_s05_old_master'},
+  'stage_10_01': (
+    'ch10_encounter_01_hetao_swordsman',
+    'ch10_s01_swordsman',
+    TechniqueSchool.gangMeng,
+    'ch2_attack_set_outer',
+    'sect_outer',
+  ),
+  'stage_10_02': (
+    'ch10_encounter_02_yanmen_wanderer',
+    'ch10_s02_wanderer',
+    TechniqueSchool.lingQiao,
+    'ch2_attack_set_hidden_weapon',
+    'sect_hidden_weapon',
+  ),
+  'stage_10_03': (
+    'ch10_encounter_03_luoshui_reflection',
+    'ch10_s03_reflection',
+    TechniqueSchool.yinRou,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
+  ),
+  'stage_10_04': (
+    'ch10_encounter_04_songyang_gatekeeper',
+    'ch10_s04_gatekeeper',
+    TechniqueSchool.gangMeng,
+    'ch7_attack_set_shield',
+    'army_shield',
+  ),
+  'stage_10_05': (
+    'ch10_encounter_05_stillwater_master',
+    'ch10_s05_stillwater_master',
+    TechniqueSchool.yinRou,
+    'ch7_attack_set_shield',
+    'army_shield',
+  ),
 };
 
 const _bossCases = {
-  'stage_09_04': ('ch9_encounter_04_cliff_guardian', 'ch9_s04_gatekeeper'),
-  'stage_09_05': ('ch9_encounter_05_old_master', 'ch9_s05_old_master'),
+  'stage_10_04': (
+    'ch10_encounter_04_songyang_gatekeeper',
+    'ch10_s04_gatekeeper',
+  ),
+  'stage_10_05': (
+    'ch10_encounter_05_stillwater_master',
+    'ch10_s05_stillwater_master',
+  ),
 };
 
 void main() {
@@ -60,9 +83,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 9 exposes five of five migrated production routes', () {
+  test('Chapter 10 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 9)
+        .where((stage) => stage.chapterIndex == 10)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -84,49 +107,53 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(46));
+    expect(migratedMainlineCount, 51);
   });
 
-  test('Chapter 9 routes match the authored cast and runtime identities', () {
-    for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
-      final stage = repository.getStage(stageId);
-      final assignment = repository.combatAssignmentForStage(stageId);
-      final encounter = repository.combatEncounterForStage(stageId);
-      final runtime = repository.combatRuntimeBindingForStage(stageId);
-      expect(assignment?.encounterId, contract.$1, reason: stageId);
-      expect(encounter?.spawnEntries, hasLength(contract.$2), reason: stageId);
-      expect(encounter?.spawnConfig.activeLimit, contract.$3, reason: stageId);
-      expect(
-        encounter?.spawnEntries.map((entry) => entry.entryId).toSet(),
-        _narrativeActorIds[stageId],
-        reason: '$stageId must match the authored narrative cast',
-      );
-      expect(runtime?.baseEnemyId, stage.enemyTeam.single.id, reason: stageId);
-      expect(runtime?.enemyBindings, hasLength(contract.$2), reason: stageId);
-    }
+  test(
+    'Chapter 10 routes retain authored singleton identities and ecology',
+    () {
+      for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
+        final stage = repository.getStage(stageId);
+        final assignment = repository.combatAssignmentForStage(stageId);
+        final encounter = repository.combatEncounterForStage(stageId);
+        final runtime = repository.combatRuntimeBindingForStage(stageId);
+        expect(assignment?.encounterId, contract.$1, reason: stageId);
+        expect(encounter?.spawnEntries, hasLength(1), reason: stageId);
+        expect(encounter?.spawnConfig.activeLimit, 1, reason: stageId);
+        expect(
+          encounter?.spawnEntries.single.entryId,
+          contract.$2,
+          reason: '$stageId must match the authored singleton opponent',
+        );
+        expect(
+          encounter?.spawnEntries.single.roleId,
+          contract.$5,
+          reason: '$stageId must retain the reviewed behavior role',
+        );
+        expect(
+          runtime?.baseEnemyId,
+          stage.enemyTeam.single.id,
+          reason: stageId,
+        );
+        expect(runtime?.enemyBindings, hasLength(1), reason: stageId);
 
-    final duneEncounter = repository.combatEncounterForStage('stage_09_02')!;
-    expect(duneEncounter.spawnConfig.activeLimit, 3);
-    expect(duneEncounter.spawnConfig.attackGraceTicks, 30);
-    expect(duneEncounter.tokenBudgets.melee, 1);
+        final bundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+          stageId: stageId,
+          encounterId: contract.$1,
+          cycleIndex: 1,
+          repository: repository,
+        );
+        final target = bundle.actorBindingsByEntryId[contract.$2]!;
+        expect(target.combatant.school, contract.$3, reason: stageId);
+        expect(target.attackSet, contract.$4, reason: stageId);
+      }
+    },
+  );
 
-    final mirageBundle = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
-      stageId: 'stage_09_03',
-      encounterId: 'ch9_encounter_03_mirage',
-      cycleIndex: 1,
-      repository: repository,
-    );
-    final mirage = mirageBundle.actorBindingsByEntryId['ch9_s03_mirage']!;
-    expect(mirage.combatant.school, TechniqueSchool.yinRou);
-    expect(mirage.attackSet, 'ch2_attack_set_lightfoot');
-    expect(mirage.combatant.availableSkills.map((skill) => skill.id), [
-      'skill_yinrou_jichu_basic',
-    ]);
-  });
-
-  test('Chapter 9 routes construct through the real factory', () async {
+  test('Chapter 10 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
-    for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
+    for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
         Phase0aMainlineEncounterHostBuildRequest(
           stage: repository.getStage(stageId),
@@ -139,27 +166,24 @@ void main() {
         ),
       );
       expect(host, isNotNull, reason: stageId);
-      expect(host!.mapping!.combatants, hasLength(contract.$2 + 1));
-      expect(host.mapping!.director.config.activeLimit, contract.$3);
-      expect(host.tokenBindingsByActorId, hasLength(contract.$2));
+      expect(host!.mapping!.combatants, hasLength(2), reason: stageId);
+      expect(host.mapping!.director.config.activeLimit, 1, reason: stageId);
+      expect(host.tokenBindingsByActorId, hasLength(1), reason: stageId);
     }
   });
 
-  test('Chapter 9 objectives require every authored opponent', () {
-    for (final stageId in ['stage_09_01', 'stage_09_02', 'stage_09_03']) {
+  test('Chapter 10 objectives require the authored singleton opponent', () {
+    for (final stageId in ['stage_10_01', 'stage_10_02', 'stage_10_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
         tickDuration: const Duration(milliseconds: 100),
       );
-      var progress = controller.initialProgress;
-      for (var index = 0; index < encounter.spawnEntries.length; index++) {
-        progress = controller.advance(
-          progress,
-          TargetDefeated(encounter.spawnEntries[index].entryId),
-        );
-        expect(progress.completed, index == encounter.spawnEntries.length - 1);
-      }
+      final progress = controller.advance(
+        controller.initialProgress,
+        TargetDefeated(_expected[stageId]!.$2),
+      );
+      expect(progress.completed, isTrue, reason: stageId);
     }
 
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
@@ -176,7 +200,7 @@ void main() {
     }
   });
 
-  test('both authored Chapter 9 targets retain Boss identity', () {
+  test('both authored Chapter 10 targets retain Boss identity', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -234,7 +258,7 @@ void main() {
   });
 
   test(
-    'all five Chapter 9 routes reach dynamic victory without stalls',
+    'all five Chapter 10 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -247,7 +271,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026090900 + index),
+            rng: Random(2026091000 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
@@ -268,7 +292,7 @@ void main() {
         expect(result.ticks, inInclusiveRange(1, maxTicks - 1));
         expect(
           result.events.whereType<Phase0aEnemyDefeated>(),
-          hasLength(_expected[stageId]!.$2),
+          hasLength(1),
           reason: stageId,
         );
       }
@@ -292,15 +316,20 @@ Phase0aMainlineEncounterRuntimeBindingSource _runtimeSource(
 Phase0aPlayerRuntimeMapping _playerMapping(
   GameRepository repository,
   String stageId,
-) => Phase0aStageContentMapper.mapPlayerOnly(
-  contentId: stageId,
-  playerSnapshot: testCombatantSnapshot(
-    maxHp: 20000,
-    currentHp: 20000,
-    internalForce: 15000,
-    totalEquipmentAttack: 2000,
-    defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
-    includeProductionBasicAttack: true,
-  ),
-  numbers: repository.numbers,
-);
+) {
+  final enemy = repository.getStage(stageId).enemyTeam.single;
+  return Phase0aStageContentMapper.mapPlayerOnly(
+    contentId: stageId,
+    playerSnapshot: testCombatantSnapshot(
+      realmTier: enemy.realmTier,
+      realmLayer: enemy.realmLayer,
+      maxHp: 20000,
+      currentHp: 20000,
+      internalForce: 15000,
+      totalEquipmentAttack: 2000,
+      defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
+      includeProductionBasicAttack: true,
+    ),
+    numbers: repository.numbers,
+  );
+}

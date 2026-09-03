@@ -1,0 +1,71 @@
+# Production Chapter 10 Zhongzhou routes. Every authored encounter is a duel.
+encounters:
+  - id: ch10_encounter_01_hetao_swordsman
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch10_s01_swordsman, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch10_s01_defeat_swordsman, kind: defeat_targets, target_ids: [ch10_s01_swordsman]}
+
+  - id: ch10_encounter_02_yanmen_wanderer
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 1, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch10_s02_wanderer, archetype_id: ch2_sects, role_id: sect_hidden_weapon, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_hidden_offset}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch10_s02_defeat_wanderer, kind: defeat_targets, target_ids: [ch10_s02_wanderer]}
+
+  - id: ch10_encounter_03_luoshui_reflection
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch10_s03_reflection, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch10_s03_defeat_reflection, kind: defeat_targets, target_ids: [ch10_s03_reflection]}
+
+  - id: ch10_encounter_04_songyang_gatekeeper
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch10_s04_gatekeeper, archetype_id: ch7_army, role_id: army_shield, entrance_id: ch7_entrance_s01_gate, position_id: ch7_position_s01_slot_01, behavior_id: ch7_behavior_shield_wall}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch10_s04_defeat_gatekeeper, kind: defeat_commander, commander_id: ch10_s04_gatekeeper}
+
+  - id: ch10_encounter_05_stillwater_master
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch10_s05_stillwater_master, archetype_id: ch7_army, role_id: army_shield, entrance_id: ch7_entrance_s01_gate, position_id: ch7_position_s01_slot_01, behavior_id: ch7_behavior_shield_wall}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch10_s05_defeat_stillwater_master, kind: defeat_commander, commander_id: ch10_s05_stillwater_master}

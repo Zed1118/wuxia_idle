@@ -138,3 +138,18 @@ stage_assignments:
   - stage_id: stage_09_05
     migration_state: migrated
     encounter_id: ch9_encounter_05_old_master
+  - stage_id: stage_10_01
+    migration_state: migrated
+    encounter_id: ch10_encounter_01_hetao_swordsman
+  - stage_id: stage_10_02
+    migration_state: migrated
+    encounter_id: ch10_encounter_02_yanmen_wanderer
+  - stage_id: stage_10_03
+    migration_state: migrated
+    encounter_id: ch10_encounter_03_luoshui_reflection
+  - stage_id: stage_10_04
+    migration_state: migrated
+    encounter_id: ch10_encounter_04_songyang_gatekeeper
+  - stage_id: stage_10_05
+    migration_state: migrated
+    encounter_id: ch10_encounter_05_stillwater_master

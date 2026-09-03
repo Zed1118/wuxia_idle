@@ -21,6 +21,7 @@ encounter_sources:
   - data/combat/encounters/chapter_06_ascension.yaml
   - data/combat/encounters/chapter_08_frontier.yaml
   - data/combat/encounters/chapter_09_qibei.yaml
+  - data/combat/encounters/chapter_10_zhongzhou.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -731,6 +732,11 @@ reference_index:
     - ch9_s03_mirage
     - ch9_s04_gatekeeper
     - ch9_s05_old_master
+    - ch10_s01_swordsman
+    - ch10_s02_wanderer
+    - ch10_s03_reflection
+    - ch10_s04_gatekeeper
+    - ch10_s05_stillwater_master
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
