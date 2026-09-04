@@ -2,7 +2,7 @@ schema_version: 1
 phase: phase2_phase0a_overhaul
 source_plan: /Users/a10506/Desktop/二阶段优化方案.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-09-01"
+updated_at: "2026-09-04"
 
 policy:
   frozen_may_implement: true
@@ -16,6 +16,37 @@ policy:
   g0_approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
 decisions:
+  - id: M7-DEPENDENCY-SEMANTICS-01
+    status: frozen_governance_interpretation
+    summary: M7 内容工程可在已集成 M3/M4 工程基础上继续，M2–M6 真人与 Windows 依赖只在正式关闭 M7 时强制满足
+    owner_task: P2-M7-CONTENT-MIGRATION-GATE
+    engineering_progression:
+      authorized: true
+      prerequisites:
+        - M3_engineering_profiles_integrated
+        - M4_major_engineering_subgates_integrated
+        - exact_batch_scope_and_production_path_verification
+      human_or_windows_signoff_substituted: false
+    formal_close:
+      blocked_until_dependencies_pass: true
+      dependencies:
+        - P2-M2-HUMAN-G2-ACCEPTANCE
+        - P2-M3-WEAPON-COMBAT-DEPTH-GATE
+        - P2-M4-ENGINEERING-AND-HUMAN-GATE
+        - P2-M5-HUMAN-ACCEPTANCE-GATE
+        - P2-M6-HUMAN-ACCEPTANCE-GATE
+    downstream_release:
+      M8_or_M9_unlocked: false
+    consolidated_human_acceptance:
+      state: tooling_ready_human_not_run
+      preparation_script: tools/phase2_acceptance/prepare_consolidated_human_package.sh
+      checklist_template: docs/dispatch/phase2_consolidated_human_acceptance_template.md
+      formal_entry: production_root_app
+      visual_routes: supplemental_only
+      default_evidence_state: NOT_RUN
+    approved_at: "2026-09-04"
+    approval_basis: '当前 Codex 会话：用户确认“按建议顺序进行调整”，即补清 M7 依赖语义、准备真人验收包，并在真人不可用时继续不依赖真人的内容工程'
+
   - id: COMBAT-SCOPE-01
     status: frozen
     summary: 首批六类作用域，环形由内外半径参数表达

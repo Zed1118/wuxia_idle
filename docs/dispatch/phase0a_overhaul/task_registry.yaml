@@ -7559,6 +7559,11 @@ tasks:
       tower_foundation_counts_as_migrated_floor: false
       legacy_production_seams: two_mainline_null_fallbacks_and_three_tower_direct_mapper_paths
       next_batch_audit: docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md
+      dependency_decision: M7-DEPENDENCY-SEMANTICS-01
+      engineering_progression_authorized: true
+      engineering_progression_prerequisites: M3_and_M4_engineering_foundations_integrated_plus_per_batch_production_path_proof
+      human_or_Windows_evidence_substituted: false
+    dependency_semantics: formal_close_only
     dependencies:
       - P2-M2-HUMAN-G2-ACCEPTANCE
       - P2-M3-WEAPON-COMBAT-DEPTH-GATE
@@ -7567,6 +7572,8 @@ tasks:
       - P2-M6-HUMAN-ACCEPTANCE-GATE
     protected_behavior:
       - content_count_or_fixture_coverage_without_production_runtime_consumption_is_not_acceptance
+      - engineering_progress_does_not_close_M7_until_all_formal_dependencies_pass
+      - deferred_human_or_Windows_evidence_does_not_unlock_M8_or_M9
 
   - id: P2-P0-M3-M7-QUALITY-HARDENING
     milestone: governance
