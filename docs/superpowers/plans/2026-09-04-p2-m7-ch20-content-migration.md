@@ -31,10 +31,10 @@
 
 ## 当前恢复点
 
-- 状态：第二十章五关 assignment、encounter、runtime binding、manifest objective 与 production factory route 已接通；Ch19 水位合同已迁移，测试契约已登记，候选工程水位为 `96/105`。
+- 状态：第二十章五关已由候选 `b28088eff48c6520ebfc3f3c662b612c00ccffef` 经 no-ff merge `4ff2157a1d75fac406c2fbef164ad0cf4a122c1a` 集成到 `main` 与 `origin/main`；merge exact-SHA CI run `33851259205` 已全部成功，工程水位为 `96/105`。
 - 有效 RED：新增 Ch20 合同测试首次运行 `0/6`，分别在 assignment、identity/role、真实 factory、objective、Boss runtime 与 dynamic victory 处因生产路由缺失失败；接线后 `6/6` 通过。Ch19+Ch20 首次相邻回归仅留下预期水位失败（期望 `91`、实际 `96`），迁移后 `12/12` 通过。
 - 变异证据：删除 `stage_20_01` assignment 时 catalog loader 因 encounter 未分配失败；把 `stage_20_02.base_enemy_id` 改错时 runtime loader 因 StageDef 不一致失败；把 `stage_20_03` role 从 `sect_outer` 改为 `sect_lightfoot` 时 runtime loader 因 attack-set closure 缺失/多余失败。三处均已恢复，assignment/runtime/encounter SHA-256 分别回到 `c65984df2bb944a6bec4072ca775c1f13be9ea0de4f48ed8aac3c9efcd9716cc`、`64f822cfff0856a39184d9ac7601c60ecd270b104d1c1cf943936cdc632dfcdd`、`46d519d5459f8a936cbc6bf494fbfebaae040038b1ba45cd74c68f4d185568b4`。
-- 已跑验证：Ch20 `6/6`、Ch19+Ch20 `12/12`、Phase 2 data `174/174`、主线 application `183/183`；`flutter analyze --no-pub lib test tool` 零问题；`dart format --output=none --set-exit-if-changed lib test tool docs` 检查 `1643` 个文件且零改动；专用 `test_contract_migration` 门 PASS（实现删 1/增 39、用例删 0/增 6、登记 1 条）。
+- 已跑验证：Ch20 `6/6`、Ch19+Ch20 `12/12`、Phase 2 data `174/174`、主线 application `183/183`；候选 analyze 零问题、format `1643` 文件零改动；专用 `test_contract_migration` 门 PASS（实现删 1/增 39、用例删 0/增 6、登记 1 条）。标准 Gate 的白名单、禁改、commit、clean、隔离 full `5987/5987`、analyze 与 format 均 PASS，receipt 因无 `lib/` 改动 SKIP；原始总结果仅 `FAIL: test_deletions`，该 1 行由专用迁移门覆盖。合并态 Ch19+Ch20 `12/12`、full `5987/5987`、analyze 零问题、format `1644` 文件零改动；merge exact-SHA CI 的 Ubuntu coverage/ratchet 与 macOS build 均成功。
 - 分支提交：`70b91861` 接通生产目录，`87a57a1d` 迁移 Ch19 水位合同，`56e3727d` 登记 Ch20 测试契约。
-- 下一步：冻结 `[READY]` 候选，运行标准 Gate；只在候选真实 diff、持锁全量与 Gate 收口后进入主线集成。
+- 下一步：提交并推送治理尾，等待最终 exact-SHA CI；随后在最终 HEAD 生成只读真人验收包并校验，不启动 GUI、不代签真人或 Windows 门。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
