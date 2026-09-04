@@ -401,6 +401,31 @@ decisions:
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
+  - id: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01
+    status: frozen_authorized_implemented_local_candidate
+    parent_decision: COMBAT-ECOLOGY-ASSIGNMENT-01
+    summary: 第十三章半山寺采用 24 人群体考校加一名非 Boss 半山知客僧 commander
+    user_choice: layered_examination_24_ecology_plus_1_named_non_boss_commander
+    signed_scope:
+      stage_id: stage_13_02
+      total_actors: 25
+      active_limit: 10
+      token_budgets:
+        melee: 2
+        ranged: 1
+        charge: 1
+        support: 1
+      commander_entry_id: ch13_s02_guard_02
+      commander_base_enemy_id: enemy_jueDing_shanwai_banshan_seng
+      commander_is_boss: false
+      other_examiners: 24
+      objective: all_24_defeat_targets_and_defeat_commander
+      narrative_rewrite: minimal_opening_and_victory_consistency_only
+    batch_freeze_requires_explicit_user_choice: false
+    implementation_owner: P2-M7-CH13-CONTENT-MIGRATION
+    approved_at: "2026-09-04"
+    approval_basis: '当前 Codex 任务：用户明确拍板第十三章“分层考校”方案'
+
   - id: GAUNTLET-VISIBLE-BOT-01
     status: frozen
     evidence_alias: UNREGISTERED-GAUNTLET-BOT-01

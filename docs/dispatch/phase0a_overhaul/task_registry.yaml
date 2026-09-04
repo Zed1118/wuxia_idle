@@ -7853,6 +7853,81 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH13-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch13-content-migration-20260904
+    worktree: /Users/a10506/.codex/worktrees/a0d7/挂机武侠
+    status: ready_local_candidate
+    current_authoritative_wip: false
+    base_commit: 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f
+    content_implementation_commit: edddd963c9d177cefa728facb83f57b02e11e04b
+    test_contract_ledger_commit: 5f0e5138a61778611fdf1bd4efc4838e2aacb607
+    completion_scope: migrate_chapter_13_mainline_stages_to_typed_production_catalog_with_user_signed_layered_examination
+    acceptance_target: chapter_13_5_of_5_and_local_mainline_catalog_candidate_105_of_105
+    acceptance_result: chapter_13_5_of_5_and_local_mainline_catalog_candidate_105_of_105_ready_not_integrated_formal_M7_open
+    evidence:
+      mainline_catalog_integrated_origin_main: 101_of_105
+      mainline_catalog_local_candidate: 105_of_105
+      chapter_13_before: 1_of_5
+      production_stage_defs: 5_of_5
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      stage_13_02_total_actors: 25
+      stage_13_02_active_limit: 10
+      stage_13_02_other_examiners: 24
+      stage_13_02_non_boss_commander: ch13_s02_guard_02
+      stage_13_02_objective: all_24_defeat_targets_and_defeat_commander
+      stage_13_02_token_budgets: melee_2_ranged_1_charge_1_support_1
+      stage_13_02_minimal_narrative_consistency: pass
+      stage_13_01_03_single_target_routes: pass
+      stage_13_04_05_boss_identity_mechanics_drop_and_numeric_snapshots: pass
+      initial_valid_red_tests: 0_of_8
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      revert_non_boss_commander_identity_rule_mutation_failures: 1
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      focused_tests: 8_of_8
+      m4_remaining_ecologies_tests: 3_of_3
+      chapter_3_12_14_adjacent_tests: 18_of_18
+      phase2_adjacent_tests: 188_of_188
+      mainline_application_tests: 183_of_183
+      test_contract_migration: pass_expect_deleted_3_added_64_cases_deleted_0_added_8_registered_3
+      analyze: no_issues_found_lib_test_tool
+      format: 1737_files_0_changed
+      pre_ready_full_tests: 6001_of_6001
+      candidate_standard_gate: run_after_final_READY_tip_with_external_ignored_receipt
+      human_desktop_acceptance: deferred
+      visual_audio_feel_acceptance: deferred
+      windows_acceptance: deferred
+    owned_files:
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_13_temple_pass.yaml
+      - data/narratives/stages/stage_13_02_opening.yaml
+      - data/narratives/stages/stage_13_02_victory.yaml
+      - lib/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart
+      - test/data/phase2/ch13_content_migration_test.dart
+      - test/data/phase2/ch21_content_migration_test.dart
+      - test/data/phase2/m4_remaining_ecologies_production_test.dart
+      - docs/dispatch/phase0a_overhaul/decision_registry.yaml
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch13-content-migration-20260904.yaml
+      - docs/superpowers/plans/2026-09-04-p2-m7-ch13-content-migration.md
+      - docs/audit/phase2_m7_ch13_content_migration_2026-09-04.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - preserve_stage_13_02_existing_25_actor_active_limit_and_token_budgets
+      - preserve_stage_13_04_and_stage_13_05_boss_identity_skills_phases_drops_and_numeric_snapshots
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_tower_or_legacy_runtime_retirement_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
@@ -7860,18 +7935,22 @@ tasks:
     current_authoritative_wip: true
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_101_of_105_integrated_origin_main_ci_success_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_101_of_105_integrated_origin_main_ci_success_local_chapter13_candidate_105_of_105_tower_0_of_49_legacy_runtime_retirement_open
     evidence:
       mainline_catalog_integrated: 101_of_105
-      remaining_mainline_stages: 4_of_105
-      next_authoritative_task: chapter_13_decision_audit_before_implementation
-      decision_audit_counts_as_migrated_stage: false
-      mainline_target_after_explicit_ecology_decision: 105_of_105
-      chapter_13_status: isolated_pending_ecology_boundary_decision
+      mainline_catalog_local_candidate: 105_of_105
+      remaining_mainline_stages_integrated: 4_of_105
+      remaining_mainline_stages_in_local_candidate: 0_of_105
+      next_authoritative_task: chapter_13_candidate_review_and_authorized_integration
+      local_candidate_counts_as_integrated_stage: false
+      mainline_target_after_authorized_integration: 105_of_105
+      chapter_13_status: ready_local_candidate_not_integrated
+      chapter_13_decision: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01
       tower_foundation_before_denominator_increment: multi_enemy_runtime_binding_guardian_id_translation_and_three_production_entrypoints
       tower_foundation_counts_as_migrated_floor: false
       legacy_production_seams: two_mainline_null_fallbacks_and_three_tower_direct_mapper_paths
       next_batch_audit: docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md
+      chapter_13_candidate_audit: docs/audit/phase2_m7_ch13_content_migration_2026-09-04.md
       dependency_decision: M7-DEPENDENCY-SEMANTICS-01
       engineering_progression_authorized: true
       engineering_progression_prerequisites: M3_and_M4_engineering_foundations_integrated_plus_per_batch_production_path_proof

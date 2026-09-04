@@ -33,8 +33,9 @@
 
 ## 当前恢复点
 
-- 状态：`WIP`，只读审计与用户授权边界已确认，尚未修改生产代码/数据。
-- 最后完成：确认 live baseline `101/105`、第十三章 `1/5`、塔 `0/49`、legacy 接缝 `5`，并定位 runtime adapter 的非 Boss commander identity 缺口。
-- 下一步：新增 Ch13 精确合同测试并运行有效 RED，然后实施 typed data、最小 adapter 与叙事改写。
-- 已跑验证：仅开局 Git/治理/生产链只读核对；历史绿色证据不作为本分支 PASS。
-- 阻塞项：无；用户已明确拍板分层考校方案。
+- 状态：`READY_LOCAL_CANDIDATE`；最终 `[READY]` tip 固化后写 ignored receipt 并自跑标准 Gate，结果只在外部 receipt/终端与最终交付中登记，避免 Gate 后再改候选树。
+- 已完成：第十三章 `1/5 → 5/5`，本地全主线 typed catalog 候选 `101/105 → 105/105`；`main/origin/main` 仍为 `101/105`，塔 `0/49`、legacy 接缝 `5`、正式 Phase 2 `1/10` 均未改变。
+- 生产实现：四关 assignment/encounter/runtime binding 接齐；`stage_13_02` 保持 `25/10` 与原 token budget，以 `24 defeat-targets + 1 非 Boss commander` 的 `all` objective 完成分层考校；adapter 只泛化 commander identity 保留规则。
+- 已跑验证：有效 RED `0/8`；Ch13 `8/8`；M4 `3/3`；Ch3/12/14 `18/18`；Phase 2 adjacent `188/188`；mainline application `183/183`；三向 mutation 均证红并以 SHA-256 复原；测试契约迁移门 PASS；analyze 0 issue；format `1737` files 0 changed；持锁全量 `6001/6001`。
+- 下一步：固化 `[READY]`、生成 ignored receipt、自跑标准 Gate；不 merge/push，等待独立审查与用户授权集成。
+- 阻塞项：工程候选无本地阻塞；正式进度仍等待候选审查/授权集成、塔与 legacy 退役，以及真人桌面/视觉/音频/手感/Windows 验收。
