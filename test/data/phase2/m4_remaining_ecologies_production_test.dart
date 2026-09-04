@@ -30,6 +30,7 @@ class _EcologySpec {
     required this.movementByRole,
     required this.attackByRole,
     required this.supportRoleId,
+    this.runtimeIdentityNamesByEntryId = const {},
   });
 
   final String stageId;
@@ -42,6 +43,7 @@ class _EcologySpec {
   final Map<String, Phase0aEnemyMovementPolicy> movementByRole;
   final Map<String, Phase0aEnemyAttackPolicy> attackByRole;
   final String supportRoleId;
+  final Map<String, String> runtimeIdentityNamesByEntryId;
 }
 
 const _specs = <_EcologySpec>[
@@ -155,6 +157,7 @@ const _specs = <_EcologySpec>[
       'temple_guard': Phase0aEnemyAttackPolicy.supportPulse,
     },
     supportRoleId: 'temple_guard',
+    runtimeIdentityNamesByEntryId: {'ch13_s02_guard_02': '半山知客僧'},
   ),
 ];
 
@@ -261,6 +264,12 @@ Future<void> _verifyEcology(
       reason: entry.roleId,
     );
     expect(binding.token.kind, spec.tokensByRole[entry.roleId]);
+    expect(
+      binding.combatant.name,
+      spec.runtimeIdentityNamesByEntryId[entry.entryId] ??
+          spec.roleNames[entry.roleId],
+      reason: entry.entryId,
+    );
     expect(binding.combatant.skillLoadout.basicAttack, isNotNull);
     expect(
       binding.enemySkillBindings,
@@ -268,10 +277,16 @@ Future<void> _verifyEcology(
       reason: entry.roleId,
     );
   }
-  expect(
-    namesByRole,
-    spec.roleNames.map((role, name) => MapEntry(role, {name})),
-  );
+  final expectedNamesByRole = <String, Set<String>>{};
+  for (final entry in encounterDef.spawnEntries) {
+    expectedNamesByRole
+        .putIfAbsent(entry.roleId, () => <String>{})
+        .add(
+          spec.runtimeIdentityNamesByEntryId[entry.entryId] ??
+              spec.roleNames[entry.roleId]!,
+        );
+  }
+  expect(namesByRole, expectedNamesByRole);
   for (final role in spec.roleCounts.keys) {
     expect(visualsByRole[role], hasLength(2), reason: role);
     expect(tokensByRole[role], {spec.tokensByRole[role]!}, reason: role);
@@ -319,8 +334,13 @@ Future<void> _verifyEcology(
     );
   }
 
-  if (encounterDef.objectives.clauses.single.primitive
-      case CombatDefendEntityRef(:final requiredTicks)) {
+  final defendRefs = encounterDef.objectives.clauses
+      .map((clause) => clause.primitive)
+      .whereType<CombatDefendEntityRef>()
+      .toList(growable: false);
+  if (defendRefs.isNotEmpty) {
+    expect(defendRefs, hasLength(1));
+    final requiredTicks = defendRefs.single.requiredTicks;
     final defended = host.mapping!.initialState.defendedEntity;
     expect(defended, isNotNull);
     expect(defended!.isAlive, isTrue);
@@ -416,7 +436,7 @@ Future<void> _verifyEcology(
     progress = controller.advance(progress, event);
   }
   expect(progress.completed, isTrue);
-  expect(progress.clauses.single.completed, isTrue);
+  expect(progress.clauses.every((clause) => clause.completed), isTrue);
 }
 
 void main() {
