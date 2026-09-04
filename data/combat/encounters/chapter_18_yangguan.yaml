@@ -1,0 +1,71 @@
+# Production Chapter 18 Yangguan routes. Authored combat is five duels.
+encounters:
+  - id: ch18_encounter_01_pass_sentry
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch18_s01_pass_sentry, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch18_s01_defeat_pass_sentry, kind: defeat_targets, target_ids: [ch18_s01_pass_sentry]}
+
+  - id: ch18_encounter_02_smoke_interceptor
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch18_s02_smoke_interceptor, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch18_s02_defeat_smoke_interceptor, kind: defeat_targets, target_ids: [ch18_s02_smoke_interceptor]}
+
+  - id: ch18_encounter_03_city_greeter
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch18_s03_city_greeter, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch18_s03_defeat_city_greeter, kind: defeat_targets, target_ids: [ch18_s03_city_greeter]}
+
+  - id: ch18_encounter_04_xiliang_third_disciple
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch18_s04_xiliang_third_disciple, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch18_s04_defeat_xiliang_third_disciple, kind: defeat_commander, commander_id: ch18_s04_xiliang_third_disciple}
+
+  - id: ch18_encounter_05_xiliang_overlord
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch18_s05_xiliang_overlord, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch18_s05_defeat_xiliang_overlord, kind: defeat_commander, commander_id: ch18_s05_xiliang_overlord}
