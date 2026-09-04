@@ -7465,6 +7465,83 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH17-CONTENT-MIGRATION
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch17-content-migration-20260904
+    worktree: /Users/a10506/.codex/worktrees/p2-m7-ch17-content-migration-20260904
+    status: integrated_origin_main_ci_success
+    current_authoritative_wip: false
+    base_commit: a4d8cd954ad9831f2eedee0471b9e472dc1e1c48
+    content_implementation_commit: da352eea
+    test_contract_commit: 8ebb9c1f
+    test_contract_ledger_commit: 784c276e
+    candidate_commit: ce32ab9736f74135dcc25854db1daccac25997ab
+    merge_commit: b2fe4e43d060ffdb631c413dfca7846aca830611
+    completion_scope: migrate_chapter_17_mainline_stages_to_typed_production_catalog_and_runtime
+    acceptance_target: chapter_17_5_of_5_and_mainline_catalog_integrated_81_of_105
+    acceptance_result: chapter_17_5_of_5_and_mainline_catalog_81_of_105_integrated_origin_main_ci_success_formal_M7_open
+    evidence:
+      mainline_catalog_integrated: 81_of_105
+      chapter_17_before: 0_of_5
+      production_stage_defs: 5_of_5
+      authored_narratives: 12_of_12
+      authored_enemy_icons: 5_of_5
+      production_assignments: 5_of_5
+      production_encounters: 5_of_5
+      runtime_bindings: 5_of_5
+      production_factory_routes: 5_of_5
+      dynamic_headless_victories: 5_of_5
+      authored_cast_sizes: 1_1_1_1_1
+      single_target_routes: stage_17_01_stage_17_02_stage_17_03
+      boss_identity_routes: stage_17_04_and_stage_17_05
+      boss_charge_and_two_phases_preserved: stage_17_04_and_stage_17_05
+      stage_17_04_vulnerability: absent_as_authored
+      stage_17_05_vulnerability: 0_20_preserved
+      stage_17_04_lingQiao: preserved_prior_signed_correction
+      initial_valid_red_tests: 0_of_6
+      remove_assignment_mutation_failures: 1
+      wrong_base_enemy_mutation_failures: 1
+      semantic_cast_mutation_failures: 2
+      mutations_restored_by_exact_reverse_patch_and_sha256: true
+      focused_tests: 6_of_6
+      chapter_16_and_17_adjacent_tests: 12_of_12
+      phase2_adjacent_tests: 156_of_156
+      mainline_application_tests: 183_of_183
+      test_contract_migration: pass_expect_deleted_1_added_35_cases_deleted_0_added_6_registered_1
+      analyze: no_issues_found_lib_test_tool
+      format: candidate_1730_and_postmerge_1731_files_0_changed
+      candidate_standard_gate: fail_test_deletions_only_full_5965_analyze_format_forbidden_commit_and_clean_pass_whitelist_and_receipt_skipped
+      postmerge_locked_full_test: 5965_of_5965_error_blocks_0_all_tests_passed_lock_released
+      merge_exact_sha_ci_run: 33824064696
+      merge_exact_sha_ci_head: b2fe4e43d060ffdb631c413dfca7846aca830611
+      merge_exact_sha_ci_conclusion: completed_success_all_jobs_and_steps
+      existing_task_branch_and_route_overlap: 0
+      baseline_exact_sha_ci_run: 33815818040
+      baseline_exact_sha_ci_head: a4d8cd954ad9831f2eedee0471b9e472dc1e1c48
+      baseline_exact_sha_ci_conclusion: completed_success_all_jobs_and_steps
+      human_desktop_acceptance: deferred_by_user
+      visual_audio_feel_acceptance: deferred_by_user
+      windows_acceptance: deferred
+    owned_files:
+      - data/combat/manifest.yaml
+      - data/combat/manifest/stage_assignments.yaml
+      - data/combat/runtime_bindings.yaml
+      - data/combat/encounters/chapter_17_shahai.yaml
+      - test/data/phase2/ch16_content_migration_test.dart
+      - test/data/phase2/ch17_content_migration_test.dart
+      - docs/dispatch/phase0a_overhaul/task_registry.yaml
+      - docs/dispatch/phase2_wiring/test_contract_migrations/p2-m7-ch17-content-migration-20260904.yaml
+      - docs/superpowers/plans/2026-09-04-p2-m7-ch17-content-migration.md
+      - docs/audit/phase2_m7_ch17_content_migration_2026-09-04.md
+    protected_behavior:
+      - preserve_existing_stage_enemy_player_boss_drop_reward_economy_narrative_unlock_cycle_and_settlement_owners
+      - preserve_chapter_17_boss_charge_phase_and_vulnerability_snapshots
+      - no_Isar_schemaVersion_saveVersion_TUNING_or_new_gameplay_rule_change
+      - no_chapter_13_or_chapter_18_and_later_or_tower_change_and_no_M8_or_M9_start
+      - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
+      - engineering_candidate_does_not_close_formal_M7_or_Phase2
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
@@ -7472,11 +7549,11 @@ tasks:
     current_authoritative_wip: true
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_76_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_81_of_105_integrated_origin_main_tower_0_of_49_legacy_runtime_retirement_open
     evidence:
-      next_complete_mainline_batch: chapter_17_stage_17_01_through_17_05
-      next_mainline_target: 81_of_105
-      remaining_sequence_after_chapter_17: chapter_18_chapter_19_chapter_20_chapter_21_then_chapter_13_decision_audit
+      next_complete_mainline_batch: chapter_18_stage_18_01_through_18_05
+      next_mainline_target: 86_of_105
+      remaining_sequence_after_chapter_18: chapter_19_chapter_20_chapter_21_then_chapter_13_decision_audit
       chapter_13_status: isolated_pending_ecology_boundary_decision
       tower_foundation_before_denominator_increment: multi_enemy_runtime_binding_guardian_id_translation_and_three_production_entrypoints
       tower_foundation_counts_as_migrated_floor: false

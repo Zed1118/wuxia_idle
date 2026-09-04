@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：生产接线、测试与测试契约迁移已完成；候选定向和宽回归通过，准备冻结 READY 后执行标准 Gate 的隔离全量复核。
-- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确 `1/1/2` 红并恢复；Ch17 `6/6`；Ch16+17 `12/12`；Phase 2 data `156/156`；mainline application `183/183`；`flutter analyze --no-pub lib test tool` 0 issue；整仓 format `1730/0`；测试契约迁移 Gate `PASS`（expect 删 1 / 增 35、用例删 0 / 增 6、登记 1）。
-- 下一步：冻结 `[READY]` 候选，运行标准 Gate；若除已登记的 `test_deletions` 外全部通过，再受控 no-ff 集成、回归并等待 exact-SHA CI。
+- 状态：生产接线、测试与测试契约迁移已完成；候选 `ce32ab97` 经 no-ff merge `b2fe4e43` 进入 `main` 与 `origin/main`，全主线工程集成水位为 `81/105`。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 分别精确 `1/1/2` 红并恢复；Ch17 `6/6`；Ch16+17 `12/12`；Phase 2 data `156/156`；mainline application `183/183`；analyze 0 issue；format 无改动；测试契约迁移 Gate `PASS`；候选标准 Gate 隔离 full `5965/5965` 且原始结论仅 `FAIL: test_deletions`；合并态持锁整仓 `5965/5965`；merge exact-SHA CI run `33824064696` 全部 jobs/steps 成功。
+- 下一步：治理尾提交经 exact-SHA CI 后收口；下一完整工程门按既定顺序为第十八章 `81/105 → 86/105`。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
