@@ -273,3 +273,18 @@ stage_assignments:
   - stage_id: stage_19_05
     migration_state: migrated
     encounter_id: ch19_encounter_05_blackstone_mirror_keeper
+  - stage_id: stage_20_01
+    migration_state: migrated
+    encounter_id: ch20_encounter_01_horse_changer
+  - stage_id: stage_20_02
+    migration_state: migrated
+    encounter_id: ch20_encounter_02_beacon_keeper
+  - stage_id: stage_20_03
+    migration_state: migrated
+    encounter_id: ch20_encounter_03_wall_mender
+  - stage_id: stage_20_04
+    migration_state: migrated
+    encounter_id: ch20_encounter_04_returning_veteran
+  - stage_id: stage_20_05
+    migration_state: migrated
+    encounter_id: ch20_encounter_05_gate_opening_old_general
