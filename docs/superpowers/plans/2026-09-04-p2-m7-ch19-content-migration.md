@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：审计完成，尚未写入生产路由。
-- 已确认：五关 StageDef、12 份关卡正文、章节正文与 5 张敌人图标齐全；typed 四层为 `0/5`。
-- 下一步：先写验收测试并取得有效 RED，再补五关生产 catalog 路由。
+- 状态：五关生产路由与测试契约已经实现，待冻结 exact-tip 候选并执行标准 Gate。
+- 已跑验证：有效初始 RED `0/6`；缺 assignment、错 `base_enemy_id`、错 role 三向 mutation 均精确转红并按 SHA-256 恢复；Ch19 `6/6`；Ch18+19 `12/12`；Phase 2 data `168/168`；mainline application `183/183`；analyze 0 issue；format `1641/0`；测试契约迁移 Gate `PASS`。
+- 下一步：冻结 `[READY]` tip，在独立 detached worktree 跑标准 Gate、持锁全量与最终范围复核。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
