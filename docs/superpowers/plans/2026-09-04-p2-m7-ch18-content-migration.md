@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：第十八章 `5/5` 工程候选 READY，等待独立标准 Gate 与受控集成。
-- 已跑验证：有效初始 RED `0/6`；删 assignment、错 base enemy、错角色语义三向 mutation 均精确变红并恢复原 SHA；Ch18 `6/6`；Ch17+18 `12/12`；Phase 2 data `162/162`；mainline application `183/183`；analyze 0 issue；format 1636 files 0 changed；test-contract migration `PASS`（expect 删 1/增 37、用例删 0/增 6、登记 1）。
-- 下一步：提交 READY，运行独立标准 Gate；通过风险匹配检查后 no-ff 合并到 main、持锁回归、推送并等待 exact-SHA CI。
+- 状态：候选 `142120d7` 经 no-ff merge `c905e50a` 进入 `main/origin/main`，exact-SHA CI run `33833220808` 全部成功；治理尾待提交。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 精确变红并恢复；Ch18 `6/6`；Ch17+18 `12/12`；Phase 2 data `162/162`；mainline application `183/183`；analyze 0 issue；format 0 changed；test-contract migration `PASS`；候选标准 Gate 隔离 full `5975/5975`、错误块 0，原始结果仅 `FAIL: test_deletions`（已登记）；merge exact-SHA CI 全部 jobs/steps 成功。
+- 下一步：同步 task registry、PROGRESS 与本计划，提交治理尾并再次核对最终 exact-SHA CI；之后在最终 clean HEAD 生成集中真人验收包。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
