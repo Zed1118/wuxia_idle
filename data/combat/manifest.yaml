@@ -28,6 +28,7 @@ encounter_sources:
   - data/combat/encounters/chapter_15_guanshan.yaml
   - data/combat/encounters/chapter_16_liangzhou.yaml
   - data/combat/encounters/chapter_17_shahai.yaml
+  - data/combat/encounters/chapter_18_yangguan.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -773,6 +774,11 @@ reference_index:
     - ch17_s03_old_city_guard
     - ch17_s04_sandstorm_hand
     - ch17_s05_desert_guide
+    - ch18_s01_pass_sentry
+    - ch18_s02_smoke_interceptor
+    - ch18_s03_city_greeter
+    - ch18_s04_xiliang_third_disciple
+    - ch18_s05_xiliang_overlord
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

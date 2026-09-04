@@ -243,3 +243,18 @@ stage_assignments:
   - stage_id: stage_17_05
     migration_state: migrated
     encounter_id: ch17_encounter_05_desert_guide
+  - stage_id: stage_18_01
+    migration_state: migrated
+    encounter_id: ch18_encounter_01_pass_sentry
+  - stage_id: stage_18_02
+    migration_state: migrated
+    encounter_id: ch18_encounter_02_smoke_interceptor
+  - stage_id: stage_18_03
+    migration_state: migrated
+    encounter_id: ch18_encounter_03_city_greeter
+  - stage_id: stage_18_04
+    migration_state: migrated
+    encounter_id: ch18_encounter_04_xiliang_third_disciple
+  - stage_id: stage_18_05
+    migration_state: migrated
+    encounter_id: ch18_encounter_05_xiliang_overlord
