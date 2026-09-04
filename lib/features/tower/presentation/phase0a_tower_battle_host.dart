@@ -7,13 +7,12 @@ import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
 import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
-import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
-import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
-import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../battle/application/phase0a/combat_content_ref.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+import '../application/phase0a_tower_encounter_host.dart';
 import '../application/tower_providers.dart';
 
 /// Phase 0A 塔层单角色战斗宿主。
@@ -55,7 +54,7 @@ class _Phase0aTowerBattleHostState
     extends ConsumerState<Phase0aTowerBattleHost> {
   String? _setupError;
   Phase0aBattleController? _controller;
-  Phase0aStageMapping? _mapping;
+  Phase0aTowerCombatSession? _session;
   bool _exitNotified = false;
 
   @override
@@ -71,38 +70,38 @@ class _Phase0aTowerBattleHostState
             (await ref.read(towerProgressProvider.future)).currentCycleIndex;
         if (!mounted) return;
         final numbers = GameRepository.instance.numbers;
-        final mapping = Phase0aStageContentMapper.mapTower(
-          floor: widget.floor,
-          playerSnapshot: playerSnapshot,
-          numbers: numbers,
-          cycleIndex: cycleIndex,
-        );
-        final roster = Phase0aVisualRoster.fromMapping(mapping);
-        for (final combatant in mapping.combatants) {
-          roster.visualFor(combatant.actorId);
-        }
         final rng = widget.seedForTest == null
             ? ref.read(mathRandomProvider)
             : newMathRandom(seed: widget.seedForTest);
-        final flow = Phase0aProductionFlowAssembler.assemble(
-          initialState: mapping.initialState,
-          waves: mapping.waves,
-          combatants: mapping.combatants,
-          moveBindings: mapping.moveBindings,
-          numbers: numbers,
-          rng: rng,
-          playerAdapter: mapping.playerAdapter,
-          enemyAiAdapter: mapping.enemyAiAdapter,
+        final session =
+            await ref.read(phase0aTowerCombatSessionFactoryProvider)(
+              Phase0aTowerCombatSessionBuildRequest(
+                contentRef: CombatContentRef.tower(
+                  'tower_${widget.floor.floorIndex}',
+                ),
+                floor: widget.floor,
+                playerSnapshot: playerSnapshot,
+                numbers: numbers,
+                cycleIndex: cycleIndex,
+                rng: rng,
+              ),
+            );
+        final roster = Phase0aVisualRoster.fromCombatants(
+          playerId: session.flow.state.player.id,
+          combatants: session.combatants,
         );
+        for (final combatant in session.combatants) {
+          roster.visualFor(combatant.actorId);
+        }
         if (!mounted) return;
         final controller = Phase0aBattleController(
-          flow: flow,
+          flow: session.flow,
           roster: roster,
           fixedDeltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
         );
         controller.addListener(_onControllerChanged);
         setState(() {
-          _mapping = mapping;
+          _session = session;
           _controller = controller;
         });
       } catch (e) {
@@ -123,11 +122,10 @@ class _Phase0aTowerBattleHostState
     if (controller == null || _exitNotified) return;
     final outcome = controller.outcome;
     if (outcome == Phase0aBattleOutcome.ongoing) return;
-    final mapping = _mapping;
-    if (mapping == null) return;
+    final session = _session;
+    if (session == null) return;
     _exitNotified = true;
-    final settlement = Phase0aSettlementAdapter.fromMapping(
-      mapping: mapping,
+    final settlement = session.settle(
       outcome: outcome,
       finalState: controller.state,
       events: controller.events,
@@ -169,8 +167,8 @@ class _Phase0aTowerBattleHostState
     }
     return Phase0aBattleScreen(
       controller: controller,
-      numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
-      basicAttackRange: _mapping!.playerAdapter.attackRange,
+      numericSkillBindings: _session!.playerAdapter.numericSkillBindings,
+      basicAttackRange: _session!.playerAdapter.attackRange,
     );
   }
 }

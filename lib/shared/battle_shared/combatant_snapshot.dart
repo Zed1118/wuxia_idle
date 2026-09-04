@@ -126,6 +126,7 @@ final class CombatantSnapshot {
     Map<String, int>? skillUses,
     List<SkillDef>? availableSkills,
     Map<String, int>? openingSkillCooldowns,
+    List<String>? guardianDefIds,
   }) => CombatantSnapshot(
     characterId: characterId,
     name: name,
@@ -166,7 +167,7 @@ final class CombatantSnapshot {
     forgingLifestealPct: forgingLifestealPct,
     enemyDefId: enemyDefId,
     guardianWardMult: guardianWardMult,
-    guardianDefIds: guardianDefIds,
+    guardianDefIds: guardianDefIds ?? this.guardianDefIds,
     vulnerabilityMult: vulnerabilityMult,
     guardInterceptsInterrupt: guardInterceptsInterrupt,
   );

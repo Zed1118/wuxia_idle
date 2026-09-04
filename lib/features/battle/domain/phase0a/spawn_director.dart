@@ -228,6 +228,16 @@ final class SpawnDirector {
     : _units = _initUnits(entries),
       _tick = 0;
 
+  /// Compatibility-preserving initialization for content whose existing
+  /// runtime starts the entire encounter roster on field at tick zero.
+  /// Callers must explicitly opt in; the ordinary dynamic route remains
+  /// pending-first.
+  SpawnDirector.allActive({
+    required this.config,
+    required List<SpawnEntry> entries,
+  }) : _units = _initActiveUnits(entries, config),
+       _tick = 0;
+
   SpawnDirector._(this.config, this._units, this._tick);
 
   final SpawnDirectorConfig config;
@@ -258,6 +268,26 @@ final class SpawnDirector {
       units.add(
         _SpawnUnit(entry, remainingWarningTicks: 0, remainingGraceTicks: 0),
       );
+    }
+    return units;
+  }
+
+  static List<_SpawnUnit> _initActiveUnits(
+    List<SpawnEntry> entries,
+    SpawnDirectorConfig config,
+  ) {
+    final units = _initUnits(entries);
+    if (units.length > config.activeLimit) {
+      throw ArgumentError.value(
+        entries.length,
+        'entries',
+        'all-active initialization exceeds activeLimit',
+      );
+    }
+    for (final unit in units) {
+      unit.stage = SpawnUnitStage.active;
+      unit.enteredTick = 0;
+      unit.remainingGraceTicks = 0;
     }
     return units;
   }
