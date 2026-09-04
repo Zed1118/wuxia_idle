@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：五关生产路由与测试契约已经实现，待冻结 exact-tip 候选并执行标准 Gate。
-- 已跑验证：有效初始 RED `0/6`；缺 assignment、错 `base_enemy_id`、错 role 三向 mutation 均精确转红并按 SHA-256 恢复；Ch19 `6/6`；Ch18+19 `12/12`；Phase 2 data `168/168`；mainline application `183/183`；analyze 0 issue；format `1641/0`；测试契约迁移 Gate `PASS`。
-- 下一步：冻结 `[READY]` tip，在独立 detached worktree 跑标准 Gate、持锁全量与最终范围复核。
+- 状态：候选 `7072d7ca` 经 no-ff merge `5ab2fe35` 进入 `main/origin/main`，merge exact-SHA CI run `33844770791` 全部成功；主线工程水位入账为 `91/105`。
+- 已跑验证：有效初始 RED `0/6`；三向 mutation 精确变红并按 SHA-256 恢复；Ch19 `6/6`；Ch18+19 `12/12`；Phase 2 data `168/168`；mainline application `183/183`；analyze 0 issue；format 0 changed；test-contract migration `PASS`；候选标准 Gate 隔离 full `5981/5981`、错误块 0，原始结果仅 `FAIL: test_deletions`（已登记）；合并态 full `5981/5981`；merge exact-SHA CI 全部 jobs/steps 成功。
+- 下一步：本计划、task registry、PROGRESS 与独立审计组成治理尾；提交后核对该最终 exact-SHA CI，再以 Ch20 `91/105 → 96/105` 为唯一下一工程门。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
