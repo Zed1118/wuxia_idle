@@ -24,51 +24,51 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_20_01': (
-    'ch20_encounter_01_horse_changer',
-    'ch20_s01_horse_changer',
+  'stage_21_01': (
+    'ch21_encounter_01_pass_soldier',
+    'ch21_s01_pass_soldier',
+    TechniqueSchool.gangMeng,
+    'ch2_attack_set_outer',
+    'sect_outer',
+  ),
+  'stage_21_02': (
+    'ch21_encounter_02_veteran_ferryman',
+    'ch21_s02_veteran_ferryman',
+    TechniqueSchool.yinRou,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
+  ),
+  'stage_21_03': (
+    'ch21_encounter_03_sword_debate_descendant',
+    'ch21_s03_sword_debate_descendant',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_20_02': (
-    'ch20_encounter_02_beacon_keeper',
-    'ch20_s02_beacon_keeper',
-    TechniqueSchool.yinRou,
-    'ch2_attack_set_lightfoot',
-    'sect_lightfoot',
-  ),
-  'stage_20_03': (
-    'ch20_encounter_03_wall_mender',
-    'ch20_s03_wall_mender',
+  'stage_21_04': (
+    'ch21_encounter_04_path_blocking_old_servant',
+    'ch21_s04_path_blocking_old_servant',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
     'sect_outer',
   ),
-  'stage_20_04': (
-    'ch20_encounter_04_returning_veteran',
-    'ch20_s04_returning_veteran',
-    TechniqueSchool.gangMeng,
-    'ch2_attack_set_outer',
-    'sect_outer',
-  ),
-  'stage_20_05': (
-    'ch20_encounter_05_gate_opening_old_general',
-    'ch20_s05_gate_opening_old_general',
-    TechniqueSchool.yinRou,
+  'stage_21_05': (
+    'ch21_encounter_05_talisman_following_youth',
+    'ch21_s05_talisman_following_youth',
+    TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
 };
 
 const _bossCases = {
-  'stage_20_04': (
-    'ch20_encounter_04_returning_veteran',
-    'ch20_s04_returning_veteran',
+  'stage_21_04': (
+    'ch21_encounter_04_path_blocking_old_servant',
+    'ch21_s04_path_blocking_old_servant',
   ),
-  'stage_20_05': (
-    'ch20_encounter_05_gate_opening_old_general',
-    'ch20_s05_gate_opening_old_general',
+  'stage_21_05': (
+    'ch21_encounter_05_talisman_following_youth',
+    'ch21_s05_talisman_following_youth',
   ),
 };
 
@@ -84,9 +84,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 20 exposes five of five migrated production routes', () {
+  test('Chapter 21 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 20)
+        .where((stage) => stage.chapterIndex == 21)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -108,11 +108,11 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(96));
+    expect(migratedMainlineCount, 101);
   });
 
   test(
-    'Chapter 20 routes retain authored singleton identities and current roles',
+    'Chapter 21 routes retain authored singleton identities and current roles',
     () {
       for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
         final stage = repository.getStage(stageId);
@@ -144,7 +144,7 @@ void main() {
     },
   );
 
-  test('Chapter 20 routes construct through the real factory', () async {
+  test('Chapter 21 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -165,8 +165,8 @@ void main() {
     }
   });
 
-  test('Chapter 20 objectives require the authored singleton opponent', () {
-    for (final stageId in ['stage_20_01', 'stage_20_02', 'stage_20_03']) {
+  test('Chapter 21 objectives preserve defeat-or-survive semantics', () {
+    for (final stageId in ['stage_21_01', 'stage_21_02', 'stage_21_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -179,21 +179,59 @@ void main() {
       expect(progress.completed, isTrue, reason: stageId);
     }
 
-    for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
-      final encounter = repository.combatEncounterForStage(stageId)!;
-      final controller = mapCombatObjectiveComposition(
-        encounter.objectives,
-        tickDuration: const Duration(milliseconds: 100),
-      );
-      final progress = controller.advance(
-        controller.initialProgress,
-        CommanderDefeated(identity.$2),
-      );
-      expect(progress.completed, isTrue, reason: stageId);
-    }
+    final middleEncounter = repository.combatEncounterForStage('stage_21_04')!;
+    final middleController = mapCombatObjectiveComposition(
+      middleEncounter.objectives,
+      tickDuration: const Duration(milliseconds: 100),
+    );
+    expect(
+      middleController
+          .advance(
+            middleController.initialProgress,
+            CommanderDefeated(_bossCases['stage_21_04']!.$2),
+          )
+          .completed,
+      isTrue,
+    );
+
+    final finalEncounter = repository.combatEncounterForStage('stage_21_05')!;
+    expect(
+      finalEncounter.objectives.completionRule,
+      CombatObjectiveCompletionRule.any,
+    );
+    expect(
+      finalEncounter.objectives.clauses.map((clause) => clause.primitive),
+      contains(isA<CombatSurviveDurationRef>()),
+    );
+    final defeatController = mapCombatObjectiveComposition(
+      finalEncounter.objectives,
+      tickDuration: const Duration(milliseconds: 100),
+    );
+    expect(
+      defeatController
+          .advance(
+            defeatController.initialProgress,
+            CommanderDefeated(_bossCases['stage_21_05']!.$2),
+          )
+          .completed,
+      isTrue,
+    );
+    final surviveController = mapCombatObjectiveComposition(
+      finalEncounter.objectives,
+      tickDuration: const Duration(milliseconds: 100),
+    );
+    expect(
+      surviveController
+          .advance(
+            surviveController.initialProgress,
+            TimeElapsed(const Duration(seconds: 1), eventId: 'ten-ticks'),
+          )
+          .completed,
+      isTrue,
+    );
   });
 
-  test('Chapter 20 Bosses retain mechanics and cycle vulnerability', () {
+  test('Chapter 21 Bosses retain mechanics and cycle vulnerability', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -246,34 +284,35 @@ void main() {
       expect(target.createActor('runtime-target').isBoss, isTrue);
     }
 
-    final middleBoss = repository.getStage('stage_20_04').enemyTeam.single;
-    expect(middleBoss.vulnerabilityForCycle(1)!.outOfWindowDamageMult, 0.18);
+    final middleBoss = repository.getStage('stage_21_04').enemyTeam.single;
+    expect(middleBoss.vulnerabilityForCycle(1)!.outOfWindowDamageMult, 0.16);
 
-    final finalStage = repository.getStage('stage_20_05');
+    final finalStage = repository.getStage('stage_21_05');
     final finalBoss = finalStage.enemyTeam.single;
-    expect(finalBoss.vulnerabilityForCycle(1)!.outOfWindowDamageMult, 0.12);
-    expect(finalBoss.vulnerabilityForCycle(2)!.outOfWindowDamageMult, 0.06);
-    expect(finalStage.dropSkillManualId, 'skill_gu_cheng_kai');
+    expect(finalBoss.vulnerabilityForCycle(1)!.outOfWindowDamageMult, 0.10);
+    expect(finalBoss.vulnerabilityForCycle(2)!.outOfWindowDamageMult, 0.05);
+    expect(finalStage.winCondition!.surviveTicksRequired, 10);
+    expect(finalStage.dropSkillManualId, 'skill_shan_wai_wu_shan');
     expect(finalBoss.chargeSkillId, finalStage.dropSkillManualId);
 
     final cycleTwoBundle =
         buildPhase0aMainlineRuntimeBindingBundleFromRepository(
-          stageId: 'stage_20_05',
-          encounterId: _expected['stage_20_05']!.$1,
+          stageId: 'stage_21_05',
+          encounterId: _expected['stage_21_05']!.$1,
           cycleIndex: 2,
           repository: repository,
         );
     expect(
       cycleTwoBundle
-          .actorBindingsByEntryId[_expected['stage_20_05']!.$2]!
+          .actorBindingsByEntryId[_expected['stage_21_05']!.$2]!
           .combatant
           .vulnerabilityMult,
-      0.06,
+      0.05,
     );
   });
 
   test(
-    'all five Chapter 20 routes reach dynamic victory without stalls',
+    'all five Chapter 21 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -286,7 +325,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026092000 + index),
+            rng: Random(2026092100 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
@@ -305,11 +344,15 @@ void main() {
         expect(result.outcome, Phase0aBattleOutcome.victory, reason: stageId);
         expect(result.timedOut, isFalse, reason: stageId);
         expect(result.ticks, inInclusiveRange(1, maxTicks - 1));
-        expect(
-          result.events.whereType<Phase0aEnemyDefeated>(),
-          hasLength(1),
-          reason: stageId,
-        );
+        if (stageId == 'stage_21_05') {
+          expect(result.ticks, lessThanOrEqualTo(10));
+        } else {
+          expect(
+            result.events.whereType<Phase0aEnemyDefeated>(),
+            hasLength(1),
+            reason: stageId,
+          );
+        }
       }
     },
     timeout: const Timeout(Duration(minutes: 3)),

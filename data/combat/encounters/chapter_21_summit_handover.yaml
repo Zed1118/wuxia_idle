@@ -1,0 +1,72 @@
+# Production Chapter 21 summit-handover routes. Authored combat is five duels.
+encounters:
+  - id: ch21_encounter_01_pass_soldier
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch21_s01_pass_soldier, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch21_s01_defeat_pass_soldier, kind: defeat_targets, target_ids: [ch21_s01_pass_soldier]}
+
+  - id: ch21_encounter_02_veteran_ferryman
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch21_s02_veteran_ferryman, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch21_s02_defeat_veteran_ferryman, kind: defeat_targets, target_ids: [ch21_s02_veteran_ferryman]}
+
+  - id: ch21_encounter_03_sword_debate_descendant
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch21_s03_sword_debate_descendant, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch21_s03_defeat_sword_debate_descendant, kind: defeat_targets, target_ids: [ch21_s03_sword_debate_descendant]}
+
+  - id: ch21_encounter_04_path_blocking_old_servant
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch21_s04_path_blocking_old_servant, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch21_s04_defeat_path_blocking_old_servant, kind: defeat_commander, commander_id: ch21_s04_path_blocking_old_servant}
+
+  - id: ch21_encounter_05_talisman_following_youth
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch21_s05_talisman_following_youth, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: any
+      clauses:
+        - {id: ch21_s05_defeat_talisman_following_youth, kind: defeat_commander, commander_id: ch21_s05_talisman_following_youth}
+        - {id: ch21_s05_survive_ten_ticks, kind: survive_duration, required_ticks: 10}

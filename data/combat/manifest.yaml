@@ -31,6 +31,7 @@ encounter_sources:
   - data/combat/encounters/chapter_18_yangguan.yaml
   - data/combat/encounters/chapter_19_return.yaml
   - data/combat/encounters/chapter_20_eastward_pass.yaml
+  - data/combat/encounters/chapter_21_summit_handover.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -791,6 +792,11 @@ reference_index:
     - ch20_s03_wall_mender
     - ch20_s04_returning_veteran
     - ch20_s05_gate_opening_old_general
+    - ch21_s01_pass_soldier
+    - ch21_s02_veteran_ferryman
+    - ch21_s03_sword_debate_descendant
+    - ch21_s04_path_blocking_old_servant
+    - ch21_s05_talisman_following_youth
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
