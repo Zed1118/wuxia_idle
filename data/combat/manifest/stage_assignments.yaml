@@ -258,3 +258,18 @@ stage_assignments:
   - stage_id: stage_18_05
     migration_state: migrated
     encounter_id: ch18_encounter_05_xiliang_overlord
+  - stage_id: stage_19_01
+    migration_state: migrated
+    encounter_id: ch19_encounter_01_turnback_traveler
+  - stage_id: stage_19_02
+    migration_state: migrated
+    encounter_id: ch19_encounter_02_sand_measurer
+  - stage_id: stage_19_03
+    migration_state: migrated
+    encounter_id: ch19_encounter_03_wind_listener
+  - stage_id: stage_19_04
+    migration_state: migrated
+    encounter_id: ch19_encounter_04_returning_gatekeeper
+  - stage_id: stage_19_05
+    migration_state: migrated
+    encounter_id: ch19_encounter_05_blackstone_mirror_keeper

@@ -24,37 +24,37 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_18_01': (
-    'ch18_encounter_01_pass_sentry',
-    'ch18_s01_pass_sentry',
+  'stage_19_01': (
+    'ch19_encounter_01_turnback_traveler',
+    'ch19_s01_turnback_traveler',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
     'sect_outer',
   ),
-  'stage_18_02': (
-    'ch18_encounter_02_smoke_interceptor',
-    'ch18_s02_smoke_interceptor',
+  'stage_19_02': (
+    'ch19_encounter_02_sand_measurer',
+    'ch19_s02_sand_measurer',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_18_03': (
-    'ch18_encounter_03_city_greeter',
-    'ch18_s03_city_greeter',
+  'stage_19_03': (
+    'ch19_encounter_03_wind_listener',
+    'ch19_s03_wind_listener',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_18_04': (
-    'ch18_encounter_04_xiliang_third_disciple',
-    'ch18_s04_xiliang_third_disciple',
-    TechniqueSchool.yinRou,
-    'ch2_attack_set_lightfoot',
-    'sect_lightfoot',
+  'stage_19_04': (
+    'ch19_encounter_04_returning_gatekeeper',
+    'ch19_s04_returning_gatekeeper',
+    TechniqueSchool.gangMeng,
+    'ch2_attack_set_outer',
+    'sect_outer',
   ),
-  'stage_18_05': (
-    'ch18_encounter_05_xiliang_overlord',
-    'ch18_s05_xiliang_overlord',
+  'stage_19_05': (
+    'ch19_encounter_05_blackstone_mirror_keeper',
+    'ch19_s05_blackstone_mirror_keeper',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
@@ -62,13 +62,13 @@ const _expected = {
 };
 
 const _bossCases = {
-  'stage_18_04': (
-    'ch18_encounter_04_xiliang_third_disciple',
-    'ch18_s04_xiliang_third_disciple',
+  'stage_19_04': (
+    'ch19_encounter_04_returning_gatekeeper',
+    'ch19_s04_returning_gatekeeper',
   ),
-  'stage_18_05': (
-    'ch18_encounter_05_xiliang_overlord',
-    'ch18_s05_xiliang_overlord',
+  'stage_19_05': (
+    'ch19_encounter_05_blackstone_mirror_keeper',
+    'ch19_s05_blackstone_mirror_keeper',
   ),
 };
 
@@ -84,9 +84,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 18 exposes five of five migrated production routes', () {
+  test('Chapter 19 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 18)
+        .where((stage) => stage.chapterIndex == 19)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -108,11 +108,11 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(86));
+    expect(migratedMainlineCount, 91);
   });
 
   test(
-    'Chapter 18 routes retain authored singleton identities and current roles',
+    'Chapter 19 routes retain authored singleton identities and current roles',
     () {
       for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
         final stage = repository.getStage(stageId);
@@ -144,7 +144,7 @@ void main() {
     },
   );
 
-  test('Chapter 18 routes construct through the real factory', () async {
+  test('Chapter 19 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -165,8 +165,8 @@ void main() {
     }
   });
 
-  test('Chapter 18 objectives require the authored singleton opponent', () {
-    for (final stageId in ['stage_18_01', 'stage_18_02', 'stage_18_03']) {
+  test('Chapter 19 objectives require the authored singleton opponent', () {
+    for (final stageId in ['stage_19_01', 'stage_19_02', 'stage_19_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -193,7 +193,7 @@ void main() {
     }
   });
 
-  test('both Chapter 18 Bosses retain exact mechanics and vulnerabilities', () {
+  test('Chapter 19 Bosses retain mechanics and cycle vulnerability', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -245,34 +245,35 @@ void main() {
       );
       expect(target.createActor('runtime-target').isBoss, isTrue);
     }
+
+    final middleBoss = repository.getStage('stage_19_04').enemyTeam.single;
+    expect(middleBoss.vulnerability, isNull);
+
+    final finalStage = repository.getStage('stage_19_05');
+    final finalBoss = finalStage.enemyTeam.single;
+    expect(finalBoss.vulnerabilityForCycle(1)!.outOfWindowDamageMult, 0.15);
+    expect(finalBoss.vulnerabilityForCycle(2)!.outOfWindowDamageMult, 0.08);
+    expect(finalStage.dropSkillManualId, 'skill_yi_jing_shuang_zhao');
+    expect(finalBoss.chargeSkillId, finalStage.dropSkillManualId);
+
+    final cycleTwoBundle =
+        buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+          stageId: 'stage_19_05',
+          encounterId: _expected['stage_19_05']!.$1,
+          cycleIndex: 2,
+          repository: repository,
+        );
     expect(
-      repository
-          .getStage('stage_18_04')
-          .enemyTeam
-          .single
-          .vulnerability!
-          .outOfWindowDamageMult,
-      0.20,
-    );
-    expect(
-      repository
-          .getStage('stage_18_05')
-          .enemyTeam
-          .single
-          .vulnerability!
-          .outOfWindowDamageMult,
-      0.12,
-    );
-    final finalStage = repository.getStage('stage_18_05');
-    expect(finalStage.dropSkillManualId, 'skill_yang_guan_wu_gu_ren');
-    expect(
-      finalStage.enemyTeam.single.chargeSkillId,
-      finalStage.dropSkillManualId,
+      cycleTwoBundle
+          .actorBindingsByEntryId[_expected['stage_19_05']!.$2]!
+          .combatant
+          .vulnerabilityMult,
+      0.08,
     );
   });
 
   test(
-    'all five Chapter 18 routes reach dynamic victory without stalls',
+    'all five Chapter 19 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -285,7 +286,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026091800 + index),
+            rng: Random(2026091900 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),

@@ -29,6 +29,7 @@ encounter_sources:
   - data/combat/encounters/chapter_16_liangzhou.yaml
   - data/combat/encounters/chapter_17_shahai.yaml
   - data/combat/encounters/chapter_18_yangguan.yaml
+  - data/combat/encounters/chapter_19_return.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -779,6 +780,11 @@ reference_index:
     - ch18_s03_city_greeter
     - ch18_s04_xiliang_third_disciple
     - ch18_s05_xiliang_overlord
+    - ch19_s01_turnback_traveler
+    - ch19_s02_sand_measurer
+    - ch19_s03_wind_listener
+    - ch19_s04_returning_gatekeeper
+    - ch19_s05_blackstone_mirror_keeper
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack

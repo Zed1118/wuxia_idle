@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch19-content-migration-20260904
+base_sha: c5fa3b15e678deea884a9266e178d93cb0be3778
+head_sha: 489c985a65c8d71c50ee8e09d7b1f341e0e7dcb6
+summary: 第十八章测试保留已集成的 86 条主线下限；第十九章测试独立精确守住 91 条候选水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 86);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(86));
+    reason: 第十八章测试只守住已集成的 86 条下限，不能阻断第十九章五关及后续章节；第十九章新测试另以精确等于 91 防止本批少接或多接。
