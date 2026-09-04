@@ -31,9 +31,10 @@
 
 ## 当前恢复点
 
-- 状态：五关已在候选 `8dabea498868014b0edd93d82490910c67c23725` 接入 typed production catalog、runtime binding 与真实 factory；候选工程水位为 `101/105`。
+- 状态：五关已在最终候选 `5e91fd9fa9a7aafe3f78c6c94f317f47daaeb377` 接入 typed production catalog、runtime binding 与真实 factory；经 no-ff merge `5ca94415fc482db69c3831de8b934071aacaee1a` 进入 `main` / `origin/main`，工程水位为 `101/105`。
 - 有效 RED：新增 Ch21 合同测试首次运行 `0/6`，分别在 assignment、identity/role、真实 factory、objective、Boss runtime 与 dynamic victory 处因生产路由缺失失败；接线后 `6/6` 通过。Ch20+Ch21 首次相邻回归仅留下预期水位失败（期望 `96`、实际 `101`），迁移后 `12/12` 通过。
 - 变异证据：删除 `stage_21_01` assignment 时 catalog loader 因 encounter 未分配失败；把 `stage_21_02.base_enemy_id` 改错时 runtime loader 因 StageDef 不一致失败；把 `stage_21_03` role 从 `sect_lightfoot` 改为 `sect_outer` 时 runtime loader 因 attack-set closure 缺失/多余失败。三处均已恢复，assignment/runtime/encounter SHA-256 分别回到 `785d8bc51a5524865c0b3479568ecb642c0fc5aea5d98444d24e399bced9fb05`、`6ed15b6c15f9444bf35e6160d84cc7640298f4344256098a612c6db8cfc00ddb`、`0d1909d1ff402342f5af81f4a12adb70e229808091c456724b9ac1ec745c1d26`。
 - 已跑验证：Ch21 `6/6`、Ch20+Ch21 `12/12`、Phase 2 data `180/180`、主线 application `183/183`；项目标准范围 analyze 零问题、format `1736` 文件零改动；专用 `test_contract_migration` 门 PASS（实现删 1/增 45、用例删 0/增 6、登记 1 条）。标准 Gate 的白名单、禁改、commit、clean、隔离 full `5993/5993`、analyze 与 format 均 PASS，receipt 因无 `lib/` 改动 SKIP；原始总结果仅 `FAIL: test_deletions`，该 1 行由专用迁移门覆盖。
-- 下一步：no-ff 集成主线、完成 exact-SHA CI 与治理尾，不启动第十三章实现。
+- 集成证据：合并态 Ch20+Ch21 `12/12`、full `5993/5993`、analyze 零问题、format `1737` 文件零改动；merge exact-SHA CI run `33862752755` 对 `5ca94415fc482db69c3831de8b934071aacaee1a` 为 `completed/success`。
+- 下一步：只进入第十三章生态边界决策审计，审计前不启动其余四关实现。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
