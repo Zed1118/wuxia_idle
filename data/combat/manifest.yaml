@@ -30,6 +30,7 @@ encounter_sources:
   - data/combat/encounters/chapter_17_shahai.yaml
   - data/combat/encounters/chapter_18_yangguan.yaml
   - data/combat/encounters/chapter_19_return.yaml
+  - data/combat/encounters/chapter_20_eastward_pass.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -785,6 +786,11 @@ reference_index:
     - ch19_s03_wind_listener
     - ch19_s04_returning_gatekeeper
     - ch19_s05_blackstone_mirror_keeper
+    - ch20_s01_horse_changer
+    - ch20_s02_beacon_keeper
+    - ch20_s03_wall_mender
+    - ch20_s04_returning_veteran
+    - ch20_s05_gate_opening_old_general
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
