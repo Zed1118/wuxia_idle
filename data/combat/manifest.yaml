@@ -27,6 +27,7 @@ encounter_sources:
   - data/combat/encounters/chapter_14_shanwai.yaml
   - data/combat/encounters/chapter_15_guanshan.yaml
   - data/combat/encounters/chapter_16_liangzhou.yaml
+  - data/combat/encounters/chapter_17_shahai.yaml
 stage_assignments_source: data/combat/manifest/stage_assignments.yaml
 runtime_bindings_source: data/combat/runtime_bindings.yaml
 player_attack_profiles_source: data/combat/player_attack_profiles.yaml
@@ -767,6 +768,11 @@ reference_index:
     - ch16_s03_traveler
     - ch16_s04_cavalry_general
     - ch16_s05_gatekeeper
+    - ch17_s01_sand_treader
+    - ch17_s02_blackwind_blade
+    - ch17_s03_old_city_guard
+    - ch17_s04_sandstorm_hand
+    - ch17_s05_desert_guide
   objective_anchor_ids:
     - ch1_s02_anchor_gate
     - ch1_s02_anchor_gong_rack
