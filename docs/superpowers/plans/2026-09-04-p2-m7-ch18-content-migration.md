@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：已完成 live 审计，尚未修改生产目录。
-- 已跑验证：本章 typed route 全仓 `0/5`；5/5 StageDef、12/12 叙事文件、5/5 敌图存在；基线 exact-SHA CI run `33829726825` 全部 jobs/steps 成功。
-- 下一步：先写第十八章契约测试并取得有效 RED，再接通 encounter、assignment、manifest 与 runtime binding。
+- 状态：生产接线、契约测试与第十七章水位合同迁移已完成，等待 wider regression 与治理登记。
+- 已跑验证：有效初始 RED `0/6`；删 assignment、错 base enemy、错角色语义三向 mutation 均精确变红并恢复原 SHA；Ch18 `6/6`；Ch17+18 `12/12`。
+- 下一步：运行 Phase 2 data 与 mainline application 回归，登记 test-contract migration、任务证据与 PROGRESS，再完成 analyze/format/Gate。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
