@@ -288,3 +288,18 @@ stage_assignments:
   - stage_id: stage_20_05
     migration_state: migrated
     encounter_id: ch20_encounter_05_gate_opening_old_general
+  - stage_id: stage_21_01
+    migration_state: migrated
+    encounter_id: ch21_encounter_01_pass_soldier
+  - stage_id: stage_21_02
+    migration_state: migrated
+    encounter_id: ch21_encounter_02_veteran_ferryman
+  - stage_id: stage_21_03
+    migration_state: migrated
+    encounter_id: ch21_encounter_03_sword_debate_descendant
+  - stage_id: stage_21_04
+    migration_state: migrated
+    encounter_id: ch21_encounter_04_path_blocking_old_servant
+  - stage_id: stage_21_05
+    migration_state: migrated
+    encounter_id: ch21_encounter_05_talisman_following_youth
