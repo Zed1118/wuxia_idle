@@ -6147,22 +6147,25 @@ tasks:
     owner: codex_root
     branch: codex/p2-m0-decision-batch-20260904
     worktree: /Users/a10506/.codex/worktrees/p2-m0-decision-batch-20260904
-    status: ready_for_user_decision
-    current_authoritative_wip: true
+    status: complete
+    current_authoritative_wip: false
     base_commit: 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f
     completion_scope: classify_and_batch_all_22_open_m0_decision_entries_without_changing_production_behavior
     acceptance_target: 22_of_22_entries_classified_and_one_explicit_user_batch_choice
-    acceptance_result: 22_of_22_classified_user_batch_choice_pending
+    acceptance_result: 22_of_22_classified_M0_R_approved
     evidence:
       decision_packet: docs/audit/phase2_m0_decision_batch_2026-09-04.md
       recommended_batch: M0-R
+      approved_batch: M0-R
+      approved_at: "2026-09-04"
+      approval_basis: '当前 Codex 会话：承接“是否批准 M0-R”，用户明确回复“批准”'
       selected_tuning_not_reasked: 4
       selected_tuning_ids:
         - TUNE-WEAPON-TIMELINE-01
         - TUNE-WEAPON-QI-01
         - TUNE-POSTURE-01
         - TUNE-ATTACK-TOKEN-01
-      unselected_tuning_batched_for_choice: 16
+      newly_selected_tuning_in_M0_R: 16
       keep_current_baseline_choice_C:
         - TUNE-FORWARD-FAN-01
         - TUNE-OTHER-GEOMETRIES-01
@@ -6185,34 +6188,34 @@ tasks:
       stale_partially_reopened_reconciled: 1
       production_behavior_changed: false
       formal_M0_closed: false
-    blockers:
-      - explicit_user_approval_of_M0_R_or_rewrite
-      - applicable_production_wiring_measurement_playtest_and_Windows_evidence
     protected_behavior:
-      - ready_for_user_decision_is_not_formal_M0_acceptance
+      - decision_batch_completion_is_not_formal_M0_acceptance
       - no_new_numeric_value_AI_binding_gameplay_rule_or_performance_promise
 
   - id: P2-M0-DECISION-TUNING-CLOSEOUT
     milestone: M0
     owner: codex_root
     status: blocked
-    current_authoritative_wip: false
+    current_authoritative_wip: true
     completion_scope: close_remaining_phase2_decisions_without_inventing_product_values_or_rules
     acceptance_target: 1_of_1_formal_M0_gate
     acceptance_result: 0_of_1_formal_M0_gate
     evidence:
       tuning_entries_total: 20
-      tuning_selected_pending_validation: 4
-      tuning_choice_pending: 16
-      deferred_pending_matrix_open: 1
+      tuning_selected_pending_validation: 20
+      tuning_choice_pending: 0
+      M0_R_user_approval_recorded: true
+      deferred_pending_matrix_open: 0
+      deferred_pending_identity_signoff_open: 1
       inner_demon_matrix_authored_pending_identity_signoff: true
       partially_reopened_open: 0
       factual_failure_display_implemented: true
       decision_batch: docs/audit/phase2_m0_decision_batch_2026-09-04.md
     blockers:
-      - human_tuning_or_product_decisions_and_required_acceptance_evidence
+      - applicable_production_wiring_measurement_playtest_and_Windows_evidence
     protected_behavior:
       - no_open_decision_is_treated_as_approved_by_elapsed_time_or_engineering_convenience
+      - new_inner_demon_AI_binding_remains_forbidden_without_per_identity_signoff
 
   - id: P2-M2-HUMAN-G2-ACCEPTANCE
     milestone: M2

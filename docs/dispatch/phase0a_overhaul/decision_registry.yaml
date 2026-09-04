@@ -349,7 +349,7 @@ decisions:
     batch_action: evidence_only
 
   - id: INNER-DEMON-AI-01
-    status: deferred_pending_matrix
+    status: deferred_pending_identity_signoff
     summary: 先完成 canon、narrative、behavior、test 四列矩阵，再逐名冻结七心魔 AI
     g0_choice: C
     required_matrix_columns:
@@ -360,6 +360,12 @@ decisions:
     freeze_requires_explicit_user_choice: true
     batch_action: author_matrix_then_get_user_signoff_for_each_identity_before_m5_binding
     safe_default: keep_existing_ai
+    matrix_status: accepted_as_identity_signoff_input
+    matrix_evidence: docs/audit/phase2_m0_decision_batch_2026-09-04.md
+    current_production_ai: existing_shared_ai_preserved
+    new_ai_binding_authorized: false
+    m0_r_approved_at: "2026-09-04"
+    m0_r_approval_basis: '当前 Codex 会话：承接“是否批准 M0-R”，用户明确回复“批准”'
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
@@ -581,21 +587,41 @@ decisions:
     status: tuning
     summary: 前向扇形边界候选生成
     atomic_vectors: [range, half_angle]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-OTHER-GEOMETRIES-01
     status: tuning
     summary: 其余五类几何默认边界候选生成
     atomic_vectors: [circle_radius, ring_inner_outer_radius, rectangle_length_width, chain_range_jumps, single_target_range]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-GEOMETRY-TARGET-CAP-01
     status: tuning
     summary: 各几何目标上限候选生成
     atomic_vectors: [single_target_cap, fan_cap, circle_cap, ring_cap, rectangle_cap, chain_cap]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-GEOMETRY-WALL-01
     status: tuning
     summary: 墙体与场地边界规则候选生成
     atomic_vectors: [wall_blocking_policy, arena_clamp_policy]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-WEAPON-TIMELINE-01
     status: tuning
@@ -629,16 +655,31 @@ decisions:
     status: tuning
     summary: 五武器与招式倍率候选生成
     atomic_vectors: [basic_multiplier, technique_multiplier, finisher_multiplier]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-DODGE-WINDOW-01
     status: tuning
     summary: 主动闪避无敌窗与完美闪避窗候选生成
     atomic_vectors: [iframe, perfect_dodge]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-DEFENSE-01
     status: tuning
     summary: 护盾吸收、化解窗口与反伤上限候选生成
     atomic_vectors: [shield_absorption, parry_window, counter_cap]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-POSTURE-01
     status: tuning
@@ -664,11 +705,21 @@ decisions:
     status: tuning
     summary: 各模式同屏 activeLimit 候选生成
     atomic_vectors: [mainline, tower, expedition, gauntlet, mass_battle]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-REINFORCEMENT-01
     status: tuning
     summary: 不同模板补兵阈值候选生成
     atomic_vectors: [threshold, delay, batch_size]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-ATTACK-TOKEN-01
     status: tuning
@@ -689,36 +740,73 @@ decisions:
     status: tuning
     summary: 各关总量区间内的精确编排候选生成
     atomic_vectors: [total_count, wave_count, wave_composition]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-INJURY-01
     status: tuning
     summary: 伤势概率、严重度与恢复时长候选生成
     atomic_vectors: [light_frequency, light_stack, heavy_trigger, heavy_duration, heavy_severity]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-ACTIVITY-DURATION-01
     status: tuning
     summary: 各活动占用时间候选生成
     atomic_vectors: [retreat, expedition, gauntlet, healing]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-REPEAT-REWARD-01
     status: tuning
     summary: 重复通关奖励候选生成
     atomic_vectors: [mainline, gauntlet, cycle]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-ENTRY-TICKET-01
     status: tuning
     summary: 世界观凭证产出候选生成
     atomic_vectors: [tower_ticket, expedition_ticket]
+    user_choice: C
+    decided_on: 2026-09-04
+    selected_candidate: C
+    decision_effect: preserve_current_production_baseline_no_new_phase2_value_or_rule
+    playtest: pending
 
   - id: TUNE-PERFORMANCE-MATRIX-01
     status: tuning
     summary: 帧预算、高密度矩阵、headless 吞吐与 RSS 候选生成
     atomic_vectors: [frame_budget, headless_throughput, rss_bound]
+    user_choice: B
+    decided_on: 2026-09-04
+    selected_candidate: B
+    decision_effect: measure_mac_and_windows_before_freezing_targets
+    measurement_status: pending
+    performance_promise_frozen: false
 
   - id: TUNE-WINDOWS-PERFORMANCE-01
     status: tuning
     summary: 最低 Windows 配置与性能目标候选生成
     atomic_vectors: [minimum_hardware_profile, mac_windows_parity]
+    user_choice: B
+    decided_on: 2026-09-04
+    selected_candidate: B
+    decision_effect: measure_mac_and_windows_before_freezing_targets
+    measurement_status: pending
+    performance_promise_frozen: false
 
   # G0 对以上全部 TUNE-* 项统一只授权候选生成；closeout 审计用 prefix + count 验证完整覆盖。
   - id: TUNING-G0-AUTHORIZATION-01
@@ -729,6 +817,15 @@ decisions:
     candidate_generation_authorized: true
     production_change_authorized: false
     current_behavior: preserved_until_evidence_gate
+    m0_r_approval:
+      status: approved_pending_evidence
+      approved_at: "2026-09-04"
+      approval_basis: '当前 Codex 会话：承接“是否批准 M0-R”，用户明确回复“批准”'
+      decision_packet: docs/audit/phase2_m0_decision_batch_2026-09-04.md
+      prior_choices_preserved: 4
+      keep_current_baseline_choice_C: 14
+      measure_before_freeze_choice_B: 2
+      new_production_value_or_rule_authorized: false
     required_evidence:
       - yaml_candidate
       - redline_tests
