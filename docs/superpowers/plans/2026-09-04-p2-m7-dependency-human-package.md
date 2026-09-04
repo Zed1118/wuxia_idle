@@ -11,7 +11,7 @@
 ## 验收标准
 
 1. decision registry 与 M7 顶层任务都明确区分 `engineering_progression` 和 `formal_close`，并保留 M2–M6 正式依赖。
-2. 集中验收包从 clean、已检出的 exact HEAD 构建一个 macOS Profile 根应用，记录 commit、AOT SHA-256、fixture SHA-256 与应用包 SHA-256。
+2. 集中验收包从 clean、已检出的 exact HEAD 构建一个 macOS Profile 根应用，记录 commit、AOT SHA-256、fixture SHA-256 与分发压缩包 SHA-256。
 3. 包内清单覆盖 M2 战斗、M3 五武器、M4 视听/高密度、M5 六模式、M6 导航/叙事；每项只允许 `PASS / REWORK / BLOCKED / NOT_RUN`，默认均为 `NOT_RUN`。
 4. 默认启动生产入口；视觉路由仅标为辅助定位，不得计入真人生产流签字。
 5. 脚本合同测试、YAML 解析、targeted、analyze、format 与风险匹配回归通过；最终进入 main/origin/main、exact-SHA CI 成功且工作树 clean。
@@ -25,8 +25,8 @@
 
 ## 当前恢复点
 
-- 状态：依赖语义治理施工中。
-- 最后完成：实时确认 `main == origin/main == 05d7bd29`、正式 `1/10`、M7 `81/105`、现有 Route C 六人包不适合作为本轮单人集中验收包。
-- 下一步：更新 decision/task registry 与 PROGRESS，再实现验收包生成器。
-- 已跑验证：开局工作树 clean；最新 exact-SHA CI run `33826562603` 为 success。
+- 状态：集中真人验收包工具已实现，等待本切片验证与 READY 冻结。
+- 最后完成：依赖语义已写入 decision/task registry 与 PROGRESS；集中包生成器、生产入口优先清单、只读默认状态和合同测试已实现。
+- 下一步：完成 package CLI/脚本定向验证并冻结 READY，再开始第十八章独立内容工程切片。
+- 已跑验证：开局工作树 clean；最新 exact-SHA CI run `33826562603` 为 success；包工具合同测试 `4/4` 通过。
 - 阻塞项：真人填写与 Windows 实机证据必须由后续真实操作产生，本任务不能自动关闭。

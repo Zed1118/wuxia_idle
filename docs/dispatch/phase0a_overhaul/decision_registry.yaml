@@ -37,6 +37,13 @@ decisions:
         - P2-M6-HUMAN-ACCEPTANCE-GATE
     downstream_release:
       M8_or_M9_unlocked: false
+    consolidated_human_acceptance:
+      state: tooling_ready_human_not_run
+      preparation_script: tools/phase2_acceptance/prepare_consolidated_human_package.sh
+      checklist_template: docs/dispatch/phase2_consolidated_human_acceptance_template.md
+      formal_entry: production_root_app
+      visual_routes: supplemental_only
+      default_evidence_state: NOT_RUN
     approved_at: "2026-09-04"
     approval_basis: '当前 Codex 会话：用户确认“按建议顺序进行调整”，即补清 M7 依赖语义、准备真人验收包，并在真人不可用时继续不依赖真人的内容工程'
 
