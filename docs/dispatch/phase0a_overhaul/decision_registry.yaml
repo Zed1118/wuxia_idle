@@ -514,7 +514,7 @@ decisions:
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: REOPEN-FAILURE-DIAGNOSIS-01
-    status: partially_reopened
+    status: frozen_implemented
     summary: 仅允许事实性失败、返程原因与伤势展示；继续禁止建议型诊断和配装建议 UI
     source_registry_entry: 失败原因诊断
     g0_choice: B
@@ -522,7 +522,14 @@ decisions:
     forbidden_scope:
       - prescriptive_failure_diagnosis
       - loadout_advice_ui
-    batch_action: implement_fact_only_consumers_in_m6
+    batch_action: completed_via_p2_m6_u10
+    implementation_evidence:
+      task: P2-M6-U10-FACTUAL-FAILURE-INJURY-DISPLAY
+      integrated_commit: ac34d50b
+      production_entries:
+        - lib/features/mainline/presentation/stage_entry_flow.dart
+        - lib/features/tower/presentation/tower_entry_flow.dart
+      advisory_ui_added: false
     approved_at: "2026-08-24"
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
@@ -640,12 +647,18 @@ decisions:
     user_choice: B
     decided_on: 2026-08-26
     selected_candidate: B
-    production_wiring: ready_unmerged
+    production_wiring: complete_integrated_main
     playtest: pending
     selected_values: {capacity: 14, vulnerability_ticks: 4, recovery_policy: recover, post_vulnerability_accumulated: 4, boss_conversion_factor: 3}
     chosen_because: 破防窗占比约 15%，可重复攻防循环且不过控
     candidate_evidence: docs/spec/phase2_combat_core_tuning_candidates_20260826.md
     parked_contract: lib/features/battle/domain/phase0a/posture.dart
+    production_evidence:
+      numbers: data/numbers.yaml
+      parser: lib/data/numbers_config.dart
+      stage_mapper: lib/features/battle/application/phase0a/phase0a_stage_content_mapper.dart
+      mainline_runtime: lib/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart
+      reducer: lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart
 
   - id: TUNE-ACTIVE-LIMIT-01
     status: tuning
