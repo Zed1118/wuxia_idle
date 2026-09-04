@@ -1,0 +1,71 @@
+# Production Chapter 17 deep-desert routes. Authored combat is five duels.
+encounters:
+  - id: ch17_encounter_01_sand_treader
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch17_s01_sand_treader, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch17_s01_defeat_sand_treader, kind: defeat_targets, target_ids: [ch17_s01_sand_treader]}
+
+  - id: ch17_encounter_02_blackwind_blade
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch17_s02_blackwind_blade, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch17_s02_defeat_blackwind_blade, kind: defeat_targets, target_ids: [ch17_s02_blackwind_blade]}
+
+  - id: ch17_encounter_03_old_city_guard
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch17_s03_old_city_guard, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch17_s03_defeat_old_city_guard, kind: defeat_targets, target_ids: [ch17_s03_old_city_guard]}
+
+  - id: ch17_encounter_04_sandstorm_hand
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch17_s04_sandstorm_hand, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch17_s04_defeat_sandstorm_hand, kind: defeat_commander, commander_id: ch17_s04_sandstorm_hand}
+
+  - id: ch17_encounter_05_desert_guide
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch17_s05_desert_guide, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch17_s05_defeat_desert_guide, kind: defeat_commander, commander_id: ch17_s05_desert_guide}

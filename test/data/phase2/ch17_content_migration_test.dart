@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
+import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 
 import '../../support/combatant_snapshot_fixture.dart';
@@ -23,52 +24,49 @@ Future<String> _fileLoader(String path) async =>
     (await File(path).readAsString()).replaceAll('\r\n', '\n');
 
 const _expected = {
-  'stage_16_01': (
-    'ch16_encounter_01_farewell_veteran',
-    'ch16_s01_veteran',
+  'stage_17_01': (
+    'ch17_encounter_01_sand_treader',
+    'ch17_s01_sand_treader',
+    TechniqueSchool.lingQiao,
+    'ch2_attack_set_lightfoot',
+    'sect_lightfoot',
+  ),
+  'stage_17_02': (
+    'ch17_encounter_02_blackwind_blade',
+    'ch17_s02_blackwind_blade',
     TechniqueSchool.gangMeng,
     'ch2_attack_set_outer',
     'sect_outer',
   ),
-  'stage_16_02': (
-    'ch16_encounter_02_blackstone_keeper',
-    'ch16_s02_mirror_keeper',
+  'stage_17_03': (
+    'ch17_encounter_03_old_city_guard',
+    'ch17_s03_old_city_guard',
     TechniqueSchool.yinRou,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_16_03': (
-    'ch16_encounter_03_xiliang_traveler',
-    'ch16_s03_traveler',
+  'stage_17_04': (
+    'ch17_encounter_04_sandstorm_hand',
+    'ch17_s04_sandstorm_hand',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
   ),
-  'stage_16_04': (
-    'ch16_encounter_04_desert_cavalry_general',
-    'ch16_s04_cavalry_general',
+  'stage_17_05': (
+    'ch17_encounter_05_desert_guide',
+    'ch17_s05_desert_guide',
     TechniqueSchool.lingQiao,
     'ch2_attack_set_lightfoot',
     'sect_lightfoot',
-  ),
-  'stage_16_05': (
-    'ch16_encounter_05_frontier_gatekeeper',
-    'ch16_s05_gatekeeper',
-    TechniqueSchool.gangMeng,
-    'ch2_attack_set_outer',
-    'sect_outer',
   ),
 };
 
 const _bossCases = {
-  'stage_16_04': (
-    'ch16_encounter_04_desert_cavalry_general',
-    'ch16_s04_cavalry_general',
+  'stage_17_04': (
+    'ch17_encounter_04_sandstorm_hand',
+    'ch17_s04_sandstorm_hand',
   ),
-  'stage_16_05': (
-    'ch16_encounter_05_frontier_gatekeeper',
-    'ch16_s05_gatekeeper',
-  ),
+  'stage_17_05': ('ch17_encounter_05_desert_guide', 'ch17_s05_desert_guide'),
 };
 
 void main() {
@@ -83,9 +81,9 @@ void main() {
   });
   tearDownAll(GameRepository.resetForTest);
 
-  test('Chapter 16 exposes five of five migrated production routes', () {
+  test('Chapter 17 exposes five of five migrated production routes', () {
     final chapterStageIds = repository.stageDefs.values
-        .where((stage) => stage.chapterIndex == 16)
+        .where((stage) => stage.chapterIndex == 17)
         .map((stage) => stage.id)
         .toSet();
     expect(chapterStageIds, _expected.keys.toSet());
@@ -107,11 +105,11 @@ void main() {
                   StageType.mainline,
         )
         .length;
-    expect(migratedMainlineCount, greaterThanOrEqualTo(76));
+    expect(migratedMainlineCount, 81);
   });
 
   test(
-    'Chapter 16 routes retain authored singleton identities and reviewed roles',
+    'Chapter 17 routes retain authored singleton identities and reviewed roles',
     () {
       for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
         final stage = repository.getStage(stageId);
@@ -143,7 +141,7 @@ void main() {
     },
   );
 
-  test('Chapter 16 routes construct through the real factory', () async {
+  test('Chapter 17 routes construct through the real factory', () async {
     final source = _runtimeSource(repository);
     for (final stageId in _expected.keys) {
       final host = await createFreshPhase0aMainlineEncounter(
@@ -164,8 +162,8 @@ void main() {
     }
   });
 
-  test('Chapter 16 objectives require the authored singleton opponent', () {
-    for (final stageId in ['stage_16_01', 'stage_16_02', 'stage_16_03']) {
+  test('Chapter 17 objectives require the authored singleton opponent', () {
+    for (final stageId in ['stage_17_01', 'stage_17_02', 'stage_17_03']) {
       final encounter = repository.combatEncounterForStage(stageId)!;
       final controller = mapCombatObjectiveComposition(
         encounter.objectives,
@@ -192,7 +190,7 @@ void main() {
     }
   });
 
-  test('both authored Chapter 16 targets retain Boss identity', () {
+  test('both authored Chapter 17 targets retain exact Boss mechanics', () {
     for (final MapEntry(key: stageId, value: identity) in _bossCases.entries) {
       final base = EnemyCombatantSnapshotAssembler.assembleOne(
         enemy: repository.getStage(stageId).enemyTeam.single,
@@ -211,6 +209,7 @@ void main() {
       expect(target.combatant.iconPath, base.iconPath, reason: stageId);
       expect(target.combatant.isBoss, isTrue, reason: stageId);
       expect(target.combatant.chargeSkillId, base.chargeSkillId);
+      expect(target.combatant.vulnerabilityMult, base.vulnerabilityMult);
       expect(
         target.combatant.availableSkills.map((skill) => skill.id),
         base.availableSkills.map((skill) => skill.id),
@@ -243,10 +242,23 @@ void main() {
       );
       expect(target.createActor('runtime-target').isBoss, isTrue);
     }
+    expect(
+      repository.getStage('stage_17_04').enemyTeam.single.vulnerability,
+      isNull,
+    );
+    expect(
+      repository
+          .getStage('stage_17_05')
+          .enemyTeam
+          .single
+          .vulnerability!
+          .outOfWindowDamageMult,
+      0.20,
+    );
   });
 
   test(
-    'all five Chapter 16 routes reach dynamic victory without stalls',
+    'all five Chapter 17 routes reach dynamic victory without stalls',
     () async {
       final source = _runtimeSource(repository);
       final maxTicks = repository.numbers.phase0aArena.maxSimulationTicks;
@@ -259,7 +271,7 @@ void main() {
             playerMapping: _playerMapping(repository, stageId),
             numbers: repository.numbers,
             cycleIndex: 1,
-            rng: Random(2026091610 + index),
+            rng: Random(2026091700 + index),
             runtimeBindingSource: source,
             catalogOverride: repository.combatCatalog,
           ),
@@ -306,6 +318,14 @@ Phase0aPlayerRuntimeMapping _playerMapping(
   String stageId,
 ) {
   final enemy = repository.getStage(stageId).enemyTeam.single;
+  final numericSkills = [
+    repository.getSkill('skill_gangmeng_shichuan_ult'),
+    repository.getSkill('skill_lingqiao_shichuan_ult'),
+    repository.getSkill('skill_yinrou_shichuan_ult'),
+    repository.getSkill('skill_feng_juan_liu_sha'),
+    repository.getSkill('skill_ping_sha_luo_yan'),
+    repository.getSkill('skill_ye_yu_shi_nian_deng'),
+  ];
   return Phase0aStageContentMapper.mapPlayerOnly(
     contentId: stageId,
     playerSnapshot: testCombatantSnapshot(
@@ -314,9 +334,20 @@ Phase0aPlayerRuntimeMapping _playerMapping(
       maxHp: 20000,
       currentHp: 20000,
       internalForce: 15000,
+      maxQi: 15000,
+      currentQi: 15000,
       totalEquipmentAttack: 2000,
       defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
       includeProductionBasicAttack: true,
+      skillLoadout: CombatantSkillLoadout(
+        main1: numericSkills[0],
+        main2: numericSkills[1],
+        assist: numericSkills[2],
+        resonance: numericSkills[3],
+        ultimate: numericSkills[4],
+        encounter: numericSkills[5],
+      ),
+      availableSkills: numericSkills,
     ),
     numbers: repository.numbers,
   );

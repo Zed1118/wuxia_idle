@@ -228,3 +228,18 @@ stage_assignments:
   - stage_id: stage_16_05
     migration_state: migrated
     encounter_id: ch16_encounter_05_frontier_gatekeeper
+  - stage_id: stage_17_01
+    migration_state: migrated
+    encounter_id: ch17_encounter_01_sand_treader
+  - stage_id: stage_17_02
+    migration_state: migrated
+    encounter_id: ch17_encounter_02_blackwind_blade
+  - stage_id: stage_17_03
+    migration_state: migrated
+    encounter_id: ch17_encounter_03_old_city_guard
+  - stage_id: stage_17_04
+    migration_state: migrated
+    encounter_id: ch17_encounter_04_sandstorm_hand
+  - stage_id: stage_17_05
+    migration_state: migrated
+    encounter_id: ch17_encounter_05_desert_guide
