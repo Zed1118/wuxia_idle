@@ -1,0 +1,71 @@
+# Production Chapter 19 eastward-return routes. Authored combat is five duels.
+encounters:
+  - id: ch19_encounter_01_turnback_traveler
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch19_s01_turnback_traveler, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch19_s01_defeat_turnback_traveler, kind: defeat_targets, target_ids: [ch19_s01_turnback_traveler]}
+
+  - id: ch19_encounter_02_sand_measurer
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch19_s02_sand_measurer, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch19_s02_defeat_sand_measurer, kind: defeat_targets, target_ids: [ch19_s02_sand_measurer]}
+
+  - id: ch19_encounter_03_wind_listener
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch19_s03_wind_listener, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch19_s03_defeat_wind_listener, kind: defeat_targets, target_ids: [ch19_s03_wind_listener]}
+
+  - id: ch19_encounter_04_returning_gatekeeper
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
+    spawn_entries:
+      - {entry_id: ch19_s04_returning_gatekeeper, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch19_s04_defeat_returning_gatekeeper, kind: defeat_commander, commander_id: ch19_s04_returning_gatekeeper}
+
+  - id: ch19_encounter_05_blackstone_mirror_keeper
+    spawn_config:
+      active_limit: 1
+      reinforcement_threshold: 0
+      entry_warning_ticks: 20
+      attack_grace_ticks: 10
+    token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
+    spawn_entries:
+      - {entry_id: ch19_s05_blackstone_mirror_keeper, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+    objectives:
+      completion_rule: all
+      clauses:
+        - {id: ch19_s05_defeat_blackstone_mirror_keeper, kind: defeat_commander, commander_id: ch19_s05_blackstone_mirror_keeper}
