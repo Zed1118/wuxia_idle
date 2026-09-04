@@ -31,7 +31,7 @@
 
 ## 当前恢复点
 
-- 状态：五关 encounter、manifest、assignment、runtime binding 与新章验收测试已接通；准备执行三向 mutation。
-- 已跑验证：基线 main/origin/remote 同为 `a4d8cd95` 且 clean；精确 SHA CI `33815818040` 成功；Ch17 typed route/分支/任务重叠为 0；StageDef `5/5`、正文 `12/12`、敌人图标 `5/5`；有效初始 RED `0/6`；接线后 Ch17 `6/6`。
-- 下一步：三向 mutation 精确证红并恢复，再登记旧 Ch16 精确水位测试的合法契约迁移。
+- 状态：五关 production route 与测试已接通；三向 mutation 已精确转红并恢复；旧 Ch16 精确水位断言已迁为 `>=76`，测试契约登记已写入。
+- 已跑验证：基线 main/origin/remote 同为 `a4d8cd95` 且 clean；精确 SHA CI `33815818040` 成功；Ch17 typed route/分支/任务重叠为 0；StageDef `5/5`、正文 `12/12`、敌人图标 `5/5`；有效初始 RED `0/6`；接线后 Ch17 `6/6`；三向 mutation 分别精确 `1/1/2` 红，恢复后 `6/6`。
+- 下一步：运行测试契约门、相邻/Phase 2/mainline application 回归、analyze、format、持锁全量与标准 Gate。
 - 挂账：真人桌面、视觉、音频、手感与 Windows 均继续 `DEFERRED`。
