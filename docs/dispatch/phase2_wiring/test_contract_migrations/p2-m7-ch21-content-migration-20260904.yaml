@@ -1,0 +1,10 @@
+schema_version: 1
+ticket: p2-m7-ch21-content-migration-20260904
+base_sha: 8674d01eedf64ff63d154b46d0ab3ac6c9d9ed8e
+head_sha: 3a9eec839005b2ad3813401716f868557c423f48
+summary: 第二十章测试保留已集成的 96 条主线下限；第二十一章测试独立精确守住 101 条候选水位。
+
+migrations:
+  - deleted: expect(migratedMainlineCount, 96);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(96));
+    reason: 第二十章测试只守住已集成的 96 条下限，不能阻断第二十一章五关及后续第十三章决策；第二十一章新测试另以精确等于 101 防止本批少接或多接。
