@@ -63,6 +63,18 @@ stage_assignments:
   - stage_id: stage_13_02
     migration_state: migrated
     encounter_id: ch13_encounter_02_halfway_temple
+  - stage_id: stage_13_01
+    migration_state: migrated
+    encounter_id: ch13_encounter_01_tea_stall_veteran
+  - stage_id: stage_13_03
+    migration_state: migrated
+    encounter_id: ch13_encounter_03_bamboo_recluse
+  - stage_id: stage_13_04
+    migration_state: migrated
+    encounter_id: ch13_encounter_04_cliff_gatekeeper
+  - stage_id: stage_13_05
+    migration_state: migrated
+    encounter_id: ch13_encounter_05_peak_waiting_sage
   - stage_id: stage_03_01
     migration_state: migrated
     encounter_id: ch3_encounter_01_martial_gathering

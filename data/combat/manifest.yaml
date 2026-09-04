@@ -565,6 +565,7 @@ reference_index:
     - ch4_s01_heavy_cavalry_05
     - ch4_s01_banner_01
     - ch4_s01_banner_02
+    - ch13_s01_tea_stall_veteran
     - ch13_s02_staff_01
     - ch13_s02_staff_02
     - ch13_s02_staff_03
@@ -590,6 +591,9 @@ reference_index:
     - ch13_s02_arhat_05
     - ch13_s02_guard_01
     - ch13_s02_guard_02
+    - ch13_s03_bamboo_recluse
+    - ch13_s04_cliff_gatekeeper
+    - ch13_s05_peak_waiting_sage
     - ch3_s01_outer_01
     - ch3_s01_outer_02
     - ch3_s01_outer_03

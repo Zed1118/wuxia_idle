@@ -1,0 +1,16 @@
+schema_version: 1
+ticket: p2-m7-ch13-content-migration-20260904
+base_sha: 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f
+head_sha: edddd963c9d177cefa728facb83f57b02e11e04b
+summary: M4 生态测试从每个 role 仅一种泛化姓名、单 objective clause，迁移为允许一个精确 StageDef commander identity 与多 clause 全完成；Ch21 水位测试退为守住已集成 101 下界，由 Ch13 新测试独立守住 105 条候选水位及 24+1 分层考校。
+
+migrations:
+  - deleted: expect(
+    replacement: expect(namesByRole, expectedNamesByRole);
+    reason: stage_13_02 的 temple_guard 现同时包含泛化护院客僧与精确半山知客僧 commander，按每个 entry 生成期望姓名集合替代每 role 单姓名假设。
+  - deleted: expect(progress.clauses.single.completed, isTrue);
+    replacement: expect(progress.clauses.every((clause) => clause.completed), isTrue);
+    reason: stage_13_02 的完成条件已由单一 defeat-all 正式迁移为 24 人 defeat-targets 与知客僧 defeat-commander 两个 all clauses，生态测试必须验证全部 clause 完成。
+  - deleted: expect(migratedMainlineCount, 101);
+    replacement: expect(migratedMainlineCount, greaterThanOrEqualTo(101));
+    reason: Ch21 测试继续守住其已经集成的 101 条下界，新的 Ch13 测试独立断言本批候选精确达到 105，避免后续批次再次改写旧章节的精确总水位。

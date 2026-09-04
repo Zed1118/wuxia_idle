@@ -133,24 +133,25 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     }
     _requireMatchingTokenPolicy(variant, binding.behavior);
 
-    final preserveBaseBossIdentity =
-        baseSnapshot.isBoss &&
-        (commanderEntryIds.contains(entry.entryId) ||
-            pursueTargetEntryIds.contains(entry.entryId));
+    final preserveBaseIdentity =
+        commanderEntryIds.contains(entry.entryId) ||
+        (baseSnapshot.isBoss && pursueTargetEntryIds.contains(entry.entryId));
+    final preserveBaseBossContract =
+        preserveBaseIdentity && baseSnapshot.isBoss;
     final snapshot = _applyVariant(
       base: baseSnapshot,
       variant: variant,
       skills: binding.attackSet.skills,
       repository: repo,
       visualAssetPath: binding.visualVariant.assetPath,
-      preserveBaseBossIdentity: preserveBaseBossIdentity,
+      preserveBaseIdentity: preserveBaseIdentity,
     );
     final basicSkill = _requiredBasicSkill(
       snapshot.availableSkills,
       stageId: stageId,
       entryId: entry.entryId,
     );
-    final enemySkills = preserveBaseBossIdentity
+    final enemySkills = preserveBaseBossContract
         ? Phase0aStageContentMapper.preResolveEnemySkillBindings(
             arena: repo.numbers.phase0aArena,
             snapshot: snapshot,
@@ -163,28 +164,28 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
           );
     final token = _tokenBinding(variant, binding.behavior);
     final position = ArenaVector(binding.position.x, binding.position.y);
-    final chargeCast = preserveBaseBossIdentity
+    final chargeCast = preserveBaseBossContract
         ? Phase0aStageContentMapper.preResolveTopLevelChargeCast(
             snapshot: snapshot,
             arena: repo.numbers.phase0aArena,
             chargeTicks: repo.numbers.combat.bossCharge.defaultChargeTicks,
           )
         : null;
-    final phaseChargeCasts = preserveBaseBossIdentity
+    final phaseChargeCasts = preserveBaseBossContract
         ? Phase0aStageContentMapper.preResolvePhaseChargeCasts(
             snapshot: snapshot,
             arena: repo.numbers.phase0aArena,
             chargeTicks: repo.numbers.combat.bossCharge.defaultChargeTicks,
           )
         : const <Phase0aChargeCast?>[];
-    final unlockedSkillIds = preserveBaseBossIdentity
+    final unlockedSkillIds = preserveBaseBossContract
         ? List<String>.unmodifiable(
             snapshot.bossPhases == null || snapshot.bossPhases!.isEmpty
                 ? const <String>[]
                 : snapshot.bossPhases!.first.unlockSkillIds,
           )
         : List<String>.unmodifiable(enemySkills.map((item) => item.skill.id));
-    final visualAssetPath = preserveBaseBossIdentity
+    final visualAssetPath = preserveBaseIdentity
         ? snapshot.iconPath ?? binding.visualVariant.assetPath
         : binding.visualVariant.assetPath;
 
@@ -214,7 +215,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
         ),
         chargeCast: chargeCast,
         phaseChargeCasts: phaseChargeCasts,
-        staggerTicksTotal: preserveBaseBossIdentity
+        staggerTicksTotal: preserveBaseBossContract
             ? repo.numbers.combat.bossCharge.defaultStaggerTicks
             : 0,
         guardianDefIds: snapshot.guardianDefIds,
@@ -323,11 +324,9 @@ CombatantSnapshot _applyVariant({
   required List<SkillDef> skills,
   required GameRepository repository,
   required String visualAssetPath,
-  required bool preserveBaseBossIdentity,
+  required bool preserveBaseIdentity,
 }) {
-  final resolvedSkills = preserveBaseBossIdentity
-      ? base.availableSkills
-      : skills;
+  final resolvedSkills = preserveBaseIdentity ? base.availableSkills : skills;
   final basic = _requiredBasicSkill(
     resolvedSkills,
     stageId: 'runtime',
@@ -342,10 +341,11 @@ CombatantSnapshot _applyVariant({
       .clamp(0.0, repository.numbers.cycleEvolution.defenseRateCap)
       .toDouble();
   final speed = (base.speed * variant.speedMultiplier).round();
-  final stripBossIdentity = base.isBoss && !preserveBaseBossIdentity;
+  final preserveBaseBossContract = preserveBaseIdentity && base.isBoss;
+  final stripBossIdentity = base.isBoss && !preserveBaseIdentity;
   return CombatantSnapshot(
     characterId: base.characterId,
-    name: preserveBaseBossIdentity ? base.name : variant.displayName,
+    name: preserveBaseIdentity ? base.name : variant.displayName,
     realmTier: base.realmTier,
     realmLayer: base.realmLayer,
     school: base.school,
@@ -356,31 +356,33 @@ CombatantSnapshot _applyVariant({
     currentQi: base.currentQi,
     qiGainMultiplier: base.qiGainMultiplier,
     qiCostReductionPct: base.qiCostReductionPct,
-    autoUltimate: preserveBaseBossIdentity && base.autoUltimate,
+    autoUltimate: preserveBaseIdentity && base.autoUltimate,
     speed: speed,
     criticalRate: base.criticalRate,
     evasionRate: base.evasionRate,
     defenseRate: defense,
     totalEquipmentAttack: attack,
     mainCultivationLayer: base.mainCultivationLayer,
-    skillLoadout: preserveBaseBossIdentity
-        ? base.skillLoadout
+    skillLoadout: preserveBaseIdentity
+        ? (base.isBoss
+              ? base.skillLoadout
+              : CombatantSkillLoadout(basicAttack: basic))
         : CombatantSkillLoadout(basicAttack: basic),
     availableSkills: List<SkillDef>.unmodifiable(resolvedSkills),
-    openingSkillCooldowns: preserveBaseBossIdentity
+    openingSkillCooldowns: preserveBaseIdentity
         ? base.openingSkillCooldowns
         : const {},
-    skillUses: preserveBaseBossIdentity ? base.skillUses : const {},
-    activeBuffs: preserveBaseBossIdentity ? base.activeBuffs : const [],
+    skillUses: preserveBaseIdentity ? base.skillUses : const {},
+    activeBuffs: preserveBaseIdentity ? base.activeBuffs : const [],
     swordSongResonanceActive:
-        preserveBaseBossIdentity && base.swordSongResonanceActive,
-    iconPath: preserveBaseBossIdentity ? base.iconPath : visualAssetPath,
+        preserveBaseIdentity && base.swordSongResonanceActive,
+    iconPath: preserveBaseIdentity ? base.iconPath : visualAssetPath,
     attackPowerMultiplier: base.attackPowerMultiplier,
     outputMultiplier: base.outputMultiplier,
-    isBoss: preserveBaseBossIdentity,
-    chargeSkillId: preserveBaseBossIdentity ? base.chargeSkillId : null,
-    bossPhases: preserveBaseBossIdentity ? base.bossPhases : null,
-    bossPhaseUnlockSkills: preserveBaseBossIdentity
+    isBoss: preserveBaseBossContract,
+    chargeSkillId: preserveBaseBossContract ? base.chargeSkillId : null,
+    bossPhases: preserveBaseBossContract ? base.bossPhases : null,
+    bossPhaseUnlockSkills: preserveBaseBossContract
         ? base.bossPhaseUnlockSkills
         : null,
     schoolDamageTakenMult: base.schoolDamageTakenMult,
@@ -388,11 +390,11 @@ CombatantSnapshot _applyVariant({
     forgingPiercePct: base.forgingPiercePct,
     forgingLifestealPct: base.forgingLifestealPct,
     enemyDefId: stripBossIdentity ? null : base.enemyDefId,
-    guardianWardMult: preserveBaseBossIdentity ? base.guardianWardMult : null,
-    guardianDefIds: preserveBaseBossIdentity ? base.guardianDefIds : const [],
-    vulnerabilityMult: preserveBaseBossIdentity ? base.vulnerabilityMult : null,
+    guardianWardMult: preserveBaseBossContract ? base.guardianWardMult : null,
+    guardianDefIds: preserveBaseBossContract ? base.guardianDefIds : const [],
+    vulnerabilityMult: preserveBaseBossContract ? base.vulnerabilityMult : null,
     guardInterceptsInterrupt:
-        preserveBaseBossIdentity && base.guardInterceptsInterrupt,
+        preserveBaseBossContract && base.guardInterceptsInterrupt,
   );
 }
 
