@@ -97,12 +97,16 @@ final class CombatEncounterSpawnEntry {
     required String entranceId,
     required String positionId,
     required String behaviorId,
+    String? sourceEnemyDefId,
   }) : entryId = _checkedId(entryId, 'entryId'),
        archetypeId = _checkedId(archetypeId, 'archetypeId'),
        roleId = _checkedId(roleId, 'roleId'),
        entranceId = _checkedId(entranceId, 'entranceId'),
        positionId = _checkedId(positionId, 'positionId'),
-       behaviorId = _checkedId(behaviorId, 'behaviorId');
+       behaviorId = _checkedId(behaviorId, 'behaviorId'),
+       sourceEnemyDefId = sourceEnemyDefId == null
+           ? null
+           : _checkedId(sourceEnemyDefId, 'sourceEnemyDefId');
 
   /// Unique within the owning encounter.
   final String entryId;
@@ -121,6 +125,11 @@ final class CombatEncounterSpawnEntry {
 
   /// References the behavior used when this entry is spawned.
   final String behaviorId;
+
+  /// Tower-only binding back to the exact [EnemyDef] identity. Mainline
+  /// catalog entries intentionally leave this null; tower factories require
+  /// it and fail closed when the binding is absent or non-bijective.
+  final String? sourceEnemyDefId;
 
   static String _checkedId(String value, String field) {
     if (value.trim().isEmpty) {

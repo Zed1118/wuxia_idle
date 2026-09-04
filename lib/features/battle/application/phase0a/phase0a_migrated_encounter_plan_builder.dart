@@ -42,11 +42,13 @@ Phase0aMigratedEncounterPlan buildPhase0aMigratedEncounterPlan(
   required Map<Phase0aDamageKind, SkillDef?> moveBindings,
   required Phase0aPlayerInputAdapter playerAdapter,
   required Phase0aEnemyAiAdapter enemyAiAdapter,
+  bool startWithAllEntriesActive = false,
 }) {
   final runtimeContracts = mapCombatEncounterRuntimeContract(
     route.encounter,
     tickDuration: tickDuration,
     resolveEnemyId: resolveEnemyId,
+    startWithAllEntriesActive: startWithAllEntriesActive,
   );
   final roster = mapCombatEncounterRoster(
     route.encounter,

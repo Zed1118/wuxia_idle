@@ -37,6 +37,7 @@ CombatEncounterRuntimeContractBundle mapCombatEncounterRuntimeContract(
   CombatEncounterDef definition, {
   required Duration tickDuration,
   required CombatEnemyInstanceIdResolver resolveEnemyId,
+  bool startWithAllEntriesActive = false,
 }) {
   final spawnEntries = [
     for (final entry in definition.spawnEntries)
@@ -44,15 +45,27 @@ CombatEncounterRuntimeContractBundle mapCombatEncounterRuntimeContract(
   ];
 
   return CombatEncounterRuntimeContractBundle(
-    spawnDirector: SpawnDirector(
-      config: SpawnDirectorConfig(
-        activeLimit: definition.spawnConfig.activeLimit,
-        reinforcementThreshold: definition.spawnConfig.reinforcementThreshold,
-        entryWarningTicks: definition.spawnConfig.entryWarningTicks,
-        attackGraceTicks: definition.spawnConfig.attackGraceTicks,
-      ),
-      entries: spawnEntries,
-    ),
+    spawnDirector: startWithAllEntriesActive
+        ? SpawnDirector.allActive(
+            config: SpawnDirectorConfig(
+              activeLimit: definition.spawnConfig.activeLimit,
+              reinforcementThreshold:
+                  definition.spawnConfig.reinforcementThreshold,
+              entryWarningTicks: definition.spawnConfig.entryWarningTicks,
+              attackGraceTicks: definition.spawnConfig.attackGraceTicks,
+            ),
+            entries: spawnEntries,
+          )
+        : SpawnDirector(
+            config: SpawnDirectorConfig(
+              activeLimit: definition.spawnConfig.activeLimit,
+              reinforcementThreshold:
+                  definition.spawnConfig.reinforcementThreshold,
+              entryWarningTicks: definition.spawnConfig.entryWarningTicks,
+              attackGraceTicks: definition.spawnConfig.attackGraceTicks,
+            ),
+            entries: spawnEntries,
+          ),
     attackTokenBudgets: AttackTokenBudgets(
       melee: definition.tokenBudgets.melee,
       ranged: definition.tokenBudgets.ranged,

@@ -12,6 +12,7 @@ import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/battle_shared/current_leader_resolver.dart';
 import '../../battle/application/phase0a/phase0a_player_bot_adapter.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
+import '../../battle/application/phase0a/combat_content_ref.dart';
 import '../../battle/application/phase0a/phase0a_headless_runner.dart';
 import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
 import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
@@ -24,6 +25,7 @@ import '../../mainline/application/phase0a_mainline_encounter_host.dart';
 import '../../mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import '../../mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import '../../tower/application/tower_automation_admission.dart';
+import '../../tower/application/phase0a_tower_encounter_host.dart';
 import '../../tower/domain/tower_automation_policy.dart';
 import '../../activity/application/durable_activity_automation_service.dart';
 import '../../activity/domain/durable_activity_combat_run.dart';
@@ -63,6 +65,7 @@ final class Phase0aSweepHeadlessRunner {
     required this.botPolicy,
     this.runtimeBindingSource,
     this.routeAuthority,
+    this.towerSessionFactory = createFreshPhase0aTowerCombatSession,
   });
 
   final Isar isar;
@@ -71,6 +74,7 @@ final class Phase0aSweepHeadlessRunner {
   final Phase0aBotTacticPolicy botPolicy;
   final Phase0aMainlineEncounterRuntimeBindingSource? runtimeBindingSource;
   final Phase0aMainlineEncounterRouteAuthority? routeAuthority;
+  final Phase0aTowerCombatSessionFactory towerSessionFactory;
 
   static const int _uiYieldEveryTicks = 32;
 
@@ -164,14 +168,18 @@ final class Phase0aSweepHeadlessRunner {
       floorIndex: floor.floorIndex,
       cycleIndex: cycleIndex,
     );
-    final mapping = Phase0aStageContentMapper.mapTower(
-      floor: floor,
-      playerSnapshot: admission.snapshot,
-      numbers: numbers,
-      cycleIndex: cycleIndex,
+    final session = await towerSessionFactory(
+      Phase0aTowerCombatSessionBuildRequest(
+        contentRef: CombatContentRef.tower('tower_${floor.floorIndex}'),
+        floor: floor,
+        playerSnapshot: admission.snapshot,
+        numbers: numbers,
+        cycleIndex: cycleIndex,
+        rng: rng,
+      ),
     );
-    return _run(
-      mapping,
+    return _runTowerSession(
+      session,
       expectedParticipantId: admission.participantCharacterId,
       participantName: admission.snapshot.name,
       towerAutomationAdmission: admission,
@@ -190,14 +198,18 @@ final class Phase0aSweepHeadlessRunner {
         admission.request.entryKind != ActivityEntryKind.offlineResume) {
       throw StateError('Tower durable admission does not match floor');
     }
-    final mapping = Phase0aStageContentMapper.mapTower(
-      floor: floor,
-      playerSnapshot: admission.snapshot,
-      numbers: numbers,
-      cycleIndex: admission.run.cycleIndex,
+    final session = await towerSessionFactory(
+      Phase0aTowerCombatSessionBuildRequest(
+        contentRef: CombatContentRef.tower('tower_${floor.floorIndex}'),
+        floor: floor,
+        playerSnapshot: admission.snapshot,
+        numbers: numbers,
+        cycleIndex: admission.run.cycleIndex,
+        rng: rng,
+      ),
     );
-    return _run(
-      mapping,
+    return _runTowerSession(
+      session,
       expectedParticipantId: admission.snapshot.characterId,
       participantName: admission.snapshot.name,
     );
@@ -284,6 +296,41 @@ final class Phase0aSweepHeadlessRunner {
     return Phase0aSweepRunResult.terminal(
       Phase0aSettlementAdapter.fromMapping(
         mapping: mapping,
+        outcome: result.outcome,
+        finalState: result.finalState,
+        events: result.events,
+      ),
+      expectedParticipantId: expectedParticipantId,
+      participantName: participantName,
+      towerAutomationAdmission: towerAutomationAdmission,
+    );
+  }
+
+  Future<Phase0aSweepRunResult> _runTowerSession(
+    Phase0aTowerCombatSession session, {
+    int? expectedParticipantId,
+    String? participantName,
+    TowerAutomationAdmission? towerAutomationAdmission,
+  }) async {
+    final result = await Phase0aHeadlessRunner.runToEndAsync(
+      flow: session.flow,
+      bot: Phase0aPlayerBotAdapter(
+        playerAdapter: session.playerAdapter,
+        policy: botPolicy,
+      ),
+      deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+      maxTicks: numbers.phase0aArena.maxSimulationTicks,
+      yieldEveryTicks: _uiYieldEveryTicks,
+    );
+    if (result.timedOut) {
+      return Phase0aSweepRunResult.timeout(
+        expectedParticipantId: expectedParticipantId,
+        participantName: participantName,
+        towerAutomationAdmission: towerAutomationAdmission,
+      );
+    }
+    return Phase0aSweepRunResult.terminal(
+      session.settle(
         outcome: result.outcome,
         finalState: result.finalState,
         events: result.events,

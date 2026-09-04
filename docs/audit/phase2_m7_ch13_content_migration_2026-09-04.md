@@ -2,9 +2,9 @@
 
 ## 结论
 
-本分支基于 clean 的 `main == origin/main == 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f`，按用户明确拍板的“分层考校”方案完成第十三章本地工程候选。第十三章由 `1/5` 推进为候选 `5/5`，全主线 typed production catalog 由本地 `101/105` 推进为 `105/105`。
+本分支基于 clean 的 `main == origin/main == 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f`，按用户明确拍板的“分层考校”方案完成第十三章工程迁移。候选 `a6bd6366ab1a609da8efde0c6f8bd0a54c1352e3` 已经 no-ff merge `7c10ff17583addda4dd9039372f6f1b918d3a60e` 合入 `main/origin/main`，merge exact-SHA CI run `33895342001` 为 `completed/success`。第十三章由 `1/5` 推进为集成 `5/5`，全主线 typed production catalog 由 `101/105` 推进为集成 `105/105`。
 
-这不是集成结论：`main/origin/main` 仍为 `101/105`，本任务不 merge/push；塔仍为 `0/49`，五处 legacy production seam 仍开放，正式 M7 与 Phase 2 `1/10` 均未关闭。
+这是工程集成结论，不是正式里程碑结论：塔仍为 `0/49`，五处 legacy production seam 仍开放，真人/Windows 依赖未关闭，故正式 M7 与 Phase 2 `1/10` 均未关闭。
 
 ## 冻结实现
 
@@ -36,11 +36,12 @@ runtime adapter 的改动只把“精确 identity 保留”从 Boss commander/pu
 | analyze | `flutter analyze --no-pub lib test tool`：No issues found |
 | format | `dart format .`：1737 files，0 changed |
 | 持锁全量 | `flutter test --no-pub --reporter compact`：`6001/6001 PASS`，exit 0，锁已释放 |
-| 标准 Gate | 最终 `[READY]` tip 固化后执行；receipt 位于 ignored `build/`，结果不回写候选树 |
+| 合入后持锁全量 | `6001/6001 PASS`，exit 0 |
+| merge exact-SHA CI | run `33895342001`，head `7c10ff17583addda4dd9039372f6f1b918d3a60e`，`completed/success` |
 
 ## 边界与挂账
 
 - 未改玩家/敌人数值、奖励、经济、解锁、周目、结算 owner、`schemaVersion`、`saveVersion`、GDD、CLAUDE 或新玩法规则。
 - 测试中的高耐久 player 只是 dynamic headless 终局 fixture，不是生产平衡值；生产数据与红线未改变。
-- 本地工程候选、自动化、mutation 与标准 Gate 均不代替独立审查、main/origin 集成、exact-SHA CI 或真人验收。
+- 自动化、mutation、main/origin 集成与 exact-SHA CI 均不代替真人验收。
 - 真人桌面、视觉、音频、手感与 Windows 全部保持 `DEFERRED`。

@@ -802,6 +802,13 @@ final class Phase0aStageContentMapper {
     return ArenaVector(x, y);
   }
 
+  /// Shared deterministic position primitive for typed non-mainline hosts.
+  static ArenaVector enemyPositionForSlot({
+    required Phase0aArenaConfig arena,
+    required int slot,
+    required int count,
+  }) => _enemyPosition(arena: arena, slot: slot, count: count);
+
   static Phase0aActor _enemyActor({
     required Phase0aArenaConfig arena,
     required CombatantSnapshot snapshot,
@@ -861,6 +868,38 @@ final class Phase0aStageContentMapper {
       posture: PostureState.initial(postureConfig),
     );
   }
+
+  /// Shared actor primitive. The caller remains responsible for translating
+  /// any content-level guardian ids to authoritative runtime actor ids.
+  static Phase0aActor buildEnemyActor({
+    required Phase0aArenaConfig arena,
+    required CombatantSnapshot snapshot,
+    required String actorId,
+    required ArenaVector position,
+    required Phase0aChargeCast? chargeCast,
+    required List<Phase0aChargeCast?> phaseChargeCasts,
+    required int staggerTicksTotal,
+    required PostureConfig postureConfig,
+    required List<String> guardianRuntimeIds,
+    required double? guardianWardMult,
+    required bool guardInterceptsInterrupt,
+    required double? vulnerabilityMult,
+    double? moveSpeedOverride,
+  }) => _enemyActor(
+    arena: arena,
+    snapshot: snapshot,
+    actorId: actorId,
+    position: position,
+    chargeCast: chargeCast,
+    phaseChargeCasts: phaseChargeCasts,
+    staggerTicksTotal: staggerTicksTotal,
+    postureConfig: postureConfig,
+    guardianDefIds: guardianRuntimeIds,
+    guardianWardMult: guardianWardMult,
+    guardInterceptsInterrupt: guardInterceptsInterrupt,
+    vulnerabilityMult: vulnerabilityMult,
+    moveSpeedOverride: moveSpeedOverride,
+  );
 
   /// 顶层蓄力入口(EnemyDef.chargeSkillId):从 snapshot 已解析技能表取招牌技
   /// 并预解析施放参数;配了 chargeSkillId 但技能缺失 → fail-fast(loader
@@ -1035,6 +1074,11 @@ final class Phase0aStageContentMapper {
     }
     return skill;
   }
+
+  static SkillDef requiredBasicSkillOf(
+    CombatantSnapshot snapshot, {
+    required String actorId,
+  }) => _requiredBasicSkillOf(snapshot, actorId: actorId);
 
   static List<Phase0aSkillSlot> _skillSlots(
     Phase0aNumericSkillBindings numericSkills,
@@ -1244,6 +1288,9 @@ final class Phase0aStageContentMapper {
         postVulnerabilityAccumulated: config.postVulnerabilityAccumulated,
         bossControlConversionFactor: config.bossConversionFactor,
       );
+
+  static PostureConfig postureConfig(PostureNumbersConfig config) =>
+      _postureConfig(config);
 }
 
 final class _Phase0aTacticalSkillBindings {
