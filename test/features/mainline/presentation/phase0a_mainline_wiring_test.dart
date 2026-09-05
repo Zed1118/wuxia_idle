@@ -116,6 +116,35 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
+  testWidgets('production first stage exposes its checkpoint objective', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Phase0aMainlineBattleHost(
+            stage: repo.getStage('stage_01_01'),
+            playerSnapshotForTest: _makeCh1Player(repo.numbers),
+            seedForTest: 20260905,
+            onVictory: (_) {},
+            onDefeat: (_) {},
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('phase0a_checkpoint_condition_banner')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   group('Phase0a 心魔镜像装配', () {
     test('01 复制单主角并按分关系数强化，YAML 空敌队不冒充剧情关', () {
       final player = _makeCh1Player(repo.numbers);

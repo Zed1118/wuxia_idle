@@ -30,6 +30,11 @@ abstract final class Phase0aPresentationTokens {
   /// Reserve the bottom controls as one band, including the taller player HUD.
   /// This affects projection only, never the arena or combat distances.
   static const double battleHudReservedHeight = 180;
+  static const double checkpointMarkerWidth = 112;
+
+  /// Foreground pointer hold required to latch ordinary player attacks.
+  static const Duration mouseAttackActivationHold = Duration(seconds: 2);
+  static const double mouseAttackStatusFontSize = 12;
 
   /// 世界四角映射时距 safeRect 右/下边界的内缩像素,
   /// 保证角点落在 Rect.contains 的半开区间内。

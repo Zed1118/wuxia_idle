@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/domain/character.dart';
@@ -6,6 +8,8 @@ import '../../../core/domain/save_data.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../data/narrative_loader.dart';
+import '../../battle/presentation/phase0a/phase0a_checkpoint_guidance.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/battle_shared/combat_settlement_snapshot.dart';
@@ -84,6 +88,7 @@ class _Phase0aMainlineBattleHostState
   Phase0aVisualRoster? _visualRoster;
   Phase0aPlayerInputAdapter? _playerAdapter;
   bool _exitNotified = false;
+  Phase0aCheckpointGuidanceCopy? _checkpointGuidanceCopy;
 
   @override
   void initState() {
@@ -207,11 +212,23 @@ class _Phase0aMainlineBattleHostState
           _playerAdapter = selectedPlayerAdapter;
           _controller = controller;
         });
+        if (encounterHost != null && encounterHost.checkpointXById.isNotEmpty) {
+          unawaited(_loadCheckpointGuidance(encounterHost));
+        }
       } catch (e) {
         if (!mounted) return;
         setState(() => _setupError = e.toString());
       }
     });
+  }
+
+  Future<void> _loadCheckpointGuidance(Phase0aEncounterHost host) async {
+    final content = await NarrativeLoader.load(
+      '${widget.stage.id}_exit_guidance',
+    );
+    if (!mounted || !identical(_encounterHost, host)) return;
+    final copy = Phase0aCheckpointGuidanceCopy.fromNarrative(content);
+    if (copy != null) setState(() => _checkpointGuidanceCopy = copy);
   }
 
   /// 生产路径:单主角续传(D3=α)= 祖师一人出战。
@@ -301,6 +318,8 @@ class _Phase0aMainlineBattleHostState
       controller: controller,
       numericSkillBindings: playerAdapter.numericSkillBindings,
       basicAttackRange: playerAdapter.attackRange,
+      checkpointXById: _encounterHost?.checkpointXById ?? const {},
+      checkpointGuidanceCopy: _checkpointGuidanceCopy,
       botCommandBuilder: widget.controller == ActivityController.playerBot
           ? Phase0aPlayerBotAdapter(
               playerAdapter: playerAdapter,

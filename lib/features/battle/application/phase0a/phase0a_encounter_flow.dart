@@ -6,6 +6,7 @@ import '../../domain/phase0a/phase0a_combat_model.dart';
 import '../../domain/phase0a/encounter_enemy_roster.dart';
 import '../../domain/phase0a/spawn_director.dart';
 import 'phase0a_combat_session.dart';
+import 'phase0a_checkpoint_objective_observation.dart';
 import 'phase0a_attack_token_lease_batch_receipt.dart';
 import 'phase0a_encounter_objective_event_source.dart';
 import 'phase0a_encounter_runtime_observation.dart';
@@ -29,6 +30,7 @@ import 'phase0a_wave_battle_flow.dart';
 final class Phase0aEncounterFlow
     implements
         Phase0aBattleFlow,
+        Phase0aCheckpointObjectiveObservationSource,
         Phase0aEncounterRuntimeObservationSource,
         Phase0aDefendObjectiveObservationSource,
         Phase0aPursueObjectiveObservationSource,
@@ -125,6 +127,29 @@ final class Phase0aEncounterFlow
 
   ObjectiveControllerProgress? get objectiveProgress =>
       _objectiveTracker?.progress;
+
+  @override
+  Phase0aCheckpointObjectiveObservation? get checkpointObjectiveObservation {
+    final tracker = _objectiveTracker;
+    final director = _director;
+    if (tracker == null || director == null) return null;
+    final checkpoints = <String, bool>{};
+    for (var index = 0; index < tracker.controller.clauses.length; index++) {
+      final objective = tracker.controller.clauses[index].objective;
+      if (objective is! ReachCheckpointObjective) continue;
+      final progress = tracker.progress.clauses[index].progress;
+      for (final id in objective.checkpointIds) {
+        checkpoints[id] = progress.satisfied.contains(id);
+      }
+    }
+    if (checkpoints.isEmpty) return null;
+    final spawn = director.state;
+    return Phase0aCheckpointObjectiveObservation(
+      checkpoints: checkpoints,
+      remainingEnemies:
+          spawn.pendingCount + spawn.warningCount + spawn.activeCount,
+    );
+  }
 
   Phase0aAttackTokenLeaseBatchReceipt? get lastAttackTokenLeaseBatchReceipt =>
       _session?.lastAttackTokenLeaseBatchReceipt;

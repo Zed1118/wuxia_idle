@@ -1,0 +1,7 @@
+id: stage_01_01_exit_guidance
+title: 出口
+# During combat / road cleared / checkpoint reached before combat ends.
+paragraphs:
+  - 清除拦路敌人，再向右穿过山道。
+  - 道路已清，向右前往出口。
+  - 已抵达出口，清除余下敌人。

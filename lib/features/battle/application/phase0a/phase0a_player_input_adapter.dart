@@ -103,6 +103,7 @@ final class Phase0aPlayerInputAdapter {
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
+    this.movementArenaBounds,
   });
 
   final String playerId;
@@ -136,6 +137,10 @@ final class Phase0aPlayerInputAdapter {
   final BasicAttackChain? basicAttackChain;
   final BasicAttackGeometryRegistry? basicAttackGeometryRegistry;
   final BasicAttackArenaBounds? basicAttackArenaBounds;
+
+  /// Existing arena limits for ordinary player movement and dodge. Kept
+  /// separate from optional basic-attack geometry so every weapon uses them.
+  final BasicAttackArenaBounds? movementArenaBounds;
 
   ArenaVector movementDirectionFor(Phase0aPlayerCommand command) =>
       command.moveDirection?.normalized() ??

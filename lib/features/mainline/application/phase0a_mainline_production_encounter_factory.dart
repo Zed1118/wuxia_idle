@@ -263,6 +263,8 @@ Phase0aEncounterHost _assemble({
     tokenRequestMapper: tokenMapper,
     objectiveEventSource: objectiveSource,
     visualAssetPathByActorId: visualAssetPathByActorId,
+    checkpointXById:
+        _checkpointXPolicyByEncounter[route.encounter.id] ?? const {},
     tokenBindingsByActorId: tokensByActor,
     objectiveContinuationCommandBuilder: _objectiveContinuationCommandBuilder(
       route.encounter,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/domain/enums.dart';
+import '../../../../data/narrative_loader.dart';
 import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
@@ -25,6 +27,7 @@ import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
 import 'phase0a_actor_render_motion.dart';
 import 'phase0a_camera_dead_zone.dart';
+import 'phase0a_checkpoint_guidance.dart';
 import 'phase0a_offscreen_indicator.dart';
 import 'phase0a_parallax_background.dart';
 import 'phase0a_presentation_tokens.dart';
@@ -47,10 +50,14 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
     this.basicAttackRange,
     this.botCommandBuilder,
+    this.checkpointXById = const {},
+    this.checkpointGuidanceCopy,
   }) : assert(feedbackHoldSeconds > 0),
        assert(basicAttackRange == null || basicAttackRange >= 0);
 
   final Phase0aBattleController controller;
+  final Map<String, double> checkpointXById;
+  final Phase0aCheckpointGuidanceCopy? checkpointGuidanceCopy;
   final bool autoStep;
   final double feedbackHoldSeconds;
 
@@ -75,7 +82,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
 }
 
 class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final FocusNode _focusNode;
   late final Ticker _ticker;
   late final ValueNotifier<int> _feedbackFrame;
@@ -100,6 +107,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   bool _secondaryPointerDown = false;
   bool _gatherTargetingArmed = false;
   bool _contextAttackPending = false;
+  bool _automaticAttackEnabled = false;
+  bool _applicationActive = true;
+  Timer? _automaticAttackActivation;
+  NarrativeContent? _mouseAttackCopy;
   final Set<LogicalKeyboardKey> _heldMovementKeys = <LogicalKeyboardKey>{};
   ArenaVector? _pointerAimDirection;
   ArenaVector? _pointerMoveDestination;
@@ -112,6 +123,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     _feedbackFrame = ValueNotifier<int>(0);
     _indicatorFrame = ValueNotifier<int>(0);
@@ -119,12 +131,29 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _resetCameraRenderPosition();
     widget.controller.addListener(_refresh);
     _ticker = createTicker(_onFrame)..start();
+    _loadMouseAttackCopy();
+  }
+
+  Future<void> _loadMouseAttackCopy() async {
+    final copy = await NarrativeLoader.load('phase0a_mouse_attack');
+    if (mounted) setState(() => _mouseAttackCopy = copy);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _applicationActive = state == AppLifecycleState.resumed;
+    if (!_applicationActive) {
+      _clearHeldInput();
+      if (mounted) setState(() {});
+    }
   }
 
   @override
   void didUpdateWidget(covariant Phase0aBattleScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller == widget.controller) return;
+    _cancelAutomaticAttackActivation();
+    _automaticAttackEnabled = false;
     oldWidget.controller.removeListener(_refresh);
     widget.controller.addListener(_refresh);
     _lastElapsed = null;
@@ -155,6 +184,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _cancelAutomaticAttackActivation();
     widget.controller.removeListener(_refresh);
     _ticker.dispose();
     _feedbackFrame.dispose();
@@ -165,6 +196,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
 
   bool get _acceptsBattleInput =>
       widget.botCommandBuilder == null &&
+      _applicationActive &&
       !_paused &&
       widget.controller.outcome == Phase0aBattleOutcome.ongoing;
 
@@ -233,6 +265,56 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     return null;
   }
 
+  Phase0aActor? _automaticAttackTarget() {
+    final range = widget.basicAttackRange;
+    if (range == null) return null;
+    final player = widget.controller.state.player;
+    Phase0aActor? nearest;
+    var nearestDistance = range * range;
+    for (final enemy in widget.controller.state.enemies) {
+      if (!enemy.isAlive) continue;
+      final distance = (enemy.position - player.position).lengthSquared;
+      if (distance > nearestDistance) continue;
+      if (distance == nearestDistance &&
+          nearest != null &&
+          enemy.id.compareTo(nearest.id) >= 0) {
+        continue;
+      }
+      nearest = enemy;
+      nearestDistance = distance;
+    }
+    return nearest;
+  }
+
+  void _cancelAutomaticAttackActivation() {
+    _automaticAttackActivation?.cancel();
+    _automaticAttackActivation = null;
+  }
+
+  void _startAutomaticAttackActivation() {
+    _cancelAutomaticAttackActivation();
+    _automaticAttackActivation = Timer(
+      Phase0aPresentationTokens.mouseAttackActivationHold,
+      () {
+        _automaticAttackActivation = null;
+        if (!mounted ||
+            !_acceptsBattleInput ||
+            !_focusNode.hasFocus ||
+            !_primaryPointerDown) {
+          return;
+        }
+        setState(() {
+          _automaticAttackEnabled = true;
+          _primaryAttackHeld = false;
+          _contextAttackPending = false;
+          _contextTargetId = null;
+          _pointerMoveDestination = null;
+          _pointerAimDirection = null;
+        });
+      },
+    );
+  }
+
   int? _primaryNumericSkillHotkey() {
     final equipped = widget.numericSkillBindings.equipped;
     return equipped.isEmpty ? null : equipped.first.hotkey;
@@ -249,6 +331,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         return;
       }
       if ((event.buttons & kPrimaryMouseButton) != 0) {
+        _cancelAutomaticAttackActivation();
         final targetPoint = stage.screenToWorld(event.localPosition);
         _gatherTargetingArmed = false;
         _primaryPointerDown = false;
@@ -269,7 +352,21 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return;
     }
     if ((event.buttons & kPrimaryMouseButton) != 0) {
+      if (_automaticAttackEnabled) {
+        _cancelAutomaticAttackActivation();
+        _automaticAttackEnabled = false;
+        _primaryPointerDown = false;
+        _primaryAttackHeld = false;
+        _contextAttackPending = false;
+        _contextTargetId = null;
+        _pointerMoveDestination = null;
+        _pointerAimDirection = null;
+        if (mounted) setState(() {});
+        _focusNode.requestFocus();
+        return;
+      }
       _primaryPointerDown = true;
+      _startAutomaticAttackActivation();
       final target = _enemyAtPointer(event.localPosition, stage);
       if (target == null) {
         _primaryAttackHeld = false;
@@ -304,6 +401,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (!_acceptsBattleInput) return;
     if (_primaryPointerDown &&
         (event.buttons & kPrimaryMouseButton) != 0 &&
+        !_automaticAttackEnabled &&
         _contextTargetId == null) {
       _pointerMoveDestination = stage.screenToWorld(event.localPosition);
     }
@@ -313,6 +411,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _stopHeldPointerActions() {
+    _cancelAutomaticAttackActivation();
     _primaryPointerDown = false;
     _primaryAttackHeld = false;
     _secondaryPointerDown = false;
@@ -325,6 +424,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _cancelPointerContext() {
+    _cancelAutomaticAttackActivation();
+    _automaticAttackEnabled = false;
     _primaryPointerDown = false;
     _primaryAttackHeld = false;
     _secondaryPointerDown = false;
@@ -347,6 +448,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (_slot(widget.controller.state, 'gather').availability !=
         Phase0aSkillAvailability.ready) {
       if (_gatherTargetingArmed) {
+        _cancelAutomaticAttackActivation();
         setState(() => _gatherTargetingArmed = false);
       }
       _focusNode.requestFocus();
@@ -355,6 +457,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     setState(() {
       _gatherTargetingArmed = !_gatherTargetingArmed;
       if (_gatherTargetingArmed) {
+        _cancelAutomaticAttackActivation();
         _primaryPointerDown = false;
         _primaryAttackHeld = false;
         _secondaryPointerDown = false;
@@ -540,6 +643,19 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       }
     }
 
+    if (_automaticAttackEnabled) {
+      final automaticTarget = _automaticAttackTarget();
+      if (automaticTarget != null) {
+        final delta =
+            automaticTarget.position - widget.controller.state.player.position;
+        attack = true;
+        attackAim = delta.lengthSquared > 0
+            ? delta.normalized()
+            : widget.controller.state.player.facing;
+        attackTargetId = automaticTarget.id;
+      }
+    }
+
     return Phase0aPlayerCommand(
       left: left,
       right: right,
@@ -572,6 +688,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _syncActorRenderTargets(preserveAdvancingSlash: true);
     final playerId = widget.controller.state.player.id;
     for (final event in widget.controller.lastEvents) {
+      final actingEnemyId = switch (event) {
+        Phase0aAttackStarted(:final actor) ||
+        Phase0aEnemySkillStarted(:final actor) when actor != playerId => actor,
+        _ => null,
+      };
+      if (actingEnemyId != null) {
+        _actionPulseRemaining[actingEnemyId] =
+            Phase0aPresentationTokens.actorActionPulseSeconds;
+      }
       if (event is Phase0aAttackStarted && event.actor == playerId) {
         _contextAttackPending = false;
         if (!_primaryAttackHeld) {
@@ -1012,7 +1137,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       focusNode: _focusNode,
       autofocus: true,
       onFocusChange: (focused) {
-        if (!focused) _clearHeldInput();
+        if (!focused) {
+          _clearHeldInput();
+          if (mounted) setState(() {});
+        }
       },
       onKeyEvent: _handleKey,
       child: Scaffold(
@@ -1023,6 +1151,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
             final typedDefend = controller.defendObjectiveProgress;
             final typedSurvive = controller.surviveObjectiveProgress;
             final typedPursuit = controller.pursueObjectiveProgress;
+            final checkpoint = controller.checkpointObjectiveProgress;
+            final checkpointCopy = widget.checkpointGuidanceCopy;
             final stage = Phase0aStage(
               viewport: size,
               cameraCenter:
@@ -1099,8 +1229,24 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     ),
                   ),
                 ),
+                if (checkpoint != null &&
+                    checkpointCopy != null &&
+                    widget.checkpointXById.isNotEmpty &&
+                    controller.outcome == Phase0aBattleOutcome.ongoing)
+                  Positioned.fill(
+                    child: Phase0aCheckpointGuidance(
+                      progress: checkpoint,
+                      checkpointXById: widget.checkpointXById,
+                      copy: checkpointCopy,
+                      stage: stage,
+                      playerPosition: controller.state.player.position,
+                    ),
+                  ),
                 _PlayerHud(
                   controller: controller,
+                  automaticAttackCopy: _automaticAttackEnabled
+                      ? _mouseAttackCopy
+                      : null,
                   healthEmphasized: _hpEmphasisRemaining.containsKey(
                     controller.state.player.id,
                   ),
@@ -2020,10 +2166,15 @@ class _HitEmphasisFrame extends StatelessWidget {
 }
 
 class _PlayerHud extends StatelessWidget {
-  const _PlayerHud({required this.controller, required this.healthEmphasized});
+  const _PlayerHud({
+    required this.controller,
+    required this.healthEmphasized,
+    this.automaticAttackCopy,
+  });
 
   final Phase0aBattleController controller;
   final bool healthEmphasized;
+  final NarrativeContent? automaticAttackCopy;
 
   @override
   Widget build(BuildContext context) {
@@ -2053,12 +2204,35 @@ class _PlayerHud extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                controller.roster.nameOf(player.id),
-                style: const TextStyle(
-                  color: WuxiaUi.ink,
-                  fontWeight: FontWeight.w800,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      controller.roster.nameOf(player.id),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  if (automaticAttackCopy != null)
+                    Tooltip(
+                      message: automaticAttackCopy!.paragraphs.join(' '),
+                      child: Text(
+                        automaticAttackCopy!.title ??
+                            automaticAttackCopy!.paragraphs.first,
+                        key: const ValueKey('phase0a_automatic_attack_status'),
+                        style: const TextStyle(
+                          color: WuxiaUi.jiang,
+                          fontWeight: FontWeight.w800,
+                          fontSize: Phase0aPresentationTokens
+                              .mouseAttackStatusFontSize,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: Phase0aPresentationTokens.hudGap),
               _HitEmphasisFrame(

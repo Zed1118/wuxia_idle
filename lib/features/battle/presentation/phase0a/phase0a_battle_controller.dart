@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 import '../../application/phase0a/phase0a_battle_flow.dart';
+import '../../application/phase0a/phase0a_checkpoint_objective_observation.dart';
 import '../../application/phase0a/phase0a_defend_objective_observation.dart';
 import '../../application/phase0a/phase0a_player_input_adapter.dart';
 import '../../application/phase0a/phase0a_pursue_objective_observation.dart';
@@ -107,6 +108,13 @@ final class Phase0aBattleController extends ChangeNotifier {
   List<CombatEventRecord> get lastEventRecords => _flow.lastOrderedEventRecords;
   List<Phase0aEvent> get events => _events;
   List<Phase0aVfxEntry> get feedback => _feedback;
+
+  Phase0aCheckpointObjectiveObservation? get checkpointObjectiveProgress {
+    final flow = _flow;
+    if (flow is! Phase0aCheckpointObjectiveObservationSource) return null;
+    return (flow as Phase0aCheckpointObjectiveObservationSource)
+        .checkpointObjectiveObservation;
+  }
 
   Phase0aSurviveObjectiveProgress? get surviveObjectiveProgress {
     final flow = _flow;

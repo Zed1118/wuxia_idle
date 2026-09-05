@@ -87,6 +87,7 @@ Phase0aActor resolvePhase0aMovement({
   required Phase0aActor actor,
   required ArenaVector direction,
   required double deltaSeconds,
+  BasicAttackArenaBounds? bounds,
 }) {
   if (!(deltaSeconds.isFinite && deltaSeconds >= 0)) {
     throw ArgumentError.value(
@@ -98,8 +99,10 @@ Phase0aActor resolvePhase0aMovement({
   final step = direction.lengthSquared > 0
       ? direction.normalized()
       : ArenaVector.zero;
+  bounds?.validate();
+  final position = actor.position + step * (actor.moveSpeed * deltaSeconds);
   return actor.copyWith(
-    position: actor.position + step * (actor.moveSpeed * deltaSeconds),
+    position: bounds?.clamp(position) ?? position,
     facing: step.lengthSquared > 0 ? step : actor.facing,
   );
 }
@@ -116,6 +119,7 @@ Phase0aStepResult reducePhase0aTick({
   required double deltaSeconds,
   required Phase0aDamageResolver damageResolver,
   Phase0aEnemySkillDamageResolver? enemySkillDamageResolver,
+  BasicAttackArenaBounds? playerMovementBounds,
 }) {
   // 拍长必须有限且非负:负值会让冷却反增/位移反向,NaN 会绕过一切比较。
   if (!(deltaSeconds.isFinite && deltaSeconds >= 0)) {
@@ -125,6 +129,7 @@ Phase0aStepResult reducePhase0aTick({
       'must be finite and non-negative',
     );
   }
+  playerMovementBounds?.validate();
   final tick = state.tick + 1;
   var seq = state.nextSeq;
   final events = <Phase0aEvent>[];
@@ -629,8 +634,9 @@ Phase0aStepResult reducePhase0aTick({
         if (intent.dodgeIframeTicks <= 0 || intent.dodgeDistance <= 0) {
           continue;
         }
+        final destination = from + direction * intent.dodgeDistance;
         player = player.copyWith(
-          position: from + direction * intent.dodgeDistance,
+          position: playerMovementBounds?.clamp(destination) ?? destination,
           facing: direction,
           shieldRemaining: 0,
           shieldTicksRemaining: 0,
@@ -699,6 +705,7 @@ Phase0aStepResult reducePhase0aTick({
           actor: actor,
           direction: direction,
           deltaSeconds: deltaSeconds,
+          bounds: isPlayer ? playerMovementBounds : null,
         );
         if (isPlayer) {
           player = moved;

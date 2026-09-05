@@ -3825,7 +3825,7 @@ runtime_bindings:
         spawn_grace_ticks_remaining: 0
         telegraph_ready: true
       - id: ch1_behavior_gong_command
-        ai_profile_id: ai_gong_command
+        ai_profile_id: ai_bandit_press
         token_policy: support
         priority: 3
         is_offscreen: false
@@ -3901,7 +3901,7 @@ runtime_bindings:
         spawn_grace_ticks_remaining: 0
         telegraph_ready: true
       - id: ch1_behavior_gong_command
-        ai_profile_id: ai_gong_command
+        ai_profile_id: ai_bandit_press
         token_policy: support
         priority: 3
         is_offscreen: false

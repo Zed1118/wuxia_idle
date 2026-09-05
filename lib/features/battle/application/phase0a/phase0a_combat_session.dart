@@ -127,6 +127,7 @@ final class Phase0aCombatSession {
       actor: before,
       direction: playerAdapter.movementDirectionFor(command),
       deltaSeconds: deltaSeconds,
+      bounds: playerAdapter.movementArenaBounds,
     );
     return after.position - before.position;
   }
@@ -228,6 +229,7 @@ final class Phase0aCombatSession {
       deltaSeconds: deltaSeconds,
       damageResolver: damageResolver,
       enemySkillDamageResolver: enemySkillDamageResolver,
+      playerMovementBounds: playerAdapter.movementArenaBounds,
     );
     final leaseRuntimeBefore = preparedLeaseBatch == null
         ? null

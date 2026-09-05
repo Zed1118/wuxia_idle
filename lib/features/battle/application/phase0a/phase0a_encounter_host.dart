@@ -132,8 +132,10 @@ final class Phase0aEncounterHost {
     this.mapping,
     this.visualAssetPathByActorId,
     this.objectiveContinuationCommandBuilder,
+    Map<String, double> checkpointXById = const {},
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
-  }) : tokenBindingsByActorId = tokenBindingsByActorId == null
+  }) : checkpointXById = Map.unmodifiable(checkpointXById),
+       tokenBindingsByActorId = tokenBindingsByActorId == null
            ? null
            : Map<String, Phase0aEncounterTokenBinding>.unmodifiable(
                tokenBindingsByActorId,
@@ -177,6 +179,7 @@ final class Phase0aEncounterHost {
     required Phase0aAttackTokenEnforcementRequestMapper tokenRequestMapper,
     required Phase0aEncounterObjectiveEventSource objectiveEventSource,
     Map<String, String>? visualAssetPathByActorId,
+    Map<String, double> checkpointXById = const {},
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
     Phase0aObjectiveContinuationCommandBuilder?
     objectiveContinuationCommandBuilder,
@@ -194,6 +197,7 @@ final class Phase0aEncounterHost {
       flow: flow,
       mapping: plan.mapping,
       visualAssetPathByActorId: visualAssetPathByActorId,
+      checkpointXById: checkpointXById,
       tokenBindingsByActorId: tokenBindingsByActorId,
       objectiveContinuationCommandBuilder: objectiveContinuationCommandBuilder,
     );
@@ -207,6 +211,7 @@ final class Phase0aEncounterHost {
     required Phase0aBattleFlow flow,
     Phase0aEncounterMapping? mapping,
     Map<String, String>? visualAssetPathByActorId,
+    Map<String, double> checkpointXById = const {},
     Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId,
     Phase0aObjectiveContinuationCommandBuilder?
     objectiveContinuationCommandBuilder,
@@ -216,6 +221,7 @@ final class Phase0aEncounterHost {
     flow: flow,
     mapping: mapping,
     visualAssetPathByActorId: visualAssetPathByActorId,
+    checkpointXById: checkpointXById,
     tokenBindingsByActorId: tokenBindingsByActorId,
     objectiveContinuationCommandBuilder: objectiveContinuationCommandBuilder,
   );
@@ -225,6 +231,7 @@ final class Phase0aEncounterHost {
   final Phase0aBattleFlow flow;
   final Phase0aEncounterMapping? mapping;
   final Map<String, String>? visualAssetPathByActorId;
+  final Map<String, double> checkpointXById;
   final Map<String, Phase0aEncounterTokenBinding>? tokenBindingsByActorId;
   final Phase0aObjectiveContinuationCommandBuilder?
   objectiveContinuationCommandBuilder;
