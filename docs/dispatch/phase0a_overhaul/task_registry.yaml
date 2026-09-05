@@ -6225,15 +6225,24 @@ tasks:
   - id: P2-M2-HUMAN-G2-ACCEPTANCE
     milestone: M2
     owner: human
-    status: deferred_by_user
-    current_authoritative_wip: false
+    status: blocked
+    current_authoritative_wip: true
     completion_scope: perform_the_deferred_real_desktop_G2_playtest_against_the_integrated_build
     acceptance_target: 1_of_1_formal_M2_gate
     acceptance_result: 0_of_1_formal_M2_gate
     evidence:
       engineering_candidate_integrated: true
-      human_desktop_acceptance: deferred_by_user
+      human_desktop_acceptance: pending_actual_human_signoff
+      delegated_work_resumed_on: 2026-09-05
+      delegated_work_authorization: process_all_remaining_tasks_in_priority_order
+      frozen_production_sha: 6d8ffa1445b4082535b2aa32a4a71afb7c990275
+      delegated_blackwind_terminal_attempts: 2_explicit_defeats_retry_and_return_verified
+      legal_fresh_save_first_clear: first_stage_not_won
+      real_save_control_matrix: 2_saves_x_3_stages_x_3_tactics_x_3_seeds_diagnostic_only
+      first_stage_and_blackwind_matrix_wins: 0_of_36
+      evidence_report: docs/audit/phase2_m2_priority_acceptance_2026-09-05.md
     blockers:
+      - first_stage_and_blackwind_playability_requires_human_strategy_validation_or_new_approved_tuning
       - real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff
     protected_behavior:
       - automated_driving_screenshots_or_test_results_do_not_replace_human_control_feel
