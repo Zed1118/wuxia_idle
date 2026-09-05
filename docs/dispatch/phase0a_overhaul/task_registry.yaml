@@ -7950,7 +7950,7 @@ tasks:
       stage_13_02_minimal_narrative_consistency: pass
       stage_13_01_03_single_target_routes: pass
       stage_13_04_05_boss_identity_mechanics_drop_and_numeric_snapshots: historical_pass_claim_superseded_by_numeric_review_gap
-      post_integration_review: identity_skills_numbers_and_commander_spawn_order_gaps_fixed_in_local_candidate_not_main
+      post_integration_review: identity_skills_numbers_and_commander_spawn_order_gaps_fixed_in_integrated_main_correction
       corrective_owner: P2-M7-CH13-CONTRACT-FIX-20260905
       initial_valid_red_tests: 0_of_8
       remove_assignment_mutation_failures: 1
@@ -8002,14 +8002,18 @@ tasks:
   - id: P2-M7-CH13-CONTRACT-FIX-20260905
     milestone: M7
     owner: codex_root
-    branch: codex/p2-m7-ch13-contract-fix-20260905
+    branch: codex/p2-m7-ch13-contract-integration-20260905
+    source_candidate_branch: codex/p2-m7-ch13-contract-fix-20260905
     worktree: /Users/a10506/.codex/worktrees/a0d7/挂机武侠
-    status: ready_local_candidate_pending_main_authorization
-    current_authoritative_wip: true
+    status: integrated_origin_main_ci_success
+    current_authoritative_wip: false
     base_commit: 2d254abdf9bd841730acc301867c1249dde2ebc4
+    source_candidate_commit: 21ad6e60b075751f42c090ef87a998a8186c1c0a
+    candidate_commit: cb824b534e7b4ed9e59ef21379eae8ca5846df9a
+    merge_commit: 261f2daf17e4357aaf12a04b86775dc64aa1164a
     completion_scope: restore_authored_Ch13_identity_skills_numeric_snapshots_and_actual_layered_spawn_order
     acceptance_target: 3_of_3_production_contract_repairs_without_increasing_catalog_or_formal_milestone_denominators
-    acceptance_result: 3_of_3_repairs_verified_in_local_candidate_not_main
+    acceptance_result: 3_of_3_repairs_verified_and_integrated_origin_main_ci_success
     evidence:
       authorization: user_explicitly_started_Ch13_repair_after_review
       plan: docs/superpowers/plans/2026-09-05-p2-m7-ch13-contract-fix.md
@@ -8030,17 +8034,39 @@ tasks:
       new_locked_full_runs: 1
       test_deleted_lines: 0
       test_contract_migration_gate: not_applicable_no_deletions
-      standard_merge_gate: not_run_pending_authorized_integration
+      integration_authorization: user_approved_merge_push_and_exact_SHA_CI_via_daily_chat_on_2026_09_05
+      original_candidate_preflight: fail_forbidden_files_PROGRESS_md_full_skipped_other_checks_pass
+      integration_candidate_delta_from_original: only_PROGRESS_md_moved_to_authorized_governance_tail_production_code_data_tests_identical
+      post_commit_mutations: remove_spawn_guard_1_failure_force_source_preservation_false_1_failure_exactly_restored
+      standard_merge_gate: native_PASS_all_checks_receipt_matched_full_6017_of_6017
+      standard_gate_started_cst: '2026-09-05 08:36:34'
+      standard_gate_ended_cst: '2026-09-05 08:53:28'
+      standard_gate_elapsed_seconds: 1014
+      postmerge_analyze: no_issues_found_lib_test_tool
+      postmerge_targeted_tests: 288_of_288
+      postmerge_format: 1742_files_0_changed
+      postmerge_format_extra_file: preexisting_ignored_battle_providers_g_dart_untouched
+      postmerge_full_tests: 6017_of_6017_exit_0
+      postmerge_full_started_cst: '2026-09-05 08:54:44'
+      postmerge_full_ended_cst: '2026-09-05 09:07:20'
+      postmerge_full_elapsed_seconds: 756
+      integration_full_runs: 2
+      integration_rework: one_governance_separation_no_production_change_or_merge_conflict
+      merge_exact_sha_ci_run: 33935197099
+      merge_exact_sha_ci_head: 261f2daf17e4357aaf12a04b86775dc64aa1164a
+      merge_exact_sha_ci_status: completed
+      merge_exact_sha_ci_conclusion: success
+      merge_exact_sha_ci_jobs: test_and_macos_build_success
       mainline_catalog_integrated: 105_of_105
       tower_migrated_floors: 0_of_49
       formal_milestones_closed: 1_of_10
-      repair_integrated_main: false
+      repair_integrated_main: true
       human_and_Windows_acceptance: deferred
     protected_behavior:
       - no_global_identity_or_numeric_changes_to_other_chapters
       - preserve_25_actors_10_active_existing_tokens_and_all_objective_composition
       - no_new_reward_economy_cycle_saveVersion_or_persistence_schema_change
-      - no_main_merge_push_tower_floor_migration_M8_or_M9_in_this_batch
+      - merge_push_authorized_only_for_this_repair_no_tower_floor_migration_M8_or_M9
 
   - id: P2-M7-TOWER-FOUNDATION
     milestone: M7
@@ -8126,13 +8152,14 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_catalog_105_of_105_integrated_Ch13_contract_repairs_open_tower_foundation_integrated_review_gaps_open_tower_0_of_49_legacy_retirement_open
+    acceptance_result: mainline_catalog_105_of_105_integrated_Ch13_contract_repairs_integrated_ci_success_tower_foundation_review_gaps_open_tower_0_of_49_legacy_retirement_open
     evidence:
       mainline_catalog_integrated: 105_of_105
       mainline_catalog_local_candidate: 105_of_105
       remaining_mainline_stages_integrated: 0_of_105
       remaining_mainline_stages_in_local_candidate: 0_of_105
-      next_authoritative_task: P2-M7-CH13-CONTRACT-FIX-20260905
+      next_authoritative_task: none_current_batch_closed
+      next_recommended_gate: tower_foundation_hardening_requires_user_authorization
       local_candidate_counts_as_integrated_stage: false
       chapter_13_status: integrated_origin_main_ci_success
       chapter_13_decision: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01

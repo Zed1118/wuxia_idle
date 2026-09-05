@@ -408,7 +408,7 @@ decisions:
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01
-    status: frozen_authorized_integrated_review_gaps_open
+    status: frozen_authorized_integrated_correction_ci_success
     parent_decision: COMBAT-ECOLOGY-ASSIGNMENT-01
     summary: 第十三章半山寺采用 24 人群体考校加一名非 Boss 半山知客僧 commander
     user_choice: layered_examination_24_ecology_plus_1_named_non_boss_commander
@@ -430,8 +430,8 @@ decisions:
     batch_freeze_requires_explicit_user_choice: false
     implementation_owner: P2-M7-CH13-CONTENT-MIGRATION
     corrective_owner: P2-M7-CH13-CONTRACT-FIX-20260905
-    review_gap: commander_actual_spawn_order_does_not_match_layered_examination
-    correction_status: verified_local_candidate_not_integrated_main
+    initial_review_gap: commander_actual_spawn_order_does_not_match_layered_examination
+    correction_status: integrated_origin_main_ci_success
     approved_at: "2026-09-04"
     approval_basis: '当前 Codex 任务：用户明确拍板第十三章“分层考校”方案'
 
