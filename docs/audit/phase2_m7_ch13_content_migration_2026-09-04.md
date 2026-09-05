@@ -1,5 +1,7 @@
 # Phase 2 M7 第十三章分层考校内容迁移审计（2026-09-04）
 
+> 2026-09-05 独立复核补充：下列集成/CI 与覆盖计数属实，但“保留单敌身份与原数值、知客僧最后入场”的验收结论存在缺口。13-01/03 被生态模板替换姓名/立绘/技能；13-03/05 继承 1.1 倍 HP/速度；知客僧因 director 的 ID 排序进入首批。原测试未覆盖这些事实。三类缺陷现已在独立本地候选完成修复与 6017 项全量验证，见 `phase2_m7_ch13_contract_fix_2026-09-05.md`；未集成前不得把 main 写成已修复。
+
 ## 结论
 
 本分支基于 clean 的 `main == origin/main == 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f`，按用户明确拍板的“分层考校”方案完成第十三章工程迁移。候选 `a6bd6366ab1a609da8efde0c6f8bd0a54c1352e3` 已经 no-ff merge `7c10ff17583addda4dd9039372f6f1b918d3a60e` 合入 `main/origin/main`，merge exact-SHA CI run `33895342001` 为 `completed/success`。第十三章由 `1/5` 推进为集成 `5/5`，全主线 typed production catalog 由 `101/105` 推进为集成 `105/105`。

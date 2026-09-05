@@ -44,6 +44,88 @@ List<String> activeIds(SpawnDirectorState state) => state.units
     .toList();
 
 void main() {
+  group('optional spawn dependencies', () {
+    test('rejects blank duplicate dangling self and cyclic dependencies', () {
+      for (final dependencies in [
+        [''],
+        ['a b'],
+        ['missing'],
+        ['b', 'b'],
+        ['a'],
+      ]) {
+        expect(
+          () => SpawnDirector(
+            config: cfg(),
+            entries: [
+              SpawnEntry(
+                entryId: 'a',
+                enemyId: 'enemy_a',
+                afterRemovedEntryIds: dependencies,
+              ),
+              entry('b'),
+            ],
+          ),
+          throwsArgumentError,
+          reason: '$dependencies',
+        );
+      }
+      expect(
+        () => SpawnDirector(
+          config: cfg(),
+          entries: [
+            SpawnEntry(
+              entryId: 'a',
+              enemyId: 'enemy_a',
+              afterRemovedEntryIds: ['b'],
+            ),
+            SpawnEntry(
+              entryId: 'b',
+              enemyId: 'enemy_b',
+              afterRemovedEntryIds: ['a'],
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+    test('all-active cannot bypass dependency gating', () {
+      expect(
+        () => SpawnDirector.allActive(
+          config: cfg(),
+          entries: [
+            entry('b'),
+            SpawnEntry(
+              entryId: 'a',
+              enemyId: 'enemy_a',
+              afterRemovedEntryIds: ['b'],
+            ),
+          ],
+        ),
+        throwsArgumentError,
+      );
+    });
+    test('dependencies are defensive and cannot release from mere entry', () {
+      final dependencyIds = ['b'];
+      var director = SpawnDirector(
+        config: cfg(warning: 0),
+        entries: [
+          SpawnEntry(
+            entryId: 'a',
+            enemyId: 'enemy_a',
+            afterRemovedEntryIds: dependencyIds,
+          ),
+          entry('b'),
+        ],
+      );
+      dependencyIds.clear();
+      director = director.advance().director;
+      expect(activeIds(director.state), ['b']);
+      director = director.advance().director;
+      expect(activeIds(director.state), ['b']);
+      director = director.markExited('b').advance().director;
+      expect(activeIds(director.state), ['a']);
+    });
+  });
   group('SpawnDirectorConfig 严格校验', () {
     test('activeLimit 必须为正', () {
       expect(
