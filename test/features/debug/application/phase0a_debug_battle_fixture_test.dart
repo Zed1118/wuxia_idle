@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_stage.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_vfx_controller.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 
@@ -147,13 +148,31 @@ void main() {
 
     expect(find.byKey(const ValueKey('phase0a_battle_screen')), findsOneWidget);
     expect(controller.state.enemies, hasLength(24));
+    final stage = Phase0aStage(
+      viewport: const Size(1280, 720),
+      cameraCenter: controller.state.player.position,
+    );
+    var visibleCount = 0;
+    var offscreenCount = 0;
     for (final enemy in controller.state.enemies) {
+      final actorKey = ValueKey('phase0a_actor_${enemy.id}');
+      // Residency and visibility are different contracts: all actors remain
+      // mounted, while only actors inside the production camera are painted.
       expect(
-        find.byKey(ValueKey('phase0a_actor_${enemy.id}')),
+        find.byKey(actorKey, skipOffstage: false),
         findsOneWidget,
         reason: enemy.id,
       );
+      final visible = stage.isWorldPointVisible(enemy.position);
+      expect(
+        find.byKey(actorKey),
+        visible ? findsOneWidget : findsNothing,
+        reason: '${enemy.id} camera visibility',
+      );
+      visible ? visibleCount++ : offscreenCount++;
     }
+    expect(visibleCount, greaterThan(0));
+    expect(offscreenCount, greaterThan(0));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
