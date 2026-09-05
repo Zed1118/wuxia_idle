@@ -11,6 +11,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_participant_snapshot_service.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
@@ -159,15 +160,42 @@ void main() {
         ),
       );
       await tester.pump();
-      var simulatedSeconds = 0;
-      while (terminalSettlement == null && simulatedSeconds < 180) {
-        await tester.sendKeyEvent(LogicalKeyboardKey.keyJ);
-        await tester.pump(const Duration(seconds: 1));
-        simulatedSeconds += 1;
+      final setupDeadline = DateTime.now().add(const Duration(seconds: 10));
+      while (find.byType(Phase0aBattleScreen).evaluate().isEmpty &&
+          DateTime.now().isBefore(setupDeadline)) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+        await tester.pump(const Duration(milliseconds: 10));
       }
+      expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+      // Sample the real held-attack path at combat cadence. One tap per
+      // second relied on the Boss remaining idle outside its melee range.
+      // Use the new character's existing clear/equipped skill as well; do
+      // not change its snapshot or disable enemy engagement to force a win.
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.keyJ);
+      var simulatedTicks = 0;
+      while (terminalSettlement == null && simulatedTicks < 1800) {
+        if (simulatedTicks % 10 == 0) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+        }
+        if (simulatedTicks % 10 == 5) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+        }
+        await tester.pump(const Duration(milliseconds: 100));
+        simulatedTicks += 1;
+      }
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.keyJ);
 
       final settlement = terminalSettlement!;
       expect(settlement.result, BattleResult.leftWin);
+      expect(settlement.damageByCharacterId[-2], greaterThan(0));
+      expect(
+        settlement.skillCasts.where(
+          (cast) => cast.characterId == run.participantId,
+        ),
+        isNotEmpty,
+      );
       expect(settlement.isFinished, isTrue);
       expect(settlement.playerCharacterId, run.participantId);
       expect(settlement.participantCharacterIds, {-2, -1, 1});

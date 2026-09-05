@@ -1861,7 +1861,7 @@ runtime_bindings:
     behaviors:
       - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
       - {id: ch2_behavior_lightfoot_flank, ai_profile_id: ai_sect_lightfoot_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
-      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_instructor_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_outer_press, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
       - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
       - {id: ai_sect_lightfoot_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
@@ -2013,7 +2013,7 @@ runtime_bindings:
     behaviors:
       - {id: ch4_behavior_sand_blade, ai_profile_id: ai_ch4_sand_blade, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
       - {id: ch4_behavior_heavy_cavalry, ai_profile_id: ai_ch4_heavy_cavalry, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
-      - {id: ch4_behavior_banner, ai_profile_id: ai_ch4_banner, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch4_behavior_banner, ai_profile_id: ai_ch4_sand_blade, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
       - {id: ai_ch4_sand_blade, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
       - {id: ai_ch4_heavy_cavalry, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
@@ -2045,7 +2045,7 @@ runtime_bindings:
       - {id: ch4_position_s01_slot_02, world_position: {x: 0, y: -40}}
     behaviors:
       - {id: ch4_behavior_sand_blade, ai_profile_id: ai_ch4_sand_blade, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
-      - {id: ch4_behavior_banner, ai_profile_id: ai_ch4_banner, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch4_behavior_banner, ai_profile_id: ai_ch4_sand_blade, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
       - {id: ai_ch4_sand_blade, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
       - {id: ai_ch4_banner, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
@@ -2203,7 +2203,7 @@ runtime_bindings:
     behaviors:
       - {id: ch1_behavior_blade_press, ai_profile_id: ai_bandit_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
       - {id: ch1_behavior_rope_flank, ai_profile_id: ai_rope_flank, token_policy: charge, priority: 2, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
-      - {id: ch1_behavior_gong_command, ai_profile_id: ai_gong_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch1_behavior_gong_command, ai_profile_id: ai_bandit_press, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
       - {id: ai_bandit_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
       - {id: ai_rope_flank, target_policy: nearest_player, movement_policy: lateral_flank, attack_policy: charge_and_reposition}
@@ -2235,7 +2235,7 @@ runtime_bindings:
       - {id: ch2_position_s02_slot_02, world_position: {x: 0, y: -40}}
     behaviors:
       - {id: ch2_behavior_outer_press, ai_profile_id: ai_sect_outer_press, token_policy: melee, priority: 1, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
-      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_instructor_command, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
+      - {id: ch2_behavior_instructor_command, ai_profile_id: ai_sect_outer_press, token_policy: support, priority: 3, is_offscreen: false, is_high_impact: false, is_unblockable_area: false, spawn_grace_ticks_remaining: 0, telegraph_ready: true}
     ai_profiles:
       - {id: ai_sect_outer_press, target_policy: nearest_player, movement_policy: direct_advance, attack_policy: close_range}
       - {id: ai_sect_instructor_command, target_policy: nearest_player, movement_policy: guarded_position, attack_policy: support_pulse}
@@ -2999,7 +2999,7 @@ runtime_bindings:
         spawn_grace_ticks_remaining: 0
         telegraph_ready: true
       - id: ch2_behavior_instructor_command
-        ai_profile_id: ai_sect_instructor_command
+        ai_profile_id: ai_sect_outer_press
         token_policy: support
         priority: 3
         is_offscreen: false
@@ -3077,7 +3077,7 @@ runtime_bindings:
         spawn_grace_ticks_remaining: 0
         telegraph_ready: true
       - id: ch2_behavior_instructor_command
-        ai_profile_id: ai_sect_instructor_command
+        ai_profile_id: ai_sect_outer_press
         token_policy: support
         priority: 3
         is_offscreen: false
