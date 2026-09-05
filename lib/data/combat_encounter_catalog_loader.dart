@@ -379,6 +379,8 @@ CombatEncounterDef _buildEncounter(
           entranceId: spawnEntry.entranceId,
           positionId: spawnEntry.positionId,
           behaviorId: spawnEntry.behaviorId,
+          preserveSourceContract: spawnEntry.preserveSourceContract,
+          spawnAfterDefeated: spawnEntry.spawnAfterDefeated,
         ),
       );
     } on ArgumentError catch (e) {

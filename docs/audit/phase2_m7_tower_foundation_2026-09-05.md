@@ -1,5 +1,7 @@
 # Phase 2 M7 塔迁移基础门审计（2026-09-05）
 
+> 2026-09-05 复核补充：merge `2d254abdf9bd841730acc301867c1249dde2ebc4` 的 exact-SHA CI `33901066970` 已实查 completed/success。基础门代码已集成不等于下批迁层验收无缺口：目标类型及完整击杀集合尚缺限制，三入口现有新守卫主要是源码字符串检查，代表层未完整比较 actor/技能全部字段及每项机制触发。上述补强须先于迁层；本批 Ch13 修复不修改塔代码。
+
 ## 结论
 
 本批在绿色 `main == origin/main == 7c10ff17583addda4dd9039372f6f1b918d3a60e` 上完成塔迁移基础门 `1/1`。`[READY]` 候选 `431f28532b6ebd1ea07dadad22d2755192955f61` 已通过标准 Gate 并 no-ff 合入 main。生产 migration set 明确保持为空，所以 49 层全部继续走兼容路径，塔迁移工程水位仍为 `0/49`。本批不关闭正式 M7，也不改变 Phase 2 `1/10`。
@@ -27,7 +29,7 @@
 | 基础门 focused | `9/9 PASS` |
 | 基础门 + 既有 wiring/headless | `20/20 PASS` |
 | 塔域宽回归 | `157/157 PASS` |
-| 代表层 | `1/7/14/32/42/49 × cycle 1/2`，actor、技能、Boss phase、charge、vulnerability、guardian ward 与 settlement 对 legacy 精确一致 |
+| 代表层 | `1/7/14/32/42/49 × cycle 1/2`，已比较敌人/技能 ID、phase/charge/vulnerability/guardian 部分机制字段及 settlement；不代表完整 actor/技能配置或每项机制触发 parity |
 | live/headless | 上述 12 组相同 seed 的 outcome、final state、events 精确一致 |
 | mutation 1 | runtime source 将多敌 source 退化为首敌重复绑定，正向测试失败 1；反向 patch 恢复后通过 |
 | mutation 2 | guardian lookup 强制查 missing key，正向测试因 dangling guardian 失败 1；反向 patch 恢复后通过 |
@@ -42,4 +44,4 @@
 - 没有迁任何塔层，没有修改数值、技能、奖励、经济、解锁、周目、结算 owner、`schemaVersion`、`saveVersion`、GDD、CLAUDE 或玩家可见文案。
 - 没有给现有塔 AI 引入 attack-token throttling；typed path 显式保留旧塔同时在场与既有 actor ID 行为，避免改变碰撞、选敌与手感。
 - 自动化、mutation、候选 READY、后续 main 集成与 exact-SHA CI 均不能代替真人桌面、视觉/音频/手感或 Windows 验收。
-- 本次 push 的 exact-SHA CI 由集成收尾实时核验；塔楼层迁移、legacy 退役和真人门仍另行挂账。
+- 集成 exact-SHA CI 已成功（见顶部复核）；塔基础门补强、楼层迁移、legacy 退役和真人门仍另行挂账。

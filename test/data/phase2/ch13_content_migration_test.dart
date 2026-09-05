@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_con
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/spawn_director.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
@@ -133,6 +134,130 @@ void main() {
       expect(target.attackSet, contract.$4, reason: stageId);
     }
   });
+
+  test('authored singleton identities retain icons and complete skills', () {
+    for (final stageId in ['stage_13_01', 'stage_13_03']) {
+      final contract = _expected[stageId]!;
+      final base = EnemyCombatantSnapshotAssembler.assembleOne(
+        enemy: repository.getStage(stageId).enemyTeam.single,
+        slotIndex: 0,
+      );
+      final binding = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+        stageId: stageId,
+        encounterId: contract.$1,
+        cycleIndex: 1,
+        repository: repository,
+      ).actorBindingsByEntryId[contract.$2]!;
+      expect(binding.combatant.name, base.name, reason: stageId);
+      expect(binding.combatant.iconPath, base.iconPath, reason: stageId);
+      expect(binding.visualAssetPath, base.iconPath, reason: stageId);
+      expect(
+        binding.combatant.availableSkills.map((s) => s.id),
+        base.availableSkills.map((s) => s.id),
+        reason: stageId,
+      );
+      expect(
+        binding.enemySkillBindings.map((s) => s.skill.id),
+        base.availableSkills
+            .where((s) => s.type != SkillType.normalAttack)
+            .map((s) => s.id),
+        reason: stageId,
+      );
+      final basic = base.availableSkills.singleWhere(
+        (s) => s.type == SkillType.normalAttack,
+      );
+      expect(binding.basicPowerMultiplier, basic.powerMultiplier);
+      expect(binding.basicQiDelta, basic.qiDelta);
+    }
+  });
+
+  test('all four singleton routes preserve source numbers in both cycles', () {
+    for (final cycle in [1, 2]) {
+      for (final MapEntry(key: stageId, value: contract) in _expected.entries) {
+        final base = EnemyCombatantSnapshotAssembler.assembleOne(
+          enemy: repository.getStage(stageId).enemyTeam.single,
+          slotIndex: 0,
+          cycleIndex: cycle,
+        );
+        final actual = buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+          stageId: stageId,
+          encounterId: contract.$1,
+          cycleIndex: cycle,
+          repository: repository,
+        ).actorBindingsByEntryId[contract.$2]!.combatant;
+        expect(
+          (
+            actual.maxHp,
+            actual.currentHp,
+            actual.speed,
+            actual.totalEquipmentAttack,
+            actual.defenseRate,
+            actual.internalForce,
+            actual.maxQi,
+            actual.currentQi,
+          ),
+          (
+            base.maxHp,
+            base.currentHp,
+            base.speed,
+            base.totalEquipmentAttack,
+            base.defenseRate,
+            base.internalForce,
+            base.maxQi,
+            base.currentQi,
+          ),
+          reason: '$stageId cycle $cycle',
+        );
+      }
+    }
+  });
+
+  test(
+    'real factory withholds the usher until all 24 examiners exit',
+    () async {
+      final host = (await createFreshPhase0aMainlineEncounter(
+        Phase0aMainlineEncounterHostBuildRequest(
+          stage: repository.getStage(_templeStageId),
+          playerMapping: _playerMapping(repository, _templeStageId),
+          numbers: repository.numbers,
+          cycleIndex: 1,
+          rng: Random(13),
+          runtimeBindingSource: _runtimeSource(repository),
+          catalogOverride: repository.combatCatalog,
+        ),
+      ))!;
+      var director = host.mapping!.director;
+      final removed = <String>{};
+      var commanderEntered = false;
+      for (var tick = 0; tick < 400 && !commanderEntered; tick++) {
+        final advance = director.advance();
+        director = advance.director;
+        for (final event in advance.events) {
+          if (event.entryId == _templeCommanderEntryId) {
+            expect(removed, hasLength(24), reason: '${event.type} at $tick');
+            if (event.type == SpawnDirectorEventType.entered) {
+              commanderEntered = true;
+            }
+          }
+        }
+        final active = director.state.units
+            .where(
+              (u) =>
+                  u.stage == SpawnUnitStage.active &&
+                  u.entryId != _templeCommanderEntryId,
+            )
+            .toList();
+        // Keep the final examiner alive across several reinforcement checks.
+        for (final unit in active) {
+          if (removed.length == 23 && tick < 200) continue;
+          removed.add(unit.entryId);
+          director = director.markExited(unit.entryId);
+        }
+      }
+      expect(removed, hasLength(24));
+      expect(commanderEntered, isTrue);
+    },
+  );
 
   test('halfway temple remains a 25 actor, 10 active layered ecology', () {
     final encounter = repository.combatEncounterForStage(_templeStageId)!;
@@ -357,6 +482,23 @@ void main() {
         );
         expect(result.outcome, Phase0aBattleOutcome.victory, reason: stageId);
         expect(result.timedOut, isFalse, reason: stageId);
+        if (stageId == _templeStageId) {
+          var defeatedCount = 0;
+          var usherEntered = false;
+          for (final event in result.events) {
+            if (event is Phase0aEnemyDefeated) defeatedCount++;
+            if (event is Phase0aSpawnWarningStarted &&
+                event.entryId == _templeCommanderEntryId) {
+              expect(defeatedCount, 24);
+            }
+            if (event is Phase0aEnemyEntered &&
+                event.entryId == _templeCommanderEntryId) {
+              expect(defeatedCount, 24);
+              usherEntered = true;
+            }
+          }
+          expect(usherEntered, isTrue);
+        }
         expect(result.ticks, inInclusiveRange(1, maxTicks - 1));
         expect(
           result.events.whereType<Phase0aEnemyDefeated>(),

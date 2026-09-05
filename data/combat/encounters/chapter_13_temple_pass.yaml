@@ -9,7 +9,7 @@ encounters:
       attack_grace_ticks: 10
     token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
     spawn_entries:
-      - {entry_id: ch13_s01_tea_stall_veteran, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch13_s01_tea_stall_veteran, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press, preserve_source_contract: true}
     objectives:
       completion_rule: all
       clauses:
@@ -177,6 +177,31 @@ encounters:
         entrance_id: ch13_entrance_s02_left
         position_id: ch13_position_s02_slot_05
         behavior_id: ch13_behavior_guard
+        spawn_after_defeated:
+          - ch13_s02_staff_01
+          - ch13_s02_staff_02
+          - ch13_s02_staff_03
+          - ch13_s02_staff_04
+          - ch13_s02_staff_05
+          - ch13_s02_staff_06
+          - ch13_s02_staff_07
+          - ch13_s02_staff_08
+          - ch13_s02_staff_09
+          - ch13_s02_staff_10
+          - ch13_s02_staff_11
+          - ch13_s02_staff_12
+          - ch13_s02_thrower_01
+          - ch13_s02_thrower_02
+          - ch13_s02_thrower_03
+          - ch13_s02_thrower_04
+          - ch13_s02_thrower_05
+          - ch13_s02_thrower_06
+          - ch13_s02_arhat_01
+          - ch13_s02_arhat_02
+          - ch13_s02_arhat_03
+          - ch13_s02_arhat_04
+          - ch13_s02_arhat_05
+          - ch13_s02_guard_01
     objectives:
       completion_rule: all
       clauses:
@@ -219,7 +244,7 @@ encounters:
       attack_grace_ticks: 10
     token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
     spawn_entries:
-      - {entry_id: ch13_s03_bamboo_recluse, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch13_s03_bamboo_recluse, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank, preserve_source_contract: true}
     objectives:
       completion_rule: all
       clauses:
@@ -233,7 +258,7 @@ encounters:
       attack_grace_ticks: 10
     token_budgets: {melee: 1, ranged: 0, charge: 0, support: 0}
     spawn_entries:
-      - {entry_id: ch13_s04_cliff_gatekeeper, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press}
+      - {entry_id: ch13_s04_cliff_gatekeeper, archetype_id: ch2_sects, role_id: sect_outer, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_outer_press, preserve_source_contract: true}
     objectives:
       completion_rule: all
       clauses:
@@ -247,7 +272,7 @@ encounters:
       attack_grace_ticks: 10
     token_budgets: {melee: 0, ranged: 0, charge: 1, support: 0}
     spawn_entries:
-      - {entry_id: ch13_s05_peak_waiting_sage, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank}
+      - {entry_id: ch13_s05_peak_waiting_sage, archetype_id: ch2_sects, role_id: sect_lightfoot, entrance_id: ch2_entrance_s02_floor, position_id: ch2_position_s02_slot_01, behavior_id: ch2_behavior_lightfoot_flank, preserve_source_contract: true}
     objectives:
       completion_rule: all
       clauses:

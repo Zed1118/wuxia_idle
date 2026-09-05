@@ -117,6 +117,55 @@ Matcher failsWithFragment(String fragment) {
 }
 
 void main() {
+  test(
+    'spawn options reject malformed unresolved cyclic and nonsingleton data',
+    () async {
+      final sources = await encounterFixtureSources();
+      final archetypes = await archetypeFixtureSources();
+      final manifest = await fixtureSource('manifest/stage_assignments.yaml');
+      final first = sources.first;
+      for (final option in [
+        'spawn_after_defeated: []',
+        'spawn_after_defeated: ["a b"]',
+        'spawn_after_defeated: [bandit_scout, bandit_scout]',
+        'spawn_after_defeated: [missing]',
+        'spawn_after_defeated: [bandit_brute]',
+        'preserve_source_contract: true',
+        'preserve_source_contract: "true"',
+      ]) {
+        final changed = first.$2.replaceFirst(
+          'entry_id: bandit_brute',
+          'entry_id: bandit_brute\n        $option',
+        );
+        expect(
+          () => loadCombatCatalogManifest(
+            archetypeSources: archetypes,
+            encounterSources: [(first.$1, changed), ...sources.skip(1)],
+            manifestSource: manifest,
+          ),
+          throwsFormatException,
+          reason: option,
+        );
+      }
+      final cyclic = first.$2
+          .replaceFirst(
+            'entry_id: bandit_brute',
+            'entry_id: bandit_brute\n        spawn_after_defeated: [bandit_scout]',
+          )
+          .replaceFirst(
+            'entry_id: bandit_scout',
+            'entry_id: bandit_scout\n        spawn_after_defeated: [bandit_brute]',
+          );
+      expect(
+        () => loadCombatCatalogManifest(
+          archetypeSources: archetypes,
+          encounterSources: [(first.$1, cyclic), ...sources.skip(1)],
+          manifestSource: manifest,
+        ),
+        throwsFormatException,
+      );
+    },
+  );
   group('valid fixture catalog', () {
     test(
       'loads archetypes, encounters and assignments in source order',

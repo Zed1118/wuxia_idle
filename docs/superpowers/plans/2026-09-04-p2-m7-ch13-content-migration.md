@@ -33,6 +33,8 @@
 
 ## 当前恢复点
 
+> 2026-09-05 校正：以下 READY 记录为历史候选恢复点。该候选已通过 merge `7c10ff17583addda4dd9039372f6f1b918d3a60e` 集成，CI `33895342001` 成功；今早复核发现身份/数值/入场顺序三类遗漏，当前权威施工已转至 `2026-09-05-p2-m7-ch13-contract-fix.md`。不得继续沿用下文“尚未合入”的历史状态作为当前事实。
+
 - 状态：`READY_LOCAL_CANDIDATE`；最终 `[READY]` tip 固化后写 ignored receipt 并自跑标准 Gate，结果只在外部 receipt/终端与最终交付中登记，避免 Gate 后再改候选树。
 - 已完成：第十三章 `1/5 → 5/5`，本地全主线 typed catalog 候选 `101/105 → 105/105`；`main/origin/main` 仍为 `101/105`，塔 `0/49`、legacy 接缝 `5`、正式 Phase 2 `1/10` 均未改变。
 - 生产实现：四关 assignment/encounter/runtime binding 接齐；`stage_13_02` 保持 `25/10` 与原 token budget，以 `24 defeat-targets + 1 非 Boss commander` 的 `all` objective 完成分层考校；adapter 只泛化 commander identity 保留规则。

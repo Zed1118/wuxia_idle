@@ -6150,7 +6150,7 @@ tasks:
     status: integrated_origin_main_ci_success
     current_authoritative_wip: false
     base_commit: 571708a7ddb5c5eb23a197b0b4e52ca3ec95145f
-    candidate_commit: eea54b97db327868fe231c3f251b93d445f02b2c
+    candidate_commit: eea54b970df647a77340bbbc4ea43fc1538a8678
     merge_commit: 4cb6568e0b6ecc36a99df8f892bfceeb2e7e2d74
     completion_scope: classify_and_batch_all_22_open_m0_decision_entries_without_changing_production_behavior
     acceptance_target: 22_of_22_entries_classified_and_one_explicit_user_batch_choice
@@ -7949,7 +7949,9 @@ tasks:
       stage_13_02_token_budgets: melee_2_ranged_1_charge_1_support_1
       stage_13_02_minimal_narrative_consistency: pass
       stage_13_01_03_single_target_routes: pass
-      stage_13_04_05_boss_identity_mechanics_drop_and_numeric_snapshots: pass
+      stage_13_04_05_boss_identity_mechanics_drop_and_numeric_snapshots: historical_pass_claim_superseded_by_numeric_review_gap
+      post_integration_review: identity_skills_numbers_and_commander_spawn_order_gaps_fixed_in_local_candidate_not_main
+      corrective_owner: P2-M7-CH13-CONTRACT-FIX-20260905
       initial_valid_red_tests: 0_of_8
       remove_assignment_mutation_failures: 1
       wrong_base_enemy_mutation_failures: 1
@@ -7997,6 +7999,49 @@ tasks:
       - automated_evidence_does_not_claim_human_visual_audio_feel_or_Windows_acceptance
       - engineering_candidate_does_not_close_formal_M7_or_Phase2
 
+  - id: P2-M7-CH13-CONTRACT-FIX-20260905
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-m7-ch13-contract-fix-20260905
+    worktree: /Users/a10506/.codex/worktrees/a0d7/挂机武侠
+    status: ready_local_candidate_pending_main_authorization
+    current_authoritative_wip: true
+    base_commit: 2d254abdf9bd841730acc301867c1249dde2ebc4
+    completion_scope: restore_authored_Ch13_identity_skills_numeric_snapshots_and_actual_layered_spawn_order
+    acceptance_target: 3_of_3_production_contract_repairs_without_increasing_catalog_or_formal_milestone_denominators
+    acceptance_result: 3_of_3_repairs_verified_in_local_candidate_not_main
+    evidence:
+      authorization: user_explicitly_started_Ch13_repair_after_review
+      plan: docs/superpowers/plans/2026-09-05-p2-m7-ch13-contract-fix.md
+      audit: docs/audit/phase2_m7_ch13_contract_fix_2026-09-05.md
+      initial_red: 8_pass_3_fail
+      focused_tests: 68_of_68
+      adjacent_and_shared_tests: 288_of_288
+      mutation_failures: identity_1_numbers_1_spawn_1
+      mutation_reverse_patch_and_sha256_restored: true
+      independent_production_diff_review: pass
+      analyze: no_issues_found_lib_test_tool
+      format: 1741_files_0_changed
+      locked_full_tests: 6017_of_6017_exit_0
+      locked_full_started_cst: '2026-09-05 08:16:20'
+      locked_full_ended_cst: '2026-09-05 08:25:12'
+      locked_full_elapsed_seconds: 532
+      own_test_lock_released: true
+      new_locked_full_runs: 1
+      test_deleted_lines: 0
+      test_contract_migration_gate: not_applicable_no_deletions
+      standard_merge_gate: not_run_pending_authorized_integration
+      mainline_catalog_integrated: 105_of_105
+      tower_migrated_floors: 0_of_49
+      formal_milestones_closed: 1_of_10
+      repair_integrated_main: false
+      human_and_Windows_acceptance: deferred
+    protected_behavior:
+      - no_global_identity_or_numeric_changes_to_other_chapters
+      - preserve_25_actors_10_active_existing_tokens_and_all_objective_composition
+      - no_new_reward_economy_cycle_saveVersion_or_persistence_schema_change
+      - no_main_merge_push_tower_floor_migration_M8_or_M9_in_this_batch
+
   - id: P2-M7-TOWER-FOUNDATION
     milestone: M7
     owner: codex_root
@@ -8041,6 +8086,11 @@ tasks:
       standard_gate_analyze: no_issues_found_lib_test
       standard_gate_format: 1740_files_0_changed
       standard_gate_receipt_crosscheck: matched
+      merge_commit: 2d254abdf9bd841730acc301867c1249dde2ebc4
+      merge_exact_sha_ci_run: 33901066970
+      merge_exact_sha_ci_conclusion: completed_success
+      review_gaps_open: objective_allowlist_and_complete_target_set_runtime_three_entrypoint_proof_complete_actor_and_mechanic_parity
+      review_gaps_block_floor_migration: true
       human_desktop_acceptance: deferred
       visual_audio_feel_acceptance: deferred
       windows_acceptance: deferred
@@ -8076,13 +8126,13 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_105_of_105_integrated_origin_main_ci_success_tower_foundation_ready_local_candidate_tower_0_of_49_legacy_runtime_retirement_open
+    acceptance_result: mainline_catalog_105_of_105_integrated_Ch13_contract_repairs_open_tower_foundation_integrated_review_gaps_open_tower_0_of_49_legacy_retirement_open
     evidence:
       mainline_catalog_integrated: 105_of_105
       mainline_catalog_local_candidate: 105_of_105
       remaining_mainline_stages_integrated: 0_of_105
       remaining_mainline_stages_in_local_candidate: 0_of_105
-      next_authoritative_task: tower_floor_migration_requires_next_authorized_batch
+      next_authoritative_task: P2-M7-CH13-CONTRACT-FIX-20260905
       local_candidate_counts_as_integrated_stage: false
       chapter_13_status: integrated_origin_main_ci_success
       chapter_13_decision: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01
