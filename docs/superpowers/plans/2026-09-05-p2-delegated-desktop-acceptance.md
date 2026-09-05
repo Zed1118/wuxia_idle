@@ -22,7 +22,7 @@
 
 ## 当前恢复点
 
-- 状态：`WIP_DELEGATED_GUI_AND_FIX_RECHECK`，11:57 检查点；正式里程碑仍 1/10。
+- 状态：`LOCAL_FIXES_VERIFIED_ACCEPTANCE_INCOMPLETE`，12:03 检查点；正式里程碑仍 1/10。第一轮不扩张施工，转证据收口。
 - 已核对：main 精确 SHA/clean；27 项清单；生产根 `main.dart → SplashScreen → SaveSelectScreen`；存档仅在选槽后开档与维护。CodeGraph 在本任务工作树未初始化，未擅自初始化。
 - 已执行：冻结 main Profile 构建成功，AOT SHA256 `f5d5f4abacc8557c1270c0ff7a7792166660f217348a80fe066845a87ff727c7`。原包实际启动至选档页；三个旧档均非空，冷备份校验通过。
 - 隔离：复制冻结包，只将 bundle ID 改为 `com.pen.wuxia.acceptance20260905` 并以原五项 entitlement 重新本地签名。AOT 与原包逐字节一致；该包并非原分发 archive 的相同字节，报告必须区分。所有试玩写入独立容器。
@@ -33,3 +33,5 @@
 - 第二轮实机：`86467861` 的六详情、地图标题、空技能印已复验；六模式均走完至少一次胜利/败局/召回闭环；黑风岭自动可见胜利，风雨渡口另关闭自动战斗并合法装备缠丝索完成手动胜利。五武器手感、Boss 应对窗口、声音和 Windows 均未冒充通过。
 - 新发现：塔败局写入后列表仍显示旧尝试/失败次数；真实 Isar 测试已确认记录为 `1/1` 但现有页面未更新（有效 RED）。修复只在落库成功且宿主仍 mounted 后失效进度 provider；相关四文件回归 28 PASS，待冻结新版本实机复验。另记录战场边缘敌人裁切/遮挡，未扩张渲染布局施工。
 - 存档安全复核：首次原包选档页访问后三个原档文件哈希发生变化，不能再称逐字节未动；对冷备份与当前原档的独立副本比较全部 26 个当前 collection，三个槽所有业务记录一致（3 PASS）。没有覆盖恢复任何用户原档。试玩状态均另存可恢复副本。
+- 最终代码候选：`e3a983eaf344dda003adefcc83ebce66cbb49185`，Profile 构建成功；隔离副本 AOT 与冻结包逐字节一致，签名验证通过。真实塔第 8 层败局关闭提示后，原页面由 59 次尝试/2 次失败即时变为 60/3，最高第 7 层不变。地图标题、塔详情和空技能槽同时复验。根 analyze 最终无问题。
+- 27 项结果与版本、原始证据索引、存档异常说明见 [`phase2_delegated_desktop_acceptance_2026-09-05.md`](../../audit/phase2_delegated_desktop_acceptance_2026-09-05.md)。9 PASS、10 PARTIAL、2 REWORK、3 BLOCKED、3 NOT_RUN 为跨版本受托检查表，不是最终 SHA 整体通过率；未改写真人验收模板或正式进度。
