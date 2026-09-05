@@ -63,8 +63,9 @@ void main() {
     required MainlineProgress progress,
     Character? activeCharacter,
     List<NavigatorObserver> navigatorObservers = const [],
+    Size surfaceSize = const Size(1024, 1400),
   }) async {
-    await tester.binding.setSurfaceSize(const Size(1024, 1400));
+    await tester.binding.setSurfaceSize(surfaceSize);
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       ProviderScope(
@@ -92,6 +93,53 @@ void main() {
     await tester.pump();
     await tester.pump();
     await tester.pump();
+  }
+
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('production encounter counts replace legacy waves at $size', (
+      tester,
+    ) async {
+      await pumpScreen(
+        tester,
+        chapterIndex: 1,
+        surfaceSize: size,
+        progress: mkProgress(
+          cleared: const [
+            'stage_01_01',
+            'stage_01_02',
+            'stage_01_03',
+            'stage_01_04',
+            'stage_01_05',
+          ],
+        ),
+      );
+
+      // Distinct real catalog routes catch both the ambush undercount and the
+      // commander overcount. Scope each assertion to its actual stage row.
+      for (final entry in const {
+        'stage_01_01': 25,
+        'stage_01_02': 25,
+        'stage_01_03': 40,
+        'stage_01_04': 3,
+        'stage_01_05': 2,
+      }.entries) {
+        final stage = GameRepository.instance.getStage(entry.key);
+        final row = find
+            .ancestor(of: find.text(stage.name), matching: find.byType(InkWell))
+            .first;
+        final count = find.descendant(
+          of: row,
+          matching: find.text(UiStrings.stageListEnemyCount(entry.value)),
+        );
+        expect(count, findsOneWidget, reason: entry.key);
+        await tester.ensureVisible(count);
+        await tester.pump();
+        expect(count.hitTestable(), findsOneWidget, reason: entry.key);
+      }
+      expect(find.text(UiStrings.stageListEnemyWaves(3, 9)), findsNothing);
+      expect(find.text(UiStrings.stageListEnemyWaves(3, 6)), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('Ch1 全新进度 → 5 关渲染：01 可挑战 + 02-05 全锁', (tester) async {
