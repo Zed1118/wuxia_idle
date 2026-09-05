@@ -6,6 +6,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_numeric_s
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_skill_seals.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 SkillDef _skill(String id, String name, int qiDelta) => SkillDef(
   id: id,
@@ -33,6 +34,44 @@ Phase0aNumericSkillBinding _binding(int hotkey, SkillDef skill) =>
     );
 
 void main() {
+  for (final hasRuntime in [false, true]) {
+    testWidgets('bound down or missing runtime stays disabled ($hasRuntime)', (
+      tester,
+    ) async {
+      final binding = _binding(1, _skill('one', 'One', -20));
+      final pressed = <int>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Phase0aNumericSkillSeals(
+              bindings: Phase0aNumericSkillBindings(one: binding),
+              slots: {
+                if (hasRuntime)
+                  'skill_1': const Phase0aSkillSlot(
+                    slot: 'skill_1',
+                    cooldownRemaining: 0,
+                    qiCost: 20,
+                    availability: Phase0aSkillAvailability.down,
+                  ),
+              },
+              qiCurrent: 40,
+              onPressed: pressed.add,
+            ),
+          ),
+        ),
+      );
+      expect(find.text(UiStrings.phase0aSealDown), findsOneWidget);
+      await tester.tap(find.byKey(Phase0aNumericSkillSeals.keyFor(1)));
+      expect(pressed, isEmpty);
+      expect(
+        tester
+            .getSemantics(find.byKey(Phase0aNumericSkillSeals.keyFor(1)))
+            .label,
+        'One 1 ${UiStrings.phase0aSealDown}',
+      );
+    });
+  }
+
   testWidgets('六槽位置稳定、真实技能名与键位可见，空槽不压缩', (tester) async {
     final one = _binding(1, _skill('one', '一苇渡江', -20));
     final three = _binding(3, _skill('three', '三叠浪', -30));
@@ -90,6 +129,13 @@ void main() {
     expect(find.text('三叠浪'), findsOneWidget);
     expect(find.text('五岳归一'), findsOneWidget);
     expect(find.text('未装备'), findsNWidgets(3));
+    expect(find.text(UiStrings.phase0aSealDown), findsNothing);
+    for (final emptyHotkey in [2, 4, 6]) {
+      final empty = tester.getSemantics(
+        find.byKey(Phase0aNumericSkillSeals.keyFor(emptyHotkey)),
+      );
+      expect(empty.label, '${UiStrings.slotEmpty} $emptyHotkey');
+    }
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.byKey(Phase0aNumericSkillSeals.keyFor(1)));

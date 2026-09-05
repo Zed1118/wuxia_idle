@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
@@ -86,6 +87,7 @@ final class _MutableBattleFlow implements Phase0aBattleFlow {
 
   Phase0aArenaState _state;
   Phase0aArenaState? _queuedState;
+  Phase0aPlayerCommand? lastCommand;
 
   void queue(Phase0aArenaState state) => _queuedState = state;
 
@@ -103,6 +105,7 @@ final class _MutableBattleFlow implements Phase0aBattleFlow {
     required double deltaSeconds,
     required Phase0aPlayerCommand command,
   }) {
+    lastCommand = command;
     final queued = _queuedState;
     if (queued != null) {
       _state = queued;
@@ -238,6 +241,138 @@ Future<int> _paintedPixelCount(
 }
 
 void main() {
+  group('complete actor bounds and HUD separation', () {
+    for (final viewport in _viewports) {
+      testWidgets('camera edge actors fit above the real HUD $viewport', (
+        tester,
+      ) async {
+        final enemies = <Phase0aActor>[
+          _enemy(
+            id: 'top_left',
+            position: const ArenaVector(-479, -194),
+            isBoss: true,
+          ),
+          _enemy(
+            id: 'top_right',
+            position: const ArenaVector(479, -194),
+            isBoss: true,
+          ),
+          _enemy(
+            id: 'bottom_left',
+            position: const ArenaVector(-479, 194),
+            isBoss: true,
+          ),
+          _enemy(
+            id: 'bottom_right',
+            position: const ArenaVector(479, 194),
+            isBoss: true,
+          ),
+        ];
+        await _pumpBattle(tester, viewport: viewport, enemies: enemies);
+        final hud = tester.getRect(
+          find.byKey(const ValueKey('phase0a_player_hud')),
+        );
+        for (final enemy in enemies) {
+          final bounds = tester.getRect(
+            find.byKey(ValueKey('phase0a_actor_position_${enemy.id}')),
+          );
+          expect(bounds.left, greaterThanOrEqualTo(0));
+          expect(bounds.right, lessThanOrEqualTo(viewport.width));
+          expect(bounds.top, greaterThanOrEqualTo(0));
+          expect(
+            bounds.bottom,
+            lessThan(hud.top),
+            reason: '${enemy.id} must not enter the HUD band',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+    testWidgets(
+      'offscreen actor is not painted or mouse-selected, domain stays intact',
+      (tester) async {
+        final enemy = _enemy(
+          id: 'charge_left',
+          position: const ArenaVector(-510, 0),
+        );
+        final harness = await _pumpBattle(
+          tester,
+          viewport: _viewports.first,
+          enemies: [enemy],
+        );
+        final position = find.byKey(
+          const ValueKey('phase0a_actor_position_charge_left'),
+        );
+        final hidden = tester.widget<Offstage>(
+          find.descendant(of: position, matching: find.byType(Offstage)).first,
+        );
+        expect(hidden.offstage, isTrue);
+        expect(
+          find.byKey(const ValueKey('phase0a_standee_charge_left')),
+          findsNothing,
+        );
+        expect(find.byKey(_indicatorKey), findsOneWidget);
+        final stage = Phase0aStage(
+          viewport: _viewports.first,
+          cameraCenter: ArenaVector.zero,
+        );
+        final pointer = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+          buttons: kPrimaryMouseButton,
+        );
+        await pointer.down(
+          stage.worldToScreen(enemy.position) - const Offset(0, 60),
+        );
+        await pointer.up();
+        await tester.pump();
+        expect(
+          find.byKey(
+            const ValueKey('phase0a_selected_target_charge_left'),
+            skipOffstage: false,
+          ),
+          findsNothing,
+        );
+        harness.controller.step();
+        expect(harness.flow.lastCommand!.attack, isFalse);
+        expect(
+          harness.controller.state.enemies.single.position,
+          enemy.position,
+        );
+        expect(
+          harness.controller.state.enemies.single.currentHealth,
+          enemy.currentHealth,
+        );
+        final inside = enemy.copyWith(position: ArenaVector.zero);
+        harness.flow.queue(_state([inside]));
+        harness.controller.step();
+        await tester.pump(const Duration(milliseconds: 120));
+        expect(
+          find.byKey(const ValueKey('phase0a_standee_charge_left')),
+          findsOneWidget,
+        );
+        expect(find.byKey(_indicatorKey), findsNothing);
+      },
+    );
+    test('bottom threat marker stays above controls in both viewports', () {
+      final painter = Phase0aOffscreenIndicatorPainter(
+        indicators: [
+          Phase0aOffscreenIndicator(
+            actorIds: ['below'],
+            kind: Phase0aOffscreenThreatKind.boss,
+            proximity: Phase0aOffscreenProximity.near,
+            direction: const ArenaVector(0, 1),
+            priority: 4,
+          ),
+        ],
+      );
+      for (final viewport in _viewports) {
+        expect(
+          painter.markerCenters(viewport).single.dy,
+          lessThan(viewport.height - 180),
+        );
+      }
+    });
+  });
   group('camera-aware stage geometry', () {
     for (final viewport in _viewports) {
       test('75% player camera exposes unclamped visibility '

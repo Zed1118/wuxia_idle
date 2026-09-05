@@ -221,9 +221,13 @@ Future<void> runTowerFlow({
       // 审查批E(2026-07-18):test hook 路径原裸吞错误,补与下方生产路径同款日志,
       // 保留「不阻 UI / 不抛出」语义。
       unawaited(
-        defeatRecorderForTest().catchError((Object e, StackTrace st) {
-          debugPrint('runTowerFlow defeatRecorderForTest failed: $e\n$st');
-        }),
+        defeatRecorderForTest()
+            .then((_) {
+              if (context.mounted) ref.invalidate(towerProgressProvider);
+            })
+            .catchError((Object e, StackTrace st) {
+              debugPrint('runTowerFlow defeatRecorderForTest failed: $e\n$st');
+            }),
       );
     } else {
       // W12 fix: provider 副作用 getOrCreate 与 record* 存在 race（W6 重构遗留），
@@ -233,6 +237,9 @@ Future<void> runTowerFlow({
           final svc = TowerProgressService(isar: IsarSetup.instance);
           await svc.getOrCreate(saveDataId: IsarSetup.currentSlotId);
           await svc.recordDefeat(now: DateTime.now());
+          // Refresh only after persistence; the earlier settlement refresh may
+          // otherwise cache the pre-defeat counters for the visible floor list.
+          if (context.mounted) ref.invalidate(towerProgressProvider);
         }().catchError((Object e, StackTrace st) {
           debugPrint('runTowerFlow recordDefeat failed: $e\n$st');
         }),

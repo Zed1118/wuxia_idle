@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -69,6 +70,15 @@ void main() {
     final value = detail();
     await tester.pumpWidget(app(value: value));
     await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.towerLocationProgressLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+      reason: 'Light paper labels must not inherit pale dark-surface text.',
+    );
 
     expect(
       find.text(

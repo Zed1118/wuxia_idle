@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -72,6 +73,18 @@ void main() {
     ],
     child: const MaterialApp(home: LightFootLocationDetailScreen()),
   );
+
+  testWidgets('paper labels use readable ink contrast', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.lightFootLocationProgressLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+    );
+  });
 
   testWidgets('展示轻功地点的七类权威信息', (tester) async {
     final value = detail();

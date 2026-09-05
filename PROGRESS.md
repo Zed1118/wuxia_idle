@@ -3,16 +3,16 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-### 二阶段结果仪表盘（2026-09-05 Ch13 修复已集成并通过代码 CI）
+### 二阶段结果仪表盘（2026-09-05 六项桌面修复授权集成中）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
 - **精确代码集成证据**：Ch13 修复原候选 `21ad6e60` 的生产代码/数据/测试，在受检候选 `cb824b534e7b4ed9e59ef21379eae8ca5846df9a` 中保持完全一致，经 no-ff merge `261f2daf17e4357aaf12a04b86775dc64aa1164a` 进入 `origin/main`；merge exact-SHA CI `33935197099` 已核验 `completed/success`（测试、覆盖率门槛、macOS 构建通过）。PROGRESS 作为本批授权治理尾同步，不伪称被施工 Gate 覆盖。M0-R 真实候选 `eea54b970df647a77340bbbc4ea43fc1538a8678`；原主线与塔集成基线 `2d254abd` 的 CI `33901066970` 已成功。
 - **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 已集成。主线 typed catalog 覆盖 `105/105`；Ch13 身份/技能、数值保真、知客僧后置入场三类修复已进入 main，不把目录满额外推为整个主线真人验收完成。塔基础门已集成，目标限制、三入口行为验证及完整 parity 尚待补强；塔仍为 `0/49`，三个可达塔兼容入口与两个主线 null fallback 共五处 legacy 接缝。
 - **真人挂账**：M2 G2、M3 五类武器手感/辨识度、M4 视觉/音频/Windows、M5 六模式实际操作、M6 导航与交互以及已迁移主线实战均未获本轮独立真人签字，统一保持未关闭，不以自动化或历史截图补猜；集中验收包工具与默认 `NOT_RUN` 清单已备妥，仍须在最终 exact HEAD 生成并由真人实际执行。
-- **当前任务状态**：Ch13 三项修复已完成工程集成与代码 CI 验证，不再保留施工 WIP，不启动新任务。候选完整标准 Gate 原生 PASS；main 上 analyze、format、288/288 定向及 6017/6017 全量均通过。初次修复全量 1 轮、授权集成全量 2 轮（Gate + main）；治理尾不重复本地全量，最终提交的 exact-SHA CI 与 clean 状态在交付记录中核验。
+- **当前任务状态**：用户已批准六项桌面修复候选 `0784c7ac` 合入 main。此前冻结源码 `8c50f0f9` 上边界/Q/R 两项 2/2、扩展回归 249 PASS 与 Profile 实机已完成；本次 no-ff 集成后重新执行 main 全量与 exact-SHA CI，当前尚未报告通过。1280×720 实测及目标 1440×900 窗口扩展不替代完整手感、精确原生尺寸、听感或 Windows 证据，M4 仍开放；没有创建新内容 WIP。恢复点见 `docs/superpowers/plans/2026-09-05-p2-desktop-fixes-integration.md`。
 - **M0 开放决策**：22 项集中处置已按用户批准的 M0-R 全部分类并集成；M0 仍缺适用生产接线、测量、实测及真人/Windows 证据，心魔逐身份签字仍开放，不以批准记录冒充正式关闭。
 - **前三阻塞**：① 塔基础门补强、塔 `49` 层与 5 处 legacy 接缝仍开放；② M0 缺适用生产接线、测量、实测证据，新心魔 AI 须逐身份签字；③ 真人桌面、视觉/音频/手感及 Windows 继续挂账。
 - **治理约束**：`M7-DEPENDENCY-SEMANTICS-01` 明确 M3/M4 工程基础已集成后可继续逐批内容工程，但 M2–M6 真人/Windows 依赖仍阻断 M7 正式关闭及 M8/M9；正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计，工程候选、测试数量、文档与 READY 不计正式里程碑。
-- **详细证据**：当前修复见 `docs/audit/phase2_m7_ch13_contract_fix_2026-09-05.md` 与对应恢复计划；历史 Ch13 审计已补充审查限制；塔基础门见 `docs/audit/phase2_m7_tower_foundation_2026-09-05.md`，五处 legacy 接缝基线见 `docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md`。
+- **详细证据**：桌面候选见 `docs/audit/phase2_battle_visibility_repair_2026-09-05.md` 及其链接的首轮报告；Ch13 见 `docs/audit/phase2_m7_ch13_contract_fix_2026-09-05.md`；塔基础门见 `docs/audit/phase2_m7_tower_foundation_2026-09-05.md`，五处 legacy 接缝基线见 `docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md`。
 
 ## 已知偏差 / 挂账事项
 - **任务储备总账 → 根目录 `BACKLOG.md`**(2026-07-19 建账):待拍板/已解锁可派/依赖锁死/方向级四段,每批收账随 PROGRESS 同步更新;原开放挂账(Riverpod TickerMode 断言)已迁其 §三。

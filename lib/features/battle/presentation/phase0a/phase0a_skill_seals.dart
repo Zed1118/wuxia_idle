@@ -25,6 +25,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
     required this.qiCurrent,
     required this.onGather,
     required this.onClear,
+    this.showStatus = true,
   });
 
   /// Q 聚怪印运行态快照。
@@ -41,6 +42,9 @@ final class Phase0aSkillSeals extends StatelessWidget {
 
   /// 清场印激活回调(仅 ready 态可达)。
   final VoidCallback onClear;
+
+  /// Terminal survivors keep disabled seals without claiming they are down.
+  final bool showStatus;
 
   /// 聚怪印查找 key(测试与宿主共用)。
   static const ValueKey<String> gatherKey = ValueKey('phase0a_seal_gather');
@@ -60,6 +64,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
           keyCap: UiStrings.phase0aSealGatherKey,
           qiCurrent: qiCurrent,
           onPressed: onGather,
+          showStatus: showStatus,
         ),
         const SizedBox(width: Phase0aPresentationTokens.skillSealSpacing),
         _SkillSeal(
@@ -69,6 +74,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
           keyCap: UiStrings.phase0aSealClearKey,
           qiCurrent: qiCurrent,
           onPressed: onClear,
+          showStatus: showStatus,
         ),
       ],
     );
@@ -130,6 +136,7 @@ final class Phase0aNumericSkillSeals extends StatelessWidget {
       slot: slot,
       glyph: binding?.skill.name ?? UiStrings.slotEmpty,
       keyCap: '$hotkey',
+      showStatus: binding != null,
       qiCurrent: qiCurrent,
       size: Phase0aPresentationTokens.numericSkillSealSize,
       onPressed: () => onPressed(hotkey),
@@ -151,6 +158,7 @@ class _SkillSeal extends StatefulWidget {
     required this.qiCurrent,
     required this.onPressed,
     this.size = Phase0aPresentationTokens.skillSealSize,
+    this.showStatus = true,
   });
 
   final Phase0aSkillSlot slot;
@@ -159,6 +167,9 @@ class _SkillSeal extends StatefulWidget {
   final int qiCurrent;
   final VoidCallback onPressed;
   final double size;
+  // Empty numeric slots have no actor state; the empty glyph is sufficient.
+  // Keep the underlying disabled slot and all real skill states unchanged.
+  final bool showStatus;
 
   @override
   State<_SkillSeal> createState() => _SkillSealState();
@@ -197,7 +208,9 @@ class _SkillSealState extends State<_SkillSeal> {
       enabled: enabled,
       // label = 印字 + 键位 + 状态行;内容层的视觉文字对读屏静音,
       // 避免节点 label 与子 Text 拼出双份文案。
-      label: '${widget.glyph} ${widget.keyCap} $_statusText',
+      label:
+          '${widget.glyph} ${widget.keyCap}'
+          '${widget.showStatus ? ' $_statusText' : ''}',
       onTap: enabled ? widget.onPressed : null,
       child: ExcludeSemantics(
         child: FocusableActionDetector(
@@ -269,18 +282,19 @@ class _SkillSealState extends State<_SkillSeal> {
                             height: 1.2,
                           ),
                         ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            _statusText,
-                            style: TextStyle(
-                              color: foreground,
-                              fontSize: Phase0aPresentationTokens
-                                  .skillSealStatusFontSize,
-                              height: 1.2,
+                        if (widget.showStatus)
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _statusText,
+                              style: TextStyle(
+                                color: foreground,
+                                fontSize: Phase0aPresentationTokens
+                                    .skillSealStatusFontSize,
+                                height: 1.2,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),

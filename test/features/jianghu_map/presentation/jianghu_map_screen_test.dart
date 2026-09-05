@@ -25,6 +25,7 @@ import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/colors.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -83,6 +84,27 @@ void main() {
     ],
     child: const MaterialApp(home: JianghuMapScreen()),
   );
+
+  testWidgets('dark map section keeps readable foreground colors', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.jianghuMapKnownLocations))
+          .style
+          ?.color,
+      WuxiaColors.textPrimary,
+    );
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.jianghuMapKnownLocationsHint))
+          .style
+          ?.color,
+      WuxiaColors.textSecondary,
+    );
+  });
 
   final asyncRouteCases =
       <

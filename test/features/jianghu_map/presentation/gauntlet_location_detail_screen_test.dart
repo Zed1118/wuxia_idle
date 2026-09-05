@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/jianghu_map/domain/gauntlet_location_detail.
 import 'package:wuxia_idle/features/jianghu_map/presentation/gauntlet_location_detail_screen.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -93,6 +94,18 @@ void main() {
     ],
     child: const MaterialApp(home: GauntletLocationDetailScreen()),
   );
+
+  testWidgets('paper labels use readable ink contrast', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.gauntletLocationProgressLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+    );
+  });
 
   testWidgets('展示断魂庄进度、境界、三关敌情、奖励与可用参与者', (tester) async {
     final value = detail();

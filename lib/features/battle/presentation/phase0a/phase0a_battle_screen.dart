@@ -203,6 +203,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     for (final enemy in widget.controller.state.enemies) {
       if (!enemy.isAlive) continue;
       final renderPosition = _actorRenderPosition(enemy);
+      if (!stage.isWorldPointVisible(renderPosition)) continue;
       final foot = stage.worldToScreen(renderPosition);
       final scale = stage.depthScale(renderPosition.y);
       final width = Phase0aPresentationTokens.actorWidth * scale;
@@ -1150,6 +1151,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                     gatherSlot: _displaySlot(controller, 'gather'),
                     clearSlot: _displaySlot(controller, 'clear'),
                     qiCurrent: controller.state.player.qiCurrent,
+                    showStatus:
+                        controller.outcome == Phase0aBattleOutcome.ongoing ||
+                        !controller.state.player.isAlive,
                     onGather: _paused ? () {} : _toggleGatherTargeting,
                     onClear: _paused
                         ? () {}
@@ -1323,31 +1327,36 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       top: foot.dy - height,
       width: width,
       height: height,
-      child: RepaintBoundary(
-        key: ValueKey('phase0a_actor_${actor.id}'),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: _ActorStandee(
-                key: ValueKey('phase0a_actor_visual_${actor.id}'),
-                actor: actor,
-                visual: controller.roster.visualFor(actor.id),
-                guardianWardActive: guardianWardActive,
-                isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
-                isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
-                isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
-                isSelectedTarget: actor.id == _contextTargetId,
-                guardianLabelOffsetX: guardianLabelOffsetX,
+      child: Offstage(
+        offstage: !stage.isWorldPointVisible(renderPosition),
+        child: RepaintBoundary(
+          key: ValueKey('phase0a_actor_${actor.id}'),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: _ActorStandee(
+                  key: ValueKey('phase0a_actor_visual_${actor.id}'),
+                  actor: actor,
+                  visual: controller.roster.visualFor(actor.id),
+                  guardianWardActive: guardianWardActive,
+                  isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+                  isHealthEmphasized: _hpEmphasisRemaining.containsKey(
+                    actor.id,
+                  ),
+                  isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
+                  isSelectedTarget: actor.id == _contextTargetId,
+                  guardianLabelOffsetX: guardianLabelOffsetX,
+                ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox.shrink(
-                key: ValueKey('phase0a_standee_${actor.id}'),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox.shrink(
+                  key: ValueKey('phase0a_standee_${actor.id}'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

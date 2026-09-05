@@ -1,0 +1,9 @@
+schema_version: 1
+ticket: p2-m4-battle-visibility-20260905
+base_sha: b13a0094938921be39853a9cd0e0093c2030ef74
+summary: 保持鼠标目标、全量角色图片解码和像素滞回合同，去除旧投影尺寸/固定等待时间的隐含假设；只把坐标往返的严格浮点相等改为十亿分之一容差，未修改生产领域坐标。
+
+migrations:
+  - deleted: expect(
+    replacement: expect(center.x, closeTo(targetPoint.x, 1e-9));
+    reason: 原聚怪落点使用 ArenaVector 严格浮点相等；安全区改变后 y=60 的可逆计算为 59.99999999999997。替代断言分别核对 x/y，容差 1e-9，不在生产代码里做取整或改目标。其余既有断言均保留，新增边界、屏外选取、终局禁用和真实像素距离检查。
