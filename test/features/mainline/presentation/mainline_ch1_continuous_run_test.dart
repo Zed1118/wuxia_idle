@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,7 +20,9 @@ import 'package:wuxia_idle/features/mainline/application/mainline_narrative_mani
 import 'package:wuxia_idle/features/mainline/application/mainline_providers.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_run_coordinator.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_settlement_journal_service.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_run.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_settlement_journal.dart';
@@ -128,8 +131,25 @@ void main() {
     expect(repository.getStage('stage_02_01').prevStageId, isNull);
   });
 
-  testWidgets('StageListScreen 首次可挑战入口消费连续 run 同一参与者快照', (tester) async {
+  testWidgets('真实等待到期时报告缺失页面，不无限等待', (tester) async {
+    await tester.pumpWidget(const SizedBox.shrink());
+    await expectLater(
+      _pumpUntil(
+        tester,
+        find.byType(Phase0aMainlineBattleHost),
+        timeout: const Duration(milliseconds: 50),
+      ),
+      throwsA(isA<TestFailure>()),
+    );
+  });
+
+  Future<void> verifyFirstClearEntry(
+    WidgetTester tester, {
+    required bool delayedBinding,
+  }) async {
+    late Zone realIoZone;
     final seeded = await tester.runAsync(() async {
+      realIoZone = Zone.current;
       final isar = IsarSetup.instance;
       final participant = Character.create(
         name: '连续首推掌门',
@@ -173,9 +193,27 @@ void main() {
 
     await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    Future<void>? bindingReady;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          if (delayedBinding)
+            phase0aMainlineEncounterRuntimeBindingLoaderProvider
+                .overrideWithValue(({
+                  required stageId,
+                  required encounterId,
+                  required cycleIndex,
+                }) async {
+                  bindingReady = realIoZone.run(
+                    () => Future<void>.delayed(const Duration(seconds: 1)),
+                  );
+                  await bindingReady;
+                  return loadPhase0aMainlineRuntimeBindingBundleFromRepository(
+                    stageId: stageId,
+                    encounterId: encounterId,
+                    cycleIndex: cycleIndex,
+                  );
+                }),
           mainlineProgressProvider.overrideWith((ref) async => progress),
           mainlineNarrativeManifestProvider.overrideWith(
             (ref) async => narrativeManifest,
@@ -194,32 +232,14 @@ void main() {
       await tester.pump();
     }
 
-    await tester.tap(find.text('山门之外'));
-    for (
-      var i = 0;
-      i < 120 && find.byType(Phase0aMainlineBattleHost).evaluate().isEmpty;
-      i++
-    ) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 1)),
-      );
-      await tester.pump(const Duration(milliseconds: 10));
-    }
     try {
+      await tester.tap(find.text('山门之外'));
+      await _pumpUntil(tester, find.byType(Phase0aMainlineBattleHost));
       expect(find.byType(Phase0aMainlineBattleHost), findsOneWidget);
       final host = tester.widget<Phase0aMainlineBattleHost>(
         find.byType(Phase0aMainlineBattleHost),
       );
-      for (
-        var i = 0;
-        i < 120 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
-        i++
-      ) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 1)),
-        );
-        await tester.pump(const Duration(milliseconds: 10));
-      }
+      await _pumpUntil(tester, find.byType(Phase0aBattleScreen));
       expect(find.byType(Phase0aBattleScreen), findsOneWidget);
       final battleScreen = tester.widget<Phase0aBattleScreen>(
         find.byType(Phase0aBattleScreen),
@@ -234,17 +254,36 @@ void main() {
         participant.name,
       );
     } finally {
-      if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
-        Navigator.of(
-          tester.element(find.byType(Phase0aMainlineBattleHost)),
-        ).pop();
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 1)),
-        );
-        await tester.pumpAndSettle();
+      try {
+        await tester.runAsync(() async {
+          await bindingReady;
+        });
+        if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
+          Navigator.of(
+            tester.element(find.byType(Phase0aMainlineBattleHost)),
+          ).pop();
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
+          await tester.pumpAndSettle(
+            const Duration(milliseconds: 100),
+            EnginePhase.sendSemanticsUpdate,
+            const Duration(seconds: 5),
+          );
+        }
+      } finally {
+        // Always unmount, including missing-host and failed-pop paths.
+        await tester.pumpWidget(const SizedBox.shrink());
       }
     }
-  });
+  }
+
+  for (final delayedBinding in [false, true]) {
+    testWidgets(
+      'StageListScreen 首次可挑战入口消费连续 run 同一参与者快照 (delayedBinding=$delayedBinding)',
+      (tester) => verifyFirstClearEntry(tester, delayedBinding: delayedBinding),
+    );
+  }
 
   testWidgets('生产 flow 从章末已结算空游标恢复卷轴并进入独立 version-1 run', (tester) async {
     final participant = await tester.runAsync(
@@ -406,16 +445,22 @@ Future<Character> _seedMainlineParticipant(String name) async {
 Future<void> _pumpUntil(
   WidgetTester tester,
   Finder finder, {
-  int attempts = 160,
+  Duration timeout = const Duration(seconds: 5),
 }) async {
-  for (var attempt = 0; attempt < attempts; attempt++) {
-    if (finder.evaluate().isNotEmpty) return;
+  // Isar and repository work need real event-loop time. Pump durations only
+  // advance the widget test's fake clock and are not an I/O deadline.
+  final elapsed = Stopwatch()..start();
+  while (finder.evaluate().isEmpty && elapsed.elapsed < timeout) {
     await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 1)),
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
     await tester.pump(const Duration(milliseconds: 10));
   }
-  expect(finder, findsWidgets);
+  expect(
+    finder,
+    findsWidgets,
+    reason: 'Widget not found within ${timeout.inMilliseconds}ms of real time',
+  );
 }
 
 class _FirstClearFlowHarness extends ConsumerStatefulWidget {
