@@ -24,6 +24,7 @@
 |---|---|---|
 | 1 | Riverpod `pausedActiveSubscriptionCount` debug 断言(低severity·框架bug·release 无感) | isar_community 支持 analyzer≥12 → 升 riverpod 3.3.2+ 真机验;详 memory `reference_riverpod_tickermode_pause_assert` |
 | 2 | isar fork 供应链 / analyzer 三角(analyzer 钉 9.0.0 止血中) | 同上游条件,解锁后做一轮依赖维护批 |
+| 4 | 主线首次 CI 宿主缺失与超时根因未闭合 | 首次 run `33950577057` attempt 1 的断言/超时保留；实时时限加固已用受控延迟验证，但反例在宿主内加载阶段，不能当作原故障复现。再开条件：取得可定位首次失败的异步加载/清理证据或同类复现；优先取证，不靠重跑变绿销账，也不据文档 diff 排除生产时序缺陷。详 `docs/superpowers/plans/2026-09-05-mainline-ci-wait-investigation.md`。 |
 | 3 | Flutter SDK 3.41.5→≥3.44 升级(解锁 audioplayers 6.8.x / 松 windows-2022 钉) | 2026-08-05 拍板暂缓(无需求驱动+isar fork 兼容风险与上行 #2 统一处理);再开条件=windows-2022 退役公告 / audioplayers 出本项目需要的修复 / #2 解锁开依赖维护批时**合并做**。要点存档(2026-08-01 实测):真闸门=audioplayers ≥6.8.0 要 Flutter ≥3.44(非 pubspec 约束);动作序列=升 SDK→pub upgrade→CMake 3.14→3.15 三处(`windows/CMakeLists.txt:2,11`+`windows/runner/CMakeLists.txt:1`)→CI 三处 flutter-version 钉(`ci.yml:36,78`/`windows-release.yml:35`)→`windows-release.yml:26` 放回 windows-latest→Windows release CI 实跑(唯一真证明);isar_community 对新 Dart 兼容须复核 |
 
 ## 四 · 方向级候选(大活·需专注会话+xhigh)

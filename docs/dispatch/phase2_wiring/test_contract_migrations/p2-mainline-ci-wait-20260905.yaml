@@ -1,0 +1,12 @@
+schema_version: 1
+ticket: p2-mainline-ci-wait-20260905
+base_sha: 58ae40bbc407dee8b52586b1d45466054540bfd6
+summary: 保留真实首通入口和参与者断言，参数化普通与实际延迟加载场景；以墙钟限时等待替代固定 pump 次数，不将受控反例等同远端根因。
+
+migrations:
+  - deleted: testWidgets('StageListScreen 首次可挑战入口消费连续 run 同一参与者快照', (tester) async {
+    replacement: (tester) => verifyFirstClearEntry(tester, delayedBinding: delayedBinding),
+    reason: 原用例主体保留为共享函数，普通与真实延迟两个场景均走原生产入口、Isar 和 typed loader；参与者身份及姓名断言不删减。
+  - deleted: expect(finder, findsWidgets);
+    replacement: 'Widget not found within ${timeout.inMilliseconds}ms of real time'
+    reason: 仍断言目标存在，新增墙钟期限诊断及永远缺失目标的有界失败用例；五秒实时时限不是修改游戏数值。
