@@ -384,7 +384,7 @@ class _MapSectionLabel extends StatelessWidget {
             Text(
               UiStrings.jianghuMapKnownLocations,
               style: TextStyle(
-                color: WuxiaUi.ink,
+                color: WuxiaColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 3,
@@ -393,7 +393,7 @@ class _MapSectionLabel extends StatelessWidget {
             SizedBox(height: 4),
             Text(
               UiStrings.jianghuMapKnownLocationsHint,
-              style: TextStyle(color: WuxiaUi.muted, fontSize: 12),
+              style: TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
             ),
           ],
         ),

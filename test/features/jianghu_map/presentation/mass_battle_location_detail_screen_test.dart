@@ -14,6 +14,7 @@ import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -83,6 +84,18 @@ void main() {
     ],
     child: const MaterialApp(home: MassBattleLocationDetailScreen()),
   );
+
+  testWidgets('paper labels use readable ink contrast', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.massBattleLocationProgressLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+    );
+  });
 
   testWidgets('展示守城地点的生产进度、阵势、敌情、奖励与参与者', (tester) async {
     final value = detail();

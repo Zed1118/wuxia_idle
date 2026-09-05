@@ -218,7 +218,7 @@ class _DetailRow extends StatelessWidget {
           child: Text(
             label,
             style: const TextStyle(
-              color: WuxiaColors.textSecondary,
+              color: WuxiaUi.muted,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),

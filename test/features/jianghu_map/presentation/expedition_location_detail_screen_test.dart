@@ -11,6 +11,7 @@ import 'package:wuxia_idle/features/jianghu_map/domain/expedition_location_detai
 import 'package:wuxia_idle/features/jianghu_map/presentation/expedition_location_detail_screen.dart';
 import 'package:wuxia_idle/shared/battle_shared/enum_localizations.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 import '../../../support/test_data.dart';
@@ -89,6 +90,18 @@ void main() {
     ],
     child: const MaterialApp(home: ExpeditionLocationDetailScreen()),
   );
+
+  testWidgets('paper labels use readable ink contrast', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.expeditionLocationProgressLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+    );
+  });
 
   testWidgets('展示历史进度、境界、敌方生态、产出、候选人与差遣占用', (tester) async {
     final value = detail();

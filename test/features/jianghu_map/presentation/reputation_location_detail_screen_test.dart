@@ -8,6 +8,7 @@ import 'package:wuxia_idle/features/jianghu_map/application/reputation_location_
 import 'package:wuxia_idle/features/jianghu_map/domain/reputation_location_detail.dart';
 import 'package:wuxia_idle/features/jianghu_map/presentation/reputation_location_detail_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
 import 'package:wuxia_idle/shared/widgets/wuxia_ink_button.dart';
 
 void main() {
@@ -70,6 +71,18 @@ void main() {
       child: const MaterialApp(home: ReputationLocationDetailScreen()),
     ),
   );
+
+  testWidgets('paper labels use readable ink contrast', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<Text>(find.text(UiStrings.reputationLocationOverviewLabel))
+          .style
+          ?.color,
+      WuxiaUi.muted,
+    );
+  });
 
   testWidgets('展示生产门派、稀疏声望、七阶与变化来源', (tester) async {
     await tester.pumpWidget(app());
