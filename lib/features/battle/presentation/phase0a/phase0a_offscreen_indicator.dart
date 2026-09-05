@@ -174,7 +174,10 @@ final class Phase0aOffscreenIndicatorPainter extends CustomPainter {
       ),
       math.max(
         0,
-        size.height - 2 * Phase0aPresentationTokens.offscreenIndicatorEdgeInset,
+        // Keep the lower threat marker above the same reserved HUD band.
+        size.height -
+            Phase0aPresentationTokens.battleHudReservedHeight -
+            2 * Phase0aPresentationTokens.offscreenIndicatorEdgeInset,
       ),
     );
     final origin = edge.center;

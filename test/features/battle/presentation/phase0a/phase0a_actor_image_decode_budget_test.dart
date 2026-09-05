@@ -39,7 +39,9 @@ void main() {
     );
     await tester.pump();
 
-    final actorImages = tester.widgetList<WuxiaImage>(find.byType(WuxiaImage));
+    // Offscreen actors remain resident; their decode budgets still apply.
+    final allActorImages = find.byType(WuxiaImage, skipOffstage: false);
+    final actorImages = tester.widgetList<WuxiaImage>(allActorImages);
     expect(actorImages, hasLength(25));
     expect(actorImages.map((image) => image.assetPath).toSet(), {
       for (final actor in [
@@ -52,8 +54,9 @@ void main() {
 
     final decodedImages = tester.widgetList<Image>(
       find.descendant(
-        of: find.byType(WuxiaImage),
-        matching: find.byType(Image),
+        of: allActorImages,
+        matching: find.byType(Image, skipOffstage: false),
+        skipOffstage: false,
       ),
     );
     expect(decodedImages, hasLength(25));

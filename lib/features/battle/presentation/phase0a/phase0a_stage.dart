@@ -32,12 +32,21 @@ final class Phase0aStage {
 
   ArenaVector get worldMax => Phase0aPresentationTokens.worldMax;
 
-  /// 扣除内边距后的安全绘制区。
+  /// Foot-anchor projection area. Reserve the whole actor at the top edge,
+  /// the largest actor width, and a separate band for the bottom controls.
   Rect get safeRect => Rect.fromLTRB(
-    Phase0aPresentationTokens.safeMarginHorizontal,
-    Phase0aPresentationTokens.safeMarginVertical,
-    viewport.width - Phase0aPresentationTokens.safeMarginHorizontal,
-    viewport.height - Phase0aPresentationTokens.safeMarginVertical,
+    Phase0aPresentationTokens.safeMarginHorizontal +
+        Phase0aPresentationTokens.actorWidth *
+            Phase0aPresentationTokens.depthScaleMax /
+            2,
+    Phase0aPresentationTokens.safeMarginVertical +
+        Phase0aPresentationTokens.actorHeight * depthScale(cameraWorldRect.top),
+    viewport.width -
+        Phase0aPresentationTokens.safeMarginHorizontal -
+        Phase0aPresentationTokens.actorWidth *
+            Phase0aPresentationTokens.depthScaleMax /
+            2,
+    viewport.height - Phase0aPresentationTokens.battleHudReservedHeight,
   );
 
   /// 当前可见的世界矩形。跟随中心在 arena 边缘会被 clamp，保证视野不越界。

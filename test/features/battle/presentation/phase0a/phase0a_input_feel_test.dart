@@ -72,7 +72,8 @@ void main() {
       final enemies = <Phase0aActor>[
         initialState.enemies[0].copyWith(position: const ArenaVector(-40, 0)),
         initialState.enemies[1].copyWith(position: const ArenaVector(120, 0)),
-        initialState.enemies[2].copyWith(position: const ArenaVector(0, 200)),
+        // Keep the pointer target inside the production 75% camera (y <= 195).
+        initialState.enemies[2].copyWith(position: const ArenaVector(0, 180)),
       ];
       nearestEnemyId = enemies[0].id;
       pointerEnemyId = enemies[2].id;
@@ -150,9 +151,12 @@ void main() {
     final pointerEnemy = harness.controller.state.enemies.singleWhere(
       (enemy) => enemy.id == harness.pointerEnemyId,
     );
-    final stage = Phase0aStage(viewport: const Size(1280, 720));
-
-    await tester.tapAt(stage.worldToScreen(pointerEnemy.position));
+    final stage = Phase0aStage(
+      viewport: const Size(1280, 720),
+      cameraCenter: harness.controller.state.player.position,
+    );
+    expect(stage.isWorldPointVisible(pointerEnemy.position), isTrue);
+    await tester.tap(find.byKey(ValueKey('phase0a_actor_${pointerEnemy.id}')));
     await tester.pump();
     final events = harness.controller.step();
     await tester.pump();

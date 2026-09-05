@@ -9,6 +9,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.d
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_visual_roster.dart';
 
 final class _CrossingActorFlow implements Phase0aBattleFlow {
@@ -169,7 +170,19 @@ void main() {
       reason: '脚底刚交叉但未越过滞回带时应保持既有层级',
     );
 
-    await tester.pump(const Duration(milliseconds: 50));
+    // Projection spacing changes with the usable viewport. Verify the actual
+    // pixel hysteresis contract instead of assuming one fixed delay crosses it.
+    for (var frame = 0; frame < 20; frame++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      if (actorFootY(tester, 'player') - actorFootY(tester, 'wave1_blade') >
+          Phase0aPresentationTokens.actorLayerHysteresisPixels) {
+        break;
+      }
+      expect(
+        actorPaintOrder(tester),
+        containsAllInOrder(['player', 'wave1_blade']),
+      );
+    }
     expect(
       actorPaintOrder(tester),
       containsAllInOrder(['wave1_blade', 'player']),
@@ -188,7 +201,17 @@ void main() {
       reason: '反向刚交叉但未越过滞回带时也应保持既有层级',
     );
 
-    await tester.pump(const Duration(milliseconds: 100));
+    for (var frame = 0; frame < 20; frame++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      if (actorFootY(tester, 'wave1_blade') - actorFootY(tester, 'player') >
+          Phase0aPresentationTokens.actorLayerHysteresisPixels) {
+        break;
+      }
+      expect(
+        actorPaintOrder(tester),
+        containsAllInOrder(['wave1_blade', 'player']),
+      );
+    }
     expect(
       actorPaintOrder(tester),
       containsAllInOrder(['player', 'wave1_blade']),

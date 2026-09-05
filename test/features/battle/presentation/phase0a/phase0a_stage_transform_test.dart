@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_stage.dart';
+import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 
 Phase0aActor _actor(String id, double x, double y) => Phase0aActor(
   id: id,
@@ -23,6 +24,48 @@ void main() {
   const viewports = [Size(1280, 720), Size(1440, 900)];
 
   group('Phase0aStage 世界→屏幕变换', () {
+    test(
+      'complete camera-edge actors remain in view for clamped camera extremes',
+      () {
+        for (final viewport in viewports) {
+          for (final center in [
+            ArenaVector.zero,
+            const ArenaVector(-640, -260),
+            const ArenaVector(640, 260),
+          ]) {
+            final stage = Phase0aStage(
+              viewport: viewport,
+              cameraCenter: center,
+            );
+            final camera = stage.cameraWorldRect;
+            for (final world in [
+              ArenaVector(camera.left, camera.top),
+              ArenaVector(camera.right, camera.top),
+              ArenaVector(camera.left, camera.bottom),
+              ArenaVector(camera.right, camera.bottom),
+            ]) {
+              final foot = stage.worldToScreen(world);
+              final scale = stage.depthScale(world.y);
+              final width = Phase0aPresentationTokens.actorWidth * scale;
+              final height = Phase0aPresentationTokens.actorHeight * scale;
+              expect(foot.dx - width / 2, greaterThanOrEqualTo(0));
+              expect(foot.dx + width / 2, lessThanOrEqualTo(viewport.width));
+              expect(foot.dy - height, greaterThanOrEqualTo(0));
+              expect(
+                foot.dy,
+                lessThan(
+                  viewport.height -
+                      Phase0aPresentationTokens.battleHudReservedHeight,
+                ),
+              );
+              final inverse = stage.screenToWorld(foot);
+              expect(inverse.x, closeTo(world.x, 1e-9));
+              expect(inverse.y, closeTo(world.y, 1e-9));
+            }
+          }
+        }
+      },
+    );
     test('screenToWorld(worldToScreen(point)) 可逆，safeRect 外点击 clamp', () {
       for (final viewport in viewports) {
         final stage = Phase0aStage(viewport: viewport);

@@ -25,6 +25,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
     required this.qiCurrent,
     required this.onGather,
     required this.onClear,
+    this.showStatus = true,
   });
 
   /// Q 聚怪印运行态快照。
@@ -41,6 +42,9 @@ final class Phase0aSkillSeals extends StatelessWidget {
 
   /// 清场印激活回调(仅 ready 态可达)。
   final VoidCallback onClear;
+
+  /// Terminal survivors keep disabled seals without claiming they are down.
+  final bool showStatus;
 
   /// 聚怪印查找 key(测试与宿主共用)。
   static const ValueKey<String> gatherKey = ValueKey('phase0a_seal_gather');
@@ -60,6 +64,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
           keyCap: UiStrings.phase0aSealGatherKey,
           qiCurrent: qiCurrent,
           onPressed: onGather,
+          showStatus: showStatus,
         ),
         const SizedBox(width: Phase0aPresentationTokens.skillSealSpacing),
         _SkillSeal(
@@ -69,6 +74,7 @@ final class Phase0aSkillSeals extends StatelessWidget {
           keyCap: UiStrings.phase0aSealClearKey,
           qiCurrent: qiCurrent,
           onPressed: onClear,
+          showStatus: showStatus,
         ),
       ],
     );

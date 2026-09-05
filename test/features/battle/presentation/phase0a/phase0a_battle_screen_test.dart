@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/shared/widgets/combat_hp_bar.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
@@ -1108,10 +1109,13 @@ void main() {
 
       await tester.tapAt(stage.worldToScreen(targetPoint));
       final events = await stepAndPump(tester);
-      expect(
-        events.whereType<Phase0aGatherStarted>().single.centerPosition,
-        targetPoint,
-      );
+      // The inverse projection preserves the target within floating precision.
+      final center = events
+          .whereType<Phase0aGatherStarted>()
+          .single
+          .centerPosition!;
+      expect(center.x, closeTo(targetPoint.x, 1e-9));
+      expect(center.y, closeTo(targetPoint.y, 1e-9));
     });
   });
 
@@ -1234,6 +1238,26 @@ void main() {
         reason: 'debug fixture 必须可用纯进攻打到胜利',
       );
       expect(bannerIndices, [1, 2], reason: '两波 banner 依次出现(1-based)');
+      expect(controller.state.player.isAlive, isTrue);
+      for (final key in [gatherSealKey, clearSealKey]) {
+        final seal = find.byKey(key);
+        expect(
+          find.descendant(
+            of: seal,
+            matching: find.text(UiStrings.phase0aSealDown),
+          ),
+          findsNothing,
+          reason: 'A living victor is not down; terminal skills stay disabled.',
+        );
+        final semantics = tester.widget<Semantics>(
+          find.descendant(of: seal, matching: find.byType(Semantics)).first,
+        );
+        expect(semantics.properties.enabled, isFalse);
+        expect(
+          semantics.properties.label,
+          isNot(contains(UiStrings.phase0aSealDown)),
+        );
+      }
 
       // 全场唯一终局封签。
       expect(find.byKey(outcomeSealKey), findsOneWidget);
