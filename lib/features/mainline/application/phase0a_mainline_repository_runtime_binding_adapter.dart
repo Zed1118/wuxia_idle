@@ -134,6 +134,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
     _requireMatchingTokenPolicy(variant, binding.behavior);
 
     final preserveBaseIdentity =
+        entry.preserveSourceContract ||
         commanderEntryIds.contains(entry.entryId) ||
         (baseSnapshot.isBoss && pursueTargetEntryIds.contains(entry.entryId));
     final preserveBaseBossContract =
@@ -145,6 +146,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       repository: repo,
       visualAssetPath: binding.visualVariant.assetPath,
       preserveBaseIdentity: preserveBaseIdentity,
+      preserveSourceContract: entry.preserveSourceContract,
     );
     final basicSkill = _requiredBasicSkill(
       snapshot.availableSkills,
@@ -325,7 +327,9 @@ CombatantSnapshot _applyVariant({
   required GameRepository repository,
   required String visualAssetPath,
   required bool preserveBaseIdentity,
+  required bool preserveSourceContract,
 }) {
+  if (preserveSourceContract) return base;
   final resolvedSkills = preserveBaseIdentity ? base.availableSkills : skills;
   final basic = _requiredBasicSkill(
     resolvedSkills,

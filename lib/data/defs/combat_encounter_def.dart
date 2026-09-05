@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import '../../features/battle/domain/phase0a/spawn_dependencies.dart';
+
 import 'combat_enemy_archetype_def.dart';
 
 /// Explicit migration route for one stage's content, mirroring the runtime
@@ -98,6 +100,8 @@ final class CombatEncounterSpawnEntry {
     required String positionId,
     required String behaviorId,
     String? sourceEnemyDefId,
+    this.preserveSourceContract = false,
+    Iterable<String> spawnAfterDefeated = const [],
   }) : entryId = _checkedId(entryId, 'entryId'),
        archetypeId = _checkedId(archetypeId, 'archetypeId'),
        roleId = _checkedId(roleId, 'roleId'),
@@ -106,7 +110,8 @@ final class CombatEncounterSpawnEntry {
        behaviorId = _checkedId(behaviorId, 'behaviorId'),
        sourceEnemyDefId = sourceEnemyDefId == null
            ? null
-           : _checkedId(sourceEnemyDefId, 'sourceEnemyDefId');
+           : _checkedId(sourceEnemyDefId, 'sourceEnemyDefId'),
+       spawnAfterDefeated = List.unmodifiable(spawnAfterDefeated);
 
   /// Unique within the owning encounter.
   final String entryId;
@@ -130,6 +135,12 @@ final class CombatEncounterSpawnEntry {
   /// catalog entries intentionally leave this null; tower factories require
   /// it and fail closed when the binding is absent or non-bijective.
   final String? sourceEnemyDefId;
+
+  /// Opt-in for a singleton authored duel to retain its exact base snapshot.
+  final bool preserveSourceContract;
+
+  /// Entries whose combat defeat must precede this entry's warning/start.
+  final List<String> spawnAfterDefeated;
 
   static String _checkedId(String value, String field) {
     if (value.trim().isEmpty) {
@@ -312,6 +323,14 @@ final class CombatEncounterDef {
     final spawnEntryIds = this.spawnEntries
         .map((entry) => entry.entryId)
         .toSet();
+    if (this.spawnEntries.length != 1 &&
+        this.spawnEntries.any((entry) => entry.preserveSourceContract)) {
+      throw ArgumentError('source contract preservation requires a singleton');
+    }
+    validateSpawnDependencies({
+      for (final entry in this.spawnEntries)
+        entry.entryId: entry.spawnAfterDefeated,
+    });
     for (final clause in objectives.clauses) {
       if (clause.primitive case CombatDefendEntityRef(:final attackerIds)) {
         final unknown = attackerIds.difference(spawnEntryIds).toList()..sort();

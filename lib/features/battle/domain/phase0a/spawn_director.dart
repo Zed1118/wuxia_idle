@@ -1,3 +1,5 @@
+import 'spawn_dependencies.dart';
+
 /// Phase 0A SpawnDirector 纯 Dart 领域合同候选。
 ///
 /// 把遭遇名单明确切分为 总量(total)/活跃(active)/后备(pending)，生成只来自
@@ -77,13 +79,18 @@ final class SpawnDirectorConfig {
 /// 不含任何空白字符。[enemyId] 表示敌人实例 ID；敌人类型应由后续
 /// 数据合同以独立字段表达，不得复用实例 ID。
 final class SpawnEntry {
-  SpawnEntry({required this.entryId, required this.enemyId}) {
+  SpawnEntry({
+    required this.entryId,
+    required this.enemyId,
+    Iterable<String> afterRemovedEntryIds = const [],
+  }) : afterRemovedEntryIds = List.unmodifiable(afterRemovedEntryIds) {
     _requireCleanId(entryId, 'entryId');
     _requireCleanId(enemyId, 'enemyId');
   }
 
   final String entryId;
   final String enemyId;
+  final List<String> afterRemovedEntryIds;
 
   static void _requireCleanId(String value, String field) {
     if (value.trim().isEmpty) {
@@ -269,6 +276,9 @@ final class SpawnDirector {
         _SpawnUnit(entry, remainingWarningTicks: 0, remainingGraceTicks: 0),
       );
     }
+    validateSpawnDependencies({
+      for (final entry in entries) entry.entryId: entry.afterRemovedEntryIds,
+    });
     return units;
   }
 
@@ -277,6 +287,9 @@ final class SpawnDirector {
     SpawnDirectorConfig config,
   ) {
     final units = _initUnits(entries);
+    if (entries.any((entry) => entry.afterRemovedEntryIds.isNotEmpty)) {
+      throw ArgumentError('all-active initialization cannot skip dependencies');
+    }
     if (units.length > config.activeLimit) {
       throw ArgumentError.value(
         entries.length,
@@ -391,8 +404,15 @@ final class SpawnDirector {
         .where((unit) => unit.stage == SpawnUnitStage.warning)
         .length;
     if (activeCount <= config.reinforcementThreshold) {
+      final removedEntryIds = units
+          .where((unit) => unit.stage == SpawnUnitStage.removed)
+          .map((unit) => unit.entry.entryId)
+          .toSet();
       for (final unit in units) {
         if (unit.stage != SpawnUnitStage.pending) continue;
+        if (!unit.entry.afterRemovedEntryIds.every(removedEntryIds.contains)) {
+          continue;
+        }
         if (activeCount + warningCount >= config.activeLimit) break;
         unit.stage = SpawnUnitStage.warning;
         unit.remainingWarningTicks = config.entryWarningTicks;

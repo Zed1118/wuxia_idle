@@ -176,6 +176,8 @@ final class ParsedCombatSpawnEntry {
     required this.entranceId,
     required this.positionId,
     required this.behaviorId,
+    this.preserveSourceContract = false,
+    this.spawnAfterDefeated = const [],
   });
 
   final String entryId;
@@ -184,6 +186,8 @@ final class ParsedCombatSpawnEntry {
   final String entranceId;
   final String positionId;
   final String behaviorId;
+  final bool preserveSourceContract;
+  final List<String> spawnAfterDefeated;
 }
 
 /// One structurally valid flat objective composition.
@@ -505,6 +509,7 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
         },
         entryPath,
         sourceName,
+        optional: const {'preserve_source_contract', 'spawn_after_defeated'},
       );
       spawnEntries.add(
         ParsedCombatSpawnEntry(
@@ -538,6 +543,21 @@ ParsedCombatEncounterSource validateCombatEncounterSource(
             '$entryPath.behavior_id',
             sourceName,
           ),
+          preserveSourceContract:
+              entryMap.containsKey('preserve_source_contract')
+              ? _requireBool(
+                  entryMap['preserve_source_contract'],
+                  '$entryPath.preserve_source_contract',
+                  sourceName,
+                )
+              : false,
+          spawnAfterDefeated: entryMap.containsKey('spawn_after_defeated')
+              ? _requireIdList(
+                  entryMap['spawn_after_defeated'],
+                  '$entryPath.spawn_after_defeated',
+                  sourceName,
+                )
+              : const [],
         ),
       );
     }
@@ -823,10 +843,14 @@ void _requireExactKeys(
   Map<String, dynamic> map,
   Set<String> allowed,
   String path,
-  String sourceName,
-) {
-  final unknown = map.keys.where((key) => !allowed.contains(key)).toList()
-    ..sort();
+  String sourceName, {
+  Set<String> optional = const {},
+}) {
+  final unknown =
+      map.keys
+          .where((key) => !allowed.contains(key) && !optional.contains(key))
+          .toList()
+        ..sort();
   if (unknown.isNotEmpty) {
     _fail(
       sourceName,
@@ -896,6 +920,13 @@ String _requireDisplayName(dynamic value, String path, String sourceName) {
 int _requireInt(dynamic value, String path, String sourceName) {
   if (value is! int) {
     _fail(sourceName, path, 'expected an integer, got ${_typeName(value)}');
+  }
+  return value;
+}
+
+bool _requireBool(dynamic value, String path, String sourceName) {
+  if (value is! bool) {
+    _fail(sourceName, path, 'expected a boolean, got ${_typeName(value)}');
   }
   return value;
 }

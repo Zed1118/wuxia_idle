@@ -41,7 +41,12 @@ CombatEncounterRuntimeContractBundle mapCombatEncounterRuntimeContract(
 }) {
   final spawnEntries = [
     for (final entry in definition.spawnEntries)
-      SpawnEntry(entryId: entry.entryId, enemyId: resolveEnemyId(entry)),
+      SpawnEntry(
+        entryId: entry.entryId,
+        enemyId: resolveEnemyId(entry),
+        // The production flow marks an entry removed only from EnemyDefeated.
+        afterRemovedEntryIds: entry.spawnAfterDefeated,
+      ),
   ];
 
   return CombatEncounterRuntimeContractBundle(
