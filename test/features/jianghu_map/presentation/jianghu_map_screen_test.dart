@@ -104,6 +104,27 @@ void main() {
           ?.color,
       WuxiaColors.textSecondary,
     );
+    final title = find.text(UiStrings.jianghuMapKnownLocations);
+    final scaffold = tester.widget<Scaffold>(
+      find.ancestor(of: title, matching: find.byType(Scaffold)).first,
+    );
+    final section = tester.widget<DecoratedBox>(
+      find.ancestor(of: title, matching: find.byType(DecoratedBox)).first,
+    );
+    final surface = Color.alphaBlend(
+      (section.decoration as BoxDecoration).color!,
+      scaffold.backgroundColor!,
+    );
+    for (final text in [
+      UiStrings.jianghuMapKnownLocations,
+      UiStrings.jianghuMapKnownLocationsHint,
+    ]) {
+      final foreground = tester.widget<Text>(find.text(text)).style!.color!;
+      final contrast =
+          (foreground.computeLuminance() + 0.05) /
+          (surface.computeLuminance() + 0.05);
+      expect(contrast, greaterThanOrEqualTo(4.5), reason: text);
+    }
   });
 
   final asyncRouteCases =

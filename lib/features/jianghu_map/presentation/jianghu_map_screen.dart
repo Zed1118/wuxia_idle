@@ -384,6 +384,7 @@ class _MapSectionLabel extends StatelessWidget {
             Text(
               UiStrings.jianghuMapKnownLocations,
               style: TextStyle(
+                // paper-text-audit: allow 8% paper tint over the dark map scaffold
                 color: WuxiaColors.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -393,6 +394,7 @@ class _MapSectionLabel extends StatelessWidget {
             SizedBox(height: 4),
             Text(
               UiStrings.jianghuMapKnownLocationsHint,
+              // paper-text-audit: allow 8% paper tint over the dark map scaffold
               style: TextStyle(color: WuxiaColors.textSecondary, fontSize: 12),
             ),
           ],
