@@ -3,15 +3,15 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-### 二阶段结果仪表盘（2026-09-05 关卡预览修复已集成，本地全量通过）
+### 二阶段结果仪表盘（2026-09-05 关卡预览修复已集成，精确 SHA 远端通过）
 - **正式里程碑**：未加权 M0–M9 固定分母为 10，当前仅 M1 关闭，结果 `1/10`；权重未获批准，不报告成熟度百分比。
 - **主线入口测试加固（2026-09-05 后续授权集成）**：候选 `e5a60292` 改为墙钟限时等待并补失败卸载；真实延迟反例证明旧等待会误报，但未证明首次 CI 的宿主缺失/十分钟超时根因。持锁全量 `6033/6033`、analyze 0 issue、format 1645/0 changed、测试契约 Gate PASS；生产源码与冻结 `13504129` 一致。精确 merge CI 与同包 M2 受托实机证据另见本任务收工记录；不代签真人/听感/Windows、不晋升正式门。过程与证据位置见 `docs/superpowers/plans/2026-09-05-mainline-ci-wait-investigation.md`。
 - **精确代码集成证据**：Ch13 修复原候选 `21ad6e60` 的生产代码/数据/测试，在受检候选 `cb824b534e7b4ed9e59ef21379eae8ca5846df9a` 中保持完全一致，经 no-ff merge `261f2daf17e4357aaf12a04b86775dc64aa1164a` 进入 `origin/main`；merge exact-SHA CI `33935197099` 已核验 `completed/success`（测试、覆盖率门槛、macOS 构建通过）。PROGRESS 作为本批授权治理尾同步，不伪称被施工 Gate 覆盖。M0-R 真实候选 `eea54b970df647a77340bbbc4ea43fc1538a8678`；原主线与塔集成基线 `2d254abd` 的 CI `33901066970` 已成功。
 - **工程门**：M3 五类单段普攻生产画像 `5/5`、P0 三项质量子门 `3/3` 已集成。主线 typed catalog 覆盖 `105/105`；Ch13 身份/技能、数值保真、知客僧后置入场三类修复已进入 main，不把目录满额外推为整个主线真人验收完成。塔基础门已集成，目标限制、三入口行为验证及完整 parity 尚待补强；塔仍为 `0/49`，三个可达塔兼容入口与两个主线 null fallback 共五处 legacy 接缝。
 - **实测与验收边界**：M2–M6 已增加分版本的受托 AI 桌面记录，并据此修复六项客观问题；完整 G2/五武器/Boss 应对、高密度与长时、导航叙事全链、实际听感及 Windows 证据仍未齐，里程碑继续开放。已有实机记录不回填为其他 SHA 的 PASS，不冒充自然人或 Windows 签字。
-- **当前任务状态**：关卡预览修复 `363a972c` 经授权 no-ff `9e63ecbf` 合入 main，黑风岭/风雨渡口现按生产编排显示 40/2 名敌人，战斗数据未改。精确 merge 持锁全量 **6035/6035**、analyze 0 issue、format 1646/0 changed；已有候选双视口测试及隔离实机显示证据，原存档哈希未变。治理尾同步后推送，最终 SHA/远端 CI 与后续黑风岭取证结果见本批收工记录；尚不能称本修复远端通过。恢复计划：`docs/superpowers/plans/2026-09-05-stage-preview-runtime.md`；收工证据：`/Users/a10506/Documents/Codex/2026-09-05/wuxia-stage-preview-integration/README.md`。
+- **当前任务状态**：关卡预览修复 `363a972c` 经授权 no-ff `9e63ecbf` 合入 main，黑风岭/风雨渡口现按生产编排显示 40/2 名敌人，战斗数据未改。精确 merge 持锁全量 **6035/6035**、analyze 0 issue、format 1646/0 changed；治理尾提交 `6d8ffa1445b4082535b2aa32a4a71afb7c990275` 的远端 CI `33962162584` 已核验 `completed/success`，测试、85.65% 覆盖率（门槛 81.25%）与 macOS 构建通过。两次同生产版本黑风岭受托操作仅补到移动、技能和保存，未捕获明确终局，不能记通关或定败因；该轮原档哈希未变，不外推为历史从未变化。证据：`/Users/a10506/Documents/Codex/2026-09-05/wuxia-stage-preview-integration/README.md`。后续恢复计划：`docs/superpowers/plans/2026-09-05-p2-priority-acceptance.md`。
 - **M0 开放决策**：22 项集中处置已按用户批准的 M0-R 全部分类并集成；M0 仍缺适用生产接线、测量、实测及真人/Windows 证据，心魔逐身份签字仍开放，不以批准记录冒充正式关闭。
-- **前三阻塞**：① 塔基础门补强、塔 `49` 层与 5 处 legacy 接缝仍开放；② M0 缺适用生产接线、测量、实测证据，新心魔 AI 须逐身份签字；③ 真人桌面、视觉/音频/手感及 Windows 继续挂账。
+- **前三阻塞（执行顺序）**：① M2 黑风岭完整输入→终局→结算证据、合法首通五关连续链与真人 G2 未闭合；② M3–M6 五武器、密度/长时/听感、六模式与导航的同包验收和 Windows 签字仍缺；③ M0 生产验证/心魔逐身份签字及 M7 塔基础补强、49 层和 5 处 legacy 接缝开放。先推进 M2，再按依赖处理后续门，不以扩塔替代体验验收。
 - **治理约束**：`M7-DEPENDENCY-SEMANTICS-01` 明确 M3/M4 工程基础已集成后可继续逐批内容工程，但 M2–M6 真人/Windows 依赖仍阻断 M7 正式关闭及 M8/M9；正式进度只按已连接生产路径、风险匹配验证、main 精确集成和 clean 状态计，工程候选、测试数量、文档与 READY 不计正式里程碑。
 - **详细证据**：桌面集成见 `docs/audit/phase2_desktop_fixes_integration_2026-09-05.md` 与对应恢复计划；分版本实机见 `docs/audit/phase2_battle_visibility_repair_2026-09-05.md` 及首轮报告。Ch13 见 `docs/audit/phase2_m7_ch13_contract_fix_2026-09-05.md`；塔基础门见 `docs/audit/phase2_m7_tower_foundation_2026-09-05.md`，五处 legacy 接缝基线见 `docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md`。
 
