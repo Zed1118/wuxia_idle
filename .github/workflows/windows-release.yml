@@ -49,9 +49,24 @@ jobs:
         run: flutter analyze --no-pub lib test tool
 
       - name: Build unsigned Windows release
+        id: build_windows
         run: flutter build windows --release --no-pub
 
+      - name: Smoke test native release startup
+        shell: pwsh
+        run: ./tools/windows_release_startup_smoke.ps1 -ReleaseDirectory build/windows/x64/runner/Release -OutputDirectory build/windows-startup-smoke
+
+      - name: Upload startup evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-startup-smoke-${{ github.sha }}
+          path: build/windows-startup-smoke/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload unsigned Windows release
+        if: always() && steps.build_windows.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: windows-release-unsigned-${{ github.sha }}

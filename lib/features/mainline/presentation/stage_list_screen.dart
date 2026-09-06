@@ -197,7 +197,10 @@ class StageListScreen extends ConsumerWidget {
                     );
 
                 return LayoutBuilder(
-                  builder: (context, constraints) {
+                  // Keep navigation bound to the screen's context. Progress
+                  // invalidation temporarily replaces this data subtree with
+                  // loading UI while a continuous run is settling a stage.
+                  builder: (_, constraints) {
                     return Align(
                       alignment: Alignment.topCenter,
                       child: ConstrainedBox(
