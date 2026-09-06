@@ -177,7 +177,9 @@ void main() {
       final enemy = Phase0aActor(
         id: 'enemy',
         side: Phase0aSide.enemy,
-        position: ArenaVector(0, maxY),
+        // Force pursuit against the player boundary. A target only one unit
+        // away now correctly makes the bot stand still and aim instead.
+        position: ArenaVector(0, maxY + mapping.playerAdapter.attackRange + 1),
         facing: const ArenaVector(0, -1),
         maxHealth: 100,
         currentHealth: 100,

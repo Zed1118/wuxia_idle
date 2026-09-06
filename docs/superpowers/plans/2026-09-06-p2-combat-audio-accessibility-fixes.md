@@ -15,8 +15,10 @@
 
 ## 当前恢复点
 
-- 状态：WIP，三项生产修复已完成，正在构建隔离原生包。
-- 最后完成：Bot 窄角近身及五武器边界回归、合法冷档五武器×三战术终局；暗器从 300 秒停滞到 30.8 秒 40 杀。音频固定槽互斥/BGM 合并/完成回调隔离；减少闪光四类真实宿主消费。
-- 下一步：原生双视口与带声十分钟稳定性；批末持锁全量、集成/CI。
-- 已跑验证：定向 106/106、analyze 0 issue；Bot、真实 AudioPlayer 平台通道、真实 Boss 命中闪光均有有效 RED/GREEN。证据位于 `/Users/a10506/Documents/Codex/2026-09-06/wuxia-blocker-fixes/`。
-- 残留风险：原生音频/帧门与真人/Windows 输入音频均不能用单元测试替代；不得启动默认 bundle 写入用户原档。
+- 状态：READY，生产修复与直接验证完成，按既有授权进入受控集成；正式 M0–M9 仍 1/10，M4 帧门保留。
+- 最后完成：合法冷档五武器×三战术均进入终局，暗器 30.8 秒胜；真实宿主双视口减少闪光/领域不变；音频 35/35，原生十分钟 285→320 MiB、峰 328 MiB、告警 0；Windows 同代码 build/startup PASS。
+- 回归：首轮定向 106/106；完整 6091 PASS / 1 旧夹具 FAIL，夹具修正后相关 20/20。完整首轮失败及修正均保留；最终集成版本再跑一次持锁全量与精确 SHA CI，结果写 `delivery.json`。
+- 下一步：最终全量及 CI 收口；验证试玩程序退出后替换已签名程序，三个试玩存档与设置保持哈希一致。冷备份和新包均已准备。
+- 生产路径：Bot → InputAdapter → reducer 共核；四种宿主 → GameplaySettingsProvider → BattleScreen；SoundManager → 真实 AudioPlayersBackend 固定池及串行 BGM。
+- 红线：无数值/配置/依赖/schema/奖励/解锁改动，原生产三存档哈希一致。临时冷副本和隔离签名包不冒充自然人。
+- 残留：密集帧耗仍红，不能关闭 M4；真人、物理 Windows 输入/音频/GPU 和 72h 继续挂账。详情 `docs/audit/phase2_blocker_fixes_2026-09-06.md`，外部证据 `/Users/a10506/Documents/Codex/2026-09-06/wuxia-blocker-fixes/`。
