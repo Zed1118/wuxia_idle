@@ -16,7 +16,13 @@ class _NativeAudioProbe {
   final interruptedPreparations = <String>[];
   final players = <String>[];
   final releaseModes = <String, String>{};
+  final pendingPauses = <Completer<void>>[];
+  final pendingSeeks = <Completer<void>>[];
+  final positions = <String, int>{};
+  final playbackStarts = <int>[];
   bool holdPreparations = true;
+  bool holdPauses = false;
+  bool holdSeeks = false;
   bool failNextPreparation = false;
 
   void install() {
@@ -41,6 +47,30 @@ class _NativeAudioProbe {
     if (call.method == 'setReleaseMode') {
       releaseModes[id] = args['releaseMode'] as String;
     }
+    if (call.method == 'pause' && holdPauses) {
+      final gate = Completer<void>();
+      pendingPauses.add(gate);
+      await gate.future;
+      pendingPauses.remove(gate);
+    }
+    if (call.method == 'seek') {
+      final gate = Completer<void>();
+      pendingSeeks.add(gate);
+      if (!holdSeeks) gate.complete();
+      await gate.future;
+      pendingSeeks.remove(gate);
+      positions[id] = args['position'] as int;
+      await messenger.handlePlatformMessage(
+        'xyz.luan/audioplayers/events/$id',
+        const StandardMethodCodec().encodeSuccessEnvelope({
+          'event': 'audio.onSeekComplete',
+        }),
+        (_) {},
+      );
+    }
+    if (call.method == 'resume') {
+      playbackStarts.add(positions[id] ?? 0);
+    }
     if (call.method == 'create') {
       players.add(id);
       messenger.setMockMethodCallHandler(
@@ -56,6 +86,7 @@ class _NativeAudioProbe {
       if (!holdPreparations) gate.complete();
       await gate.future;
       gates.remove(gate);
+      positions[id] = 0;
       await messenger.handlePlatformMessage(
         'xyz.luan/audioplayers/events/$id',
         const StandardMethodCodec().encodeSuccessEnvelope({
@@ -85,6 +116,20 @@ class _NativeAudioProbe {
       for (final gate in gates) {
         if (!gate.isCompleted) gate.complete();
       }
+    }
+  }
+
+  void releasePauses() {
+    holdPauses = false;
+    for (final gate in pendingPauses) {
+      if (!gate.isCompleted) gate.complete();
+    }
+  }
+
+  void releaseSeeks() {
+    holdSeeks = false;
+    for (final gate in pendingSeeks) {
+      if (!gate.isCompleted) gate.complete();
     }
   }
 
@@ -141,6 +186,8 @@ void main() {
   tearDown(() async {
     native.holdPreparations = false;
     native.releasePreparations();
+    native.releasePauses();
+    native.releaseSeeks();
     await backend.dispose();
     AudioCache.instance = previousCache;
     native.uninstall();
@@ -217,6 +264,124 @@ void main() {
       await reuse;
       expect(native.count('resume'), 3);
       expect(native.overlappingPreparations, isEmpty);
+    },
+  );
+
+  test(
+    'completed matching voice reuses its source ahead of round robin',
+    () async {
+      native.holdPreparations = false;
+      await backend.playSfx('hit.mp3', 0.8);
+      final hitId =
+          (native.named('resume').last.arguments as Map)['playerId'] as String;
+      await backend.playSfx('slash.mp3', 0.7);
+      final slashId =
+          (native.named('resume').last.arguments as Map)['playerId'] as String;
+      await native.beginSoundCompletion(hitId);
+      await native.beginSoundCompletion(slashId);
+      await pumpEventQueue();
+
+      await backend.playSfx('slash.mp3', 0.4);
+      expect(
+        (native.named('resume').last.arguments as Map)['playerId'],
+        slashId,
+      );
+      expect(native.count('setSourceUrl'), 2);
+      expect((native.named('setVolume').last.arguments as Map)['volume'], 0.4);
+      expect(native.players, hasLength(3));
+    },
+  );
+
+  test('overlapping identical sounds still use separate voices', () async {
+    native.holdPreparations = false;
+    await backend.playSfx('hit.mp3', 0.8);
+    await backend.playSfx('hit.mp3', 0.8);
+    expect(
+      native
+          .named('resume')
+          .map((c) => (c.arguments as Map)['playerId'])
+          .toSet(),
+      hasLength(2),
+    );
+    await backend.playSfx('hit.mp3', 0.8);
+    expect(native.count('setSourceUrl'), 2);
+    expect(native.count('resume'), 3);
+  });
+
+  test(
+    'failed source replacement invalidates the previously prepared asset',
+    () async {
+      native.holdPreparations = false;
+      await backend.playSfx('hit.mp3', 0.8);
+      await backend.playSfx('slash.mp3', 0.8);
+      native.failNextPreparation = true;
+      await expectLater(
+        backend.playSfx('broken.mp3', 0.8),
+        throwsA(isA<PlatformException>()),
+      );
+      await backend.playSfx('hit.mp3', 0.8);
+      expect(native.count('setSourceUrl'), 4);
+      expect(
+        (native.named('setSourceUrl').last.arguments as Map)['url'],
+        '/cached/hit.mp3',
+      );
+      expect(native.count('resume'), 3);
+    },
+  );
+
+  test('cached playback remains exclusive while pause is pending', () async {
+    native.holdPreparations = false;
+    await backend.playSfx('hit.mp3', 0.8);
+    await backend.playSfx('slash.mp3', 0.8);
+    native.holdPauses = true;
+    final first = backend.playSfx('hit.mp3', 0.8);
+    final second = backend.playSfx('slash.mp3', 0.8);
+    await pumpEventQueue();
+    expect(native.pendingPauses, hasLength(2));
+    final burst = List.generate(100, (_) => backend.playSfx('hit.mp3', 0.8));
+    await Future.wait(burst);
+    expect(native.pendingPauses, hasLength(2));
+    native.releasePauses();
+    await Future.wait([first, second]);
+    expect(native.count('setSourceUrl'), 2);
+    expect(native.count('resume'), 4);
+    expect(native.overlappingPreparations, isEmpty);
+  });
+
+  test('reused source waits for an explicit rewind before resuming', () async {
+    native.holdPreparations = false;
+    await backend.playSfx('hit.mp3', 0.8);
+    await backend.playSfx('slash.mp3', 0.8);
+    for (final id in native.positions.keys) {
+      native.positions[id] = 137;
+    }
+    native.holdSeeks = true;
+    final replay = backend.playSfx('hit.mp3', 0.8);
+    await pumpEventQueue();
+    expect(native.count('resume'), 2);
+    expect(native.pendingSeeks, hasLength(1));
+    expect((native.named('seek').last.arguments as Map)['position'], 0);
+    native.releaseSeeks();
+    await replay;
+    expect(native.playbackStarts.last, 0);
+    expect(native.count('setSourceUrl'), 2);
+    expect(native.count('stop'), 0);
+  });
+
+  test(
+    'different source is prepared from the beginning without seeking old media',
+    () async {
+      native.holdPreparations = false;
+      await backend.playSfx('hit.mp3', 0.8);
+      await backend.playSfx('slash.mp3', 0.8);
+      for (final id in native.positions.keys) {
+        native.positions[id] = 137;
+      }
+      await backend.playSfx('other.mp3', 0.8);
+      expect(native.playbackStarts.last, 0);
+      expect(native.count('setSourceUrl'), 3);
+      expect(native.count('seek'), 0);
+      expect(native.count('stop'), 0);
     },
   );
 

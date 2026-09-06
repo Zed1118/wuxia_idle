@@ -100,12 +100,26 @@ class AudioPlayersBackend implements AudioBackend {
   @override
   Future<void> playSfx(String assetPath, double volume) {
     if (_disposed) return Future.value();
+    int? availableIndex;
+    int? idleIndex;
+    int? matchingIdleIndex;
     for (var offset = 0; offset < _sfxPool.length; offset++) {
       final index = (_sfxCursor + offset) % _sfxPool.length;
       final voice = _sfxPool[index];
       if (voice.work != null) continue;
+      availableIndex ??= index;
+      if (voice.player.state != PlayerState.playing) {
+        idleIndex ??= index;
+        if (voice.preparedAssetPath == assetPath) {
+          matchingIdleIndex = index;
+          break;
+        }
+      }
+    }
+    final index = matchingIdleIndex ?? idleIndex ?? availableIndex;
+    if (index != null) {
       _sfxCursor = (index + 1) % _sfxPool.length;
-      return voice.play(assetPath, volume, () => !_disposed);
+      return _sfxPool[index].play(assetPath, volume, () => !_disposed);
     }
     // Busy voices are still preparing native AVPlayerItems. Replacing one now
     // can orphan its preparation continuation. Drop stale burst sounds instead
@@ -155,6 +169,7 @@ class _SfxVoice {
   final AudioPlayer player = _createPlayer();
   Future<void>? work;
   bool _stopConfigured = false;
+  String? preparedAssetPath;
 
   Future<void> play(String assetPath, double volume, bool Function() active) =>
       work = _play(assetPath, volume, active);
@@ -172,12 +187,26 @@ class _SfxVoice {
         await player.setReleaseMode(ReleaseMode.stop);
         _stopConfigured = true;
       }
-      await player.stop();
+      // Native stop reads the old media time synchronously on Darwin. A new
+      // source starts at zero anyway; a reused source needs an explicit seek,
+      // whose future also waits for the native seek-complete event.
+      await player.pause();
       if (!active()) return;
-      await player.setVolume(volume);
+      if (player.volume != volume) await player.setVolume(volume);
       if (!active()) return;
-      await player.setSource(AssetSource(assetPath));
+      if (preparedAssetPath != assetPath) {
+        // ReleaseMode.stop retains the prepared source. Replacing an identical
+        // asset adds extraction/platform work and may rebuild native media.
+        preparedAssetPath = null;
+        await player.setSource(AssetSource(assetPath));
+        preparedAssetPath = assetPath;
+      } else {
+        await player.seek(Duration.zero);
+      }
       if (active()) await player.resume();
+    } catch (_) {
+      preparedAssetPath = null;
+      rethrow;
     } finally {
       work = null;
     }
