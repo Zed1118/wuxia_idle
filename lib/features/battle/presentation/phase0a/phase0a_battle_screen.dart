@@ -45,6 +45,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
     super.key,
     required this.controller,
     this.autoStep = true,
+    this.reduceFlashing = false,
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
@@ -59,6 +60,9 @@ final class Phase0aBattleScreen extends StatefulWidget {
   final Map<String, double> checkpointXById;
   final Phase0aCheckpointGuidanceCopy? checkpointGuidanceCopy;
   final bool autoStep;
+
+  /// Visual-only preference supplied by the gameplay settings owner.
+  final bool reduceFlashing;
   final double feedbackHoldSeconds;
 
   /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
@@ -1486,7 +1490,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                   actor: actor,
                   visual: controller.roster.visualFor(actor.id),
                   guardianWardActive: guardianWardActive,
-                  isHitFlashing: _hitFlashRemaining.containsKey(actor.id),
+                  isHitFlashing:
+                      !widget.reduceFlashing &&
+                      _hitFlashRemaining.containsKey(actor.id),
                   isHealthEmphasized: _hpEmphasisRemaining.containsKey(
                     actor.id,
                   ),

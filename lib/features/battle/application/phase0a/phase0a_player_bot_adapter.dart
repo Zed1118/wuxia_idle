@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import '../../domain/phase0a/phase0a_combat_model.dart';
 import 'phase0a_bot_tactic.dart';
 import 'phase0a_player_input_adapter.dart';
@@ -14,8 +12,7 @@ typedef Phase0aObjectiveContinuationCommandBuilder =
 ///
 /// 策略(灰盒基线,可调优数值一律取自 [playerAdapter],本层零数值复制):
 /// - 锁定最近存活敌人(id 决胜);无存活敌人返回空指令。
-/// - 超出普攻射程或朝向不在普攻扇区内时,朝目标四向移动(移动同时校正
-///   朝向);否则站定输出。
+/// - 超出普攻射程时朝目标移动;射程内站定并显式瞄准,避免近身折返。
 /// - 普攻常按:冷却/射程/扇区判定全部由 reducer 结算。
 /// - 技能印 availability 为 ready 即按(真气/冷却已合成在可用态,bot 不重算)。
 final class Phase0aPlayerBotAdapter {
@@ -43,9 +40,7 @@ final class Phase0aPlayerBotAdapter {
     final toTarget = target.position - player.position;
     final distance = toTarget.length;
     final outOfRange = distance > playerAdapter.attackRange;
-    final facingOffTarget =
-        player.facing.dot(toTarget.normalized()) <
-        math.cos(playerAdapter.attackHalfArcRadians);
+    final aimDirection = distance > 0 ? toTarget.normalized() : player.facing;
     final gatherReady = _slotReady(state, playerAdapter.gatherSlot);
     final clearReady = _slotReady(state, playerAdapter.clearSlot);
     final numericSkill = _firstReadyNumericSkill(state);
@@ -58,18 +53,17 @@ final class Phase0aPlayerBotAdapter {
       player: player,
     );
     return Phase0aPlayerCommand(
-      left: (outOfRange || facingOffTarget) && toTarget.x < 0,
-      right: (outOfRange || facingOffTarget) && toTarget.x > 0,
-      up: (outOfRange || facingOffTarget) && toTarget.y < 0,
-      down: (outOfRange || facingOffTarget) && toTarget.y > 0,
+      left: outOfRange && toTarget.x < 0,
+      right: outOfRange && toTarget.x > 0,
+      up: outOfRange && toTarget.y < 0,
+      down: outOfRange && toTarget.y > 0,
       attack: true,
+      attackAimDirection: aimDirection,
       gather: tactical.gather,
       clear: tactical.clear,
       skillHotkey: tactical.skillHotkey,
       defenseAction: tactical.defenseAction,
-      defenseDirection: toTarget.lengthSquared > 0
-          ? toTarget.normalized()
-          : player.facing,
+      defenseDirection: aimDirection,
     );
   }
 

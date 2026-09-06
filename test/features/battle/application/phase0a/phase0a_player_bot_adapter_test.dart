@@ -2,7 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import '../../../../support/combatant_snapshot_fixture.dart';
+import '../../../../support/test_data.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_numeric_skill_binding.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
@@ -42,11 +47,12 @@ Phase0aNumericSkillBinding _burstBinding() => Phase0aNumericSkillBinding(
 
 Phase0aPlayerInputAdapter _adapter({
   bool withBurst = false,
+  double halfArc = math.pi / 4,
   Phase0aDefenseTuning? defenseTuning,
 }) => Phase0aPlayerInputAdapter(
   playerId: 'player',
   attackRange: 120,
-  attackHalfArcRadians: math.pi / 4,
+  attackHalfArcRadians: halfArc,
   attackCooldownSeconds: 1,
   attackQiDelta: 0,
   postureBasicPowerMultiplier: 1,
@@ -161,7 +167,125 @@ Phase0aArenaState _state({bool window = false, bool withBurst = false}) =>
       ],
     );
 
+class _HitResolver implements Phase0aDamageResolver {
+  @override
+  Phase0aResolvedHit resolve({
+    required String attackerId,
+    required String targetId,
+    required Phase0aDamageKind kind,
+    bool defenderStaggered = false,
+    bool defenderVulnerable = false,
+    required double defenderWardMult,
+  }) => const Phase0aResolvedHit(isHit: true, isCritical: false, damage: 10);
+}
+
 void main() {
+  for (final targetPosition in [
+    const ArenaVector(-0.65, 9.36),
+    const ArenaVector(-9.0, -5.0),
+    const ArenaVector(0, 0),
+  ]) {
+    test(
+      'in-range target $targetPosition receives repeated hits without oscillation',
+      () {
+        final adapter = _adapter(halfArc: 0.36);
+        final bot = Phase0aPlayerBotAdapter(
+          playerAdapter: adapter,
+          policy: const Phase0aBotTacticPolicy.seekGap(),
+        );
+        var state = Phase0aArenaState(
+          tick: 0,
+          nextSeq: 1,
+          player: _actor(side: Phase0aSide.player, id: 'player'),
+          enemies: [
+            _actor(
+              side: Phase0aSide.enemy,
+              id: 'enemy',
+              position: targetPosition,
+            ),
+          ],
+          skillSlots: const [],
+        );
+        var hits = 0;
+        for (var tick = 0; tick < 35; tick++) {
+          final result = reducePhase0aTick(
+            state: state,
+            intents: adapter.intentsFor(
+              state: state,
+              command: bot.commandFor(state),
+            ),
+            deltaSeconds: 0.1,
+            damageResolver: _HitResolver(),
+          );
+          state = result.state;
+          hits += result.events.whereType<Phase0aHitLanded>().length;
+        }
+        expect(hits, greaterThanOrEqualTo(3));
+        expect(
+          state.player.position,
+          const ArenaVector(0, 0),
+          reason: 'Facing correction must not move through a nearby target',
+        );
+      },
+    );
+  }
+
+  for (final weapon in WeaponArchetype.values) {
+    test(
+      '${weapon.name} production geometry hits a nearby boundary target',
+      () async {
+        final repository = await loadTestGameRepository();
+        final mapping = Phase0aStageContentMapper.mapPlayerOnly(
+          contentId: 'stage_01_03',
+          numbers: repository.numbers,
+          playerSnapshot: testCombatantSnapshot(
+            weaponArchetype: weapon,
+            includeProductionBasicAttack: true,
+          ),
+        );
+        final adapter = mapping.playerAdapter;
+        final bot = Phase0aPlayerBotAdapter(
+          playerAdapter: adapter,
+          policy: const Phase0aBotTacticPolicy.seekGap(),
+        );
+        final player = mapping.initialPlayer.copyWith(
+          position: const ArenaVector(-341, 0),
+          facing: const ArenaVector(1, 0),
+        );
+        var state = Phase0aArenaState(
+          tick: 0,
+          nextSeq: 1,
+          player: player,
+          enemies: [
+            _actor(
+              side: Phase0aSide.enemy,
+              id: 'edge',
+              position: const ArenaVector(-351, 6),
+            ),
+          ],
+          skillSlots: const [],
+        );
+        var hits = 0;
+        for (var tick = 0; tick < 100 && state.enemies.isNotEmpty; tick++) {
+          final result = reducePhase0aTick(
+            state: state,
+            intents: adapter.intentsFor(
+              state: state,
+              command: bot.commandFor(state),
+            ),
+            deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+            playerMovementBounds: adapter.movementArenaBounds,
+            damageResolver: _HitResolver(),
+          );
+          state = result.state;
+          hits += result.events.whereType<Phase0aHitLanded>().length;
+        }
+        expect(hits, greaterThanOrEqualTo(3));
+        expect(state.player.position, player.position);
+      },
+    );
+  }
+
   test('custom policy copies mutable collections into immutable values', () {
     final priority = <Phase0aBotAction>[Phase0aBotAction.clear];
     final enabled = <Phase0aBotAction>{Phase0aBotAction.clear};

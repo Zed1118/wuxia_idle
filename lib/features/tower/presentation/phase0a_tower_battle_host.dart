@@ -1,3 +1,4 @@
+import '../../settings/application/gameplay_settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/defs/tower_floor_def.dart';
@@ -166,6 +167,9 @@ class _Phase0aTowerBattleHostState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Phase0aBattleScreen(
+      reduceFlashing:
+          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+          true,
       controller: controller,
       numericSkillBindings: _session!.playerAdapter.numericSkillBindings,
       basicAttackRange: _session!.playerAdapter.attackRange,

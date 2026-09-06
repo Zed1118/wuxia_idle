@@ -1,3 +1,4 @@
+import '../../settings/application/gameplay_settings_provider.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -315,6 +316,9 @@ class _Phase0aMainlineBattleHostState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Phase0aBattleScreen(
+      reduceFlashing:
+          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+          true,
       controller: controller,
       numericSkillBindings: playerAdapter.numericSkillBindings,
       basicAttackRange: playerAdapter.attackRange,

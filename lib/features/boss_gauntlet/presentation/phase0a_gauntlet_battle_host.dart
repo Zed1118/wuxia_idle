@@ -1,3 +1,4 @@
+import '../../settings/application/gameplay_settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -125,6 +126,9 @@ final class _Phase0aGauntletBattleHostState
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Phase0aBattleScreen(
+      reduceFlashing:
+          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+          true,
       controller: controller,
       numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
       basicAttackRange: _mapping!.playerAdapter.attackRange,

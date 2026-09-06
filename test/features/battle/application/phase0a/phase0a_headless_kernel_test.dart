@@ -14,7 +14,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 
 /// Phase 0A headless 内核红测(headless 内核批,路线 C 子项①落地):
-/// ① bot 策略:无敌人/玩家死亡 → 空指令;超射程或朝向出扇 → 朝目标移动;
+/// ① bot 策略:无敌人/玩家死亡 → 空指令;超射程 → 朝目标移动;
 ///   射程内且朝向正确 → 站定输出;技能印 ready 才按;
 /// ② runToEnd:单波/两波 bot 全程驾驶 victory;玩家死亡 defeat;
 ///   拍数预算耗尽 ongoing + timedOut;maxTicks=0 零推进;
@@ -211,7 +211,7 @@ void main() {
       expect(command.attack, isTrue);
     });
 
-    test('射程内但朝向出扇时用移动校正朝向', () {
+    test('射程内但朝向出扇时站定并显式瞄准', () {
       final command = makeBot().commandFor(
         makeState(
           player: const Phase0aActor(
@@ -230,7 +230,8 @@ void main() {
           enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],
         ),
       );
-      expect(command.right, isTrue);
+      expect(command.right, isFalse);
+      expect(command.attackAimDirection, const ArenaVector(1, 0));
       expect(command.attack, isTrue);
     });
 
