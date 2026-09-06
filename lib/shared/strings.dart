@@ -46,19 +46,24 @@ class UiStrings {
   /// 结算标题(surviveTicks 型胜利)：与「击败」区分——赢法不同,说法就不同。
   static const String battleResultSurvived = '守住了';
 
-  static const String defendEntityLabel = '阵眼';
+  static const String defendEntityLabel = '守护目标';
+  static const String defendObjectiveHint = '护住目标直到倒计时结束；目标损毁即失败。';
 
-  static String defendConditionRemaining(
-    int currentDurability,
-    int maxDurability,
-    int remainingTicks,
-  ) => '守阵 · 耐久 $currentDurability/$maxDurability · 还需 $remainingTicks 拍';
+  static String defendObjectiveRemaining(
+    String target,
+    int current,
+    int maximum,
+    int seconds,
+  ) => '保护$target · 耐久 $current/$maximum · 还需 $seconds 秒';
 
-  static String defendConditionMet(int currentDurability, int maxDurability) =>
-      '守阵 · 耐久 $currentDurability/$maxDurability · 已守住';
+  static String defendObjectiveMet(String target, int current, int maximum) =>
+      '$target已守住 · 耐久 $current/$maximum';
 
-  static const String battleResultDefended = '阵守住了';
-  static const String battleResultWardLost = '阵眼失守';
+  static String defendObjectiveLost(String target) => '$target已损毁';
+
+  static String defendFailureReason(String target) => '$target已被毁，未能守住。';
+
+  static const String battleResultDefended = '守住了';
 
   static const String battleLog = '战斗日志';
   static const String battleLogShort = '日志';

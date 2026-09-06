@@ -112,6 +112,13 @@ void main() {
     await tester.pump();
   }
 
+  Future<void> hoverAt(WidgetTester tester, Offset location) async {
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: location);
+    addTearDown(mouse.removePointer);
+    await tester.pump();
+  }
+
   List<Phase0aEvent> step(
     WidgetTester tester, [
     Phase0aPlayerCommand? command,
@@ -1006,24 +1013,21 @@ void main() {
     });
   });
 
-  group('键盘 Q + 左键落点:涡旋 + 拉拢', () {
-    testWidgets('Q 先进入定点态，左键后围绕点击位聚怪且玩家不移动', (tester) async {
+  group('键盘 Q 即时落点与鼠标技能印:涡旋 + 拉拢', () {
+    testWidgets('Q 立即围绕鼠标当前位置聚怪且玩家不移动', (tester) async {
       await pumpScreen(tester);
 
       final before = controller.state;
       final stage = Phase0aStage(viewport: const Size(1280, 720));
       stage.updateCameraCenter(before.player.position);
       const targetPoint = ArenaVector(-560, 0);
+      await hoverAt(tester, stage.worldToScreen(targetPoint));
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      final armedEvents = await stepAndPump(tester);
-      expect(armedEvents.whereType<Phase0aGatherStarted>(), isEmpty);
+      final events = await stepAndPump(tester);
       final mouseRegion = tester.widget<MouseRegion>(
         find.byKey(const ValueKey('phase0a_stage_mouse_region')),
       );
-      expect(mouseRegion.cursor, SystemMouseCursors.precise);
-
-      await tester.tapAt(stage.worldToScreen(targetPoint));
-      final events = await stepAndPump(tester);
+      expect(mouseRegion.cursor, SystemMouseCursors.basic);
 
       final started = events.whereType<Phase0aGatherStarted>().single;
       expect(started.centerPosition, targetPoint);
@@ -1063,12 +1067,12 @@ void main() {
                   expectedMidpoint)
               .distance,
           lessThan(2),
-          reason: 'Q 拉拢轨迹必须绑定目标→点击位的事件位置快照',
+          reason: 'Q 拉拢轨迹必须绑定目标→按键时鼠标位的事件位置快照',
         );
         expect(
           (outcome.targetPosition! - targetPoint).lengthSquared,
           lessThan((outcome.sourcePosition! - targetPoint).lengthSquared),
-          reason: '被拉目标 ${outcome.target} 必须向点击位拉近',
+          reason: '被拉目标 ${outcome.target} 必须向鼠标落点拉近',
         );
       }
     });
@@ -1078,8 +1082,8 @@ void main() {
       final stage = Phase0aStage(viewport: const Size(1280, 720));
       stage.updateCameraCenter(controller.state.player.position);
 
+      await hoverAt(tester, stage.worldToScreen(const ArenaVector(80, 0)));
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      await tester.tapAt(stage.worldToScreen(const ArenaVector(80, 0)));
       final firstCast = await stepAndPump(tester);
       expect(firstCast.whereType<Phase0aGatherStarted>(), hasLength(1));
       expect(
@@ -1438,8 +1442,8 @@ void main() {
         final safeCenter = stage.safeRect.center;
         const targetPoint = ArenaVector(80, 0);
 
+        await hoverAt(tester, stage.worldToScreen(targetPoint));
         await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-        await tester.tapAt(stage.worldToScreen(targetPoint));
         await stepAndPump(tester);
 
         final vortexEntry = controller.feedback.firstWhere(
@@ -1504,8 +1508,8 @@ void main() {
       final safeCenter = stage.safeRect.center;
       const targetPoint = ArenaVector(80, 0);
 
+      await hoverAt(tester, stage.worldToScreen(targetPoint));
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      await tester.tapAt(stage.worldToScreen(targetPoint));
       await stepAndPump(tester);
 
       final vortexEntry = controller.feedback.firstWhere(

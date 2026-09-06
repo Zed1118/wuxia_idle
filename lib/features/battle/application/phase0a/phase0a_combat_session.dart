@@ -180,7 +180,10 @@ final class Phase0aCombatSession {
       state: _state,
       command: command,
     );
-    final enemyIntents = enemyAiAdapter.intentsFor(state: _state);
+    final enemyIntents = enemyAiAdapter.intentsFor(
+      state: _state,
+      deltaSeconds: deltaSeconds,
+    );
     final gate = enemyIntentGate;
     final perIntentGatedEnemyIntents = gate != null
         ? List<Phase0aIntent>.unmodifiable(enemyIntents.where(gate.allows))

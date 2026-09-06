@@ -95,7 +95,10 @@ void main() {
       behaviorProfilesByActor: profiles,
     );
 
-    final intents = adapter.intentsFor(state: state(holdCooldown: 1));
+    final intents = adapter.intentsFor(
+      state: state(holdCooldown: 1),
+      deltaSeconds: 0.1,
+    );
     final moves = {
       for (final intent in intents.whereType<Phase0aMoveIntent>())
         intent.actorId: intent,
@@ -121,7 +124,10 @@ void main() {
       uniformBasicPowerMultiplier: 1,
       behaviorProfilesByActor: profiles,
     );
-    final intents = adapter.intentsFor(state: state(flankInRange: true));
+    final intents = adapter.intentsFor(
+      state: state(flankInRange: true),
+      deltaSeconds: 0.1,
+    );
     final byActor = {for (final intent in intents) intent.actorId: intent};
 
     expect(byActor['hold'], isA<Phase0aAttackIntent>());
@@ -159,7 +165,7 @@ void main() {
       skillSlots: base.skillSlots,
     );
     final intent = adapter
-        .intentsFor(state: initial)
+        .intentsFor(state: initial, deltaSeconds: 1)
         .whereType<Phase0aMoveIntent>()
         .single;
 
@@ -196,7 +202,7 @@ void main() {
       skillSlots: base.skillSlots,
     );
 
-    final intents = adapter.intentsFor(state: controlled);
+    final intents = adapter.intentsFor(state: controlled, deltaSeconds: 0.1);
 
     expect(intents.where((intent) => intent.actorId == 'hold'), isEmpty);
     expect(intents.where((intent) => intent.actorId == 'direct'), isNotEmpty);
@@ -216,7 +222,7 @@ void main() {
       final initial = state(holdCooldown: 1);
       final result = reducePhase0aTick(
         state: initial,
-        intents: adapter.intentsFor(state: initial),
+        intents: adapter.intentsFor(state: initial, deltaSeconds: 1),
         deltaSeconds: 1,
         damageResolver: const _NoDamageResolver(),
       );

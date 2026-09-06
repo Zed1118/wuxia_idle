@@ -201,6 +201,7 @@ void main() {
   group('敌方 AI 适配器契约', () {
     test('射程外朝玩家移动,方向为单位向量', () {
       final intents = makeEnemyAdapter().intentsFor(
+        deltaSeconds: 0.1,
         state: makeState(
           enemies: [makeEnemy(id: 'e1', position: const ArenaVector(300, 0))],
         ),
@@ -212,6 +213,7 @@ void main() {
 
     test('射程内发起普攻且朝向锁定玩家', () {
       final intents = makeEnemyAdapter().intentsFor(
+        deltaSeconds: 0.1,
         state: makeState(
           enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],
         ),
@@ -224,6 +226,7 @@ void main() {
 
     test('玩家已倒下时不产生任何 intent', () {
       final intents = makeEnemyAdapter().intentsFor(
+        deltaSeconds: 0.1,
         state: makeState(
           player: makePlayer(currentHealth: 0),
           enemies: [makeEnemy(id: 'e1', position: const ArenaVector(50, 0))],

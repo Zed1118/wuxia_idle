@@ -100,7 +100,10 @@ void main() {
     const ValueKey('phase0a_automatic_attack_status'),
   );
 
-  Future<void> activate(WidgetTester tester, {bool ground = false}) async {
+  Future<TestGesture> activate(
+    WidgetTester tester, {
+    bool ground = false,
+  }) async {
     final gesture = ground
         ? await tester.startGesture(
             const Offset(640, 520),
@@ -111,6 +114,7 @@ void main() {
     await advance(tester, 21);
     expect(automaticStatus, findsOneWidget);
     await gesture.up();
+    return gesture;
   }
 
   testWidgets(
@@ -182,14 +186,15 @@ void main() {
   );
 
   testWidgets(
-    'Q targeting click and R preserve automatic attack; no automatic skills',
+    'Q quick cast and R preserve automatic attack; no automatic skills',
     (tester) async {
       final controller = await pumpScreen(tester);
-      await activate(tester);
+      final mouse = await activate(tester);
       expect(controller.events.whereType<Phase0aGatherStarted>(), isEmpty);
       expect(controller.events.whereType<Phase0aClearStarted>(), isEmpty);
+      await mouse.moveTo(const Offset(700, 410));
+      addTearDown(mouse.removePointer);
       await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
-      await tester.tapAt(const Offset(700, 410));
       await advance(tester, 3);
       expect(controller.events.whereType<Phase0aGatherStarted>(), hasLength(1));
       expect(automaticStatus, findsOneWidget);
@@ -199,6 +204,24 @@ void main() {
       expect(controller.events.whereType<Phase0aClearStarted>(), hasLength(1));
       expect(automaticStatus, findsOneWidget);
       expect(attackCount(controller), greaterThan(before));
+    },
+  );
+
+  testWidgets(
+    'Q during a left hold preserves its original two-second activation time',
+    (tester) async {
+      final controller = await pumpScreen(tester, autoStep: false);
+      final gesture = await holdFirstEnemy(tester);
+      await tester.pump(const Duration(milliseconds: 1000));
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
+      expect(controller.step().whereType<Phase0aGatherStarted>(), hasLength(1));
+      await tester.pump(const Duration(milliseconds: 999));
+      expect(automaticStatus, findsNothing);
+      await tester.pump(const Duration(milliseconds: 1));
+      expect(automaticStatus, findsOneWidget);
+      await gesture.up();
+      await tester.pump();
+      expect(automaticStatus, findsOneWidget);
     },
   );
 

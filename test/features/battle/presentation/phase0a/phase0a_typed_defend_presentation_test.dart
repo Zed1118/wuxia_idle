@@ -132,7 +132,14 @@ void main() {
       findsOneWidget,
     );
     expect(
-      find.text(UiStrings.defendConditionRemaining(75, 100, 2)),
+      find.text(
+        UiStrings.defendObjectiveRemaining(
+          UiStrings.defendEntityLabel,
+          75,
+          100,
+          2,
+        ),
+      ),
       findsOneWidget,
     );
     expect(
@@ -163,7 +170,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text(UiStrings.battleResultWardLost), findsOneWidget);
+    expect(
+      find.text(UiStrings.defendObjectiveLost(UiStrings.defendEntityLabel)),
+      findsNWidgets(2),
+    );
     expect(tester.takeException(), isNull);
   });
 }

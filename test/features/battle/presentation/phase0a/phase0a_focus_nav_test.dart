@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -246,16 +247,23 @@ void main() {
       await tester.pump();
       expect(ringInside(find.byKey(gatherSealKey)), findsOneWidget);
 
-      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
       final stage = Phase0aStage(viewport: const Size(1280, 720));
       stage.updateCameraCenter(controller.state.player.position);
-      await tester.tapAt(stage.worldToScreen(const ArenaVector(80, 0)));
+      const target = ArenaVector(80, 0);
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: stage.worldToScreen(target));
+      addTearDown(mouse.removePointer);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyQ);
       final gatherEvents = controller.step();
       await tester.pump();
       expect(
         gatherEvents.whereType<Phase0aGatherStarted>(),
         hasLength(1),
-        reason: '焦点在 gather 印上按 Q 必须冒泡驱动聚怪',
+        reason: '焦点在 gather 印上按 Q 必须冒泡驱动聚怪，无需舞台点击',
+      );
+      expect(
+        gatherEvents.whereType<Phase0aGatherStarted>().single.centerPosition,
+        target,
       );
 
       // Tab 推进到 clear 印(gather 已冷却被跳过),再按 R。

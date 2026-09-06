@@ -1034,6 +1034,7 @@ Future<void> _runSingleStageFlow({
   while (true) {
     if (!context.mounted) return;
     final MainlineBattleExit battleExit;
+    String? defeatReason;
     if (phase0aBattleOutcomeForTest != null) {
       battleExit = await phase0aBattleOutcomeForTest();
     } else if (battleOutcomeForTest != null) {
@@ -1056,6 +1057,7 @@ Future<void> _runSingleStageFlow({
         targetCycle: targetCycle,
         playerSnapshot: playerSnapshot,
         controller: battleController,
+        onDefeatReason: (reason) => defeatReason = reason,
       );
     }
 
@@ -1100,6 +1102,7 @@ Future<void> _runSingleStageFlow({
                     context,
                     stage,
                     participantName: participantName,
+                    defeatReason: defeatReason,
                   )
                 : false);
       if (retry) continue;
@@ -1709,6 +1712,7 @@ Future<MainlineBattleExit> _runBattle({
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  ValueChanged<String>? onDefeatReason,
 }) async {
   return _runPhase0aBattle(
     context: context,
@@ -1716,6 +1720,7 @@ Future<MainlineBattleExit> _runBattle({
     targetCycle: targetCycle,
     playerSnapshot: playerSnapshot,
     controller: controller,
+    onDefeatReason: onDefeatReason,
   );
 }
 
@@ -1731,6 +1736,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required int targetCycle,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  ValueChanged<String>? onDefeatReason,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
       ? await pickMassBattleFormation(
@@ -1752,6 +1758,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
             playerSnapshot: playerSnapshot,
             controller: controller,
             massBattleFormation: massBattleFormation,
+            onDefeatReason: onDefeatReason,
             onVictory: (settlement) {
               if (!completer.isCompleted) {
                 completer.complete((
@@ -1787,11 +1794,15 @@ Future<bool> _showStageRetryDialog(
   BuildContext context,
   StageDef stage, {
   String? participantName,
+  String? defeatReason,
 }) async {
   final retry = await PaperDialog.show<bool>(
     context,
     title: UiStrings.stageRetryTitle,
-    body: StageRetryDialogBody(participantName: participantName),
+    body: StageRetryDialogBody(
+      participantName: participantName,
+      defeatReason: defeatReason,
+    ),
     actions: [
       Builder(
         builder: (ctx) => TextButton(
@@ -2967,9 +2978,14 @@ bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
 /// 普通关战败弹框正文：提示 + 非教学化补强短诊断（S3 新手打磨）。
 /// 抽成公开 widget 便于单测（对话框本体私有、测试 harness 注入替换）。
 class StageRetryDialogBody extends StatelessWidget {
-  const StageRetryDialogBody({super.key, this.participantName});
+  const StageRetryDialogBody({
+    super.key,
+    this.participantName,
+    this.defeatReason,
+  });
 
   final String? participantName;
+  final String? defeatReason;
 
   @override
   Widget build(BuildContext context) {
@@ -2979,6 +2995,10 @@ class StageRetryDialogBody extends StatelessWidget {
       children: [
         if (participantName != null) ...[
           Text(UiStrings.stageReportParticipant(participantName!)),
+          const SizedBox(height: 8),
+        ],
+        if (defeatReason != null) ...[
+          Text(defeatReason!, style: const TextStyle(color: WuxiaUi.jiang)),
           const SizedBox(height: 8),
         ],
         const Text(UiStrings.stageRetryPrompt),

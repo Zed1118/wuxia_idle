@@ -176,7 +176,10 @@ void main() {
         skillSlots: host.mapping!.initialState.skillSlots,
       );
       final intent = host.mapping!.enemyAiAdapter
-          .intentsFor(state: state)
+          .intentsFor(
+            state: state,
+            deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+          )
           .single;
       expect(intent, isA<Phase0aMoveIntent>());
       expect((intent as Phase0aMoveIntent).direction, ArenaVector.zero);

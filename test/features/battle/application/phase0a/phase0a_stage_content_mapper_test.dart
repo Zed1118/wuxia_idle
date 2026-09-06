@@ -303,7 +303,11 @@ void main() {
         winCondition: mapping.initialState.winCondition,
       );
       final enemyAttack = mapping.enemyAiAdapter
-          .intentsFor(state: enemyState)
+          .intentsFor(
+            state: enemyState,
+            // Inspect the first eligible attack after its real opening cooldown.
+            deltaSeconds: enemyState.enemies.first.attackCooldownRemaining,
+          )
           .whereType<Phase0aAttackIntent>()
           .single;
       expect(enemyAttack.qiDelta, enemyBasic.qiDelta);
