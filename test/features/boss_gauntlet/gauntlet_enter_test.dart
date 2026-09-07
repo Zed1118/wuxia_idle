@@ -112,8 +112,10 @@ void main() {
     expect(run!.saveDataId, 0);
     expect(run.currentStage, 1);
     expect(run.sessionPhase, GauntletPhase.inBattle);
-    // 新会话 seed 按不可变 slotId 稳定派生；每关再混 currentStage。
+    // 新会话 seed 取同事务持久化的开局序号。
     expect(run.seed, 1);
+    expect(run.cycleSeedEnabled, isTrue);
+    expect((await IsarSetup.currentSaveData())!.gauntletRunSerial, run.seed);
 
     final member = run.members.single;
     expect(member.characterId, cid);
@@ -154,28 +156,29 @@ void main() {
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
   });
 
-  test('新会话 seed 同 slot 稳定、不同 slot 不同', () async {
+  test('同一槽连续开局 seed 递增，关库重开后序号仍持久化', () async {
     final cid = await putDisciple(mainTech: 5);
     await putInventory('item_duanhuntie', ItemType.ticket, 3);
-    final svc = GauntletService(IsarSetup.instance);
-
-    Future<int> enterForSlot(int slotId) async {
-      await IsarSetup.instance.writeTxn(() async {
-        final save = (await IsarSetup.instance.saveDatas.get(0))!;
-        save.slotId = slotId;
-        await IsarSetup.instance.saveDatas.put(save);
-        await IsarSetup.instance.bossGauntletRuns.clear();
-      });
+    Future<int> enterAndClose() async {
+      final svc = GauntletService(IsarSetup.instance);
       final runId = await svc.enter(characterIds: [cid], supplyCap: 3);
-      return (await IsarSetup.instance.bossGauntletRuns.get(runId))!.seed;
+      final seed = (await IsarSetup.instance.bossGauntletRuns.get(runId))!.seed;
+      expect((await svc.activeRun())!.cycleSeedEnabled, isTrue);
+      final save = (await IsarSetup.currentSaveData())!;
+      expect(save.slotId, 1);
+      expect(save.gauntletRunSerial, seed);
+      await svc.close();
+      return seed;
     }
 
-    final slot1First = await enterForSlot(1);
-    final slot1Again = await enterForSlot(1);
-    final slot2 = await enterForSlot(2);
-
-    expect(slot1Again, slot1First);
-    expect(slot2, isNot(slot1First));
+    final first = await enterAndClose();
+    final second = await enterAndClose();
+    expect(second, isNot(first));
+    expect([first, second], [1, 2]);
+    await IsarSetup.close();
+    await IsarSetup.init(directory: tempDir, inspector: false);
+    expect(await enterAndClose(), 3);
+    expect(await qtyOf('item_duanhuntie'), 0);
   });
 
   test('队伍为空 → 抛错', () async {
@@ -290,6 +293,8 @@ void main() {
       svc.enter(characterIds: [b], supplyCap: 3),
       throwsStateError,
     );
+    expect((await IsarSetup.currentSaveData())!.gauntletRunSerial, 1);
+    expect(await qtyOf('item_duanhuntie'), 1);
   });
 
   test('无断魂帖 → 抛错且事务回滚（补给不扣·无 run）', () async {
@@ -352,6 +357,7 @@ void main() {
     expect(await qtyOf('item_duanhuntie'), 1); // 事务回滚，帖未扣
     expect(await qtyOf('item_liaoshangdan'), 1);
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect((await IsarSetup.currentSaveData())!.gauntletRunSerial, 0);
   });
 
   test('补给份数非正（0）→ 抛错（前置校验·不进事务）', () async {

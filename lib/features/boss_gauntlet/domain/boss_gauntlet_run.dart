@@ -17,9 +17,12 @@ class BossGauntletRun {
 
   late int saveDataId;
 
-  /// 稳定随机种子（新会话取存档 slotId；关次另行派生，§5.6）。
+  /// 稳定随机种子（新会话取存档 gauntletRunSerial；关次与周目另行派生）。
   /// 旧进行中会话始终沿用已持久化值，不按当前存档重算。
   late int seed;
+
+  /// 仅 0.47 起的新会话启用周目种子盐。旧档缺字段为 false，保留旧派生流。
+  bool cycleSeedEnabled = false;
 
   /// 当前关次 1..3（1 苏无咎 / 2 石镇岳 / 3 闻九针）。
   int currentStage = 1;

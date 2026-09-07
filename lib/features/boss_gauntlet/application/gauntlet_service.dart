@@ -353,11 +353,15 @@ class GauntletService {
         escrowUsed.add(0);
       }
 
+      final newSerial = save.gauntletRunSerial + 1;
+      save.gauntletRunSerial = newSerial;
+
       final run = BossGauntletRun()
         ..saveDataId = save.id
-        // 新会话按槽位身份稳定派生（无 run serial·异于远征）；旧会话持久化
-        // seed 永不重算，每关组合层再混 currentStage。
-        ..seed = save.slotId
+        // 新会话取同事务持久化的开局序号；旧会话持久化 seed 永不重算。
+        // 每关组合层再混 currentStage 与 cycleIndex。
+        ..seed = newSerial
+        ..cycleSeedEnabled = true
         ..currentStage = 1
         ..cycleIndex = cycleIndex
         ..sessionPhase = GauntletPhase.inBattle
@@ -366,6 +370,7 @@ class GauntletService {
         ..escrowLoadedQty = escrowLoaded
         ..escrowUsedQty = escrowUsed;
 
+      await _isar.saveDatas.put(save);
       final gauntletRunId = await _isar.bossGauntletRuns.put(run);
       if (!persistDurableDispatch) {
         return (gauntletRunId: gauntletRunId, durableRunId: 0);
@@ -823,7 +828,11 @@ class GauntletService {
     return (
       playerSnapshot: player,
       enemyDefs: enemyDefs,
-      seed: _stageSeed(run.seed, run.currentStage),
+      seed: _stageSeed(
+        run.seed,
+        run.currentStage,
+        run.cycleSeedEnabled ? run.cycleIndex : 1,
+      ),
       isBoss: stageCfg.role == 'boss',
       cycleIndex: run.cycleIndex,
       stage: run.currentStage,
@@ -1332,8 +1341,12 @@ class GauntletService {
     });
   }
 
-  /// 关次稳定种子：会话 [baseSeed] 混当前 [stage]（§5.6·重打同关不重抽·跨关不同流）。
-  static int _stageSeed(int baseSeed, int stage) => baseSeed * 31 + stage;
+  /// 会话种子混关次与周目；恢复同会话同关不重抽，不同周目不同流。
+  /// 首周目（含旧档 cycle=0）保留原派生值；周目盐仅用于 RNG，不是战斗数值。
+  static int _stageSeed(int baseSeed, int stage, int cycleIndex) {
+    final cycleOffset = cycleIndex <= 1 ? 0 : (cycleIndex - 1) * 0x9e3779b9;
+    return baseSeed * 31 + stage + cycleOffset;
+  }
 
   /// 当前存档的 active 断魂庄会话（provider/UI watch·总览断魂庄卡/整备屏据此路由）。
   /// 无存档/无会话 → null。写路径（enter/fight/choose/settle/close）后由 caller
