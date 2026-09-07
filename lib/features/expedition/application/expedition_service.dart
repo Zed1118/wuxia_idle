@@ -523,7 +523,7 @@ class ExpeditionService {
       return false;
     }
 
-    final claimKeys = RewardClaimPlan.forSettlement(
+    final claimPlan = RewardClaimPlan.forSettlement(
       contentKind: RewardContentKind.expedition,
       contentId: '${plan.routeId}:${plan.milestoneId}',
       saveDataId: IsarSetup.currentSlotId,
@@ -531,11 +531,11 @@ class ExpeditionService {
       occurrenceId: plan.recordKey,
       includesFirstClear: true,
     );
-    final disposition = await DurableRewardClaimService(_isar).claimBatch(
-      keys: claimKeys,
+    final disposition = await DurableRewardClaimService(_isar).claimSettlement(
+      plan: claimPlan,
       sourceSettlementId: 'expedition-manual-milestone:${plan.recordKey}',
       at: at,
-      applyInTxn: () async {
+      applyInTxn: (_) async {
         final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
           plan.recordKey,
         );
@@ -554,6 +554,8 @@ class ExpeditionService {
           member: plan.member,
           settlement: settlement,
         );
+        // 同模板后续 headless 仍发相同节点经验与里程碑断魂帖；这些是本次
+        // 节点奖励，不是首通专属奖，不能因首通 receipt 已存在而扣除。
         await _applyManualMilestoneRewardsInTxn(plan: plan, at: at);
         record.manualClearedAt = at;
         await _isar.expeditionMilestoneRecords.put(record);
@@ -1042,21 +1044,18 @@ class ExpeditionService {
 
     final numbers = GameRepository.instance.numbers;
     final stagedExp = granted.quantityOf('exp');
-    final claimKeys = <RewardClaimKey>[];
-    final seenClaimKeys = <String>{};
-    for (final memberId in memberIds) {
-      for (final key in RewardClaimPlan.forSettlement(
-        contentKind: RewardContentKind.expedition,
-        contentId: contentId,
-        saveDataId: IsarSetup.currentSlotId,
-        participantId: memberId,
-        occurrenceId: run.id.toString(),
-        includesFirstClear: false,
-      )) {
-        if (seenClaimKeys.add(key.canonical)) claimKeys.add(key);
-      }
-    }
-    if (claimKeys.isEmpty) {
+    final claimPlan = RewardClaimPlan.combine([
+      for (final memberId in memberIds)
+        RewardClaimPlan.forSettlement(
+          contentKind: RewardContentKind.expedition,
+          contentId: contentId,
+          saveDataId: IsarSetup.currentSlotId,
+          participantId: memberId,
+          occurrenceId: run.id.toString(),
+          includesFirstClear: false,
+        ),
+    ]);
+    if (claimPlan.recurringKeys.isEmpty) {
       throw StateError('百草岭返程会话无可结算成员');
     }
 
@@ -1074,11 +1073,11 @@ class ExpeditionService {
         return;
       }
       final disposition = await DurableRewardClaimService(_isar)
-          .claimBatchInTxn(
-            keys: claimKeys,
+          .claimSettlementInTxn(
+            plan: claimPlan,
             sourceSettlementId: 'expedition-run:${run.id}',
             at: at,
-            applyInTxn: () async {
+            applyInTxn: (_) async {
               // 1. 全员发经验（含途中倒下者）+ 战败伤势。
               // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
               // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是

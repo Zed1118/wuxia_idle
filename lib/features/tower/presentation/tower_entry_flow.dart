@@ -546,7 +546,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
     }
   }
 
-  final keys = RewardClaimPlan.forSettlement(
+  final claimPlan = RewardClaimPlan.forSettlement(
     contentKind: RewardContentKind.tower,
     contentId: 'tower_floor_${floor.floorIndex}_cycle_$cycle',
     saveDataId: IsarSetup.currentSlotId,
@@ -558,7 +558,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   late TowerCombatResolution resolution;
   var skillDrop = SkillDropResult.none;
   final rewardClaims = DurableRewardClaimService(isar);
-  Future<void> applyInTxn() async {
+  Future<void> applyInTxn(bool grantsFirstClear) async {
     clearResult = await progressService.recordClearInTxn(
       floorIndex: floor.floorIndex,
       now: now,
@@ -576,10 +576,15 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       now: now,
     );
     await afterProgressInTxnForTest?.call();
+    // Progress remains authoritative even when a first-clear receipt exists.
+    // The receipt only suppresses the exclusive grant and its displayed drops.
+    if (!grantsFirstClear) {
+      drops = const DropResult(equipments: <Equipment>[], items: []);
+    }
     resolution = await applyTowerCombatResolution(
       ref: ref,
       floor: floor,
-      grantsFirstClearExperience: isFirstClear,
+      grantsFirstClearExperience: grantsFirstClear,
       expectedParticipantId: participantId,
       settlementSnapshot: settlementSnapshot,
       transactionOwned: true,
@@ -612,8 +617,8 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   }
 
   if (durableActivitySettlement == null) {
-    final disposition = await rewardClaims.claimBatch(
-      keys: keys,
+    final disposition = await rewardClaims.claimSettlement(
+      plan: claimPlan,
       sourceSettlementId: occurrenceId,
       at: now,
       applyInTxn: applyInTxn,
@@ -628,8 +633,8 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
           outcome: DurableActivityOutcome.victory,
           now: now,
           applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimBatchInTxn(
-              keys: keys,
+            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
+              plan: claimPlan,
               sourceSettlementId: occurrenceId,
               at: now,
               applyInTxn: applyInTxn,

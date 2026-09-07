@@ -2262,7 +2262,7 @@ applyVictoryResolution({
           : 'ephemeral:${stage.id}:${combatSettlement.playerCharacterId}:'
                 '${now.microsecondsSinceEpoch}',
   };
-  final rewardClaimKeys = RewardClaimPlan.forSettlement(
+  final rewardClaimPlan = RewardClaimPlan.forSettlement(
     contentKind: rewardContentKind,
     contentId: stage.id,
     saveDataId: IsarSetup.currentSlotId,
@@ -2283,7 +2283,19 @@ applyVictoryResolution({
       : durableActivityDependencies != null
       ? durableActivityDependencies.reputationService
       : ref!.read(reputationServiceProvider);
-  Future<void> persistResolutionInTxn() async {
+  var grantedDrops = result.dropResult;
+  Future<void> persistResolutionInTxn(bool grantsFirstClear) async {
+    grantedDrops = DropResult(
+      equipments: result.dropResult.equipments,
+      items: result.dropResult.items
+          .where(
+            (item) => !shouldSkipScrollDrop(
+              item.defId,
+              isFirstClear: grantsFirstClear,
+            ),
+          )
+          .toList(growable: false),
+    );
     // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
@@ -2293,17 +2305,10 @@ applyVictoryResolution({
       if (list.isNotEmpty) await isar.equipments.putAll(list);
     }
     // drops：装备 owner=null 入背包 + items 写/更新 inventoryItems
-    if (result.dropResult.equipments.isNotEmpty) {
-      await isar.equipments.putAll(result.dropResult.equipments);
+    if (grantedDrops.equipments.isNotEmpty) {
+      await isar.equipments.putAll(grantedDrops.equipments);
     }
-    for (final item in result.dropResult.items) {
-      // T5 首通必得门控：秘籍(item_scroll_*) 仅首通写入背包，重打跳过。
-      // 银两/经验丹等其余 item 继续每次掉落，不受此 gate 影响。
-      // isFirstClearStage 在 writeTxn 之前快照(本函数 L~800)，首通语义正确；
-      // 勿将此 continue 挪到 recordVictory/clearedStageIds 写入之后，否则首通亦被 gate。
-      if (shouldSkipScrollDrop(item.defId, isFirstClear: isFirstClearStage)) {
-        continue;
-      }
+    for (final item in grantedDrops.items) {
       final existing = await isar.inventoryItems.getByDefId(item.defId);
       if (existing != null) {
         existing.quantity += item.quantity;
@@ -2323,7 +2328,7 @@ applyVictoryResolution({
 
     // 主线专属 equipmentObtained 与公共成长事件在同一事务写入。
     final events = GameEventService(isar);
-    for (final drop in result.dropResult.equipments) {
+    for (final drop in grantedDrops.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);
       await events.recordEquipmentObtained(
         characterId: battleEventOwnerId,
@@ -2341,7 +2346,7 @@ applyVictoryResolution({
       resonanceUpgradedEquipmentIds: result.resonanceUpgradedEquipmentIds,
       advancements: advancements,
       founderId: founderId,
-      bossVictory: stage.isBossStage && isFirstClearStage
+      bossVictory: stage.isBossStage && grantsFirstClear
           ? BossVictoryEventContext(
               stageId: stage.id,
               stageName: stage.name,
@@ -2369,13 +2374,14 @@ applyVictoryResolution({
         fragmentThreshold: numbers.skillUnlock.fragmentThreshold,
       ),
       clearedStageIds: clearedSet,
+      grantsFirstClear: grantsFirstClear,
       towerFragmentDropProb: numbers.skillUnlock.towerFragmentDropProb,
       rng: settlementSkillDropRng,
     );
     await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
       saveDataId: IsarSetup.currentSlotId,
       defIds: [
-        for (final equipment in result.dropResult.equipments) equipment.defId,
+        for (final equipment in grantedDrops.equipments) equipment.defId,
       ],
       from: stage.name,
       now: now,
@@ -2416,8 +2422,8 @@ applyVictoryResolution({
       }
       String? treasureName;
       EquipmentTier? treasureTier;
-      if (result.dropResult.equipments.isNotEmpty) {
-        final best = result.dropResult.equipments.reduce(
+      if (grantedDrops.equipments.isNotEmpty) {
+        final best = grantedDrops.equipments.reduce(
           (left, right) => left.tier.index >= right.tier.index ? left : right,
         );
         treasureTier = best.tier;
@@ -2468,8 +2474,8 @@ applyVictoryResolution({
   }
 
   if (durableSettlement == null && durableActivitySettlement == null) {
-    final disposition = await rewardClaims.claimBatch(
-      keys: rewardClaimKeys,
+    final disposition = await rewardClaims.claimSettlement(
+      plan: rewardClaimPlan,
       sourceSettlementId: occurrenceId,
       at: now,
       applyInTxn: persistResolutionInTxn,
@@ -2483,8 +2489,8 @@ applyVictoryResolution({
           identity: durableSettlement.identity,
           now: now,
           applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimBatchInTxn(
-              keys: rewardClaimKeys,
+            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
+              plan: rewardClaimPlan,
               sourceSettlementId: occurrenceId,
               at: now,
               applyInTxn: persistResolutionInTxn,
@@ -2520,8 +2526,8 @@ applyVictoryResolution({
           outcome: DurableActivityOutcome.victory,
           now: now,
           applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimBatchInTxn(
-              keys: rewardClaimKeys,
+            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
+              plan: rewardClaimPlan,
               sourceSettlementId: occurrenceId,
               at: now,
               applyInTxn: persistResolutionInTxn,
@@ -2542,11 +2548,11 @@ applyVictoryResolution({
   // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
   final extraDisplayTiers = await computeFirstAcquisitionTiers(
     isar,
-    result.dropResult,
+    grantedDrops,
   );
 
   return (
-    drops: result.dropResult,
+    drops: grantedDrops,
     advancements: advancements,
     resonanceUpgrades: resonanceUpgrades,
     stats: stats,

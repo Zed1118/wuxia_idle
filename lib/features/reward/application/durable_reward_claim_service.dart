@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../domain/reward_claim_receipt.dart';
+import 'reward_claim_plan.dart';
 
 enum RewardClaimDisposition { applied, alreadyApplied }
 
@@ -15,6 +16,46 @@ final class DurableRewardClaimService {
     _requireContentLayer(key);
     return await _isar.rewardClaimReceipts.getByClaimKey(key.canonical) != null;
   }
+
+  /// 两批防重、一笔事务：首通已领不阻止本次进度与重复/成长结算。
+  Future<RewardClaimDisposition> claimSettlement({
+    required RewardClaimPlan plan,
+    required String sourceSettlementId,
+    required DateTime at,
+    required Future<void> Function(bool grantsFirstClear) applyInTxn,
+  }) => _isar.writeTxn(
+    () => claimSettlementInTxn(
+      plan: plan,
+      sourceSettlementId: sourceSettlementId,
+      at: at,
+      applyInTxn: applyInTxn,
+    ),
+  );
+
+  /// 复用 journal/run 已有事务。先挡住同一次结算重放，再独立检查首通。
+  /// 首通 receipt、奖励、进度和本次 receipt 任一失败均整体回滚。
+  Future<RewardClaimDisposition> claimSettlementInTxn({
+    required RewardClaimPlan plan,
+    required String sourceSettlementId,
+    required DateTime at,
+    required Future<void> Function(bool grantsFirstClear) applyInTxn,
+  }) => claimBatchInTxn(
+    keys: plan.recurringKeys,
+    sourceSettlementId: sourceSettlementId,
+    at: at,
+    applyInTxn: () async {
+      var grantsFirstClear = false;
+      if (plan.firstClearKeys.isNotEmpty) {
+        await claimBatchInTxn(
+          keys: plan.firstClearKeys,
+          sourceSettlementId: sourceSettlementId,
+          at: at,
+          applyInTxn: () async => grantsFirstClear = true,
+        );
+      }
+      await applyInTxn(grantsFirstClear);
+    },
+  );
 
   /// 自行开启写事务；effect 与全部 receipt 要么一起提交，要么一起回滚。
   Future<RewardClaimDisposition> claimBatch({

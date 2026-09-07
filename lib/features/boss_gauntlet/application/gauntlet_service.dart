@@ -994,33 +994,18 @@ class GauntletService {
     final cycleRewardMult = numbers.cycleEvolution.realmAdvance.rewardMultFor(
       run0.cycleIndex,
     );
-    final rewardExp =
-        ((isFirstClear
-                    ? config.firstClearRewardExp
-                    : config.firstClearRewardExp ~/ 2) *
-                cycleRewardMult)
-            .round();
-    final rewardInsight =
-        ((isFirstClear
-                    ? config.firstClearRewardInsight
-                    : config.firstClearRewardInsight ~/ 2) *
-                cycleRewardMult)
-            .round();
-    final claimKeys = <RewardClaimKey>[];
-    final seenClaimKeys = <String>{};
-    for (final memberId in memberIds) {
-      for (final key in RewardClaimPlan.forSettlement(
-        contentKind: RewardContentKind.gauntlet,
-        contentId: gauntletId,
-        saveDataId: IsarSetup.currentSlotId,
-        participantId: memberId,
-        occurrenceId: run0.id.toString(),
-        includesFirstClear: isFirstClear,
-      )) {
-        if (seenClaimKeys.add(key.canonical)) claimKeys.add(key);
-      }
-    }
-    if (claimKeys.isEmpty) {
+    final claimPlan = RewardClaimPlan.combine([
+      for (final memberId in memberIds)
+        RewardClaimPlan.forSettlement(
+          contentKind: RewardContentKind.gauntlet,
+          contentId: gauntletId,
+          saveDataId: IsarSetup.currentSlotId,
+          participantId: memberId,
+          occurrenceId: run0.id.toString(),
+          includesFirstClear: isFirstClear,
+        ),
+    ]);
+    if (claimPlan.recurringKeys.isEmpty) {
       throw StateError('断魂庄选奖：会话无可结算参战者');
     }
 
@@ -1031,11 +1016,24 @@ class GauntletService {
       final save = (await _isar.saveDatas.get(0))!;
       final alreadyCleared = save.clearedGauntletIds.contains(gauntletId);
       final disposition = await DurableRewardClaimService(_isar)
-          .claimBatchInTxn(
-            keys: claimKeys,
+          .claimSettlementInTxn(
+            plan: claimPlan,
             sourceSettlementId: 'gauntlet-run:${run.id}',
             at: at,
-            applyInTxn: () async {
+            applyInTxn: (grantsFirstClear) async {
+              // 首通墓碑只能扣除首通加成，既有重复经验、领悟与选奖仍发放。
+              final rewardExp =
+                  ((grantsFirstClear
+                              ? config.firstClearRewardExp
+                              : config.firstClearRewardExp ~/ 2) *
+                          cycleRewardMult)
+                      .round();
+              final rewardInsight =
+                  ((grantsFirstClear
+                              ? config.firstClearRewardInsight
+                              : config.firstClearRewardInsight ~/ 2) *
+                          cycleRewardMult)
+                      .round();
               // ① 选中命名装备入背包（owner=null·走标准 roll 路径）。
               final eq = EquipmentFactory.fromDef(
                 eqDef,
@@ -1079,8 +1077,8 @@ class GauntletService {
                 }
               }
 
-              // ③ 首通：解锁秘籍（inline markUnlocked·避嵌套 writeTxn）+ 记首通时间。
-              if (isFirstClear && !alreadyCleared) {
+              // ③ 首通专属秘籍受独立 receipt 防重；通关时间属于进度记录。
+              if (grantsFirstClear && !alreadyCleared) {
                 save.skillUnlockProgress = List.of(save.skillUnlockProgress);
                 if (!save.skillUnlockProgress.isUnlocked(
                   config.firstClearRewardSkillId,
@@ -1089,6 +1087,8 @@ class GauntletService {
                     config.firstClearRewardSkillId,
                   );
                 }
+              }
+              if (isFirstClear && !alreadyCleared) {
                 save.duanhunFirstClearedAt = at;
               }
               // ④ 记通关（防重键·首通秘籍不重复掉落靠此·§inv5）。

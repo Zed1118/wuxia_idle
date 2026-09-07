@@ -125,6 +125,22 @@ void main() {
     expect(item, isNotNull);
     expect(item!.quantity, 3);
     expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 2);
+    final experienceAfter = (await IsarSetup.instance.characters.get(
+      1,
+    ))!.experience;
+    final replayed = await svc.recall();
+    expect(replayed.returned, isFalse);
+    expect(
+      (await IsarSetup.instance.characters.get(1))!.experience,
+      experienceAfter,
+    );
+    expect(
+      (await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_yaocao',
+      ))!.quantity,
+      3,
+    );
+    expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 2);
 
     // 占用释放：可再次派遣。
     final runId2 = await svc.dispatch(
