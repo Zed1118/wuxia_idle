@@ -38,7 +38,7 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.48.0',
+        '0.49.0',
       );
       expect(await IsarSetup.instance.progressiveUnlockReceipts.count(), 0);
     },

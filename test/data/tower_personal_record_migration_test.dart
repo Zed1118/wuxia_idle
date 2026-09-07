@@ -37,7 +37,7 @@ void main() {
   });
 
   test('tower personal record remains registered after saveVersion 0.47.0', () {
-    expect(IsarSetup.currentSaveVersion, '0.48.0');
+    expect(IsarSetup.currentSaveVersion, '0.49.0');
   });
 
   test(
@@ -75,7 +75,7 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.48.0',
+        '0.49.0',
       );
       expect(await IsarSetup.instance.towerPersonalRecords.count(), 0);
     },

@@ -62,7 +62,7 @@ void main() {
       for (var reopen = 0; reopen < 2; reopen++) {
         await IsarSetup.init(directory: tempDir, inspector: false);
         final save = (await IsarSetup.currentSaveData())!;
-        expect(save.saveVersion, '0.48.0');
+        expect(save.saveVersion, '0.49.0');
         expect(save.gauntletRunSerial, 0);
         expect(save.expeditionRunSerial, 17);
         expect(save.lastOnlineAt, savedAt.toLocal());

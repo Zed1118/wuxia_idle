@@ -91,6 +91,7 @@ class SectRecruitTransactionService {
         await isar.characters.delete(newCharacter.id);
         return SectRecruitTransactionResult.fullCap;
       case RecruitResult.alreadyInSect:
+      case RecruitResult.invalidMemberCount:
       case RecruitResult.sectNotFound:
       case RecruitResult.targetNotFound:
         throw StateError(

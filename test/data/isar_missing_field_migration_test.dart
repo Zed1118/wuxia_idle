@@ -56,7 +56,7 @@ void main() {
           await raw.close();
 
           await IsarSetup.init(directory: dir, inspector: false);
-          expect((await IsarSetup.currentSaveData())!.saveVersion, '0.48.0');
+          expect((await IsarSetup.currentSaveData())!.saveVersion, '0.49.0');
           expect(
             await field.read(IsarSetup.instance),
             everyElement(field.defaultValue()),

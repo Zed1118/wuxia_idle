@@ -121,4 +121,38 @@ void main() {
     expect(await isar.characters.count(), 0);
     expect((await isar.sects.get(1))!.memberCount, cap);
   });
+
+  test('异常负计数拒绝招收并回滚 caller 已写内容和候选角色', () async {
+    final isar = IsarSetup.instance;
+    const pollutedCount = -9223372036854775805;
+    await isar.writeTxn(() async {
+      final sect = await SectRecruitTransactionService(isar)
+          .ensureDefaultSectInTxn(
+            defaultSectName: 'preserve-sect',
+            now: DateTime.utc(2026, 9, 7),
+          );
+      sect.memberCount = pollutedCount;
+      await isar.sects.put(sect);
+    });
+
+    await expectLater(
+      isar.writeTxn(() async {
+        final sect = (await isar.sects.get(1))!;
+        sect.name = 'uncommitted-caller-write';
+        await isar.sects.put(sect);
+        await SectRecruitTransactionService(isar).recruitInTxn(
+          candidate:
+              GameRepository.instance.sectCandidates['bamboo_swordsman']!,
+          defaultSectName: 'unused',
+          now: DateTime.utc(2026, 9, 7),
+        );
+      }),
+      throwsStateError,
+    );
+
+    expect(await isar.characters.count(), 0);
+    final retained = (await isar.sects.get(1))!;
+    expect(retained.name, 'preserve-sect');
+    expect(retained.memberCount, pollutedCount);
+  });
 }

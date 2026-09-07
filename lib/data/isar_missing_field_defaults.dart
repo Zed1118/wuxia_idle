@@ -280,8 +280,8 @@ abstract final class IsarMissingFieldDefaults {
     'Sect.memberCount':
         'B: entity introduced at 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
         'field added at 5378c2a3f10eaf92fd4af2dcee254eff002e6474. '
-        'Existing rows lack memberCount and read minLong; '
-        'default or cache-rebuild policy awaits a decision.',
+        'Approved 1A: SectMemberCountRepair (0.49.0) rebuilds negative caches '
+        'from verified membership; ambiguous rows remain unchanged and reported.',
     'Sect.sectLevel':
         'A: entity and field introduced together; no missing-field exposure. '
         'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '

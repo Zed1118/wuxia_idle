@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'game_repository.dart';
 import 'isar_restore_paths.dart';
 import 'isar_missing_field_defaults.dart';
+import 'sect_member_count_repair.dart';
 import 'slot_summary.dart';
 import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
@@ -81,6 +82,12 @@ class IsarSetup {
 
   /// 当前存档 schema 版本（展示/测试用）。
   static String get currentSaveVersion => _currentSaveVersion;
+
+  /// Unresolved negative member counts in the currently open slot.
+  static List<SectMemberCountRepairIssue> get sectMemberCountRepairIssues =>
+      _sectMemberCountRepairIssues;
+  static List<SectMemberCountRepairIssue> _sectMemberCountRepairIssues =
+      const [];
 
   /// 当前槽位 SaveData（id 固定 0）。init 后必非 null；未 init 时 instance 抛错。
   static Future<SaveData?> currentSaveData() => instance.saveDatas.get(0);
@@ -235,7 +242,9 @@ class IsarSetup {
   // BossGauntletRun +cycleSeedEnabled，旧档缺 bool 读 false，保留所有旧周目随机流。
   // 0.48.0 真实缺字段数值哨兵归静态默认；不推断身份、阈值或历史事实。
   // 旧业务迁移依赖的角色/塔字段先归位；末段补齐其余字段（含 expeditionRunSerial）。
-  static const _currentSaveVersion = '0.48.0';
+  // 0.49.0 已批准 1A：按核实的角色关联重建 Sect.memberCount 负计数。
+  // 冲突行原样保留并报告；以后重开仅重试负计数，不重跑旧业务迁移。
+  static const _currentSaveVersion = '0.49.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -280,7 +289,15 @@ class IsarSetup {
         );
       }
       if (comparison < 0) {
-        await _migrateSaveData(isar, existing);
+        _publishSectMemberCountIssues(await _migrateSaveData(isar, existing));
+      } else {
+        // A previous attempt may have retained an ambiguous row. Retry only
+        // this approved repair after its relationships have been corrected.
+        _publishSectMemberCountIssues(
+          await isar.writeTxn(
+            () => SectMemberCountRepair.repairInTxn(isar, existing),
+          ),
+        );
       }
       return existing;
     }
@@ -293,8 +310,27 @@ class IsarSetup {
       ..createdAt = now
       ..lastSavedAt = now
       ..lastOnlineAt = now;
-    await isar.writeTxn(() => isar.saveDatas.put(fresh));
+    _publishSectMemberCountIssues(
+      await isar.writeTxn(() async {
+        await isar.saveDatas.put(fresh);
+        return SectMemberCountRepair.repairInTxn(isar, fresh);
+      }),
+    );
     return fresh;
+  }
+
+  static void _publishSectMemberCountIssues(
+    List<SectMemberCountRepairIssue> issues,
+  ) {
+    // Publish only after the owning transaction commits. One diagnostic per
+    // opening, with exact row IDs; no guesses or changes to the retained rows.
+    _sectMemberCountRepairIssues = List.unmodifiable(issues);
+    if (issues.isNotEmpty) {
+      debugPrint(
+        'Unresolved sect member counts in save slot $currentSlotId: '
+        '${issues.join('; ')}',
+      );
+    }
   }
 
   /// 波A A4 0.18.0 迁移:旧池 `EncounterProgress.unlockedSkillIds`(全部行)
@@ -306,11 +342,15 @@ class IsarSetup {
   ///     补入 "$id#1"(幂等:已存在则跳过)。
   ///   - TowerProgress.currentCycleIndex = 1(显式落档);
   ///     maxClearedCycle = highestClearedFloor >= 30 ? 1 : 0。
-  static Future<void> _migrateSaveData(Isar isar, SaveData save) async {
+  static Future<List<SectMemberCountRepairIssue>> _migrateSaveData(
+    Isar isar,
+    SaveData save,
+  ) async {
     // 迁入前的旧版本(save.saveVersion 在本函数末尾才升到当前)。tower 周目
     // 字段初始化须按此版本判定:0.21.0 才引入,对 0.21+ 存档重跑会把已推进的
     // currentCycleIndex/maxClearedCycle 重置成初值 → 数据丢失。
     final fromVersion = save.saveVersion;
+    var memberCountIssues = const <SectMemberCountRepairIssue>[];
 
     await isar.writeTxn(() async {
       // 0.48.0 前置依赖：NaN 不能先参与 0.36 时长合并，负哨兵不能先
@@ -633,9 +673,17 @@ class IsarSetup {
         await IsarMissingFieldDefaults.repairInTxn(isar, save);
       }
 
+      // --- 段 19(0.49.0 已批准的门派人数缓存修复)---
+      // 本字段负数均为异常（包括旧哨兵经招收递增后的 minLong+k）。
+      // 身份或关系不明确的行不写；诊断仅在整个迁移事务提交后发布。
+      if (_compareVersion(fromVersion, '0.49.0') < 0) {
+        memberCountIssues = await SectMemberCountRepair.repairInTxn(isar, save);
+      }
+
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });
+    return memberCountIssues;
   }
 
   static Future<void> _backfillRewardClaimTombstonesInTxn({
@@ -831,6 +879,7 @@ class IsarSetup {
   static Future<void> close() async {
     await _instance?.close();
     _instance = null;
+    _sectMemberCountRepairIssues = const [];
   }
 
   /// 校验恢复候选副本。候选是历史备份的临时副本，校验可升级其 Isar schema，
@@ -1082,6 +1131,7 @@ class IsarSetup {
   @visibleForTesting
   static void resetForTest() {
     _instance = null;
+    _sectMemberCountRepairIssues = const [];
     _directory = null;
     currentSlotId = 1;
   }

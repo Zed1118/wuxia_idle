@@ -31,6 +31,7 @@ class SectMemberService {
   /// - target 不存在 → [RecruitResult.targetNotFound]
   /// - target 已入派 → [RecruitResult.alreadyInSect]
   /// - sect 不存在 → [RecruitResult.sectNotFound]
+  /// - 计数异常且尚未核实修复 → [RecruitResult.invalidMemberCount]
   /// - memberCount ≥ cap(by_sect_level[sectLevel-1])→ [RecruitResult.fullCap]
   Future<RecruitResult> recruit({
     required int targetCharacterId,
@@ -42,6 +43,7 @@ class SectMemberService {
     if (target.isInSect) return RecruitResult.alreadyInSect;
     final sect = await isar.sects.get(sectId);
     if (sect == null) return RecruitResult.sectNotFound;
+    if (sect.memberCount < 0) return RecruitResult.invalidMemberCount;
     final cap = memberCapFor(numbers, sect.sectLevel);
     if (sect.memberCount >= cap) return RecruitResult.fullCap;
 
@@ -140,6 +142,7 @@ enum RecruitResult {
   alreadyInSect,
   sectNotFound,
   targetNotFound,
+  invalidMemberCount,
 }
 
 /// [SectMemberService.promoteRank] 返回枚举。

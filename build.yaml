@@ -15,3 +15,4 @@ targets:
             - test/fixtures/legacy_gauntlet_save_data.dart
             - test/fixtures/legacy_missing_fields.dart
             - test/fixtures/legacy_numeric_fields.dart
+            - test/fixtures/legacy_sect_member_count.dart
