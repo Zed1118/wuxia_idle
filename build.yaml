@@ -13,3 +13,5 @@ targets:
             - lib/features/*/domain/**.dart
             # 真实旧 schema 升级回归，验证缺失计数器升级后初始化为 0。
             - test/fixtures/legacy_gauntlet_save_data.dart
+            - test/fixtures/legacy_missing_fields.dart
+            - test/fixtures/legacy_numeric_fields.dart

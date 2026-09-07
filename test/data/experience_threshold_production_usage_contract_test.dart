@@ -6,6 +6,9 @@ void main() {
   test('production consumers never read the legacy threshold mirror', () async {
     const allowed = <String>{
       'lib/core/domain/character.dart',
+      // 0.48.0 仅识别缺字段哨兵并恢复静态初始化器，不将兼容镜像
+      // 作为成长阈值。实际升级仍由下方 advancement 的 RealmDef 驱动。
+      'lib/data/isar_missing_field_defaults.dart',
       'lib/features/cultivation/application/character_advancement_service.dart',
       'lib/features/debug/application/phase2_seed_service.dart',
       'lib/features/onboarding/application/master_builder.dart',
