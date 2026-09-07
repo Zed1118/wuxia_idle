@@ -94,126 +94,253 @@ abstract final class IsarMissingFieldDefaults {
 
   static const deferredNumericFields = <String, String>{
     'ActivityMemberSnapshot.characterId':
-        'Participant identity cannot be inferred from placeholder 0.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 9e55c268695333242e93e90f98eb70dbc459efcd; '
+        'field: 9e55c268695333242e93e90f98eb70dbc459efcd.',
     'Attributes.agility':
-        'Birth attribute must not be invented from placeholder 5.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'Attributes.constitution':
-        'Birth attribute must not be invented from placeholder 5.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'Attributes.enlightenment':
-        'Birth attribute must not be invented from placeholder 5.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'Attributes.fortune':
-        'Birth attribute must not be invented from placeholder 5.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'BossGauntletRun.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7a06a2abaab9749629ed471685dc76b503cc5531; '
+        'field: 7a06a2abaab9749629ed471685dc76b503cc5531.',
     'BossGauntletRun.seed':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7a06a2abaab9749629ed471685dc76b503cc5531; '
+        'field: 7a06a2abaab9749629ed471685dc76b503cc5531.',
     'BossMemory.defeatCount':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: bdee80d577e6563be4d01e64bfc89ee46ccd57e8; '
+        'field: bdee80d577e6563be4d01e64bfc89ee46ccd57e8.',
     'BossMemory.groupIndex':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: bdee80d577e6563be4d01e64bfc89ee46ccd57e8; '
+        'field: bdee80d577e6563be4d01e64bfc89ee46ccd57e8.',
     'BossMemory.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: bdee80d577e6563be4d01e64bfc89ee46ccd57e8; '
+        'field: bdee80d577e6563be4d01e64bfc89ee46ccd57e8.',
     'Character.internalForceMax':
-        'Realm-dependent maximum; placeholder 500 is not the historical maximum.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
     'DurableActivityCombatRun.cycleIndex':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: fedad8812b81f10b44d2fca02b71bcfc0975c0fb; '
+        'field: fedad8812b81f10b44d2fca02b71bcfc0975c0fb.',
     'DurableActivityCombatRun.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: fedad8812b81f10b44d2fca02b71bcfc0975c0fb; '
+        'field: fedad8812b81f10b44d2fca02b71bcfc0975c0fb.',
     'DurableActivityCombatRun.seed':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: fedad8812b81f10b44d2fca02b71bcfc0975c0fb; '
+        'field: fedad8812b81f10b44d2fca02b71bcfc0975c0fb.',
     'EncounterProgress.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1027431d6eff64f0e3d5f8c026bd3a669c284440; '
+        'field: 1027431d6eff64f0e3d5f8c026bd3a669c284440.',
     'EquipmentCatalogEntry.obtainedCount':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a150a93018a0c7418117b26c67f6bbe39806e691; '
+        'field: a150a93018a0c7418117b26c67f6bbe39806e691.',
     'EquipmentCatalogEntry.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a150a93018a0c7418117b26c67f6bbe39806e691; '
+        'field: a150a93018a0c7418117b26c67f6bbe39806e691.',
     'ExpeditionMilestoneRecord.nodeIndex':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 80d95a1415c73f168786836a7de28eb474f32e08; '
+        'field: 80d95a1415c73f168786836a7de28eb474f32e08.',
     'ExpeditionMilestoneRecord.nodeSeed':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 80d95a1415c73f168786836a7de28eb474f32e08; '
+        'field: 80d95a1415c73f168786836a7de28eb474f32e08.',
     'ExpeditionMilestoneRecord.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 80d95a1415c73f168786836a7de28eb474f32e08; '
+        'field: 80d95a1415c73f168786836a7de28eb474f32e08.',
     'ExpeditionMilestoneRecord.sourceParticipantId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 80d95a1415c73f168786836a7de28eb474f32e08; '
+        'field: 80d95a1415c73f168786836a7de28eb474f32e08.',
     'ExpeditionMilestoneRecord.sourceRunId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 80d95a1415c73f168786836a7de28eb474f32e08; '
+        'field: 80d95a1415c73f168786836a7de28eb474f32e08.',
     'ExpeditionRun.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 2726b63fb63f6f15217c9de0bf65042daf13eea8; '
+        'field: 2726b63fb63f6f15217c9de0bf65042daf13eea8.',
     'ExpeditionRun.seed':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 2726b63fb63f6f15217c9de0bf65042daf13eea8; '
+        'field: 2726b63fb63f6f15217c9de0bf65042daf13eea8.',
     'ForgingSlot.slotIndex':
-        'Slot identity cannot be inferred from placeholder 1.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'MainlineProgress.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0f97327ca586fad3c651a4569a830bff7be9f0d8; '
+        'field: 0f97327ca586fad3c651a4569a830bff7be9f0d8.',
     'MainlineSettlementJournal.loadoutVersion':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 6d9902600fbb076b3e344fb9710a9209c9fe1a55; '
+        'field: 6d9902600fbb076b3e344fb9710a9209c9fe1a55.',
     'MainlineSettlementJournal.participantId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 6d9902600fbb076b3e344fb9710a9209c9fe1a55; '
+        'field: 6d9902600fbb076b3e344fb9710a9209c9fe1a55.',
     'MainlineSettlementJournal.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 6d9902600fbb076b3e344fb9710a9209c9fe1a55; '
+        'field: 6d9902600fbb076b3e344fb9710a9209c9fe1a55.',
     'NpcRelation.level':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec; '
+        'field: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec.',
     'NpcRelation.sourceCharacterId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec; '
+        'field: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec.',
     'NpcRelation.targetCharacterId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec; '
+        'field: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec.',
     'ProgressiveUnlockReceipt.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 05727c830763dee29e5b41dd54b8025ab1354660; '
+        'field: 05727c830763dee29e5b41dd54b8025ab1354660.',
     'PvpRecord.eloDelta':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpRecord.leftSnapshotId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpRecord.opponentSnapshotId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpRecord.playerEloAfter':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpRecord.playerEloBefore':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpRecord.playerId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'PvpSnapshot.snapshotElo':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a90282ee0b81edb46db35e18cb30b79f199b8248; '
+        'field: a90282ee0b81edb46db35e18cb30b79f199b8248.',
     'Reputation.playerId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec; '
+        'field: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec.',
     'Reputation.value':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec; '
+        'field: 7c88ed2c00eb88ef7ef43606cb602b1c3b65abec.',
     'RetreatSession.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 091c51f370e89b2dda7b50b5fddec2ecc5295c9c; '
+        'field: 091c51f370e89b2dda7b50b5fddec2ecc5295c9c.',
     'RewardClaimReceipt.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
-    'SaveData.slotId': 'Slot identity; static 1 cannot identify slot 2 or 3.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: d2c5185fa307c065fdf67a981e51637fee5de1cd; '
+        'field: d2c5185fa307c065fdf67a981e51637fee5de1cd.',
+    'SaveData.slotId':
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
     'Sect.founderId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2.',
     'Sect.memberCount':
-        'Existing membership is not reconstructed by placeholder 0.',
+        'B: entity introduced at 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field added at 5378c2a3f10eaf92fd4af2dcee254eff002e6474. '
+        'Existing rows lack memberCount and read minLong; '
+        'default or cache-rebuild policy awaits a decision.',
     'Sect.sectLevel':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2.',
     'Sect.sectReputation':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2.',
     'Sect.totalWins':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2.',
     'SectEvent.sectId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2; '
+        'field: 0dff1f667f7ce80e5396e9b8140b7f55fc5632d2.',
     'Technique.cultivationProgressToNext':
-        'Live cultivation threshold depends on the historical layer.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
     'Technique.ownerCharacterId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
     'TowerPersonalRecord.participantId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a04567dbb541f8db1a23417aab91a5bb31f273cf; '
+        'field: a04567dbb541f8db1a23417aab91a5bb31f273cf.',
     'TowerPersonalRecord.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: a04567dbb541f8db1a23417aab91a5bb31f273cf; '
+        'field: a04567dbb541f8db1a23417aab91a5bb31f273cf.',
     'TowerProgress.saveDataId':
-        'No Dart initializer; identity, seed or historical data cannot be invented.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 71a78d4889b5632a049e34fdca0e8192db52f2eb; '
+        'field: 71a78d4889b5632a049e34fdca0e8192db52f2eb.',
   };
 
   static const deferredNonNumericFields = <String, String>{
-    'Character.isAlive': 'False can mean a legitimately dead character.',
-    'Lore.isPreset': 'False is used for actual player-created lore.',
+    'Character.isAlive':
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
+    'Lore.isPreset':
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
     'Lore.addedAt':
-        'Epoch is not distinguishable from a persisted timestamp; 2000 is a placeholder.',
-    'Character.rarity': 'The first enum value is a legitimate birth rarity.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 1aeb94c593814ecaa873c8f36700a78b7a1aa945; '
+        'field: 1aeb94c593814ecaa873c8f36700a78b7a1aa945.',
+    'Character.rarity':
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: 549991ec8b2146e5cfac898c04078314cda82181; '
+        'field: 549991ec8b2146e5cfac898c04078314cda82181.',
     'BiomeMinutes.biome':
-        'The first enum value is a legitimate biome identity.',
+        'A: entity and field introduced together; no missing-field exposure. '
+        'Entity: e08c8e7068f15a715223c1046135b02c2def8634; '
+        'field: e08c8e7068f15a715223c1046135b02c2def8634.',
   };
 
   /// Older segments consume these rows before the final 0.48 segment.
