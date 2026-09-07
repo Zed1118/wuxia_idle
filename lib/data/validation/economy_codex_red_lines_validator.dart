@@ -12,8 +12,8 @@ import '../numbers_config.dart';
 /// 经济/百科/相生域加载期红线(2026-07-18 审查批C 自 GameRepository 抽出)。
 ///
 /// 体例:顶层自由函数 + 显式参数(沿 enforceLineageOnboardingRedLines 先例),
-/// 参数名与 GameRepository 字段名一致,方法体自抽出起逐字未改;
-/// 越界一律抛 [StateError],启动失败(fail-fast)。
+/// 参数名与 GameRepository 字段名一致;越界一律抛 [StateError],启动失败。
+/// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
 /// P1.z 机制百科红线(GDD §10.2 第 3 方式):
 /// - 加载到的 entry id 必须在 [CodexIndex.entries] 登记(graceful loader 已保证)
@@ -24,8 +24,18 @@ import '../numbers_config.dart';
 ///
 /// P2 扩段:A 组 4 篇补充阅读挂相同机制 category 与 P1.z 首批共存(同档可多条),
 /// 故 step 唯一性已废除;id 唯一性由 [CodexIndex.byId] + Map 加载层保证。
-void enforceCodexRedLines({required Map<String, CodexEntry> codexEntries}) {
-  if (codexEntries.isEmpty) return; // test fixture 兼容
+void enforceCodexRedLines({
+  bool strict = false,
+  required Map<String, CodexEntry> codexEntries,
+}) {
+  if (codexEntries.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/narratives/codex/*.md codexEntries must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final e in codexEntries.values) {
     if (CodexIndex.byId(e.id) == null) {
       throw StateError('codex entry ${e.id} 不在 CodexIndex.entries 登记');
@@ -54,10 +64,18 @@ void enforceCodexRedLines({required Map<String, CodexEntry> codexEntries}) {
 /// - 固定价商品：price ∈ [1, 100000]（test fixture 不带 yaml 时空 map，跳过）。
 /// - 动态价商品（priceLayerFraction != null）：fraction > 0，跳过绝对价格校验。
 void enforceShopRedLines({
+  bool strict = false,
   required Map<String, ShopItemDef> shopItemDefs,
   required Map<String, ItemDef> itemDefs,
 }) {
-  if (shopItemDefs.isEmpty) return; // test fixture 兼容
+  if (shopItemDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/shop.yaml shopItemDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final d in shopItemDefs.values) {
     // F8（2026-06-23 掉落优化）：§5.7「仅掉落不上架」守门。
     //   - 秘籍（techniqueScroll）：GDD §5.7 仅掉落，上架破"先感受问题再给答案"。
@@ -94,10 +112,18 @@ void enforceShopRedLines({
 
 /// 材料经济 balance T1：经验丹 layer_fraction 红线（应 ∈ (0.0, 1.0]，防配 0 或超 1 破缩放）。
 void enforceItemRedLines({
+  bool strict = false,
   required Map<String, ItemDef> itemDefs,
   required NumbersConfig numbers,
 }) {
-  if (itemDefs.isEmpty) return; // test fixture 兼容
+  if (itemDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/items.yaml itemDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final d in itemDefs.values) {
     final frac = d.layerFraction;
     if (frac != null && (frac <= 0 || frac > 1.0)) {
@@ -126,10 +152,18 @@ void enforceItemRedLines({
 /// itemDefs 为空（test fixture 不带 items.yaml）时跳过，避免误伤 fixture。
 /// 非空时收集已知 item defId，调 [TaohuaIslandConfig.validate]。
 void enforceTaohuaIslandRedLines({
+  bool strict = false,
   required Map<String, ItemDef> itemDefs,
   required NumbersConfig numbers,
 }) {
-  if (itemDefs.isEmpty) return; // test fixture 兼容
+  if (itemDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/items.yaml itemDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   final knownIds = itemDefs.keys.toSet();
   TaohuaIslandConfig.validate(numbers.taohuaIsland, knownIds);
 }
@@ -142,10 +176,18 @@ void enforceTaohuaIslandRedLines({
 /// - synergies 非空时 ≥ 5(GDD §4.5 "5-8 个隐藏组合")— test fixture
 ///   不带 yaml 时 list 为空,跳过下限校验
 void enforceSynergyRedLines({
+  bool strict = false,
   required List<SynergyDef> synergies,
   required Map<String, TechniqueDef> techniqueDefs,
 }) {
-  if (synergies.isEmpty) return;
+  if (synergies.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/synergies.yaml synergies must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   if (synergies.length < 5) {
     throw StateError('synergies.yaml 至少 5 组合(GDD §4.5),实际 ${synergies.length}');
   }

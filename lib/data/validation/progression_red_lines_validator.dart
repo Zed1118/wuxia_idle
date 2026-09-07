@@ -10,14 +10,23 @@ import '../numbers_config.dart';
 /// (2026-07-18 审查批C 自 GameRepository 抽出)。
 ///
 /// 体例:顶层自由函数 + 显式参数,参数名与 GameRepository 字段名一致,
-/// 方法体自抽出起逐字未改;越界抛 [StateError] 启动失败(fail-fast)。
+/// 越界抛 [StateError] 启动失败(fail-fast)。
+/// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
 void enforceTowerRedLines({
+  bool strict = false,
   required List<TowerFloorDef> towerFloors,
   required Map<String, SkillDef> skillDefs,
   required NumbersConfig numbers,
 }) {
-  if (towerFloors.isEmpty) return; // 允许测试 fixture 不带 towers
+  if (towerFloors.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/towers.yaml towerFloors must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   // 1:1 锚死（spec 2026-08-01 §7）：floor N ↔ 境界绝对层 N，故塔层数不得
   // 超过境界总层数。层数本身由 towers.yaml 定义，代码不写死具体值——
   // 上界是约束语义，具体层数是数据事实（memory feedback_red_line_test_semantics）。
@@ -143,11 +152,21 @@ void enforceSeclusionRedLines({
 ///
 /// 章内具体哪几关是 Boss 由 yaml 决定(当前约定 4/5 为 Boss),但本红线
 /// 不硬绑位置,只要求 defeat 文案与 Boss 标记一致。
-void enforceMainlineRedLines({required Map<String, StageDef> stageDefs}) {
+void enforceMainlineRedLines({
+  bool strict = false,
+  required Map<String, StageDef> stageDefs,
+}) {
   final mainlines = stageDefs.values
       .where((s) => s.stageType == StageType.mainline)
       .toList();
-  if (mainlines.isEmpty) return; // 允许测试 fixture 不带主线
+  if (mainlines.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/stages.yaml mainlines must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   final byChapter = <int, List<StageDef>>{};
   for (final s in mainlines) {
     final ch = s.chapterIndex;
@@ -189,13 +208,22 @@ void enforceMainlineRedLines({required Map<String, StageDef> stageDefs}) {
 
 /// Phase 0A 主线群怪 schema/语义红线：仅校验主线，其他战斗形态不受此配置接管。
 void enforceMainlineWaveRedLines({
+  bool strict = false,
   required Map<String, StageDef> stageDefs,
   required NumbersConfig numbers,
 }) {
   final mainlines = stageDefs.values
       .where((stage) => stage.stageType == StageType.mainline)
       .toList();
-  if (mainlines.isEmpty || !numbers.mainlineWave.isEnabled) return;
+  if (mainlines.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/stages.yaml mainlines must not be empty in strict mode',
+      );
+    }
+    return;
+  }
+  if (!numbers.mainlineWave.isEnabled) return;
   numbers.mainlineWave.validate();
   for (final stage in mainlines) {
     if (stage.enemyTeam.length != 1) {

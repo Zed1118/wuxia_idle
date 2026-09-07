@@ -13,7 +13,8 @@ import '../numbers_config.dart';
 /// 原类外自由函数同域迁入)。
 ///
 /// 体例:顶层自由函数 + 显式参数,参数名与 GameRepository 字段名一致,
-/// 方法体自抽出起逐字未改;越界抛 [StateError] 启动失败(fail-fast)。
+/// 越界抛 [StateError] 启动失败(fail-fast)。
+/// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
 /// Phase 3 Week 4 T53 + T55：师徒 3 角色红线。
 ///
@@ -136,6 +137,7 @@ void enforceMasterRedLines({
 /// - 出身资源差异只能是低量非负数；
 /// - 命盘池至少 3 份,每份属性单项 [1,10] / 总和 [16,24]。
 void enforceFounderCreationRedLines({
+  bool strict = false,
   required FounderCreationConfig founderCreation,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
@@ -143,6 +145,12 @@ void enforceFounderCreationRedLines({
   if (founderCreation.schools.isEmpty &&
       founderCreation.origins.isEmpty &&
       founderCreation.fatePool.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/founder_creation.yaml founderCreation '
+        '(schools, origins, fatePool) must not be empty in strict mode',
+      );
+    }
     return;
   }
   enforceFounderSchoolUniqueness(founderCreation.schools);
@@ -250,11 +258,19 @@ void enforceFounderCreationRedLines({
 ///
 /// 允许 test fixture 不带 yaml → recruitCandidates 空 map → 整个校验跳过。
 void enforceRecruitCandidateRedLines({
+  bool strict = false,
   required Map<String, RecruitCandidateDef> recruitCandidates,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
 }) {
-  if (recruitCandidates.isEmpty) return; // fixture 兜底
+  if (recruitCandidates.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/recruit_candidates.yaml recruitCandidates must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   if (recruitCandidates.length != 3) {
     throw StateError(
       '收徒候选应为 3 条（audit 方案 3 + D2.b），实际 ${recruitCandidates.length}',
@@ -336,11 +352,19 @@ void enforceRecruitCandidateRedLines({
 ///
 /// 允许 test fixture 不带 yaml → sectCandidates 空 map → 整个校验跳过。
 void enforceSectCandidateRedLines({
+  bool strict = false,
   required Map<String, SectCandidateDef> sectCandidates,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
 }) {
-  if (sectCandidates.isEmpty) return; // fixture 兜底
+  if (sectCandidates.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/sect_candidates.yaml sectCandidates must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   if (sectCandidates.length > 20) {
     throw StateError('门派招收候选数量=${sectCandidates.length},应 ≤ 20(Demo PoC 5-8)');
   }
@@ -448,12 +472,20 @@ void enforceBossRecruitRedLines({
 ///   不一致会「配置说 senior 实际建 junior」）；
 /// - narrative_id 非空。
 void enforceLineageOnboardingRedLines({
+  bool strict = false,
   required List<DiscipleJoinDef> joins,
   required Set<String> existingStageIds,
   required List<MasterDef> masters,
 }) {
   // 空 stages（测试精简 fixture，与覆盖度红线同约定）→ 跳过；生产 stages 必非空。
-  if (existingStageIds.isEmpty) return;
+  if (existingStageIds.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/stages.yaml existingStageIds must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   final seenRoles = <LineageRole>{};
   for (final j in joins) {
     if (!existingStageIds.contains(j.stageId)) {

@@ -6,7 +6,8 @@ import '../numbers_config.dart';
 /// 奇遇域加载期红线(2026-07-18 审查批C 自 GameRepository 抽出)。
 ///
 /// 体例:顶层自由函数 + 显式参数,参数名与 GameRepository 字段名一致,
-/// 方法体自抽出起逐字未改;越界抛 [StateError] 启动失败(fail-fast)。
+/// 越界抛 [StateError] 启动失败(fail-fast)。
+/// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
 /// 奇遇招式红线(C-W14-3-A):
 /// - 每招 tier ∈ [1, 7]
@@ -108,10 +109,18 @@ void enforceEncounterSkillRedLines({
 /// - attributeBonus outcome 的 attributeKey 必须 != null(已由 fromYaml 保证)
 /// - unlockSkill outcome 的 skillId 非空(已由 fromYaml 保证)
 void enforceEncounterRedLines({
+  bool strict = false,
   required Map<String, EncounterDef> encounterDefs,
   required Map<String, SectCandidateDef> sectCandidates,
 }) {
-  if (encounterDefs.isEmpty) return;
+  if (encounterDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/encounters.yaml encounterDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final def in encounterDefs.values) {
     for (final entry in def.trigger.schoolKillThreshold.entries) {
       if (entry.value <= 0) {

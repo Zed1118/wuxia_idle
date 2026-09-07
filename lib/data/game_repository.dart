@@ -202,11 +202,13 @@ class GameRepository {
   /// 启动时一次性加载全部 yaml 配置。
   ///
   /// [loader] 可注入：生产用 [rootBundle.loadString]，测试可传内存字符串
-  /// 加载器。任何 yaml 缺失 / 语法错 / 红线越界都直接抛异常（fail fast）。
+  /// 加载器。未注入 loader 时启用 strict，装载失败或红线空输入直接抛错。
+  /// 注入 fixture 可省略可选资产；四个旧装载器还保留损坏/缺引用兜底。
   static Future<GameRepository> loadAllDefs({
     Future<String> Function(String path)? loader,
     Future<bool> Function(String path)? assetExists,
   }) async {
+    final strict = (loader == null);
     final load = loader ?? rootBundle.loadString;
     // A custom String loader cannot prove binary asset presence. Production
     // keeps the strict rootBundle resolver; injected tests must pass an
@@ -239,35 +241,27 @@ class GameRepository {
       idOf: (d) => d.id,
     );
 
-    // Phase 4 W14-3-A:奇遇专属招式池(独立 yaml,与 skills.yaml 同 SkillDef 类型,
-    // 合并到同 Map;允许测试 fixture 不带,空 set 让红线层 noop)。
-    final encounterSkillIds = <String>{};
-    try {
-      final encounterSkillsRaw = parseYamlMap(
-        await load('data/encounter_skills.yaml'),
-      );
-      final encounterSkills = _parseDefMap(
-        encounterSkillsRaw['encounter_skills'] as List,
+    // Legacy fixtures may omit or stub this pool. Production must never lose it
+    // after a read/parse failure. Validate collisions before merging any entries.
+    final encounterSkills = await _loadOptionalAsset(
+      load,
+      'data/encounter_skills.yaml',
+      (raw) => _parseDefMap(
+        parseYamlMap(raw)['encounter_skills'] as List,
         SkillDef.fromYaml,
         idOf: (d) => d.id,
-      );
-      for (final entry in encounterSkills.entries) {
-        if (skillDefs.containsKey(entry.key)) {
-          throw StateError(
-            'encounter_skills.yaml 与 skills.yaml id 冲突: ${entry.key}',
-          );
-        }
-        skillDefs[entry.key] = entry.value;
-        encounterSkillIds.add(entry.key);
+      ),
+      strict: strict,
+      allowInvalidFixture: true,
+      fallback: const <String, SkillDef>{},
+    );
+    for (final id in encounterSkills.keys) {
+      if (skillDefs.containsKey(id)) {
+        throw StateError('encounter_skills.yaml 与 skills.yaml id 冲突: $id');
       }
-    } on StateError {
-      // 显式 collision 抛出的 StateError 透传,fail fast
-      rethrow;
-    } catch (e) {
-      // test fixture 不带 encounter_skills.yaml 时静默(空池)。P2-a 后:若 encounters
-      // 仍引用 unlockSkill skillId,enforceEncounterSkillRedLines(validation/) 会在空池上 fail-fast
-      // (不再被 isNotEmpty 闸门跳过),故生产损坏/缺失不会静默失效。
     }
+    skillDefs.addAll(encounterSkills);
+    final encounterSkillIds = encounterSkills.keys.toSet();
     final stageDefs = _parseDefMap(
       stagesRaw['stages'] as List,
       StageDef.fromYaml,
@@ -293,6 +287,7 @@ class GameRepository {
       load,
       'data/founder_creation.yaml',
       (raw) => FounderCreationConfig.fromYaml(parseYamlMap(raw)),
+      strict: strict,
       fallback: FounderCreationConfig.empty,
     );
 
@@ -300,106 +295,93 @@ class GameRepository {
       load,
       'data/founder_names.yaml',
       (raw) => FounderNamesConfig.fromYaml(parseYamlMap(raw)),
+      strict: strict,
       fallback: FounderNamesConfig.empty,
     );
 
-    // P1.1 A1 E.1:收徒候选 yaml(允许 test fixture 不带 → 空 map)。
-    // 生产路径红线校验在 enforceRecruitCandidateRedLines(validation/) 拦三系锁死违例。
-    // **fixture 兜底**:某些 fixture loader 走 File fallback 读生产 yaml,但
-    // 自己的 techniques/equipment 是 stub → starting* 引用 def 不存在。这种
-    // 情形预先校验 starting refs,不全则视 fixture 模式空 map(不挂到 repo);
-    // 生产 yaml 引用全部对齐,自然 pass 进入严格红线校验。
-    Map<String, RecruitCandidateDef> recruitCandidates = const {};
-    try {
-      final recruitRaw = parseYamlMap(
-        await load('data/recruit_candidates.yaml'),
-      );
-      final loaded = _parseDefMap(
-        recruitRaw['recruit_candidates'] as List,
-        RecruitCandidateDef.fromYaml,
-        idOf: (d) => d.id,
-      );
-      var allRefsValid = true;
-      for (final c in loaded.values) {
-        for (final tid in c.startingTechniqueIds) {
-          if (techniqueDefs[tid] == null) {
-            allRefsValid = false;
-            break;
-          }
+    // Only injected fixtures may fall back when starting references are absent.
+    final recruitCandidates = await _loadOptionalAsset(
+      load,
+      'data/recruit_candidates.yaml',
+      (raw) {
+        final loaded = _parseDefMap(
+          parseYamlMap(raw)['recruit_candidates'] as List,
+          RecruitCandidateDef.fromYaml,
+          idOf: (d) => d.id,
+        );
+        for (final candidate in loaded.values) {
+          _validateStartingReferences(
+            assetPath: 'data/recruit_candidates.yaml',
+            id: candidate.id,
+            techniqueIds: candidate.startingTechniqueIds,
+            equipmentIds: candidate.startingEquipmentIds,
+            techniqueDefs: techniqueDefs,
+            equipmentDefs: equipmentDefs,
+          );
         }
-        if (!allRefsValid) break;
-        for (final eid in c.startingEquipmentIds) {
-          if (equipmentDefs[eid] == null) {
-            allRefsValid = false;
-            break;
-          }
-        }
-        if (!allRefsValid) break;
-      }
-      if (allRefsValid) recruitCandidates = loaded;
-    } catch (e) {
-      // test fixture 不带 recruit_candidates.yaml 时静默
-    }
+        return loaded;
+      },
+      strict: strict,
+      allowInvalidFixture: true,
+      fallback: const <String, RecruitCandidateDef>{},
+    );
 
-    // P4.1 1.1 Q6A:sect_candidates.yaml 允许测试 fixture 不带 + starting refs
-    // 不全 → 整个 map 空(fixture-friendly,沿 recruit_candidates 体例)。
-    // 生产路径红线校验在 enforceSectCandidateRedLines(validation/) 拦三系锁死违例。
-    Map<String, SectCandidateDef> sectCandidates = const {};
-    try {
-      final sectCandidatesRaw = parseYamlMap(
-        await load('data/sect_candidates.yaml'),
-      );
-      final loaded = _parseDefMap(
-        sectCandidatesRaw['sect_candidates'] as List,
-        SectCandidateDef.fromYaml,
-        idOf: (d) => d.id,
-      );
-      var allRefsValid = true;
-      for (final c in loaded.values) {
-        for (final tid in c.startingTechniqueIds) {
-          if (techniqueDefs[tid] == null) {
-            allRefsValid = false;
-            break;
-          }
+    // Only injected fixtures may fall back when starting references are absent.
+    final sectCandidates = await _loadOptionalAsset(
+      load,
+      'data/sect_candidates.yaml',
+      (raw) {
+        final loaded = _parseDefMap(
+          parseYamlMap(raw)['sect_candidates'] as List,
+          SectCandidateDef.fromYaml,
+          idOf: (d) => d.id,
+        );
+        for (final candidate in loaded.values) {
+          _validateStartingReferences(
+            assetPath: 'data/sect_candidates.yaml',
+            id: candidate.id,
+            techniqueIds: candidate.startingTechniqueIds,
+            equipmentIds: candidate.startingEquipmentIds,
+            techniqueDefs: techniqueDefs,
+            equipmentDefs: equipmentDefs,
+          );
         }
-        if (!allRefsValid) break;
-        for (final eid in c.startingEquipmentIds) {
-          if (equipmentDefs[eid] == null) {
-            allRefsValid = false;
-            break;
-          }
-        }
-        if (!allRefsValid) break;
-      }
-      if (allRefsValid) sectCandidates = loaded;
-    } catch (e) {
-      // test fixture 不带 sect_candidates.yaml 时静默
-    }
+        return loaded;
+      },
+      strict: strict,
+      allowInvalidFixture: true,
+      fallback: const <String, SectCandidateDef>{},
+    );
 
-    // Phase 4 W14-1:encounters.yaml 允许测试 fixture 不带(catch 失败 → 空 map)。
-    Map<String, EncounterDef> encounterDefs = const {};
-    try {
-      final encountersRaw = parseYamlMap(await load('data/encounters.yaml'));
-      encounterDefs = _parseDefMap(
-        encountersRaw['encounters'] as List,
+    final encounterDefs = await _loadOptionalAsset(
+      load,
+      'data/encounters.yaml',
+      (raw) => _parseDefMap(
+        parseYamlMap(raw)['encounters'] as List,
         EncounterDef.fromYaml,
         idOf: (d) => d.id,
-      );
-    } catch (e) {
-      // test fixture 不带 encounters.yaml 时静默,生产路径仍 fail-fast on
-      // 红线校验阶段(enforceEncounterRedLines(validation/) 检查非空与字段合法)。
-    }
+      ),
+      strict: strict,
+      allowInvalidFixture: true,
+      fallback: const <String, EncounterDef>{},
+    );
 
     // W18-A1:心法相生 yaml(允许 test fixture 不带,空 list)。生产路径
     // 红线校验在 enforceSynergyRedLines(validation/) 强制 ≥ 5 + multiplier 范围。
-    final synergies = await _loadOptionalAsset(load, 'data/synergies.yaml', (
-      raw,
-    ) {
-      final synergiesRaw = parseYamlMap(raw);
-      return ((synergiesRaw['synergies'] as List?) ?? const [])
-          .map((e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
-          .toList(growable: false);
-    }, fallback: const <SynergyDef>[]);
+    final synergies = await _loadOptionalAsset(
+      load,
+      'data/synergies.yaml',
+      (raw) {
+        final synergiesRaw = parseYamlMap(raw);
+        return ((synergiesRaw['synergies'] as List?) ?? const [])
+            .map(
+              (e) => SynergyDef.fromYaml(Map<String, dynamic>.from(e as Map)),
+            )
+            .toList(growable: false);
+      },
+      strict: strict,
+      fallback: const <SynergyDef>[],
+    );
 
     // P1.z 机制百科 md(graceful;档 8 缺失或 fixture 不带均允许空 map)。
     final codexList = await CodexLoader.loadAll(loader: load);
@@ -420,58 +402,77 @@ class GameRepository {
             .toList(growable: false);
         return {for (final d in defs) d.id: d};
       },
+      strict: strict,
       fallback: const <String, TerritoryDef>{},
     );
 
     // P1.2 factions.yaml 完整定义(graceful;fixture 不带时空 map)。
-    final factionDefs = await _loadOptionalAsset(load, 'data/factions.yaml', (
-      raw,
-    ) {
-      final factionsRaw = parseYamlMap(raw);
-      return _parseDefMap(
-        (factionsRaw['factions'] as List?) ?? const [],
-        FactionDef.fromYaml,
-        idOf: (def) => def.id,
-      );
-    }, fallback: const <String, FactionDef>{});
+    final factionDefs = await _loadOptionalAsset(
+      load,
+      'data/factions.yaml',
+      (raw) {
+        final factionsRaw = parseYamlMap(raw);
+        return _parseDefMap(
+          strict
+              ? factionsRaw['factions'] as List
+              : (factionsRaw['factions'] as List?) ?? const [],
+          FactionDef.fromYaml,
+          idOf: (def) => def.id,
+        );
+      },
+      strict: strict,
+      fallback: const <String, FactionDef>{},
+    );
     final factionAlignments = <String, String>{
       for (final def in factionDefs.values) def.id: def.alignment,
     };
 
     // 材料经济 P1 shop.yaml(graceful;fixture 不带 yaml 时空 map)。
     // 生产路径红线校验在 enforceShopRedLines(validation/) 拦标价越界。
-    final shopItemDefs = await _loadOptionalAsset(load, 'data/shop.yaml', (
-      raw,
-    ) {
-      final shopRaw = parseYamlMap(raw);
-      return _parseDefMap(
-        shopRaw['shop'] as List,
-        ShopItemDef.fromYaml,
-        idOf: (d) => d.id,
-      );
-    }, fallback: const <String, ShopItemDef>{});
+    final shopItemDefs = await _loadOptionalAsset(
+      load,
+      'data/shop.yaml',
+      (raw) {
+        final shopRaw = parseYamlMap(raw);
+        return _parseDefMap(
+          shopRaw['shop'] as List,
+          ShopItemDef.fromYaml,
+          idOf: (d) => d.id,
+        );
+      },
+      strict: strict,
+      fallback: const <String, ShopItemDef>{},
+    );
 
     // 材料经济 P2 items.yaml(graceful;fixture 不带 yaml 时空 map)。
-    final itemDefs = await _loadOptionalAsset(load, 'data/items.yaml', (raw) {
-      final itemsRaw = parseYamlMap(raw);
-      return _parseDefMap(
-        itemsRaw['items'] as List,
-        ItemDef.fromYaml,
-        idOf: (d) => d.defId,
-      );
-    }, fallback: const <String, ItemDef>{});
+    final itemDefs = await _loadOptionalAsset(
+      load,
+      'data/items.yaml',
+      (raw) {
+        final itemsRaw = parseYamlMap(raw);
+        return _parseDefMap(
+          itemsRaw['items'] as List,
+          ItemDef.fromYaml,
+          idOf: (d) => d.defId,
+        );
+      },
+      strict: strict,
+      fallback: const <String, ItemDef>{},
+    );
 
     // 江湖远行 A2 配置骨架(graceful;fixture 无 yaml 时 null,损坏/非法 fail-fast)。
     final expeditionConfig = await _loadOptionalAsset<ExpeditionConfig?>(
       load,
       'data/expeditions.yaml',
       (raw) => ExpeditionConfig.fromYaml(parseYamlMap(raw)),
+      strict: strict,
       fallback: null,
     );
     final bossGauntletConfig = await _loadOptionalAsset<BossGauntletConfig?>(
       load,
       'data/boss_gauntlets.yaml',
       (raw) => BossGauntletConfig.fromYaml(parseYamlMap(raw)),
+      strict: strict,
       fallback: null,
     );
     final combatCatalog = await loadProductionCombatCatalogIfPresent(load);
@@ -523,7 +524,7 @@ class GameRepository {
       combatRuntimeBindings: combatRuntimeBindings,
       weaponAttackProfiles: weaponAttackProfiles,
     );
-    repo._enforceRedLines();
+    repo._enforceRedLines(strict: strict);
     await _validatePresetLoreReferences(equipmentDefs, load);
     await _validateEncounterEventReferences(encounterDefs, load);
     _validateFactionTerritoryReferences(
@@ -531,36 +532,74 @@ class GameRepository {
       encounterDefs,
       factionAlignments,
       territoryDefs,
+      strict: strict,
     );
     _instance = repo;
     return repo;
   }
 
-  /// 加载可选 yaml asset(P0-1 2026-06-29 审查修复)。区分两类异常:
-  /// - `load(assetPath)` 抛 → 文件不存在/不可读(test fixture 不带某 yaml 的
-  ///   合法情况,或生产 asset 缺失)→ 返回 [fallback],静默。
-  /// - `load` 成功但 [parse] 抛 → yaml 存在但损坏/字段类型错 → 抛
-  ///   [FormatException] 附文件名 rethrow,**不再静默降级**(此前 `catch (_) {}`
-  ///   会把损坏 yaml 吞成空,致商店空架/道具失效/阵营 wire 断链而玩家无感知,
-  ///   启动也不 fail-fast)。缺失走红线层 `isEmpty return` 跳过,损坏在此拦下。
+  /// Production never falls back after a read or parse failure. Injected
+  /// fixtures may omit assets; only the four legacy loaders also allow invalid
+  /// fixture content. Existing P0-1 loaders retain their parse-error contract.
   static Future<T> _loadOptionalAsset<T>(
     Future<String> Function(String) load,
     String assetPath,
     T Function(String raw) parse, {
+    required bool strict,
     required T fallback,
+    bool allowInvalidFixture = false,
   }) async {
     final String raw;
     try {
       raw = await load(assetPath);
-    } catch (missingOptionalAsset) {
-      // 可选 asset 缺失是旧测试 fixture/未启用模块的合法路径,此处故意不打日志。
-      // yaml 一旦存在,解析错误会在下方 fail-fast。
+    } catch (e) {
+      if (strict) {
+        throw FormatException('Failed to load $assetPath: $e');
+      }
+      // Preserve the legacy encounter skill loader's read-error contract too.
+      if (e is StateError && assetPath == 'data/encounter_skills.yaml') {
+        rethrow;
+      }
       return fallback;
     }
     try {
       return parse(raw);
     } catch (e) {
-      throw FormatException('解析 $assetPath 失败(yaml 损坏或字段类型错误): $e');
+      // The encounter skill loader has always surfaced explicit StateErrors
+      // (including duplicate IDs), even for fixtures.
+      if (!strict &&
+          e is StateError &&
+          assetPath == 'data/encounter_skills.yaml') {
+        rethrow;
+      }
+      if (!strict && allowInvalidFixture) return fallback;
+      throw FormatException('Failed to parse $assetPath: $e');
+    }
+  }
+
+  static void _validateStartingReferences({
+    required String assetPath,
+    required String id,
+    required List<String> techniqueIds,
+    required List<String> equipmentIds,
+    required Map<String, TechniqueDef> techniqueDefs,
+    required Map<String, EquipmentDef> equipmentDefs,
+  }) {
+    for (final techniqueId in techniqueIds) {
+      if (!techniqueDefs.containsKey(techniqueId)) {
+        throw FormatException(
+          '$assetPath id=$id startingTechniqueIds references missing '
+          'data/techniques.yaml id=$techniqueId',
+        );
+      }
+    }
+    for (final equipmentId in equipmentIds) {
+      if (!equipmentDefs.containsKey(equipmentId)) {
+        throw FormatException(
+          '$assetPath id=$id startingEquipmentIds references missing '
+          'data/equipment.yaml id=$equipmentId',
+        );
+      }
     }
   }
 
@@ -666,8 +705,9 @@ class GameRepository {
     Map<String, StageDef> stageDefs,
     Map<String, EncounterDef> encounterDefs,
     Map<String, String> factionAlignments,
-    Map<String, TerritoryDef> territoryDefs,
-  ) {
+    Map<String, TerritoryDef> territoryDefs, {
+    required bool strict,
+  }) {
     const validAlignments = {'orthodox', 'neutral', 'evil'};
     for (final entry in factionAlignments.entries) {
       if (!validAlignments.contains(entry.value)) {
@@ -678,7 +718,7 @@ class GameRepository {
       }
     }
 
-    if (factionAlignments.isNotEmpty) {
+    if (strict || factionAlignments.isNotEmpty) {
       for (final s in stageDefs.values) {
         final fid = s.factionId;
         if (fid != null && !factionAlignments.containsKey(fid)) {
@@ -756,7 +796,7 @@ class GameRepository {
   }
 
   /// 启动期红线校验（GDD §5.2 + phase1_tasks T07 验收）。
-  void _enforceRedLines() {
+  void _enforceRedLines({required bool strict}) {
     if (realms.length != 49) {
       throw StateError('RealmDef 行数应为 49，实际 ${realms.length}');
     }
@@ -772,11 +812,16 @@ class GameRepository {
       }
     }
     // Phase 3 Week 7 T63：装备 fixture 扩 35 件,校验单件红线 + 覆盖度
-    enforceEquipmentRedLines(equipmentDefs: equipmentDefs, numbers: numbers);
+    enforceEquipmentRedLines(
+      strict: strict,
+      equipmentDefs: equipmentDefs,
+      numbers: numbers,
+    );
 
     // Phase 3 Week 8 T64：心法 fixture 扩 21 本,7 阶 × 3 流派覆盖度
     //   + 每本 3 招 type 精确 normalAttack/powerSkill/ultimate
     enforceTechniqueRedLines(
+      strict: strict,
       techniqueDefs: techniqueDefs,
       skillDefs: skillDefs,
     );
@@ -802,8 +847,12 @@ class GameRepository {
     // Phase 3 Week 5 T59：主线 15 关校验
     //   - mainline stages 总数 = 15，按 chapterIndex 分 3 章 × 5 关
     //   - narrativeDefeatId 必须仅在 isBossStage=true 关配置
-    enforceMainlineRedLines(stageDefs: stageDefs);
-    enforceMainlineWaveRedLines(stageDefs: stageDefs, numbers: numbers);
+    enforceMainlineRedLines(strict: strict, stageDefs: stageDefs);
+    enforceMainlineWaveRedLines(
+      strict: strict,
+      stageDefs: stageDefs,
+      numbers: numbers,
+    );
 
     // Phase 3 T40（批 A 扩 49 层重排）：爬塔校验
     //   - floorIndex 从 1 起连续唯一；层数 ≤ 境界总层数 49（1:1 锚死上界）
@@ -812,6 +861,7 @@ class GameRepository {
     //   - Boss HP ≤ bossHpMax（§5.4 红线，config-driven，2026-06-14 调至 60000）
     //   - requiredRealm ≤ 该层敌人境界（拍板 #8，防掉落阶提前发放）
     enforceTowerRedLines(
+      strict: strict,
       towerFloors: towerFloors,
       skillDefs: skillDefs,
       numbers: numbers,
@@ -827,11 +877,13 @@ class GameRepository {
       equipmentDefs: equipmentDefs,
     );
     enforceFounderCreationRedLines(
+      strict: strict,
       founderCreation: founderCreation,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
     );
     enforceRecruitCandidateRedLines(
+      strict: strict,
       recruitCandidates: recruitCandidates,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
@@ -841,6 +893,7 @@ class GameRepository {
     // slot role 与 join role 一致 / role∈{senior,junior} / narrative 非空）。
     // 防 numbers.yaml↔masters.yaml 漂移静默生成错角色 / stage 拼错永不触发。
     enforceLineageOnboardingRedLines(
+      strict: strict,
       joins: numbers.lineageOnboarding.discipleJoins,
       existingStageIds: stageDefs.keys.toSet(),
       masters: masters,
@@ -848,6 +901,7 @@ class GameRepository {
 
     // P4.1 1.1 Q6A:sect_candidates.yaml 校验(空 map → 跳过)
     enforceSectCandidateRedLines(
+      strict: strict,
       sectCandidates: sectCandidates,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
@@ -927,6 +981,7 @@ class GameRepository {
 
     // Phase 4 W14-1 C-1:encounter fixture 校验(若加载到)
     enforceEncounterRedLines(
+      strict: strict,
       encounterDefs: encounterDefs,
       sectCandidates: sectCandidates,
     );
@@ -940,19 +995,31 @@ class GameRepository {
     );
 
     // W18-A1:心法相生 yaml 校验(空 list 兼容 test fixture)
-    enforceSynergyRedLines(synergies: synergies, techniqueDefs: techniqueDefs);
+    enforceSynergyRedLines(
+      strict: strict,
+      synergies: synergies,
+      techniqueDefs: techniqueDefs,
+    );
 
     // P1.z 机制百科 md 校验(空 map 兼容 test fixture;graceful 缺档 8)
-    enforceCodexRedLines(codexEntries: codexEntries);
+    enforceCodexRedLines(strict: strict, codexEntries: codexEntries);
 
     // 材料经济 P1：商店标价上限校验（空 map 兼容 test fixture）。
-    enforceShopRedLines(shopItemDefs: shopItemDefs, itemDefs: itemDefs);
+    enforceShopRedLines(
+      strict: strict,
+      shopItemDefs: shopItemDefs,
+      itemDefs: itemDefs,
+    );
 
     // 材料经济 P2：道具经验值红线（空 map 兼容 test fixture）。
-    enforceItemRedLines(itemDefs: itemDefs, numbers: numbers);
+    enforceItemRedLines(strict: strict, itemDefs: itemDefs, numbers: numbers);
 
     // 桃花岛一期：建筑配置红线（itemDefs 为空时跳过，test fixture 兼容）。
-    enforceTaohuaIslandRedLines(itemDefs: itemDefs, numbers: numbers);
+    enforceTaohuaIslandRedLines(
+      strict: strict,
+      itemDefs: itemDefs,
+      numbers: numbers,
+    );
   }
 
   /// 批二①：Boss 阶段 unlockSkillIds 红线校验。

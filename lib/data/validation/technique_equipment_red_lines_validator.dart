@@ -7,7 +7,8 @@ import '../numbers_config.dart';
 /// 心法/装备域加载期红线(2026-07-18 审查批C 自 GameRepository 抽出)。
 ///
 /// 体例:顶层自由函数 + 显式参数,参数名与 GameRepository 字段名一致,
-/// 方法体自抽出起逐字未改;越界抛 [StateError] 启动失败(fail-fast)。
+/// 越界抛 [StateError] 启动失败(fail-fast)。
+/// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
 /// 心法 + 招式红线（Phase 3 Week 8 T64）：
 /// - 覆盖度：7 阶 × 3 流派 = 21 个 (tier,school) 组合每个 ≥ 1 本
@@ -17,10 +18,18 @@ import '../numbers_config.dart';
 ///
 /// 允许测试 fixture 不带 techniqueDefs(为空时整体跳过)。
 void enforceTechniqueRedLines({
+  bool strict = false,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, SkillDef> skillDefs,
 }) {
-  if (techniqueDefs.isEmpty) return;
+  if (techniqueDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/techniques.yaml techniqueDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final tier in TechniqueTier.values) {
     for (final school in TechniqueSchool.values) {
       final hit = techniqueDefs.values.any(
@@ -71,6 +80,7 @@ void enforceTechniqueRedLines({
 ///
 /// 允许测试 fixture 缺装备段(equipmentDefs 为空时跳过覆盖度,仅放过 master/stage 等独立测试)。
 void enforceEquipmentRedLines({
+  bool strict = false,
   required Map<String, EquipmentDef> equipmentDefs,
   required NumbersConfig numbers,
 }) {
@@ -97,7 +107,14 @@ void enforceEquipmentRedLines({
       );
     }
   }
-  if (equipmentDefs.isEmpty) return;
+  if (equipmentDefs.isEmpty) {
+    if (strict) {
+      throw StateError(
+        'data/equipment.yaml equipmentDefs must not be empty in strict mode',
+      );
+    }
+    return;
+  }
   for (final tier in EquipmentTier.values) {
     final tierItems = equipmentDefs.values.where((e) => e.tier == tier);
     if (tierItems.length < 5) {
