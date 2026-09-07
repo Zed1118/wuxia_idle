@@ -125,6 +125,9 @@ class SaveData {
   /// 远征序号；每次派遣自增，进稳定随机种子（§4.7）。
   int expeditionRunSerial = 0;
 
+  /// 断魂庄序号；每次开局自增，进稳定随机种子。
+  int gauntletRunSerial = 0;
+
   /// 断魂庄首通 gauntlet id 集合（一次性防重，仿 [grantedMilestoneEquipmentIds]）。
   List<String> clearedGauntletIds = [];
 

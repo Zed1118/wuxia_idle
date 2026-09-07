@@ -7,6 +7,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 
 const _flags = AttackDefenseFlags(
   blockable: true,
@@ -50,7 +51,7 @@ Phase0aActor _actor({
   defeatKind: Phase0aDefeatKind.normal,
 );
 
-Phase0aArenaState _state() => Phase0aArenaState(
+Phase0aArenaState _state({PostureState? playerPosture}) => Phase0aArenaState(
   tick: 0,
   nextSeq: 1,
   player: _actor(
@@ -58,7 +59,7 @@ Phase0aArenaState _state() => Phase0aArenaState(
     side: Phase0aSide.player,
     position: ArenaVector.zero,
     facing: const ArenaVector(1, 0),
-  ),
+  ).copyWith(posture: playerPosture),
   enemies: [
     _actor(
       id: 'enemy',
@@ -123,10 +124,60 @@ void main() {
 
     expect(result.state.player.currentHealth, 200);
     expect(result.state.enemies.single.currentHealth, 175);
+    expect(result.state.player.parryCounterBudgetRemaining, 5);
     final defense = result.events.whereType<Phase0aDefenseResolved>().single;
     expect(defense.branch, DefenseBranch.parry);
     expect(defense.counterDamage, 25);
     expect(defense.nonRecursive, isTrue);
+  });
+
+  test('player posture matches hit events after shield absorption', () {
+    final result = reducePhase0aTick(
+      state: _state(
+        playerPosture: PostureState.initial(
+          PostureConfig(
+            capacity: 100,
+            vulnerabilityTicks: 3,
+            recoveryPolicy: PostureRecoveryPolicy.reset,
+            postVulnerabilityAccumulated: 0,
+            bossControlConversionFactor: 1,
+          ),
+        ),
+      ),
+      intents: [
+        _defense(Phase0aDefenseAction.shield),
+        const Phase0aAttackIntent(
+          actorId: 'enemy',
+          range: 100,
+          halfArcRadians: math.pi,
+          cooldownSeconds: 1,
+          moveKind: Phase0aMoveKind.light,
+          aimDirection: ArenaVector(-1, 0),
+          qiDelta: 0,
+          postureDamage: 35,
+          postureHitKind: PostureHitKind.light,
+          defenseFlags: _flags,
+        ),
+      ],
+      deltaSeconds: 0.1,
+      damageResolver: const _FixedDamage(),
+    );
+
+    final postureEvent = result.events
+        .whereType<Phase0aPostureChanged>()
+        .single;
+    expect(postureEvent.target, 'player');
+    expect(postureEvent.eventType, PostureEventType.postureDamageApplied);
+    expect(postureEvent.amount, 35);
+    expect(postureEvent.accumulated, 35);
+    expect(result.state.player.posture!.accumulated, postureEvent.accumulated);
+    expect(
+      result.state.player.posture!.vulnerabilityTicksRemaining,
+      postureEvent.vulnerabilityTicksRemaining,
+    );
+    expect(result.state.player.currentHealth, 130);
+    expect(result.state.player.shieldRemaining, 0);
+    expect(result.state.player.shieldTicksRemaining, 0);
   });
 
   test('dodge moves the player and grants an invulnerable inbound branch', () {

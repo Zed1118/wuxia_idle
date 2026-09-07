@@ -229,7 +229,10 @@ class IsarSetup {
   // 旧档深度不能证明具体险关模板，不猜测 route/milestone 解锁事实。
   // 0.46.0 修复旧塔扩层奖励墓碑：只删除 0.42.0 迁移写入、超出实际最高
   // 通关层的塔历史墓碑，不补发奖励、不推断各周目的通关事实。
-  static const _currentSaveVersion = '0.46.0';
+  // 0.47.0 断魂庄开局序号：SaveData +gauntletRunSerial。真实缺字段旧库
+  // 经 Isar readLong 读为负哨兵，须归零；有效序号与旧会话 seed 均不重算。
+  // BossGauntletRun +cycleSeedEnabled，旧档缺 bool 读 false，保留所有旧周目随机流。
+  static const _currentSaveVersion = '0.47.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -594,6 +597,14 @@ class IsarSetup {
           save: save,
           towerRows: towerRows,
         );
+      }
+
+      // --- 段 17(0.47.0 断魂庄开局序号)---
+      // 非空 int 的 Dart 初值不覆盖 Isar 缺字段的 readLong 负哨兵。
+      // 只初始化缺失/非法负序号；不从旧会话 seed 猜历史局数或重写 seed。
+      if (_compareVersion(fromVersion, '0.47.0') < 0 &&
+          save.gauntletRunSerial < 0) {
+        save.gauntletRunSerial = 0;
       }
 
       save.saveVersion = _currentSaveVersion;

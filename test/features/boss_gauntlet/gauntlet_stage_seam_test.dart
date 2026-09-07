@@ -70,6 +70,8 @@ void main() {
     required GauntletPhase phase,
     required int currentStage,
     required List<ActivityMemberSnapshot> members,
+    int cycleIndex = 1,
+    bool cycleSeedEnabled = false,
   }) async {
     late int id;
     await IsarSetup.instance.writeTxn(() async {
@@ -78,6 +80,8 @@ void main() {
           ..saveDataId = 0
           ..seed = 0
           ..currentStage = currentStage
+          ..cycleIndex = cycleIndex
+          ..cycleSeedEnabled = cycleSeedEnabled
           ..sessionPhase = phase
           ..members = members,
       );
@@ -128,6 +132,77 @@ void main() {
       final persisted =
           (await IsarSetup.instance.bossGauntletRuns.where().findAll()).single;
       expect(persisted.seed, 0, reason: '恢复/准备战斗不得重写旧 seed');
+    }
+  });
+
+  test('同 seed 同 stage 的不同周目派生不同随机流，旧 cycle=0 等价首周目', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final service = GauntletService(IsarSetup.instance);
+    final seeds = <int, int>{};
+    for (final cycle in [0, 1, 2, 3]) {
+      await IsarSetup.instance.writeTxn(() async {
+        await IsarSetup.instance.bossGauntletRuns.clear();
+      });
+      await putRun(
+        phase: GauntletPhase.inBattle,
+        currentStage: 2,
+        members: [snap(1)],
+        cycleIndex: cycle,
+        cycleSeedEnabled: true,
+      );
+      final plan = await service.preparePhase0aStage(config: config);
+      seeds[cycle] = plan.seed;
+      expect(plan.stage, 2);
+      expect(plan.cycleIndex, cycle);
+      expect((await service.activeRun())!.seed, 0);
+      expect(
+        (await service.preparePhase0aStage(config: config)).seed,
+        plan.seed,
+      );
+    }
+    expect(seeds[0], seeds[1]);
+    expect({seeds[1], seeds[2], seeds[3]}, hasLength(3));
+  });
+
+  test('旧高周目会话关库恢复后保留原 seed 和关卡随机流', () async {
+    await Phase2SeedService(isar: IsarSetup.instance).seedP3();
+    final config = GameRepository.instance.bossGauntletConfig!;
+    for (final cycle in [0, 1, 2, 3]) {
+      for (var stage = 1; stage <= 3; stage++) {
+        await IsarSetup.instance.writeTxn(() async {
+          await IsarSetup.instance.bossGauntletRuns.clear();
+          final save = (await IsarSetup.currentSaveData())!;
+          save.saveVersion = '0.46.0';
+          await IsarSetup.instance.saveDatas.put(save);
+        });
+        final id = await putRun(
+          phase: GauntletPhase.inBattle,
+          currentStage: stage,
+          members: [snap(1)],
+          cycleIndex: cycle,
+        );
+        await IsarSetup.instance.writeTxn(() async {
+          final run = (await IsarSetup.instance.bossGauntletRuns.get(id))!;
+          run.seed = 3;
+          await IsarSetup.instance.bossGauntletRuns.put(run);
+        });
+        await IsarSetup.close();
+        await IsarSetup.init(directory: tempDir, inspector: false);
+        final service = GauntletService(IsarSetup.instance);
+        expect(
+          await service.recover(config: config),
+          GauntletRecoveryOutcome.resumed,
+        );
+        final plan = await service.preparePhase0aStage(config: config);
+        expect(
+          plan.seed,
+          3 * 31 + stage,
+          reason: 'legacy cycle=$cycle stage=$stage',
+        );
+        expect((await service.activeRun())!.seed, 3);
+        expect((await service.activeRun())!.cycleSeedEnabled, isFalse);
+      }
     }
   });
 
