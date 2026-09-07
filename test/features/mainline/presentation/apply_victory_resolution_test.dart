@@ -497,6 +497,169 @@ void main() {
     });
   });
 
+  for (final (stageType, contentKind) in [
+    (StageType.mainline, RewardContentKind.mainline),
+    (StageType.lightFoot, RewardContentKind.lightFoot),
+    (StageType.massBattle, RewardContentKind.massBattle),
+    (StageType.innerDemon, RewardContentKind.innerDemon),
+  ]) {
+    testWidgets(
+      '${contentKind.name} first-clear tombstone permits progress and recurring rewards',
+      (tester) async {
+        final stage = normalStage(
+          stageType: stageType,
+          baseExpReward: 30,
+          dropTable: const [
+            ItemDrop(
+              inventoryItemDefId: 'item_silver',
+              quantityMin: 5,
+              quantityMax: 5,
+              dropChance: 1,
+            ),
+            ItemDrop(
+              inventoryItemDefId: 'item_scroll_kai_bei_shou',
+              quantityMin: 1,
+              quantityMax: 1,
+              dropChance: 1,
+            ),
+          ],
+        );
+        final participantId = (await tester.runAsync(() async {
+          final id = await insertCharacter(name: '墓碑回归参战者');
+          await writeSaveData(activeIds: [id], founderId: id);
+          await IsarSetup.instance.writeTxn(
+            () => IsarSetup.instance.rewardClaimReceipts.put(
+              RewardClaimReceipt.fromKey(
+                key: RewardClaimKey.contentLayer(
+                  contentKind: contentKind,
+                  contentId: stage.id,
+                  layer: RewardLayer.firstClear,
+                  scope: contentKind == RewardContentKind.innerDemon
+                      ? RewardScope.personal
+                      : RewardScope.sectShared,
+                  saveDataId: 1,
+                  participantId: id,
+                  occurrenceId: 'ignored',
+                ),
+                sourceSettlementId: 'historical-first-clear',
+                createdAt: DateTime(2026, 9, 7),
+                isHistoricalTombstone: true,
+              ),
+            ),
+          );
+          return id;
+        }))!;
+        final occurrence = 'tombstone-${contentKind.name}';
+        final outcome = await runWithRef(
+          tester,
+          (ref) => applyVictoryResolution(
+            ref: ref,
+            stage: stage,
+            settlementSnapshot: finishedSettlement([participantId]),
+            rewardOccurrenceId: occurrence,
+          ),
+        );
+        expect(outcome, isNotNull);
+        expect(outcome!.drops.items.map((item) => item.defId), ['item_silver']);
+        await tester.runAsync(() async {
+          final isar = IsarSetup.instance;
+          expect((await isar.characters.get(participantId))!.experience, 30);
+          expect(
+            (await isar.inventoryItems.getByDefId('item_silver'))!.quantity,
+            5,
+          );
+          expect(
+            await isar.inventoryItems.getByDefId('item_scroll_kai_bei_shou'),
+            isNull,
+          );
+          expect(
+            (await isar.mainlineProgress.where().findFirst())!.clearedStageIds,
+            contains(stage.id),
+          );
+          expect(await isar.rewardClaimReceipts.count(), 3);
+        });
+        final replay = await runWithRef(
+          tester,
+          (ref) => applyVictoryResolution(
+            ref: ref,
+            stage: stage,
+            settlementSnapshot: finishedSettlement([participantId]),
+            rewardOccurrenceId: occurrence,
+          ),
+        );
+        expect(replay, isNull);
+        await tester.runAsync(() async {
+          final isar = IsarSetup.instance;
+          expect((await isar.characters.get(participantId))!.experience, 30);
+          expect(
+            (await isar.inventoryItems.getByDefId('item_silver'))!.quantity,
+            5,
+          );
+          expect(await isar.rewardClaimReceipts.count(), 3);
+        });
+      },
+    );
+  }
+
+  testWidgets(
+    'Boss first-clear receipt suppresses exclusive manual and event without vetoing victory',
+    (tester) async {
+      final stage = GameRepository.instance.stageDefs.values.firstWhere(
+        (stage) =>
+            stage.stageType == StageType.mainline &&
+            stage.isBossStage &&
+            stage.dropSkillManualId != null,
+      );
+      final participantId = (await tester.runAsync(() async {
+        final id = await insertCharacter(name: '首通防重参战者');
+        await writeSaveData(activeIds: [id], founderId: id);
+        await IsarSetup.instance.writeTxn(
+          () => IsarSetup.instance.rewardClaimReceipts.put(
+            RewardClaimReceipt.fromKey(
+              key: RewardClaimKey.contentLayer(
+                contentKind: RewardContentKind.mainline,
+                contentId: stage.id,
+                layer: RewardLayer.firstClear,
+                scope: RewardScope.sectShared,
+                saveDataId: 1,
+                participantId: id,
+                occurrenceId: 'ignored',
+              ),
+              sourceSettlementId: 'existing-first-clear',
+              createdAt: DateTime(2026, 9, 7),
+            ),
+          ),
+        );
+        return id;
+      }))!;
+      final outcome = await runWithRef(
+        tester,
+        (ref) => applyVictoryResolution(
+          ref: ref,
+          stage: stage,
+          settlementSnapshot: finishedSettlement([participantId]),
+          rewardOccurrenceId: 'boss-first-clear-already-claimed',
+        ),
+      );
+      expect(outcome, isNotNull);
+      expect(outcome!.skillDrop.manualGranted, isNull);
+      await tester.runAsync(() async {
+        final isar = IsarSetup.instance;
+        expect(
+          (await isar.mainlineProgress.where().findFirst())!.clearedStageIds,
+          contains(stage.id),
+        );
+        expect(
+          await isar.gameEvents
+              .filter()
+              .eventTypeEqualTo(GameEventType.bossDefeated)
+              .count(),
+          0,
+        );
+      });
+    },
+  );
+
   testWidgets('可见重打的经验与无主掉落事件归实际参与门人，不回落掌门', (tester) async {
     final (founderId, participantId) = (await tester.runAsync(() async {
       final founder = await insertCharacter(name: '掌门');

@@ -227,7 +227,9 @@ class IsarSetup {
   // 历史实际参与者，故保持空集合，不从存档级塔进度或奖励 receipt 猜测回填。
   // 0.45.0 百草岭首次亲战里程碑：新增 ExpeditionMilestoneRecord collection；
   // 旧档深度不能证明具体险关模板，不猜测 route/milestone 解锁事实。
-  static const _currentSaveVersion = '0.45.0';
+  // 0.46.0 修复旧塔扩层奖励墓碑：只删除 0.42.0 迁移写入、超出实际最高
+  // 通关层的塔历史墓碑，不补发奖励、不推断各周目的通关事实。
+  static const _currentSaveVersion = '0.46.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -579,6 +581,19 @@ class IsarSetup {
         // 无显式迁移动作(纯可加)。
       }
 
+      // --- 段 16(0.46.0 旧塔扩层超范围墓碑修复)---
+      // 0.42.0 曾按当前塔目录上界回填已完成周目，误把旧 30 层档的
+      // 31..49 层视为已领首通。按当前最高层口径清理旧迁移墓碑。
+      // advanceCycle 会清零最高层，因此也可能删去已完成周目的历史墓碑；
+      // 本段按指定修复口径不区分周目，不把最高层当作全生命周期记录。
+      if (_compareVersion(fromVersion, '0.46.0') < 0) {
+        await _removeUnclearedTowerRewardTombstonesInTxn(
+          isar: isar,
+          save: save,
+          towerRows: towerRows,
+        );
+      }
+
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });
@@ -631,11 +646,13 @@ class IsarSetup {
         }
       }
 
-      final maxFloor = GameRepository.instance.towerMaxFloor;
       for (final progress in towerRows) {
         if (progress.saveDataId != saveDataId) continue;
         for (var cycle = 1; cycle <= progress.maxClearedCycle; cycle++) {
-          for (var floor = 1; floor <= maxFloor; floor++) {
+          // 当前周目统一由下面的循环回填；旧塔的已完成周目也只能证明
+          // 最高实际通关层，不能用扩层后的内容目录补造首通领取事实。
+          if (cycle == progress.currentCycleIndex) continue;
+          for (var floor = 1; floor <= progress.highestClearedFloor; floor++) {
             await _putTowerRewardClaimTombstoneInTxn(
               isar: isar,
               saveDataId: saveDataId,
@@ -672,6 +689,42 @@ class IsarSetup {
         sourceSettlementId: 'migration:0.42.0:cleared-gauntlet:$gauntletId',
         createdAt: createdAt,
       );
+    }
+  }
+
+  static Future<void> _removeUnclearedTowerRewardTombstonesInTxn({
+    required Isar isar,
+    required SaveData save,
+    required List<TowerProgress> towerRows,
+  }) async {
+    final highestClearedBySave = <int, int>{};
+    for (final progress in towerRows) {
+      if (progress.saveDataId != save.slotId) continue;
+      final previous = highestClearedBySave[progress.saveDataId];
+      if (previous == null || progress.highestClearedFloor > previous) {
+        highestClearedBySave[progress.saveDataId] =
+            progress.highestClearedFloor;
+      }
+    }
+    final towerContentId = RegExp(r'^tower_floor_([0-9]+)_cycle_[0-9]+$');
+    final staleIds = <Id>[];
+    for (final receipt in await isar.rewardClaimReceipts.where().findAll()) {
+      if (receipt.saveDataId != save.slotId ||
+          receipt.contentKind != RewardContentKind.tower ||
+          !receipt.isHistoricalTombstone ||
+          !receipt.sourceSettlementId.startsWith(
+            'migration:0.42.0:cleared-tower:',
+          )) {
+        continue;
+      }
+      final highestCleared = highestClearedBySave[receipt.saveDataId];
+      final match = towerContentId.firstMatch(receipt.contentId);
+      if (highestCleared == null || match == null) continue;
+      final floor = int.tryParse(match.group(1)!);
+      if (floor != null && floor > highestCleared) staleIds.add(receipt.id);
+    }
+    if (staleIds.isNotEmpty) {
+      await isar.rewardClaimReceipts.deleteAll(staleIds);
     }
   }
 

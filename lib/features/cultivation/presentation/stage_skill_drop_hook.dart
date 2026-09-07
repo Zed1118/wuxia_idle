@@ -59,10 +59,11 @@ Future<SkillDropResult> runStageSkillDropHookAfterVictoryInTxn({
   required Set<String> clearedStageIds,
   required double towerFragmentDropProb,
   required Random rng,
+  bool? grantsFirstClear,
 }) => _applySkillDrop(
   manualId: stage.dropSkillManualId,
   fragmentId: stage.dropSkillFragmentId,
-  isFirstClear: !clearedStageIds.contains(stage.id),
+  isFirstClear: grantsFirstClear ?? !clearedStageIds.contains(stage.id),
   svc: svc,
   fragmentDropProb: towerFragmentDropProb,
   rng: rng,

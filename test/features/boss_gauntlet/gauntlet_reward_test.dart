@@ -18,6 +18,8 @@ import 'package:wuxia_idle/features/cultivation/application/character_advancemen
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_claim_key.dart';
+import 'package:wuxia_idle/shared/battle_shared/reward_contract.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 
 import '../../support/isar_test_support.dart';
@@ -192,6 +194,100 @@ void main() {
     expect(await ownedCount(chosen), 1);
     expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
     expect(await IsarSetup.instance.rewardClaimReceipts.where().count(), 3);
+  });
+
+  test('首通墓碑不阻断选奖与进度：只发重复量，失败回滚后可重试且不重发', () async {
+    final config = GameRepository.instance.bossGauntletConfig!;
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    await putAwaitingRun(candidates: config.rewardCandidateEquipmentIds);
+    final firstClearKey = RewardClaimKey.contentLayer(
+      contentKind: RewardContentKind.gauntlet,
+      contentId: GauntletService.gauntletId,
+      layer: RewardLayer.firstClear,
+      scope: RewardScope.sectShared,
+      saveDataId: IsarSetup.currentSlotId,
+      participantId: null,
+      occurrenceId: 'historical',
+    );
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.rewardClaimReceipts.put(
+        RewardClaimReceipt.fromKey(
+          key: firstClearKey,
+          sourceSettlementId: 'migration:0.42.0:cleared-gauntlet',
+          createdAt: DateTime(2026, 7, 1),
+          isHistoricalTombstone: true,
+        ),
+      );
+    });
+    final before = (await IsarSetup.instance.characters.get(1))!;
+    final service = svc();
+    await expectLater(
+      service.chooseReward(
+        chosenEquipmentDefId: chosen,
+        config: config,
+        numbers: GameRepository.instance.numbers,
+        rng: DefaultRng(seed: 7),
+        afterRewardInTxnForTest: () async => throw StateError('crash'),
+      ),
+      throwsStateError,
+    );
+    expect(await ownedCount(chosen), 0);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 1);
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 1);
+    final rolledBack = (await IsarSetup.instance.characters.get(1))!;
+    expect(rolledBack.experience, before.experience);
+    expect(rolledBack.insightPoints, before.insightPoints);
+    expect(
+      (await IsarSetup.instance.saveDatas.get(0))!.clearedGauntletIds,
+      isNot(contains(GauntletService.gauntletId)),
+    );
+
+    final at = DateTime(2026, 9, 7, 12);
+    await service.chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+      now: at,
+    );
+    final after = (await IsarSetup.instance.characters.get(1))!;
+    expect(
+      after.experience - before.experience,
+      config.firstClearRewardExp ~/ 2,
+    );
+    expect(
+      after.insightPoints - before.insightPoints,
+      config.firstClearRewardInsight ~/ 2,
+    );
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+    expect(save.clearedGauntletIds, contains(GauntletService.gauntletId));
+    expect(save.duanhunFirstClearedAt, at);
+    expect(
+      save.skillUnlockProgress.isUnlocked(config.firstClearRewardSkillId),
+      isFalse,
+      reason: '首通专属秘籍不可因进度修复而重发',
+    );
+    expect(await ownedCount(chosen), 1);
+    expect(await IsarSetup.instance.bossGauntletRuns.count(), 0);
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 3);
+    expect(
+      (await IsarSetup.instance.rewardClaimReceipts.getByClaimKey(
+        firstClearKey.canonical,
+      ))!.isHistoricalTombstone,
+      isTrue,
+    );
+
+    await service.chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: GameRepository.instance.numbers,
+      rng: DefaultRng(seed: 7),
+    );
+    expect(await ownedCount(chosen), 1);
+    final replayed = (await IsarSetup.instance.characters.get(1))!;
+    expect(replayed.experience, after.experience);
+    expect(replayed.insightPoints, after.insightPoints);
+    expect(await IsarSetup.instance.rewardClaimReceipts.count(), 3);
   });
 
   test('幂等：结算后重入（无 run）→ no-op 不重复发装备', () async {
