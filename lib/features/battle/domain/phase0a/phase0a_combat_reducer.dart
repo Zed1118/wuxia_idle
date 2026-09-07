@@ -474,7 +474,9 @@ Phase0aStepResult reducePhase0aTick({
         visualSchool: visualSchool,
       ),
     );
-    var updated = target.copyWith(currentHealth: remaining);
+    // Player defense has already consumed shield/counter state above.
+    final currentTarget = target.side == Phase0aSide.player ? player : target;
+    var updated = currentTarget.copyWith(currentHealth: remaining);
     updated = applyPostureDamage(
       actorId: attacker.id,
       target: updated,
@@ -523,7 +525,7 @@ Phase0aStepResult reducePhase0aTick({
         seq = advanced.nextSeq;
       }
     } else {
-      player = applyStatus(player.copyWith(currentHealth: remaining));
+      player = applyStatus(updated);
     }
   }
 
