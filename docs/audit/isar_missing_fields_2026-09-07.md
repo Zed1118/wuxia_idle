@@ -2,7 +2,7 @@
 
 ## 交付状态与边界
 
-本单基于本地 main `adff44e5821d7ae651b2fba694a38c42ba080469`，B `6c162e4bd` 与 C `0d3a21833` 均为其祖先，开工版本 0.47.0 与 gauntletRunSerial 段已核验。独立分支 `codex/isar-missing-fields-048-20260907`；不合 main、不 push。
+本单基于本地 main `adff44e5821d7ae651b2fba694a38c42ba080469`，B `6c162e4bd` 与 C `0d3a21833` 均为其祖先，开工版本 0.47.0 与 gauntletRunSerial 段已核验。原始交付位于独立分支 `codex/isar-missing-fields-048-20260907`，当时未合 main、未 push；后续本地 main 集成见文末记录。
 
 已实现 62 个静态数值字段的精确哨兵归位，并为 72 条真实持久路径补缺字段、迁移、已有值及重开证据。不是所有不一致字段都已修复：10 个可疑数值默认与 5 个非数值歧义字段保持待决；140 个 late 无初始化器字段也不猜填。有关可疑默认值已通过本任务文字问题提交用户选择，目前按保守方案保留。
 
@@ -138,7 +138,7 @@ build_runner 的 0 outputs 是最终增量核验结果；本单新增旧 schema 
 
 独立数值复核最终记录位于 `numeric-review.md` 第 5 节，对上述生产两文件当前 SHA256 静态复核无剩余阻断项；非数值清查见 `nonnumeric-review.md`。独立静态复核没有冒充动态测试，旧建议与最终采用方案已分开注明。
 
-本单只提交独立候选，尚未合 main / push / 跑远端 CI，不代签真人或 Windows 验收，M0–M9 仍按既有 1/10。AGENTS.md、CLAUDE.md、data/*.yaml 均无本单修改；主仓四个既有用户文件逐一 SHA256 对照未变。15 个可疑初始化器字段与 140 个 late 无默认字段仍明确待决，不将本次自动化通过写成“全部旧档语义恢复”。
+D 单原始交付时只提交独立候选，未合 main / push / 跑远端 CI，不代签真人或 Windows 验收，M0–M9 仍按既有 1/10。AGENTS.md、CLAUDE.md、data/*.yaml 均无本单修改；主仓四个既有用户文件逐一 SHA256 对照未变。15 个可疑初始化器字段与 140 个 late 无默认字段仍明确待决，不将本次自动化通过写成“全部旧档语义恢复”。
 
 ## 逐字段清单
 
@@ -794,3 +794,19 @@ build_runner 的 0 outputs 是最终增量核验结果；本单新增旧 schema 
 | `firstObtainedFrom` :22 | `String` | `无（late）` | 待决：无初始化器，不把 fallback 当语义默认 | — |
 | `obtainedCount` :25 | `int` | `无（late）` | 待决：无初始化器，不猜历史值 | — |
 | `isPreRecord` :28 | `bool` | `无（late）` | 待决：无初始化器，不把 fallback 当语义默认 | — |
+
+## 2026-09-07 D 单前置条件集成
+
+用户在分诊任务开工受阻后明确要求先处理前置条件。本次接收 D 单 `ecc75dba9bba04e8f18b6dbe603d0679e99b6cae`，以 `adff44e5821d7ae651b2fba694a38c42ba080469` 为基线，在既有集成 worktree 创建合并提交 `547db1c430db01d4624fd6c0377638664ef72c1c`；其整棵 Git tree 与 D 单相同。以下检查均在该 exact SHA 上重新执行，并非复用历史 PASS。随后只更新本报告与 PROGRESS，再快进纳入本地 main；最终 main SHA 和前后保护核验见 [交付记录](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/delivery.json)。
+
+| 实际命令 | 当前结果 | 原始输出 |
+|---|---|---|
+| `dart run build_runner build --delete-conflicting-outputs` | `Built with build_runner/aot in 6s; wrote 144 outputs.` | [build-runner.log](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/build-runner.log) |
+| `flutter analyze` | `No issues found! (ran in 7.5s)` | [analyze.log](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/analyze.log) |
+| `dart format .` | `Formatted 1771 files (0 changed) in 4.71 seconds.` | [format.log](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/format.log) |
+| `flutter build macos` | `✓ Built build/macos/Build/Products/Release/wuxia_idle.app (177.3MB)` | [macos-build.log](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/macos-build.log) |
+| `flutter test --no-pub --machine` | 6285 PASS / 0 FAIL / 0 SKIP；899/899 文件，漏文件 0 | [全量摘要](/Users/a10506/Documents/Codex/2026-09-07/isar-d-integration/full-test-summary.json) |
+
+相关测试另按 13 个文件逐个执行，合计 115/115。全量持有既有共享锁；生成文件未提交；未设置 DEVELOPER_DIR。macOS 构建的第三方编译警告原样保留在日志中。后续记录提交只含两份 Markdown，不改变受测代码。main 快进后另执行一次 build_runner，补齐主仓忽略的生成文件；结果见交付记录与 `main-build-runner.log`。
+
+主仓 `lib/data/isar_missing_field_defaults.dart` 存在、`_currentSaveVersion == '0.48.0'`，且 `git log --oneline -3` 能正常读取，分诊任务的两条前置条件与历史查询权限自检均已满足。主仓已有 AGENTS.md、CLAUDE.md、.qoder/settings.json、归档文件逐个 SHA256 对照未变；本次未 push、未发布、未启动真实存档迁移，不删除分支/worktree，不代签 CI、真人或 Windows 验收。此次只解除 D 单集成依赖，待决字段的考古分诊与菜单尚未开展。
