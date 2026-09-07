@@ -584,8 +584,10 @@ class IsarSetup {
       // --- 段 16(0.46.0 旧塔扩层超范围墓碑修复)---
       // 0.42.0 曾按当前塔目录上界回填已完成周目，误把旧 30 层档的
       // 31..49 层视为已领首通。按当前最高层口径清理旧迁移墓碑。
-      // advanceCycle 会清零最高层，因此也可能删去已完成周目的历史墓碑；
-      // 本段按指定修复口径不区分周目，不把最高层当作全生命周期记录。
+      // advanceCycle 会清零最高层，但 currentCycleIndex 只增不减；生产
+      // applyTowerVictorySettlement 只用当前周目构造 contentId/领取键。
+      // 因此即便删去已完成周目的历史墓碑，其旧键也已不可达，不会重复发奖。
+      // 安全性来自周目键不可达，不依赖最高层全生命周期单调；勿恢复目录上界。
       if (_compareVersion(fromVersion, '0.46.0') < 0) {
         await _removeUnclearedTowerRewardTombstonesInTxn(
           isar: isar,
@@ -649,8 +651,9 @@ class IsarSetup {
       for (final progress in towerRows) {
         if (progress.saveDataId != saveDataId) continue;
         for (var cycle = 1; cycle <= progress.maxClearedCycle; cycle++) {
-          // 当前周目统一由下面的循环回填；旧塔的已完成周目也只能证明
-          // 最高实际通关层，不能用扩层后的内容目录补造首通领取事实。
+          // 当前周目统一由下面的循环回填，不能按扩层后的目录补造领取事实。
+          // 新周目最高层会清零，按它收口可能少写已完成周目的墓碑；但周目
+          // 只增不减、生产只生成当前周目的领取键，少写的旧键不可达，故无害。
           if (cycle == progress.currentCycleIndex) continue;
           for (var floor = 1; floor <= progress.highestClearedFloor; floor++) {
             await _putTowerRewardClaimTombstoneInTxn(
@@ -708,9 +711,12 @@ class IsarSetup {
     }
     final towerContentId = RegExp(r'^tower_floor_([0-9]+)_cycle_[0-9]+$');
     final staleIds = <Id>[];
-    for (final receipt in await isar.rewardClaimReceipts.where().findAll()) {
-      if (receipt.saveDataId != save.slotId ||
-          receipt.contentKind != RewardContentKind.tower ||
+    final receipts = await isar.rewardClaimReceipts
+        .where()
+        .saveDataIdEqualTo(save.slotId)
+        .findAll();
+    for (final receipt in receipts) {
+      if (receipt.contentKind != RewardContentKind.tower ||
           !receipt.isHistoricalTombstone ||
           !receipt.sourceSettlementId.startsWith(
             'migration:0.42.0:cleared-tower:',
