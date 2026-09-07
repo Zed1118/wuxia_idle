@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'game_repository.dart';
 import 'isar_restore_paths.dart';
+import 'isar_missing_field_defaults.dart';
 import 'slot_summary.dart';
 import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
@@ -232,7 +233,9 @@ class IsarSetup {
   // 0.47.0 断魂庄开局序号：SaveData +gauntletRunSerial。真实缺字段旧库
   // 经 Isar readLong 读为负哨兵，须归零；有效序号与旧会话 seed 均不重算。
   // BossGauntletRun +cycleSeedEnabled，旧档缺 bool 读 false，保留所有旧周目随机流。
-  static const _currentSaveVersion = '0.47.0';
+  // 0.48.0 真实缺字段数值哨兵归静态默认；不推断身份、阈值或历史事实。
+  // 旧业务迁移依赖的角色/塔字段先归位；末段补齐其余字段（含 expeditionRunSerial）。
+  static const _currentSaveVersion = '0.48.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -309,18 +312,20 @@ class IsarSetup {
     // currentCycleIndex/maxClearedCycle 重置成初值 → 数据丢失。
     final fromVersion = save.saveVersion;
 
-    // 段 1(0.18.0+):encounter 旧 unlock 池并入 skillUnlockProgress。
-    final progresses = await isar.encounterProgress.where().findAll();
-
-    // 段 2(0.21.0):周目字段迁移。
-    final mainlineRows = await isar.mainlineProgress.where().findAll();
-    final towerRows = await isar.towerProgress.where().findAll();
-    final activeRetreats = (await isar.retreatSessions.where().findAll())
-        .where((s) => s.status == RetreatStatus.active)
-        .toList(growable: false);
-    final characters = await isar.characters.where().findAll();
-
     await isar.writeTxn(() async {
+      // 0.48.0 前置依赖：NaN 不能先参与 0.36 时长合并，负哨兵不能先
+      // 参与 0.39 资质计算或 0.42 塔墓碑写入。只归已审定的静态默认。
+      if (_compareVersion(fromVersion, '0.48.0') < 0) {
+        await IsarMissingFieldDefaults.prepareLegacyInputsInTxn(isar);
+      }
+      // 归位后再读缓存；避免旧快照 put 把哨兵或旧身份覆盖回来。
+      final progresses = await isar.encounterProgress.where().findAll();
+      final mainlineRows = await isar.mainlineProgress.where().findAll();
+      final towerRows = await isar.towerProgress.where().findAll();
+      final activeRetreats = (await isar.retreatSessions.where().findAll())
+          .where((s) => s.status == RetreatStatus.active)
+          .toList(growable: false);
+      final characters = await isar.characters.where().findAll();
       // --- 段 1(0.18.0 · 版本门 <0.18.0)---
       // P0-5(2026-06-29):补版本门。0.18+ 存档旧 unlock 池已并入,不再每次升级
       // 重跑(此前仅靠 markUnlocked 幂等承诺)。markUnlocked 仍幂等,门是防御加固。
@@ -459,7 +464,11 @@ class IsarSetup {
           // 前置迁移段可能已写回同一角色（如 0.25 师徒 role 重映射），
           // 必须重读当前行，避免用事务前快照覆盖前置迁移结果。
           final current = await isar.characters.get(character.id) ?? character;
-          current.internalForce = current.internalForceMax;
+          // 上限缺字段仍属待决，不能把哨兵复制到合法的永久内力。
+          if (current.internalForceMax !=
+              IsarMissingFieldDefaults.missingLong) {
+            current.internalForce = current.internalForceMax;
+          }
           if (current.innerDemonResidueHoursRemaining >
               current.innerBreathDisorderHoursRemaining) {
             current.innerBreathDisorderHoursRemaining =
@@ -471,8 +480,9 @@ class IsarSetup {
       }
 
       // --- 段 7(0.37.0 江湖远行)---
-      // SaveData 新字段为可加性(List/bool/DateTime? 均有默认),旧档 load 时 Isar
-      // 自动取 Dart 字段初值,无需显式回填;两新 collection 旧档初始为空。此段仅作
+      // List/bool(false)/DateTime? 缺字段分别读 []/false/null；不代表 Isar
+      // 会采用所有 Dart 初始化器。数值缺字段由 0.48 段归位。两新 collection
+      // 旧档初始为空。此段仅作
       // 幂等占位与版本文档锚,真正落版本号由本函数尾部统一执行。
       if (_compareVersion(fromVersion, '0.37.0') < 0) {
         // 无显式迁移动作(纯可加)。
@@ -530,6 +540,15 @@ class IsarSetup {
         for (final character in characters) {
           // 同段 6:前置段可能已写回同一角色,必须重读当前行,避免用事务前快照覆盖。
           final current = await isar.characters.get(character.id) ?? character;
+          // 出生属性缺失时保留已存资质，不用哨兵计算/补造出生事实。
+          if ([
+            current.attributes.constitution,
+            current.attributes.enlightenment,
+            current.attributes.agility,
+            current.attributes.fortune,
+          ].contains(IsarMissingFieldDefaults.missingLong)) {
+            continue;
+          }
           current.rarity = numbers.rarityForTotalPoints(
             current.birthAttributeTotal,
           );
@@ -605,6 +624,13 @@ class IsarSetup {
       if (_compareVersion(fromVersion, '0.47.0') < 0 &&
           save.gauntletRunSerial < 0) {
         save.gauntletRunSerial = 0;
+      }
+
+      // --- 段 18(0.48.0 旧档缺字段哨兵归位)---
+      // 仅匹配 minLong/NaN，不改有限负值、旧 seed 或已有合法值。
+      // 同事务重读当前行，保留前置业务迁移已写入的结果；待决字段不猜填。
+      if (_compareVersion(fromVersion, '0.48.0') < 0) {
+        await IsarMissingFieldDefaults.repairInTxn(isar, save);
       }
 
       save.saveVersion = _currentSaveVersion;
