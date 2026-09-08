@@ -133,3 +133,22 @@ Building macOS application...
 最终主仓 HEAD、既有用户文件 SHA256、候选 clean 状态、代码/文档分离和检查结果见 [delivery.json](/Users/a10506/Documents/Codex/2026-09-07/isar-sect-member-count-049/delivery.json)。原始完整验证记录：[validation-results.json](/Users/a10506/Documents/Codex/2026-09-07/isar-sect-member-count-049/validation-results.json)。
 
 本轮交付独立工程候选，没有合 main、push、部署或迁移实际玩家存档；不代签远端 CI、Windows 或真人验收。无法证明身份/关联的负计数行按批准方案继续保留，需依据诊断核对后重开重试。
+
+## 2026-09-08 main 集成验证（后续授权）
+
+用户在核查合并与 push 条件后回复「按建议顺序执行」，授权快进合并、main 集成验证和普通 push，范围包含远端之后原有的 16 个提交。main 已从 `ba29fc33d2f21a5f1bf0fe7eb9346e01f19a8645` 快进至 `df3be136515b423300ad81f3ecafbd6ed300ef41`，没有生成合并提交；此后仅补本节及 PROGRESS 集成摘要，推送共 17 个提交。
+
+本次全部在主仓 `/Users/a10506/Desktop/Projects/挂机武侠` 的 `df3be1365` 执行。生成前置及集成检查依次为：
+
+| 命令 | 实测结果 |
+|---|---|
+| `dart run build_runner build --delete-conflicting-outputs` | exit 0；5s，146 outputs |
+| `flutter analyze` | exit 0；No issues found，11.7s |
+| `flutter test --no-pub --machine` 加相关文件清单 | exit 0；19/19 文件，195 PASS / 0 FAIL / 0 SKIP |
+| `flutter test --no-pub --machine` | exit 0；900/900 文件，6307 PASS / 0 FAIL / 0 SKIP，漏跑 0 |
+
+全量开始 `2026-09-08T09:33:03.398946+08:00`，结束 `2026-09-08T09:39:20.604755+08:00`；正常等待并使用既有共享锁，未删除或抢占。生成文件仍被忽略，未提交。源码与上一轮五项验证时的 18 个文件 SHA256 全部一致；本次按集成规则重跑 analyze、相关测试和全量，候选的 format/macOS release 证据仍见上文，没有伪称本轮重跑。
+
+主仓原有 AGENTS.md、CLAUDE.md、.qoder/settings.json 及冻结归档文件的内容哈希均未变化；未提交、还原或删除它们。独立分支与 worktree 保留。此次仅集成与推送代码，没有打开/迁移玩家存档或更新运行中的应用。
+
+本节提交前所有本地集成检查已通过，尚未以未来结果宣称 push 或远端 CI 成功；最终远端 SHA、推送结果及 CI 状态由 [delivery.json](/Users/a10506/Documents/Codex/2026-09-08/isar-049-main-integration/delivery.json) 实测记录。完整命令和各文件执行清单见 [integration-results.json](/Users/a10506/Documents/Codex/2026-09-08/isar-049-main-integration/integration-results.json)，原始输出见同目录 `merge.log`、`build-runner.log`、`analyze.log`、`targeted.log`、`full-test.log`。远端 CI、真人及 Windows 验收分别记录，不相互替代。
