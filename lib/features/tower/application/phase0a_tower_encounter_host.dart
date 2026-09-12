@@ -31,12 +31,12 @@ enum Phase0aTowerEncounterRouteMode { legacy, migrated }
 
 /// Production authority for tower migration routing.
 ///
-/// The production set is deliberately empty at this foundation gate, so the
-/// tower migration numerator remains 0/49. Tests and later per-floor migration
-/// commits can opt exact floors into the typed path without changing callers.
+/// Floors 1–7 passed the first production migration batch. Remaining floors
+/// retain compatibility routing until their own batch is verified; all three
+/// entrypoints consume this same authority.
 final class Phase0aTowerEncounterRouteAuthority {
   const Phase0aTowerEncounterRouteAuthority.production()
-    : migratedFloorIndices = const <int>{};
+    : migratedFloorIndices = const <int>{1, 2, 3, 4, 5, 6, 7};
 
   Phase0aTowerEncounterRouteAuthority.migratedFloors(
     Set<int> migratedFloorIndices,

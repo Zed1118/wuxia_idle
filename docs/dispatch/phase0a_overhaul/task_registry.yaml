@@ -1,7 +1,7 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
 base_commit: 52a4255fd74d1c7d86f43f846a536e52cfdec1b6
-updated_at: "2026-09-04"
+updated_at: "2026-09-12"
 
 formal_milestone_gate:
   denominator: 10
@@ -8128,8 +8128,9 @@ tasks:
       merge_commit: 2d254abdf9bd841730acc301867c1249dde2ebc4
       merge_exact_sha_ci_run: 33901066970
       merge_exact_sha_ci_conclusion: completed_success
-      review_gaps_open: objective_allowlist_and_complete_target_set_runtime_three_entrypoint_proof_complete_actor_and_mechanic_parity
-      review_gaps_block_floor_migration: true
+      review_gaps_open: none_in_local_candidate_2026_09_12
+      latest_review_audit: docs/audit/phase2_m7_tower_first_seven_2026-09-12.md
+      review_gaps_block_floor_migration: false
       human_desktop_acceptance: deferred
       visual_audio_feel_acceptance: deferred
       windows_acceptance: deferred
@@ -8158,6 +8159,47 @@ tasks:
       - no_M8_or_M9_start
       - engineering_foundation_does_not_increment_tower_floor_numerator_or_close_formal_M7_or_Phase2
 
+  - id: P2-M7-TOWER-FIRST-SEVEN
+    milestone: M7
+    owner: codex_root
+    branch: codex/p2-player-flow-20260910
+    worktree: /Users/a10506/Desktop/Projects/挂机武侠
+    status: verified_local_candidate
+    current_authoritative_wip: false
+    base_commit: 8bb82d2c42ca4b93502b5aafa6ac918d70c08c68
+    completion_scope: preserve_complete_tower_mechanic_parity_and_migrate_production_floors_1_through_7
+    acceptance_target: tower_7_of_49_in_unified_local_candidate
+    acceptance_result: tower_7_of_49_verified_in_unified_local_candidate
+    evidence:
+      authorization: user_set_goal_to_complete_candidate_commit_parity_and_first_seven_on_2026_09_12
+      precondition_parity_tests: 29_of_29
+      three_entrypoint_floor_cycle_matrix: 22_cases
+      fields: complete_snapshot_skills_and_45_actor_constructor_fields
+      actual_mechanisms: guardian_interception_coop_charge_phase_and_vulnerability_open_hit_recovery
+      typed_actor_vulnerability_mutation_assertion_failures: 2
+      mutation_restored: true
+      production_migration_set: [1, 2, 3, 4, 5, 6, 7]
+      remaining_compatibility_floors: 8_through_49
+      local_candidate_tower: 7_of_49
+      main_tower: 0_of_49
+      final_targeted_files: 43_of_43
+      final_targeted_tests: 290_of_290
+      analyze: no_issues
+      full_suite: 919_of_919_files_6561_PASS_no_failures_skips_or_missing_files
+      targeted_and_full_source_hashes_match: true
+      test_contract_migration: PASS
+      audit: docs/audit/phase2_m7_tower_first_seven_2026-09-12.md
+      logs: /Users/a10506/Documents/Codex/2026-09-12/tower-first-batch/
+      formal_milestones_closed: 1_of_10
+      formal_M7_closed: false
+      human_and_Windows_acceptance: pending
+      main_merge_push_release: not_authorized_not_performed
+    protected_behavior:
+      - no_enemy_skill_numbers_reward_schema_saveVersion_unlock_AI_or_owner_change
+      - no_game_or_player_save_access
+      - preserve_four_unrelated_user_files
+      - formal_milestone_and_main_integration_not_inferred_from_local_candidate
+
   - id: P2-M7-CONTENT-MIGRATION-GATE
     milestone: M7
     owner: codex_root
@@ -8165,14 +8207,14 @@ tasks:
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
     acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_catalog_105_of_105_integrated_Ch13_contract_repairs_integrated_ci_success_tower_foundation_review_gaps_open_tower_0_of_49_legacy_retirement_open
+    acceptance_result: mainline_105_of_105_integrated_tower_7_of_49_verified_local_candidate_legacy_retirement_open
     evidence:
       mainline_catalog_integrated: 105_of_105
       mainline_catalog_local_candidate: 105_of_105
       remaining_mainline_stages_integrated: 0_of_105
       remaining_mainline_stages_in_local_candidate: 0_of_105
-      next_authoritative_task: none_current_batch_closed
-      next_recommended_gate: tower_foundation_hardening_requires_user_authorization
+      next_authoritative_task: P2-M7-TOWER-FIRST-SEVEN
+      next_recommended_gate: remaining_tower_floors_8_through_49_require_next_batch_authorization
       local_candidate_counts_as_integrated_stage: false
       chapter_13_status: integrated_origin_main_ci_success
       chapter_13_decision: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01

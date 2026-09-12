@@ -1,0 +1,12 @@
+schema_version: 1
+ticket: P2-M7-TOWER-FIRST-SEVEN
+base_sha: 8bb82d2c42ca4b93502b5aafa6ac918d70c08c68
+summary: 用户已批准将塔1至7层迁入生产typed路径，保留8至49层兼容路径，并保持显式legacy对照。
+
+migrations:
+  - deleted: test('production route authority keeps tower numerator at zero', () {
+    replacement: production route authority migrates only the first seven floors
+    reason: 空生产集合是迁移前契约；新契约逐层确认1至7已迁且8至49仍兼容。
+  - deleted: expect(authority.migratedFloorIndices, isEmpty);
+    replacement: expect(authority.migratedFloorIndices, {1, 2, 3, 4, 5, 6, 7});
+    reason: 本次授权正是启用首批七层，精确集合断言禁止漏迁和超范围迁移。

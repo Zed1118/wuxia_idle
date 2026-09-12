@@ -22,15 +22,17 @@ import '../../../support/combatant_snapshot_fixture.dart';
 import '../../../support/test_data.dart';
 
 void main() {
-  test('production route authority keeps tower numerator at zero', () {
+  test('production route authority migrates only the first seven floors', () {
     const authority = Phase0aTowerEncounterRouteAuthority.production();
     for (var floorIndex = 1; floorIndex <= 49; floorIndex += 1) {
       expect(
         authority.modeForFloor(floorIndex),
-        Phase0aTowerEncounterRouteMode.legacy,
+        floorIndex <= 7
+            ? Phase0aTowerEncounterRouteMode.migrated
+            : Phase0aTowerEncounterRouteMode.legacy,
       );
     }
-    expect(authority.migratedFloorIndices, isEmpty);
+    expect(authority.migratedFloorIndices, {1, 2, 3, 4, 5, 6, 7});
 
     final candidateFloors = <int>{1};
     final candidate = Phase0aTowerEncounterRouteAuthority.migratedFloors(
@@ -145,6 +147,9 @@ void main() {
         final seed = 20260905 + floorIndex * 100 + cycleIndex;
         final legacy = await createFreshPhase0aTowerCombatSession(
           Phase0aTowerCombatSessionBuildRequest(
+            routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors(
+              {},
+            ),
             contentRef: CombatContentRef.tower('tower_$floorIndex'),
             floor: floor,
             playerSnapshot: _player(),

@@ -47,6 +47,7 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/combat_event_order.dar
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/debug/application/phase2_seed_service.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
@@ -105,7 +106,7 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  for (final floorIndex in [1, 7, 14, 32, 42, 49]) {
+  for (final floorIndex in [1, 2, 3, 4, 5, 6, 7, 14, 32, 42, 49]) {
     for (final cycle in [1, 2]) {
       testWidgets(
         'real visible / immediate / reopened durable parity $floorIndex/$cycle',
@@ -139,6 +140,8 @@ void main() {
               numbers: repo.numbers,
               cycleIndex: cycle,
               rng: Random(1),
+              routeAuthority:
+                  Phase0aTowerEncounterRouteAuthority.migratedFloors({}),
             ),
           );
           final legacyFlow = _TraceFlow(legacy.flow);
@@ -254,6 +257,129 @@ void main() {
 
   for (final cycle in [1, 2]) {
     test(
+      'authored vulnerability opens, takes damage and recovers cycle $cycle',
+      () async {
+        final floor = repo.getTowerFloor(32);
+        // Lower player output leaves the authored boss alive long enough to
+        // exercise the window. No enemy, skill, posture or damage rule is changed.
+        final player = testCombatantSnapshot(
+          realmTier: RealmTier.wuSheng,
+          maxHp: 20000,
+          defenseRate: 0.9,
+          includeProductionBasicAttack: true,
+        );
+        Future<Phase0aTowerCombatSession> build(Set<int> migrated) =>
+            createFreshPhase0aTowerCombatSession(
+              Phase0aTowerCombatSessionBuildRequest(
+                contentRef: const CombatContentRef.tower('tower_32'),
+                floor: floor,
+                playerSnapshot: player,
+                numbers: repo.numbers,
+                cycleIndex: cycle,
+                rng: Random(20260912),
+                routeAuthority:
+                    Phase0aTowerEncounterRouteAuthority.migratedFloors(
+                      migrated,
+                    ),
+              ),
+            );
+        final typed = await build({32});
+        final legacy = await build({});
+        final bossId = typed.flow.state.enemies.firstWhere((e) => e.isBoss).id;
+        final bossSnapshot = typed.combatants
+            .firstWhere((entry) => entry.actorId == bossId)
+            .snapshot;
+        expect(bossSnapshot.vulnerabilityMult, isNotNull);
+        expect(bossSnapshot.vulnerabilityMult, lessThan(1));
+        final events = <Phase0aEvent>[];
+        final legacyEvents = <Phase0aEvent>[];
+        var sawGuardedHit = false;
+        var sawWindowHit = false;
+        var sawRecovery = false;
+        while (typed.flow.outcome == Phase0aBattleOutcome.ongoing &&
+            typed.flow.state.tick <
+                repo.numbers.phase0aArena.maxSimulationTicks &&
+            !sawRecovery) {
+          final state = typed.flow.state;
+          final boss = state.enemies.firstWhere((e) => e.id == bossId);
+          final vulnerable = boss.posture?.isVulnerable ?? false;
+          final offset = boss.position - state.player.position;
+          final aim = offset.length > 0
+              ? offset.normalized()
+              : state.player.facing;
+          // Attack the actual boss through the normal input adapter. R is saved
+          // for an already open window, then input stops to observe its expiry.
+          final command = sawWindowHit
+              ? const Phase0aPlayerCommand()
+              : Phase0aPlayerCommand(
+                  moveDirection: offset.length > typed.playerAdapter.attackRange
+                      ? aim
+                      : null,
+                  attack: !vulnerable,
+                  attackAimDirection: aim,
+                  attackTargetId: bossId,
+                  clear: vulnerable,
+                );
+          final emitted = typed.flow.advance(
+            deltaSeconds: repo.numbers.phase0aArena.fixedDeltaSeconds,
+            command: command,
+          );
+          events.addAll(emitted);
+          legacyEvents.addAll(
+            legacy.flow.advance(
+              deltaSeconds: repo.numbers.phase0aArena.fixedDeltaSeconds,
+              command: command,
+            ),
+          );
+          expect(
+            _canonicalState(typed.flow.state, typed),
+            _canonicalState(legacy.flow.state, legacy),
+          );
+          expect(typed.flow.outcome, legacy.flow.outcome);
+          final bossHit = emitted.whereType<Phase0aHitLanded>().any(
+            (event) => event.target == bossId && event.resolvedDamage > 0,
+          );
+          final clearHit = emitted.whereType<Phase0aClearApplied>().any(
+            (event) => event.outcomes.any(
+              (outcome) =>
+                  outcome.target == bossId && outcome.resolvedDamage > 0,
+            ),
+          );
+          sawGuardedHit |= bossHit && !vulnerable;
+          sawWindowHit |=
+              clearHit &&
+              vulnerable &&
+              boss.posture!.vulnerabilityTicksRemaining > 1;
+          sawRecovery =
+              sawWindowHit &&
+              typed.flow.state.enemies.any(
+                (enemy) =>
+                    enemy.id == bossId &&
+                    enemy.isAlive &&
+                    !(enemy.posture?.isVulnerable ?? false),
+              );
+        }
+        expect(
+          events.whereType<Phase0aPostureChanged>().where(
+            (event) =>
+                event.target == bossId &&
+                event.eventType == PostureEventType.vulnerabilityEntered,
+          ),
+          isNotEmpty,
+        );
+        expect(sawGuardedHit, isTrue);
+        expect(
+          sawWindowHit,
+          isTrue,
+          reason: 'an observed window must also consume a real damaging action',
+        );
+        expect(sawRecovery, isTrue);
+        expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
+        expect(_combatEvents(events), _combatEvents(legacyEvents));
+      },
+    );
+
+    test(
       'authored guardian interception coop and phase windows retain behavior cycle $cycle',
       () async {
         final floor = repo.getTowerFloor(42);
@@ -289,6 +415,9 @@ void main() {
             numbers: repo.numbers,
             cycleIndex: cycle,
             rng: Random(20260911),
+            routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors(
+              {},
+            ),
           ),
         );
         final events = <Phase0aEvent>[];
@@ -561,9 +690,13 @@ final class _FactoryTrace {
         numbers: incoming.numbers,
         cycleIndex: incoming.cycleIndex,
         rng: incoming.rng,
-        routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors({
-          incoming.floor.floorIndex,
-        }),
+        // Migrated floors must use the authority supplied by the real entrypoint.
+        // Later representative floors still exercise the opt-in parity fixture.
+        routeAuthority: invalid == null && incoming.floor.floorIndex <= 7
+            ? incoming.routeAuthority
+            : Phase0aTowerEncounterRouteAuthority.migratedFloors({
+                incoming.floor.floorIndex,
+              }),
         definitionSource: invalid == null
             ? const Phase0aDerivedTowerEncounterDefinitionSource()
             : _InvalidObjectives(invalid!),
@@ -1075,4 +1208,9 @@ Phase0aActor _canonicalActor(
   parryCounterBudgetRemaining: a.parryCounterBudgetRemaining,
   statusLedger: a.statusLedger,
   basicAttackSegmentIndex: a.basicAttackSegmentIndex,
+  basicAction: a.basicAction,
+  qiLedger: a.qiLedger,
+  killQiGain: a.killQiGain,
+  killQiWindowCap: a.killQiWindowCap,
+  qiWindowSerial: a.qiWindowSerial,
 );
