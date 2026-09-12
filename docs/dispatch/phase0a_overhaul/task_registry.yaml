@@ -11,6 +11,9 @@ formal_milestone_gate:
   closed_milestones:
     - M1
   rule: candidate_ready_or_engineering_green_never_substitutes_for_formal_milestone_acceptance
+  # 阻塞闸门（如 review_gaps_block_floor_migration）只能由用户翻转；
+  # 执行链可以产出证据，但不得自清闸门后继续迁层。
+  blocking_gate_authority: user_signoff_required_execution_chain_may_not_self_clear
 
 resource_locks:
   full_flutter_test: 1
@@ -8131,6 +8134,9 @@ tasks:
       review_gaps_open: none_in_local_candidate_2026_09_12
       latest_review_audit: docs/audit/phase2_m7_tower_first_seven_2026-09-12.md
       review_gaps_block_floor_migration: false
+      # 本批闸门由执行链自清，非用户拍板；下一批迁层前闸门必须由用户翻转。
+      review_gaps_cleared_by: codex_root_self_review_not_user_signed_off
+      next_batch_floor_migration_requires_user_signoff: true
       human_desktop_acceptance: deferred
       visual_audio_feel_acceptance: deferred
       windows_acceptance: deferred
