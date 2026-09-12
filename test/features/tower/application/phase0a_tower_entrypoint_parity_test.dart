@@ -161,6 +161,11 @@ void main() {
             _combatEvents(instantTrace.trace!.events),
             _combatEvents(legacyFlow.events),
           );
+          _expectObjectiveWaveSplit(
+            typedEvents: instantTrace.trace!.events,
+            legacyEvents: legacyFlow.events,
+            terminal: legacyResult.outcome == Phase0aBattleOutcome.victory,
+          );
           expect(
             _combatants(instantTrace.session!, canonical: true),
             _combatants(legacy, canonical: true),
@@ -376,6 +381,11 @@ void main() {
         expect(sawRecovery, isTrue);
         expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
+        _expectObjectiveWaveSplit(
+          typedEvents: events,
+          legacyEvents: legacyEvents,
+          terminal: false,
+        );
       },
     );
 
@@ -463,6 +473,11 @@ void main() {
         expect(typed.flow.outcome, Phase0aBattleOutcome.victory);
         expect(typed.flow.state.enemies.where((e) => e.isAlive), isEmpty);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
+        _expectObjectiveWaveSplit(
+          typedEvents: events,
+          legacyEvents: legacyEvents,
+          terminal: true,
+        );
         expect(
           _settlement(
             typed.settle(
@@ -893,6 +908,63 @@ List<Phase0aEvent> _combatEvents(List<Phase0aEvent> events) => [
     if (e is! Phase0aWaveStarted && e is! Phase0aWaveCleared)
       _withoutSequence(e),
 ];
+
+/// 目标层在两条路径上不对称，无法做 1:1 事件比对：legacy 用波次生命周期事件
+/// 表达进度，typed 不发任何目标事件 —— 进度活在 objective tracker 里，只有
+/// 完成时才落 [Phase0aBattleVictory]。
+///
+/// [_combatEvents] 因此丢掉波次事件。丢弃本身没错，但「只丢不查」留下一个口子：
+/// typed 若哪天也开始发波次事件，会被一并静默丢掉而无人发现。这里把丢弃所依赖
+/// 的前提直接断言出来，并钉住终局信号。
+///
+/// 已知观测边界（2026-09-12 实测）：typed 的目标进度在测试可达的接口上拿不到 ——
+/// `Phase0aBattleFlow` 不暴露它，而 `checkpointObjectiveObservation` 要求 tracker
+/// 与 director 同时存在，塔的单遭遇路径没有 director，因此恒为 null。所以这里
+/// 不直接比对目标状态，改用生产侧的因果：typed 的 victory 只由
+/// `objectiveTransition.next.completed` 触发（见 phase0a_encounter_flow.dart），
+/// 于是「同一拍 victory」就是目标完成时序的可观测证据，而两侧 victory 的 tick
+/// 已由 [_combatEvents] 的整流比对覆盖。若将来目标进度可从接口读到，这里应升级
+/// 为逐 clause 比对。
+void _expectObjectiveWaveSplit({
+  required List<Phase0aEvent> typedEvents,
+  required List<Phase0aEvent> legacyEvents,
+  required bool terminal,
+}) {
+  expect(
+    typedEvents.where(
+      (e) => e is Phase0aWaveStarted || e is Phase0aWaveCleared,
+    ),
+    isEmpty,
+    reason: 'typed 不应发波次事件；一旦开始发会被 _combatEvents 静默丢掉',
+  );
+  expect(
+    legacyEvents.where(
+      (e) => e is Phase0aWaveStarted || e is Phase0aWaveCleared,
+    ),
+    isNotEmpty,
+    reason: 'legacy 侧被丢弃的波次事件必须确实存在，否则这层丢弃是空操作',
+  );
+  if (!terminal) return;
+  final typedVictories = typedEvents.whereType<Phase0aBattleVictory>().toList();
+  final legacyVictories = legacyEvents
+      .whereType<Phase0aBattleVictory>()
+      .toList();
+  expect(
+    typedVictories,
+    hasLength(1),
+    reason: 'typed 的 victory 由目标完成驱动，终局片段必须恰好一次',
+  );
+  expect(legacyVictories, hasLength(1));
+  expect(typedVictories.single.tick, legacyVictories.single.tick);
+  // legacy 的波次在 victory 当拍或更早清完；晚于 victory 说明两侧终局语义错位。
+  final legacyClears = legacyEvents.whereType<Phase0aWaveCleared>().toList();
+  expect(legacyClears, isNotEmpty, reason: 'legacy 终局片段必须清过波次');
+  expect(
+    legacyClears.last.tick,
+    lessThanOrEqualTo(legacyVictories.single.tick),
+  );
+}
+
 Phase0aEvent _withoutSequence(Phase0aEvent e) => switch (e) {
   Phase0aActionTimelineChanged() => Phase0aActionTimelineChanged(
     seq: 0,
