@@ -43,6 +43,36 @@ final class NumericFieldEvidence {
 
 final numericFieldEvidence = <NumericFieldEvidence>[
   NumericFieldEvidence(
+    'Character.passiveExperienceRemainder',
+    'Character',
+    ['passiveExperienceRemainder'],
+    true,
+    () => Character().passiveExperienceRemainder,
+    (db) async => [
+      (await db.collection<Character>().get(1))!.passiveExperienceRemainder,
+    ],
+    (db, value) async {
+      final row = (await db.collection<Character>().get(1))!;
+      row.passiveExperienceRemainder = value.toDouble();
+      await db.collection<Character>().put(row);
+    },
+  ),
+  NumericFieldEvidence(
+    'SaveData.passiveMojianshiRemainder',
+    'SaveData',
+    ['passiveMojianshiRemainder'],
+    true,
+    () => SaveData().passiveMojianshiRemainder,
+    (db) async => [
+      (await db.collection<SaveData>().get(0))!.passiveMojianshiRemainder,
+    ],
+    (db, value) async {
+      final row = (await db.collection<SaveData>().get(0))!;
+      row.passiveMojianshiRemainder = value.toDouble();
+      await db.collection<SaveData>().put(row);
+    },
+  ),
+  NumericFieldEvidence(
     'Character.internalForce',
     'Character',
     ['internalForce'],

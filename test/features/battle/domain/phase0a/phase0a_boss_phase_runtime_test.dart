@@ -191,7 +191,7 @@ void main() {
           phaseIndex: 1,
         ).copyWith(attackCooldownRemaining: 0.05),
       );
-      final intents = ai.intentsFor(state: before);
+      final intents = ai.intentsFor(state: before, deltaSeconds: 0.1);
       expect(intents.single, isA<Phase0aEnemySkillIntent>());
 
       final result = reducePhase0aTick(
@@ -214,8 +214,16 @@ void main() {
         isFalse,
       );
 
-      final whileCooling = ai.intentsFor(state: result.state);
-      expect(whileCooling.single, isA<Phase0aAttackIntent>());
+      final whileCooling = ai.intentsFor(
+        state: result.state,
+        deltaSeconds: 0.1,
+      );
+      expect(whileCooling, isEmpty);
+      final basicAfterActionCooldown = ai.intentsFor(
+        state: result.state,
+        deltaSeconds: result.state.enemies.single.attackCooldownRemaining,
+      );
+      expect(basicAfterActionCooldown.single, isA<Phase0aAttackIntent>());
     },
   );
 
@@ -240,7 +248,7 @@ void main() {
     );
 
     expect(
-      ai.intentsFor(state: _state(_boss())).single,
+      ai.intentsFor(state: _state(_boss()), deltaSeconds: 0.1).single,
       isA<Phase0aAttackIntent>(),
     );
   });

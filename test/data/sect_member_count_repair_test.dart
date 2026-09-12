@@ -172,7 +172,7 @@ void main() {
 
       await open();
       expect(await count(), 2);
-      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.49.0');
+      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.50.0');
       expect(IsarSetup.sectMemberCountRepairIssues, isEmpty);
       await IsarSetup.close();
       await open();
@@ -407,7 +407,7 @@ void main() {
     () async {
       await seed(characters: [_founder(), _character(2)..isInSect = false]);
       await open();
-      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.49.0');
+      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.50.0');
       expect(await count(), _missingLong);
       expectIssue(characterId: 2);
       await IsarSetup.close();
@@ -420,7 +420,7 @@ void main() {
       });
       await IsarSetup.close();
       await open();
-      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.49.0');
+      expect((await IsarSetup.currentSaveData())!.saveVersion, '0.50.0');
       expect(await count(), 1);
       expect(IsarSetup.sectMemberCountRepairIssues, isEmpty);
     },

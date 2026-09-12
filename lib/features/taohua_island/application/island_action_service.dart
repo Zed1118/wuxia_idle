@@ -4,6 +4,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../../data/defs/taohua_island_config.dart';
+import 'island_settle_service.dart';
 
 /// 建筑升级操作的失败/成功原因。
 enum UpgradeResult {
@@ -46,8 +47,8 @@ enum SelectRecipeResult {
 ///   然后读 Isar 做银两 / 材料检查，全过则原子写 Isar。
 /// - [selectRecipe]：检查 isProcessor / recipeExists / realmUnlock，全过则原子写 Isar。
 ///
-/// 失败路径**无任何副作用**（check 在 writeTxn 外先做；txn 内仅在全过后写，
-/// 单一 txn 保证原子性）。
+/// 失败路径**无任何副作用**：事务内同步普通收益后重查门槛，失败回滚
+/// 同事务内全部收益与建筑写入。
 class IslandActionService {
   IslandActionService._();
 
@@ -86,8 +87,7 @@ class IslandActionService {
 
   /// 升级指定建筑。
   ///
-  /// - [save]：调用前从 Isar 取出的 SaveData 快照（仅作 check 初值用；
-  ///   txn 内重新 get 确保最新）。
+  /// - [save]：调用前的快照；事务内重读，并使用持久祖师的最新境界。
   /// - [buildingType]：要升级的建筑类型。
   /// - [founderRealmIndex]：祖师境界 index（0=学徒…6=武圣）。
   ///
@@ -96,96 +96,66 @@ class IslandActionService {
     required SaveData save,
     required BuildingType buildingType,
     required int founderRealmIndex,
+    DateTime? now,
   }) async {
-    final cfg = GameRepository.instance.numbers.taohuaIsland;
-    final bCfg = cfg.buildings[buildingType]!;
-
-    // 从 save 快照取当前建筑（check 用）
-    final building = save.islandBuildings.firstWhere(
-      (b) => b.type == buildingType,
-    );
-    final currentLevel = building.level;
-
-    // ── 纯检查阶段（txn 外，不写 Isar）──────────────────────────────────────
-
-    // 1 & 2: maxLevel / realmLocked（纯静态，不需要 Isar）
-    // 传 silver=-1 / material=-1 先只检查前两项（后两项待读 Isar 后再检查）
-    final earlyBlock = upgradeBlockReason(
-      cfg: bCfg,
-      level: currentLevel,
-      founderRealmIndex: founderRealmIndex,
-      silver: 0,
-      material: 0,
-    );
-    // earlyBlock 仅覆盖 maxLevelReached / realmLocked（silver/material=0 时
-    // 若实际有资源也会误报 notEnoughSilver，所以分两阶段：先检 level/realm）
-    if (earlyBlock == UpgradeResult.maxLevelReached) {
-      return UpgradeResult.maxLevelReached;
-    }
-    if (earlyBlock == UpgradeResult.realmLocked) {
-      return UpgradeResult.realmLocked;
-    }
-
+    final bCfg =
+        GameRepository.instance.numbers.taohuaIsland.buildings[buildingType]!;
     final isar = IsarSetup.instance;
+    final upgradedAt = now ?? DateTime.now();
+    try {
+      return await isar.writeTxn(() async {
+        final current = await IslandSettleService.loadAfterPassiveInTxn(
+          upgradedAt,
+          database: isar,
+        );
+        final building = current.islandBuildings.firstWhere(
+          (state) => state.type == buildingType,
+        );
+        final realm = await IslandSettleService.founderRealmIndex(
+          current,
+          database: isar,
+        );
+        final silver = await isar.inventoryItems.getByDefId('item_silver');
+        final material = await isar.inventoryItems.getByDefId(
+          bCfg.upgradeMaterialItem,
+        );
+        final blocked = upgradeBlockReason(
+          cfg: bCfg,
+          level: building.level,
+          founderRealmIndex: realm,
+          silver: silver?.quantity ?? 0,
+          material: material?.quantity ?? 0,
+        );
+        if (blocked != null) throw _ActionBlocked(blocked);
 
-    // 3. 银两与材料检查（读 Isar 但不写，再调纯静态函数复用同一判断逻辑）
-    final silverItem = await isar.inventoryItems.getByDefId('item_silver');
-    final silverQty = silverItem?.quantity ?? 0;
-    final materialItem = await isar.inventoryItems.getByDefId(
-      bCfg.upgradeMaterialItem,
-    );
-    final materialQty = materialItem?.quantity ?? 0;
-
-    final fullBlock = upgradeBlockReason(
-      cfg: bCfg,
-      level: currentLevel,
-      founderRealmIndex: founderRealmIndex,
-      silver: silverQty,
-      material: materialQty,
-    );
-    if (fullBlock != null) return fullBlock;
-
-    // ── 执行阶段（单一 writeTxn 原子）────────────────────────────────────────
-    // P1-7(2026-07-07 体检批5):txn 内重跑完整检查防 check-then-act。上面
-    // sufficiency 检查(:127-144)在 txn 外用快照,连点/并发时两笔都过外层检查,
-    // 旧代码 txn 内直接 -= 扣成负数、越 maxLevel。改为 txn 内用最新快照重跑
-    // upgradeBlockReason,不足/越界则空提交回滚并返回对应 block。
-    UpgradeResult? txnBlock;
-    await isar.writeTxn(() async {
-      final s = (await isar.saveDatas.get(0))!;
-      final b = s.islandBuildings.firstWhere((b) => b.type == buildingType);
-      final silver = await isar.inventoryItems.getByDefId('item_silver');
-      final mat = await isar.inventoryItems.getByDefId(
-        bCfg.upgradeMaterialItem,
-      );
-
-      txnBlock = upgradeBlockReason(
-        cfg: bCfg,
-        level: b.level,
-        founderRealmIndex: founderRealmIndex,
-        silver: silver?.quantity ?? 0,
-        material: mat?.quantity ?? 0,
-      );
-      if (txnBlock != null) return; // 不写任何行,txn 空提交等价回滚
-
-      // 按 txn 内最新 level 重算扣除量(成本随 level 变)
-      final silverNeededNow = bCfg.upgradeSilverFor(b.level);
-      final materialNeededNow = bCfg.upgradeMaterialFor(b.level);
-
-      b.level += 1;
-      await isar.saveDatas.put(s);
-
-      if (silver != null) {
-        silver.quantity -= silverNeededNow;
-        await isar.inventoryItems.put(silver);
-      }
-      if (mat != null) {
-        mat.quantity -= materialNeededNow;
-        await isar.inventoryItems.put(mat);
-      }
-    });
-
-    return txnBlock ?? UpgradeResult.ok;
+        final silverNeeded = bCfg.upgradeSilverFor(building.level);
+        final materialNeeded = bCfg.upgradeMaterialFor(building.level);
+        await IslandSettleService.settleInTxn(
+          current,
+          upgradedAt,
+          realmIndex: realm,
+          database: isar,
+        );
+        // Settlement replaces the embedded list; mutate its new state, never
+        // the pre-settlement reference. The elapsed window uses the old level.
+        current.islandBuildings
+                .firstWhere((state) => state.type == buildingType)
+                .level +=
+            1;
+        await isar.saveDatas.put(current);
+        if (silver != null) {
+          silver.quantity -= silverNeeded;
+          await isar.inventoryItems.put(silver);
+        }
+        if (material != null) {
+          material.quantity -= materialNeeded;
+          await isar.inventoryItems.put(material);
+        }
+        return UpgradeResult.ok;
+      });
+    } on _ActionBlocked<UpgradeResult> catch (blocked) {
+      return blocked.result;
+    }
   }
 
   // ── selectRecipe ──────────────────────────────────────────────────────────
@@ -203,6 +173,7 @@ class IslandActionService {
     required BuildingType buildingType,
     required String recipeId,
     required int founderRealmIndex,
+    DateTime? now,
   }) async {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
     final bCfg = cfg.buildings[buildingType]!;
@@ -218,22 +189,44 @@ class IslandActionService {
       return SelectRecipeResult.recipeNotFound;
     }
 
-    // 3. 境界门槛（§5.3 config-backed 实现）
-    if (recipe.realmUnlockIndex > founderRealmIndex) {
-      return SelectRecipeResult.realmLocked;
-    }
-
-    // ── 执行阶段（单一 writeTxn 原子）────────────────────────────────────────
     final isar = IsarSetup.instance;
-    await isar.writeTxn(() async {
-      final s = (await isar.saveDatas.get(0))!;
-      s.islandBuildings
-              .firstWhere((b) => b.type == buildingType)
-              .activeRecipeId =
-          recipeId;
-      await isar.saveDatas.put(s);
-    });
-
-    return SelectRecipeResult.ok;
+    final selectedAt = now ?? DateTime.now();
+    try {
+      return await isar.writeTxn(() async {
+        final current = await IslandSettleService.loadAfterPassiveInTxn(
+          selectedAt,
+          database: isar,
+        );
+        final realm = await IslandSettleService.founderRealmIndex(
+          current,
+          database: isar,
+        );
+        if (recipe.realmUnlockIndex > realm) {
+          throw const _ActionBlocked(SelectRecipeResult.realmLocked);
+        }
+        await IslandSettleService.settleInTxn(
+          current,
+          selectedAt,
+          realmIndex: realm,
+          database: isar,
+        );
+        current.islandBuildings
+                .firstWhere((state) => state.type == buildingType)
+                .activeRecipeId =
+            recipeId;
+        await isar.saveDatas.put(current);
+        return SelectRecipeResult.ok;
+      });
+    } on _ActionBlocked<SelectRecipeResult> catch (blocked) {
+      return blocked.result;
+    }
   }
+}
+
+/// Abort the whole transaction, including pending passive/island accrual, when
+/// an action fails a guard. Public callers continue receiving the existing enum.
+class _ActionBlocked<T> implements Exception {
+  final T result;
+
+  const _ActionBlocked(this.result);
 }

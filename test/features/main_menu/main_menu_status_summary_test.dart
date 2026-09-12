@@ -76,6 +76,50 @@ void main() {
     ..clearedStageIds = cleared
     ..clearedAt = [for (final _ in cleared) DateTime(2026, 6, 29)];
 
+  for (final available in [0, 2]) {
+    test(
+      'island summary counts separate product integers, available=$available',
+      () async {
+        final save = islandSave(0.4);
+        save.islandBuildings.add(
+          IslandBuildingState()
+            ..type = BuildingType.daZaoTai
+            ..activeRecipeId = 'forge_xinxue'
+            ..setProductStored('item_mojianshi', available + 0.6)
+            ..setProductStored('item_xinxuejiejing', 0.7),
+        );
+        final container = ProviderContainer(
+          overrides: [
+            activeRetreatSessionProvider.overrideWith((ref) async => null),
+            mainMenuSaveSnapshotProvider.overrideWith((ref) async => save),
+            activeCharacterIdsProvider.overrideWith((ref) async => []),
+            mainlineProgressProvider.overrideWith((ref) async => progress([])),
+          ],
+        );
+        addTearDown(container.dispose);
+        final summaries = await container.read(
+          mainMenuStatusSummaryProvider.future,
+        );
+        final islands = summaries.where(
+          (item) => item.kind == MainMenuStatusKind.island,
+        );
+        if (available == 0) {
+          expect(
+            islands,
+            isEmpty,
+            reason:
+                'Different material fractions cannot form a claimable item.',
+          );
+        } else {
+          expect(
+            islands.single.detail,
+            UiStrings.mainMenuStatusIslandDetail(available),
+          );
+        }
+      },
+    );
+  }
+
   test('provider returns at most five items in fixed priority order', () async {
     final retreating = character(
       id: 7,

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'dart:isolate' as isolates;
+import 'dart:ui' show FramePhase;
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -23,6 +25,7 @@ final class BattleFrameProfileRunConfig {
     required this.viewportWidth,
     required this.viewportHeight,
     required this.nativeContentViewport,
+    this.diagnostics = false,
   });
 
   final String runId;
@@ -34,6 +37,7 @@ final class BattleFrameProfileRunConfig {
   final double viewportWidth;
   final double viewportHeight;
   final bool nativeContentViewport;
+  final bool diagnostics;
 
   Duration get total => warmup + sample + cooldown;
 
@@ -98,6 +102,7 @@ final class BattleFrameProfileRunConfig {
       viewportHeight: double.parse(viewport.group(2)!),
       nativeContentViewport:
           values['battle-profile-native-content-viewport'] == 'true',
+      diagnostics: values['battle-profile-diagnostics'] == 'true',
     );
   }
 }
@@ -109,6 +114,7 @@ final class BattleFrameProfileSample {
     required this.rasterUs,
     required this.totalSpanUs,
     required this.rssBytes,
+    this.frameTiming,
   });
 
   final int elapsedUs;
@@ -116,6 +122,7 @@ final class BattleFrameProfileSample {
   final int rasterUs;
   final int totalSpanUs;
   final int rssBytes;
+  final FrameTiming? frameTiming;
 
   Map<String, Object> toJson() => <String, Object>{
     'elapsed_us': elapsedUs,
@@ -123,6 +130,17 @@ final class BattleFrameProfileSample {
     'raster_us': rasterUs,
     'total_span_us': totalSpanUs,
     'rss_bytes': rssBytes,
+    if (frameTiming case final timing?) ...<String, Object>{
+      'frame_number': timing.frameNumber,
+      'phase_timestamps_us': <String, int>{
+        for (final phase in FramePhase.values)
+          phase.name: timing.timestampInMicroseconds(phase),
+      },
+      'vsync_overhead_us': timing.vsyncOverhead.inMicroseconds,
+      'build_to_raster_gap_us':
+          timing.timestampInMicroseconds(FramePhase.rasterStart) -
+          timing.timestampInMicroseconds(FramePhase.buildFinish),
+    },
   };
 }
 
@@ -201,6 +219,7 @@ class BattleFrameProfileAccumulator {
     required Duration raster,
     Duration? totalSpan,
     int rssBytes = 0,
+    FrameTiming? frameTiming,
   }) {
     if (elapsed < warmup ||
         (sampleDuration != null && elapsed >= warmup + sampleDuration!)) {
@@ -213,6 +232,7 @@ class BattleFrameProfileAccumulator {
         rasterUs: raster.inMicroseconds,
         totalSpanUs: (totalSpan ?? build + raster).inMicroseconds,
         rssBytes: rssBytes,
+        frameTiming: frameTiming,
       ),
     );
     if (build > _maxBuild) _maxBuild = build;
@@ -249,6 +269,279 @@ class BattleFrameProfileAccumulator {
     if (sorted.isEmpty) return Duration.zero;
     final index = ((sorted.length - 1) * percentile).ceil();
     return Duration(microseconds: sorted[index]);
+  }
+}
+
+/// Opt-in diagnostic capture; its overhead excludes the run from baseline use.
+/// CPU metadata is expensive: retrieve it once after the sampling interval.
+/// Timeline chunks retain their original clock windows and VM response data.
+final class BattleFrameProfileDiagnostics {
+  BattleFrameProfileDiagnostics({
+    Future<VmService> Function()? connect,
+    String? isolateId,
+  }) : _connect = connect ?? _connectToVm,
+       _isolateId =
+           isolateId ??
+           developer.Service.getIsolateId(isolates.Isolate.current);
+
+  static const _rpcTimeout = Duration(seconds: 8);
+  static const _chunkInterval = Duration(seconds: 5);
+  static const _requestedStreams = <String>['Dart', 'GC', 'Embedder'];
+  final Future<VmService> Function() _connect;
+  final String? _isolateId;
+  final List<Map<String, Object?>> cpuChunks = [];
+  final List<Map<String, Object?>> timelineChunks = [];
+  final List<Map<String, Object?>> errors = [];
+  VmService? _service;
+  Future<void>? _startFuture;
+  Future<void>? _captureFuture;
+  Future<void>? _finishFuture;
+  Timer? _timer;
+  String? _originalProfiler;
+  List<String>? _originalStreams;
+  Map<String, dynamic>? _timelineFlags;
+  Map<String, Object?>? _cpuCoverage;
+  int? _origin;
+  int? _firstOrigin;
+  int? _lastEnd;
+  int _cpuSamples = 0;
+  int _timelineEvents = 0;
+  bool _cpuEnabled = false;
+  bool _timelineEnabled = false;
+
+  static Future<VmService> _connectToVm() async {
+    final uri = (await developer.Service.getInfo()).serverWebSocketUri;
+    if (uri == null) throw StateError('Dart VM service URI is unavailable.');
+    return vmServiceConnectUri(uri.toString());
+  }
+
+  Future<void> start() => _startFuture ??= _start();
+
+  Future<void> _start() async {
+    try {
+      final service = _service = await _connect().timeout(_rpcTimeout);
+      if (_isolateId == null) {
+        throw StateError('Current isolate is unavailable.');
+      }
+      try {
+        final flags = await service.getFlagList().timeout(_rpcTimeout);
+        _originalProfiler = flags.flags
+            ?.where((flag) => flag.name == 'profiler')
+            .firstOrNull
+            ?.valueAsString;
+        if (_originalProfiler == null) {
+          throw StateError('Cannot preserve the original profiler flag.');
+        }
+        await _setProfiler('true');
+        _cpuEnabled = true;
+      } on Object catch (error) {
+        _recordError('cpu', 'setup', error);
+      }
+      try {
+        final flags = await service.getVMTimelineFlags().timeout(_rpcTimeout);
+        _timelineFlags = flags.toJson();
+        _originalStreams = List.of(flags.recordedStreams ?? <String>[]);
+        final available = flags.availableStreams ?? <String>[];
+        final requested = _requestedStreams.where(available.contains).toList();
+        final unavailable = _requestedStreams.where(
+          (stream) => !available.contains(stream),
+        );
+        if (unavailable.isNotEmpty) {
+          _recordError(
+            'timeline',
+            'streams',
+            'Unavailable streams: ${unavailable.join(', ')}',
+          );
+        }
+        await service
+            .setVMTimelineFlags({..._originalStreams!, ...requested}.toList())
+            .timeout(_rpcTimeout);
+        final active = await service.getVMTimelineFlags().timeout(_rpcTimeout);
+        _timelineFlags = active.toJson();
+        final missing = requested.where(
+          (stream) => !(active.recordedStreams ?? <String>[]).contains(stream),
+        );
+        if (missing.isNotEmpty) {
+          _recordError(
+            'timeline',
+            'streams',
+            'Unavailable streams: ${missing.join(', ')}',
+          );
+        }
+        _timelineEnabled = true;
+      } on Object catch (error) {
+        _recordError('timeline', 'setup', error);
+      }
+      _origin = _firstOrigin = developer.Timeline.now;
+      _timer = Timer.periodic(_chunkInterval, (_) => unawaited(capture()));
+    } on Object catch (error) {
+      _recordError('cpu', 'connect', error);
+      _recordError('timeline', 'connect', error);
+    }
+  }
+
+  Future<void> _setProfiler(String value) async {
+    final response = await _service!
+        .setFlag('profiler', value)
+        .timeout(_rpcTimeout);
+    if (response is! Success) throw StateError(jsonEncode(response.toJson()));
+  }
+
+  Future<void> capture() => _captureFuture ??= _capture().whenComplete(() {
+    _captureFuture = null;
+  });
+
+  Future<void> _capture() async {
+    final service = _service;
+    final origin = _origin;
+    if (service == null || origin == null) return;
+    final end = developer.Timeline.now;
+    if (end <= origin) return;
+    final extent = end - origin;
+    final window = <String, Object?>{
+      'requested_origin_us': origin,
+      'requested_extent_us': extent,
+    };
+    if (_timelineEnabled) {
+      try {
+        final timeline = await service
+            .getVMTimeline(timeOriginMicros: origin, timeExtentMicros: extent)
+            .timeout(_rpcTimeout);
+        timelineChunks.add({...window, 'response': timeline.toJson()});
+        _timelineEvents += timeline.traceEvents?.length ?? 0;
+      } on Object catch (error) {
+        _recordError('timeline', 'capture', error, window);
+      }
+    }
+    _origin = _lastEnd = end;
+  }
+
+  Future<void> _captureCpuOnce() async {
+    final origin = _firstOrigin;
+    final end = _lastEnd;
+    if (_cpuEnabled && origin != null && end != null && end > origin) {
+      final window = <String, Object?>{
+        'requested_origin_us': origin,
+        'requested_extent_us': end - origin,
+      };
+      try {
+        final samples = await _service!
+            .getCpuSamples(_isolateId!, origin, end - origin)
+            .timeout(_rpcTimeout);
+        cpuChunks.add({...window, 'response': samples.toJson()});
+        _cpuSamples = samples.samples?.length ?? 0;
+        final returnedOrigin = samples.timeOriginMicros;
+        final returnedExtent = samples.timeExtentMicros;
+        final returnedEnd = returnedOrigin != null && returnedExtent != null
+            ? returnedOrigin + returnedExtent
+            : null;
+        final tolerance = samples.samplePeriod ?? 0;
+        final complete =
+            returnedOrigin != null &&
+            returnedEnd != null &&
+            returnedOrigin <= origin + tolerance &&
+            returnedEnd >= end - tolerance;
+        _cpuCoverage = {
+          ...window,
+          'returned_origin_us': returnedOrigin,
+          'returned_extent_us': returnedExtent,
+          'function_count': samples.functions?.length ?? 0,
+          'sample_period_us': samples.samplePeriod,
+          'status': _cpuSamples == 0
+              ? 'EMPTY'
+              : (complete ? 'RANGE_SPANNED' : 'PARTIAL_RANGE'),
+          'limitation':
+              'Idle time and overwritten buffer history cannot be distinguished from the returned sample range.',
+        };
+        if (_cpuSamples > 0 && !complete) {
+          _recordError(
+            'cpu',
+            'coverage',
+            'Returned samples do not span the requested interval; see raw coverage.',
+            window,
+          );
+        }
+      } on Object catch (error) {
+        _recordError('cpu', 'capture', error, window);
+      }
+    }
+  }
+
+  void _recordError(
+    String source,
+    String phase,
+    Object error, [
+    Map<String, Object?> window = const {},
+  ]) => errors.add({
+    'source': source,
+    'phase': phase,
+    'error': error.toString(),
+    ...window,
+  });
+
+  String _status(String source, int count, bool enabled) {
+    final failed = errors.any((error) => error['source'] == source);
+    if (count > 0) return failed ? 'PARTIAL' : 'COLLECTED';
+    if (failed) return 'MISSING';
+    return enabled ? 'EMPTY' : 'NOT_STARTED';
+  }
+
+  Map<String, Object?> get status => {
+    'enabled': true,
+    'baseline_eligible': false,
+    'cpu_status': _status('cpu', _cpuSamples, _cpuEnabled),
+    'timeline_status': _status('timeline', _timelineEvents, _timelineEnabled),
+    'cpu_sample_count': _cpuSamples,
+    'cpu_capture_mode': 'after_sample_once',
+    'cpu_coverage': _cpuCoverage,
+    'timeline_event_count': _timelineEvents,
+    'isolate_id': _isolateId,
+    'requested_start_us': _firstOrigin,
+    'requested_end_us': _lastEnd,
+    'timeline_flags': _timelineFlags,
+    'coverage':
+        'Inspect each raw chunk; COLLECTED does not certify gap-free coverage.',
+    'errors': errors,
+  };
+
+  Future<void> finish() => _finishFuture ??= _finish();
+
+  Future<void> _finish() async {
+    await _startFuture;
+    _timer?.cancel();
+    await _captureFuture;
+    await capture();
+    await _captureCpuOnce();
+    if (_originalStreams != null) {
+      try {
+        await _service!
+            .setVMTimelineFlags(_originalStreams!)
+            .timeout(_rpcTimeout);
+      } on Object catch (error) {
+        _recordError('timeline', 'restore', error);
+      }
+    }
+    if (_originalProfiler != null) {
+      try {
+        await _setProfiler(_originalProfiler!);
+      } on Object catch (error) {
+        _recordError('cpu', 'restore', error);
+      }
+    }
+    await _service?.dispose();
+    _service = null;
+  }
+
+  Future<void> writeEvidence(Directory directory) async {
+    for (final entry in <String, Object>{
+      'cpu-profile.json': {'chunks': cpuChunks},
+      'timeline.json': {'chunks': timelineChunks},
+      'diagnostics-status.json': status,
+    }.entries) {
+      await File(
+        '${directory.path}/${entry.key}',
+      ).writeAsString('${jsonEncode(entry.value)}\n');
+    }
   }
 }
 
@@ -297,6 +590,8 @@ class BattleFrameProfileProbe extends StatefulWidget {
   final Widget child;
   static BattleFrameProfileRunConfig? _runtimeConfig;
 
+  static bool get diagnosticsEnabled => _runtimeConfig?.diagnostics == true;
+
   static BattleFrameProfileRunConfig? configureFromArgs(List<String> args) {
     return _runtimeConfig = BattleFrameProfileRunConfig.tryParse(args);
   }
@@ -325,6 +620,8 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
   late final BattleFrameProfileAccumulator _profile;
   Timer? _finishTimer;
   Timer? _memoryTimer;
+  Timer? _diagnosticsFinishTimer;
+  BattleFrameProfileDiagnostics? _diagnostics;
   bool _reported = false;
   double? _logicalWidth;
   double? _logicalHeight;
@@ -342,6 +639,14 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
       sampleDuration: _config?.sample,
     );
     _elapsed.start();
+    if (_config?.diagnostics == true) {
+      _diagnostics = BattleFrameProfileDiagnostics();
+      unawaited(_diagnostics!.start());
+      _diagnosticsFinishTimer = Timer(
+        _config!.warmup + _config.sample,
+        () => unawaited(_diagnostics!.finish()),
+      );
+    }
     SchedulerBinding.instance.addTimingsCallback(_recordTimings);
     unawaited(_gc.connect());
     _recordMemory();
@@ -360,6 +665,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
         raster: timing.rasterDuration,
         totalSpan: timing.totalSpan,
         rssBytes: rss,
+        frameTiming: _config?.diagnostics == true ? timing : null,
       );
     }
   }
@@ -383,6 +689,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
     _logicalWidth = media?.size.width;
     _logicalHeight = media?.size.height;
     _devicePixelRatio = media?.devicePixelRatio;
+    await _diagnostics?.finish();
     await _gc.close();
     final summary = _profile.summary;
     final line = summary.toJsonLine(
@@ -407,6 +714,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
   ) async {
     final directory = Directory(config.outputDirectory);
     await directory.create(recursive: true);
+    await _diagnostics?.writeEvidence(directory);
     await File('${directory.path}/frames.jsonl').writeAsString(
       '${_profile.samples.map((sample) => jsonEncode(sample.toJson())).join('\n')}\n',
     );
@@ -429,6 +737,9 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
     final payload = <String, Object?>{
       'schema': 'route-c-production-profile-summary-v1',
       'run_id': config.runId,
+      'diagnostics_enabled': config.diagnostics,
+      'baseline_eligible': !config.diagnostics,
+      if (_diagnostics != null) 'diagnostics': _diagnostics!.status,
       ...summary.toJson(
         totalSeconds: config.total.inSeconds,
         warmupSeconds: config.warmup.inSeconds,
@@ -453,11 +764,13 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
   void dispose() {
     _finishTimer?.cancel();
     _memoryTimer?.cancel();
+    _diagnosticsFinishTimer?.cancel();
     if (!_reported) {
       SchedulerBinding.instance.removeTimingsCallback(_recordTimings);
     }
     _elapsed.stop();
     unawaited(_gc.close());
+    if (_diagnostics != null) unawaited(_diagnostics!.finish());
     super.dispose();
   }
 

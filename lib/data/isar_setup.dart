@@ -8,6 +8,7 @@ import 'game_repository.dart';
 import 'isar_restore_paths.dart';
 import 'isar_missing_field_defaults.dart';
 import 'sect_member_count_repair.dart';
+import 'player_yield_migration.dart';
 import 'slot_summary.dart';
 import '../core/domain/enums.dart';
 import '../core/domain/character.dart';
@@ -106,6 +107,9 @@ class IsarSetup {
     await isar.writeTxn(() async {
       final save = await isar.saveDatas.get(0);
       if (save == null) return;
+      // A slot/menu/restore presence write must not erase an established yield
+      // window. New leaders initialize their ledger at creation instead.
+      PlayerYieldMigration.initializePassiveAnchor(save);
       save.lastOnlineAt = now ?? DateTime.now();
       await isar.saveDatas.put(save);
     });
@@ -244,7 +248,8 @@ class IsarSetup {
   // 旧业务迁移依赖的角色/塔字段先归位；末段补齐其余字段（含 expeditionRunSerial）。
   // 0.49.0 已批准 1A：按核实的角色关联重建 Sect.memberCount 负计数。
   // 冲突行原样保留并报告；以后重开仅重试负计数，不重跑旧业务迁移。
-  static const _currentSaveVersion = '0.49.0';
+  // 0.50.0 Preserve island product identity and persistent ordinary idle fractions.
+  static const _currentSaveVersion = '0.50.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -257,6 +262,11 @@ class IsarSetup {
     final dir = directory ?? await getApplicationDocumentsDirectory();
     _directory = dir;
     await recoverInterruptedRestoreFiles(dir, slotId);
+    // Isar.open is writable even for a read: probe a disposable copy first.
+    // Reject damaged/forward-version files before the original can be changed.
+    if (await File('${dir.path}/wuxia_save_slot$slotId.isar').exists()) {
+      await _withSlotRead(dir, slotId, _readSlotSaveData);
+    }
     _instance = await Isar.open(
       _allSchemas,
       directory: dir.path,
@@ -351,6 +361,13 @@ class IsarSetup {
     // currentCycleIndex/maxClearedCycle 重置成初值 → 数据丢失。
     final fromVersion = save.saveVersion;
     var memberCountIssues = const <SectMemberCountRepairIssue>[];
+    final islandConfig = save.islandBuildings.isEmpty
+        ? null
+        : (GameRepository.isLoaded
+                  ? GameRepository.instance
+                  : await GameRepository.loadAllDefs())
+              .numbers
+              .taohuaIsland;
 
     await isar.writeTxn(() async {
       // 0.48.0 前置依赖：NaN 不能先参与 0.36 时长合并，负哨兵不能先
@@ -680,6 +697,14 @@ class IsarSetup {
         memberCountIssues = await SectMemberCountRepair.repairInTxn(isar, save);
       }
 
+      if (_compareVersion(fromVersion, '0.50.0') < 0) {
+        await IsarMissingFieldDefaults.repairPassiveRemaindersInTxn(isar, save);
+        if (islandConfig != null) {
+          PlayerYieldMigration.migrateIslandStocks(save, islandConfig);
+        }
+        PlayerYieldMigration.initializePassiveAnchor(save);
+      }
+
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });
@@ -978,22 +1003,67 @@ class IsarSetup {
   /// 该槽是否有存档(db 文件存在且含 founder)。当前已打开槽直接读不重开。
   static Future<bool> slotHasSave(int n, {Directory? directory}) async {
     final dir = await _resolveDir(directory);
-    final name = 'wuxia_save_slot$n';
-    if (!await File('${dir.path}/$name.isar').exists()) return false;
-    final already = Isar.getInstance(name);
-    final isar =
-        already ??
-        await Isar.open(
-          _allSchemas,
-          directory: dir.path,
-          name: name,
-          inspector: false,
-        );
-    try {
-      return await isar.characters.filter().isFounderEqualTo(true).count() > 0;
-    } finally {
-      if (already == null) await isar.close(); // 只关临时开的,不关当前槽
+    if (!await File('${dir.path}/wuxia_save_slot$n.isar').exists()) {
+      return false;
     }
+    return _withSlotRead(dir, n, (isar) async {
+      await _readSlotSaveData(isar);
+      return await isar.characters.filter().isFounderEqualTo(true).count() > 0;
+    });
+  }
+
+  /// The native API has no read-only open. Unopened files are inspected through
+  /// disposable copies so schema upgrades or damaged-file initialization cannot
+  /// modify the source. A live instance remains owned by its existing caller.
+  static Future<T> _withSlotRead<T>(
+    Directory directory,
+    int slotId,
+    Future<T> Function(Isar) read,
+  ) async {
+    final name = 'wuxia_save_slot$slotId';
+    final already = Isar.getInstance(name);
+    if (already != null) {
+      if (Directory(already.directory!).absolute.path !=
+          directory.absolute.path) {
+        throw StateError('Slot instance belongs to a different directory');
+      }
+      return read(already);
+    }
+    final probeDir = await Directory.systemTemp.createTemp('wuxia_slot_probe_');
+    final probeName = probeDir.path.split(Platform.pathSeparator).last;
+    Isar? probe;
+    try {
+      await File(
+        '${directory.path}/$name.isar',
+      ).copy('${probeDir.path}/$probeName.isar');
+      probe = await Isar.open(
+        _allSchemas,
+        directory: probeDir.path,
+        name: probeName,
+        inspector: false,
+      );
+      return await read(probe);
+    } finally {
+      try {
+        await probe?.close();
+      } finally {
+        await probeDir.delete(recursive: true);
+      }
+    }
+  }
+
+  static Future<SaveData> _readSlotSaveData(Isar isar) async {
+    final save = await isar.saveDatas.get(0);
+    if (save == null) {
+      throw const UnreadableSaveException('Existing slot has no SaveData');
+    }
+    if (_compareVersion(save.saveVersion, _currentSaveVersion) > 0) {
+      throw UnsupportedSaveVersionException(
+        actualVersion: save.saveVersion,
+        supportedVersion: _currentSaveVersion,
+      );
+    }
+    return save;
   }
 
   /// 遍历 1..3 槽读轻量摘要(选择屏用)。当前已打开槽直接读不重开;临时只读
@@ -1002,24 +1072,14 @@ class IsarSetup {
     final dir = await _resolveDir(directory);
     final out = <SlotSummary>[];
     for (var n = 1; n <= 3; n++) {
-      final name = 'wuxia_save_slot$n';
-      if (!await File('${dir.path}/$name.isar').exists()) {
-        out.add(SlotSummary.empty(n));
-        continue;
-      }
-      final already = Isar.getInstance(name);
-      final isar =
-          already ??
-          await Isar.open(
-            _allSchemas,
-            directory: dir.path,
-            name: name,
-            inspector: false,
-          );
       try {
-        out.add(await _readSummary(isar, n));
-      } finally {
-        if (already == null) await isar.close();
+        if (!await File('${dir.path}/wuxia_save_slot$n.isar').exists()) {
+          out.add(SlotSummary.empty(n));
+          continue;
+        }
+        out.add(await _withSlotRead(dir, n, (isar) => _readSummary(isar, n)));
+      } catch (error, stackTrace) {
+        out.add(SlotSummary.unavailable(n, error, stackTrace));
       }
     }
     DateTime? mostRecent;
@@ -1037,15 +1097,8 @@ class IsarSetup {
   }
 
   static Future<SlotSummary> _readSummary(Isar isar, int n) async {
-    final save = await isar.saveDatas.get(0);
-    if (save != null &&
-        _compareVersion(save.saveVersion, _currentSaveVersion) > 0) {
-      throw UnsupportedSaveVersionException(
-        actualVersion: save.saveVersion,
-        supportedVersion: _currentSaveVersion,
-      );
-    }
-    final founderId = save?.founderCharacterId;
+    final save = await _readSlotSaveData(isar);
+    final founderId = save.founderCharacterId;
     final founder = founderId == null
         ? null
         : await isar.characters.get(founderId);
@@ -1061,9 +1114,9 @@ class IsarSetup {
     return SlotSummary(
       slotId: n,
       isEmpty: false,
-      slotName: save?.slotName?.trim().isEmpty == true
+      slotName: save.slotName?.trim().isEmpty == true
           ? null
-          : save?.slotName?.trim(),
+          : save.slotName?.trim(),
       founderName: founder.name,
       realmDisplay: EnumL10n.realm(founder.realmTier, founder.realmLayer),
       chapterIndex: mp?.currentChapterIndex ?? 1,
@@ -1071,9 +1124,8 @@ class IsarSetup {
       completedFirstCycle:
           mp?.clearedStageCycleKeys.contains('stage_06_05#1') == true ||
           mp?.clearedStageIds.contains('stage_06_05') == true,
-      highestTowerFloor:
-          tp?.highestClearedFloor ?? save?.highestTowerLayer ?? 0,
-      lastPlayed: save?.lastOnlineAt,
+      highestTowerFloor: tp?.highestClearedFloor ?? save.highestTowerLayer,
+      lastPlayed: save.lastOnlineAt,
     );
   }
 
@@ -1087,6 +1139,7 @@ class IsarSetup {
     final dir = await _resolveDir(directory);
     final name = 'wuxia_save_slot$n';
     if (!await File('${dir.path}/$name.isar').exists()) return;
+    await _withSlotRead(dir, n, _readSlotSaveData);
     final already = Isar.getInstance(name);
     final isar =
         already ??

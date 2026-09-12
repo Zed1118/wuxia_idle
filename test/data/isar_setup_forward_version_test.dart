@@ -74,14 +74,15 @@ void main() {
       await raw.close();
     }
 
-    await expectLater(
-      IsarSetup.listSlots(directory: tempDir),
-      throwsA(isA<UnsupportedSaveVersionException>()),
-      reason: '存档列表须把同一异常交给既有 AsyncValue.error 呈现路径',
-    );
+    final slots = await IsarSetup.listSlots(directory: tempDir);
+    expect(slots[0].readError, isA<UnsupportedSaveVersionException>());
+    expect(slots[0].isEmpty, isFalse);
+    expect(slots[1].isEmpty, isTrue);
+    expect(slots[2].isEmpty, isTrue);
+    expect(Isar.instanceNames, isEmpty);
   });
 
-  testWidgets('未来版本档在存档选择屏命中既有 ErrorFallback', (tester) async {
+  testWidgets('列表整体读取错误仍命中既有 ErrorFallback', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

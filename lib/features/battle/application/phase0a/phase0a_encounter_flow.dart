@@ -385,7 +385,11 @@ final class Phase0aEncounterFlow
         ? resolved.nextSeq + 1
         : resolved.nextSeq;
     final nextSession = gatedSession.forkWithStateAndEnemyIntentGate(
-      _copyState(resolved, nextSeq: nextSeq),
+      _copyState(
+        resolved,
+        nextSeq: nextSeq,
+        clearBasicAction: nextOutcome != Phase0aBattleOutcome.ongoing,
+      ),
       enemyIntentGate: Phase0aSpawnGraceIntentGate(
         canAttackActorIds: directorAfterCombat.state.units
             .where((unit) => unit.canAttack)
@@ -430,10 +434,11 @@ final class Phase0aEncounterFlow
     Phase0aArenaState state, {
     List<Phase0aActor>? enemies,
     int? nextSeq,
+    bool clearBasicAction = false,
   }) => Phase0aArenaState(
     tick: state.tick,
     nextSeq: nextSeq ?? state.nextSeq,
-    player: state.player,
+    player: state.player.copyWith(clearBasicAction: clearBasicAction),
     enemies: enemies ?? state.enemies,
     skillSlots: state.skillSlots,
     defendedEntity: state.defendedEntity,

@@ -348,7 +348,8 @@ void main() {
       fail = true;
       expect(
         () => session.advance(
-          deltaSeconds: 0.1,
+          // Observe another eligible attack, not a discarded cooldown request.
+          deltaSeconds: session.state.enemies.single.attackCooldownRemaining,
           command: const Phase0aPlayerCommand(),
         ),
         throwsArgumentError,

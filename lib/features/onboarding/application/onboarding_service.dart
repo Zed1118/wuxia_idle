@@ -58,21 +58,30 @@ class OnboardingService {
   /// 返回 `true` 表示 seed 已执行 / `false` 表示已存在 founder 跳过。
   ///
   /// 调用方:[SplashScreen._bootstrap] IsarSetup.init 之后(splash loading 期间).
-  Future<bool> ensureFoundingMasters({bool soloStart = true}) async {
-    return _seedFoundingMasters(soloStart: soloStart);
+  Future<bool> ensureFoundingMasters({
+    bool soloStart = true,
+    DateTime? now,
+  }) async {
+    return _seedFoundingMasters(soloStart: soloStart, at: now);
   }
 
   /// 新档创建页确认后的祖师塑形 seed。已有 founder 时幂等跳过。
   Future<bool> createFoundingMaster({
     required FounderCreationSelection selection,
     bool soloStart = true,
+    DateTime? now,
   }) async {
-    return _seedFoundingMasters(soloStart: soloStart, creation: selection);
+    return _seedFoundingMasters(
+      soloStart: soloStart,
+      creation: selection,
+      at: now,
+    );
   }
 
   Future<bool> _seedFoundingMasters({
     required bool soloStart,
     FounderCreationSelection? creation,
+    DateTime? at,
   }) async {
     final existing = await isar.characters
         .filter()
@@ -82,7 +91,7 @@ class OnboardingService {
 
     final repo = GameRepository.instance;
     final masters = repo.masters;
-    final now = DateTime.now();
+    final now = at ?? DateTime.now();
 
     await isar.writeTxn(() async {
       // 1. 祖师固定 id=1(与既有 main_menu / character_panel 对齐)。
@@ -144,6 +153,7 @@ class OnboardingService {
       if (save != null) {
         save.activeCharacterIds = seeded.map((c) => c.id).toList();
         save.founderCharacterId = founder.id;
+        save.passiveLastSettledAt = now;
         save.sectName =
             creation?.sectName ?? save.sectName ?? UiStrings.defaultSectName;
         if (creation?.startMode == FounderStartMode.quick) {

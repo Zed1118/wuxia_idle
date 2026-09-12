@@ -53,12 +53,14 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.botCommandBuilder,
     this.checkpointXById = const {},
     this.checkpointGuidanceCopy,
+    this.defendGuidanceCopy,
   }) : assert(feedbackHoldSeconds > 0),
        assert(basicAttackRange == null || basicAttackRange >= 0);
 
   final Phase0aBattleController controller;
   final Map<String, double> checkpointXById;
   final Phase0aCheckpointGuidanceCopy? checkpointGuidanceCopy;
+  final NarrativeContent? defendGuidanceCopy;
   final bool autoStep;
 
   /// Visual-only preference supplied by the gameplay settings owner.
@@ -110,6 +112,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   bool _secondarySkillHeld = false;
   bool _secondaryPointerDown = false;
   bool _gatherTargetingArmed = false;
+  final GlobalKey _pointerCoordinateKey = GlobalKey();
+  Offset? _pointerGlobalPosition;
+  Phase0aStage? _pointerStage;
   bool _contextAttackPending = false;
   bool _automaticAttackEnabled = false;
   bool _applicationActive = true;
@@ -325,6 +330,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _onStagePointerDown(PointerDownEvent event, Phase0aStage stage) {
+    if (event.kind == PointerDeviceKind.mouse) {
+      _pointerGlobalPosition = event.position;
+    }
     if (!_acceptsBattleInput) return;
     if (_gatherTargetingArmed) {
       if (_slot(widget.controller.state, 'gather').availability !=
@@ -402,6 +410,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _onStagePointerMove(PointerMoveEvent event, Phase0aStage stage) {
+    if (event.kind == PointerDeviceKind.mouse) {
+      _pointerGlobalPosition = event.position;
+    }
     if (!_acceptsBattleInput) return;
     if (_primaryPointerDown &&
         (event.buttons & kPrimaryMouseButton) != 0 &&
@@ -472,6 +483,29 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         _pointerAimDirection = null;
       }
     });
+    _focusNode.requestFocus();
+  }
+
+  void _castGatherAtPointer() {
+    if (!_acceptsBattleInput ||
+        _slot(widget.controller.state, 'gather').availability !=
+            Phase0aSkillAvailability.ready) {
+      return;
+    }
+    final position = _pointerGlobalPosition;
+    final stage = _pointerStage;
+    final box = _pointerCoordinateKey.currentContext?.findRenderObject();
+    final target = position != null && stage != null && box is RenderBox
+        ? stage.screenToWorld(box.globalToLocal(position))
+        : null;
+    if (_gatherTargetingArmed) {
+      setState(() => _gatherTargetingArmed = false);
+    }
+    // Capture the current pointer/camera transform now. Held movement and
+    // automatic attacks remain independent of this one-shot command.
+    widget.controller.enqueue(
+      Phase0aPlayerCommand(gather: true, gatherTargetPoint: target),
+    );
     _focusNode.requestFocus();
   }
 
@@ -899,6 +933,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aVfxKind.waveBanner ||
     Phase0aVfxKind.outcomeSeal => true,
     Phase0aVfxKind.damagePopup ||
+    Phase0aVfxKind.enemyStrike ||
     Phase0aVfxKind.gatherPull ||
     Phase0aVfxKind.defeatInk ||
     Phase0aVfxKind.skillImpact => false,
@@ -927,6 +962,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         Phase0aPresentationTokens.damagePopupSeconds,
       Phase0aVfxKind.meleeSlash => Phase0aPresentationTokens.meleeVfxSeconds,
       Phase0aVfxKind.palmTrail => Phase0aPresentationTokens.palmTrailSeconds,
+      Phase0aVfxKind.enemyStrike => Phase0aPresentationTokens.palmTrailSeconds,
       Phase0aVfxKind.skillCast => Phase0aPresentationTokens.skillCastVfxSeconds,
       Phase0aVfxKind.skillImpact =>
         Phase0aPresentationTokens.skillImpactVfxSeconds,
@@ -1067,7 +1103,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       return KeyEventResult.ignored;
     }
     if (event is KeyRepeatEvent &&
-        (_isMovementKey(key) || key == LogicalKeyboardKey.keyJ)) {
+        (_isMovementKey(key) ||
+            key == LogicalKeyboardKey.keyJ ||
+            key == LogicalKeyboardKey.keyQ)) {
       // Held movement/attack is sampled once per fixed tick. Consuming the
       // platform repeat prevents macOS from treating it as an unhandled key
       // (the audible alert) without enqueueing duplicate gameplay commands.
@@ -1096,7 +1134,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     }
     if (_paused) return KeyEventResult.ignored;
     if (key == LogicalKeyboardKey.keyQ) {
-      _toggleGatherTargeting();
+      _castGatherAtPointer();
       return KeyEventResult.handled;
     }
     if (_isMovementKey(key)) {
@@ -1169,189 +1207,209 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               roster: controller.roster,
               positionOf: _actorRenderPosition,
             );
-            return Stack(
-              key: const ValueKey('phase0a_battle_screen'),
-              fit: StackFit.expand,
-              children: [
-                Positioned.fill(
-                  child: MouseRegion(
-                    key: const ValueKey('phase0a_stage_mouse_region'),
-                    cursor: _gatherTargetingArmed
-                        ? SystemMouseCursors.precise
-                        : SystemMouseCursors.basic,
-                    child: Listener(
-                      key: const ValueKey('phase0a_stage_input_layer'),
-                      behavior: HitTestBehavior.opaque,
-                      onPointerDown: (event) =>
-                          _onStagePointerDown(event, stage),
-                      onPointerMove: (event) =>
-                          _onStagePointerMove(event, stage),
-                      onPointerUp: (_) => _stopHeldPointerActions(),
-                      onPointerCancel: (_) => _cancelPointerContext(),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          RepaintBoundary(
-                            key: const ValueKey('phase0a_static_background'),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                Phase0aParallaxBackground(
-                                  cameraOffset: stage.cameraWorldRect.center,
-                                ),
-                                const ColoredBox(color: Color(0x380F0E0B)),
-                                const CustomPaint(painter: _StageWashPainter()),
-                              ],
-                            ),
-                          ),
-                          ..._buildActors(controller, stage),
-                          if (typedDefend != null)
-                            _positionedDefendedEntity(stage, typedDefend),
-                          _FeedbackLayer(
-                            controller: controller,
-                            stage: stage,
-                            entries: _heldFeedback,
-                            feedbackFrame: _feedbackFrame,
-                            numericSkillBindings: widget.numericSkillBindings,
-                          ),
-                          if (offscreenIndicators.isNotEmpty)
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: CustomPaint(
-                                  key: const ValueKey(
-                                    'phase0a_offscreen_indicators',
+            _pointerStage = stage;
+            return MouseRegion(
+              key: _pointerCoordinateKey,
+              onEnter: (event) => _pointerGlobalPosition = event.position,
+              onHover: (event) => _pointerGlobalPosition = event.position,
+              onExit: (_) => _pointerGlobalPosition = null,
+              child: Stack(
+                key: const ValueKey('phase0a_battle_screen'),
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(
+                    child: MouseRegion(
+                      key: const ValueKey('phase0a_stage_mouse_region'),
+                      cursor: _gatherTargetingArmed
+                          ? SystemMouseCursors.precise
+                          : SystemMouseCursors.basic,
+                      child: Listener(
+                        key: const ValueKey('phase0a_stage_input_layer'),
+                        behavior: HitTestBehavior.opaque,
+                        onPointerDown: (event) =>
+                            _onStagePointerDown(event, stage),
+                        onPointerMove: (event) =>
+                            _onStagePointerMove(event, stage),
+                        onPointerUp: (_) => _stopHeldPointerActions(),
+                        onPointerCancel: (_) => _cancelPointerContext(),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            RepaintBoundary(
+                              key: const ValueKey('phase0a_static_background'),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Phase0aParallaxBackground(
+                                    cameraOffset: stage.cameraWorldRect.center,
                                   ),
-                                  painter: Phase0aOffscreenIndicatorPainter(
-                                    indicators: offscreenIndicators,
-                                    frame: _indicatorFrame,
+                                  const ColoredBox(color: Color(0x380F0E0B)),
+                                  const CustomPaint(
+                                    painter: _StageWashPainter(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ..._buildActors(controller, stage),
+                            if (typedDefend != null)
+                              _positionedDefendedEntity(stage, typedDefend),
+                            _FeedbackLayer(
+                              controller: controller,
+                              stage: stage,
+                              entries: _heldFeedback,
+                              feedbackFrame: _feedbackFrame,
+                              numericSkillBindings: widget.numericSkillBindings,
+                              defendedEntityLabel: _defendedEntityLabel,
+                            ),
+                            if (offscreenIndicators.isNotEmpty)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: CustomPaint(
+                                    key: const ValueKey(
+                                      'phase0a_offscreen_indicators',
+                                    ),
+                                    painter: Phase0aOffscreenIndicatorPainter(
+                                      indicators: offscreenIndicators,
+                                      frame: _indicatorFrame,
+                                    ),
                                   ),
                                 ),
                               ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (checkpoint != null &&
+                      checkpointCopy != null &&
+                      widget.checkpointXById.isNotEmpty &&
+                      controller.outcome == Phase0aBattleOutcome.ongoing)
+                    Positioned.fill(
+                      child: Phase0aCheckpointGuidance(
+                        progress: checkpoint,
+                        checkpointXById: widget.checkpointXById,
+                        copy: checkpointCopy,
+                        stage: stage,
+                        playerPosition: controller.state.player.position,
+                      ),
+                    ),
+                  _PlayerHud(
+                    controller: controller,
+                    automaticAttackCopy: _automaticAttackEnabled
+                        ? _mouseAttackCopy
+                        : null,
+                    healthEmphasized: _hpEmphasisRemaining.containsKey(
+                      controller.state.player.id,
+                    ),
+                  ),
+                  if (typedDefend != null)
+                    _DefendConditionBanner(
+                      progress: typedDefend,
+                      targetLabel: _defendedEntityLabel,
+                      hint:
+                          widget.defendGuidanceCopy?.paragraphs.join('\n') ??
+                          UiStrings.defendObjectiveHint,
+                      fixedDeltaSeconds: controller.fixedDeltaSeconds,
+                    )
+                  else if (typedSurvive != null)
+                    _SurviveConditionBanner(
+                      requiredTicks: typedSurvive.requiredTicks,
+                      currentTick: typedSurvive.elapsedTicks,
+                    )
+                  else if (controller.state.winCondition?.isSurviveTicks ==
+                      true)
+                    _SurviveConditionBanner(
+                      requiredTicks:
+                          controller.state.winCondition!.surviveTicksRequired!,
+                      currentTick: controller.state.tick,
+                    ),
+                  if (typedDefend == null &&
+                      typedSurvive == null &&
+                      typedPursuit != null)
+                    _PursueConditionBanner(progress: typedPursuit),
+                  if (widget.numericSkillBindings.equipped.isNotEmpty)
+                    Positioned(
+                      left: Phase0aPresentationTokens.hudInset,
+                      right: Phase0aPresentationTokens.hudInset,
+                      bottom: Phase0aPresentationTokens.skillHudBottom,
+                      child: Center(
+                        child: Phase0aNumericSkillSeals(
+                          bindings: widget.numericSkillBindings,
+                          slots: {
+                            for (final slot in controller.state.skillSlots)
+                              slot.slot: slot,
+                          },
+                          qiCurrent: controller.state.player.qiCurrent,
+                          onPressed: (hotkey) {
+                            if (_paused) return;
+                            controller.enqueue(
+                              Phase0aPlayerCommand(skillHotkey: hotkey),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    right: Phase0aPresentationTokens.skillHudRight,
+                    bottom: Phase0aPresentationTokens.skillHudBottom,
+                    child: Phase0aSkillSeals(
+                      gatherSlot: _displaySlot(controller, 'gather'),
+                      clearSlot: _displaySlot(controller, 'clear'),
+                      qiCurrent: controller.state.player.qiCurrent,
+                      showStatus:
+                          controller.outcome == Phase0aBattleOutcome.ongoing ||
+                          !controller.state.player.isAlive,
+                      onGather: _paused ? () {} : _toggleGatherTargeting,
+                      onClear: _paused
+                          ? () {}
+                          : () => controller.enqueue(
+                              const Phase0aPlayerCommand(clear: true),
                             ),
+                    ),
+                  ),
+                  // Esc 暂停横幅(0C):盖在 HUD/技能印之上,暂停中唯一新增可见物。
+                  if (_paused)
+                    const Center(
+                      child: SizedBox(
+                        key: ValueKey('phase0a_paused_banner'),
+                        width: Phase0aPresentationTokens.vfxBannerWidth,
+                        height: Phase0aPresentationTokens.vfxBannerHeight,
+                        child: CustomPaint(
+                          painter: _PaperBannerPainter(),
+                          child: Center(
+                            child: Text(
+                              UiStrings.phase0aPausedBanner,
+                              style: TextStyle(
+                                color: WuxiaUi.ink,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  // 终局「再战」入口(9B):封签由 IgnorePointer 反馈层展示,
+                  // 按钮必须落在主 Stack 才能收手势;无 builder 时纯展示不出按钮。
+                  if (controller.outcome != Phase0aBattleOutcome.ongoing &&
+                      widget.retryFlowBuilder != null)
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            height:
+                                Phase0aPresentationTokens.vfxOutcomeSize +
+                                Phase0aPresentationTokens.retryButtonTopGap,
+                          ),
+                          _RetryButton(
+                            onPressed: _retryInFlight ? null : _retry,
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                if (checkpoint != null &&
-                    checkpointCopy != null &&
-                    widget.checkpointXById.isNotEmpty &&
-                    controller.outcome == Phase0aBattleOutcome.ongoing)
-                  Positioned.fill(
-                    child: Phase0aCheckpointGuidance(
-                      progress: checkpoint,
-                      checkpointXById: widget.checkpointXById,
-                      copy: checkpointCopy,
-                      stage: stage,
-                      playerPosition: controller.state.player.position,
-                    ),
-                  ),
-                _PlayerHud(
-                  controller: controller,
-                  automaticAttackCopy: _automaticAttackEnabled
-                      ? _mouseAttackCopy
-                      : null,
-                  healthEmphasized: _hpEmphasisRemaining.containsKey(
-                    controller.state.player.id,
-                  ),
-                ),
-                if (typedDefend != null)
-                  _DefendConditionBanner(progress: typedDefend)
-                else if (typedSurvive != null)
-                  _SurviveConditionBanner(
-                    requiredTicks: typedSurvive.requiredTicks,
-                    currentTick: typedSurvive.elapsedTicks,
-                  )
-                else if (controller.state.winCondition?.isSurviveTicks == true)
-                  _SurviveConditionBanner(
-                    requiredTicks:
-                        controller.state.winCondition!.surviveTicksRequired!,
-                    currentTick: controller.state.tick,
-                  ),
-                if (typedDefend == null &&
-                    typedSurvive == null &&
-                    typedPursuit != null)
-                  _PursueConditionBanner(progress: typedPursuit),
-                if (widget.numericSkillBindings.equipped.isNotEmpty)
-                  Positioned(
-                    left: Phase0aPresentationTokens.hudInset,
-                    right: Phase0aPresentationTokens.hudInset,
-                    bottom: Phase0aPresentationTokens.skillHudBottom,
-                    child: Center(
-                      child: Phase0aNumericSkillSeals(
-                        bindings: widget.numericSkillBindings,
-                        slots: {
-                          for (final slot in controller.state.skillSlots)
-                            slot.slot: slot,
-                        },
-                        qiCurrent: controller.state.player.qiCurrent,
-                        onPressed: (hotkey) {
-                          if (_paused) return;
-                          controller.enqueue(
-                            Phase0aPlayerCommand(skillHotkey: hotkey),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  right: Phase0aPresentationTokens.skillHudRight,
-                  bottom: Phase0aPresentationTokens.skillHudBottom,
-                  child: Phase0aSkillSeals(
-                    gatherSlot: _displaySlot(controller, 'gather'),
-                    clearSlot: _displaySlot(controller, 'clear'),
-                    qiCurrent: controller.state.player.qiCurrent,
-                    showStatus:
-                        controller.outcome == Phase0aBattleOutcome.ongoing ||
-                        !controller.state.player.isAlive,
-                    onGather: _paused ? () {} : _toggleGatherTargeting,
-                    onClear: _paused
-                        ? () {}
-                        : () => controller.enqueue(
-                            const Phase0aPlayerCommand(clear: true),
-                          ),
-                  ),
-                ),
-                // Esc 暂停横幅(0C):盖在 HUD/技能印之上,暂停中唯一新增可见物。
-                if (_paused)
-                  const Center(
-                    child: SizedBox(
-                      key: ValueKey('phase0a_paused_banner'),
-                      width: Phase0aPresentationTokens.vfxBannerWidth,
-                      height: Phase0aPresentationTokens.vfxBannerHeight,
-                      child: CustomPaint(
-                        painter: _PaperBannerPainter(),
-                        child: Center(
-                          child: Text(
-                            UiStrings.phase0aPausedBanner,
-                            style: TextStyle(
-                              color: WuxiaUi.ink,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                // 终局「再战」入口(9B):封签由 IgnorePointer 反馈层展示,
-                // 按钮必须落在主 Stack 才能收手势;无 builder 时纯展示不出按钮。
-                if (controller.outcome != Phase0aBattleOutcome.ongoing &&
-                    widget.retryFlowBuilder != null)
-                  Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(
-                          height:
-                              Phase0aPresentationTokens.vfxOutcomeSize +
-                              Phase0aPresentationTokens.retryButtonTopGap,
-                        ),
-                        _RetryButton(onPressed: _retryInFlight ? null : _retry),
-                      ],
-                    ),
-                  ),
-              ],
+                ],
+              ),
             );
           },
         ),
@@ -1388,6 +1446,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final ratio = progress.maxDurability == 0
         ? 0.0
         : progress.currentDurability / progress.maxDurability;
+    final hit = _hitFlashRemaining.containsKey(progress.entityId);
+    final emphasized = _hpEmphasisRemaining.containsKey(progress.entityId);
     return Positioned(
       key: ValueKey('phase0a_defended_entity_${progress.entityId}'),
       left: foot.dx - width / 2,
@@ -1398,28 +1458,43 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                color: const Color(0xD9E8D8B8),
-                border: Border.all(
-                  color: progress.destroyed
-                      ? WuxiaUi.jiang
-                      : const Color(0xB36D5940),
-                  width: 2,
-                ),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
+            AnimatedScale(
+              key: ValueKey(
+                'phase0a_defended_entity_reaction_${progress.entityId}',
               ),
-              child: const SizedBox(
-                width: 54,
-                height: 62,
-                child: Center(
-                  child: Text(
-                    UiStrings.defendEntityLabel,
-                    style: TextStyle(
-                      color: WuxiaUi.ink,
-                      fontWeight: FontWeight.w800,
+              scale: hit ? Phase0aPresentationTokens.actorActionScale : 1,
+              duration: Duration(
+                microseconds:
+                    (Phase0aPresentationTokens.actorMotionTweenSeconds *
+                            Duration.microsecondsPerSecond)
+                        .round(),
+              ),
+              child: DecoratedBox(
+                key: hit
+                    ? ValueKey(
+                        'phase0a_defended_entity_hit_${progress.entityId}',
+                      )
+                    : null,
+                decoration: BoxDecoration(
+                  color: const Color(0xD9E8D8B8),
+                  border: Border.all(
+                    color: progress.destroyed || emphasized
+                        ? WuxiaUi.jiang
+                        : const Color(0xB36D5940),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: SizedBox(
+                  width: 92,
+                  height: 62,
+                  child: Center(
+                    child: Text(
+                      _defendedEntityLabel,
+                      style: const TextStyle(
+                        color: WuxiaUi.ink,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
@@ -1436,7 +1511,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
               child: FractionallySizedBox(
                 widthFactor: ratio.clamp(0.0, 1.0),
                 child: ColoredBox(
-                  color: progress.destroyed ? WuxiaUi.jiang : WuxiaUi.gold,
+                  color: progress.destroyed || emphasized
+                      ? WuxiaUi.jiang
+                      : WuxiaUi.gold,
                 ),
               ),
             ),
@@ -1445,6 +1522,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       ),
     );
   }
+
+  String get _defendedEntityLabel =>
+      widget.defendGuidanceCopy?.title ?? UiStrings.defendEntityLabel;
 
   Widget _positionedActor(
     Phase0aBattleController controller,
@@ -2340,6 +2420,7 @@ class _FeedbackLayer extends StatefulWidget {
     required this.entries,
     required this.feedbackFrame,
     required this.numericSkillBindings,
+    required this.defendedEntityLabel,
   });
 
   final Phase0aBattleController controller;
@@ -2347,6 +2428,7 @@ class _FeedbackLayer extends StatefulWidget {
   final List<_HeldFeedback> entries;
   final ValueListenable<int> feedbackFrame;
   final Phase0aNumericSkillBindings numericSkillBindings;
+  final String defendedEntityLabel;
 
   @override
   State<_FeedbackLayer> createState() => _FeedbackLayerState();
@@ -2387,6 +2469,8 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
           );
         case Phase0aVfxKind.palmTrail:
           children.add(_palmTrail(held));
+        case Phase0aVfxKind.enemyStrike:
+          children.add(_palmTrail(held, enemyStrike: true));
         case Phase0aVfxKind.skillCast:
           children.add(_skillVfx(held, _SkillVfxPhase.cast));
         case Phase0aVfxKind.skillImpact:
@@ -2691,7 +2775,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
 
   /// 掌风轨迹:出手者→目标连线的世界坐标映射到屏幕,
   /// 以连线中点为中心、以连线方向为旋转角度绘制。
-  Widget _palmTrail(_HeldFeedback held) {
+  Widget _palmTrail(_HeldFeedback held, {bool enemyStrike = false}) {
     final entry = held.entry;
     final src = entry.source;
     final dst = entry.vfxTarget;
@@ -2712,7 +2796,9 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
     final width = distance + Phase0aPresentationTokens.palmTrailPadding * 2;
     final height = Phase0aPresentationTokens.palmTrailHeight;
     return Positioned(
-      key: ValueKey('phase0a_palm_trail_${held.id}'),
+      key: enemyStrike
+          ? ValueKey('phase0a_enemy_strike_${held.id}')
+          : ValueKey('phase0a_palm_trail_${held.id}'),
       left: mid.dx - width / 2,
       top: mid.dy - height / 2,
       width: width,
@@ -2733,7 +2819,11 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                     '${entry.visualSchool?.name ?? 'neutral'}',
                   ),
             child: CustomPaint(
-              key: const ValueKey('phase0a_palm_trail'),
+              key: enemyStrike
+                  ? ValueKey(
+                      'phase0a_enemy_strike_${entry.actorId}_${entry.targetId}',
+                    )
+                  : const ValueKey('phase0a_palm_trail'),
               size: Size(width, height),
               painter: _InkEffectPainter(
                 _InkEffect.palm,
@@ -2938,7 +3028,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 : outcome == Phase0aBattleOutcome.defeat &&
                       widget.controller.defendObjectiveProgress?.destroyed ==
                           true
-                ? UiStrings.battleResultWardLost
+                ? UiStrings.defendObjectiveLost(widget.defendedEntityLabel)
                 : outcome == Phase0aBattleOutcome.victory &&
                       (widget.controller.surviveObjectiveProgress != null ||
                           widget
@@ -2964,28 +3054,41 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
 }
 
 final class _DefendConditionBanner extends StatelessWidget {
-  const _DefendConditionBanner({required this.progress});
+  const _DefendConditionBanner({
+    required this.progress,
+    required this.targetLabel,
+    required this.hint,
+    required this.fixedDeltaSeconds,
+  });
 
   final Phase0aDefendObjectiveProgress progress;
+  final String targetLabel;
+  final String hint;
+  final double fixedDeltaSeconds;
 
   @override
   Widget build(BuildContext context) {
-    final label = progress.completed
-        ? UiStrings.defendConditionMet(
+    final label = progress.destroyed
+        ? UiStrings.defendObjectiveLost(targetLabel)
+        : progress.completed
+        ? UiStrings.defendObjectiveMet(
+            targetLabel,
             progress.currentDurability,
             progress.maxDurability,
           )
-        : UiStrings.defendConditionRemaining(
+        : UiStrings.defendObjectiveRemaining(
+            targetLabel,
             progress.currentDurability,
             progress.maxDurability,
-            progress.remainingTicks,
+            (progress.remainingTicks * fixedDeltaSeconds).ceil(),
           );
     return Positioned(
       key: const ValueKey('phase0a_defend_condition_banner'),
       top: Phase0aPresentationTokens.hudInset,
       left: Phase0aPresentationTokens.hudInset,
-      child: Semantics(
-        label: label,
+      right: Phase0aPresentationTokens.hudInset,
+      child: Align(
+        alignment: Alignment.topLeft,
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: const Color(0xD9E8D8B8),
@@ -3000,16 +3103,23 @@ final class _DefendConditionBanner extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            child: Text(
-              label,
-              style: TextStyle(
-                color: WuxiaUi.ink,
-                fontSize: 16,
-                fontWeight: progress.completed
-                    ? FontWeight.w700
-                    : FontWeight.w500,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: WuxiaUi.ink,
+                    fontSize: 16,
+                    fontWeight: progress.completed
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                Text(hint, style: const TextStyle(color: WuxiaUi.ink)),
+              ],
             ),
           ),
         ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/character_providers.dart';
-import '../../../core/domain/enums.dart';
+import '../../../core/domain/character.dart';
 import '../../../data/game_repository.dart';
+import '../../../shared/strings.dart';
 import '../application/offline_recap_service.dart';
 import '../application/online_presence_controller.dart';
 import 'active_retreat_screen.dart';
@@ -28,15 +28,21 @@ Future<void> maybeShowOfflineRecap({
   if (session != null) {
     // P0-3:闭关期间也起心跳保基准新鲜(修收功后 stale 基准双吃边角)。
     ref.read(onlinePresenceControllerProvider).markStartupSettleDone();
-    // —— 范围 A：有 active 闭关,引导收功（原逻辑原样,与被动互斥）——
-    final ids = await ref.read(activeCharacterIdsProvider.future);
-    final id = ids.isNotEmpty ? ids.first : 1;
-    final ch = await ref.read(characterByIdProvider(id).future);
-    final realmTier = ch?.realmTier ?? RealmTier.xueTu;
+    // —— 范围 A：有 active 闭关,按会话归属引导收功,与被动互斥 ——
+    final Character owner;
+    try {
+      owner = await ref.read(retreatOwnerProvider(session.id).future);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(UiStrings.retreatCollectFailed(e))),
+      );
+      return;
+    }
 
     final recap = OfflineRecapService.buildRecap(
       session: session,
-      charRealmTier: realmTier,
+      charRealmTier: owner.realmTier,
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
       now: now ?? DateTime.now(),
@@ -61,7 +67,7 @@ Future<void> maybeShowOfflineRecap({
                 builder: (_) => ActiveRetreatScreen(
                   session: session,
                   mapDef: mapDef,
-                  characterId: ch?.id ?? id,
+                  characterId: owner.id,
                 ),
               ),
             );

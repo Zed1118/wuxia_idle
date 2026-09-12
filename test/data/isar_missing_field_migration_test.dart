@@ -8,9 +8,13 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import '../fixtures/legacy_numeric_fields.dart';
 import '../support/isar_numeric_field_evidence.dart';
 import '../support/isar_test_support.dart';
+import '../support/test_data.dart';
 
 void main() {
-  setUpAll(initializeTestIsarCore);
+  setUpAll(() async {
+    await initializeTestIsarCore();
+    await loadTestGameRepository();
+  });
 
   for (final field in numericFieldEvidence) {
     test(
@@ -56,7 +60,7 @@ void main() {
           await raw.close();
 
           await IsarSetup.init(directory: dir, inspector: false);
-          expect((await IsarSetup.currentSaveData())!.saveVersion, '0.49.0');
+          expect((await IsarSetup.currentSaveData())!.saveVersion, '0.50.0');
           expect(
             await field.read(IsarSetup.instance),
             everyElement(field.defaultValue()),

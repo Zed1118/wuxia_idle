@@ -203,4 +203,27 @@ void main() {
     expect(() => timeline.advance(0), throwsArgumentError);
     expect(() => timeline.advance(-1), throwsArgumentError);
   });
+  test(
+    'snapshots resume each cursor without sharing state or repeating first effect',
+    () {
+      for (var cursor = 0; cursor <= 7; cursor++) {
+        final original = ActionTimeline(config())..start();
+        if (cursor > 0) original.advance(cursor);
+        final checkpoint = original.snapshot;
+        final restored = ActionTimeline.fromSnapshot(checkpoint);
+        final independent = ActionTimeline(config())..start();
+        if (cursor > 0) independent.advance(cursor);
+        expect(checkpoint, independent.snapshot);
+        expect(checkpoint.hashCode, independent.snapshot.hashCode);
+        final expected = original.advance(7);
+        expect(restored.advance(7), expected);
+        expect(restored.snapshot, original.snapshot);
+        expect(checkpoint.nextTick, cursor);
+        expect(
+          expected.where((e) => e.type == ActionTimelineEventType.firstEffect),
+          hasLength(cursor <= 2 ? 1 : 0),
+        );
+      }
+    },
+  );
 }

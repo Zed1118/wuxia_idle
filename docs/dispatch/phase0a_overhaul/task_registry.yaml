@@ -6216,8 +6216,12 @@ tasks:
       partially_reopened_open: 0
       factual_failure_display_implemented: true
       decision_batch: docs/audit/phase2_m0_decision_batch_2026-09-04.md
+      weapon_timeline_qi_mapping_approved_on: 2026-09-11
+      weapon_timeline_qi_production_wiring: connected_verified_uncommitted_candidate
+      weapon_mapping_evidence: docs/audit/phase2_m0_production_mapping_2026-09-11.md
+      formal_M0_closed: false
     blockers:
-      - applicable_production_wiring_measurement_playtest_and_Windows_evidence
+      - remaining_measurement_playtest_Windows_and_clean_integration_evidence
     protected_behavior:
       - no_open_decision_is_treated_as_approved_by_elapsed_time_or_engineering_convenience
       - new_inner_demon_AI_binding_remains_forbidden_without_per_identity_signoff

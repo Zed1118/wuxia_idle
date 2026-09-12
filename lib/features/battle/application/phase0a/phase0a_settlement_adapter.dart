@@ -157,6 +157,9 @@ final class Phase0aSettlementAdapter {
 
     for (final event in eventSnapshot) {
       switch (event) {
+        case Phase0aActionTimelineChanged():
+        case Phase0aQiChanged():
+          break;
         case Phase0aAttackStarted(:final actor, :final tick):
           hadActions = true;
           addSkillCast(actor, tick, Phase0aDamageKind.basic);

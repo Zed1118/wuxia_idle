@@ -10,6 +10,7 @@ import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 
 /// 材料经济 P2：道具"使用"派发服务。
 ///
@@ -28,6 +29,7 @@ class ItemUseService {
     required ItemDef def,
     required RealmDef Function(RealmTier, RealmLayer) realmLookup,
     bool Function(RealmTier, RealmLayer)? isLayerLocked,
+    DateTime? now,
   }) async {
     return isar.writeTxn(() async {
       final item = await isar.inventoryItems.getByDefId(def.defId);
@@ -37,10 +39,16 @@ class ItemUseService {
 
       switch (def.type) {
         case ItemType.jingYanDan:
-          final founder = await isar.characters
-              .filter()
-              .isFounderEqualTo(true)
-              .findFirst();
+          await OfflinePassiveService.settleWithinTxn(
+            settleIslandBeforeGrowth: true,
+            isar: isar,
+            now: now ?? DateTime.now(),
+          );
+          final save = await isar.saveDatas.get(0);
+          final founderId = save?.founderCharacterId;
+          final founder = founderId == null
+              ? null
+              : await isar.characters.get(founderId);
           if (founder == null) {
             return const ItemUseResult(kind: ItemUseKind.noTarget);
           }

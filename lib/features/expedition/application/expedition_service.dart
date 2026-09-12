@@ -29,6 +29,7 @@ import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../../shared/battle_shared/player_combatant_snapshot_assembler.dart';
 import '../../../data/defs/expedition_config.dart';
@@ -550,6 +551,11 @@ class ExpeditionService {
             record.cycleIndex != plan.cycleIndex) {
           throw StateError('Expedition manual milestone plan is stale');
         }
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: _isar,
+          now: at,
+        );
         await _applySharedCombatLedger(
           member: plan.member,
           settlement: settlement,
@@ -1078,6 +1084,12 @@ class ExpeditionService {
             sourceSettlementId: 'expedition-run:${run.id}',
             at: at,
             applyInTxn: (_) async {
+              await OfflinePassiveService.settleWithinTxn(
+                settleIslandBeforeGrowth: true,
+                isar: _isar,
+                now: at,
+                updatePresence: isDefeated,
+              );
               // 1. 全员发经验（含途中倒下者）+ 战败伤势。
               // 主线进度行以槽号（IsarSetup.currentSlotId，1-3）为 saveDataId
               // （mainline_providers/stage_entry_flow 口径）；run.saveDataId 是

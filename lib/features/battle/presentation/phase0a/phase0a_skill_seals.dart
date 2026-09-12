@@ -128,7 +128,7 @@ final class Phase0aNumericSkillSeals extends StatelessWidget {
               Phase0aSkillSlot(
                 slot: binding.slotId,
                 cooldownRemaining: 0,
-                qiCost: binding.skill.qiCost,
+                qiCost: binding.qiCost,
                 availability: Phase0aSkillAvailability.down,
               );
     return _SkillSeal(

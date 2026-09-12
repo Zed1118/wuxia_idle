@@ -5,6 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
@@ -47,9 +48,16 @@ void main() {
           ..id = kCharId
           ..internalForceMax = 10000
           ..experienceToNextLayer = 999999;
-    await IsarSetup.instance.writeTxn(
-      () => IsarSetup.instance.characters.put(ch),
-    );
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.characters.put(ch);
+      final save = (await IsarSetup.currentSaveData())!;
+      save.founderCharacterId = kCharId;
+      save.activeCharacterIds = [kCharId];
+      save.createdAt = DateTime(2026, 1, 1);
+      save.lastOnlineAt = DateTime(2026, 6, 15, 9);
+      save.passiveLastSettledAt = save.lastOnlineAt;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
   });
 
   tearDown(() async {
@@ -148,10 +156,10 @@ void main() {
     test('重伤 8h，离线 awayHours=3h → 剩 5h；轻伤清零', () async {
       await setInjury(injuryHours: 8.0, lightStacks: 3, disorderHours: 6);
 
-      await OfflinePassiveService.settle(
-        saveDataId: kSaveDataId,
-        characterId: kCharId,
-        awayHours: 3,
+      await OfflinePassiveService.settleWindow(
+        isar: IsarSetup.instance,
+        recoverInjuries: true,
+        updatePresence: true,
         now: DateTime(2026, 6, 15, 12),
       );
 
@@ -169,13 +177,13 @@ void main() {
       await setInjury(injuryHours: 8.0, lightStacks: 5);
 
       // awayHours=0.001 → compute 经验/磨剑石均 floor 到 0（验无产出分支也疗养）
-      final result = await OfflinePassiveService.settle(
-        saveDataId: kSaveDataId,
-        characterId: kCharId,
-        awayHours: 0.001,
-        now: DateTime(2026, 6, 15, 12),
+      final result = await OfflinePassiveService.settleWindow(
+        isar: IsarSetup.instance,
+        recoverInjuries: true,
+        updatePresence: true,
+        now: DateTime(2026, 6, 15, 9).add(const Duration(milliseconds: 3600)),
       );
-      expect(result.experience, 0, reason: '前置断言：本场景确实 0 经验产出');
+      expect(result!.experience, 0, reason: '前置断言：本场景确实 0 经验产出');
       expect(result.mojianshi, 0);
 
       final ch = await IsarSetup.instance.characters.get(kCharId);

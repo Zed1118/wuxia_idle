@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/action_timeline.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
@@ -118,6 +120,9 @@ void main() {
                 .toList(),
           };
           records.add(row);
+          var retreatsBeforeFirstEffect = 0;
+          var nextClearAttempt = 0;
+          var nextSkillAttempt = 5;
           for (
             var tick = 0;
             tick < 2400 && controller.outcome == Phase0aBattleOutcome.ongoing;
@@ -141,7 +146,18 @@ void main() {
                 final retreat =
                     distance < 130 &&
                     controller.state.player.attackCooldownRemaining > 0;
-                if (retreat) d = d * -1;
+                if (retreat) {
+                  if (controller
+                          .state
+                          .player
+                          .basicAction
+                          ?.timeline
+                          .firstEffectEmitted ==
+                      false) {
+                    retreatsBeforeFirstEffect++;
+                  }
+                  d = d * -1;
+                }
                 move = retreat || distance > screen.basicAttackRange! * .9;
                 if (p.x.abs() > 570 || p.y.abs() > 220) {
                   d = p * -1;
@@ -169,11 +185,24 @@ void main() {
             await keys(desired);
             final close =
                 enemies.isNotEmpty && (enemies.first.position - p).length < 180;
-            if (close && tick % 10 == 0) {
-              await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
-            }
-            if (close && tick % 10 == 5) {
-              await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+            // Let an admitted basic resolve before deliberately replacing it
+            // with another action. Ordinary movement remains independent.
+            final effectResolved =
+                controller
+                    .state
+                    .player
+                    .basicAction
+                    ?.timeline
+                    .firstEffectEmitted ==
+                true;
+            if (close && effectResolved) {
+              if (tick >= nextClearAttempt) {
+                await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+                nextClearAttempt = tick + 10;
+              } else if (tick >= nextSkillAttempt) {
+                await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+                nextSkillAttempt = tick + 10;
+              }
             }
             if (close &&
                 controller.state.player.defenseCooldownRemaining == 0) {
@@ -184,6 +213,17 @@ void main() {
           await keys({});
           row.addAll({
             'outcome': controller.outcome.name,
+            'retreatsBeforeFirstEffect': retreatsBeforeFirstEffect,
+            'firstEffects': controller.events
+                .whereType<Phase0aActionTimelineChanged>()
+                .where(
+                  (e) => e.eventType == ActionTimelineEventType.firstEffect,
+                )
+                .length,
+            'playerHits': controller.events
+                .whereType<Phase0aHitLanded>()
+                .where((e) => e.actor == controller.state.player.id)
+                .length,
             'ticks': controller.state.tick,
             'remainingHp': controller.state.player.currentHealth,
             'kills': controller.events.whereType<Phase0aEnemyDefeated>().length,
@@ -197,7 +237,14 @@ void main() {
                 .length,
           });
 
-          if (controller.outcome != Phase0aBattleOutcome.victory) break;
+          debugPrintSynchronously('M0 real first victory: $row');
+          expect(row['firstEffects'], greaterThan(0));
+          expect(row['playerHits'], greaterThan(0));
+          expect(
+            controller.outcome,
+            Phase0aBattleOutcome.victory,
+            reason: 'Actual fresh-save combat before navigation: $row',
+          );
           await waitFor(
             tester,
             find.text(

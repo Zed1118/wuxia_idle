@@ -111,9 +111,9 @@ final class Phase0aDebugBattleFixture {
   /// debug-only allocation spikes do not contaminate production-frame data.
   Phase0aDebugBattleFixture fresh() => _fromConfig(_config, _numbers);
 
-  /// Builds the bounded restart pool before profile sampling begins. The Gate
-  /// runs for 102 seconds, so four deterministic flows cover every expected
-  /// battle boundary without assembling debug fixtures on a measured frame.
+  /// Builds a bounded restart pool before profile sampling begins. Once the
+  /// pool is exhausted, the driver uses [fresh]; this does not guarantee that
+  /// fixture assembly is absent from the measured window.
   List<Phase0aDebugBattleFixture> prewarmRestartPool({int count = 4}) {
     if (count < 0) {
       throw ArgumentError.value(count, 'count', 'must not be negative');

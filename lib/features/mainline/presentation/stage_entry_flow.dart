@@ -89,6 +89,7 @@ import '../../battle_record/domain/boss_memory_key.dart';
 import '../../battle_record/domain/boss_memory_source.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import 'phase0a_mainline_battle_host.dart';
@@ -1034,6 +1035,7 @@ Future<void> _runSingleStageFlow({
   while (true) {
     if (!context.mounted) return;
     final MainlineBattleExit battleExit;
+    String? defeatReason;
     if (phase0aBattleOutcomeForTest != null) {
       battleExit = await phase0aBattleOutcomeForTest();
     } else if (battleOutcomeForTest != null) {
@@ -1056,6 +1058,7 @@ Future<void> _runSingleStageFlow({
         targetCycle: targetCycle,
         playerSnapshot: playerSnapshot,
         controller: battleController,
+        onDefeatReason: (reason) => defeatReason = reason,
       );
     }
 
@@ -1100,6 +1103,7 @@ Future<void> _runSingleStageFlow({
                     context,
                     stage,
                     participantName: participantName,
+                    defeatReason: defeatReason,
                   )
                 : false);
       if (retry) continue;
@@ -1709,6 +1713,7 @@ Future<MainlineBattleExit> _runBattle({
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  ValueChanged<String>? onDefeatReason,
 }) async {
   return _runPhase0aBattle(
     context: context,
@@ -1716,6 +1721,7 @@ Future<MainlineBattleExit> _runBattle({
     targetCycle: targetCycle,
     playerSnapshot: playerSnapshot,
     controller: controller,
+    onDefeatReason: onDefeatReason,
   );
 }
 
@@ -1731,6 +1737,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required int targetCycle,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  ValueChanged<String>? onDefeatReason,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
       ? await pickMassBattleFormation(
@@ -1752,6 +1759,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
             playerSnapshot: playerSnapshot,
             controller: controller,
             massBattleFormation: massBattleFormation,
+            onDefeatReason: onDefeatReason,
             onVictory: (settlement) {
               if (!completer.isCompleted) {
                 completer.complete((
@@ -1787,11 +1795,15 @@ Future<bool> _showStageRetryDialog(
   BuildContext context,
   StageDef stage, {
   String? participantName,
+  String? defeatReason,
 }) async {
   final retry = await PaperDialog.show<bool>(
     context,
     title: UiStrings.stageRetryTitle,
-    body: StageRetryDialogBody(participantName: participantName),
+    body: StageRetryDialogBody(
+      participantName: participantName,
+      defeatReason: defeatReason,
+    ),
     actions: [
       Builder(
         builder: (ctx) => TextButton(
@@ -2072,6 +2084,7 @@ applyVictoryResolution({
   DurableActivityCombatSettlementDependencies? durableActivityDependencies,
   int? expectedParticipantId,
   String? rewardOccurrenceId,
+  DateTime? settlementAt,
   @visibleForTesting Future<void> Function()? afterRewardWritesInTxnForTest,
 }) async {
   if (durableSettlement != null && durableActivitySettlement != null) {
@@ -2111,53 +2124,16 @@ applyVictoryResolution({
           expectedParticipantId: expectedParticipantId,
         );
   if (ids.isEmpty) return null;
+  if (expectedParticipantId == null &&
+      (await isar.characters.getAll(
+        ids,
+      )).every((character) => character == null)) {
+    return null;
+  }
 
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
   final techsByCh = <int, List<Technique>>{};
-  for (final cid in ids) {
-    final c = await isar.characters.get(cid);
-    if (c == null) {
-      if (expectedParticipantId != null) {
-        throw StateError('Expected settlement participant disappeared: $cid');
-      }
-      continue;
-    }
-    characters.add(c);
-
-    final eqs = <Equipment>[];
-    for (final eqId in [
-      c.equippedWeaponId,
-      c.equippedArmorId,
-      c.equippedAccessoryId,
-    ]) {
-      if (eqId == null) continue;
-      final e = await isar.equipments.get(eqId);
-      if (e == null || e.ownerCharacterId != c.id) {
-        if (expectedParticipantId != null) {
-          throw StateError('Expected settlement participant equipment invalid');
-        }
-        continue;
-      }
-      eqs.add(e);
-    }
-    equipsByCh[c.id] = eqs;
-
-    final ts = await isar.techniques
-        .where()
-        .filter()
-        .ownerCharacterIdEqualTo(c.id)
-        .findAll();
-    // W13 fix: Isar @embedded list 反序列化为 fixed-length,
-    // skillUsageCount.increment 走 add 分支会抛 UnsupportedError。
-    // 转 growable copy 让后续 _accumulateSkillUsage 可写。
-    for (final t in ts) {
-      t.skillUsageCount = List.of(t.skillUsageCount);
-    }
-    techsByCh[c.id] = ts;
-  }
-  if (characters.isEmpty) return null;
-
   final NumbersConfig numbers;
   final DropService dropSvc;
   final Rng settlementRng;
@@ -2182,55 +2158,17 @@ applyVictoryResolution({
     ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
   }
 
-  final result = CombatResolutionService.resolveSnapshot(
-    settlement: combatSettlement,
-    participatingCharacters: characters,
-    equipmentsByCharacter: equipsByCh,
-    techniquesByCharacter: techsByCh,
-    stageDef: stage,
-    // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
-    // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
-    rng: settlementRng,
-    progressToNextMap: numbers.cultivationProgressToNext,
-    techniqueDefLookup: GameRepository.instance.getTechnique,
-    dropService: dropSvc,
-    numbersConfig: numbers,
-    // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
-    // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
-    isHardFight: stage.isBossStage,
-    // 第八阶段 E·稀有彩头:阶池 + realm→装备阶映射注入(本关固定掉落外额外 roll)。
-    equipmentPoolByTier: (tier) => GameRepository.instance.equipmentDefs.values
-        .where((e) => e.tier == tier)
-        .toList(growable: false),
-    equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
-    // 周目平衡 2026-06-26:二周目起提高稀有彩头概率 + 普通掉落材料加成。
-    cycle: cycle,
-  );
-
   // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
   // 含 stageId 即 repeat,不含即首通 → bossDefeated 防刷)。
   final mainlineProgressSnapshot = await isar.mainlineProgress
       .filter()
       .saveDataIdEqualTo(IsarSetup.currentSlotId)
       .findFirst();
-  final clearedSet =
-      mainlineProgressSnapshot?.clearedStageIds.toSet() ?? <String>{};
   final settlement = CombatProgressionSettlementService(
     GameRepository.instance,
   );
-  // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
-  final advancements = settlement.applyExperience(
-    characters: characters,
-    experienceReward: stage.baseExpReward,
-    clearedStageIds: clearedSet,
-  );
   final isFirstClearStage =
       !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ?? false);
-  final founderId = save?.founderCharacterId;
-  final battleEventOwnerId = characters.length == 1
-      ? characters.single.id
-      : founderId;
-
   // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
   var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
   var skillDrop = SkillDropResult.none;
@@ -2238,13 +2176,7 @@ applyVictoryResolution({
   final bossName = stage.enemyTeam.isNotEmpty
       ? stage.enemyTeam.last.name
       : stage.name;
-  final heroCamera = deriveHeroCameraDataFromDamageTotals(
-    damageByCharacterId: combatSettlement.damageByCharacterId,
-    characters: characters,
-    bossName: bossName,
-  );
-
-  final now = DateTime.now();
+  final now = settlementAt ?? DateTime.now();
   final rewardContentKind = switch (stage.stageType) {
     StageType.mainline => RewardContentKind.mainline,
     StageType.tower => RewardContentKind.tower,
@@ -2283,8 +2215,115 @@ applyVictoryResolution({
       : durableActivityDependencies != null
       ? durableActivityDependencies.reputationService
       : ref!.read(reputationServiceProvider);
-  var grantedDrops = result.dropResult;
+  late BattleResolutionResult result;
+  late List<AdvancementEntry> advancements;
+  late HeroCameraData? heroCamera;
+  late DropResult grantedDrops;
   Future<void> persistResolutionInTxn(bool grantsFirstClear) async {
+    await OfflinePassiveService.settleWithinTxn(
+      settleIslandBeforeGrowth: true,
+      isar: isar,
+      now: now,
+      updatePresence: true,
+    );
+    for (final cid in ids) {
+      final c = await isar.characters.get(cid);
+      if (c == null) {
+        if (expectedParticipantId != null) {
+          throw StateError('Expected settlement participant disappeared: $cid');
+        }
+        continue;
+      }
+      characters.add(c);
+
+      final eqs = <Equipment>[];
+      for (final eqId in [
+        c.equippedWeaponId,
+        c.equippedArmorId,
+        c.equippedAccessoryId,
+      ]) {
+        if (eqId == null) continue;
+        final e = await isar.equipments.get(eqId);
+        if (e == null || e.ownerCharacterId != c.id) {
+          if (expectedParticipantId != null) {
+            throw StateError(
+              'Expected settlement participant equipment invalid',
+            );
+          }
+          continue;
+        }
+        eqs.add(e);
+      }
+      equipsByCh[c.id] = eqs;
+
+      final ts = await isar.techniques
+          .where()
+          .filter()
+          .ownerCharacterIdEqualTo(c.id)
+          .findAll();
+      // W13 fix: Isar @embedded list 反序列化为 fixed-length,
+      // skillUsageCount.increment 走 add 分支会抛 UnsupportedError。
+      // 转 growable copy 让后续 _accumulateSkillUsage 可写。
+      for (final t in ts) {
+        t.skillUsageCount = List.of(t.skillUsageCount);
+      }
+      techsByCh[c.id] = ts;
+    }
+    if (characters.isEmpty) {
+      throw StateError('Settlement participants disappeared');
+    }
+
+    result = CombatResolutionService.resolveSnapshot(
+      settlement: combatSettlement,
+      participatingCharacters: characters,
+      equipmentsByCharacter: equipsByCh,
+      techniquesByCharacter: techsByCh,
+      stageDef: stage,
+      // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
+      // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
+      rng: settlementRng,
+      progressToNextMap: numbers.cultivationProgressToNext,
+      techniqueDefLookup: GameRepository.instance.getTechnique,
+      dropService: dropSvc,
+      numbersConfig: numbers,
+      // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
+      // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
+      isHardFight: stage.isBossStage,
+      // 第八阶段 E·稀有彩头:阶池 + realm→装备阶映射注入(本关固定掉落外额外 roll)。
+      equipmentPoolByTier: (tier) => GameRepository
+          .instance
+          .equipmentDefs
+          .values
+          .where((e) => e.tier == tier)
+          .toList(growable: false),
+      equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
+      // 周目平衡 2026-06-26:二周目起提高稀有彩头概率 + 普通掉落材料加成。
+      cycle: cycle,
+    );
+
+    final currentProgress = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(IsarSetup.currentSlotId)
+        .findFirst();
+    final clearedSet = currentProgress?.clearedStageIds.toSet() ?? <String>{};
+    // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
+    advancements = settlement.applyExperience(
+      characters: characters,
+      experienceReward: stage.baseExpReward,
+      clearedStageIds: clearedSet,
+    );
+
+    final founderId = save?.founderCharacterId;
+    final battleEventOwnerId = characters.length == 1
+        ? characters.single.id
+        : founderId;
+
+    heroCamera = deriveHeroCameraDataFromDamageTotals(
+      damageByCharacterId: combatSettlement.damageByCharacterId,
+      characters: characters,
+      bossName: bossName,
+    );
+
     grantedDrops = DropResult(
       equipments: result.dropResult.equipments,
       items: result.dropResult.items
@@ -2578,6 +2617,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
   required StageDef stage,
   CombatSettlementSnapshot? settlementSnapshot,
   int? expectedParticipantId,
+  DateTime? settlementAt,
   DurableActivitySettlementContext? durableActivitySettlement,
   DurableActivityCombatSettlementDependencies? durableActivityDependencies,
 }) async {
@@ -2616,47 +2656,6 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
   final characters = <Character>[];
   final equipsByCh = <int, List<Equipment>>{};
   final techsByCh = <int, List<Technique>>{};
-  for (final cid in ids) {
-    final c = await isar.characters.get(cid);
-    if (c == null) {
-      if (expectedParticipantId != null) {
-        throw StateError('Expected defeat participant disappeared: $cid');
-      }
-      continue;
-    }
-    characters.add(c);
-
-    final eqs = <Equipment>[];
-    for (final eqId in [
-      c.equippedWeaponId,
-      c.equippedArmorId,
-      c.equippedAccessoryId,
-    ]) {
-      if (eqId == null) continue;
-      final e = await isar.equipments.get(eqId);
-      if (e == null || e.ownerCharacterId != c.id) {
-        if (expectedParticipantId != null) {
-          throw StateError('Expected defeat participant equipment invalid');
-        }
-        continue;
-      }
-      eqs.add(e);
-    }
-    equipsByCh[c.id] = eqs;
-
-    final ts = await isar.techniques
-        .where()
-        .filter()
-        .ownerCharacterIdEqualTo(c.id)
-        .findAll();
-    // W13 fix: Isar @embedded list 反序列化为 fixed-length（同 _applyVictoryResolution）
-    for (final t in ts) {
-      t.skillUsageCount = List.of(t.skillUsageCount);
-    }
-    techsByCh[c.id] = ts;
-  }
-  if (characters.isEmpty) return const [];
-
   final NumbersConfig numbers;
   final DropService dropSvc;
   final Rng settlementRng;
@@ -2669,34 +2668,85 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     dropSvc = ref.read(dropServiceProvider);
     settlementRng = ref.read(rngProvider);
   }
-  final injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
-    for (final character in characters)
-      character.id: (
-        heavyHours: character.injuryHoursRemaining,
-        lightStacks: character.lightInjuryStacks,
-      ),
-  };
-
-  final result = CombatResolutionService.resolveSnapshot(
-    settlement: combatSettlement,
-    participatingCharacters: characters,
-    equipmentsByCharacter: equipsByCh,
-    techniquesByCharacter: techsByCh,
-    stageDef: stage,
-    // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
-    rng: settlementRng,
-    progressToNextMap: numbers.cultivationProgressToNext,
-    techniqueDefLookup: GameRepository.instance.getTechnique,
-    dropService: dropSvc,
-    numbersConfig: numbers,
-    // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
-    // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。
-    isHardFight: stage.isBossStage,
-  );
+  final now = settlementAt ?? DateTime.now();
+  var injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{};
+  BattleResolutionResult? result;
 
   // 写回 Isar：受影响的 character + 所有 technique + 所有装备。
   // durable activity 把这些业务写入与 receipt 同事务提交，恢复不重放。
   Future<void> persistDefeatInTxn() async {
+    await OfflinePassiveService.settleWithinTxn(
+      settleIslandBeforeGrowth: true,
+      isar: isar,
+      now: now,
+      updatePresence: true,
+    );
+    for (final cid in ids) {
+      final c = await isar.characters.get(cid);
+      if (c == null) {
+        if (expectedParticipantId != null) {
+          throw StateError('Expected defeat participant disappeared: $cid');
+        }
+        continue;
+      }
+      characters.add(c);
+
+      final eqs = <Equipment>[];
+      for (final eqId in [
+        c.equippedWeaponId,
+        c.equippedArmorId,
+        c.equippedAccessoryId,
+      ]) {
+        if (eqId == null) continue;
+        final e = await isar.equipments.get(eqId);
+        if (e == null || e.ownerCharacterId != c.id) {
+          if (expectedParticipantId != null) {
+            throw StateError('Expected defeat participant equipment invalid');
+          }
+          continue;
+        }
+        eqs.add(e);
+      }
+      equipsByCh[c.id] = eqs;
+
+      final ts = await isar.techniques
+          .where()
+          .filter()
+          .ownerCharacterIdEqualTo(c.id)
+          .findAll();
+      // W13 fix: Isar @embedded list 反序列化为 fixed-length（同 _applyVictoryResolution）
+      for (final t in ts) {
+        t.skillUsageCount = List.of(t.skillUsageCount);
+      }
+      techsByCh[c.id] = ts;
+    }
+    if (characters.isEmpty) return;
+
+    injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
+      for (final character in characters)
+        character.id: (
+          heavyHours: character.injuryHoursRemaining,
+          lightStacks: character.lightInjuryStacks,
+        ),
+    };
+
+    result = CombatResolutionService.resolveSnapshot(
+      settlement: combatSettlement,
+      participatingCharacters: characters,
+      equipmentsByCharacter: equipsByCh,
+      techniquesByCharacter: techsByCh,
+      stageDef: stage,
+      // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
+      rng: settlementRng,
+      progressToNextMap: numbers.cultivationProgressToNext,
+      techniqueDefLookup: GameRepository.instance.getTechnique,
+      dropService: dropSvc,
+      numbersConfig: numbers,
+      // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
+      // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。
+      isHardFight: stage.isBossStage,
+    );
+
     await isar.characters.putAll(characters);
     for (final list in techsByCh.values) {
       if (list.isNotEmpty) await isar.techniques.putAll(list);
@@ -2713,6 +2763,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
         .commitSettlement(
           runId: durableActivitySettlement.runId,
           outcome: DurableActivityOutcome.defeat,
+          now: now,
           applyInTxn: persistDefeatInTxn,
         );
     if (disposition != DurableActivitySettlementDisposition.applied) {
@@ -2720,11 +2771,13 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     }
   }
 
+  if (result == null) return const [];
+
   // 构造损失摘要（Boss 散功 + 心魔惩罚）
   return buildDefeatLossEntries(
     characters: characters,
     techsByCh: techsByCh,
-    result: result,
+    result: result!,
     injuryBeforeByCharacterId: injuryBeforeByCharacterId,
   );
 }
@@ -2973,9 +3026,14 @@ bool shouldSkipScrollDrop(String defId, {required bool isFirstClear}) =>
 /// 普通关战败弹框正文：提示 + 非教学化补强短诊断（S3 新手打磨）。
 /// 抽成公开 widget 便于单测（对话框本体私有、测试 harness 注入替换）。
 class StageRetryDialogBody extends StatelessWidget {
-  const StageRetryDialogBody({super.key, this.participantName});
+  const StageRetryDialogBody({
+    super.key,
+    this.participantName,
+    this.defeatReason,
+  });
 
   final String? participantName;
+  final String? defeatReason;
 
   @override
   Widget build(BuildContext context) {
@@ -2985,6 +3043,10 @@ class StageRetryDialogBody extends StatelessWidget {
       children: [
         if (participantName != null) ...[
           Text(UiStrings.stageReportParticipant(participantName!)),
+          const SizedBox(height: 8),
+        ],
+        if (defeatReason != null) ...[
+          Text(defeatReason!, style: const TextStyle(color: WuxiaUi.jiang)),
           const SizedBox(height: 8),
         ],
         const Text(UiStrings.stageRetryPrompt),

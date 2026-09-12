@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import '../../../core/domain/island_building_state.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../../data/defs/taohua_island_config.dart';
@@ -40,7 +38,7 @@ class IslandProductionReadability {
   }) {
     final bCfg = config.buildingOf(state.type);
     final cap = bCfg.capFor(state.level).toDouble();
-    final stored = state.stored.clamp(0.0, double.infinity).toDouble();
+    final stored = state.totalStored.clamp(0.0, double.infinity).toDouble();
     final full = stored >= cap;
 
     String? recipeId;
@@ -84,12 +82,16 @@ class IslandProductionReadability {
       );
     }
 
+    final currentOutputStock = bCfg.kind == BuildingKind.processor
+        ? state.productStored(outputItemId!)
+        : state.stored;
     final hoursToNext = _hoursUntilStoredAtLeast(
       state: state,
       allStates: allStates,
       config: config,
       founderRealmIndex: founderRealmIndex,
-      targetStored: math.min(cap, stored.floorToDouble() + 1),
+      targetStored: currentOutputStock.floorToDouble() + 1,
+      outputItemId: bCfg.kind == BuildingKind.processor ? outputItemId : null,
     );
     final hoursToFull = _hoursUntilStoredAtLeast(
       state: state,
@@ -118,8 +120,12 @@ class IslandProductionReadability {
     required TaohuaIslandConfig config,
     required int founderRealmIndex,
     required double targetStored,
+    String? outputItemId,
   }) {
-    final current = state.stored;
+    double quantity(IslandBuildingState candidate) => outputItemId == null
+        ? candidate.totalStored
+        : candidate.productStored(outputItemId);
+    final current = quantity(state);
     if (current >= targetStored) return 0;
     if (targetStored <= current) return 0;
 
@@ -134,9 +140,9 @@ class IslandProductionReadability {
         founderRealmIndex: founderRealmIndex,
       );
       for (final s in projected) {
-        if (s.type == state.type) return s.stored;
+        if (s.type == state.type) return quantity(s);
       }
-      return state.stored;
+      return quantity(state);
     }
 
     if (storedAfter(horizon) + 1e-9 < targetStored) return null;

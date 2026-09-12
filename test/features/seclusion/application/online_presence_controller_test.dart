@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/application/inventory_providers.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/seclusion/application/online_presence_controller.dart';
@@ -27,6 +30,25 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('wuxia_presence_');
     await IsarSetup.init(directory: tempDir, inspector: false);
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.characters.put(
+        Character.create(
+          name: 'presence fixture',
+          realmTier: RealmTier.xueTu,
+          realmLayer: RealmLayer.qiMeng,
+          attributes: Attributes(),
+          rarity: RarityTier.biaoZhun,
+          lineageRole: LineageRole.founder,
+          createdAt: DateTime(2026, 1, 1),
+        )..id = 1,
+      );
+      final save = (await IsarSetup.currentSaveData())!;
+      save.founderCharacterId = 1;
+      save.activeCharacterIds = [1];
+      save.createdAt = DateTime(2026, 1, 1);
+      save.lastOnlineAt = save.createdAt;
+      await IsarSetup.instance.saveDatas.put(save);
+    });
     container = ProviderContainer();
   });
 
@@ -135,6 +157,149 @@ void main() {
       );
       expect(item, isNull); // 未结算
     });
+
+    Future<void> flushLifecycleWrite() async {
+      // Lifecycle handlers enqueue their Isar write after a microtask. Wait for
+      // that enqueue, then use the transaction queue as a completion barrier.
+      await Future<void>.delayed(Duration.zero);
+      await IsarSetup.instance.writeTxn(() async {});
+    }
+
+    test(
+      'blur before startup settlement preserves the offline window',
+      () async {
+        final t0 = DateTime(2026, 7, 7, 10);
+        final now = t0.add(const Duration(hours: 8));
+        await IsarSetup.touchOnlineNow(now: t0);
+        final ctl = shortBeat(clock: () => now);
+
+        ctl.onAppBlurred();
+        await flushLifecycleWrite();
+        expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
+        expect(ctl.isHeartbeatActive, isFalse);
+
+        final result = await ctl.settlePassiveWindow();
+        expect(result?.awayHours, 8);
+        expect(result?.mojianshi, 2);
+      },
+    );
+
+    test('repeated blur preserves the first background boundary', () async {
+      final t0 = DateTime(2026, 7, 7, 10);
+      var now = t0;
+      await IsarSetup.touchOnlineNow(
+        now: t0.subtract(const Duration(minutes: 1)),
+      );
+      final ctl = shortBeat(clock: () => now);
+      ctl.markStartupSettleDone();
+
+      ctl.onAppBlurred();
+      await flushLifecycleWrite();
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
+
+      now = t0.add(const Duration(hours: 4));
+      ctl.onAppBlurred();
+      await flushLifecycleWrite();
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
+
+      now = t0.add(const Duration(hours: 8));
+      ctl.onAppFocused();
+      await flushLifecycleWrite();
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
+      while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+          DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      final item = await IsarSetup.instance.inventoryItems.getByDefId(
+        'item_mojianshi',
+      );
+      expect(item?.quantity, 2);
+      expect((await IsarSetup.currentSaveData())!.totalPassiveExperience, 24);
+      expect(ctl.isHeartbeatActive, isTrue);
+    });
+
+    test('startup completion while blurred keeps heartbeat stopped', () async {
+      final t0 = DateTime(2026, 7, 7, 10);
+      var now = t0;
+      await IsarSetup.touchOnlineNow(now: t0);
+      final ctl = shortBeat(clock: () => now);
+
+      ctl.onAppBlurred();
+      await ctl.settlePassiveWindow();
+      ctl.markStartupSettleDone();
+      expect(ctl.isHeartbeatActive, isFalse);
+
+      now = t0.add(const Duration(hours: 8));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
+
+      ctl.onAppFocused();
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
+      while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+          DateTime.now().isBefore(deadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(ctl.isHeartbeatActive, isTrue);
+      final save = (await IsarSetup.currentSaveData())!;
+      expect(save.totalPassiveExperience, 24);
+      expect(save.totalPassiveMojianshi, 2);
+    });
+
+    test('focus before startup completion restores foreground state', () async {
+      final ctl = shortBeat();
+      ctl.onAppBlurred();
+      ctl.onAppFocused();
+      expect(ctl.isHeartbeatActive, isFalse);
+
+      ctl.markStartupSettleDone();
+      expect(ctl.isHeartbeatActive, isTrue);
+    });
+
+    test(
+      'foreground heartbeat grants products without clearing battle injuries',
+      () async {
+        final t0 = DateTime(2026, 7, 7, 10);
+        var now = t0;
+        await IsarSetup.touchOnlineNow(now: t0);
+        await IsarSetup.instance.writeTxn(() async {
+          final character = (await IsarSetup.instance.characters.get(1))!;
+          character.lightInjuryStacks = 3;
+          character.injuryHoursRemaining = 8;
+          character.innerBreathDisorderHoursRemaining = 6;
+          await IsarSetup.instance.characters.put(character);
+        });
+        final ctl = shortBeat(clock: () => now);
+        ctl.markStartupSettleDone();
+        now = t0.add(const Duration(hours: 2));
+        final heartbeatDeadline = DateTime.now().add(
+          const Duration(seconds: 5),
+        );
+        while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+            DateTime.now().isBefore(heartbeatDeadline)) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        var character = (await IsarSetup.instance.characters.get(1))!;
+        expect(character.experience, 6);
+        expect(character.lightInjuryStacks, 3);
+        expect(character.injuryHoursRemaining, 8);
+        expect(character.innerBreathDisorderHoursRemaining, 6);
+
+        ctl.onAppBlurred();
+        await flushLifecycleWrite();
+        now = t0.add(const Duration(hours: 3));
+        ctl.onAppFocused();
+        final focusDeadline = DateTime.now().add(const Duration(seconds: 5));
+        while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+            DateTime.now().isBefore(focusDeadline)) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        }
+        character = (await IsarSetup.instance.characters.get(1))!;
+        expect(character.experience, 9);
+        expect(character.lightInjuryStacks, 0);
+        expect(character.injuryHoursRemaining, 7);
+        expect(character.innerBreathDisorderHoursRemaining, 5);
+      },
+    );
 
     test('disposed controller ignores late lifecycle calls', () async {
       final c = ProviderContainer(

@@ -6,6 +6,7 @@ import 'phase0a_combat_intent.dart';
 import 'phase0a_combat_model.dart';
 import 'posture.dart';
 import 'status_effects.dart';
+import 'action_timeline.dart';
 
 /// Phase 0A 语义事件基类(对齐冻结反馈契约公共 payload)。
 ///
@@ -16,6 +17,83 @@ sealed class Phase0aEvent {
 
   final int seq;
   final int tick;
+}
+
+final class Phase0aActionTimelineChanged extends Phase0aEvent {
+  const Phase0aActionTimelineChanged({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.actionId,
+    required this.eventType,
+    required this.phase,
+    required this.actionTick,
+  });
+  final String actor;
+  final String actionId;
+  final ActionTimelineEventType eventType;
+  final ActionTimelinePhase phase;
+  final int actionTick;
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aActionTimelineChanged &&
+      seq == other.seq &&
+      tick == other.tick &&
+      actor == other.actor &&
+      actionId == other.actionId &&
+      eventType == other.eventType &&
+      phase == other.phase &&
+      actionTick == other.actionTick;
+  @override
+  int get hashCode =>
+      Object.hash(seq, tick, actor, actionId, eventType, phase, actionTick);
+}
+
+enum Phase0aQiChangeReason { basic, skill, kill }
+
+final class Phase0aQiChanged extends Phase0aEvent {
+  const Phase0aQiChanged({
+    required super.seq,
+    required super.tick,
+    required this.actor,
+    required this.actionId,
+    required this.reason,
+    required this.applied,
+    required this.overflow,
+    required this.current,
+    this.windowId,
+  });
+  final String actor;
+  final String actionId;
+  final Phase0aQiChangeReason reason;
+  final int applied;
+  final int overflow;
+  final int current;
+  final String? windowId;
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aQiChanged &&
+      seq == other.seq &&
+      tick == other.tick &&
+      actor == other.actor &&
+      actionId == other.actionId &&
+      reason == other.reason &&
+      applied == other.applied &&
+      overflow == other.overflow &&
+      current == other.current &&
+      windowId == other.windowId;
+  @override
+  int get hashCode => Object.hash(
+    seq,
+    tick,
+    actor,
+    actionId,
+    reason,
+    applied,
+    overflow,
+    current,
+    windowId,
+  );
 }
 
 /// 普攻出手(对齐契约 attack_started)。

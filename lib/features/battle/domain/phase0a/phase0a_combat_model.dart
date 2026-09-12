@@ -4,6 +4,8 @@ import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import 'posture.dart';
 import 'status_effects.dart';
+import 'qi_resource.dart';
+import 'phase0a_basic_action_snapshot.dart';
 
 export 'posture.dart' show PostureHitKind;
 
@@ -14,6 +16,8 @@ const _noGatherControlTicks = 0;
 const _noDefenseTicks = 0;
 const _noDefenseScalar = 0.0;
 const _initialBasicAttackSegmentIndex = 0;
+const _noKillQiPolicy = 0;
+const _initialQiWindowSerial = 0;
 
 /// Phase 0A 竞技场阵营:单角色玩家对多敌。
 enum Phase0aSide { player, enemy }
@@ -183,6 +187,11 @@ final class Phase0aActor {
     this.parryCounterBudgetRemaining = _noDefenseScalar,
     this.statusLedger = const TimedStatusLedgerSnapshot.empty(),
     this.basicAttackSegmentIndex = _initialBasicAttackSegmentIndex,
+    this.basicAction,
+    this.qiLedger,
+    this.killQiGain = _noKillQiPolicy,
+    this.killQiWindowCap = _noKillQiPolicy,
+    this.qiWindowSerial = _initialQiWindowSerial,
   });
 
   /// 语义 id,事件 actor/target 字段与稳定排序决胜键。
@@ -195,6 +204,11 @@ final class Phase0aActor {
   final double moveSpeed;
   final int qiCurrent;
   final int qiMax;
+  final Phase0aBasicActionSnapshot? basicAction;
+  final QiResourceLedgerSnapshot? qiLedger;
+  final int killQiGain;
+  final int killQiWindowCap;
+  final int qiWindowSerial;
 
   /// 普攻剩余冷却(秒);>0 时普攻请求被拒绝。
   final double attackCooldownRemaining;
@@ -305,7 +319,21 @@ final class Phase0aActor {
     double? parryCounterBudgetRemaining,
     TimedStatusLedgerSnapshot? statusLedger,
     int? basicAttackSegmentIndex,
+    Phase0aBasicActionSnapshot? basicAction,
+    bool clearBasicAction = false,
+    QiResourceLedgerSnapshot? qiLedger,
+    int? qiWindowSerial,
   }) {
+    final nextLedger =
+        qiLedger ??
+        (qiCurrent == null
+            ? this.qiLedger
+            : this.qiLedger?.withCurrent(qiCurrent));
+    if (qiLedger != null &&
+        qiCurrent != null &&
+        qiLedger.current != qiCurrent) {
+      throw StateError('player qi and ledger projection disagree');
+    }
     return Phase0aActor(
       id: id,
       side: side,
@@ -314,8 +342,13 @@ final class Phase0aActor {
       maxHealth: maxHealth,
       currentHealth: currentHealth ?? this.currentHealth,
       moveSpeed: moveSpeed,
-      qiCurrent: qiCurrent ?? this.qiCurrent,
+      qiCurrent: nextLedger?.current ?? qiCurrent ?? this.qiCurrent,
       qiMax: qiMax,
+      basicAction: clearBasicAction ? null : basicAction ?? this.basicAction,
+      qiLedger: nextLedger,
+      killQiGain: killQiGain,
+      killQiWindowCap: killQiWindowCap,
+      qiWindowSerial: qiWindowSerial ?? this.qiWindowSerial,
       attackCooldownRemaining:
           attackCooldownRemaining ?? this.attackCooldownRemaining,
       defeatKind: defeatKind,
@@ -404,6 +437,11 @@ final class Phase0aActor {
       other.parryCounterDamage == parryCounterDamage &&
       other.parryCounterBudgetRemaining == parryCounterBudgetRemaining &&
       other.statusLedger == statusLedger &&
+      other.basicAction == basicAction &&
+      other.qiLedger == qiLedger &&
+      other.killQiGain == killQiGain &&
+      other.killQiWindowCap == killQiWindowCap &&
+      other.qiWindowSerial == qiWindowSerial &&
       other.basicAttackSegmentIndex == basicAttackSegmentIndex;
 
   @override
@@ -450,6 +488,11 @@ final class Phase0aActor {
         parryCounterBudgetRemaining,
         statusLedger,
         basicAttackSegmentIndex,
+        basicAction,
+        qiLedger,
+        killQiGain,
+        killQiWindowCap,
+        qiWindowSerial,
       ),
     ),
   );

@@ -39,52 +39,75 @@ void main() {
     }
   });
 
-  test(
-    'five production wiring points cover seven experience scenarios',
-    () async {
-      const combatPaths = {
-        'mainline': 'lib/features/mainline/presentation/stage_entry_flow.dart',
-        'tower': 'lib/features/tower/presentation/tower_entry_flow.dart',
-      };
-      for (final entry in combatPaths.entries) {
-        final contract = DartSourceContract.parse(
-          await File(entry.value).readAsString(),
-          path: entry.value,
-        );
-        expect(
-          contract.variableInitializerSource('settlement'),
-          'CombatProgressionSettlementService(GameRepository.instance)',
-          reason: '${entry.key} settlement 必须是真实共享结算服务实例',
-        );
-        final calls = contract.methodCalls(
-          targetSource: 'settlement',
-          methodName: 'applyExperience',
-        );
-        expect(calls, hasLength(1), reason: '${entry.key} 必须有且仅有一个真实经验结算调用');
-      }
+  test('production wiring points cover all experience scenarios', () async {
+    const combatPaths = {
+      'mainline': 'lib/features/mainline/presentation/stage_entry_flow.dart',
+      'tower': 'lib/features/tower/presentation/tower_entry_flow.dart',
+    };
+    for (final entry in combatPaths.entries) {
+      final contract = DartSourceContract.parse(
+        await File(entry.value).readAsString(),
+        path: entry.value,
+      );
+      expect(
+        contract.variableInitializerSource('settlement'),
+        'CombatProgressionSettlementService(GameRepository.instance)',
+        reason: '${entry.key} settlement 必须是真实共享结算服务实例',
+      );
+      final calls = contract.methodCalls(
+        targetSource: 'settlement',
+        methodName: 'applyExperience',
+      );
+      expect(calls, hasLength(1), reason: '${entry.key} 必须有且仅有一个真实经验结算调用');
+    }
 
-      const directPaths = {
-        'retreat': 'lib/features/seclusion/application/seclusion_service.dart',
-        'offline':
-            'lib/features/seclusion/application/offline_passive_service.dart',
-        'item': 'lib/features/inventory/application/item_use_service.dart',
-      };
-      for (final entry in directPaths.entries) {
-        final contract = DartSourceContract.parse(
-          await File(entry.value).readAsString(),
-          path: entry.value,
-        );
-        expect(
-          contract.methodCalls(
-            targetSource: 'CharacterAdvancementService',
-            methodName: 'applyExperience',
-          ),
-          hasLength(1),
-          reason: '${entry.key} 未委托唯一成长服务',
-        );
-      }
-    },
-  );
+    const directPaths = {
+      'retreat': 'lib/features/seclusion/application/seclusion_service.dart',
+      'offlineIntegrator':
+          'lib/features/seclusion/application/passive_idle_integrator.dart',
+      'item': 'lib/features/inventory/application/item_use_service.dart',
+    };
+    for (final entry in directPaths.entries) {
+      final contract = DartSourceContract.parse(
+        await File(entry.value).readAsString(),
+        path: entry.value,
+      );
+      expect(
+        contract.methodCalls(
+          targetSource: 'CharacterAdvancementService',
+          methodName: 'applyExperience',
+        ),
+        hasLength(1),
+        reason: '${entry.key} 未委托唯一成长服务',
+      );
+    }
+
+    const offlinePath =
+        'lib/features/seclusion/application/offline_passive_service.dart';
+    final offline = DartSourceContract.parse(
+      await File(offlinePath).readAsString(),
+      path: offlinePath,
+    );
+    final accrual = offline.methodCalls(
+      targetSource: 'PassiveIdleIntegrator',
+      methodName: 'accrue',
+    );
+    expect(accrual, hasLength(1), reason: '普通挂机必须通过唯一积分器委托成长服务');
+    expect(accrual.single.namedArguments['character'], 'character');
+    expect(
+      accrual.single.namedArguments['isLayerLocked'],
+      contains('ProgressionGateService.isLayerLocked'),
+      reason: '积分器必须接收生产发布上限门禁',
+    );
+    expect(
+      offline.methodCalls(
+        targetSource: 'CharacterAdvancementService',
+        methodName: 'applyExperience',
+      ),
+      isEmpty,
+      reason: '普通挂机不得在积分器外重复发放经验',
+    );
+  });
 
   test(
     'mainline replay and tower first-clear policies are real call arguments',

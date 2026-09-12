@@ -1,3 +1,5 @@
+import 'package:isar_community/isar.dart';
+
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
@@ -7,6 +9,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/island_building_state.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../../data/defs/taohua_island_config.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import 'island_production_service.dart';
 
 /// 桃花岛一次收获的产出汇总。
@@ -37,10 +40,10 @@ class IslandSettleService {
 
   /// 按「founder → active 第一位 → fallback 0」顺序返回境界 index。
   ///
-  /// 查 Isar 的同步做不到，故为 async；在 writeTxn 之外调用（txn 不可 await 外部
-  /// async 调用），先拿到再开 txn。供 [island_providers.dart] 与 action 层复用。
-  static Future<int> founderRealmIndex(SaveData save) async {
-    final isar = IsarSetup.instance;
+  /// Reads only this slot's Isar rows; callers inside a writeTxn see the same
+  /// transaction snapshot. Shared by the view and transactional action paths.
+  static Future<int> founderRealmIndex(SaveData save, {Isar? database}) async {
+    final isar = database ?? IsarSetup.instance;
 
     // 优先用 founderCharacterId 直接取
     if (save.founderCharacterId != null) {
@@ -72,30 +75,35 @@ class IslandSettleService {
   ///
   /// 内部调用 writeTxn 完成持久化（与 offline_passive_service 体例一致）。
   static Future<void> ensureInitialized(SaveData save, DateTime now) async {
-    final cfg = GameRepository.instance.numbers.taohuaIsland;
-
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
-      final s = (await isar.saveDatas.get(0))!;
-
-      final existingTypes = s.islandBuildings.map((b) => b.type).toSet();
-      final missingTypes = BuildingType.values
-          .where((type) => cfg.buildings.containsKey(type))
-          .where((type) => !existingTypes.contains(type))
-          .toList();
-
-      if (s.islandBuildings.isNotEmpty && missingTypes.isEmpty) return;
-
-      final buildings = s.islandBuildings.map((b) => b.copy()).toList();
-      for (final type in missingTypes) {
-        buildings.add(_initialBuildingState(type, cfg.buildings[type]!));
+      final current = await loadAfterPassiveInTxn(now, database: isar);
+      if (_ensureBuildings(current, now)) {
+        await isar.saveDatas.put(current);
       }
-
-      s.islandBuildings = buildings;
-      s.islandLastSettledAt ??= now;
-      await isar.saveDatas.put(s);
     });
+  }
+
+  static bool _ensureBuildings(SaveData save, DateTime now) {
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+    final existing = save.islandBuildings.map((b) => b.type).toSet();
+    final missing = cfg.buildings.keys.where(
+      (type) => !existing.contains(type),
+    );
+    var changed = false;
+    if (missing.isNotEmpty) {
+      save.islandBuildings = [
+        for (final state in save.islandBuildings) state.copy(),
+        for (final type in missing)
+          _initialBuildingState(type, cfg.buildings[type]!),
+      ];
+      changed = true;
+    }
+    if (save.islandLastSettledAt == null) {
+      save.islandLastSettledAt = now;
+      changed = true;
+    }
+    return changed;
   }
 
   static IslandBuildingState _initialBuildingState(
@@ -122,50 +130,52 @@ class IslandSettleService {
   /// - 若 [save.islandLastSettledAt] 为 null，先调 [ensureInitialized]。
   /// - 调用 [IslandProductionService.settle] 得到新状态后写回 Isar。
   static Future<void> settle(SaveData save, DateTime now) async {
-    final cfg = GameRepository.instance.numbers.taohuaIsland;
-
-    // 若未初始化先建
-    if (save.islandLastSettledAt == null || save.islandBuildings.isEmpty) {
-      await ensureInitialized(save, now);
-      return; // ensureInitialized 已写 now，无需再 settle（elapsed=0）
-    }
-
-    // 旧档可能已有一期建筑和结算时间，但缺少二期新增建筑。先补建再重读，
-    // 保留原 islandLastSettledAt，让新建筑参与同一段离线结算。
-    if (!_hasAllConfiguredBuildings(save, cfg)) {
-      await ensureInitialized(save, now);
-      save = (await IsarSetup.instance.saveDatas.get(0))!;
-    }
-
-    final elapsed =
-        now.difference(save.islandLastSettledAt!).inSeconds / 3600.0;
-    if (elapsed <= 0) return;
-
-    final realmIdx = await founderRealmIndex(save);
-
-    final newStates = IslandProductionService.settle(
-      states: save.islandBuildings,
-      config: cfg,
-      elapsedHours: elapsed,
-      founderRealmIndex: realmIdx,
-    );
-
     final isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
-      final s = (await isar.saveDatas.get(0))!;
-      s.islandBuildings = newStates;
-      s.islandLastSettledAt = now;
-      await isar.saveDatas.put(s);
+      final current = await loadAfterPassiveInTxn(now, database: isar);
+      await settleInTxn(current, now, database: isar);
+      await isar.saveDatas.put(current);
     });
   }
 
-  static bool _hasAllConfiguredBuildings(
+  /// Caller owns the transaction. Resolve pending passive realm changes before
+  /// an island visit or action can advance beyond those changes. First opening
+  /// establishes the island clock without backdating production. Internal
+  /// passive boundaries call [settleInTxn] directly to avoid recursive accrual.
+  static Future<SaveData> loadAfterPassiveInTxn(
+    DateTime now, {
+    Isar? database,
+  }) async {
+    final isar = database ?? IsarSetup.instance;
+    await OfflinePassiveService.settleWithinTxn(isar: isar, now: now);
+    return (await isar.saveDatas.get(0))!;
+  }
+
+  /// Advances the caller's fresh transaction snapshot without opening a nested
+  /// transaction or writing it. The caller owns the final atomic save/inventory
+  /// write. Repeated or older times do not replay production or move time back.
+  static Future<void> settleInTxn(
     SaveData save,
-    TaohuaIslandConfig cfg,
-  ) {
-    final existingTypes = save.islandBuildings.map((b) => b.type).toSet();
-    return cfg.buildings.keys.every(existingTypes.contains);
+    DateTime now, {
+    int? realmIndex,
+    Isar? database,
+  }) async {
+    _ensureBuildings(save, now);
+    final cfg = GameRepository.instance.numbers.taohuaIsland;
+    IslandProductionService.validateProductStocks(save.islandBuildings, cfg);
+    final elapsed =
+        now.difference(save.islandLastSettledAt!).inMicroseconds /
+        Duration.microsecondsPerHour;
+    if (elapsed <= 0) return;
+    final realm =
+        realmIndex ?? await founderRealmIndex(save, database: database);
+    save.islandBuildings = IslandProductionService.settle(
+      states: save.islandBuildings,
+      config: cfg,
+      elapsedHours: elapsed,
+      founderRealmIndex: realm,
+    );
+    save.islandLastSettledAt = now;
   }
 
   // ── harvest ──────────────────────────────────────────────────────────────
@@ -174,56 +184,40 @@ class IslandSettleService {
   ///
   /// - 小数尾保留在 stored 中（float continuity）。
   /// - 每种成品 defId 对应一条 InventoryItem，已有则累加 quantity。
-  /// - settle 串行完成后，harvest 开单一 writeTxn：在同一 save 快照内同时
-  ///   统计 gainedMap、扣减 stored 小数尾、写 InventoryItem，保证背包入账
-  ///   与 stored 扣除来自同一次读取、严格一致、无竞态窗口。
+  /// - Production, separately floored item quantities, retained fractions, and
+  ///   inventory credits are committed in one transaction using the latest save.
   static Future<IslandHarvest> harvest(SaveData save, DateTime now) async {
-    // 先 settle（settle 自己的 txn 串行完成，harvest 之后再开自己的 txn）
-    await settle(save, now);
-
     final isar = IsarSetup.instance;
     final cfg = GameRepository.instance.numbers.taohuaIsland;
-
-    // gainedMap 在 writeTxn 内、基于同一 save 快照计算，与 stored 扣减严格一致
     final gainedMap = <String, int>{};
 
     await isar.writeTxn(() async {
-      // txn 内重新 get 取最新版本，不复用 txn 外 save 快照
-      final s = (await isar.saveDatas.get(0))!;
+      final current = await loadAfterPassiveInTxn(now, database: isar);
+      await settleInTxn(current, now, database: isar);
 
-      // 统计各建筑整数成品，同时扣除 floor 部分、保留小数尾
-      final newStates = s.islandBuildings.map((b) {
-        final copy = b.copy();
-        final bCfg = cfg.buildings[b.type]!;
-
-        // 取成品 defId：source 取 outputItem，processor 取激活配方的 outputItem
-        String? outputDefId;
+      for (final state in current.islandBuildings) {
+        final bCfg = cfg.buildings[state.type]!;
         if (bCfg.kind == BuildingKind.source) {
-          outputDefId = bCfg.outputItem;
-        } else {
-          final recipeId = b.activeRecipeId;
-          if (recipeId != null) {
-            outputDefId = bCfg.recipeById(recipeId)?.outputItem;
+          final qty = state.stored.floor();
+          final output = bCfg.outputItem;
+          if (qty > 0 && output != null) {
+            gainedMap[output] = (gainedMap[output] ?? 0) + qty;
+            state.stored -= qty;
           }
+        } else {
+          for (final stock in state.productStocks) {
+            final qty = stock.stored.floor();
+            if (qty <= 0) continue;
+            final output = stock.outputItemId;
+            gainedMap[output] = (gainedMap[output] ?? 0) + qty;
+            stock.stored -= qty;
+          }
+          state.productStocks = state.productStocks
+              .where((stock) => stock.stored > 0)
+              .toList();
         }
-
-        final floored = b.stored.floor();
-        if (floored > 0 && outputDefId != null) {
-          gainedMap[outputDefId] = (gainedMap[outputDefId] ?? 0) + floored;
-          copy.stored = b.stored - floored; // 保留小数尾
-        }
-
-        return copy;
-      }).toList();
-
-      if (gainedMap.isEmpty) {
-        // 无成品：仍需写回（newStates 无变化，但保持 txn 完整性）
-        // 不写 inventory，直接返回即可（txn 内无法提前 return，用 flag 跳过）
-        return;
       }
-
-      s.islandBuildings = newStates;
-      await isar.saveDatas.put(s);
+      await isar.saveDatas.put(current);
 
       // 写入背包（与 offline_passive_service 相同路径）
       for (final entry in gainedMap.entries) {

@@ -337,6 +337,31 @@ void _validateDefinition({
       'tower encounter sourceEnemyDefId bindings must be unique and ordered',
     );
   }
+
+  // Migration preserves the authored tower defeat-all contract. The generic
+  // objective mapper also supports timers/commanders and partial rosters;
+  // those are valid for other modes, but would silently change tower victory.
+  final objectives = encounter.objectives;
+  if (objectives.completionRule != CombatObjectiveCompletionRule.all) {
+    throw StateError('tower objectives must require all defeat targets');
+  }
+  final targetIds = <String>{};
+  for (final clause in objectives.clauses) {
+    final primitive = clause.primitive;
+    if (primitive is! CombatDefeatTargetsRef) {
+      throw StateError('tower objective must use defeat targets: ${clause.id}');
+    }
+    targetIds.addAll(primitive.targetIds);
+  }
+  final entryIds = entries.map((entry) => entry.entryId).toSet();
+  final missing = entryIds.difference(targetIds).toList()..sort();
+  final foreign = targetIds.difference(entryIds).toList()..sort();
+  if (missing.isNotEmpty || foreign.isNotEmpty) {
+    throw StateError(
+      'tower objective targets must exactly cover floor entries: '
+      'missing=$missing foreign=$foreign',
+    );
+  }
 }
 
 Phase0aTowerCombatSession _createLegacySession(

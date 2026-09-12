@@ -151,8 +151,8 @@ void main() {
 
           for (final type in BuildingType.values) {
             expect(
-              byType(r1, type).stored,
-              closeTo(byType(rN, type).stored, 1e-3),
+              byType(r1, type).totalStored,
+              closeTo(byType(rN, type).totalStored, 1e-3),
               reason:
                   '$type 在 $label/level=$level 下,'
                   '一次性结算与分块结算 stored 应一致'
@@ -173,12 +173,12 @@ void main() {
         final danExpected =
             1.0 * synergyMultiplier(BuildingType.danFang, level) * level * 72;
         expect(
-          byType(r, BuildingType.daZaoTai).stored,
+          byType(r, BuildingType.daZaoTai).totalStored,
           closeTo(daExpected, 1e-3),
           reason: 'level=$level 磨剑石应满产 $daExpected,未被成品 cap 截断',
         );
         expect(
-          byType(r, BuildingType.danFang).stored,
+          byType(r, BuildingType.danFang).totalStored,
           closeTo(danExpected, 1e-3),
           reason: 'level=$level 凝神丹应满产 $danExpected,未被成品 cap 截断',
         );
@@ -192,7 +192,7 @@ void main() {
         final made =
             0.6 * synergyMultiplier(BuildingType.danFang, level) * level * 72;
         expect(
-          byType(r, BuildingType.danFang).stored,
+          byType(r, BuildingType.danFang).totalStored,
           closeTo(made, 1e-3),
           reason: 'level=$level 疗伤丹应满产 $made(灵泉水供给充足非约束)',
         );
@@ -201,7 +201,7 @@ void main() {
         final consumed =
             made * 5.0 / synergyMultiplier(BuildingType.danFang, level);
         expect(
-          byType(r, BuildingType.lingQuan).stored,
+          byType(r, BuildingType.lingQuan).totalStored,
           closeTo(produced - consumed, 1e-3),
           reason: 'level=$level 灵泉水应被疗伤丹真实消耗 $consumed(证 sink 生效)',
         );

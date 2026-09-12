@@ -165,4 +165,49 @@ void main() {
       expect(ledger.current, 6);
     });
   });
+  test(
+    'ledger snapshot deep copy preserves committed IDs and actual window cap',
+    () {
+      final original = QiResourceLedger(capacity: 100, current: 80);
+      original.reserve(actionId: 'skill', amount: 30);
+      original.commit('skill');
+      original.gainKill(
+        actionId: 'kill1',
+        windowId: 'wave',
+        amount: 5,
+        windowCap: 15,
+      );
+      final checkpoint = original.snapshot;
+      final restored = QiResourceLedger.fromSnapshot(checkpoint);
+      expect(restored.snapshot, checkpoint);
+      expect(restored.snapshot.hashCode, checkpoint.hashCode);
+      expect(restored.commit('skill'), QiReservationResult.alreadyCommitted);
+      expect(
+        restored
+            .gainKill(
+              actionId: 'kill1',
+              windowId: 'wave',
+              amount: 5,
+              windowCap: 15,
+            )
+            .isAlreadyApplied,
+        isTrue,
+      );
+      restored.gainKill(
+        actionId: 'kill2',
+        windowId: 'wave',
+        amount: 20,
+        windowCap: 15,
+      );
+      expect(restored.current, 65);
+      expect(checkpoint.current, 55);
+      expect(checkpoint.windowGains, {'wave': 5});
+      expect(() => checkpoint.windowGains['wave'] = 90, throwsUnsupportedError);
+      expect(
+        () => checkpoint.gainActionIds.add('forged'),
+        throwsUnsupportedError,
+      );
+      expect(original.snapshot, checkpoint);
+    },
+  );
 }

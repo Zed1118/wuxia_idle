@@ -1,5 +1,8 @@
 import 'dart:math' as math;
 
+import 'phase0a_weapon_mapping_config.dart';
+export 'phase0a_weapon_mapping_config.dart';
+
 import 'defs/progression_release_cap.dart';
 import 'defs/cycle_drop_bonus.dart';
 import 'defs/equipment_disposal_def.dart';
@@ -1857,6 +1860,7 @@ class Phase0aArenaConfig {
   final double playerAttackHalfArcRadians;
   final double playerAttackCooldownSeconds;
   final Phase0aBasicAttackChainConfig basicAttackChain;
+  final Phase0aWeaponMappingConfig? weaponMapping;
   final String gatherSlot;
   final String gatherSkillId;
   final double gatherRingRadius;
@@ -1896,6 +1900,7 @@ class Phase0aArenaConfig {
     required this.playerAttackHalfArcRadians,
     required this.playerAttackCooldownSeconds,
     required this.basicAttackChain,
+    this.weaponMapping,
     required this.gatherSlot,
     this.gatherSkillId = '',
     required this.gatherRingRadius,
@@ -2017,6 +2022,9 @@ class Phase0aArenaConfig {
       basicAttackChain: Phase0aBasicAttackChainConfig.fromYaml(
         player['basic_attack_chain'],
       ),
+      weaponMapping: y.containsKey('weapon_mapping')
+          ? Phase0aWeaponMappingConfig.fromYaml(y['weapon_mapping'])
+          : null,
       gatherSlot: player['gather_slot'] as String,
       gatherSkillId: tacticalSkillId('gather_skill_id'),
       gatherRingRadius: (player['gather_ring_radius'] as num).toDouble(),

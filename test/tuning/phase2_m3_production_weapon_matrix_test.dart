@@ -213,7 +213,10 @@ Future<_Metrics> _simulate({
   while (productionHost.flow.outcome == Phase0aBattleOutcome.ongoing &&
       ticks < maxTicks) {
     enemyIntentCount += productionHost.mapping!.enemyAiAdapter
-        .intentsFor(state: productionHost.flow.state)
+        .intentsFor(
+          state: productionHost.flow.state,
+          deltaSeconds: deltaSeconds,
+        )
         .length;
     events.addAll(
       productionHost.advanceAuto(deltaSeconds: deltaSeconds, bot: bot),

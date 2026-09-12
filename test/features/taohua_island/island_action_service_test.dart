@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -74,6 +76,27 @@ void main() {
     return item?.quantity ?? 0;
   }
 
+  Future<void> seedFounder(RealmTier tier) async {
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final character = Character.create(
+        name: 'Founder',
+        realmTier: tier,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime.now(),
+      )..isFounder = true;
+      final id = await isar.characters.put(character);
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = id;
+      save.activeCharacterIds = [id];
+      save.passiveLastSettledAt = DateTime.now();
+      await isar.saveDatas.put(save);
+    });
+  }
+
   // ── helper：读建筑等级 ────────────────────────────────────────────────────
   Future<int> buildingLevel(BuildingType type) async {
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
@@ -117,6 +140,7 @@ void main() {
 
   // ── P1-7: 并发连点升级不扣成负数(txn 内重查)──────────────────────────────
   test('P1-7: 并发连点升级 → 恰一笔成功,银两不落负数', () async {
+    await seedFounder(RealmTier.wuSheng);
     // 只够升一级的银两(500),材料充足
     await seedInventory('item_silver', 500);
     await seedInventory('item_jingtie', 100);
@@ -231,35 +255,37 @@ void main() {
     expect(await inventoryQty('item_jingtie'), 10, reason: '材料不扣');
   });
 
-  // ── T5: realmLocked（建筑 realmUnlockIndex > founderRealmIndex）───────────
-  // 当前配置全部 realm_unlock_index=0，此场景需伪造场景：
-  // 用打造台 (processor)，人为 set level=4，然后让我们改用一个 realm>0 的建筑。
-  // 由于所有建筑 realmUnlockIndex==0，此检查实际上在当前配置下永不触发，
-  // 但代码路径须测。使用 founderRealmIndex=-1 让 0 > -1 触发。
-  test(
-    'T5: realmLocked（founderRealmIndex 低于 buildingCfg.realmUnlockIndex）→ 拒绝',
-    () async {
-      await seedInventory('item_silver', 9999);
-      await seedInventory('item_jingtie', 9999);
+  // ── T5: real stored realm cannot unlock the next building level ──────────
+  test('T5: 学徒升 L2→L3 未达三流门槛 → 拒绝', () async {
+    await seedFounder(RealmTier.xueTu);
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final save = (await isar.saveDatas.get(0))!;
+      save.islandBuildings
+              .firstWhere((state) => state.type == BuildingType.tieJiangChang)
+              .level =
+          2;
+      await isar.saveDatas.put(save);
+    });
+    await seedInventory('item_silver', 9999);
+    await seedInventory('item_jingtie', 9999);
 
-      final save = (await IsarSetup.instance.saveDatas.get(0))!;
-      // founderRealmIndex=-1 使 realmUnlockIndex=0 > -1 → realmLocked
-      final result = await IslandActionService.upgrade(
-        save: save,
-        buildingType: BuildingType.tieJiangChang,
-        founderRealmIndex: -1,
-      );
+    final save = (await IsarSetup.instance.saveDatas.get(0))!;
+    final result = await IslandActionService.upgrade(
+      save: save,
+      buildingType: BuildingType.tieJiangChang,
+      founderRealmIndex: 0,
+    );
 
-      expect(result, UpgradeResult.realmLocked);
-      expect(
-        await buildingLevel(BuildingType.tieJiangChang),
-        1,
-        reason: 'level 不变',
-      );
-      expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
-      expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
-    },
-  );
+    expect(result, UpgradeResult.realmLocked);
+    expect(
+      await buildingLevel(BuildingType.tieJiangChang),
+      2,
+      reason: 'level 不变',
+    );
+    expect(await inventoryQty('item_silver'), 9999, reason: '银两不扣');
+    expect(await inventoryQty('item_jingtie'), 9999, reason: '材料不扣');
+  });
 
   // ── T5b: 节奏 B 按等级分阶 realm gate（高等级需更高境界）─────────────────
   // 铁匠厂 upgrade_realm_levels=[0,1,2,3]：升 L3→L4 需 realm2(二流)。
@@ -267,6 +293,7 @@ void main() {
   test(
     'T5b: 升 L3→L4 需 realm2，founderRealmIndex=1 → realmLocked，无副作用',
     () async {
+      await seedFounder(RealmTier.sanLiu);
       final isar = IsarSetup.instance;
       await isar.writeTxn(() async {
         final s = (await isar.saveDatas.get(0))!;
@@ -301,6 +328,7 @@ void main() {
   test(
     'T5c: 升 L3→L4 founderRealmIndex=2(二流)达标 → 成功，扣 silver 2800/精铁 120',
     () async {
+      await seedFounder(RealmTier.erLiu);
       final isar = IsarSetup.instance;
       await isar.writeTxn(() async {
         final s = (await isar.saveDatas.get(0))!;
@@ -351,6 +379,7 @@ void main() {
 
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
     final result = await IslandActionService.selectRecipe(
+      now: DateTime(2026, 6, 25),
       save: save,
       buildingType: BuildingType.daZaoTai,
       recipeId: 'forge_mojianshi',
@@ -368,6 +397,7 @@ void main() {
       // forge_xinxue 的 realm_unlock_index=3，founderRealmIndex=0 → realmLocked
       final save = (await IsarSetup.instance.saveDatas.get(0))!;
       final result = await IslandActionService.selectRecipe(
+        now: DateTime(2026, 6, 25),
         save: save,
         buildingType: BuildingType.daZaoTai,
         recipeId: 'forge_xinxue',
@@ -387,6 +417,7 @@ void main() {
   test('T8: selectRecipe notProcessor（source 建筑）→ 拒绝', () async {
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
     final result = await IslandActionService.selectRecipe(
+      now: DateTime(2026, 6, 25),
       save: save,
       buildingType: BuildingType.tieJiangChang, // source 建筑
       recipeId: 'forge_mojianshi',
@@ -400,6 +431,7 @@ void main() {
   test('T9: selectRecipe recipeNotFound → 拒绝', () async {
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
     final result = await IslandActionService.selectRecipe(
+      now: DateTime(2026, 6, 25),
       save: save,
       buildingType: BuildingType.daZaoTai,
       recipeId: 'nonexistent_recipe',
@@ -417,8 +449,26 @@ void main() {
   // ── T10: selectRecipe 成功切换到高阶配方（境界够）──────────────────────
   test('T10: selectRecipe 高阶配方+高境界 → 成功切换 activeRecipeId', () async {
     // forge_xinxue realm_unlock_index=3，founderRealmIndex=3 → 可选
+    final isar = IsarSetup.instance;
+    await isar.writeTxn(() async {
+      final founder = Character.create(
+        name: 'Founder',
+        realmTier: RealmTier.yiLiu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026, 6, 25),
+      )..isFounder = true;
+      final id = await isar.characters.put(founder);
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = id;
+      save.activeCharacterIds = [id];
+      await isar.saveDatas.put(save);
+    });
     final save = (await IsarSetup.instance.saveDatas.get(0))!;
     final result = await IslandActionService.selectRecipe(
+      now: DateTime(2026, 6, 25),
       save: save,
       buildingType: BuildingType.daZaoTai,
       recipeId: 'forge_xinxue',

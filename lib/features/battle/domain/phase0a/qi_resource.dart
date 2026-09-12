@@ -32,6 +32,84 @@ final class QiReservation {
 
 enum _ReservationState { reserved, committed, cancelled }
 
+final class _ReservationSnapshot {
+  const _ReservationSnapshot(this.amount, this.state);
+  final int amount;
+  final _ReservationState state;
+  @override
+  bool operator ==(Object other) =>
+      other is _ReservationSnapshot &&
+      amount == other.amount &&
+      state == other.state;
+  @override
+  int get hashCode => Object.hash(amount, state);
+}
+
+/// A value snapshot, never a mutable ledger shared between replay branches.
+final class QiResourceLedgerSnapshot {
+  QiResourceLedgerSnapshot._({
+    required this.capacity,
+    required this.current,
+    required Map<String, _ReservationSnapshot> reservations,
+    required Set<String> gainActionIds,
+    required Map<String, int> windowGains,
+  }) : _reservations = Map.unmodifiable(reservations),
+       gainActionIds = Set.unmodifiable(gainActionIds),
+       windowGains = Map.unmodifiable(windowGains);
+
+  final int capacity;
+  final int current;
+  final Map<String, _ReservationSnapshot> _reservations;
+  final Set<String> gainActionIds;
+  final Map<String, int> windowGains;
+  int get reserved => _reservations.values
+      .where((r) => r.state == _ReservationState.reserved)
+      .fold(0, (sum, r) => sum + r.amount);
+  int get available => current - reserved;
+  bool containsAction(String actionId) =>
+      _reservations.containsKey(actionId) || gainActionIds.contains(actionId);
+
+  /// Existing content recovery and drains still update the same qi balance.
+  QiResourceLedgerSnapshot withCurrent(int value) {
+    if (value < reserved || value > capacity) {
+      throw StateError('qi balance outside spendable ledger bounds');
+    }
+    return QiResourceLedgerSnapshot._(
+      capacity: capacity,
+      current: value,
+      reservations: _reservations,
+      gainActionIds: gainActionIds,
+      windowGains: windowGains,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is QiResourceLedgerSnapshot &&
+      capacity == other.capacity &&
+      current == other.current &&
+      _equalMap(_reservations, other._reservations) &&
+      gainActionIds.length == other.gainActionIds.length &&
+      gainActionIds.containsAll(other.gainActionIds) &&
+      _equalMap(windowGains, other.windowGains);
+  @override
+  int get hashCode => Object.hash(
+    capacity,
+    current,
+    Object.hashAllUnordered(
+      _reservations.entries.map((e) => Object.hash(e.key, e.value)),
+    ),
+    Object.hashAllUnordered(gainActionIds),
+    Object.hashAllUnordered(
+      windowGains.entries.map((e) => Object.hash(e.key, e.value)),
+    ),
+  );
+}
+
+bool _equalMap<T>(Map<String, T> a, Map<String, T> b) =>
+    a.length == b.length &&
+    a.entries.every((e) => b.containsKey(e.key) && b[e.key] == e.value);
+
 final class _ReservationRecord {
   _ReservationRecord(this.amount) : state = _ReservationState.reserved;
 
@@ -55,6 +133,28 @@ final class QiResourceLedger {
       throw ArgumentError.value(current, 'current', 'must be within capacity');
     }
   }
+
+  QiResourceLedger.fromSnapshot(QiResourceLedgerSnapshot snapshot)
+    : capacity = snapshot.capacity,
+      _current = snapshot.current {
+    for (final entry in snapshot._reservations.entries) {
+      _reservations[entry.key] = _ReservationRecord(entry.value.amount)
+        ..state = entry.value.state;
+    }
+    _gainActionIds.addAll(snapshot.gainActionIds);
+    _windowGains.addAll(snapshot.windowGains);
+  }
+
+  QiResourceLedgerSnapshot get snapshot => QiResourceLedgerSnapshot._(
+    capacity: capacity,
+    current: current,
+    reservations: {
+      for (final e in _reservations.entries)
+        e.key: _ReservationSnapshot(e.value.amount, e.value.state),
+    },
+    gainActionIds: _gainActionIds,
+    windowGains: _windowGains,
+  );
 
   final int capacity;
   int _current;

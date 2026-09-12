@@ -28,8 +28,40 @@ import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 class SaveSelectScreen extends ConsumerWidget {
   const SaveSelectScreen({super.key});
 
+  Future<bool> _openSlot(BuildContext context, WidgetRef ref, int n) async {
+    try {
+      await SaveSlotStartupService.openSlot(n);
+      return true;
+    } catch (error) {
+      if (!context.mounted) return false;
+      // Opening can fail after the list was read. Refresh both the instance and
+      // the list before offering another slot; never fall through to onboarding.
+      ref.invalidate(isarProvider);
+      ref.invalidate(slotListProvider);
+      await PaperDialog.show<void>(
+        context,
+        title: UiStrings.slotOpenFailed,
+        body: Text(_slotErrorMessage(error)),
+        actions: [
+          Builder(
+            builder: (context) => PlaqueButton(
+              label: UiStrings.slotCancel,
+              onTap: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      );
+      return false;
+    }
+  }
+
+  static String _slotErrorMessage(Object error) =>
+      error is UnsupportedSaveVersionException
+      ? UiStrings.slotUnsupportedVersion(error.actualVersion)
+      : UiStrings.slotUnreadable;
+
   Future<void> _enterSlot(BuildContext context, WidgetRef ref, int n) async {
-    await SaveSlotStartupService.openSlot(n);
+    if (!await _openSlot(context, ref, n)) return;
     // 幂等:已有 founder 跳过(老档/已开过的槽);空槽走全新 onboarding。
     // 随机源走 rngProvider:祖师/弟子起始装备属性 roll 在 service 内,
     // 注入后测试可确定化。
@@ -57,7 +89,7 @@ class SaveSelectScreen extends ConsumerWidget {
       action: UiStrings.slotEnter,
     );
     if (!ok || !context.mounted) return;
-    await SaveSlotStartupService.openSlot(n);
+    if (!await _openSlot(context, ref, n)) return;
     ref.invalidate(isarProvider);
     if (!context.mounted) return;
     await Navigator.of(context).push(
@@ -269,7 +301,10 @@ class SaveSelectScreen extends ConsumerWidget {
             ),
             data: (slots) {
               final allowQuickStart = slots.any(
-                (slot) => !slot.isEmpty && slot.completedFirstCycle,
+                (slot) =>
+                    slot.isAvailable &&
+                    !slot.isEmpty &&
+                    slot.completedFirstCycle,
               );
               return SingleChildScrollView(
                 child: Column(
@@ -291,18 +326,21 @@ class SaveSelectScreen extends ConsumerWidget {
                       _SlotCard(
                         summary: s,
                         allowQuickStart: allowQuickStart,
-                        onTap: () => s.isEmpty
-                            ? _confirmNewGame(
-                                context,
-                                ref,
-                                s.slotId,
-                                allowQuickStart,
-                              )
-                            : _enterSlot(context, ref, s.slotId),
-                        onRename: s.isEmpty
+                        onRetry: () => ref.invalidate(slotListProvider),
+                        onTap: !s.isAvailable
+                            ? null
+                            : () => s.isEmpty
+                                  ? _confirmNewGame(
+                                      context,
+                                      ref,
+                                      s.slotId,
+                                      allowQuickStart,
+                                    )
+                                  : _enterSlot(context, ref, s.slotId),
+                        onRename: s.isEmpty || !s.isAvailable
                             ? null
                             : () => _renameSlot(context, ref, s),
-                        onDelete: s.isEmpty
+                        onDelete: s.isEmpty || !s.isAvailable
                             ? null
                             : () => _deleteSlot(context, ref, s),
                       ),
@@ -324,10 +362,12 @@ class _SlotCard extends StatelessWidget {
     required this.allowQuickStart,
     this.onRename,
     this.onDelete,
+    required this.onRetry,
   });
 
   final SlotSummary summary;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final VoidCallback onRetry;
   final bool allowQuickStart;
   final VoidCallback? onRename;
   final VoidCallback? onDelete;
@@ -348,7 +388,27 @@ class _SlotCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(6),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          child: summary.isEmpty
+          child: !summary.isAvailable
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      displayName,
+                      style: const TextStyle(
+                        color: WuxiaColors.resultHighlight,
+                        fontSize: 18,
+                      ),
+                    ),
+                    ErrorFallback(
+                      error: summary.readError,
+                      message: SaveSelectScreen._slotErrorMessage(
+                        summary.readError!,
+                      ),
+                      onRetry: onRetry,
+                    ),
+                  ],
+                )
+              : summary.isEmpty
               ? _EmptySlot(title: displayName, allowQuickStart: allowQuickStart)
               : _FilledSlot(
                   summary: summary,

@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-09-10 增量：玩家收益账本（0.50.0）
+
+以下增量对应用户本轮“按推荐执行”的批准；其余章节仍是历史快照，当前事实以 Dart 模型及迁移为准。
+
+| 持久字段 | 类型 / 默认 | 语义 |
+|---|---|---|
+| `SaveData.passiveLastSettledAt` | `DateTime? / null` | 普通挂机独立结算时刻，不能被菜单、切槽等 presence 写入覆盖 |
+| `SaveData.passiveMojianshiRemainder` | `double / 0` | 未满一份的磨剑石，属于该存档，合法范围 `[0,1)` |
+| `Character.passiveExperienceRemainder` | `double / 0` | 未满一点的普通经验，属于原角色，传承时不挪给继任者 |
+| `IslandBuildingState.productStocks` | `List<IslandProductStock> / []` | 加工建筑按原产物保存库存；每项为 `outputItemId: String` 与 `stored: double` |
+
+原料建筑继续使用 `stored`；加工建筑迁移后该标量归零，以各产品库存总量共用原容量。`IslandProductStock` 是 Isar 嵌入对象，其生成 schema 与真实旧结构重开测试已验证；历史 §1.2 的“一层嵌入”描述不适用于当前生成器能力。
+
+0.50 迁移与版本更新处于同一事务：只修复两个新增 double 缺字段产生的 NaN；合法尾数保留。旧加工库存按当时 `activeRecipeId` 的输出 ID 搬迁，保留整数及小数，无法确定正库存产物时整体失败回滚；不凭新配方猜改。旧 presence 已建立则保留该时间为独立锚点，`lastOnlineAt == createdAt` 的未建立时段不追溯补发。各槽独立，重复重开幂等。
+
+源码：`lib/data/player_yield_migration.dart`、`lib/data/isar_setup.dart`；实库证据：`test/data/player_yield_migration_test.dart` 与完整 0.49 fixture `test/fixtures/legacy_player_yield.dart`。`.g.dart` 沿用项目忽略规则，由 `dart run build_runner build` 生成。
+
 ## 目录
 
 0. [文档定位](#0-文档定位)

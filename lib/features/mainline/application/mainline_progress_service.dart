@@ -4,6 +4,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../domain/mainline_progress.dart';
 
@@ -129,6 +130,7 @@ class MainlineProgressService {
     TutorialService? tutorialService,
     int cycle = 1,
   }) async {
+    await OfflinePassiveService.settleWithinTxn(isar: isar, now: now);
     final progress = await isar.mainlineProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)

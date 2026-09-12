@@ -48,6 +48,7 @@ enum VisualRoute {
     '章节列表·封面接线验收(章节卡顶部封面条 + 锁章调暗 · 图未到位 errorBuilder 兜底)',
   ),
   stageList('stage_list', '主线章内行程·5 关路径 + Boss 节点 + 原进入关卡流程验收'),
+  stageListEscort('stage_list_escort', '第二章护送·隔离档真实选关、键鼠战斗与失败返回验收'),
   towerFloorList(
     'tower_floor_list',
     '爬塔列表·塔势概览验收(30 层横向节点 + Boss 小/大标记 + 原列表保留)',

@@ -21,7 +21,7 @@ import 'seclusion_map_visuals.dart';
 /// 开放式闭关设置屏（Phase 3 T49）。
 ///
 /// 显示地图详情与两段式结算规则。
-/// 点击「开始闭关」：abandon 旧 session（若有）→ startRetreat → push ActiveRetreatScreen。
+/// 点击「开始闭关」：startRetreat → push ActiveRetreatScreen；已有闭关须先收功。
 class SeclusionSetupScreen extends ConsumerStatefulWidget {
   final SeclusionMapDef mapDef;
   final RealmTier charRealmTier;

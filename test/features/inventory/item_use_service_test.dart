@@ -31,6 +31,13 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('wuxia_itemuse_');
     await IsarSetup.init(directory: tempDir, inspector: false);
     isar = IsarSetup.instance;
+    // Production onboarding records the current leader independently of the
+    // historical isFounder flag retained by retired ancestors.
+    await isar.writeTxn(() async {
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = 1;
+      await isar.saveDatas.put(save);
+    });
   });
 
   tearDown(() async {

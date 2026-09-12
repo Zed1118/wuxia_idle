@@ -112,7 +112,7 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('startRetreat', () {
-    test('开放式闭关固化开始境界且不再需要计划时长', () async {
+    test('开放式闭关固化角色实际境界而非调用方旧快照，且不需计划时长', () async {
       final now = DateTime(2026, 7, 12, 8);
       final session = await SeclusionService(isar: IsarSetup.instance)
           .startRetreat(
@@ -124,7 +124,7 @@ void main() {
             now: now,
           );
 
-      expect(session.realmTierAtStart, RealmTier.erLiu);
+      expect(session.realmTierAtStart, RealmTier.xueTu);
       expect(session.durationHours, 0, reason: '旧字段仅用于存档兼容');
     });
 
@@ -167,38 +167,54 @@ void main() {
       );
     });
 
-    test('旧 active session 被 abandon，新 session 变 active', () async {
-      final t1 = DateTime(2026, 5, 11, 10, 0);
-      final s1 = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+    test('已有闭关须先收功，重复开始保留原会话和收益', () async {
+      final t1 = DateTime(2026, 5, 11, 10);
+      final svc = SeclusionService(isar: IsarSetup.instance);
+      final s1 = await svc.startRetreat(
         mapType: RetreatMapType.shanLin,
-        durationHours: 1,
         saveDataId: kSaveDataId,
         characterId: kCharId,
         charRealmTier: RealmTier.xueTu,
         maps: GameRepository.instance.seclusionMaps,
         now: t1,
       );
-
-      final t2 = DateTime(2026, 5, 11, 11, 0);
-      final s2 = await SeclusionService(isar: IsarSetup.instance).startRetreat(
+      final t2 = t1.add(const Duration(hours: 1));
+      await expectLater(
+        svc.startRetreat(
+          mapType: RetreatMapType.shanLin,
+          saveDataId: kSaveDataId,
+          characterId: kCharId,
+          charRealmTier: RealmTier.xueTu,
+          maps: GameRepository.instance.seclusionMaps,
+          now: t2,
+        ),
+        throwsStateError,
+      );
+      expect((await svc.getActiveSession(kSaveDataId))!.id, s1.id);
+      expect(
+        (await IsarSetup.instance.characters.get(
+          kCharId,
+        ))!.currentRetreatSessionId,
+        s1.id,
+      );
+      final reward = await svc.completeRetreat(
+        session: s1,
+        characterId: kCharId,
+        config: GameRepository.instance.numbers.retreat,
+        maps: GameRepository.instance.seclusionMaps,
+        now: t2,
+      );
+      expect(reward.experiencePoints, greaterThan(0));
+      final s2 = await svc.startRetreat(
         mapType: RetreatMapType.shanLin,
-        durationHours: 4,
         saveDataId: kSaveDataId,
         characterId: kCharId,
         charRealmTier: RealmTier.xueTu,
         maps: GameRepository.instance.seclusionMaps,
         now: t2,
       );
-
-      final old = await IsarSetup.instance.retreatSessions.get(s1.id);
-      expect(old?.status, RetreatStatus.abandoned);
-      expect(s2.status, RetreatStatus.active);
-
-      final count = await IsarSetup.instance.retreatSessions
-          .filter()
-          .statusEqualTo(RetreatStatus.active)
-          .count();
-      expect(count, 1);
+      expect(s2.id, isNot(s1.id));
+      expect((await svc.getActiveSession(kSaveDataId))!.id, s2.id);
     });
   });
 
@@ -959,6 +975,11 @@ void main() {
 
     test('收功后地图特色产出入库并写入 actualRewards', () async {
       final start = DateTime(2026, 5, 11, 10, 0);
+      await IsarSetup.instance.writeTxn(() async {
+        final ch = (await IsarSetup.instance.characters.get(kCharId))!;
+        ch.realmTier = RealmTier.sanLiu;
+        await IsarSetup.instance.characters.put(ch);
+      });
       final session = await SeclusionService(isar: IsarSetup.instance)
           .startRetreat(
             mapType: RetreatMapType.cangJingGe,

@@ -38,7 +38,7 @@ void main() {
     final processor = IslandBuildingState()
       ..type = BuildingType.daZaoTai
       ..level = 1
-      ..stored = 7.25
+      ..setProductStored('item_mojianshi', 7.25)
       ..activeRecipeId = 'forge_mojianshi';
     final source2 = IslandBuildingState()
       ..type = BuildingType.caoYaoYuan
@@ -60,19 +60,19 @@ void main() {
     final readSource = read.islandBuildings[0];
     expect(readSource.type, BuildingType.tieJiangChang);
     expect(readSource.level, 2);
-    expect(readSource.stored, closeTo(35.5, 1e-9));
+    expect(readSource.totalStored, closeTo(35.5, 1e-9));
     expect(readSource.activeRecipeId, isNull);
 
     final readProcessor = read.islandBuildings[1];
     expect(readProcessor.type, BuildingType.daZaoTai);
     expect(readProcessor.level, 1);
-    expect(readProcessor.stored, closeTo(7.25, 1e-9));
+    expect(readProcessor.totalStored, closeTo(7.25, 1e-9));
     expect(readProcessor.activeRecipeId, 'forge_mojianshi');
 
     final readSource2 = read.islandBuildings[2];
     expect(readSource2.type, BuildingType.caoYaoYuan);
     expect(readSource2.level, 3);
-    expect(readSource2.stored, closeTo(0.0, 1e-9));
+    expect(readSource2.totalStored, closeTo(0.0, 1e-9));
 
     expect(read.islandLastSettledAt, now);
   });

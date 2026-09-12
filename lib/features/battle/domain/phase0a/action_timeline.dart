@@ -70,6 +70,70 @@ final class ActionTimelineConfig {
   final int failedCooldownTicks;
 
   int get totalTicks => windupTicks + activeTicks + recoveryTicks;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ActionTimelineConfig &&
+      windupTicks == other.windupTicks &&
+      activeTicks == other.activeTicks &&
+      recoveryTicks == other.recoveryTicks &&
+      firstEffectTick == other.firstEffectTick &&
+      cancelWindowStartTick == other.cancelWindowStartTick &&
+      cancelWindowEndTick == other.cancelWindowEndTick &&
+      interruptedCooldownTicks == other.interruptedCooldownTicks &&
+      cancelledCooldownTicks == other.cancelledCooldownTicks &&
+      failedCooldownTicks == other.failedCooldownTicks;
+
+  @override
+  int get hashCode => Object.hash(
+    windupTicks,
+    activeTicks,
+    recoveryTicks,
+    firstEffectTick,
+    cancelWindowStartTick,
+    cancelWindowEndTick,
+    interruptedCooldownTicks,
+    cancelledCooldownTicks,
+    failedCooldownTicks,
+  );
+}
+
+/// Immutable cursor carried by the authoritative combat state.
+final class ActionTimelineSnapshot {
+  const ActionTimelineSnapshot._(
+    this.config,
+    this.phase,
+    this.cooldownMarker,
+    this.cooldownRemainingTicks,
+    this.nextTick,
+    this.firstEffectEmitted,
+  );
+
+  final ActionTimelineConfig config;
+  final ActionTimelinePhase phase;
+  final ActionTimelineCooldownMarker cooldownMarker;
+  final int cooldownRemainingTicks;
+  final int nextTick;
+  final bool firstEffectEmitted;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ActionTimelineSnapshot &&
+      config == other.config &&
+      phase == other.phase &&
+      cooldownMarker == other.cooldownMarker &&
+      cooldownRemainingTicks == other.cooldownRemainingTicks &&
+      nextTick == other.nextTick &&
+      firstEffectEmitted == other.firstEffectEmitted;
+  @override
+  int get hashCode => Object.hash(
+    config,
+    phase,
+    cooldownMarker,
+    cooldownRemainingTicks,
+    nextTick,
+    firstEffectEmitted,
+  );
 }
 
 final class ActionTimelineEvent {
@@ -88,6 +152,23 @@ final class ActionTimelineEvent {
 
 final class ActionTimeline {
   ActionTimeline(this.config);
+
+  ActionTimeline.fromSnapshot(ActionTimelineSnapshot state)
+    : config = state.config,
+      phase = state.phase,
+      cooldownMarker = state.cooldownMarker,
+      cooldownRemainingTicks = state.cooldownRemainingTicks,
+      _nextTick = state.nextTick,
+      _firstEffectEmitted = state.firstEffectEmitted;
+
+  ActionTimelineSnapshot get snapshot => ActionTimelineSnapshot._(
+    config,
+    phase,
+    cooldownMarker,
+    cooldownRemainingTicks,
+    _nextTick,
+    _firstEffectEmitted,
+  );
 
   final ActionTimelineConfig config;
   ActionTimelinePhase phase = ActionTimelinePhase.idle;

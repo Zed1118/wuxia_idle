@@ -5,6 +5,9 @@ import '../../../../data/defs/boss_phase_def.dart';
 import '../../../../data/defs/skill_def.dart';
 import '../../../boss_gauntlet/domain/qi_drain_effect.dart';
 import 'arena_vector.dart';
+import 'action_timeline.dart';
+import 'phase0a_basic_action_snapshot.dart';
+import 'qi_resource.dart';
 import 'basic_attack_chain.dart';
 import 'basic_attack_geometry_registry.dart';
 import 'combat_geometry.dart';
@@ -590,11 +593,497 @@ Phase0aStepResult reducePhase0aTick({
       attackIntentsByActor.putIfAbsent(intent.actorId, () => intent);
     }
   }
+  final consumedIntentActorIds = <String>{};
+
+  void emitTimeline(
+    Phase0aBasicActionSnapshot pending,
+    ActionTimeline timeline,
+    List<ActionTimelineEvent> changes,
+  ) {
+    for (final change in changes) {
+      final phase = switch (change.type) {
+        ActionTimelineEventType.firstEffect => ActionTimelinePhase.active,
+        ActionTimelineEventType.completed => ActionTimelinePhase.completed,
+        ActionTimelineEventType.cancelled => ActionTimelinePhase.cancelled,
+        ActionTimelineEventType.interrupted => ActionTimelinePhase.interrupted,
+        ActionTimelineEventType.failed => ActionTimelinePhase.failed,
+        _ =>
+          change.tick < timeline.config.windupTicks
+              ? ActionTimelinePhase.windup
+              : change.tick <
+                    timeline.config.windupTicks + timeline.config.activeTicks
+              ? ActionTimelinePhase.active
+              : ActionTimelinePhase.recovery,
+      };
+      events.add(
+        Phase0aActionTimelineChanged(
+          seq: seq++,
+          tick: tick,
+          actor: player.id,
+          actionId: pending.actionId,
+          eventType: change.type,
+          phase: phase,
+          actionTick: change.tick,
+        ),
+      );
+    }
+  }
+
+  Phase0aActor terminateBasicForAcceptedAction(Phase0aActor actor) {
+    final pending = actor.basicAction;
+    if (pending == null) return actor;
+    final timeline = ActionTimeline.fromSnapshot(pending.timeline);
+    if (!timeline.cancel()) timeline.interrupt();
+    emitTimeline(pending, timeline, timeline.drainTerminalEvents());
+    return actor.copyWith(
+      clearBasicAction: true,
+      attackCooldownRemaining: math.max(
+        actor.attackCooldownRemaining,
+        timeline.cooldownRemainingTicks * deltaSeconds,
+      ),
+    );
+  }
+
+  void executeBasicAttack(Phase0aAttackIntent intent, {bool resumed = false}) {
+    final actorId = intent.actorId;
+    final isPlayer = actorId == player.id;
+    final actor = isPlayer ? player : enemiesById[actorId];
+    if (actor == null || !actor.isAlive) return;
+    final preIntentEnemies = Map<String, Phase0aActor>.unmodifiable(
+      enemiesById,
+    );
+    // 非法数值(负/NaN/Infinity)静默拒绝:平方会掩盖负射程,
+    // 负冷却等价无冷却。
+    if (!_isUsableNumber(intent.range) ||
+        !_isUsableNumber(intent.halfArcRadians) ||
+        !_isUsableNumber(intent.cooldownSeconds) ||
+        !_isUsableNumber(intent.postureDamage)) {
+      return;
+    }
+    if (!resumed &&
+        (actor.attackCooldownRemaining > 0 ||
+            (isPlayer && actor.basicAction != null))) {
+      return;
+    }
+    if (!resumed && isPlayer && intent.timelineConfig != null) {
+      // Timeline B owns production basics; legacy chain fixtures stay separate.
+      if (intent.basicAttackChain != null || intent.qiDelta < 0) return;
+      final frozen = intent.withAimDirection(
+        intent.aimDirection.lengthSquared > 0
+            ? intent.aimDirection.normalized()
+            : actor.facing,
+      );
+      final timeline = ActionTimeline(intent.timelineConfig!);
+      final started = timeline.start();
+      final pending = Phase0aBasicActionSnapshot(
+        intent: frozen,
+        timeline: timeline.snapshot,
+        startedTick: tick,
+        actionId: '${actor.id}:${actor.qiWindowSerial}:$tick:basic',
+      );
+      player = actor.copyWith(
+        basicAction: pending,
+        attackCooldownRemaining: intent.cooldownSeconds,
+        facing: frozen.aimDirection,
+      );
+      events.add(
+        Phase0aAttackStarted(
+          seq: seq++,
+          tick: tick,
+          actor: actorId,
+          moveKind: intent.moveKind,
+          weaponArchetype: intent.weaponArchetype,
+          visualSchool: intent.visualSchool,
+        ),
+      );
+      emitTimeline(pending, timeline, started);
+      return;
+    }
+    final basicAttackChain = isPlayer ? intent.basicAttackChain : null;
+    final basicAttackSegment = basicAttackChain?.segmentAt(
+      actor.basicAttackSegmentIndex % basicAttackChain.segments.length,
+    );
+    final geometryRegistry = intent.basicAttackGeometryRegistry;
+    BasicAttackGeometryTuning? segmentTuning;
+    List<CombatGeometryTarget> selectedGeometryTargets = const [];
+    var resolvedAimDirection = intent.aimDirection;
+    var attackActor = actor;
+    if (basicAttackSegment != null) {
+      if (geometryRegistry == null) {
+        throw StateError('basic attack chain requires a geometry registry');
+      }
+      segmentTuning = geometryRegistry.tuningFor(basicAttackSegment);
+      resolvedAimDirection = geometryRegistry.resolveAimDirection(
+        segment: basicAttackSegment,
+        origin: actor.position,
+        inputDirection: intent.aimDirection,
+        candidates: [
+          for (final target in _opposingTargets(
+            casterSide: actor.side,
+            player: player,
+            enemiesById: enemiesById,
+          ))
+            if (!_isGuardedBoss(target, enemiesById))
+              BasicAttackAimCandidate(target.id, target.position),
+        ],
+      );
+      final geometryCandidates = [
+        for (final target in _opposingTargets(
+          casterSide: actor.side,
+          player: player,
+          enemiesById: enemiesById,
+        ))
+          if (!_isGuardedBoss(target, enemiesById))
+            CombatGeometryTarget(target.id, target.position),
+      ];
+      selectedGeometryTargets = geometryRegistry
+          .scopeFor(
+            segment: basicAttackSegment,
+            origin: actor.position,
+            direction: resolvedAimDirection,
+          )
+          .hitTargets(geometryCandidates);
+      if (segmentTuning.advanceDistance > 0) {
+        final bounds = intent.basicAttackArenaBounds;
+        if (bounds == null) {
+          throw StateError('advancing basic attack requires arena bounds');
+        }
+        attackActor = actor.copyWith(
+          position: resolveBasicAttackAdvance(
+            origin: actor.position,
+            direction: resolvedAimDirection,
+            distance: segmentTuning.advanceDistance,
+            stopTarget: selectedGeometryTargets.isEmpty
+                ? null
+                : selectedGeometryTargets.first,
+            bounds: bounds,
+          ),
+        );
+        if (isPlayer) {
+          player = attackActor;
+        } else {
+          enemiesById[actorId] = attackActor;
+        }
+      }
+    }
+    final coop = _guardianCoopContext(
+      actor: actor,
+      enemiesById: enemiesById,
+      attackIntentsByActor: attackIntentsByActor,
+      player: player,
+      suppressedActorIds: suppressedActorIds,
+    );
+    if (coop != null) {
+      final mainIntent = attackIntentsByActor[actor.id]!;
+      final partnerIntent = attackIntentsByActor[coop.partner.id]!;
+      final mainHit = damageResolver.resolve(
+        attackerId: actor.id,
+        targetId: player.id,
+        kind: Phase0aDamageKind.basic,
+        defenderVulnerable: player.posture?.isVulnerable ?? false,
+        defenderWardMult: 1.0,
+      );
+      final partnerHit = damageResolver.resolve(
+        attackerId: coop.partner.id,
+        targetId: player.id,
+        kind: Phase0aDamageKind.basic,
+        defenderVulnerable: player.posture?.isVulnerable ?? false,
+        defenderWardMult: 1.0,
+      );
+      final mainDamage = mainHit.isHit ? _checkedDamage(mainHit) : 0;
+      final partnerDamage = partnerHit.isHit ? _checkedDamage(partnerHit) : 0;
+      final rawTotalDamage = mainDamage + partnerDamage;
+      final defenseFlags =
+          mainIntent.defenseFlags ?? partnerIntent.defenseFlags;
+      var totalDamage = rawTotalDamage;
+      if (defenseFlags != null && rawTotalDamage > 0) {
+        final healthBeforeDefense = player.currentHealth;
+        settleInbound(
+          attacker: actor,
+          target: player,
+          resolved: Phase0aResolvedHit(
+            isHit: true,
+            isCritical: mainHit.isCritical || partnerHit.isCritical,
+            damage: rawTotalDamage,
+          ),
+          defenseFlags: defenseFlags,
+          attackId: '${actor.id}:$tick:${player.id}:guardian_coop',
+          moveKind: Phase0aMoveKind.light,
+          isUltimate: false,
+          postureDamage: mainIntent.postureDamage + partnerIntent.postureDamage,
+          postureHitKind: PostureHitKind.light,
+          breakPower: _noBreakPower,
+        );
+        totalDamage = healthBeforeDefense - player.currentHealth;
+      } else {
+        player = player.copyWith(
+          currentHealth: math.max(0, player.currentHealth - rawTotalDamage),
+        );
+      }
+      events.add(
+        Phase0aGuardianCoopStrike(
+          seq: seq++,
+          tick: tick,
+          mainGuardian: actor.id,
+          partner: coop.partner.id,
+          boss: coop.boss.id,
+          target: player.id,
+          mainGuardianDamage: mainDamage,
+          mainGuardianCritical: mainHit.isHit && mainHit.isCritical,
+          totalDamage: totalDamage,
+          mainGuardianPosition: actor.position,
+          partnerPosition: coop.partner.position,
+          bossPosition: coop.boss.position,
+          targetPosition: player.position,
+        ),
+      );
+      final currentMain = enemiesById[actor.id];
+      if (currentMain != null) {
+        enemiesById[actor.id] = currentMain.copyWith(
+          attackCooldownRemaining: mainIntent.cooldownSeconds,
+          facing: mainIntent.aimDirection.lengthSquared > 0
+              ? mainIntent.aimDirection.normalized()
+              : currentMain.facing,
+          qiCurrent: (currentMain.qiCurrent + mainIntent.qiDelta).clamp(
+            0,
+            currentMain.qiMax,
+          ),
+        );
+      }
+      final currentPartner = enemiesById[coop.partner.id];
+      if (currentPartner != null) {
+        enemiesById[coop.partner.id] = currentPartner.copyWith(
+          attackCooldownRemaining: partnerIntent.cooldownSeconds,
+          facing: partnerIntent.aimDirection.lengthSquared > 0
+              ? partnerIntent.aimDirection.normalized()
+              : currentPartner.facing,
+          qiCurrent: (currentPartner.qiCurrent + partnerIntent.qiDelta).clamp(
+            0,
+            currentPartner.qiMax,
+          ),
+        );
+      }
+      enemiesById[coop.boss.id] = coop.boss.copyWith(
+        guardianCoopUsedInCharge: true,
+      );
+      consumedIntentActorIds.add(coop.partner.id);
+      return;
+    }
+    if (!resumed) {
+      events.add(
+        Phase0aAttackStarted(
+          seq: seq++,
+          tick: tick,
+          actor: actorId,
+          moveKind: intent.moveKind,
+          basicAttackSegment: basicAttackSegment,
+          weaponArchetype: intent.weaponArchetype,
+          visualSchool: intent.visualSchool,
+        ),
+      );
+    }
+    final preferredDefendedEntity =
+        !isPlayer &&
+            intent.preferredTargetId != null &&
+            intent.preferredTargetId == defendedEntity?.id
+        ? defendedEntity
+        : null;
+    final defendedEntityInArc =
+        preferredDefendedEntity != null &&
+        preferredDefendedEntity.isAlive &&
+        isTargetInsideStrikeArc(
+          origin: attackActor.position,
+          aimDirection: resolvedAimDirection,
+          target: preferredDefendedEntity.position,
+          range: intent.range,
+          halfArcRadians: intent.halfArcRadians,
+        );
+    if (defendedEntityInArc) {
+      final beforeDurability = preferredDefendedEntity.currentDurability;
+      final remaining = math.max(
+        0,
+        beforeDurability - preferredDefendedEntity.damagePerHit,
+      );
+      final resolvedDamage = beforeDurability - remaining;
+      defendedEntity = preferredDefendedEntity.copyWith(
+        currentDurability: remaining,
+      );
+      events.add(
+        Phase0aDefendedEntityHit(
+          seq: seq++,
+          tick: tick,
+          actor: actorId,
+          target: preferredDefendedEntity.id,
+          resolvedDamage: resolvedDamage,
+          remainingDurability: remaining,
+          actorPosition: attackActor.position,
+          targetPosition: preferredDefendedEntity.position,
+        ),
+      );
+      if (remaining == 0) {
+        events.add(
+          Phase0aDefendedEntityDestroyed(
+            seq: seq++,
+            tick: tick,
+            target: preferredDefendedEntity.id,
+            targetPosition: preferredDefendedEntity.position,
+          ),
+        );
+      }
+    }
+    final targets = preferredDefendedEntity != null
+        ? const <Phase0aActor>[]
+        : basicAttackSegment == null
+        ? [
+            ?_selectStrikeTarget(
+              attacker: attackActor,
+              player: player,
+              enemiesById: enemiesById,
+              aimDirection: resolvedAimDirection,
+              range: intent.range,
+              halfArcRadians: intent.halfArcRadians,
+              preferredTargetId: intent.preferredTargetId,
+            ),
+          ]
+        : selectedGeometryTargets
+              .map(
+                (match) => attackActor.side == Phase0aSide.player
+                    ? enemiesById[match.id]!
+                    : player,
+              )
+              .toList(growable: false);
+    for (final target in targets) {
+      final resolved = damageResolver.resolve(
+        attackerId: actorId,
+        targetId: target.id,
+        kind: Phase0aDamageKind.basic,
+        defenderStaggered:
+            staggeredActorIds.contains(target.id) ||
+            target.staggerTicksRemaining > 0,
+        defenderVulnerable: target.posture?.isVulnerable ?? false,
+        defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
+      );
+      settleInbound(
+        attacker: attackActor,
+        target: target,
+        resolved: resolved,
+        defenseFlags: intent.defenseFlags,
+        attackId: '$actorId:$tick:${target.id}',
+        moveKind: intent.moveKind,
+        isUltimate: false,
+        postureDamage: intent.postureDamage,
+        postureHitKind: intent.postureHitKind,
+        breakPower: _noBreakPower,
+        basicAttackSegment: basicAttackSegment,
+        weaponArchetype: intent.weaponArchetype,
+        visualSchool: intent.visualSchool,
+      );
+    }
+    final aimDirection = resolvedAimDirection.lengthSquared > 0
+        ? resolvedAimDirection.normalized()
+        : attackActor.facing;
+    final currentAttacker = isPlayer ? player : enemiesById[actorId];
+    if (currentAttacker == null) return;
+    QiResourceLedgerSnapshot? nextLedger;
+    if (resumed && currentAttacker.qiLedger != null) {
+      final ledger = QiResourceLedger.fromSnapshot(currentAttacker.qiLedger!);
+      final actionId = currentAttacker.basicAction!.actionId;
+      final gain = ledger.gainAction(
+        actionId: actionId,
+        amount: intent.qiDelta,
+      );
+      nextLedger = ledger.snapshot;
+      events.add(
+        Phase0aQiChanged(
+          seq: seq++,
+          tick: tick,
+          actor: actorId,
+          actionId: actionId,
+          reason: Phase0aQiChangeReason.basic,
+          applied: gain.applied,
+          overflow: gain.overflow,
+          current: ledger.current,
+        ),
+      );
+    }
+    final recharged = currentAttacker.copyWith(
+      attackCooldownRemaining: resumed
+          ? currentAttacker.attackCooldownRemaining
+          : intent.cooldownSeconds,
+      facing: aimDirection,
+      qiLedger: nextLedger,
+      qiCurrent: nextLedger == null
+          ? (currentAttacker.qiCurrent + intent.qiDelta).clamp(
+              0,
+              currentAttacker.qiMax,
+            )
+          : null,
+      basicAttackSegmentIndex: basicAttackChain == null
+          ? currentAttacker.basicAttackSegmentIndex
+          : (actor.basicAttackSegmentIndex + 1) %
+                basicAttackChain.segments.length,
+    );
+    if (isPlayer) {
+      player = recharged;
+    } else {
+      enemiesById[actorId] = recharged;
+    }
+  }
+
+  void advancePlayerBasic() {
+    final pending = player.basicAction;
+    if (pending == null) return;
+    if (!player.isAlive) {
+      player = player.copyWith(clearBasicAction: true);
+      return;
+    }
+    final timeline = ActionTimeline.fromSnapshot(pending.timeline);
+    final changes = timeline.advance(1);
+    player = player.copyWith(
+      basicAction: pending.withTimeline(timeline.snapshot),
+    );
+    emitTimeline(pending, timeline, changes);
+    if (changes.any(
+      (event) => event.type == ActionTimelineEventType.firstEffect,
+    )) {
+      executeBasicAttack(pending.intent, resumed: true);
+    }
+    if (timeline.phase == ActionTimelinePhase.completed) {
+      player = player.copyWith(clearBasicAction: true);
+    }
+  }
+
+  _SkillCast acceptedSkill(_SkillCast cast, Phase0aActor before, int qiDelta) {
+    final caster = terminateBasicForAcceptedAction(cast.casterAfterQi);
+    if (caster.qiLedger != null) {
+      final applied = caster.qiCurrent - before.qiCurrent;
+      events.add(
+        Phase0aQiChanged(
+          seq: seq++,
+          tick: tick,
+          actor: caster.id,
+          actionId:
+              '${caster.id}:${caster.qiWindowSerial}:$tick:skill:${cast.slot}',
+          reason: Phase0aQiChangeReason.skill,
+          applied: applied,
+          overflow: qiDelta > 0 ? qiDelta - applied : 0,
+          current: caster.qiCurrent,
+        ),
+      );
+    }
+    return _SkillCast(
+      slot: cast.slot,
+      casterAfterQi: caster,
+      slotAfterCast: cast.slotAfterCast,
+    );
+  }
+
   var defenseConsumed = false;
   for (final intent in ordered) {
     if (intent is! Phase0aDefenseIntent ||
         intent.actorId != player.id ||
         defenseConsumed ||
+        !player.isAlive ||
         player.defenseCooldownRemaining > 0 ||
         !_validDefenseIntent(intent)) {
       continue;
@@ -649,6 +1138,7 @@ Phase0aStepResult reducePhase0aTick({
           defenseCooldownRemaining: intent.cooldownSeconds,
         );
     }
+    player = terminateBasicForAcceptedAction(player);
     defenseConsumed = true;
     final windowTicks = switch (intent.action) {
       Phase0aDefenseAction.shield => intent.shieldDurationTicks,
@@ -668,8 +1158,14 @@ Phase0aStepResult reducePhase0aTick({
       ),
     );
   }
-  final consumedIntentActorIds = <String>{};
+  var basicAdvanced = false;
   for (final intent in ordered) {
+    // Complete the player's input group first, so an admitted skill can cancel
+    // before this tick's first effect. Preserve the existing actor sort order.
+    if (!basicAdvanced && intent.actorId.compareTo(player.id) > 0) {
+      advancePlayerBasic();
+      basicAdvanced = true;
+    }
     final actorId = intent.actorId;
     if (consumedIntentActorIds.contains(actorId)) continue;
     final isPlayer = actorId == player.id;
@@ -715,316 +1211,7 @@ Phase0aStepResult reducePhase0aTick({
           enemiesById[actorId] = moved;
         }
       case Phase0aAttackIntent():
-        // 非法数值(负/NaN/Infinity)静默拒绝:平方会掩盖负射程,
-        // 负冷却等价无冷却。
-        if (!_isUsableNumber(intent.range) ||
-            !_isUsableNumber(intent.halfArcRadians) ||
-            !_isUsableNumber(intent.cooldownSeconds) ||
-            !_isUsableNumber(intent.postureDamage)) {
-          continue;
-        }
-        if (actor.attackCooldownRemaining > 0) continue;
-        final basicAttackChain = isPlayer ? intent.basicAttackChain : null;
-        final basicAttackSegment = basicAttackChain?.segmentAt(
-          actor.basicAttackSegmentIndex % basicAttackChain.segments.length,
-        );
-        final geometryRegistry = intent.basicAttackGeometryRegistry;
-        BasicAttackGeometryTuning? segmentTuning;
-        List<CombatGeometryTarget> selectedGeometryTargets = const [];
-        var resolvedAimDirection = intent.aimDirection;
-        var attackActor = actor;
-        if (basicAttackSegment != null) {
-          if (geometryRegistry == null) {
-            throw StateError('basic attack chain requires a geometry registry');
-          }
-          segmentTuning = geometryRegistry.tuningFor(basicAttackSegment);
-          resolvedAimDirection = geometryRegistry.resolveAimDirection(
-            segment: basicAttackSegment,
-            origin: actor.position,
-            inputDirection: intent.aimDirection,
-            candidates: [
-              for (final target in _opposingTargets(
-                casterSide: actor.side,
-                player: player,
-                enemiesById: enemiesById,
-              ))
-                if (!_isGuardedBoss(target, enemiesById))
-                  BasicAttackAimCandidate(target.id, target.position),
-            ],
-          );
-          final geometryCandidates = [
-            for (final target in _opposingTargets(
-              casterSide: actor.side,
-              player: player,
-              enemiesById: enemiesById,
-            ))
-              if (!_isGuardedBoss(target, enemiesById))
-                CombatGeometryTarget(target.id, target.position),
-          ];
-          selectedGeometryTargets = geometryRegistry
-              .scopeFor(
-                segment: basicAttackSegment,
-                origin: actor.position,
-                direction: resolvedAimDirection,
-              )
-              .hitTargets(geometryCandidates);
-          if (segmentTuning.advanceDistance > 0) {
-            final bounds = intent.basicAttackArenaBounds;
-            if (bounds == null) {
-              throw StateError('advancing basic attack requires arena bounds');
-            }
-            attackActor = actor.copyWith(
-              position: resolveBasicAttackAdvance(
-                origin: actor.position,
-                direction: resolvedAimDirection,
-                distance: segmentTuning.advanceDistance,
-                stopTarget: selectedGeometryTargets.isEmpty
-                    ? null
-                    : selectedGeometryTargets.first,
-                bounds: bounds,
-              ),
-            );
-            if (isPlayer) {
-              player = attackActor;
-            } else {
-              enemiesById[actorId] = attackActor;
-            }
-          }
-        }
-        final coop = _guardianCoopContext(
-          actor: actor,
-          enemiesById: enemiesById,
-          attackIntentsByActor: attackIntentsByActor,
-          player: player,
-          suppressedActorIds: suppressedActorIds,
-        );
-        if (coop != null) {
-          final mainIntent = attackIntentsByActor[actor.id]!;
-          final partnerIntent = attackIntentsByActor[coop.partner.id]!;
-          final mainHit = damageResolver.resolve(
-            attackerId: actor.id,
-            targetId: player.id,
-            kind: Phase0aDamageKind.basic,
-            defenderVulnerable: player.posture?.isVulnerable ?? false,
-            defenderWardMult: 1.0,
-          );
-          final partnerHit = damageResolver.resolve(
-            attackerId: coop.partner.id,
-            targetId: player.id,
-            kind: Phase0aDamageKind.basic,
-            defenderVulnerable: player.posture?.isVulnerable ?? false,
-            defenderWardMult: 1.0,
-          );
-          final mainDamage = mainHit.isHit ? _checkedDamage(mainHit) : 0;
-          final partnerDamage = partnerHit.isHit
-              ? _checkedDamage(partnerHit)
-              : 0;
-          final rawTotalDamage = mainDamage + partnerDamage;
-          final defenseFlags =
-              mainIntent.defenseFlags ?? partnerIntent.defenseFlags;
-          var totalDamage = rawTotalDamage;
-          if (defenseFlags != null && rawTotalDamage > 0) {
-            final healthBeforeDefense = player.currentHealth;
-            settleInbound(
-              attacker: actor,
-              target: player,
-              resolved: Phase0aResolvedHit(
-                isHit: true,
-                isCritical: mainHit.isCritical || partnerHit.isCritical,
-                damage: rawTotalDamage,
-              ),
-              defenseFlags: defenseFlags,
-              attackId: '${actor.id}:$tick:${player.id}:guardian_coop',
-              moveKind: Phase0aMoveKind.light,
-              isUltimate: false,
-              postureDamage:
-                  mainIntent.postureDamage + partnerIntent.postureDamage,
-              postureHitKind: PostureHitKind.light,
-              breakPower: _noBreakPower,
-            );
-            totalDamage = healthBeforeDefense - player.currentHealth;
-          } else {
-            player = player.copyWith(
-              currentHealth: math.max(0, player.currentHealth - rawTotalDamage),
-            );
-          }
-          events.add(
-            Phase0aGuardianCoopStrike(
-              seq: seq++,
-              tick: tick,
-              mainGuardian: actor.id,
-              partner: coop.partner.id,
-              boss: coop.boss.id,
-              target: player.id,
-              mainGuardianDamage: mainDamage,
-              mainGuardianCritical: mainHit.isHit && mainHit.isCritical,
-              totalDamage: totalDamage,
-              mainGuardianPosition: actor.position,
-              partnerPosition: coop.partner.position,
-              bossPosition: coop.boss.position,
-              targetPosition: player.position,
-            ),
-          );
-          final currentMain = enemiesById[actor.id];
-          if (currentMain != null) {
-            enemiesById[actor.id] = currentMain.copyWith(
-              attackCooldownRemaining: mainIntent.cooldownSeconds,
-              facing: mainIntent.aimDirection.lengthSquared > 0
-                  ? mainIntent.aimDirection.normalized()
-                  : currentMain.facing,
-              qiCurrent: (currentMain.qiCurrent + mainIntent.qiDelta).clamp(
-                0,
-                currentMain.qiMax,
-              ),
-            );
-          }
-          final currentPartner = enemiesById[coop.partner.id];
-          if (currentPartner != null) {
-            enemiesById[coop.partner.id] = currentPartner.copyWith(
-              attackCooldownRemaining: partnerIntent.cooldownSeconds,
-              facing: partnerIntent.aimDirection.lengthSquared > 0
-                  ? partnerIntent.aimDirection.normalized()
-                  : currentPartner.facing,
-              qiCurrent: (currentPartner.qiCurrent + partnerIntent.qiDelta)
-                  .clamp(0, currentPartner.qiMax),
-            );
-          }
-          enemiesById[coop.boss.id] = coop.boss.copyWith(
-            guardianCoopUsedInCharge: true,
-          );
-          consumedIntentActorIds.add(coop.partner.id);
-          continue;
-        }
-        events.add(
-          Phase0aAttackStarted(
-            seq: seq++,
-            tick: tick,
-            actor: actorId,
-            moveKind: intent.moveKind,
-            basicAttackSegment: basicAttackSegment,
-            weaponArchetype: intent.weaponArchetype,
-            visualSchool: intent.visualSchool,
-          ),
-        );
-        final preferredDefendedEntity =
-            !isPlayer &&
-                intent.preferredTargetId != null &&
-                intent.preferredTargetId == defendedEntity?.id
-            ? defendedEntity
-            : null;
-        final defendedEntityInArc =
-            preferredDefendedEntity != null &&
-            preferredDefendedEntity.isAlive &&
-            isTargetInsideStrikeArc(
-              origin: attackActor.position,
-              aimDirection: resolvedAimDirection,
-              target: preferredDefendedEntity.position,
-              range: intent.range,
-              halfArcRadians: intent.halfArcRadians,
-            );
-        if (defendedEntityInArc) {
-          final beforeDurability = preferredDefendedEntity.currentDurability;
-          final remaining = math.max(
-            0,
-            beforeDurability - preferredDefendedEntity.damagePerHit,
-          );
-          final resolvedDamage = beforeDurability - remaining;
-          defendedEntity = preferredDefendedEntity.copyWith(
-            currentDurability: remaining,
-          );
-          events.add(
-            Phase0aDefendedEntityHit(
-              seq: seq++,
-              tick: tick,
-              actor: actorId,
-              target: preferredDefendedEntity.id,
-              resolvedDamage: resolvedDamage,
-              remainingDurability: remaining,
-              actorPosition: attackActor.position,
-              targetPosition: preferredDefendedEntity.position,
-            ),
-          );
-          if (remaining == 0) {
-            events.add(
-              Phase0aDefendedEntityDestroyed(
-                seq: seq++,
-                tick: tick,
-                target: preferredDefendedEntity.id,
-                targetPosition: preferredDefendedEntity.position,
-              ),
-            );
-          }
-        }
-        final targets = preferredDefendedEntity != null
-            ? const <Phase0aActor>[]
-            : basicAttackSegment == null
-            ? [
-                ?_selectStrikeTarget(
-                  attacker: attackActor,
-                  player: player,
-                  enemiesById: enemiesById,
-                  aimDirection: resolvedAimDirection,
-                  range: intent.range,
-                  halfArcRadians: intent.halfArcRadians,
-                  preferredTargetId: intent.preferredTargetId,
-                ),
-              ]
-            : selectedGeometryTargets
-                  .map(
-                    (match) => attackActor.side == Phase0aSide.player
-                        ? enemiesById[match.id]!
-                        : player,
-                  )
-                  .toList(growable: false);
-        for (final target in targets) {
-          final resolved = damageResolver.resolve(
-            attackerId: actorId,
-            targetId: target.id,
-            kind: Phase0aDamageKind.basic,
-            defenderStaggered:
-                staggeredActorIds.contains(target.id) ||
-                target.staggerTicksRemaining > 0,
-            defenderVulnerable: target.posture?.isVulnerable ?? false,
-            defenderWardMult: defenderWardMultFor(target, preIntentEnemies),
-          );
-          settleInbound(
-            attacker: attackActor,
-            target: target,
-            resolved: resolved,
-            defenseFlags: intent.defenseFlags,
-            attackId: '$actorId:$tick:${target.id}',
-            moveKind: intent.moveKind,
-            isUltimate: false,
-            postureDamage: intent.postureDamage,
-            postureHitKind: intent.postureHitKind,
-            breakPower: _noBreakPower,
-            basicAttackSegment: basicAttackSegment,
-            weaponArchetype: intent.weaponArchetype,
-            visualSchool: intent.visualSchool,
-          );
-        }
-        final aimDirection = resolvedAimDirection.lengthSquared > 0
-            ? resolvedAimDirection.normalized()
-            : attackActor.facing;
-        final currentAttacker = isPlayer ? player : enemiesById[actorId];
-        if (currentAttacker == null) continue;
-        final recharged = currentAttacker.copyWith(
-          attackCooldownRemaining: intent.cooldownSeconds,
-          facing: aimDirection,
-          qiCurrent: (attackActor.qiCurrent + intent.qiDelta).clamp(
-            0,
-            attackActor.qiMax,
-          ),
-          basicAttackSegmentIndex: basicAttackChain == null
-              ? currentAttacker.basicAttackSegmentIndex
-              : (actor.basicAttackSegmentIndex + 1) %
-                    basicAttackChain.segments.length,
-        );
-        if (isPlayer) {
-          player = recharged;
-        } else {
-          enemiesById[actorId] = recharged;
-        }
+        executeBasicAttack(intent);
       case Phase0aEnemySkillIntent():
         if (actor.side != Phase0aSide.enemy ||
             enemySkillDamageResolver == null ||
@@ -1174,14 +1361,16 @@ Phase0aStepResult reducePhase0aTick({
             intent.ringRadius > intent.effectRadius) {
           continue;
         }
-        final cast = _tryCastSkill(
+        var cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
           qiDelta: -intent.qiCost,
           cooldownSeconds: intent.cooldownSeconds,
           slots: slots,
+          tick: tick,
         );
         if (cast == null) continue;
+        cast = acceptedSkill(cast, actor, -intent.qiCost);
         final gatherCenter = intent.targetPoint ?? actor.position;
         events.add(
           Phase0aGatherStarted(
@@ -1310,14 +1499,16 @@ Phase0aStepResult reducePhase0aTick({
             intent.qiCost < 0) {
           continue;
         }
-        final cast = _tryCastSkill(
+        var cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
           qiDelta: -intent.qiCost,
           cooldownSeconds: intent.cooldownSeconds,
           slots: slots,
+          tick: tick,
         );
         if (cast == null) continue;
+        cast = acceptedSkill(cast, actor, -intent.qiCost);
         events.add(
           Phase0aClearStarted(
             seq: seq++,
@@ -1462,14 +1653,16 @@ Phase0aStepResult reducePhase0aTick({
             !_isUsableNumber(intent.postureDamage)) {
           continue;
         }
-        final cast = _tryCastSkill(
+        var cast = _tryCastSkill(
           actor: actor,
           slotId: intent.slot,
           qiDelta: intent.qiDelta,
           cooldownSeconds: intent.cooldownSeconds,
           slots: slots,
+          tick: tick,
         );
         if (cast == null) continue;
+        cast = acceptedSkill(cast, actor, intent.qiDelta);
         events.add(
           Phase0aSkillStarted(
             seq: seq++,
@@ -1618,6 +1811,7 @@ Phase0aStepResult reducePhase0aTick({
         player = cast.casterAfterQi.copyWith(facing: aimDirection);
     }
   }
+  if (!basicAdvanced) advancePlayerBasic();
 
   // 蓄力拍尾释放(稳定敌序):pre-step 倒计时归零者在此走既有 enemy skill
   // 结算路径(DamageCalculator 唯一真相源)。本拍 intent 阶段被破招/击败者
@@ -1726,6 +1920,62 @@ Phase0aStepResult reducePhase0aTick({
       enemySkillCooldowns: Map.unmodifiable(cooldowns),
       attackCooldownRemaining: hitAny ? cast.actionCooldownSeconds : 0,
     );
+  }
+
+  if (!player.isAlive) player = player.copyWith(clearBasicAction: true);
+  if (player.qiLedger != null) {
+    final ledger = QiResourceLedger.fromSnapshot(player.qiLedger!);
+    final deaths = events.whereType<Phase0aEnemyDefeated>().toList(
+      growable: false,
+    );
+    final windowId = '${player.id}:${player.qiWindowSerial}';
+    for (final death in deaths) {
+      final actionId = 'kill:${player.qiWindowSerial}:${death.target}';
+      if (ledger.snapshot.containsAction(actionId)) continue;
+      final gain = ledger.gainKill(
+        actionId: actionId,
+        windowId: windowId,
+        amount: player.killQiGain,
+        windowCap: player.killQiWindowCap,
+      );
+      events.add(
+        Phase0aQiChanged(
+          seq: seq++,
+          tick: tick,
+          actor: player.id,
+          actionId: actionId,
+          reason: Phase0aQiChangeReason.kill,
+          applied: gain.applied,
+          overflow: gain.overflow,
+          current: ledger.current,
+          windowId: windowId,
+        ),
+      );
+    }
+    player = player.copyWith(qiLedger: ledger.snapshot);
+    for (var i = 0; i < slots.length; i++) {
+      final slot = slots[i];
+      final availability = availabilityOf(
+        cooldownRemaining: slot.cooldownRemaining,
+        qiCurrent: player.qiCurrent,
+        qiCost: slot.qiCost,
+      );
+      if (availability == slot.availability) continue;
+      slots[i] = slot.copyWith(availability: availability);
+      events.add(
+        Phase0aSkillAvailabilityChanged(
+          seq: seq++,
+          tick: tick,
+          slot: slot.slot,
+          availability: availability,
+          cooldownRemaining: availability == Phase0aSkillAvailability.cooldown
+              ? slot.cooldownRemaining
+              : null,
+          qiCurrent: player.qiCurrent,
+          qiRequired: slot.qiCost,
+        ),
+      );
+    }
   }
 
   return Phase0aStepResult(
@@ -2122,12 +2372,33 @@ _SkillCast? _tryCastSkill({
   required int qiDelta,
   required double cooldownSeconds,
   required List<Phase0aSkillSlot> slots,
+  required int tick,
 }) {
   final qiCost = qiDelta < 0 ? -qiDelta : 0;
   final index = slots.indexWhere((slot) => slot.slot == slotId);
   if (index < 0) return null;
   final slot = slots[index];
   if (slot.cooldownRemaining > 0 || actor.qiCurrent < qiCost) return null;
+  final Phase0aActor casterAfterQi;
+  if (actor.qiLedger != null) {
+    final snapshot = actor.qiLedger!;
+    final actionId = '${actor.id}:${actor.qiWindowSerial}:$tick:skill:$slotId';
+    if (snapshot.available < qiCost || snapshot.containsAction(actionId)) {
+      return null;
+    }
+    final ledger = QiResourceLedger.fromSnapshot(snapshot);
+    if (qiDelta < 0) {
+      ledger.reserve(actionId: actionId, amount: qiCost);
+      ledger.commit(actionId);
+    } else {
+      ledger.gainAction(actionId: actionId, amount: qiDelta);
+    }
+    casterAfterQi = actor.copyWith(qiLedger: ledger.snapshot);
+  } else {
+    casterAfterQi = actor.copyWith(
+      qiCurrent: (actor.qiCurrent + qiDelta).clamp(0, actor.qiMax),
+    );
+  }
   // availability 不在此处预置:施放后由全槽同拍重算按槽序发出真实迁移。
   final slotAfterCast = slot.copyWith(
     cooldownRemaining: cooldownSeconds,
@@ -2136,9 +2407,7 @@ _SkillCast? _tryCastSkill({
   slots[index] = slotAfterCast;
   return _SkillCast(
     slot: slotId,
-    casterAfterQi: actor.copyWith(
-      qiCurrent: (actor.qiCurrent + qiDelta).clamp(0, actor.qiMax),
-    ),
+    casterAfterQi: casterAfterQi,
     slotAfterCast: slotAfterCast,
   );
 }

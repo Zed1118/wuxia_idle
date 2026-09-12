@@ -171,9 +171,12 @@ void main() {
       ..startedAt = start
       ..status = RetreatStatus.active
       ..actualRewards = [];
-    await IsarSetup.instance.writeTxn(
-      () => IsarSetup.instance.retreatSessions.put(session),
-    );
+    await IsarSetup.instance.writeTxn(() async {
+      await IsarSetup.instance.retreatSessions.put(session);
+      final character = (await IsarSetup.instance.characters.get(kCharId))!;
+      character.currentRetreatSessionId = session.id;
+      await IsarSetup.instance.characters.put(character);
+    });
 
     await SeclusionService(isar: IsarSetup.instance).completeRetreat(
       session: session,

@@ -64,6 +64,7 @@ import '../../../data/defs/tower_floor_def.dart';
 import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../activity/application/durable_activity_automation_service.dart';
@@ -492,6 +493,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
   required int elapsedMs,
   CombatSettlementSnapshot? settlementSnapshot,
   String? rewardOccurrenceId,
+  DateTime? settlementAt,
   DurableActivitySettlementContext? durableActivitySettlement,
   @visibleForTesting Future<void> Function()? afterProgressInTxnForTest,
 }) async {
@@ -515,7 +517,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       floor.floorIndex >= 1 &&
       floor.floorIndex <= maxFloor;
   final cycle = progress.currentCycleIndex;
-  final now = DateTime.now();
+  final now = settlementAt ?? DateTime.now();
   final occurrenceId = rewardOccurrenceId?.trim().isNotEmpty == true
       ? rewardOccurrenceId!.trim()
       : 'tower:$cycle:${floor.floorIndex}:$participantId:'
@@ -588,6 +590,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       expectedParticipantId: participantId,
       settlementSnapshot: settlementSnapshot,
       transactionOwned: true,
+      settlementAt: now,
     );
     if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
       skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
@@ -678,6 +681,7 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
   int? expectedParticipantId,
   CombatSettlementSnapshot? settlementSnapshot,
   bool transactionOwned = false,
+  DateTime? settlementAt,
 }) async {
   const empty = (
     advancements: <AdvancementEntry>[],
@@ -700,6 +704,26 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
   if (combatSettlement.playerCharacterId != resolvedParticipantId) {
     return empty;
   }
+  final now = settlementAt ?? DateTime.now();
+  if (!transactionOwned) {
+    return isar.writeTxn(
+      () => applyTowerCombatResolution(
+        ref: ref,
+        floor: floor,
+        grantsFirstClearExperience: grantsFirstClearExperience,
+        expectedParticipantId: resolvedParticipantId,
+        settlementSnapshot: combatSettlement,
+        transactionOwned: true,
+        settlementAt: now,
+      ),
+    );
+  }
+  await OfflinePassiveService.settleWithinTxn(
+    settleIslandBeforeGrowth: true,
+    isar: isar,
+    now: now,
+    updatePresence: true,
+  );
   final ids = [resolvedParticipantId];
   final save = await isar.saveDatas.get(0);
 
@@ -812,11 +836,7 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
     );
   }
 
-  if (transactionOwned) {
-    await persistInTxn();
-  } else {
-    await isar.writeTxn(persistInTxn);
-  }
+  await persistInTxn();
 
   // 第七阶段 批一:派生英雄镜头数据（本场最高输出玩家）。纯展示，不改数值。
   final bossName = floor.enemyTeam.isNotEmpty

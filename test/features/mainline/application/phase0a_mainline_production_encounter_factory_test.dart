@@ -251,6 +251,8 @@ void main() {
     final profileIds = {
       for (final intent in mapping.enemyAiAdapter.intentsFor(
         state: intentState,
+        deltaSeconds:
+            repository.numbers.phase0aArena.enemyInitialAttackCooldown,
       ))
         switch (intent) {
           Phase0aMoveIntent(:final behaviorProfile) => behaviorProfile?.id,

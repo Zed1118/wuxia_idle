@@ -41,6 +41,9 @@ class Character {
 
   int experience = 0;
 
+  /// Fractional idle experience stays with its recipient across succession.
+  double passiveExperienceRemainder = 0;
+
   /// Legacy Isar compatibility mirror of RealmDef.experienceToNext.
   /// Production decisions must derive the threshold from realmTier + realmLayer.
   /// Keep synchronized after creation/advancement until a future schema cleanup.
@@ -185,6 +188,7 @@ class Character {
     int lightInjuryStacks = 0,
     double injuryHoursRemaining = 0,
     int experience = 0,
+    double passiveExperienceRemainder = 0,
     int experienceToNextLayer = 100,
     int level = 1,
     int levelExp = 0,
@@ -234,6 +238,7 @@ class Character {
       ..lightInjuryStacks = lightInjuryStacks
       ..injuryHoursRemaining = injuryHoursRemaining
       ..experience = experience
+      ..passiveExperienceRemainder = passiveExperienceRemainder
       ..experienceToNextLayer = experienceToNextLayer
       ..level = level
       ..levelExp = levelExp

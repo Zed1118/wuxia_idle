@@ -378,7 +378,7 @@ class _IslandSnapshot {
         (b) => b.type == type,
         orElse: () => IslandBuildingState()..type = type,
       );
-      final stored = state.stored.floor();
+      final stored = state.harvestableCount;
       if (bCfg.kind == BuildingKind.source) {
         rawStored += stored;
         continue;
@@ -553,7 +553,7 @@ class _SceneBuildingHotspot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spec = _BuildingSceneSpec.forType(type);
-    final stored = state.stored.floor();
+    final stored = state.harvestableCount;
     final active =
         bCfg.kind == BuildingKind.source || state.activeRecipeId != null;
     final full = progress.pauseReason == IslandProductionPauseReason.full;
@@ -783,7 +783,11 @@ class _HotspotProductionProgress {
       founderRealmIndex: founderRealmIndex,
     );
     final cap = cfg.buildingOf(state.type).capFor(state.level).toDouble();
-    final stored = state.stored.clamp(0.0, cap).toDouble();
+    final activeStock =
+        cfg.buildingOf(state.type).kind == BuildingKind.processor
+        ? state.productStored(intel.outputItemId ?? '')
+        : state.stored;
+    final stored = activeStock.clamp(0.0, cap).toDouble();
     final base = WuxiaUi.ink.withValues(alpha: 0.16);
 
     return switch (intel.pauseReason) {
@@ -1277,7 +1281,7 @@ class _BuildingCard extends StatelessWidget {
     final itemDefs = GameRepository.instance.itemDefs;
     final level = state.level;
     final cap = bCfg.capFor(level);
-    final stored = state.stored.floor();
+    final stored = state.totalStored;
     final isProcessor = bCfg.kind == BuildingKind.processor;
     final synergyLine = _synergyLine();
     final productionIntel = IslandProductionReadability.from(
@@ -1356,7 +1360,9 @@ class _BuildingCard extends StatelessWidget {
 
           // ── 仓储进度 ──
           Text(
-            UiStrings.taohuaIslandStorageLabel(stored, cap),
+            isProcessor
+                ? UiStrings.taohuaIslandTotalStorageLabel(stored, cap)
+                : UiStrings.taohuaIslandStorageLabel(stored.floor(), cap),
             style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
           ),
           const SizedBox(height: 4),
@@ -1370,6 +1376,27 @@ class _BuildingCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+
+          if (isProcessor && state.productStocks.isNotEmpty) ...[
+            const Text(
+              UiStrings.taohuaIslandStoredProducts,
+              style: TextStyle(color: WuxiaUi.ink2, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            for (final stock in state.productStocks)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  UiStrings.taohuaIslandStoredProduct(
+                    itemDefs[stock.outputItemId]?.name ?? stock.outputItemId,
+                    stock.stored,
+                  ),
+                  key: Key('taohua_stock_${type.name}_${stock.outputItemId}'),
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 12),
+                ),
+              ),
+            const SizedBox(height: 8),
+          ],
 
           _ProductionQueueIntel(
             isProcessor: isProcessor,

@@ -16,3 +16,4 @@ targets:
             - test/fixtures/legacy_missing_fields.dart
             - test/fixtures/legacy_numeric_fields.dart
             - test/fixtures/legacy_sect_member_count.dart
+            - test/fixtures/legacy_player_yield.dart

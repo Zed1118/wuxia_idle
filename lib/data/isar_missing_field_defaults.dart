@@ -39,6 +39,7 @@ abstract final class IsarMissingFieldDefaults {
     'Character.birthInGameYear',
     'Character.experience',
     'Character.experienceToNextLayer',
+    'Character.passiveExperienceRemainder',
     'Character.injuryHoursRemaining',
     'Character.innerBreathDisorderHoursRemaining',
     'Character.innerDemonResidueHoursRemaining',
@@ -76,6 +77,7 @@ abstract final class IsarMissingFieldDefaults {
     'SaveData.highestTowerLayer',
     'SaveData.totalPassiveExperience',
     'SaveData.totalPassiveMojianshi',
+    'SaveData.passiveMojianshiRemainder',
     'SaveData.totalPlaySeconds',
     'SaveData.tutorialStep',
     'SchoolKillCount.count',
@@ -93,6 +95,9 @@ abstract final class IsarMissingFieldDefaults {
   };
 
   static const deferredNumericFields = <String, String>{
+    'IslandProductStock.stored':
+        'A: entity and field introduced together in 0.50.0; '
+        'old saves contain no productStocks entries, so no absent-field exposure.',
     'ActivityMemberSnapshot.characterId':
         'A: entity and field introduced together; no missing-field exposure. '
         'Entity: 9e55c268695333242e93e90f98eb70dbc459efcd; '
@@ -349,6 +354,21 @@ abstract final class IsarMissingFieldDefaults {
     await _repairRows(isar.collection<TowerProgress>(), _repairTowerProgress);
   }
 
+  /// The 0.50 fields may be absent even when the older 0.48 repair already ran.
+  static Future<void> repairPassiveRemaindersInTxn(
+    Isar isar,
+    SaveData save,
+  ) async {
+    if (save.passiveMojianshiRemainder.isNaN) {
+      save.passiveMojianshiRemainder = 0;
+    }
+    await _repairRows(isar.collection<Character>(), (row) {
+      if (!row.passiveExperienceRemainder.isNaN) return false;
+      row.passiveExperienceRemainder = 0;
+      return true;
+    });
+  }
+
   /// Final segment re-reads current rows, preserving writes from earlier segments.
   static Future<void> repairInTxn(Isar isar, SaveData save) async {
     _repairSaveData(save);
@@ -405,6 +425,10 @@ abstract final class IsarMissingFieldDefaults {
   static bool _repairCharacter(Character row) {
     var changed = false;
     final defaults = Character();
+    if (row.passiveExperienceRemainder.isNaN) {
+      row.passiveExperienceRemainder = defaults.passiveExperienceRemainder;
+      changed = true;
+    }
     if (row.internalForce == missingLong) {
       row.internalForce = defaults.internalForce;
       changed = true;
@@ -552,6 +576,10 @@ abstract final class IsarMissingFieldDefaults {
     }
     if (row.totalPassiveExperience == missingLong) {
       row.totalPassiveExperience = defaults.totalPassiveExperience;
+      changed = true;
+    }
+    if (row.passiveMojianshiRemainder.isNaN) {
+      row.passiveMojianshiRemainder = defaults.passiveMojianshiRemainder;
       changed = true;
     }
     if (row.baicaoMaxDepth == missingLong) {

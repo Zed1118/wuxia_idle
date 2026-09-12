@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/application/character_providers.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
@@ -103,19 +102,24 @@ class MainMenuRetreatBanner extends ConsumerWidget {
     RetreatSession session,
     SeclusionMapDef mapDef,
   ) async {
-    final ids = await ref.read(activeCharacterIdsProvider.future);
-    final id = ids.isNotEmpty ? ids.first : 1;
-    final ch = await ref.read(characterByIdProvider(id).future);
-    if (!context.mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ActiveRetreatScreen(
-          session: session,
-          mapDef: mapDef,
-          characterId: ch?.id ?? id,
+    try {
+      final owner = await ref.read(retreatOwnerProvider(session.id).future);
+      if (!context.mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ActiveRetreatScreen(
+            session: session,
+            mapDef: mapDef,
+            characterId: owner.id,
+          ),
         ),
-      ),
-    );
-    ref.invalidate(activeRetreatSessionProvider);
+      );
+      ref.invalidate(activeRetreatSessionProvider);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(UiStrings.retreatCollectFailed(e))),
+      );
+    }
   }
 }

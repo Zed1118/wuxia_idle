@@ -6,11 +6,12 @@ import '../../../core/domain/inventory_item.dart';
 import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
-import '../../../data/isar_setup.dart';
 import '../../../data/numbers_config.dart';
-import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
+import '../../taohua_island/application/island_settle_service.dart';
+import '../domain/retreat_session.dart';
+import 'passive_idle_integrator.dart';
 
 /// 被动离线挂机一次结算的产量（纯数据）。
 typedef PassiveYield = ({
@@ -24,12 +25,12 @@ typedef PassiveYield = ({
 /// M2 范围 B 通用被动离线挂机服务。
 ///
 /// [compute] 纯函数算产量（经验/磨剑石各走 numbers.yaml passive_idle 锚点）。
-/// 副作用入库见 [settle]（Task 4）。与闭关互斥：仅在无 active 闭关时由 gate 调用。
+/// Persisted accrual uses [settleWindow]; active retreats own their whole window.
 class OfflinePassiveService {
   OfflinePassiveService._();
 
   /// 按离线时长 + 主角境界算被动产量。
-  /// [awayHours] 由 caller 传入（gate 已 clamp 下界 0）；内部按 cap 截上界。
+  /// [awayHours] is clamped at zero and has no upper time cap.
   static PassiveYield compute({
     required double awayHours,
     required RealmTier realmTier,
@@ -49,92 +50,192 @@ class OfflinePassiveService {
     );
   }
 
-  /// 结算一次被动离线产出并写 Isar（同事务）：
-  ///   1. 磨剑石 → InventoryItem(item_mojianshi)
-  ///   2. 经验 → CharacterAdvancementService.applyExperience（含升层 + 心魔锁，
-  ///      与闭关收功一致）
-  ///   3. SaveData 累计 += + lastOnlineAt = now（重置基准，防重复结算）
-  /// 仅由 gate 在「无 active 闭关 + 离线>0」时调用（互斥见 spec）。返回本次产量。
-  static Future<PassiveYield> settle({
-    required int saveDataId,
-    required int characterId,
-    required double awayHours,
+  /// Settles the persistent passive ledger atomically. Lifecycle presence and
+  /// injury recovery are separate opt-ins; ordinary reward boundaries use the
+  /// defaults and cannot heal the character or overwrite the recovery window.
+  static Future<PassiveYield?> settleWindow({
+    required Isar isar,
     required DateTime now,
+    bool recoverInjuries = false,
+    bool updatePresence = false,
+    bool settleIslandBeforeGrowth = false,
+  }) => isar.writeTxn(
+    () => settleWithinTxn(
+      isar: isar,
+      now: now,
+      recoverInjuries: recoverInjuries,
+      updatePresence: updatePresence,
+      settleIslandBeforeGrowth: settleIslandBeforeGrowth,
+    ),
+  );
+
+  /// Caller must own the Isar write transaction. Read the character again after
+  /// this call before applying another reward: passive experience can advance it.
+  /// External growth and succession also settle an already opened island at the
+  /// current realm before they change it. Routine heartbeats leave its window.
+  static Future<PassiveYield?> settleWithinTxn({
+    required Isar isar,
+    required DateTime now,
+    bool recoverInjuries = false,
+    bool updatePresence = false,
+    bool settleIslandBeforeGrowth = false,
   }) async {
-    final isar = IsarSetup.instance;
-    final ch = await isar.characters.get(characterId);
-    final realmTier = ch?.realmTier ?? RealmTier.xueTu;
-    final yield_ = compute(
-      awayHours: awayHours,
-      realmTier: realmTier,
-      config: GameRepository.instance.numbers.passiveIdle,
+    final save = await isar.saveDatas.get(0);
+    if (save == null) return null;
+    final ownerId = save.founderCharacterId;
+    if (ownerId == null) return null;
+    final character = await isar.characters.get(ownerId);
+    if (character == null || !character.isAlive) return null;
+
+    final anchor = save.passiveLastSettledAt ?? save.lastOnlineAt;
+    if (now.isBefore(anchor)) return null;
+    _validateRemainder(save.passiveMojianshiRemainder);
+    _validateRemainder(character.passiveExperienceRemainder);
+
+    final active = await isar.retreatSessions
+        .filter()
+        .saveDataIdEqualTo(save.slotId)
+        .statusEqualTo(RetreatStatus.active)
+        .findFirst();
+    if (active != null) {
+      // The retreat owns this entire window, including its ordinary tail after
+      // 72 hours. Preserve pre-retreat fractions but never accrue it twice.
+      if (settleIslandBeforeGrowth) {
+        await _settleIslandIfInitialized(isar, save, now, character.realmTier);
+      }
+      save.passiveLastSettledAt = now;
+      if (updatePresence && !now.isBefore(save.lastOnlineAt)) {
+        save.lastOnlineAt = now;
+      }
+      await isar.saveDatas.put(save);
+      return null;
+    }
+
+    if (save.passiveLastSettledAt == null &&
+        save.lastOnlineAt == save.createdAt) {
+      // An unestablished legacy timestamp is not evidence of earned time.
+      if (settleIslandBeforeGrowth) {
+        await _settleIslandIfInitialized(isar, save, now, character.realmTier);
+      }
+      save.passiveLastSettledAt = now;
+      if (updatePresence) save.lastOnlineAt = now;
+      await isar.saveDatas.put(save);
+      return null;
+    }
+
+    final elapsed = now.difference(anchor).inMicroseconds;
+    final hours = elapsed / Duration.microsecondsPerHour;
+    final repository = GameRepository.instance;
+    final progress = await isar.mainlineProgress
+        .filter()
+        .saveDataIdEqualTo(save.slotId)
+        .findFirst();
+    final cleared = progress?.clearedStageIds.toSet() ?? <String>{};
+    final accrual = PassiveIdleIntegrator.accrue(
+      character: character,
+      elapsedMicroseconds: elapsed,
+      config: repository.numbers.passiveIdle,
+      experienceRemainder: character.passiveExperienceRemainder,
+      mojianshiRemainder: save.passiveMojianshiRemainder,
+      realmLookup: repository.getRealm,
+      isLayerLocked: (tier, layer) => ProgressionGateService.isLayerLocked(
+        nextTier: tier,
+        nextLayer: layer,
+        releaseCap: repository.numbers.progressionReleaseCap,
+        realmLookup: repository.getRealm,
+        innerDemonDef: repository.numbers.innerDemon,
+        clearedStageIds: cleared,
+      ),
     );
 
-    await isar.writeTxn(() async {
-      if (yield_.mojianshi > 0) {
-        final existing = await isar.inventoryItems.getByDefId('item_mojianshi');
-        if (existing != null) {
-          existing.quantity += yield_.mojianshi;
-          existing.lastObtainedAt = now;
-          await isar.inventoryItems.put(existing);
-        } else {
-          await isar.inventoryItems.put(
-            InventoryItem()
-              ..defId = 'item_mojianshi'
-              ..itemType = ItemType.moJianShi
-              ..quantity = yield_.mojianshi
-              ..firstObtainedAt = now
-              ..lastObtainedAt = now,
-          );
-        }
+    for (final change in accrual.realmTierChanges) {
+      await _settleIslandIfInitialized(
+        isar,
+        save,
+        anchor.add(Duration(microseconds: change.elapsedMicroseconds)),
+        change.previousTier,
+      );
+    }
+    if (settleIslandBeforeGrowth) {
+      await _settleIslandIfInitialized(isar, save, now, character.realmTier);
+    }
+
+    if (accrual.mojianshi > 0) {
+      final item =
+          await isar.inventoryItems.getByDefId('item_mojianshi') ??
+          (InventoryItem()
+            ..defId = 'item_mojianshi'
+            ..itemType = ItemType.moJianShi
+            ..firstObtainedAt = now);
+      item.quantity += accrual.mojianshi;
+      item.lastObtainedAt = now;
+      await isar.inventoryItems.put(item);
+    }
+    character.passiveExperienceRemainder = accrual.experienceRemainder;
+    save.passiveMojianshiRemainder = accrual.mojianshiRemainder;
+
+    if (recoverInjuries) {
+      final recoveryHours =
+          now.difference(save.lastOnlineAt).inMicroseconds /
+          Duration.microsecondsPerHour;
+      if (recoveryHours > 0) {
+        InnerBreathDisorder.recover(character: character, hours: recoveryHours);
+        final remaining = character.injuryHoursRemaining - recoveryHours;
+        character.injuryHoursRemaining = remaining < 0 ? 0 : remaining;
+        character.lightInjuryStacks = 0;
       }
+    }
 
-      final c = await isar.characters.get(characterId);
-      if (c != null) {
-        InnerBreathDisorder.recover(character: c, hours: yield_.settledHours);
-        // Task 8: 双层伤势疗养（§5.5 在线=离线，按 awayHours 真实离线时长累减，
-        // 无加速）。重伤按时长累减 clamp ≥ 0；轻伤离线结算即清零。
-        // 关键：放在 experience>0 之外的无条件路径——即使本次 0 产出，挂机即疗养。
-        if (c.injuryHoursRemaining > 0) {
-          final left = c.injuryHoursRemaining - awayHours;
-          c.injuryHoursRemaining = left < 0 ? 0 : left;
-        }
-        c.lightInjuryStacks = 0;
+    save.totalPassiveMojianshi += accrual.mojianshi;
+    save.totalPassiveExperience += accrual.experience;
+    save.passiveLastSettledAt = now;
+    if (updatePresence && !now.isBefore(save.lastOnlineAt)) {
+      save.lastOnlineAt = now;
+    }
+    await isar.characters.put(character);
+    await isar.saveDatas.put(save);
+    if (elapsed == 0) return null;
+    return (
+      mojianshi: accrual.mojianshi,
+      experience: accrual.experience,
+      awayHours: hours,
+      settledHours: hours,
+      isCapped: false,
+    );
+  }
 
-        if (yield_.experience > 0) {
-          final progress = await isar.mainlineProgress
-              .filter()
-              .saveDataIdEqualTo(saveDataId)
-              .findFirst();
-          final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-          final repository = GameRepository.instance;
-          CharacterAdvancementService.applyExperience(
-            c,
-            yield_.experience,
-            realmLookup: repository.getRealm,
-            isLayerLocked: (tier, layer) =>
-                ProgressionGateService.isLayerLocked(
-                  nextTier: tier,
-                  nextLayer: layer,
-                  releaseCap: repository.numbers.progressionReleaseCap,
-                  realmLookup: repository.getRealm,
-                  innerDemonDef: repository.numbers.innerDemon,
-                  clearedStageIds: clearedSet,
-                ),
-          );
-        }
-        await isar.characters.put(c);
-      }
+  /// The completed retreat has already settled its interval. Resume ordinary
+  /// accrual at that boundary without awarding it again or discarding fractions.
+  static Future<void> resumeAfterRetreatWithinTxn({
+    required Isar isar,
+    required DateTime now,
+  }) async {
+    final save = await isar.saveDatas.get(0);
+    if (save == null) return;
+    final anchor = save.passiveLastSettledAt;
+    if (anchor != null && now.isBefore(anchor)) return;
+    save.passiveLastSettledAt = now;
+    await isar.saveDatas.put(save);
+  }
 
-      final save = await isar.saveDatas.get(0);
-      if (save != null) {
-        save.totalPassiveMojianshi += yield_.mojianshi;
-        save.totalPassiveExperience += yield_.experience;
-        save.lastOnlineAt = now;
-        await isar.saveDatas.put(save);
-      }
-    });
+  static void _validateRemainder(double value) {
+    if (!value.isFinite || value < 0 || value >= 1) {
+      throw StateError('Invalid passive resource remainder: $value');
+    }
+  }
 
-    return yield_;
+  static Future<void> _settleIslandIfInitialized(
+    Isar isar,
+    SaveData save,
+    DateTime now,
+    RealmTier realmTier,
+  ) async {
+    if (save.islandLastSettledAt == null) return;
+    await IslandSettleService.settleInTxn(
+      save,
+      now,
+      realmIndex: realmTier.index,
+      database: isar,
+    );
   }
 }

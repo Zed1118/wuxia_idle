@@ -24,6 +24,7 @@ class IslandProductionService {
     required double elapsedHours,
     required int founderRealmIndex,
   }) {
+    validateProductStocks(states, config);
     // 步骤 1:深拷贝输入(保证纯函数)
     final result = states.map((s) => s.copy()).toList();
 
@@ -103,7 +104,7 @@ class IslandProductionService {
             secondarySource.stored / effectiveSecondaryInputPerOutput;
         made = math.min(made, bySecondary);
       }
-      made = math.min(made, cap - s.stored); // 成品仓 cap 限
+      made = math.min(made, cap - s.totalStored); // All products share one cap.
       made = math.max(0.0, made); // 浮点负兜底:也覆盖 stored > cap 的历史存量(cap 调低后存量合法超限)
 
       sourceState.stored -= made * effectiveInputPerOutput; // 扣源料
@@ -111,9 +112,42 @@ class IslandProductionService {
         secondarySource.stored -=
             made * effectiveSecondaryInputPerOutput; // 扣次要源料
       }
-      s.stored += made; // 产成品
+      s.setProductStored(
+        recipe.outputItem,
+        s.productStored(recipe.outputItem) + made,
+      );
     }
 
     return result;
+  }
+
+  /// Never infer the identity of legacy processor stock during production.
+  /// Its explicit, versioned migration must finish before these paths run.
+  static void validateProductStocks(
+    List<IslandBuildingState> states,
+    TaohuaIslandConfig config,
+  ) {
+    for (final state in states) {
+      final cfg = config.buildingOf(state.type);
+      if (cfg.kind == BuildingKind.processor && state.stored != 0) {
+        throw StateError(
+          'Unmigrated island stock: ${state.type.name} / '
+          '${state.activeRecipeId} / ${state.stored}',
+        );
+      }
+      final identities = <String>{};
+      for (final stock in state.productStocks) {
+        if (cfg.kind != BuildingKind.processor ||
+            stock.outputItemId.isEmpty ||
+            !stock.stored.isFinite ||
+            stock.stored < 0 ||
+            !identities.add(stock.outputItemId)) {
+          throw StateError(
+            'Invalid island product stock: ${state.type.name} / '
+            '${stock.outputItemId} / ${stock.stored}',
+          );
+        }
+      }
+    }
   }
 }

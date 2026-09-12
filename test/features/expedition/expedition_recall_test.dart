@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/expedition/application/expedition_service.da
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
 import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
+import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
 
 import '../../support/isar_test_support.dart';
 import '../../support/test_data.dart';
@@ -383,5 +384,123 @@ void main() {
 
     save = (await IsarSetup.instance.saveDatas.get(0))!;
     expect(save.baicaoMaxDepth, 12, reason: 'max 单调，浅返程不回退');
+  });
+
+  test('真实掌门返程跨境界保留挂机账本，战败新伤不补吃返程前离线时间', () async {
+    final isar = IsarSetup.instance;
+    final repo = GameRepository.instance;
+    final startedAt = DateTime(2026, 9, 10, 8);
+    final at = startedAt.add(const Duration(hours: 8, minutes: 6));
+    final scale = repo.numbers.passiveIdle.realmScaleFor(RealmTier.erLiu);
+    final expExact =
+        repo.numbers.passiveIdle.baseExpPerHour * scale * 8.1 + 0.4;
+    final materialExact =
+        repo.numbers.passiveIdle.baseMojianshiPerHour * scale * 8.1 + 0.2;
+    final oldRealm = repo.getRealm(RealmTier.erLiu, RealmLayer.dengFeng);
+    final beforeExperience = oldRealm.experienceToNext - expExact.floor() - 6;
+    await Phase2SeedService(isar: isar).seedP3();
+    await isar.writeTxn(() async {
+      final character = (await isar.characters.get(1))!
+        ..isFounder = true
+        ..lineageRole = LineageRole.founder
+        ..realmTier = RealmTier.erLiu
+        ..realmLayer = RealmLayer.dengFeng
+        ..experienceToNextLayer = oldRealm.experienceToNext
+        ..internalForceMax = oldRealm.internalForceMax
+        ..experience = beforeExperience
+        ..passiveExperienceRemainder = 0.4;
+      await isar.characters.put(character);
+      final save = (await isar.saveDatas.get(0))!
+        ..founderCharacterId = 1
+        ..activeCharacterIds = [1]
+        ..lastOnlineAt = startedAt
+        ..passiveLastSettledAt = startedAt
+        ..passiveMojianshiRemainder = 0.2;
+      await isar.saveDatas.put(save);
+    });
+    final service = ExpeditionService(isar);
+    final runId = await service.dispatchRequest(
+      request: ExpeditionService.dispatchRequestFor(characterId: 1),
+      policy: ExpeditionPolicy.yiZhanLiXing,
+      now: startedAt,
+    );
+    await stageRun(
+      runId,
+      currentNode: 6,
+      rewards: [rw('exp', 120), rw('item_yaocao', 3)],
+      downed: true,
+      defeated: true,
+    );
+    final materialBefore = (await isar.inventoryItems.getByDefId(
+      'item_mojianshi',
+    ))!.quantity;
+
+    await expectLater(
+      service.recall(
+        now: at,
+        afterRewardsInTxnForTest: () async => throw StateError('rollback'),
+      ),
+      throwsStateError,
+    );
+    final rolledBack = (await isar.saveDatas.get(0))!;
+    expect(rolledBack.passiveLastSettledAt, startedAt);
+    expect(rolledBack.lastOnlineAt, startedAt);
+    expect(rolledBack.totalPassiveExperience, 0);
+    expect(rolledBack.passiveMojianshiRemainder, 0.2);
+    expect(rolledBack.baicaoMaxDepth, 0);
+    final unchanged = (await isar.characters.get(1))!;
+    expect(unchanged.experience, beforeExperience);
+    expect(unchanged.passiveExperienceRemainder, 0.4);
+    expect(unchanged.injuryHoursRemaining, 0);
+    expect(await isar.expeditionRuns.get(runId), isNotNull);
+    expect(await isar.rewardClaimReceipts.count(), 0);
+
+    final result = await service.recall(now: at);
+    expect(result.returned, isTrue);
+    expect(result.defeated, isTrue);
+    expect(result.participantCharacterId, 1);
+    final character = (await isar.characters.get(1))!;
+    expect(character.realmTier, RealmTier.yiLiu);
+    expect(character.realmLayer, RealmLayer.qiMeng);
+    expect(character.experience, 114);
+    expect(
+      character.passiveExperienceRemainder,
+      closeTo(expExact - expExact.floor(), 1e-8),
+    );
+    final newHeavyHours = character.injuryHoursRemaining;
+    expect(newHeavyHours, greaterThan(0));
+    final save = (await isar.saveDatas.get(0))!;
+    expect(save.passiveLastSettledAt, at);
+    expect(save.lastOnlineAt, at);
+    expect(save.totalPassiveExperience, expExact.floor());
+    expect(save.totalPassiveMojianshi, materialExact.floor());
+    expect(
+      save.passiveMojianshiRemainder,
+      closeTo(materialExact - materialExact.floor(), 1e-8),
+    );
+    expect(save.baicaoMaxDepth, 6);
+    expect(
+      (await isar.inventoryItems.getByDefId('item_mojianshi'))!.quantity,
+      materialBefore + materialExact.floor(),
+    );
+    expect((await isar.inventoryItems.getByDefId('item_yaocao'))!.quantity, 3);
+    expect(await isar.expeditionRuns.get(runId), isNull);
+
+    // A lifecycle recovery at this instant must not spend the old 8.1-hour
+    // absence on an injury which was only applied by the return above.
+    await OfflinePassiveService.settleWindow(
+      isar: isar,
+      now: at,
+      recoverInjuries: true,
+      updatePresence: true,
+    );
+    expect((await isar.characters.get(1))!.injuryHoursRemaining, newHeavyHours);
+    expect((await isar.characters.get(1))!.experience, 114);
+    expect(
+      (await isar.saveDatas.get(0))!.totalPassiveExperience,
+      expExact.floor(),
+    );
+    expect((await service.recall(now: at)).returned, isFalse);
+    expect(await isar.rewardClaimReceipts.count(), 2);
   });
 }

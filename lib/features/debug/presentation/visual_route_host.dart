@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -107,6 +108,7 @@ import '../../baike/presentation/skill_codex_detail_screen.dart';
 import '../../character_panel/presentation/lineage_character_detail_screen.dart';
 import '../../zangjuange/presentation/zangjuange_screen.dart';
 import '../../../core/domain/island_building_type.dart';
+import '../../taohua_island/application/island_settle_service.dart';
 import '../../taohua_island/presentation/taohua_island_screen.dart';
 import '../../recruitment/presentation/recruitment_dialog.dart';
 import '../../boss_gauntlet/application/gauntlet_service.dart';
@@ -370,6 +372,9 @@ Future<Widget> buildVisualTarget(
       await isar.writeTxn(() => isar.mainlineProgress.clear());
       await Phase2SeedService(isar: isar).seedVisualCheckW7W11();
       return const StageListScreen(chapterIndex: 1);
+    case VisualRoute.stageListEscort:
+      await Phase2SeedService(isar: isar).seedChapterCycleVisualCheck();
+      return const StageListScreen(chapterIndex: 2);
     case VisualRoute.towerFloorList:
       await OnboardingService(
         isar: isar,
@@ -394,6 +399,9 @@ Future<Widget> buildVisualTarget(
       await isar.writeTxn(() async {
         await isar.retreatSessions.clear();
         await isar.retreatSessions.put(session);
+        final owner = (await isar.characters.get(1))!;
+        owner.currentRetreatSessionId = session.id;
+        await isar.characters.put(owner);
       });
       return const SeclusionMapListScreen(
         charRealmTier: RealmTier.erLiu,
@@ -409,6 +417,9 @@ Future<Widget> buildVisualTarget(
         characterId: 1,
       );
     case VisualRoute.seclusionActive:
+      await OnboardingService(
+        isar: isar,
+      ).ensureFoundingMasters(soloStart: false);
       final def = GameRepository.instance.getSeclusionMap(
         RetreatMapType.cangJingGe,
       );
@@ -422,6 +433,12 @@ Future<Widget> buildVisualTarget(
         ..completedAt = null
         ..status = RetreatStatus.active
         ..actualRewards = [];
+      await isar.writeTxn(() async {
+        await isar.retreatSessions.put(session);
+        final owner = (await isar.characters.get(1))!;
+        owner.currentRetreatSessionId = session.id;
+        await isar.characters.put(owner);
+      });
       return ActiveRetreatScreen(session: session, mapDef: def, characterId: 1);
     case VisualRoute.seclusionResult:
       final def = GameRepository.instance.getSeclusionMap(
@@ -833,6 +850,24 @@ Future<Widget> buildVisualTarget(
       await _seedInventoryItem(isar, 'item_yaocao', 60);
       await _seedInventoryItem(isar, 'item_mucai', 60);
       await _seedInventoryItem(isar, 'item_lingquanshui', 60);
+      // Persisted mixed-stock fixture for the 0.50 recipe identity UI.
+      final islandSave = (await isar.saveDatas.get(0))!;
+      final islandNow = DateTime.now();
+      await IslandSettleService.ensureInitialized(islandSave, islandNow);
+      await isar.writeTxn(() async {
+        final current = (await isar.saveDatas.get(0))!;
+        final founder = await isar.characters.get(current.founderCharacterId!);
+        founder!.realmTier = RealmTier.yiLiu;
+        await isar.characters.put(founder);
+        final forge = current.islandBuildings.firstWhere(
+          (building) => building.type == BuildingType.daZaoTai,
+        );
+        forge.activeRecipeId = 'forge_xinxue';
+        forge.setProductStored('item_mojianshi', 12.24);
+        forge.setProductStored('item_xinxuejiejing', 0.53);
+        current.islandLastSettledAt = islandNow;
+        await isar.saveDatas.put(current);
+      });
       return const TaohuaIslandScreen(
         initialBuildingMenu: BuildingType.daZaoTai,
       );
@@ -1078,7 +1113,8 @@ class _Phase0aProfilePreview extends StatefulWidget {
 }
 
 class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
-  late final Phase0aBattleController _controller;
+  late Phase0aBattleController _controller;
+  Phase0aBattleController? _retiredController;
   late Phase0aPlayerBotAdapter _bot;
   late final List<Phase0aDebugBattleFixture> _restartFixtures;
   int _nextRestartFixture = 0;
@@ -1111,6 +1147,14 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
       );
 
   void _advance() {
+    if (BattleFrameProfileProbe.diagnosticsEnabled) {
+      developer.Timeline.timeSync('phase0a.profile.advance', _advanceTick);
+    } else {
+      _advanceTick();
+    }
+  }
+
+  void _advanceTick() {
     if (!mounted || _restarting) return;
     if (_controller.outcome == Phase0aBattleOutcome.ongoing) {
       _controller.step(_bot.commandFor(_controller.state));
@@ -1121,15 +1165,44 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
   }
 
   void _restart() {
+    if (BattleFrameProfileProbe.diagnosticsEnabled) {
+      developer.Timeline.timeSync('phase0a.profile.restart', _restartFixture);
+    } else {
+      _restartFixture();
+    }
+  }
+
+  Phase0aDebugBattleFixture _freshFixture() =>
+      BattleFrameProfileProbe.diagnosticsEnabled
+      ? developer.Timeline.timeSync(
+          'phase0a.profile.fresh',
+          widget.initialFixture.fresh,
+        )
+      : widget.initialFixture.fresh();
+
+  void _restartFixture() {
     try {
       final fixture = _nextRestartFixture < _restartFixtures.length
           ? _restartFixtures[_nextRestartFixture++]
-          : widget.initialFixture.fresh();
+          : _freshFixture();
       if (!mounted) return;
       _bot = Phase0aPlayerBotAdapter(playerAdapter: fixture.playerAdapter);
-      _controller.restart(fixture.flow);
-    } finally {
+      final previous = _controller;
+      setState(() => _controller = _controllerFor(fixture));
+      _retiredController = previous;
+      // The production screen clears all local presentation/input state when
+      // its controller changes. Keep the old notifier alive until it detaches,
+      // and do not advance the new flow before that replacement frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_retiredController == previous) {
+          _retiredController = null;
+          previous.dispose();
+        }
+        _restarting = false;
+      });
+    } on Object {
       _restarting = false;
+      rethrow;
     }
   }
 
@@ -1137,6 +1210,8 @@ class _Phase0aProfilePreviewState extends State<_Phase0aProfilePreview> {
   void dispose() {
     _timer?.cancel();
     _controller.dispose();
+    _retiredController?.dispose();
+    _retiredController = null;
     super.dispose();
   }
 

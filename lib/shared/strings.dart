@@ -46,19 +46,24 @@ class UiStrings {
   /// 结算标题(surviveTicks 型胜利)：与「击败」区分——赢法不同,说法就不同。
   static const String battleResultSurvived = '守住了';
 
-  static const String defendEntityLabel = '阵眼';
+  static const String defendEntityLabel = '守护目标';
+  static const String defendObjectiveHint = '护住目标直到倒计时结束；目标损毁即失败。';
 
-  static String defendConditionRemaining(
-    int currentDurability,
-    int maxDurability,
-    int remainingTicks,
-  ) => '守阵 · 耐久 $currentDurability/$maxDurability · 还需 $remainingTicks 拍';
+  static String defendObjectiveRemaining(
+    String target,
+    int current,
+    int maximum,
+    int seconds,
+  ) => '保护$target · 耐久 $current/$maximum · 还需 $seconds 秒';
 
-  static String defendConditionMet(int currentDurability, int maxDurability) =>
-      '守阵 · 耐久 $currentDurability/$maxDurability · 已守住';
+  static String defendObjectiveMet(String target, int current, int maximum) =>
+      '$target已守住 · 耐久 $current/$maximum';
 
-  static const String battleResultDefended = '阵守住了';
-  static const String battleResultWardLost = '阵眼失守';
+  static String defendObjectiveLost(String target) => '$target已损毁';
+
+  static String defendFailureReason(String target) => '$target已被毁，未能守住。';
+
+  static const String battleResultDefended = '守住了';
 
   static const String battleLog = '战斗日志';
   static const String battleLogShort = '日志';
@@ -2433,6 +2438,7 @@ class UiStrings {
 
   static const String seclusionSetupTitle = '闭关安排';
   static const String seclusionSetupStartButton = '开始闭关';
+  static const String seclusionCollectBeforeSwitch = '请先收功领取当前闭关收益，再选择新的地图。';
   static const String seclusionOpenEndedTitle = '此行不设归期';
   static String seclusionOpenEndedRule(int fullRateHours) =>
       '开始后将持续修炼，由你上线后主动收功。前 $fullRateHours 小时按当前地图完整结算。';
@@ -2697,6 +2703,10 @@ class UiStrings {
   // ── 多存档槽(spec B 选择/新开/删除/切换)────────────────────────────
   static const String slotSelectTitle = '选择江湖';
   static const String slotSaveEmpty = '空 · 新开江湖';
+  static const String slotOpenFailed = '无法打开此存档';
+  static const String slotUnreadable = '此存档暂时无法读取，原文件已保留。可重试或选择其他存档。';
+  static String slotUnsupportedVersion(String version) =>
+      '此存档由更高版本（$version）保存，请使用相应版本打开。原文件已保留，可选择其他存档。';
   static const String slotNewGameTitle = '新开江湖';
   static const String slotNewGameConfirm = '在此卷开启一段全新的江湖路？';
   static const String slotQuickStartAvailable = '已解锁老江湖开局';
@@ -3842,6 +3852,11 @@ class UiStrings {
 
   /// 建筑仓储进度：`cur / cap`。
   static String taohuaIslandStorageLabel(int cur, int cap) => '$cur / $cap';
+  static const String taohuaIslandStoredProducts = '仓中成品';
+  static String taohuaIslandStoredProduct(String name, double amount) =>
+      '$name：${amount.toStringAsFixed(2)}（可收 ${amount.floor()}）';
+  static String taohuaIslandTotalStorageLabel(double amount, int cap) =>
+      '合计：${amount.toStringAsFixed(2)} / $cap';
 
   /// 建筑升级按钮。
   static const String taohuaIslandUpgrade = '升级';

@@ -59,6 +59,14 @@ final class Phase0aEventOrderAdapter {
   ) => project(input);
 
   static _EventDescriptor _describe(Phase0aEvent event) => switch (event) {
+    Phase0aActionTimelineChanged() => const _EventDescriptor(
+      'action_timeline_changed',
+      CombatEventStage.status,
+    ),
+    Phase0aQiChanged() => const _EventDescriptor(
+      'qi_changed',
+      CombatEventStage.killAndResources,
+    ),
     Phase0aAttackStarted() => const _EventDescriptor(
       'attack_started',
       CombatEventStage.startup,
@@ -180,6 +188,24 @@ final class Phase0aEventOrderAdapter {
       _component('tick', event.tick),
     ];
     switch (event) {
+      case Phase0aActionTimelineChanged():
+        values.addAll([
+          _component('actor', event.actor),
+          _component('action', event.actionId),
+          _component('event', event.eventType.name),
+          _component('phase', event.phase.name),
+          _component('actionTick', event.actionTick),
+        ]);
+      case Phase0aQiChanged():
+        values.addAll([
+          _component('actor', event.actor),
+          _component('action', event.actionId),
+          _component('reason', event.reason.name),
+          _component('applied', event.applied),
+          _component('overflow', event.overflow),
+          _component('current', event.current),
+          _component('window', event.windowId),
+        ]);
       case Phase0aAttackStarted():
         values.addAll([
           _component('actor', event.actor),

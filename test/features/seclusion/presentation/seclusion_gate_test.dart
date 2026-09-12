@@ -143,6 +143,9 @@ void main() {
         overrides: [
           activeRetreatSessionProvider.overrideWith((ref) async => session),
           seclusionServiceProvider.overrideWithValue(fake),
+          retreatOwnerProvider(
+            session.id,
+          ).overrideWith((ref) async => character),
           activeCharacterIdsProvider.overrideWith((ref) async => [1]),
           characterByIdProvider(1).overrideWith((ref) async => character),
         ],

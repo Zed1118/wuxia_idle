@@ -20,6 +20,7 @@ import '../../../data/defs/seclusion_map_def.dart';
 import 'active_retreat_screen.dart';
 import 'seclusion_map_visuals.dart';
 import 'seclusion_setup_screen.dart';
+import 'seclusion_gate.dart';
 
 /// 闭关地图列表屏幕（Phase 3 T49）。
 ///
@@ -71,13 +72,29 @@ class _SeclusionMapListScreenState
     final active = await _activeFuture;
     if (!mounted) return;
 
-    if (active != null && active.mapType == def.mapType) {
+    if (active != null) {
+      final int ownerId;
+      try {
+        ownerId = (await ref.read(retreatOwnerProvider(active.id).future)).id;
+      } catch (e) {
+        if (!mounted) return;
+        messenger.showSnackBar(
+          SnackBar(content: Text(UiStrings.retreatCollectFailed(e))),
+        );
+        return;
+      }
+      if (!mounted) return;
+      if (active.mapType != def.mapType) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text(UiStrings.seclusionCollectBeforeSwitch)),
+        );
+      }
       await nav.push<void>(
         MaterialPageRoute(
           builder: (_) => ActiveRetreatScreen(
             session: active,
-            mapDef: def,
-            characterId: widget.characterId,
+            mapDef: GameRepository.instance.getSeclusionMap(active.mapType),
+            characterId: ownerId,
           ),
         ),
       );

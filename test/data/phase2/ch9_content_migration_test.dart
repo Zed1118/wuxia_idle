@@ -292,15 +292,22 @@ Phase0aMainlineEncounterRuntimeBindingSource _runtimeSource(
 Phase0aPlayerRuntimeMapping _playerMapping(
   GameRepository repository,
   String stageId,
-) => Phase0aStageContentMapper.mapPlayerOnly(
-  contentId: stageId,
-  playerSnapshot: testCombatantSnapshot(
-    maxHp: 20000,
-    currentHp: 20000,
-    internalForce: 15000,
-    totalEquipmentAttack: 2000,
-    defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
-    includeProductionBasicAttack: true,
-  ),
-  numbers: repository.numbers,
-);
+) {
+  final enemy = repository.getStage(stageId).enemyTeam.single;
+  return Phase0aStageContentMapper.mapPlayerOnly(
+    contentId: stageId,
+    playerSnapshot: testCombatantSnapshot(
+      // This verifies chapter route completion, not an under-realm challenge.
+      // The default apprentice cannot satisfy Chapter 9's admission realm.
+      realmTier: enemy.realmTier,
+      realmLayer: enemy.realmLayer,
+      maxHp: 20000,
+      currentHp: 20000,
+      internalForce: 15000,
+      totalEquipmentAttack: 2000,
+      defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
+      includeProductionBasicAttack: true,
+    ),
+    numbers: repository.numbers,
+  );
+}

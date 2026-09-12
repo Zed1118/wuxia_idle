@@ -30,7 +30,7 @@ void main() {
       IsarSetup.schemasForTesting.map((schema) => schema.name),
       contains('ExpeditionMilestoneRecord'),
     );
-    expect(IsarSetup.currentSaveVersion, '0.49.0');
+    expect(IsarSetup.currentSaveVersion, '0.50.0');
   });
 
   test(
@@ -48,7 +48,7 @@ void main() {
       await IsarSetup.init(directory: tempDir, inspector: false);
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.49.0',
+        '0.50.0',
       );
       expect(await IsarSetup.instance.expeditionMilestoneRecords.count(), 0);
     },

@@ -16,6 +16,9 @@ enum Phase0aVfxKind {
   /// 玩家远距普攻命中的掌风轨迹。
   palmTrail,
 
+  /// A resolved enemy strike, directed at its actual player or defended target.
+  enemyStrike,
+
   /// 数字技能成功释放时，按装备技能的 typed 流派绘制起手墨势。
   skillCast,
 
@@ -356,7 +359,19 @@ final class Phase0aVfxController {
         break;
       }
       switch (event) {
+        case Phase0aActionTimelineChanged():
+        case Phase0aQiChanged():
+          break;
         case Phase0aDefendedEntityHit():
+          push(
+            Phase0aVfxEntry(
+              kind: Phase0aVfxKind.enemyStrike,
+              actorId: event.actor,
+              targetId: event.target,
+              source: event.actorPosition,
+              vfxTarget: event.targetPosition,
+            ),
+          );
           pushPopup(
             event.target,
             event.resolvedDamage,
@@ -365,6 +380,18 @@ final class Phase0aVfxController {
             anchor: event.targetPosition,
           );
         case Phase0aHitLanded():
+          if (_actors[event.actor]?.side == Phase0aSide.enemy) {
+            push(
+              Phase0aVfxEntry(
+                kind: Phase0aVfxKind.enemyStrike,
+                actorId: event.actor,
+                targetId: event.target,
+                source: event.actorPosition ?? _actors[event.actor]?.position,
+                vfxTarget:
+                    event.targetPosition ?? _actors[event.target]?.position,
+              ),
+            );
+          }
           pushPopup(
             event.target,
             event.resolvedDamage,

@@ -482,7 +482,10 @@ void main() {
         skillSlots: mapping.initialState.skillSlots,
       );
       final aiIntent = mapping.enemyAiAdapter
-          .intentsFor(state: chargingState)
+          .intentsFor(
+            state: chargingState,
+            deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+          )
           .single;
       expect(aiIntent, isA<Phase0aEnemySkillIntent>());
       expect(

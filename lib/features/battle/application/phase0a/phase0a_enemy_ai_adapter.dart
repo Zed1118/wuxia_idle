@@ -39,7 +39,10 @@ final class Phase0aEnemyAiAdapter {
   final Map<String, String> defendedEntityTargetIdByActor;
   final Phase0aDefenseTuning? defenseTuning;
 
-  List<Phase0aIntent> intentsFor({required Phase0aArenaState state}) {
+  List<Phase0aIntent> intentsFor({
+    required Phase0aArenaState state,
+    required double deltaSeconds,
+  }) {
     final player = state.player;
     if (!player.isAlive) return const [];
     final intents = <Phase0aIntent>[];
@@ -81,6 +84,12 @@ final class Phase0aEnemyAiAdapter {
         );
         continue;
       }
+      // The reducer decrements action cooldowns before executing this tick.
+      // Only actions ready at that point may request an attack token; otherwise
+      // early roster entries reserve the budget while their attacks are later
+      // rejected, permanently starving the remaining enemies. Movement above
+      // keeps its existing policy even while the actor is cooling down.
+      if (enemy.attackCooldownRemaining > deltaSeconds) continue;
       final skill = targetsDefendedEntity ? null : _pickSkill(enemy);
       if (skill != null) {
         intents.add(

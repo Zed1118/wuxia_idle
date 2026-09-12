@@ -143,12 +143,12 @@ void main() {
         IslandBuildingState()
           ..type = BuildingType.daZaoTai
           ..level = 4
-          ..stored = 6.75
+          ..setProductStored('item_xinxuejiejing', 6.75)
           ..activeRecipeId = 'forge_xinxue',
         IslandBuildingState()
           ..type = BuildingType.danFang
           ..level = 5
-          ..stored = 3.5
+          ..setProductStored('item_jingyandan_mid', 3.5)
           ..activeRecipeId = 'brew_peiyuan',
       ];
       s.islandLastSettledAt = oldLastSettledAt;
@@ -170,35 +170,35 @@ void main() {
       (b) => b.type == BuildingType.tieJiangChang,
     );
     expect(tie.level, 3);
-    expect(tie.stored, closeTo(12.5, 1e-9));
+    expect(tie.totalStored, closeTo(12.5, 1e-9));
     expect(tie.activeRecipeId, isNull);
 
     final daZaoTai = updated.islandBuildings.firstWhere(
       (b) => b.type == BuildingType.daZaoTai,
     );
     expect(daZaoTai.level, 4);
-    expect(daZaoTai.stored, closeTo(6.75, 1e-9));
+    expect(daZaoTai.totalStored, closeTo(6.75, 1e-9));
     expect(daZaoTai.activeRecipeId, 'forge_xinxue');
 
     final muGongFang = updated.islandBuildings.firstWhere(
       (b) => b.type == BuildingType.muGongFang,
     );
     expect(muGongFang.level, 1);
-    expect(muGongFang.stored, 0);
+    expect(muGongFang.totalStored, 0);
     expect(muGongFang.activeRecipeId, isNull);
 
     final lingQuan = updated.islandBuildings.firstWhere(
       (b) => b.type == BuildingType.lingQuan,
     );
     expect(lingQuan.level, 1);
-    expect(lingQuan.stored, 0);
+    expect(lingQuan.totalStored, 0);
     expect(lingQuan.activeRecipeId, isNull);
 
     final zhuZaoTai = updated.islandBuildings.firstWhere(
       (b) => b.type == BuildingType.zhuZaoTai,
     );
     expect(zhuZaoTai.level, 1);
-    expect(zhuZaoTai.stored, 0);
+    expect(zhuZaoTai.totalStored, 0);
     expect(zhuZaoTai.activeRecipeId, 'forge_kaifeng_fucai');
   });
 
@@ -236,7 +236,7 @@ void main() {
     );
     expect(zhuZaoTai.activeRecipeId, 'forge_kaifeng_fucai');
     expect(
-      zhuZaoTai.stored,
+      zhuZaoTai.totalStored,
       closeTo(3.264, 1e-9),
       reason: '0.8/h × synergy1.02(木工坊L1) × level1 × 4h = 3.264',
     );
@@ -292,7 +292,7 @@ void main() {
         (b) => b.type == BuildingType.daZaoTai,
       );
       expect(
-        daZaoState.stored,
+        daZaoState.totalStored,
         closeTo(6.12, 1e-9),
         reason: '1.5×1.02×1×4 = 6.12(synergy 计入,非裸 6.0)',
       );
@@ -302,7 +302,7 @@ void main() {
         (b) => b.type == BuildingType.tieJiangChang,
       );
       expect(
-        tieState.stored,
+        tieState.totalStored,
         closeTo(0.0, 1e-9),
         reason: '产出 24 全耗 → stored≈0(浮点尾差容忍)',
       );
@@ -355,9 +355,9 @@ void main() {
       final updated = (await isar.saveDatas.get(0))!;
       for (final b in updated.islandBuildings) {
         expect(
-          b.stored >= 0 && b.stored < 1.0,
+          b.totalStored >= 0 && b.totalStored < 1.0,
           isTrue,
-          reason: '${b.type} stored=${b.stored} 应已 floor 清走整数部分',
+          reason: '${b.type} stored=${b.totalStored} 应已 floor 清走整数部分',
         );
       }
     },
@@ -498,7 +498,7 @@ void main() {
     );
     for (final b in updated.islandBuildings) {
       expect(
-        b.stored,
+        b.totalStored,
         closeTo(0.0, 1e-9),
         reason: '${b.type} 回拨窗口不产,stored 保持 0',
       );
@@ -524,7 +524,7 @@ void main() {
     expect(updated.islandLastSettledAt, now);
     final totalStored = updated.islandBuildings.fold<double>(
       0,
-      (sum, b) => sum + b.stored,
+      (sum, b) => sum + b.totalStored,
     );
     expect(
       totalStored,

@@ -30,6 +30,14 @@ class _OnlinePresenceLifecycleHookState
       onInactive: _onBlurred,
       onDetach: _onBlurred,
     );
+    // AppLifecycleListener remembers the current state without emitting an
+    // initial callback. Sync it before the startup gate can enable a heartbeat.
+    final state = WidgetsBinding.instance.lifecycleState;
+    if (state == null || state == AppLifecycleState.resumed) {
+      _onFocused();
+    } else {
+      _onBlurred();
+    }
   }
 
   void _onFocused() =>

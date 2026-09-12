@@ -199,7 +199,7 @@ _Observation _observe({
     IslandBuildingState()
       ..type = BuildingType.danFang
       ..level = level
-      ..stored = initialProduct
+      ..setProductStored(recipe.outputItem, initialProduct)
       ..activeRecipeId = recipeId,
   ];
   final settledHours = requestedHours.clamp(0.0, config.capHours.toDouble());
@@ -220,7 +220,7 @@ _Observation _observe({
   }
   double stored(List<IslandBuildingState> states, BuildingType type) => states
       .where((state) => state.type == type)
-      .fold(0.0, (sum, state) => sum + state.stored);
+      .fold(0.0, (sum, state) => sum + state.totalStored);
   final oneOutput = stored(once, BuildingType.danFang) - initialProduct;
   final segmentedOutput =
       stored(segmented, BuildingType.danFang) - initialProduct;

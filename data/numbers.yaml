@@ -521,6 +521,49 @@ realms:
 # 平衡校准批可独立调参。fixture 缺段走 Phase0aArenaConfig.empty。
 
 phase0a_arena:
+  # M0 mapping approved 2026-09-11: timeline B and qi C, composed with M3 CD.
+  # capacity/opening are candidate bases; runtime keeps the derived snapshot.
+  weapon_mapping:
+    power_cost_anchor: 30
+    ultimate_cost_anchor: 60
+    kill_gain: 5
+    kill_window_cap: 15
+    weapons:
+      sword:
+        timeline: {windup_ticks: 1, active_ticks: 2, recovery_ticks: 3, first_effect_tick: 1, cancel_window_start_tick: 1, cancel_window_end_tick: 4, interrupted_cooldown_ticks: 3, cancelled_cooldown_ticks: 2, failed_cooldown_ticks: 4}
+        capacity: 100
+        opening: 40
+        basic_gain: 20
+        power_cost: 28
+        ultimate_cost: 52
+      heavy:
+        timeline: {windup_ticks: 2, active_ticks: 3, recovery_ticks: 3, first_effect_tick: 2, cancel_window_start_tick: 2, cancel_window_end_tick: 5, interrupted_cooldown_ticks: 4, cancelled_cooldown_ticks: 3, failed_cooldown_ticks: 5}
+        capacity: 100
+        opening: 40
+        basic_gain: 24
+        power_cost: 34
+        ultimate_cost: 60
+      flexible:
+        timeline: {windup_ticks: 1, active_ticks: 4, recovery_ticks: 2, first_effect_tick: 1, cancel_window_start_tick: 1, cancel_window_end_tick: 4, interrupted_cooldown_ticks: 3, cancelled_cooldown_ticks: 2, failed_cooldown_ticks: 4}
+        capacity: 100
+        opening: 40
+        basic_gain: 22
+        power_cost: 30
+        ultimate_cost: 54
+      dual:
+        timeline: {windup_ticks: 0, active_ticks: 4, recovery_ticks: 2, first_effect_tick: 0, cancel_window_start_tick: 0, cancel_window_end_tick: 4, interrupted_cooldown_ticks: 2, cancelled_cooldown_ticks: 1, failed_cooldown_ticks: 3}
+        capacity: 100
+        opening: 40
+        basic_gain: 18
+        power_cost: 24
+        ultimate_cost: 46
+      hidden:
+        timeline: {windup_ticks: 0, active_ticks: 2, recovery_ticks: 3, first_effect_tick: 0, cancel_window_start_tick: 0, cancel_window_end_tick: 3, interrupted_cooldown_ticks: 2, cancelled_cooldown_ticks: 1, failed_cooldown_ticks: 3}
+        capacity: 100
+        opening: 40
+        basic_gain: 18
+        power_cost: 26
+        ultimate_cost: 48
   simulation:
     fixed_delta_seconds: 0.1
     max_battle_seconds: 300.0

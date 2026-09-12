@@ -1,4 +1,5 @@
 import 'arena_vector.dart';
+import 'action_timeline.dart';
 import 'basic_attack_chain.dart';
 import 'basic_attack_geometry_registry.dart';
 import '../../../../core/domain/enums.dart';
@@ -88,6 +89,7 @@ final class Phase0aAttackIntent extends Phase0aIntent {
     this.basicAttackChain,
     this.basicAttackGeometryRegistry,
     this.basicAttackArenaBounds,
+    this.timelineConfig,
   });
 
   final double range;
@@ -117,6 +119,72 @@ final class Phase0aAttackIntent extends Phase0aIntent {
   /// Required with [basicAttackChain]. Missing refs fail closed in reducer.
   final BasicAttackGeometryRegistry? basicAttackGeometryRegistry;
   final BasicAttackArenaBounds? basicAttackArenaBounds;
+  final ActionTimelineConfig? timelineConfig;
+
+  Phase0aAttackIntent withAimDirection(ArenaVector direction) =>
+      Phase0aAttackIntent(
+        actorId: actorId,
+        range: range,
+        halfArcRadians: halfArcRadians,
+        cooldownSeconds: cooldownSeconds,
+        moveKind: moveKind,
+        aimDirection: direction,
+        qiDelta: qiDelta,
+        postureDamage: postureDamage,
+        postureHitKind: postureHitKind,
+        weaponArchetype: weaponArchetype,
+        visualSchool: visualSchool,
+        defenseFlags: defenseFlags,
+        behaviorProfile: behaviorProfile,
+        preferredTargetId: preferredTargetId,
+        basicAttackChain: basicAttackChain,
+        basicAttackGeometryRegistry: basicAttackGeometryRegistry,
+        basicAttackArenaBounds: basicAttackArenaBounds,
+        timelineConfig: timelineConfig,
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is Phase0aAttackIntent &&
+      actorId == other.actorId &&
+      range == other.range &&
+      halfArcRadians == other.halfArcRadians &&
+      cooldownSeconds == other.cooldownSeconds &&
+      moveKind == other.moveKind &&
+      aimDirection == other.aimDirection &&
+      qiDelta == other.qiDelta &&
+      postureDamage == other.postureDamage &&
+      postureHitKind == other.postureHitKind &&
+      weaponArchetype == other.weaponArchetype &&
+      visualSchool == other.visualSchool &&
+      defenseFlags == other.defenseFlags &&
+      behaviorProfile == other.behaviorProfile &&
+      preferredTargetId == other.preferredTargetId &&
+      basicAttackChain == other.basicAttackChain &&
+      basicAttackGeometryRegistry == other.basicAttackGeometryRegistry &&
+      basicAttackArenaBounds == other.basicAttackArenaBounds &&
+      timelineConfig == other.timelineConfig;
+  @override
+  int get hashCode => Object.hashAll([
+    actorId,
+    range,
+    halfArcRadians,
+    cooldownSeconds,
+    moveKind,
+    aimDirection,
+    qiDelta,
+    postureDamage,
+    postureHitKind,
+    weaponArchetype,
+    visualSchool,
+    defenseFlags,
+    behaviorProfile,
+    preferredTargetId,
+    basicAttackChain,
+    basicAttackGeometryRegistry,
+    basicAttackArenaBounds,
+    timelineConfig,
+  ]);
 }
 
 /// Enemy phase-unlocked skill request. Binding and policy are resolved in the

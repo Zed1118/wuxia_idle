@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,8 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/action_timeline.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_participant_snapshot_service.dart';
 import 'package:wuxia_idle/features/mainline/application/mainline_progress_service.dart';
@@ -169,18 +173,30 @@ void main() {
         await tester.pump(const Duration(milliseconds: 10));
       }
       expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+      final battleController = tester
+          .widget<Phase0aBattleScreen>(find.byType(Phase0aBattleScreen))
+          .controller;
       // Sample the real held-attack path at combat cadence. One tap per
       // second relied on the Boss remaining idle outside its melee range.
       // Use the new character's existing clear/equipped skill as well; do
       // not change its snapshot or disable enemy engagement to force a win.
       await tester.sendKeyDownEvent(LogicalKeyboardKey.keyJ);
       var simulatedTicks = 0;
+      var nextClearAttempt = 0;
+      var nextSkillAttempt = 5;
       while (terminalSettlement == null && simulatedTicks < 1800) {
-        if (simulatedTicks % 10 == 0) {
-          await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
-        }
-        if (simulatedTicks % 10 == 5) {
-          await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+        // M0 heavy basics need two ticks before their first judgment. Insert
+        // skills after that judgment, including the opening R, so this player
+        // script does not cancel its own windup before dealing damage or qi.
+        final basic = battleController.state.player.basicAction;
+        if (basic?.timeline.firstEffectEmitted == true) {
+          if (simulatedTicks >= nextClearAttempt) {
+            await tester.sendKeyEvent(LogicalKeyboardKey.keyR);
+            nextClearAttempt = simulatedTicks + 10;
+          } else if (simulatedTicks >= nextSkillAttempt) {
+            await tester.sendKeyEvent(LogicalKeyboardKey.digit1);
+            nextSkillAttempt = simulatedTicks + 10;
+          }
         }
         await tester.pump(const Duration(milliseconds: 100));
         simulatedTicks += 1;
@@ -188,6 +204,64 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.keyJ);
 
       final settlement = terminalSettlement!;
+      final timeline = battleController.events
+          .whereType<Phase0aActionTimelineChanged>()
+          .toList();
+      final effects = timeline
+          .where(
+            (event) => event.eventType == ActionTimelineEventType.firstEffect,
+          )
+          .map((event) => event.actionId)
+          .toSet();
+      final terminatedBeforeEffect = timeline.where(
+        (event) =>
+            (event.eventType == ActionTimelineEventType.cancelled ||
+                event.eventType == ActionTimelineEventType.interrupted) &&
+            !effects.contains(event.actionId),
+      );
+      debugPrintSynchronously(
+        jsonEncode({
+          'diagnostic': 'settlement_participant_m0',
+          'result': settlement.result?.name,
+          'ticks': battleController.state.tick,
+          'weapon': playerSnapshot.weaponArchetype?.name,
+          'openingQi': playerSnapshot.currentQi,
+          'remainingQi': battleController.state.player.qiCurrent,
+          'playerHp': battleController.state.player.currentHealth,
+          'enemyHp': {
+            for (final enemy in battleController.state.enemies)
+              enemy.id: enemy.currentHealth,
+          },
+          'basicStarted': battleController.events
+              .whereType<Phase0aAttackStarted>()
+              .where((event) => event.actor == battleController.state.player.id)
+              .length,
+          'basicFirstEffects': effects.length,
+          'terminatedBeforeEffect': [
+            for (final event in terminatedBeforeEffect)
+              {'tick': event.tick, 'actionId': event.actionId},
+          ],
+          'playerBasicHits': battleController.events
+              .whereType<Phase0aHitLanded>()
+              .where((event) => event.actor == battleController.state.player.id)
+              .length,
+          'qiChanges': [
+            for (final event
+                in battleController.events.whereType<Phase0aQiChanged>())
+              {
+                'tick': event.tick,
+                'reason': event.reason.name,
+                'applied': event.applied,
+                'current': event.current,
+              },
+          ],
+          'damageByCharacter': {
+            for (final entry in settlement.damageByCharacterId.entries)
+              '${entry.key}': entry.value,
+          },
+        }),
+      );
+      expect(terminatedBeforeEffect, isEmpty);
       expect(settlement.result, BattleResult.leftWin);
       expect(settlement.damageByCharacterId[-2], greaterThan(0));
       expect(

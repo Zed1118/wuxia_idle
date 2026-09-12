@@ -271,7 +271,7 @@ void main() {
       expect(mapping.initialState.player.qiMax, 100);
     });
 
-    test('玩家与普通敌人普攻真气只读各自真实 SkillDef.qiDelta', () {
+    test('玩家普攻使用批准的武器回气，普通敌人保留真实 SkillDef.qiDelta', () {
       final numbers = repo.numbers;
       final player = makeCh1Player(numbers);
       final playerBasic = player.skillLoadout.basicAttack!;
@@ -288,7 +288,9 @@ void main() {
           )
           .whereType<Phase0aAttackIntent>()
           .single;
-      expect(playerAttack.qiDelta, playerBasic.qiDelta);
+      expect(player.weaponArchetype, WeaponArchetype.heavy);
+      expect(playerBasic.qiDelta, 20);
+      expect(playerAttack.qiDelta, 24);
 
       final enemyBasic = mapping.combatants[1].snapshot.availableSkills
           .singleWhere((skill) => skill.type == SkillType.normalAttack);
@@ -303,7 +305,11 @@ void main() {
         winCondition: mapping.initialState.winCondition,
       );
       final enemyAttack = mapping.enemyAiAdapter
-          .intentsFor(state: enemyState)
+          .intentsFor(
+            state: enemyState,
+            // Inspect the first eligible attack after its real opening cooldown.
+            deltaSeconds: enemyState.enemies.first.attackCooldownRemaining,
+          )
           .whereType<Phase0aAttackIntent>()
           .single;
       expect(enemyAttack.qiDelta, enemyBasic.qiDelta);

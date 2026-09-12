@@ -13,6 +13,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_con
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_survive_objective_observation.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/encounter_objective.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_enemy_behavior_profile.dart';
@@ -142,6 +143,7 @@ void main() {
         position: const ArenaVector(0, -200),
       );
       final intents = mapping.enemyAiAdapter.intentsFor(
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
         state: _arena(
           tick: 1,
           player: player,
@@ -157,6 +159,54 @@ void main() {
           .singleWhere((intent) => intent.actorId == ordinary.actorId);
       expect(designatedAttack.preferredTargetId, ward.id);
       expect(ordinaryAttack.preferredTargetId, isNull);
+    },
+  );
+
+  test(
+    'production escort enemies keep attacking the player while ward attackers cool down',
+    () async {
+      final host = await _host(
+        repository,
+        'stage_02_01',
+        maxHp: 20000,
+        attack: 1,
+        defense: 0.8,
+      );
+      final designated = host
+          .mapping!
+          .enemyAiAdapter
+          .defendedEntityTargetIdByActor
+          .keys
+          .toSet();
+      final ordinaryHitTicks = <int>[];
+      final ordinaryAttackers = <String>{};
+      final wardAttackers = <String>{};
+      for (var tick = 0; tick < 150; tick++) {
+        final events = host.flow.advance(
+          deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
+          command: const Phase0aPlayerCommand(),
+        );
+        for (final event in events) {
+          if (event is Phase0aDefendedEntityHit) {
+            wardAttackers.add(event.actor);
+          } else if (event is Phase0aHitLanded &&
+              event.target == host.flow.state.player.id &&
+              !designated.contains(event.actor)) {
+            ordinaryHitTicks.add(event.tick);
+            ordinaryAttackers.add(event.actor);
+          }
+        }
+      }
+      expect(wardAttackers, isNotEmpty);
+      expect(ordinaryAttackers.length, greaterThan(1));
+      expect(
+        ordinaryHitTicks.where((tick) => tick > 100),
+        isNotEmpty,
+        reason:
+            'An early hit before ward attackers arrive must not mask later token starvation',
+      );
+      expect(host.flow.state.defendedEntity!.isAlive, isTrue);
+      expect(host.flow.state.player.isAlive, isTrue);
     },
   );
 
@@ -221,7 +271,9 @@ void main() {
         'stage_02_01',
         maxHp: 20000,
         attack: 1,
-        defense: 0.8,
+        // Keep this observer alive so the ward is the isolated defeat cause.
+        // Ordinary enemies now also receive tokens during ward-attack cooldowns.
+        defense: 0.99,
       );
       var ticks = 0;
       while (failing.flow.outcome == Phase0aBattleOutcome.ongoing &&
@@ -347,6 +399,7 @@ void main() {
       expect((caught.single as TargetPursued).targetId, targetEntryId);
 
       final intents = mapping.enemyAiAdapter.intentsFor(
+        deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
         state: _arena(tick: 1, player: farPlayer, enemies: [target]),
       );
       final targetMove = intents.whereType<Phase0aMoveIntent>().singleWhere(

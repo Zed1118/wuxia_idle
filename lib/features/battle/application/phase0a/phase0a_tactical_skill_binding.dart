@@ -11,7 +11,11 @@ final class Phase0aTacticalSkillBinding {
     required this.kind,
     required this.slot,
     required this.skill,
-  }) {
+    int? effectiveQiCost,
+  }) : qiCost = effectiveQiCost ?? skill.qiCost {
+    if (qiCost < 0) {
+      throw ArgumentError.value(qiCost, 'effectiveQiCost');
+    }
     if (slot.trim().isEmpty) {
       throw ArgumentError.value(slot, 'slot', 'must not be empty');
     }
@@ -73,7 +77,7 @@ final class Phase0aTacticalSkillBinding {
       behavior.effectOf(Phase0aSkillEffectType.pull)?.destinationRadius;
   int get controlTicks =>
       behavior.effectOf(Phase0aSkillEffectType.pull)?.controlTicks ?? 0;
-  int get qiCost => skill.qiCost;
+  final int qiCost;
 
   /// typed break 契约载荷(reducer 破招迁移唯一触发源);无 break 效果 = 0。
   int get breakPower =>

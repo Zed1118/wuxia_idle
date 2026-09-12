@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
+import 'package:wuxia_idle/features/onboarding/application/onboarding_service.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/offline_recap_gate.dart';
 import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
 import 'package:wuxia_idle/shared/strings.dart';
@@ -14,7 +16,8 @@ import '../../../support/test_data.dart';
 
 /// M2 范围 B gate「旧档首启不回溯」守卫专测（spec §7 #4）。
 ///
-/// 场景：lastOnlineAt == createdAt（新档 / 旧档基准未建立），无 active 闭关。
+/// 场景：有效掌门、lastOnlineAt == createdAt、独立锚点 null 的旧档，
+/// 无 active 闭关。缺失掌门属于另一种保留时间以待修复的状态。
 /// 预期：不结算被动、不弹被动卡；lastOnlineAt 更新为传入 now（建基准）。
 ///
 /// 注意：范围 B 旧档守卫调 touchOnlineNow（Isar writeTxn），testWidgets 的
@@ -47,6 +50,16 @@ void main() {
     await tester.runAsync(() async {
       // 确认初始状态：lastOnlineAt == createdAt（守卫触发条件）
       final saveBefore = (await IsarSetup.currentSaveData())!;
+      await OnboardingService(
+        isar: IsarSetup.instance,
+      ).ensureFoundingMasters(now: saveBefore.createdAt);
+      await IsarSetup.instance.writeTxn(() async {
+        final legacy = (await IsarSetup.currentSaveData())!;
+        legacy.passiveLastSettledAt = null;
+        legacy.lastOnlineAt = legacy.createdAt;
+        await IsarSetup.instance.saveDatas.put(legacy);
+      });
+      expect((await IsarSetup.currentSaveData())!.passiveLastSettledAt, isNull);
       expect(saveBefore.lastOnlineAt, saveBefore.createdAt);
 
       // 传一个比 createdAt 晚很久的 now，模拟「离线很久的旧档首次启动」。
@@ -92,6 +105,7 @@ void main() {
       // lastOnlineAt 已更新为 nowInject（touchOnlineNow 建基准，走的是守卫
       // 而非结算路径）
       expect(saveAfter.lastOnlineAt, nowInject);
+      expect(saveAfter.passiveLastSettledAt, nowInject);
     });
   });
 }

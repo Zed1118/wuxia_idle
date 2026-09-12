@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/qi_resource.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
@@ -97,6 +98,44 @@ Phase0aSkillIntent _skill({
 );
 
 void main() {
+  test(
+    'reserved qi is checked before balance projection; insufficient available qi rejects',
+    () {
+      final initial = _state(qi: 40);
+      final ledger = QiResourceLedger(capacity: 100, current: 40)
+        ..reserve(actionId: 'pending', amount: 30);
+      final state = Phase0aArenaState(
+        tick: initial.tick,
+        nextSeq: initial.nextSeq,
+        player: initial.player.copyWith(qiLedger: ledger.snapshot),
+        enemies: initial.enemies,
+        skillSlots: initial.skillSlots,
+      );
+      final resolver = _Resolver();
+      final result = reducePhase0aTick(
+        state: state,
+        deltaSeconds: 0,
+        damageResolver: resolver,
+        intents: [
+          _skill(
+            skillId: 'skill_one',
+            hotkey: 1,
+            kind: Phase0aDamageKind.skill1,
+            targetType: TargetType.single,
+            qiDelta: -25,
+            cooldownSeconds: 2,
+            range: 30,
+          ),
+        ],
+      );
+      expect(resolver.calls, isEmpty);
+      expect(result.events.whereType<Phase0aSkillStarted>(), isEmpty);
+      expect(result.state.player.qiLedger, ledger.snapshot);
+      expect(result.state.player.qiCurrent, 40);
+      expect(result.state.skillSlots.first.cooldownRemaining, 0);
+    },
+  );
+
   test('single skill uses aim/range and resolves exactly one target', () {
     final resolver = _Resolver();
     final result = reducePhase0aTick(

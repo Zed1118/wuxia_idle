@@ -10,8 +10,7 @@ part 'retreat_session.g.dart';
 /// 每次进入地图创建一行；收功或放弃后 [status] 更新，不删除（保留历史）。
 ///
 /// 关键约束：
-///   - 同一 saveDataId 至多一条 active session（startRetreat 开始前先
-///     abandon 旧的）
+///   - 同一 saveDataId 至多一条 active session，须先收功再开始下一次闭关
 ///   - completedAt == null 表示进行中或已放弃（由 status 区分）
 ///   - actualRewards 仅在 status == completed 时有意义
 @collection

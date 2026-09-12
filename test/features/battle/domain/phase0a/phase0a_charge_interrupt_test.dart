@@ -798,11 +798,14 @@ void main() {
       _charger(chargeTicksRemaining: 2, chargingCast: _cast()),
       _charger(staggerTicksRemaining: 1),
     ]) {
-      expect(ai.intentsFor(state: _state(suppressed)), isEmpty);
+      expect(
+        ai.intentsFor(state: _state(suppressed), deltaSeconds: 0.1),
+        isEmpty,
+      );
     }
 
     // 未蓄力、无解锁招但有 chargeCast:选招牌技(旁路 unlock 门)。
-    final pick = ai.intentsFor(state: _state(_charger()));
+    final pick = ai.intentsFor(state: _state(_charger()), deltaSeconds: 0.1);
     expect(pick, hasLength(1));
     expect(pick.single, isA<Phase0aEnemySkillIntent>());
     expect(
@@ -812,6 +815,7 @@ void main() {
 
     // 招牌技 CD 未归零:回落普攻。
     final cooling = ai.intentsFor(
+      deltaSeconds: 0.1,
       state: _state(
         _charger(enemySkillCooldowns: const {'charge_signature': 2}),
       ),

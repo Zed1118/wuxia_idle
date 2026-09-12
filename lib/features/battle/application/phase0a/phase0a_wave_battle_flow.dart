@@ -152,12 +152,12 @@ final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
       _outcome = Phase0aBattleOutcome.defeat;
       events.add(Phase0aBattleDefeat(seq: nextSeq, tick: tick));
       nextSeq += 1;
-      _rebuildSession(_withNextSeq(resolved, nextSeq));
+      _rebuildSession(_withNextSeq(resolved, nextSeq, clearBasicAction: true));
     } else if (_surviveTicksReached(resolved)) {
       _outcome = Phase0aBattleOutcome.victory;
       events.add(Phase0aBattleVictory(seq: nextSeq, tick: tick));
       nextSeq += 1;
-      _rebuildSession(_withNextSeq(resolved, nextSeq));
+      _rebuildSession(_withNextSeq(resolved, nextSeq, clearBasicAction: true));
     } else if (resolved.enemies.isEmpty) {
       events.add(
         Phase0aWaveCleared(
@@ -171,7 +171,9 @@ final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
         _outcome = Phase0aBattleOutcome.victory;
         events.add(Phase0aBattleVictory(seq: nextSeq, tick: tick));
         nextSeq += 1;
-        _rebuildSession(_withNextSeq(resolved, nextSeq));
+        _rebuildSession(
+          _withNextSeq(resolved, nextSeq, clearBasicAction: true),
+        );
       } else {
         _waveCursor += 1;
         events.add(
@@ -202,8 +204,24 @@ final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
 
   Phase0aArenaState _applyWaveTransition(Phase0aArenaState state) {
     final policy = waveTransitionPolicy;
-    if (policy == null) return state;
-    final player = state.player;
+    // A wave is part of the same encounter: retain the action cursor and
+    // recovery gate while starting only a new kill-reward window.
+    final player = state.player.copyWith(
+      qiWindowSerial: state.player.qiLedger == null
+          ? state.player.qiWindowSerial
+          : state.player.qiWindowSerial + 1,
+    );
+    if (policy == null) {
+      return Phase0aArenaState(
+        tick: state.tick,
+        nextSeq: state.nextSeq,
+        player: player,
+        enemies: state.enemies,
+        skillSlots: state.skillSlots,
+        defendedEntity: state.defendedEntity,
+        winCondition: state.winCondition,
+      );
+    }
     final recoveredQi =
         (player.qiCurrent + (player.qiMax * policy.qiRecoveryPct).round())
             .clamp(0, player.qiMax);
@@ -260,11 +278,15 @@ final class Phase0aWaveBattleFlow implements Phase0aBattleFlow {
     _session = _session.forkWithState(nextState);
   }
 
-  static Phase0aArenaState _withNextSeq(Phase0aArenaState state, int nextSeq) {
+  static Phase0aArenaState _withNextSeq(
+    Phase0aArenaState state,
+    int nextSeq, {
+    bool clearBasicAction = false,
+  }) {
     return Phase0aArenaState(
       tick: state.tick,
       nextSeq: nextSeq,
-      player: state.player,
+      player: state.player.copyWith(clearBasicAction: clearBasicAction),
       enemies: state.enemies,
       skillSlots: state.skillSlots,
       winCondition: state.winCondition,

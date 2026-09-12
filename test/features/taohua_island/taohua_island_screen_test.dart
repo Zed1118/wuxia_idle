@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -21,6 +26,20 @@ void main() {
   setUpAll(() async {
     if (!GameRepository.isLoaded) {
       await loadTestGameRepository();
+    }
+    final captureFont = Platform.environment['WUXIA_ISLAND_CAPTURE_FONT'];
+    if (captureFont != null) {
+      final bytes = await File(captureFont).readAsBytes();
+      final loader = FontLoader('IslandCapture')
+        ..addFont(Future.value(bytes.buffer.asByteData()));
+      await loader.load();
+    }
+    final iconFont = Platform.environment['WUXIA_ISLAND_CAPTURE_ICON_FONT'];
+    if (iconFont != null) {
+      final bytes = await File(iconFont).readAsBytes();
+      final loader = FontLoader('MaterialIcons')
+        ..addFont(Future.value(bytes.buffer.asByteData()));
+      await loader.load();
     }
   });
 
@@ -67,7 +86,7 @@ void main() {
     final dzState = IslandBuildingState()
       ..type = BuildingType.daZaoTai
       ..level = 1
-      ..stored = 3
+      ..setProductStored('item_mojianshi', 3)
       ..activeRecipeId = 'forge_mojianshi';
 
     final dfState = IslandBuildingState()
@@ -79,7 +98,7 @@ void main() {
     final zzState = IslandBuildingState()
       ..type = BuildingType.zhuZaoTai
       ..level = 1
-      ..stored = 2
+      ..setProductStored('item_kaifeng_fucai', 2)
       ..activeRecipeId = 'forge_kaifeng_fucai';
 
     return IslandView(
@@ -113,7 +132,14 @@ void main() {
 
   Widget wrap(IslandView? view) => ProviderScope(
     overrides: [taohuaIslandViewProvider.overrideWith((ref) async => view)],
-    child: const MaterialApp(home: TaohuaIslandScreen()),
+    child: MaterialApp(
+      theme: ThemeData(
+        fontFamily: Platform.environment['WUXIA_ISLAND_CAPTURE_FONT'] == null
+            ? null
+            : 'IslandCapture',
+      ),
+      home: const TaohuaIslandScreen(),
+    ),
   );
 
   // ── 辅助：扩大 viewport ────────────────────────────────────────────────────
@@ -714,4 +740,87 @@ void main() {
       expect(find.text(UiStrings.taohuaIslandRealmLocked), findsNothing);
     });
   });
+
+  for (final viewport in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('mixed stock keeps both identities visible at $viewport', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = viewport;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      final semantics = tester.ensureSemantics();
+      try {
+        final view = buildTestView(founderRealmIndex: 3);
+        final forge = view.buildings.firstWhere(
+          (b) => b.type == BuildingType.daZaoTai,
+        );
+        forge.activeRecipeId = 'forge_xinxue';
+        forge.setProductStored('item_mojianshi', 12.24);
+        forge.setProductStored('item_xinxuejiejing', 0.53);
+        final captureKey = GlobalKey();
+        await tester.pumpWidget(
+          RepaintBoundary(key: captureKey, child: wrap(view)),
+        );
+        await tester.pumpAndSettle();
+        await selectBuilding(tester, BuildingType.daZaoTai);
+
+        expect(tester.takeException(), isNull);
+        expect(find.text(UiStrings.taohuaIslandStoredProducts), findsOneWidget);
+        expect(
+          find.text(UiStrings.taohuaIslandTotalStorageLabel(12.77, 120)),
+          findsOneWidget,
+        );
+        for (final item in ['item_mojianshi', 'item_xinxuejiejing']) {
+          final name = GameRepository.instance.itemDefs[item]!.name;
+          final finder = find.byKey(Key('taohua_stock_daZaoTai_$item'));
+          expect(finder, findsOneWidget);
+          expect(tester.widget<Text>(finder).data, contains(name));
+          expect(tester.getSemantics(finder).label, contains(name));
+          final bounds = tester.getRect(finder);
+          expect(bounds.left, greaterThanOrEqualTo(0));
+          expect(bounds.right, lessThanOrEqualTo(viewport.width));
+          expect(bounds.top, greaterThanOrEqualTo(0));
+          expect(bounds.bottom, lessThanOrEqualTo(viewport.height));
+        }
+
+        final captureDir = Platform.environment['WUXIA_ISLAND_CAPTURE_DIR'];
+        if (captureDir != null) {
+          await tester.runAsync(() async {
+            final images = <ImageProvider>{
+              for (final widget in tester.widgetList<Image>(find.byType(Image)))
+                widget.image,
+              for (final widget in tester.widgetList<DecoratedBox>(
+                find.byType(DecoratedBox),
+              ))
+                if (widget.decoration case BoxDecoration(image: final image?))
+                  image.image,
+            };
+            await Future.wait([
+              for (final image in images)
+                precacheImage(image, captureKey.currentContext!),
+            ]);
+          });
+          await tester.pumpAndSettle();
+          await tester.runAsync(() async {
+            final boundary =
+                captureKey.currentContext!.findRenderObject()!
+                    as RenderRepaintBoundary;
+            final image = await boundary.toImage(pixelRatio: 1);
+            final bytes = await image.toByteData(
+              format: ui.ImageByteFormat.png,
+            );
+            await Directory(captureDir).create(recursive: true);
+            await File(
+              '$captureDir/island_stock_${viewport.width.toInt()}x${viewport.height.toInt()}.png',
+            ).writeAsBytes(bytes!.buffer.asUint8List());
+            image.dispose();
+          });
+        }
+        await tester.pumpWidget(const SizedBox.shrink());
+      } finally {
+        semantics.dispose();
+      }
+    });
+  }
 }

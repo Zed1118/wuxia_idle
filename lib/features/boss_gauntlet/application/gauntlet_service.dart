@@ -37,6 +37,7 @@ import '../../injury/application/injury_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
@@ -1022,6 +1023,11 @@ class GauntletService {
       final run = await _activeRun(save0.id);
       if (run == null) return; // 幂等
       if (run.sessionPhase != GauntletPhase.awaitingRewardChoice) return;
+      await OfflinePassiveService.settleWithinTxn(
+        settleIslandBeforeGrowth: true,
+        isar: _isar,
+        now: at,
+      );
       final save = (await _isar.saveDatas.get(0))!;
       final alreadyCleared = save.clearedGauntletIds.contains(gauntletId);
       final disposition = await DurableRewardClaimService(_isar)
@@ -1210,6 +1216,12 @@ class GauntletService {
         run = exactRun;
       }
 
+      await OfflinePassiveService.settleWithinTxn(
+        settleIslandBeforeGrowth: true,
+        isar: _isar,
+        now: now ?? DateTime.now(),
+        updatePresence: applyInjuries,
+      );
       // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
       // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId（P1-5.5）。
       var clearedSet = const <String>{};

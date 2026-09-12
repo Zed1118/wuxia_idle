@@ -85,8 +85,7 @@ typedef RetreatResult = ({
 /// 不互相 import，saveDataId 隔离。
 ///
 /// 关键不变量：
-///   - 同一 saveDataId 至多一条 active session；[startRetreat] 开始前
-///     先调 [_abandonActive]（内部方法）
+///   - 同一 saveDataId 至多一条 active session；须先收功再开始下一次闭关
 ///   - [computeOutputs] 纯函数（不写 Isar），由 [completeRetreat] 调用
 ///   - actualHours = min(elapsed, capHours)；旧 durationHours 不再参与结算
 ///   - 加成均按 `session.startedAt` 时刻判定（不跨日切换 — GDD §7.3）：
@@ -138,9 +137,30 @@ class SeclusionService {
         .findFirst();
   }
 
+  /// Resolves the persisted participant, including a retired former leader.
+  /// Ambiguous or missing links must not redirect rewards to another character.
+  static Future<Character> resolveRetreatOwner(Isar isar, int sessionId) async {
+    final session = await isar.retreatSessions.get(sessionId);
+    final save = await isar.saveDatas.get(0);
+    if (session == null ||
+        session.status != RetreatStatus.active ||
+        save == null ||
+        save.slotId != session.saveDataId) {
+      throw StateError('Retreat session is unavailable in this save');
+    }
+    final owners = await isar.characters
+        .filter()
+        .currentRetreatSessionIdEqualTo(sessionId)
+        .findAll();
+    if (owners.length != 1) {
+      throw StateError('Retreat session must have exactly one participant');
+    }
+    return owners.single;
+  }
+
   /// 开始闭关：
-  ///   1. 境界校验（不满足抛 [StateError]）
-  ///   2. abandon 旧 active session（若有）
+  ///   1. 拒绝替换未收功的 active session，保留累计收益
+  ///   2. 结清普通挂机，以结算后的角色境界校验并固化快照
   ///   3. 写新 [RetreatSession] + 更新 [Character.currentRetreatSessionId]
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
@@ -151,30 +171,32 @@ class SeclusionService {
     required List<SeclusionMapDef> maps,
     required DateTime now,
   }) async {
-    if (!canEnterMap(
-      mapType: mapType,
-      charRealmTier: charRealmTier,
-      maps: maps,
-    )) {
-      throw StateError(
-        '境界不足：${charRealmTier.name} 无法进入 ${mapType.name}（'
-        '要求 ${_getDef(mapType, maps).requiredRealm.name}）',
-      );
-    }
-
     late RetreatSession created;
 
     await isar.writeTxn(() async {
-      // 1. abandon 旧 active（若有）
+      // 1. Keep the existing session and its accrued rewards until collection.
       final old = await isar.retreatSessions
           .filter()
           .saveDataIdEqualTo(saveDataId)
           .statusEqualTo(RetreatStatus.active)
           .findFirst();
       if (old != null) {
-        old.status = RetreatStatus.abandoned;
-        old.completedAt = now;
-        await isar.retreatSessions.put(old);
+        throw StateError(UiStrings.seclusionCollectBeforeSwitch);
+      }
+
+      await OfflinePassiveService.settleWithinTxn(
+        settleIslandBeforeGrowth: true,
+        isar: isar,
+        now: now,
+      );
+      final ch = await isar.characters.get(characterId);
+      if (ch == null) throw StateError('Retreat participant does not exist');
+      if (!canEnterMap(
+        mapType: mapType,
+        charRealmTier: ch.realmTier,
+        maps: maps,
+      )) {
+        throw StateError(UiStrings.seclusionMapLocked);
       }
 
       // 2. 建新 session
@@ -182,7 +204,7 @@ class SeclusionService {
         ..saveDataId = saveDataId
         ..mapType = mapType
         ..durationHours = 0
-        ..realmTierAtStart = charRealmTier
+        ..realmTierAtStart = ch.realmTier
         ..startedAt = now
         ..completedAt = null
         ..status = RetreatStatus.active
@@ -192,11 +214,8 @@ class SeclusionService {
       created = session;
 
       // 3. 更新 character.currentRetreatSessionId
-      final ch = await isar.characters.get(characterId);
-      if (ch != null) {
-        ch.currentRetreatSessionId = sid;
-        await isar.characters.put(ch);
-      }
+      ch.currentRetreatSessionId = sid;
+      await isar.characters.put(ch);
     });
 
     return created;
@@ -387,38 +406,9 @@ class SeclusionService {
     required DateTime now,
     Rng? rng,
   }) async {
-    // CLAUDE.md §12.1 #7 v1.4:正午阳刚 +20% 需要角色主修流派 — writeTxn 外
-    // 提前读 character.school(后续 writeTxn 内 read 写回 ch 沿原 W15 #30 第 3 期体例),
-    // seclusion 完工低频,2 次 read 开销可忽略。
-    final preCharForBonus = await isar.characters.get(characterId);
-
-    // W18-A1.2:闭关收功时查 character 的心法相生(主修 + 全部辅修),
-    // 命中 internalForceGrowthPct 注入 computeOutputs 内力维度。读 tech 在
-    // writeTxn 外(seclusion 完工低频,2-3 次 isar.get 开销可忽略),拿不到
-    // character / tech → growthPct 默认 0.0(无相生),整链 fallthrough。
-    final synergyGrowthPct = await _detectSynergyGrowthPct(preCharForBonus);
-
-    final settlement = computeSettlement(
-      session: session,
-      config: config,
-      passiveConfig: GameRepository.instance.numbers.passiveIdle,
-      maps: maps,
-      now: now,
-      legacyRealmTier: charRealmTier,
-      charSchool: preCharForBonus?.school,
-      synergyInternalForceGrowthPct: synergyGrowthPct,
-      dropService: GameRepository.isLoaded
-          ? DropService(
-              equipmentDefLookup: GameRepository.instance.getEquipment,
-              defaultObtainedFrom: UiStrings.dropSourceSeclusion,
-              now: () => now,
-            )
-          : null,
-    );
-    final outputs = settlement.retreat;
-
-    // W15 #30 第 3 期:applyExperience 返回值,在 writeTxn 内闭包 assign,
-    // 跨 writeTxn 暴露给 caller 用于 UI 升层 banner。
+    late RetreatSettlement settlement;
+    late RetreatOutputs outputs;
+    late RetreatSession settledSession;
     AdvancementResult? advancement;
 
     await isar.writeTxn(() async {
@@ -427,6 +417,35 @@ class SeclusionService {
           persistedSession.status != RetreatStatus.active) {
         throw StateError('闭关会话已结算或不存在');
       }
+      final owner = await resolveRetreatOwner(isar, persistedSession.id);
+      if (owner.id != characterId) {
+        throw StateError('Retreat participant does not match the session');
+      }
+      await OfflinePassiveService.settleWithinTxn(
+        isar: isar,
+        now: now,
+        settleIslandBeforeGrowth: true,
+      );
+      settledSession = persistedSession;
+      final synergyGrowthPct = await _detectSynergyGrowthPct(owner);
+      settlement = computeSettlement(
+        session: persistedSession,
+        config: config,
+        passiveConfig: GameRepository.instance.numbers.passiveIdle,
+        maps: maps,
+        now: now,
+        legacyRealmTier: charRealmTier,
+        charSchool: owner.school,
+        synergyInternalForceGrowthPct: synergyGrowthPct,
+        dropService: GameRepository.isLoaded
+            ? DropService(
+                equipmentDefLookup: GameRepository.instance.getEquipment,
+                defaultObtainedFrom: UiStrings.dropSourceSeclusion,
+                now: () => now,
+              )
+            : null,
+      );
+      outputs = settlement.retreat;
 
       // 1. 写 mojianshi → InventoryItem
       // defId 统一为 'item_mojianshi'，与 towers.yaml / stages.yaml drop 体系
@@ -490,10 +509,6 @@ class SeclusionService {
         ..status = RetreatStatus.completed
         ..actualRewards = rewards;
       await isar.retreatSessions.put(persistedSession);
-      session
-        ..completedAt = now
-        ..status = RetreatStatus.completed
-        ..actualRewards = rewards;
 
       // 3. 写 Character:internalForce(clamp old max) + insightPoints 累加 +
       //    experience 写回 + 升层(W15 #30 第 2 期 + 第 3 期消费层接入),
@@ -549,7 +564,7 @@ class SeclusionService {
           // 统一升层门禁：发布上限或心魔未通时，EXP 留账不消费。
           final progress = await isar.mainlineProgress
               .filter()
-              .saveDataIdEqualTo(session.saveDataId)
+              .saveDataIdEqualTo(persistedSession.saveDataId)
               .findFirst();
           final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
           final repository = GameRepository.instance;
@@ -574,7 +589,7 @@ class SeclusionService {
         // P1 #42 Phase 2:GameEvent 写入 — 闭关完成 + (升层时)境界突破。
         // 同 writeTxn 内原子,不开嵌套 writeTxn(GameEventService 内部 put 不开)。
         final events = GameEventService(isar);
-        final mapDef = _getDef(session.mapType, maps);
+        final mapDef = _getDef(persistedSession.mapType, maps);
         await events.recordRetreatCompleted(
           characterId: characterId,
           characterName: ch.name,
@@ -597,6 +612,10 @@ class SeclusionService {
         }
       }
 
+      await OfflinePassiveService.resumeAfterRetreatWithinTxn(
+        isar: isar,
+        now: now,
+      );
       final save = await isar.saveDatas.get(0);
       if (save != null) {
         save.totalPassiveMojianshi += settlement.passive.mojianshi;
@@ -606,12 +625,17 @@ class SeclusionService {
       }
     });
 
+    session
+      ..completedAt = settledSession.completedAt
+      ..status = settledSession.status
+      ..actualRewards = settledSession.actualRewards;
+
     // C-W14-2 idle tick:writeTxn 外单独喂奇遇 biome/weather 累计。
     // 嵌套 writeTxn 会抛 IsarError,故分开两个 txn。原子性损失可接受:
     // mojianshi 已落地,idle tick 失败仅缺少奇遇累计,不破坏闭关数据。
     await _feedEncounterIdleMinutes(
-      session: session,
-      saveDataId: session.saveDataId,
+      session: settledSession,
+      saveDataId: settledSession.saveDataId,
       maps: maps,
       actualHours: outputs.actualHours,
     );
@@ -628,7 +652,7 @@ class SeclusionService {
       equipmentDrops: outputs.equipmentDrops,
       equipmentDropNodeHours: outputs.equipmentDropNodeHours,
       realmTierAtStart:
-          session.realmTierAtStart ?? charRealmTier ?? RealmTier.xueTu,
+          settledSession.realmTierAtStart ?? charRealmTier ?? RealmTier.xueTu,
       experiencePoints:
           outputs.experiencePoints + settlement.passive.experience,
       techniqueLearnPoints: outputs.techniqueLearnPoints,

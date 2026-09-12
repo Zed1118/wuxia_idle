@@ -119,7 +119,10 @@ void main() {
         elapsedHours: 5,
         founderRealmIndex: 6,
       );
-      expect(_byType(r5, BuildingType.tieJiangChang).stored, closeTo(30, 1e-9));
+      expect(
+        _byType(r5, BuildingType.tieJiangChang).totalStored,
+        closeTo(30, 1e-9),
+      );
 
       // 挂超 cap：cap = 200，挂 1000h 也只到 200
       final rCap = IslandProductionService.settle(
@@ -128,7 +131,7 @@ void main() {
         elapsedHours: 1000, // 会被 capHours 先夹到 72
         founderRealmIndex: 6,
       );
-      expect(_byType(rCap, BuildingType.tieJiangChang).stored, 200);
+      expect(_byType(rCap, BuildingType.tieJiangChang).totalStored, 200);
     });
 
     test('2. 加工守恒：成品增量×inputPerOutput == 铁匠厂被扣量（铁匠厂不产以隔离）', () {
@@ -156,10 +159,10 @@ void main() {
       final tie = _byType(r, BuildingType.tieJiangChang);
 
       // byMaterial = 30/4 = 7.5；want=3×72=216；cap=1000 不限 → made=7.5
-      expect(zao.stored, closeTo(7.5, 1e-6));
+      expect(zao.totalStored, closeTo(7.5, 1e-6));
       // 守恒：30 - 7.5×4 = 0
-      expect(tie.stored, closeTo(0, 1e-6));
-      expect(30 - tie.stored, closeTo(zao.stored * 4, 1e-6));
+      expect(tie.totalStored, closeTo(0, 1e-6));
+      expect(30 - tie.totalStored, closeTo(zao.totalStored * 4, 1e-6));
     });
 
     test('2b. 源料真正成为瓶颈（铁匠厂未解锁不产）', () {
@@ -191,8 +194,8 @@ void main() {
       final zao = _byType(r, BuildingType.daZaoTai);
       final tie = _byType(r, BuildingType.tieJiangChang);
       // byMaterial = 10/4 = 2.5；want=3×72=216；cap=1000 不限 → made=2.5
-      expect(zao.stored, closeTo(2.5, 1e-6));
-      expect(tie.stored, closeTo(0, 1e-6)); // 10 - 2.5×4 = 0
+      expect(zao.totalStored, closeTo(2.5, 1e-6));
+      expect(tie.totalStored, closeTo(0, 1e-6)); // 10 - 2.5×4 = 0
     });
 
     test('3. 加工受成品 cap 限', () {
@@ -205,8 +208,7 @@ void main() {
         IslandBuildingState()
           ..type = BuildingType.daZaoTai
           ..level = 1
-          ..stored =
-              48 // 接近 cap=50
+          ..setProductStored('item_mojianshi', 48) // 接近 cap=50
           ..activeRecipeId = 'forge_mojianshi',
       ];
       final r = IslandProductionService.settle(
@@ -216,7 +218,7 @@ void main() {
         founderRealmIndex: 6,
       );
       // 成品封到 cap=50，不超
-      expect(_byType(r, BuildingType.daZaoTai).stored, closeTo(50, 1e-9));
+      expect(_byType(r, BuildingType.daZaoTai).totalStored, closeTo(50, 1e-9));
     });
 
     test('4. offline=online 可加性（线性区：源料充裕 + 成品仓远未满）', () {
@@ -253,8 +255,8 @@ void main() {
       );
 
       expect(
-        _byType(once, BuildingType.daZaoTai).stored,
-        closeTo(_byType(twice, BuildingType.daZaoTai).stored, 1e-6),
+        _byType(once, BuildingType.daZaoTai).totalStored,
+        closeTo(_byType(twice, BuildingType.daZaoTai).totalStored, 1e-6),
       );
     });
 
@@ -296,12 +298,12 @@ void main() {
       );
 
       expect(
-        _byType(once, BuildingType.daZaoTai).stored,
+        _byType(once, BuildingType.daZaoTai).totalStored,
         closeTo(3 * (1 + 3 * 0.02) * 2 * 4, 1e-6),
       );
       expect(
-        _byType(twice, BuildingType.daZaoTai).stored,
-        closeTo(_byType(once, BuildingType.daZaoTai).stored, 1e-6),
+        _byType(twice, BuildingType.daZaoTai).totalStored,
+        closeTo(_byType(once, BuildingType.daZaoTai).totalStored, 1e-6),
       );
     });
 
@@ -332,8 +334,8 @@ void main() {
       );
 
       expect(
-        twice.map((s) => s.stored.floor()).toList(),
-        once.map((s) => s.stored.floor()).toList(),
+        twice.map((s) => s.totalStored.floor()).toList(),
+        once.map((s) => s.totalStored.floor()).toList(),
       );
     });
 
@@ -363,8 +365,8 @@ void main() {
       );
       for (final type in [BuildingType.tieJiangChang, BuildingType.daZaoTai]) {
         expect(
-          _byType(r100, type).stored,
-          closeTo(_byType(r72, type).stored, 1e-9),
+          _byType(r100, type).totalStored,
+          closeTo(_byType(r72, type).totalStored, 1e-9),
           reason: '$type stored 100h 应等于 72h',
         );
       }
@@ -389,9 +391,9 @@ void main() {
         founderRealmIndex: 6,
       );
       // 打造台不产成品
-      expect(_byType(r, BuildingType.daZaoTai).stored, 0);
+      expect(_byType(r, BuildingType.daZaoTai).totalStored, 0);
       // 铁匠厂源料只受自身产出影响、不被打造台扣：500 + 6×72=432 → 932，cap=200
-      expect(_byType(r, BuildingType.tieJiangChang).stored, 200);
+      expect(_byType(r, BuildingType.tieJiangChang).totalStored, 200);
     });
 
     test('7. 境界门槛：配方 realm_unlock_index=3 而 founderRealmIndex=0 → 暂停', () {
@@ -413,9 +415,9 @@ void main() {
         founderRealmIndex: 0, // < 3 → 配方未达境界
       );
       // 打造台暂停：不产
-      expect(_byType(r, BuildingType.daZaoTai).stored, 0);
+      expect(_byType(r, BuildingType.daZaoTai).totalStored, 0);
       // 源料不被扣（铁匠厂自身产出 + cap）：500+432→cap 200，未被打造台动
-      expect(_byType(r, BuildingType.tieJiangChang).stored, 200);
+      expect(_byType(r, BuildingType.tieJiangChang).totalStored, 200);
     });
 
     test('纯函数：不修改输入 states', () {
@@ -432,7 +434,7 @@ void main() {
         elapsedHours: 10,
         founderRealmIndex: 6,
       );
-      expect(input.first.stored, 0, reason: '输入不应被修改');
+      expect(input.first.totalStored, 0, reason: '输入不应被修改');
     });
 
     test('t<=0 直接返回副本', () {
@@ -449,7 +451,7 @@ void main() {
         elapsedHours: 0,
         founderRealmIndex: 6,
       );
-      expect(r.first.stored, 42);
+      expect(r.first.totalStored, 42);
       expect(identical(r.first, input.first), isFalse, reason: '应为副本');
     });
   });

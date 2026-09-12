@@ -1,3 +1,13 @@
+/// Existing slot cannot be read safely. The original file is retained.
+class UnreadableSaveException implements Exception {
+  const UnreadableSaveException(this.reason);
+
+  final String reason;
+
+  @override
+  String toString() => 'UnreadableSaveException($reason)';
+}
+
 /// 存档槽只读摘要快照(给存档选择屏用)。
 ///
 /// 纯只读值对象,不写库、不新增 schema 字段(spec B §3.4):祖师名/境界/主线进度/
@@ -16,10 +26,17 @@ class SlotSummary {
     this.highestTowerFloor = 0,
     this.lastPlayed,
     this.isMostRecent = false,
+    this.readError,
+    this.readStackTrace,
   });
 
   /// 槽号(1/2/3)。
   final int slotId;
+
+  /// A per-slot failure is never an empty slot or a playable save.
+  final Object? readError;
+  final StackTrace? readStackTrace;
+  bool get isAvailable => readError == null;
 
   /// 是否空槽(db 文件不存在 或 无 founder)。
   final bool isEmpty;
@@ -54,9 +71,22 @@ class SlotSummary {
   factory SlotSummary.empty(int slotId) =>
       SlotSummary(slotId: slotId, isEmpty: true);
 
+  factory SlotSummary.unavailable(
+    int slotId,
+    Object error,
+    StackTrace stackTrace,
+  ) => SlotSummary(
+    slotId: slotId,
+    isEmpty: false,
+    readError: error,
+    readStackTrace: stackTrace,
+  );
+
   SlotSummary copyWith({String? slotName, bool? isMostRecent}) => SlotSummary(
     slotId: slotId,
     isEmpty: isEmpty,
+    readError: readError,
+    readStackTrace: readStackTrace,
     slotName: slotName ?? this.slotName,
     founderName: founderName,
     realmDisplay: realmDisplay,

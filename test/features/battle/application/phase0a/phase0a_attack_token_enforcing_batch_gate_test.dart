@@ -10,6 +10,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_enemy_int
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/arena_vector.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/attack_token_director.dart';
+import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_intent.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_reducer.dart';
@@ -130,6 +131,7 @@ Phase0aCombatSession _session({
   Phase0aEnemyIntentGate? perIntentGate,
   Phase0aEnemyIntentBatchGate? batchGate,
   Phase0aEnemyIntentObserver? observer,
+  Phase0aEnemyAiAdapter? enemyAdapter,
 }) => Phase0aCombatSession(
   initialState: initialState,
   playerAdapter: const Phase0aPlayerInputAdapter(
@@ -152,13 +154,15 @@ Phase0aCombatSession _session({
     clearQiCost: 30,
     clearCooldownSeconds: 4,
   ),
-  enemyAiAdapter: const Phase0aEnemyAiAdapter(
-    attackRange: 70,
-    attackHalfArcRadians: math.pi / 3,
-    attackCooldownSeconds: 1.2,
-    postureBasicPowerMultiplier: 1,
-    uniformBasicPowerMultiplier: 1,
-  ),
+  enemyAiAdapter:
+      enemyAdapter ??
+      const Phase0aEnemyAiAdapter(
+        attackRange: 70,
+        attackHalfArcRadians: math.pi / 3,
+        attackCooldownSeconds: 1.2,
+        postureBasicPowerMultiplier: 1,
+        uniformBasicPowerMultiplier: 1,
+      ),
   damageResolver: resolver,
   enemyIntentGate: perIntentGate,
   enemyIntentBatchGate: batchGate,
@@ -259,6 +263,127 @@ void main() {
   });
 
   group('CombatSession batch gate 合同', () {
+    for (final targetsWard in [false, true]) {
+      test(
+        'cooling attackers leave tokens for ready ${targetsWard ? 'ward' : 'player'} attackers',
+        () {
+          const ward = Phase0aDefendedEntityState(
+            id: 'ward',
+            position: ArenaVector(0, 0),
+            maxDurability: 100,
+            currentDurability: 100,
+            damagePerHit: 5,
+          );
+          final requested = <String>[];
+          final session = _session(
+            initialState: Phase0aArenaState(
+              tick: 0,
+              nextSeq: 1,
+              player: _player(),
+              skillSlots: const [],
+              defendedEntity: ward,
+              enemies: [
+                _enemy('e1', 50).copyWith(attackCooldownRemaining: 1),
+                _enemy('e2', 50),
+              ],
+            ),
+            resolver: _CountingDamageResolver(),
+            enemyAdapter: Phase0aEnemyAiAdapter(
+              attackRange: 70,
+              attackHalfArcRadians: math.pi / 3,
+              attackCooldownSeconds: 1.2,
+              postureBasicPowerMultiplier: 1,
+              uniformBasicPowerMultiplier: 1,
+              defendedEntityTargetIdByActor: {
+                'e1': 'ward',
+                if (targetsWard) 'e2': 'ward',
+              },
+            ),
+            batchGate: AttackTokenEnforcingBatchGate(
+              director: const AttackTokenDirector(),
+              budgets: _budgets(),
+              requestMapper: (intent) {
+                if (intent is! Phase0aAttackIntent) return null;
+                requested.add(intent.actorId);
+                return _request(intent);
+              },
+            ),
+          );
+          final events = session.advance(
+            deltaSeconds: 0.1,
+            command: const Phase0aPlayerCommand(),
+          );
+          expect(events.whereType<Phase0aAttackStarted>().map((e) => e.actor), [
+            'e2',
+          ]);
+          expect(requested, ['e2']);
+          expect(
+            session.state.enemies.first.attackCooldownRemaining,
+            closeTo(0.9, 1e-9),
+          );
+          expect(session.state.enemies.last.attackCooldownRemaining, 1.2);
+          expect(session.state.player.currentHealth, targetsWard ? 100 : 85);
+          expect(
+            session.state.defendedEntity!.currentDurability,
+            targetsWard ? 95 : 100,
+          );
+        },
+      );
+    }
+
+    for (final cooldown in [0.05, 0.1, 0.1001]) {
+      test(
+        'token eligibility preserves the reducer cooldown boundary at $cooldown',
+        () {
+          final session = _session(
+            initialState: Phase0aArenaState(
+              tick: 0,
+              nextSeq: 1,
+              player: _player(),
+              skillSlots: const [],
+              enemies: [
+                _enemy('e1', 50).copyWith(attackCooldownRemaining: cooldown),
+                _enemy('e2', 50),
+              ],
+            ),
+            resolver: _CountingDamageResolver(),
+            batchGate: AttackTokenEnforcingBatchGate(
+              director: const AttackTokenDirector(),
+              budgets: _budgets(),
+              requestMapper: (intent) =>
+                  intent is Phase0aAttackIntent ? _request(intent) : null,
+            ),
+          );
+          final events = session.advance(
+            deltaSeconds: 0.1,
+            command: const Phase0aPlayerCommand(),
+          );
+          expect(events.whereType<Phase0aAttackStarted>().map((e) => e.actor), [
+            cooldown <= 0.1 ? 'e1' : 'e2',
+          ]);
+        },
+      );
+    }
+
+    test('an attacker on cooldown still pursues an out-of-range target', () {
+      final session = _session(
+        initialState: Phase0aArenaState(
+          tick: 0,
+          nextSeq: 1,
+          player: _player(),
+          skillSlots: const [],
+          enemies: [_enemy('e1', 300).copyWith(attackCooldownRemaining: 1)],
+        ),
+        resolver: _CountingDamageResolver(),
+      );
+      final events = session.advance(
+        deltaSeconds: 0.1,
+        command: const Phase0aPlayerCommand(),
+      );
+      expect(session.state.enemies.single.position, const ArenaVector(294, 0));
+      expect(events.whereType<Phase0aAttackStarted>(), isEmpty);
+    });
+
     test('null batch gate 与基线 state/events/resolver 完全一致', () {
       final resolverA = _CountingDamageResolver();
       final resolverB = _CountingDamageResolver();

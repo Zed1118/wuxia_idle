@@ -278,7 +278,7 @@ void main() {
       final ref = await mountRef(tester);
       await tester.runAsync(() async {
         final isar = IsarSetup.instance;
-        expect((await isar.saveDatas.get(0))!.saveVersion, '0.49.0');
+        expect((await isar.saveDatas.get(0))!.saveVersion, '0.50.0');
         expect(
           await isar.rewardClaimReceipts.getByClaimKey(
             tombstoneFor(31).claimKey,

@@ -17,11 +17,22 @@ void main() {
     int level = 1,
     double stored = 0,
     String? recipe,
-  }) => IslandBuildingState()
-    ..type = type
-    ..level = level
-    ..stored = stored
-    ..activeRecipeId = recipe;
+  }) {
+    final state = IslandBuildingState()
+      ..type = type
+      ..level = level
+      ..activeRecipeId = recipe;
+    if (recipe == null) {
+      state.stored = stored;
+    } else {
+      final output = GameRepository.instance.numbers.taohuaIsland
+          .buildingOf(type)
+          .recipeById(recipe)!
+          .outputItem;
+      state.setProductStored(output, stored);
+    }
+    return state;
+  }
 
   test('source 建筑从现有产速派生下一件与满仓时间', () {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
@@ -89,4 +100,35 @@ void main() {
     expect(fullIntel.hoursToNextItem, isNull);
     expect(fullIntel.hoursToFull, isNull);
   });
+
+  test(
+    'next item uses only active product fraction while fullness uses all stock',
+    () {
+      final cfg = GameRepository.instance.numbers.taohuaIsland;
+      final source = state(BuildingType.tieJiangChang, stored: 100);
+      final forge = state(BuildingType.daZaoTai, recipe: 'forge_mojianshi')
+        ..setProductStored('item_mojianshi', 0.25)
+        ..setProductStored('item_xinxuejiejing', 0.6);
+      final intel = IslandProductionReadability.from(
+        state: forge,
+        allStates: [source, forge],
+        config: cfg,
+        founderRealmIndex: 3,
+      );
+      expect(intel.hoursToNextItem, closeTo(0.75 / (1.5 * 1.02), 1e-4));
+      forge.setProductStored('item_xinxuejiejing', 119.5);
+      final nearlyFull = IslandProductionReadability.from(
+        state: forge,
+        allStates: [source, forge],
+        config: cfg,
+        founderRealmIndex: 3,
+      );
+      expect(
+        nearlyFull.hoursToNextItem,
+        isNull,
+        reason: 'Remaining shared capacity cannot fit the next whole item.',
+      );
+      expect(nearlyFull.hoursToFull, closeTo(0.25 / (1.5 * 1.02), 1e-4));
+    },
+  );
 }

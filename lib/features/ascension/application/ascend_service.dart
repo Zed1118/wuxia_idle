@@ -10,6 +10,7 @@ import '../../../shared/strings.dart';
 import '../../equipment/application/milestone_equipment_grant_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../sect/domain/sect.dart';
+import '../../seclusion/application/offline_passive_service.dart';
 import '../domain/ascension_models.dart';
 
 /// P2.3 飞升 + 遗物 transfer service(spec p2_3_ascension_spec_2026-05-24)。
@@ -180,6 +181,7 @@ class AscendService {
   Future<AscensionResult> performAscend(
     Map<int, int> selections, {
     int? promotedDiscipleId,
+    DateTime? now,
   }) async {
     // 1. 5 子条件复查(避 UI invalidate 漏窗口 · 防 race)
     final eligibility = await computeEligibility();
@@ -197,9 +199,7 @@ class AscendService {
       );
     }
 
-    final save = (await isar.saveDatas.get(0))!;
-    final founderId = save.founderCharacterId!;
-    final founder = (await isar.characters.get(founderId))!;
+    final founderId = (await isar.saveDatas.get(0))!.founderCharacterId!;
 
     final discipleTargets = await listDiscipleTargets();
     final discipleIds = discipleTargets.map((c) => c.id).toSet();
@@ -232,6 +232,16 @@ class AscendService {
         '(active+alive disciples=$discipleIds)',
       );
     }
+
+    await OfflinePassiveService.settleWithinTxn(
+      settleIslandBeforeGrowth: true,
+      isar: isar,
+      now: now ?? DateTime.now(),
+    );
+    // Settlement can change the old leader's experience/fraction and the save's
+    // ledger. Load the transfer snapshots afterwards so none are overwritten.
+    final save = (await isar.saveDatas.get(0))!;
+    final founder = (await isar.characters.get(founderId))!;
 
     // 4. transfer 副作用(单 writeTxn · caller 持锁)
     for (final eq in equipmentsByOrder) {

@@ -8,6 +8,7 @@ import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
+import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/inventory/application/item_use_invalidation.dart';
@@ -33,7 +34,7 @@ void main() {
     await IsarSetup.init(directory: tempDir, inspector: false);
     isar = IsarSetup.instance;
     await isar.writeTxn(() async {
-      await isar.characters.put(
+      final founderId = await isar.characters.put(
         Character.create(
           name: '主角',
           realmTier: RealmTier.xueTu,
@@ -49,6 +50,9 @@ void main() {
           internalForceMax: 800,
         ),
       );
+      final save = (await isar.saveDatas.get(0))!;
+      save.founderCharacterId = founderId;
+      await isar.saveDatas.put(save);
       await isar.inventoryItems.put(
         InventoryItem()
           ..defId = 'item_jingyandan_small'

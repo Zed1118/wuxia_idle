@@ -1,5 +1,6 @@
 import '../../../../core/domain/enums.dart';
 import '../../domain/phase0a/arena_vector.dart';
+import '../../domain/phase0a/action_timeline.dart';
 import '../../domain/phase0a/basic_attack_chain.dart';
 import '../../domain/phase0a/basic_attack_geometry_registry.dart';
 import '../../domain/phase0a/phase0a_combat_intent.dart';
@@ -84,6 +85,7 @@ final class Phase0aPlayerInputAdapter {
     required this.postureBasicPowerMultiplier,
     required this.attackPowerMultiplier,
     this.weaponArchetype,
+    this.attackTimelineConfig,
     this.attackVisualSchool,
     required this.gatherPowerMultiplier,
     required this.clearPowerMultiplier,
@@ -114,6 +116,7 @@ final class Phase0aPlayerInputAdapter {
   final int postureBasicPowerMultiplier;
   final int attackPowerMultiplier;
   final WeaponArchetype? weaponArchetype;
+  final ActionTimelineConfig? attackTimelineConfig;
   final TechniqueSchool? attackVisualSchool;
   final int gatherPowerMultiplier;
   final int clearPowerMultiplier;
@@ -197,6 +200,7 @@ final class Phase0aPlayerInputAdapter {
           ),
           postureHitKind: PostureHitKind.light,
           weaponArchetype: weaponArchetype,
+          timelineConfig: attackTimelineConfig,
           visualSchool: attackVisualSchool,
           defenseFlags: defenseTuning?.basicAttackFlags,
           basicAttackChain: basicAttackChain,

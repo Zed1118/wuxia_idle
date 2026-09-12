@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/attributes.dart';
+import 'package:wuxia_idle/core/domain/character.dart';
+import 'package:wuxia_idle/features/seclusion/presentation/seclusion_gate.dart';
+import 'package:wuxia_idle/features/seclusion/presentation/active_retreat_screen.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -82,6 +86,7 @@ void main() {
     WidgetTester tester, {
     RealmTier charRealmTier = RealmTier.xueTu,
     _FakeSeclusionService? fakeService,
+    Character? retreatOwner,
     Size surfaceSize = const Size(1024, 1800),
   }) async {
     await tester.binding.setSurfaceSize(surfaceSize);
@@ -91,6 +96,10 @@ void main() {
         overrides: [
           if (fakeService != null)
             seclusionServiceProvider.overrideWithValue(fakeService),
+          if (retreatOwner != null && fakeService?.activeSession != null)
+            retreatOwnerProvider(
+              fakeService!.activeSession!.id,
+            ).overrideWith((ref) async => retreatOwner),
         ],
         child: MaterialApp(
           home: SeclusionMapListScreen(
@@ -231,6 +240,42 @@ void main() {
     expect(find.text('山林'), findsOneWidget);
     expect(find.text(UiStrings.seclusionMapExpectedOutputLabel), findsWidgets);
   });
+
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('换地图先打开旧会话收功，不替换已有收益 $size', (tester) async {
+      final fake = _FakeSeclusionService()..activeSession = fakeActiveSession();
+      final owner = Character.create(
+        name: 'retired leader',
+        realmTier: RealmTier.sanLiu,
+        realmLayer: RealmLayer.qiMeng,
+        attributes: Attributes(),
+        rarity: RarityTier.biaoZhun,
+        lineageRole: LineageRole.founder,
+        createdAt: DateTime(2026),
+        isActive: false,
+      )..id = 41;
+      await pumpMapList(
+        tester,
+        charRealmTier: RealmTier.sanLiu,
+        fakeService: fake,
+        retreatOwner: owner,
+        surfaceSize: size,
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('古剑冢'));
+      await tester.tap(find.text('古剑冢'));
+      await tester.pumpAndSettle();
+      final active = tester.widget<ActiveRetreatScreen>(
+        find.byType(ActiveRetreatScreen),
+      );
+      expect(active.session.id, fake.activeSession!.id);
+      expect(active.mapDef.mapType, RetreatMapType.shanLin);
+      expect(active.characterId, 41);
+      expect(find.byType(SeclusionSetupScreen), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 
   testWidgets('active 卡显示进行中状态与查看提示', (tester) async {
     final fakeService = _FakeSeclusionService()

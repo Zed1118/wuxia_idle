@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
+import '../../../core/domain/character.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
 import '../application/seclusion_service_providers.dart';
+import '../application/seclusion_service.dart';
 import '../domain/retreat_session.dart';
 import 'retreat_result_screen.dart';
 
@@ -22,6 +24,15 @@ final activeRetreatSessionProvider =
       if (svc == null) return null;
       return svc.getActiveSession(IsarSetup.currentSlotId);
     });
+
+final retreatOwnerProvider = FutureProvider.autoDispose.family<Character, int>((
+  ref,
+  sessionId,
+) async {
+  final svc = ref.watch(seclusionServiceProvider);
+  if (svc == null) throw StateError('Retreat service unavailable');
+  return SeclusionService.resolveRetreatOwner(svc.isar, sessionId);
+});
 
 /// 防止同一闭关会话被多个入口同时发起结算。
 final Set<int> _retreatCompletionsInFlight = <int>{};
@@ -74,12 +85,10 @@ Future<void> _endRetreatEarly(
   if (svc == null) return;
   if (!_retreatCompletionsInFlight.add(session.id)) return;
   try {
-    final ids = await ref.read(activeCharacterIdsProvider.future);
-    final id = ids.isNotEmpty ? ids.first : 1;
-    final ch = await ref.read(characterByIdProvider(id).future);
+    final owner = await ref.read(retreatOwnerProvider(session.id).future);
     final result = await svc.completeRetreat(
       session: session,
-      characterId: ch?.id ?? id,
+      characterId: owner.id,
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
       now: DateTime.now(),

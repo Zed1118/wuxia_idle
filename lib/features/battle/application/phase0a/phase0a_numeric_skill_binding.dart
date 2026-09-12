@@ -15,8 +15,12 @@ class Phase0aNumericSkillBinding {
     required this.halfArc,
     required this.effectRadius,
     required this.cooldownSeconds,
+    int? effectiveQiDelta,
     this.consumesDefenseBreakAsPostureDamage = false,
-  }) {
+  }) : qiDelta = effectiveQiDelta ?? skill.qiDelta {
+    if (qiDelta > 0 && skill.qiDelta <= 0) {
+      throw ArgumentError.value(qiDelta, 'effectiveQiDelta');
+    }
     if (hotkey < 1 || hotkey > 6) {
       throw ArgumentError.value(hotkey, 'hotkey', 'must be in 1..6');
     }
@@ -74,7 +78,10 @@ class Phase0aNumericSkillBinding {
   final double cooldownSeconds;
   final bool consumesDefenseBreakAsPostureDamage;
 
-  int get qiDelta => skill.qiDelta;
+  /// One derived resource value shared by slot availability and the intent.
+  /// The original SkillDef remains the damage/identity authority.
+  final int qiDelta;
+  int get qiCost => qiDelta < 0 ? -qiDelta : 0;
   TargetType get targetType => skill.targetType;
 
   /// typed break 契约载荷(reducer 破招迁移唯一触发源);无 break 效果 = 0。

@@ -117,7 +117,7 @@ MainMenuStatusSummaryItem? _islandItem(SaveData? save) {
   if (save == null) return null;
   final claimable = save.islandBuildings.fold<int>(
     0,
-    (sum, building) => sum + building.stored.floor(),
+    (sum, building) => sum + building.harvestableCount,
   );
   if (claimable <= 0) return null;
   return MainMenuStatusSummaryItem(

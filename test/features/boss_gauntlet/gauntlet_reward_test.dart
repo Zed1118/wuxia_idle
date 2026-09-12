@@ -479,4 +479,97 @@ void main() {
       reason: 'threshold-1 + 首通经验 - threshold',
     );
   });
+
+  test('选奖跨境界时旧倍率挂机账本与奖励同事务保留，失败回滚且重放不双发', () async {
+    final isar = IsarSetup.instance;
+    final repo = GameRepository.instance;
+    final config = repo.bossGauntletConfig!;
+    final startedAt = DateTime(2026, 9, 10, 8);
+    final at = startedAt.add(const Duration(hours: 8, minutes: 6));
+    final rateScale = repo.numbers.passiveIdle.realmScaleFor(RealmTier.erLiu);
+    final expExact =
+        repo.numbers.passiveIdle.baseExpPerHour * rateScale * 8.1 + 0.4;
+    final materialExact =
+        repo.numbers.passiveIdle.baseMojianshiPerHour * rateScale * 8.1 + 0.2;
+    final oldRealm = repo.getRealm(RealmTier.erLiu, RealmLayer.dengFeng);
+    final beforeExperience = oldRealm.experienceToNext - expExact.floor() - 6;
+    await isar.writeTxn(() async {
+      final character = (await isar.characters.get(1))!
+        ..realmTier = RealmTier.erLiu
+        ..realmLayer = RealmLayer.dengFeng
+        ..experienceToNextLayer = oldRealm.experienceToNext
+        ..internalForceMax = oldRealm.internalForceMax
+        ..experience = beforeExperience
+        ..passiveExperienceRemainder = 0.4;
+      await isar.characters.put(character);
+      final save = (await isar.saveDatas.get(0))!
+        ..founderCharacterId = 1
+        ..lastOnlineAt = startedAt
+        ..passiveLastSettledAt = startedAt
+        ..passiveMojianshiRemainder = 0.2;
+      await isar.saveDatas.put(save);
+    });
+    await putAwaitingRun(candidates: config.rewardCandidateEquipmentIds);
+    final chosen = config.rewardCandidateEquipmentIds.first;
+    final service = svc();
+    final materialBefore = (await qtyOf('item_mojianshi'))!;
+
+    await expectLater(
+      service.chooseReward(
+        chosenEquipmentDefId: chosen,
+        config: config,
+        numbers: repo.numbers,
+        rng: DefaultRng(seed: 7),
+        now: at,
+        afterRewardInTxnForTest: () async => throw StateError('rollback'),
+      ),
+      throwsStateError,
+    );
+    final rolledBack = (await isar.saveDatas.get(0))!;
+    expect(rolledBack.passiveLastSettledAt, startedAt);
+    expect(rolledBack.totalPassiveExperience, 0);
+    expect(rolledBack.passiveMojianshiRemainder, 0.2);
+    expect((await isar.characters.get(1))!.experience, beforeExperience);
+    expect((await isar.characters.get(1))!.passiveExperienceRemainder, 0.4);
+    expect(await qtyOf('item_mojianshi'), materialBefore);
+    expect(await isar.bossGauntletRuns.count(), 1);
+    expect(await isar.rewardClaimReceipts.count(), 0);
+
+    Future<void> claim() => service.chooseReward(
+      chosenEquipmentDefId: chosen,
+      config: config,
+      numbers: repo.numbers,
+      rng: DefaultRng(seed: 7),
+      now: at,
+    );
+    await claim();
+    for (var replay = 0; replay < 2; replay++) {
+      final save = (await isar.saveDatas.get(0))!;
+      final character = (await isar.characters.get(1))!;
+      expect(character.realmTier, RealmTier.yiLiu);
+      expect(character.realmLayer, RealmLayer.qiMeng);
+      expect(character.experience, config.firstClearRewardExp - 6);
+      expect(
+        character.passiveExperienceRemainder,
+        closeTo(expExact - expExact.floor(), 1e-8),
+      );
+      expect(save.passiveLastSettledAt, at);
+      expect(save.totalPassiveExperience, expExact.floor());
+      expect(save.totalPassiveMojianshi, materialExact.floor());
+      expect(
+        save.passiveMojianshiRemainder,
+        closeTo(materialExact - materialExact.floor(), 1e-8),
+      );
+      expect(save.clearedGauntletIds, contains(GauntletService.gauntletId));
+      expect(save.duanhunFirstClearedAt, at);
+      expect(
+        await qtyOf('item_mojianshi'),
+        materialBefore + materialExact.floor(),
+      );
+      expect(await ownedCount(chosen), 1);
+      expect(await isar.bossGauntletRuns.count(), 0);
+      expect(await isar.rewardClaimReceipts.count(), 3);
+      if (replay == 0) await claim();
+    }
+  });
 }

@@ -10,6 +10,7 @@ import '../../../../data/game_repository.dart';
 import '../../../../data/numbers_config.dart';
 import '../../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../../shared/battle_shared/combatant_skill_loadout.dart';
+import '../../../../shared/battle_shared/qi_cycle.dart';
 import '../../../../shared/strings.dart';
 import '../../../../shared/theme/wuxia_tokens.dart';
 import '../../domain/phase0a/arena_vector.dart';
@@ -19,6 +20,8 @@ import '../../domain/phase0a/phase0a_defense_tuning.dart';
 import '../../domain/phase0a/phase0a_combat_reducer.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../domain/phase0a/posture.dart';
+import '../../domain/phase0a/qi_resource.dart';
+import '../../domain/phase0a/action_timeline.dart';
 import '../../../../shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 import 'phase0a_battle_snapshot_factory.dart';
 import 'phase0a_basic_attack_geometry_mapper.dart';
@@ -101,8 +104,26 @@ final class Phase0aStageContentMapper {
     if (playerBasicSkill == null) {
       throw StateError('Phase0a player mapping lacks a real basic skill');
     }
-    final numeric = _numericSkillBindings(playerSnapshot, arena);
-    final tactical = _tacticalSkillBindings(arena);
+    final weapon = playerSnapshot.weaponArchetype;
+    final weaponMapping = arena.weaponMapping;
+    if (weapon != null && weaponMapping == null) {
+      throw StateError('Phase0a player weapon ${weapon.name} lacks M0 mapping');
+    }
+    final resourceProfile = weapon == null
+        ? null
+        : weaponMapping!.profileFor(weapon);
+    int effectiveDelta(SkillDef skill) => _effectivePlayerQiDelta(
+      skill: skill,
+      player: playerSnapshot,
+      numbers: numbers,
+      profile: resourceProfile,
+    );
+    final numeric = _numericSkillBindings(
+      playerSnapshot,
+      arena,
+      effectiveDelta,
+    );
+    final tactical = _tacticalSkillBindings(arena, effectiveDelta);
     final defenseTuning = Phase0aDefenseTuningMapper.fromNumbers(numbers);
     final player = Phase0aActor(
       id: playerId,
@@ -114,6 +135,16 @@ final class Phase0aStageContentMapper {
       moveSpeed: arena.playerMoveSpeed,
       qiCurrent: playerSnapshot.currentQi,
       qiMax: playerSnapshot.maxQi,
+      qiLedger: resourceProfile == null
+          ? null
+          : QiResourceLedger(
+              capacity: playerSnapshot.maxQi,
+              current: playerSnapshot.currentQi,
+            ).snapshot,
+      killQiGain: resourceProfile == null ? 0 : weaponMapping!.killQiGain,
+      killQiWindowCap: resourceProfile == null
+          ? 0
+          : weaponMapping!.killQiWindowCap,
       attackCooldownRemaining: 0,
       defeatKind: Phase0aDefeatKind.normal,
     );
@@ -128,7 +159,8 @@ final class Phase0aStageContentMapper {
         playerId: playerId,
         numericSkillBindings: numeric,
         tacticalSkillBindings: tactical,
-        attackQiDelta: playerBasicSkill.qiDelta,
+        attackQiDelta: effectiveDelta(playerBasicSkill),
+        attackTimelineConfig: resourceProfile?.timeline,
         attackPowerMultiplier: playerBasicSkill.powerMultiplier,
         weaponArchetype: playerSnapshot.weaponArchetype,
         attackVisualSchool: playerSnapshot.school,
@@ -1081,6 +1113,51 @@ final class Phase0aStageContentMapper {
     required String actorId,
   }) => _requiredBasicSkillOf(snapshot, actorId: actorId);
 
+  /// Only resource amounts are derived here; the real skill remains shared by
+  /// damage, typed effects, cooldowns and presentation. Unarmed/isolated input
+  /// fixtures without a weapon profile retain their existing resource path.
+  static int _effectivePlayerQiDelta({
+    required SkillDef skill,
+    required CombatantSnapshot player,
+    required NumbersConfig numbers,
+    required Phase0aWeaponResourceProfile? profile,
+  }) {
+    if (profile == null || skill.type == SkillType.jointSkill) {
+      return skill.qiDelta;
+    }
+    final arena = numbers.phase0aArena;
+    final mapping = arena.weaponMapping!;
+    var baseDelta = skill.qiDelta;
+    final tactical =
+        skill.id == arena.gatherSkillId || skill.id == arena.clearSkillId;
+    if (skill.type == SkillType.normalAttack) {
+      baseDelta = profile.basicGain;
+    } else if (!tactical && baseDelta < 0) {
+      final offset = switch (skill.type) {
+        SkillType.powerSkill => profile.powerCost - mapping.powerCostAnchor,
+        SkillType.ultimate => profile.ultimateCost - mapping.ultimateCostAnchor,
+        _ => 0,
+      };
+      final cost = -baseDelta + offset;
+      if (cost < 0) {
+        throw StateError('M0 mapped skill cost is negative: ${skill.id}');
+      }
+      baseDelta = -cost;
+    }
+    if (!player.qiGainMultiplier.isFinite ||
+        !player.qiCostReductionPct.isFinite) {
+      throw StateError('M0 player qi modifiers must be finite');
+    }
+    final qi = numbers.combat.qi;
+    return QiCycle.effectiveSkillDelta(
+      baseDelta: baseDelta,
+      gainMultiplier: player.qiGainMultiplier,
+      gainMultiplierCap: qi.gainMultiplierCap,
+      costReductionPct: player.qiCostReductionPct,
+      costReductionCap: qi.costReductionCap,
+    );
+  }
+
   static List<Phase0aSkillSlot> _skillSlots(
     Phase0aNumericSkillBindings numericSkills,
     _Phase0aTacticalSkillBindings tacticalSkills,
@@ -1110,11 +1187,11 @@ final class Phase0aStageContentMapper {
       Phase0aSkillSlot(
         slot: binding.slotId,
         cooldownRemaining: 0,
-        qiCost: binding.skill.qiCost,
+        qiCost: binding.qiCost,
         availability: availabilityOf(
           cooldownRemaining: 0,
           qiCurrent: openingQi,
-          qiCost: binding.skill.qiCost,
+          qiCost: binding.qiCost,
         ),
       ),
   ]);
@@ -1135,6 +1212,7 @@ final class Phase0aStageContentMapper {
   static Phase0aNumericSkillBindings _numericSkillBindings(
     CombatantSnapshot player,
     Phase0aArenaConfig arena,
+    int Function(SkillDef) effectiveDelta,
   ) {
     Phase0aNumericSkillBinding? binding(int hotkey) {
       final loadoutSlot = CombatantSkillLoadout.numericSlots[hotkey - 1];
@@ -1147,6 +1225,7 @@ final class Phase0aStageContentMapper {
         hotkey: hotkey,
         loadoutSlot: loadoutSlot,
         skill: skill,
+        effectiveQiDelta: effectiveDelta(skill),
         visualSchool: skill.style ?? player.school,
         slotId: 'phase0a_skill_$hotkey',
         attackRange: arena.playerAttackRange,
@@ -1191,6 +1270,7 @@ final class Phase0aStageContentMapper {
   /// the retired synthetic-clear mapper path must not be reintroduced.
   static _Phase0aTacticalSkillBindings _tacticalSkillBindings(
     Phase0aArenaConfig arena,
+    int Function(SkillDef) effectiveDelta,
   ) {
     final gatherMissing = arena.gatherSkillId.isEmpty;
     final clearMissing = arena.clearSkillId.isEmpty;
@@ -1214,11 +1294,13 @@ final class Phase0aStageContentMapper {
         kind: Phase0aTacticalSkillKind.gather,
         slot: arena.gatherSlot,
         skill: gatherSkill,
+        effectiveQiCost: -effectiveDelta(gatherSkill),
       ),
       clear: Phase0aTacticalSkillBinding(
         kind: Phase0aTacticalSkillKind.clear,
         slot: arena.clearSlot,
         skill: clearSkill,
+        effectiveQiCost: -effectiveDelta(clearSkill),
       ),
     );
   }
@@ -1229,6 +1311,7 @@ final class Phase0aStageContentMapper {
     required Phase0aNumericSkillBindings numericSkillBindings,
     required _Phase0aTacticalSkillBindings tacticalSkillBindings,
     required int attackQiDelta,
+    ActionTimelineConfig? attackTimelineConfig,
     required int attackPowerMultiplier,
     WeaponArchetype? weaponArchetype,
     TechniqueSchool? attackVisualSchool,
@@ -1255,6 +1338,7 @@ final class Phase0aStageContentMapper {
       attackCooldownSeconds:
           arena.playerAttackCooldownSeconds * (profile?.cooldownFactor ?? 1),
       attackQiDelta: attackQiDelta,
+      attackTimelineConfig: attackTimelineConfig,
       postureBasicPowerMultiplier: arena.basicPowerMultiplier,
       attackPowerMultiplier:
           (attackPowerMultiplier * (profile?.postureDamageFactor ?? 1)).round(),

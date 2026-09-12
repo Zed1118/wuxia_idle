@@ -225,7 +225,10 @@ void main() {
         .availableSkills
         .firstWhere((skill) => skill.type == SkillType.normalAttack);
     final enemyBasicIntent = ordinary.enemyAiAdapter
-        .intentsFor(state: ordinaryState)
+        .intentsFor(
+          state: ordinaryState,
+          deltaSeconds: ordinaryEnemy.attackCooldownRemaining,
+        )
         .whereType<Phase0aAttackIntent>()
         .single;
     expect(
@@ -244,7 +247,10 @@ void main() {
       winCondition: mapping.initialState.winCondition,
     );
     final enemySkillIntent = mapping.enemyAiAdapter
-        .intentsFor(state: bossState)
+        .intentsFor(
+          state: bossState,
+          deltaSeconds: boss.attackCooldownRemaining,
+        )
         .whereType<Phase0aEnemySkillIntent>()
         .single;
     expect(

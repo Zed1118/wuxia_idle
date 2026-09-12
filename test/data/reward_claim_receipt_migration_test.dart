@@ -128,7 +128,7 @@ void main() {
       );
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.49.0',
+        '0.50.0',
       );
 
       await IsarSetup.close();
@@ -182,7 +182,7 @@ void main() {
         expect(receipts.every((row) => row.isHistoricalTombstone), isTrue);
         expect(
           (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-          '0.49.0',
+          '0.50.0',
         );
       },
     );
@@ -254,7 +254,7 @@ void main() {
       expect(receipts, hasLength(90 + preserved.length));
       expect(
         (await IsarSetup.instance.saveDatas.get(0))!.saveVersion,
-        '0.49.0',
+        '0.50.0',
       );
       final progress =
           (await IsarSetup.instance.towerProgress.where().findAll()).single;

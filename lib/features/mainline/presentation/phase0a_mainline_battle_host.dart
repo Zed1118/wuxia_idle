@@ -49,6 +49,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     required this.stage,
     required this.onVictory,
     required this.onDefeat,
+    this.onDefeatReason,
     this.cycleIndex = 1,
     this.playerSnapshot,
     this.playerSnapshotForTest,
@@ -61,6 +62,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final StageDef stage;
   final ValueChanged<CombatSettlementSnapshot> onVictory;
   final ValueChanged<CombatSettlementSnapshot> onDefeat;
+  final ValueChanged<String>? onDefeatReason;
   final int cycleIndex;
   final Formation? massBattleFormation;
   final CombatantSnapshot? playerSnapshot;
@@ -90,6 +92,7 @@ class _Phase0aMainlineBattleHostState
   Phase0aPlayerInputAdapter? _playerAdapter;
   bool _exitNotified = false;
   Phase0aCheckpointGuidanceCopy? _checkpointGuidanceCopy;
+  NarrativeContent? _defendGuidanceCopy;
 
   @override
   void initState() {
@@ -199,6 +202,9 @@ class _Phase0aMainlineBattleHostState
               enemyAiAdapter: mapping.enemyAiAdapter,
               waveTransitionPolicy: mapping.waveTransitionPolicy,
             );
+        final defendGuidance = flow.state.defendedEntity == null
+            ? null
+            : await NarrativeLoader.load('${widget.stage.id}_defend_guidance');
         if (!mounted) return;
         final controller = Phase0aBattleController(
           flow: flow,
@@ -212,6 +218,9 @@ class _Phase0aMainlineBattleHostState
           _visualRoster = roster;
           _playerAdapter = selectedPlayerAdapter;
           _controller = controller;
+          _defendGuidanceCopy = defendGuidance?.isPlaceholder == false
+              ? defendGuidance
+              : null;
         });
         if (encounterHost != null && encounterHost.checkpointXById.isNotEmpty) {
           unawaited(_loadCheckpointGuidance(encounterHost));
@@ -280,6 +289,13 @@ class _Phase0aMainlineBattleHostState
     if (outcome == Phase0aBattleOutcome.victory) {
       widget.onVictory(settlement);
     } else {
+      if (controller.defendObjectiveProgress?.destroyed == true) {
+        widget.onDefeatReason?.call(
+          UiStrings.defendFailureReason(
+            _defendGuidanceCopy?.title ?? UiStrings.defendEntityLabel,
+          ),
+        );
+      }
       widget.onDefeat(settlement);
       if (mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
@@ -324,6 +340,7 @@ class _Phase0aMainlineBattleHostState
       basicAttackRange: playerAdapter.attackRange,
       checkpointXById: _encounterHost?.checkpointXById ?? const {},
       checkpointGuidanceCopy: _checkpointGuidanceCopy,
+      defendGuidanceCopy: _defendGuidanceCopy,
       botCommandBuilder: widget.controller == ActivityController.playerBot
           ? Phase0aPlayerBotAdapter(
               playerAdapter: playerAdapter,
