@@ -163,6 +163,7 @@ void main() {
             _combatEvents(legacyFlow.events),
           );
           _expectObjectiveWaveSplit(
+            contentId: instantTrace.session!.contentRef.contentId,
             typedFlow: instantTrace.session!.flow,
             typedEvents: instantTrace.trace!.events,
             legacyEvents: legacyFlow.events,
@@ -384,6 +385,7 @@ void main() {
         expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
         _expectObjectiveWaveSplit(
+          contentId: typed.contentRef.contentId,
           typedFlow: typed.flow,
           typedEvents: events,
           legacyEvents: legacyEvents,
@@ -477,6 +479,7 @@ void main() {
         expect(typed.flow.state.enemies.where((e) => e.isAlive), isEmpty);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
         _expectObjectiveWaveSplit(
+          contentId: typed.contentRef.contentId,
           typedFlow: typed.flow,
           typedEvents: events,
           legacyEvents: legacyEvents,
@@ -926,10 +929,18 @@ List<Phase0aEvent> _combatEvents(List<Phase0aEvent> events) => [
 /// 用「WaveCleared 数是否追平 WaveStarted 数」代表同一件事（全波清空 = 全灭目标
 /// 达成）。终局片段两侧必须都算达成，未终局片段两侧必须都算未达成。
 ///
-/// 这里不比对逐 clause 的 [EncounterObjectiveProgress] 内部字段：legacy 侧没有
-/// 可对应的结构，硬比会变成拿 typed 自己跟自己比。clause id 与条数仍然钉住，
-/// 防止目标定义被悄悄换掉。
+/// clause 形状按生产公式精确钉住：塔的默认派生定义只产一条
+/// `<contentId>_defeat_all`（见 phase0a_tower_encounter_host.dart 的 objectives），
+/// 所以这里直接比对 clause id 列表，改名或拆成多条都必须红。上一版只断言
+/// 「列表非空 + 每个 id 非空」，改名和拆条都能过，而注释却声称钉住了 —— 那是
+/// 假绿，已由外部侦察的负对照复现后修正。
+///
+/// 终局再把 satisfied 集与实际 [Phase0aEnemyDefeated] 事件数交叉核对：目标声称
+/// 达成的目标数必须等于本场真正死掉的敌人数，且每个 satisfied id 都落在
+/// `<contentId>_entry_` 命名下。legacy 侧没有 entry 概念，这一层只能这样自证，
+/// 但它咬得住「目标集合被换掉」和「少杀一个也算达成」。
 void _expectObjectiveWaveSplit({
+  required String contentId,
   required Phase0aBattleFlow typedFlow,
   required List<Phase0aEvent> typedEvents,
   required List<Phase0aEvent> legacyEvents,
@@ -954,11 +965,12 @@ void _expectObjectiveWaveSplit({
     isNotNull,
     reason: 'typed 的 objectiveProgress 为 null 说明目标层没接上，映射比对无意义',
   );
-  expect(progress!.clauses, isNotEmpty);
   expect(
-    progress.clauses.map((c) => c.id),
-    everyElement(isNotEmpty),
-    reason: 'clause id 为空说明目标定义退化，后续迁层无法定位',
+    progress!.clauses.map((c) => c.id).toList(),
+    ['${contentId}_defeat_all'],
+    reason:
+        '塔的默认派生目标必须恰好一条 defeat-all clause；'
+        '改名或拆条都要在这里红，不能只检查 id 非空',
   );
 
   // —— 映射比对：typed 目标达成 ⇔ legacy 全波清空 ——
@@ -994,6 +1006,24 @@ void _expectObjectiveWaveSplit({
   expect(
     legacyClears.last.tick,
     lessThanOrEqualTo(legacyVictories.single.tick),
+  );
+
+  // satisfied 集 x 实际击杀事件：少杀一个也算达成，或目标集合被换掉，都在这里红。
+  final satisfied = progress.clauses.single.progress.satisfied;
+  final typedDefeats = typedEvents.whereType<Phase0aEnemyDefeated>().length;
+  final legacyDefeats = legacyEvents.whereType<Phase0aEnemyDefeated>().length;
+  expect(typedDefeats, legacyDefeats);
+  expect(
+    satisfied,
+    hasLength(typedDefeats),
+    reason:
+        '目标声称达成 ${satisfied.length} 个，实际击杀 $typedDefeats 个敌人，'
+        '两者必须一致',
+  );
+  expect(
+    satisfied,
+    everyElement(startsWith('${contentId}_entry_')),
+    reason: 'satisfied 必须是本内容的 entry id，命名漂移要在这里红',
   );
 }
 
