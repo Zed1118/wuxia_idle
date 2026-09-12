@@ -237,6 +237,11 @@ final class ActionTimeline {
     config.interruptedCooldownTicks,
   );
 
+  /// Contract-only terminal state: the approved M0 mapping keeps a failed CD,
+  /// but no production path produces a legal failed player action yet, so this
+  /// has zero production callers (2026-09-12). Reaching it in a test does not
+  /// prove a production branch exists; wiring one must also update
+  /// `data/numbers.yaml` weapon_mapping's unused-by-production note.
   bool fail() => _terminate(
     ActionTimelinePhase.failed,
     ActionTimelineCooldownMarker.failed,

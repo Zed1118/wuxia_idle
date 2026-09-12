@@ -112,9 +112,47 @@ void main() {
         profile.powerCost,
         profile.ultimateCost,
       ], entry.value.$2);
+      // 已批准的候选基值本身，不代表生产行为；生产不消费这两项，
+      // 「未接线」这一约束由下一条守卫钉死。
       expect([profile.capacity, profile.opening], [100, 40]);
     }
   });
+
+  // capacity/opening 是已批准但未接线的候选基值：运行态气海继续走派生
+  // snapshot(含心法/紊乱/内容修正)。这里钉死「未接线」这一约束本身 —— 配置
+  // 给出与 snapshot 完全不同的值时，运行态必须仍然只看 snapshot。将来若有人
+  // 把配置接进运行态而未同步改这条约定，此测试会红。
+  test(
+    'approved capacity/opening stay unwired; runtime qi follows snapshot',
+    () {
+      final raw = copyNumbers();
+      final weapons =
+          ((raw['phase0a_arena'] as Map)['weapon_mapping'] as Map)['weapons']
+              as Map;
+      for (final weapon in weapons.values) {
+        (weapon as Map)['capacity'] = 999;
+        weapon['opening'] = 777;
+      }
+      final numbers = NumbersConfig.fromYaml(raw);
+      final mapping = mapPlayer(player(), numbers: numbers);
+      // 配置确实带着被改过的值进来了，排除「改动没生效」这种假绿。
+      for (final weapon in WeaponArchetype.values) {
+        final profile = numbers.phase0aArena.weaponMapping!.profileFor(weapon);
+        expect([profile.capacity, profile.opening], [999, 777]);
+      }
+      expect(
+        [mapping.initialPlayer.qiMax, mapping.initialPlayer.qiCurrent],
+        [130, 23],
+      );
+      expect(
+        [
+          mapping.initialPlayer.qiLedger!.capacity,
+          mapping.initialPlayer.qiLedger!.current,
+        ],
+        [130, 23],
+      );
+    },
+  );
 
   test(
     'present mapping rejects missing, unknown, fractional and invalid values',

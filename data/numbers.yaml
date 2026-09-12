@@ -523,6 +523,11 @@ realms:
 phase0a_arena:
   # M0 mapping approved 2026-09-11: timeline B and qi C, composed with M3 CD.
   # capacity/opening are candidate bases; runtime keeps the derived snapshot.
+  # unused-by-production (contract only, kept by the approved mapping):
+  #   capacity / opening — runtime qi comes from the derived snapshot;
+  #   failed_cooldown_ticks — no production path produces a failed action yet.
+  # These stay parsed and strictly validated so a later wiring batch inherits
+  # the approved values; do not read them as current behaviour.
   weapon_mapping:
     power_cost_anchor: 30
     ultimate_cost_anchor: 60
