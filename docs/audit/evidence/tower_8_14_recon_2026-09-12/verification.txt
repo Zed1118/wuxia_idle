@@ -1,0 +1,73 @@
+基线 0ec23aa0fefcab5f37109216552edcd48b552350
+工作分支 codex/tower-multi-recon-20260912
+所有命令 cwd = /Users/a10506/.codex/worktrees/tower-multi-recon-20260912/挂机武侠
+
+$ flutter pub get --offline
+exit_code=0
+stdout_sha256=0170e49fb1c9ca9900b96c63abc95c925a35e269ab14d0fddf3ff4ac76694127
+13 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+
+$ dart run build_runner build
+exit_code=0
+stdout_sha256=cc92d4b6708660a32a7705242a23b987dae7c527dded97a72bd47aeef47d7d92
+  0s source_gen:combining_builder on 1633 inputs: 74 output, 1559 no-op
+  Built with build_runner/aot in 17s; wrote 148 outputs.
+
+$ flutter test --no-pub --reporter expanded test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+exit_code=0
+stdout_sha256=c318344ca8c8004cefb680912d9350a7fa3450e046eef5f2407fb4d76e268e6e
+00:20 +29: (tearDownAll)
+00:20 +29: All tests passed!
+
+$ flutter test --no-pub --reporter expanded test/diagnostics/phase0a_tower_a48_replay_test.dart
+exit_code=0
+stdout_sha256=512539acdea1dad8f302d4a96d194e5509443befb016720c9cbab333e136860b
+00:16 +29: (tearDownAll)
+00:16 +29: All tests passed!
+
+$ flutter test --no-pub --reporter expanded test/diagnostics/phase0a_tower_multi_enemy_recon_test.dart
+exit_code=0
+stdout_sha256=e85a3cd3e29488756661e39306c4cc9bf5d9e13bbffd1a37c440f00ba19a38a4
+00:01 +61: (tearDownAll)
+00:01 +61: All tests passed!
+
+$ flutter test --no-pub --reporter expanded test/diagnostics/phase0a_tower_a48_clause_guard_recon_test.dart
+exit_code=0
+stdout_sha256=d64de877065f55c07e0c4225de54478cc1e34fe5c9b9f654cb5a25597ecbc659
+00:00 +2: (tearDownAll)
+00:00 +2: All tests passed!
+
+$ dart analyze test/diagnostics/phase0a_tower_multi_enemy_recon_test.dart test/diagnostics/phase0a_tower_a48_clause_guard_recon_test.dart
+exit_code=0
+stdout_sha256=ce9620191e3f06819e8e6385bfd00db0d6116e5f6d52ce447950b0edab047b99
+Analyzing phase0a_tower_multi_enemy_recon_test.dart, phase0a_tower_a48_clause_guard_recon_test.dart...
+No issues found!
+
+A48 replay 来源：git show a48aab668:test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+A48 replay 仅替换 '../../../support/' 为 '../support/' 并增加诊断头注释，执行后丢弃临时复制文件。
+初轮失败记录：49/1、49/2 探针把胜利写成必需，真实结果均为两路相同的 defeat；断言失败前逐拍 state/event/outcome 对照已通过。
+首次结果：55 passed, 2 failed。后续只调整诊断前提：8-14 仍要求指定胜负；32/42/49 要求已终局且两路一致，保留实际 outcome。
+最终固定样本探针：61 passed = 1 inventory + 60 route pairs；其中 52 victory pairs、8 defeat pairs。
+
+交付前受保护内容检查：四项清单及所有文件哈希前后一致。
+AGENTS.md sha256=0d9b32834ab6f5fe10942a5619933440617e7763238ecab64b932379e14f7f17
+CLAUDE.md sha256=ae131cb86b3dc08916d7ab585f74cb34062421e3924c410d2982aee5caeed1c5
+.qoder/settings.json sha256=6f70bfd91befa47fddd08a2a7cfb83b5181faa50e7ac4eb9d8fb5953371aa817
+docs/_archive/CLAUDE_v2.00_frozen_2026-09-06.md sha256=bb69c534cb5e9f8dd16fec5c628d041e06c280a19ad584ab19d0cde1c6bfb0e8
+main=342d1927529b8306582431be597ef1975bd69deb
+worktree /Users/a10506/Desktop/Projects/挂机武侠/.claude/worktrees/review-followup-20260912
+HEAD a48aab668d5fbf631c94a06e1a00baa41244de8b
+branch refs/heads/worktree-review-followup-20260912
+locked claude session review-followup-20260912 (pid 12522 start Sat Sep 12 00:18:05 2026)
+main_checkout_HEAD=a48aab668d5fbf631c94a06e1a00baa41244de8b
+main_checkout_status:
+ M AGENTS.md
+ M CLAUDE.md
+?? .qoder/
+?? docs/_archive/CLAUDE_v2.00_frozen_2026-09-06.md
+
+源分支在侦察期间由其他执行链推进至 a48aab668；git diff --name-only 0ec23aa0f codex/p2-player-flow-20260910 只含 test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart。
+git diff --exit-code 0ec23aa0f -- lib data/towers.yaml data/numbers.yaml GDD.md CLAUDE.md data_schema.md IDS_REGISTRY.md docs/dispatch/phase0a_overhaul/task_registry.yaml: exit_code=0
+dart format --output=none --set-exit-if-changed 两个保留诊断文件: 2 files / 0 changed
+报告禁词、文件行号存在性、相对链接、63条JSON及summary内容校验: PASS
