@@ -1,0 +1,15 @@
+[补记 2026-09-12] 影响的 yaml 清单（原 commit body 缺，按项目 CLAUDE.md「涉及
+配置 schema 变化需列影响的 yaml 文件」补记；commit 已被 7 处证据引用，不改写历史）
+
+数值/schema 层：
+- data/numbers.yaml            +43 行，新增 phase0a_arena.weapon_mapping
+                               （timeline B / qi C / M3 CD 组合，M0 已拍板）
+- data_schema.md               +17 行，随上条同步 schema 文档
+
+内容/构建层：
+- data/narratives/stages/stage_02_01_defend_guidance.yaml   +5 行
+- build.yaml                                                +1 行
+
+派单台账（非数值层）：
+- docs/dispatch/phase0a_overhaul/decision_registry.yaml
+- docs/dispatch/phase0a_overhaul/task_registry.yaml
