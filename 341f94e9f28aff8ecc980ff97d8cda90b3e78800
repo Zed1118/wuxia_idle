@@ -1,0 +1,16 @@
+[补记 2026-09-12] 影响的 yaml 清单与批次范围（原 commit body 缺；commit 已被
+证据文件引用，不改写历史）
+
+影响的 yaml（均为派单/契约台账，不含数值 schema，故标题无需 [schema] 前缀）：
+- docs/dispatch/phase0a_overhaul/task_registry.yaml
+- docs/dispatch/phase2_wiring/test_contract_migrations/2026-09-12-tower-first-seven.yaml
+
+本 commit 实为三条工作流合并落一次（评审已记：应拆分提交）：
+1. 塔机制验证补齐（A/B 平价）
+2. 首批七层迁移（Phase0aTowerEncounterRouteAuthority.production 的
+   migratedFloorIndices = {1..7}）
+3. 契约迁移台账登记
+
+闸门提示：review_gaps_block_floor_migration 本批由执行链自清，非用户拍板。
+下一批迁层前该闸门必须由用户翻转，见 task_registry.yaml 的
+next_batch_floor_migration_requires_user_signoff。
