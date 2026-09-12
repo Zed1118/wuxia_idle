@@ -38,6 +38,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/application/durable_activity_automation_service.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/combat_content_ref.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_flow.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
@@ -162,6 +163,7 @@ void main() {
             _combatEvents(legacyFlow.events),
           );
           _expectObjectiveWaveSplit(
+            typedFlow: instantTrace.session!.flow,
             typedEvents: instantTrace.trace!.events,
             legacyEvents: legacyFlow.events,
             terminal: legacyResult.outcome == Phase0aBattleOutcome.victory,
@@ -382,6 +384,7 @@ void main() {
         expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
         _expectObjectiveWaveSplit(
+          typedFlow: typed.flow,
           typedEvents: events,
           legacyEvents: legacyEvents,
           terminal: false,
@@ -474,6 +477,7 @@ void main() {
         expect(typed.flow.state.enemies.where((e) => e.isAlive), isEmpty);
         expect(_combatEvents(events), _combatEvents(legacyEvents));
         _expectObjectiveWaveSplit(
+          typedFlow: typed.flow,
           typedEvents: events,
           legacyEvents: legacyEvents,
           terminal: true,
@@ -909,23 +913,24 @@ List<Phase0aEvent> _combatEvents(List<Phase0aEvent> events) => [
       _withoutSequence(e),
 ];
 
-/// 目标层在两条路径上不对称，无法做 1:1 事件比对：legacy 用波次生命周期事件
-/// 表达进度，typed 不发任何目标事件 —— 进度活在 objective tracker 里，只有
+/// 目标层在两条路径上不对称，不能做 1:1 事件比对：legacy 用波次生命周期事件
+/// 表达进度，typed 不发任何目标事件 —— 进度活在 objective controller 里，只有
 /// 完成时才落 [Phase0aBattleVictory]。
 ///
 /// [_combatEvents] 因此丢掉波次事件。丢弃本身没错，但「只丢不查」留下一个口子：
-/// typed 若哪天也开始发波次事件，会被一并静默丢掉而无人发现。这里把丢弃所依赖
-/// 的前提直接断言出来，并钉住终局信号。
+/// typed 若哪天也开始发波次事件，会被一并静默丢掉而无人发现。这里既断言丢弃所
+/// 依赖的前提，也把两侧的进度语义做映射比对。
 ///
-/// 已知观测边界（2026-09-12 实测）：typed 的目标进度在测试可达的接口上拿不到 ——
-/// `Phase0aBattleFlow` 不暴露它，而 `checkpointObjectiveObservation` 要求 tracker
-/// 与 director 同时存在，塔的单遭遇路径没有 director，因此恒为 null。所以这里
-/// 不直接比对目标状态，改用生产侧的因果：typed 的 victory 只由
-/// `objectiveTransition.next.completed` 触发（见 phase0a_encounter_flow.dart），
-/// 于是「同一拍 victory」就是目标完成时序的可观测证据，而两侧 victory 的 tick
-/// 已由 [_combatEvents] 的整流比对覆盖。若将来目标进度可从接口读到，这里应升级
-/// 为逐 clause 比对。
+/// 映射口径（2026-09-12 实测塔第 1 层：clause 单条 `tower_1_defeat_all`）：
+/// typed 侧读公开的 [Phase0aEncounterFlow.objectiveProgress]；legacy 侧没有目标层，
+/// 用「WaveCleared 数是否追平 WaveStarted 数」代表同一件事（全波清空 = 全灭目标
+/// 达成）。终局片段两侧必须都算达成，未终局片段两侧必须都算未达成。
+///
+/// 这里不比对逐 clause 的 [EncounterObjectiveProgress] 内部字段：legacy 侧没有
+/// 可对应的结构，硬比会变成拿 typed 自己跟自己比。clause id 与条数仍然钉住，
+/// 防止目标定义被悄悄换掉。
 void _expectObjectiveWaveSplit({
+  required Phase0aBattleFlow typedFlow,
   required List<Phase0aEvent> typedEvents,
   required List<Phase0aEvent> legacyEvents,
   required bool terminal,
@@ -937,13 +942,41 @@ void _expectObjectiveWaveSplit({
     isEmpty,
     reason: 'typed 不应发波次事件；一旦开始发会被 _combatEvents 静默丢掉',
   );
+  final legacyStarts = legacyEvents.whereType<Phase0aWaveStarted>().toList();
+  final legacyClears = legacyEvents.whereType<Phase0aWaveCleared>().toList();
+  expect(legacyStarts, isNotEmpty, reason: 'legacy 侧被丢弃的波次事件必须确实存在，否则这层丢弃是空操作');
+
+  // —— typed 目标进度：公开 getter，非 null 才谈得上比对 ——
+  expect(typedFlow, isA<Phase0aEncounterFlow>());
+  final progress = (typedFlow as Phase0aEncounterFlow).objectiveProgress;
   expect(
-    legacyEvents.where(
-      (e) => e is Phase0aWaveStarted || e is Phase0aWaveCleared,
-    ),
-    isNotEmpty,
-    reason: 'legacy 侧被丢弃的波次事件必须确实存在，否则这层丢弃是空操作',
+    progress,
+    isNotNull,
+    reason: 'typed 的 objectiveProgress 为 null 说明目标层没接上，映射比对无意义',
   );
+  expect(progress!.clauses, isNotEmpty);
+  expect(
+    progress.clauses.map((c) => c.id),
+    everyElement(isNotEmpty),
+    reason: 'clause id 为空说明目标定义退化，后续迁层无法定位',
+  );
+
+  // —— 映射比对：typed 目标达成 ⇔ legacy 全波清空 ——
+  final legacyAllWavesCleared = legacyClears.length == legacyStarts.length;
+  expect(
+    progress.completed,
+    legacyAllWavesCleared,
+    reason:
+        'typed 目标达成=${progress.completed} 与 legacy 全波清空'
+        '=$legacyAllWavesCleared 不一致（started=${legacyStarts.length} '
+        'cleared=${legacyClears.length}）',
+  );
+  expect(
+    progress.completed,
+    terminal,
+    reason: '终局片段=$terminal，typed 目标达成必须与之一致',
+  );
+
   if (!terminal) return;
   final typedVictories = typedEvents.whereType<Phase0aBattleVictory>().toList();
   final legacyVictories = legacyEvents
@@ -957,7 +990,6 @@ void _expectObjectiveWaveSplit({
   expect(legacyVictories, hasLength(1));
   expect(typedVictories.single.tick, legacyVictories.single.tick);
   // legacy 的波次在 victory 当拍或更早清完；晚于 victory 说明两侧终局语义错位。
-  final legacyClears = legacyEvents.whereType<Phase0aWaveCleared>().toList();
   expect(legacyClears, isNotEmpty, reason: 'legacy 终局片段必须清过波次');
   expect(
     legacyClears.last.tick,
