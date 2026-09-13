@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -123,6 +124,7 @@ void main() {
     required MainlineProgress progress,
     required List<Character> activeCharacters,
     required bool autoPlayDefault,
+    Future<GameplaySettings> Function()? settingsLoader,
   }) async {
     await tester.binding.setSurfaceSize(const Size(1024, 1400));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -144,7 +146,9 @@ void main() {
               character.id,
             ).overrideWith((ref) async => character),
           gameplaySettingsProvider.overrideWith(
-            (ref) async => GameplaySettings(autoPlayDefault: autoPlayDefault),
+            (ref) async => settingsLoader == null
+                ? GameplaySettings(autoPlayDefault: autoPlayDefault)
+                : await settingsLoader(),
           ),
         ],
         child: Consumer(
@@ -164,15 +168,23 @@ void main() {
   Future<void> pumpUntilFound(
     WidgetTester tester,
     Finder finder, {
-    int maxPumps = 120,
+    Duration timeout = const Duration(seconds: 5),
   }) async {
-    for (var i = 0; i < maxPumps && finder.evaluate().isEmpty; i++) {
+    // Widget pumps advance fake time, whereas Isar and settings loading need
+    // the real event loop. Bound that elapsed time, not a fast pump count.
+    final elapsed = Stopwatch()..start();
+    while (finder.evaluate().isEmpty && elapsed.elapsed < timeout) {
       await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 1)),
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
       );
       await tester.pump(const Duration(milliseconds: 10));
     }
-    expect(finder, findsOneWidget);
+    expect(
+      finder,
+      findsOneWidget,
+      reason:
+          'Widget not found within ${timeout.inMilliseconds}ms of real time',
+    );
   }
 
   ActivityParticipationRequest request({
@@ -220,8 +232,18 @@ void main() {
     expect(selected, MainlineReplayMode.headless);
   });
 
-  testWidgets('StageListScreen 可见重打消费 bot/realtime 与同一门人快照', (tester) async {
+  Future<void> verifyVisibleReplay(
+    WidgetTester tester, {
+    Duration settingsDelay = Duration.zero,
+    Duration entryTimeout = const Duration(seconds: 5),
+    bool holdSettingsUntilDisposed = false,
+  }) async {
+    late Zone realIoZone;
+    Future<void>? settingsReady;
+    Completer<void>? heldSettings;
     final seeded = await tester.runAsync(() async {
+      realIoZone = Zone.current;
+      if (holdSettingsUntilDisposed) heldSettings = Completer<void>();
       final (leader, disciple) = await seedRoster();
       final progress = await seedClearedProgress('stage_01_01');
       return (leader: leader, disciple: disciple, progress: progress);
@@ -234,19 +256,31 @@ void main() {
       progress: progress,
       activeCharacters: [leader, disciple],
       autoPlayDefault: true,
+      settingsLoader: settingsDelay == Duration.zero && heldSettings == null
+          ? null
+          : () async {
+              settingsReady =
+                  heldSettings?.future ??
+                  realIoZone.run(() => Future<void>.delayed(settingsDelay));
+              await settingsReady;
+              return const GameplaySettings(autoPlayDefault: true);
+            },
     );
-
-    await tester.tap(find.text('山门之外'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('mainline_visible_replay_mode')));
-    final participantFinder = find.byKey(
-      Key('mainline_replay_participant_${disciple.id}'),
-    );
-    await pumpUntilFound(tester, participantFinder);
-    await tester.tap(participantFinder);
-    await pumpUntilFound(tester, find.byType(Phase0aMainlineBattleHost));
 
     try {
+      await tester.tap(find.text('山门之外'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('mainline_visible_replay_mode')));
+      final participantFinder = find.byKey(
+        Key('mainline_replay_participant_${disciple.id}'),
+      );
+      await pumpUntilFound(tester, participantFinder);
+      await tester.tap(participantFinder);
+      await pumpUntilFound(
+        tester,
+        find.byType(Phase0aMainlineBattleHost),
+        timeout: entryTimeout,
+      );
       final host = tester.widget<Phase0aMainlineBattleHost>(
         find.byType(Phase0aMainlineBattleHost),
       );
@@ -262,16 +296,62 @@ void main() {
       );
       expect(screen.botCommandBuilder, isNotNull);
     } finally {
-      if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
-        Navigator.of(
-          tester.element(find.byType(Phase0aMainlineBattleHost)),
-        ).pop();
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 1)),
-        );
-        await tester.pumpAndSettle();
+      try {
+        if (find.byType(Phase0aMainlineBattleHost).evaluate().isNotEmpty) {
+          Navigator.of(
+            tester.element(find.byType(Phase0aMainlineBattleHost)),
+          ).pop();
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
+          await tester.pumpAndSettle(
+            const Duration(milliseconds: 100),
+            EnginePhase.sendSemanticsUpdate,
+            const Duration(seconds: 5),
+          );
+        }
+      } finally {
+        // Even a missing-host assertion must dispose the provider tree before
+        // tearDown closes Isar. Delayed work then sees an unmounted context.
+        await tester.pumpWidget(const SizedBox.shrink());
+        heldSettings?.complete();
+        await tester.runAsync(() async {
+          await settingsReady;
+        });
+        await tester.pump();
       }
     }
+  }
+
+  testWidgets('StageListScreen 可见重打消费 bot/realtime 与同一门人快照', (tester) async {
+    await verifyVisibleReplay(tester);
+  });
+
+  testWidgets('可见重打等待真实设置加载后仍进入同一门人战斗', (tester) async {
+    await verifyVisibleReplay(
+      tester,
+      settingsDelay: const Duration(seconds: 1),
+    );
+  }, timeout: const Timeout(Duration(seconds: 30)));
+
+  testWidgets('可见重打入场超时也卸载页面，存档仍可读并正常关闭', (tester) async {
+    await expectLater(
+      verifyVisibleReplay(
+        tester,
+        holdSettingsUntilDisposed: true,
+        entryTimeout: const Duration(milliseconds: 30),
+      ),
+      throwsA(isA<TestFailure>()),
+    );
+    expect(find.byType(ProviderScope), findsNothing);
+    expect(find.byType(Phase0aMainlineBattleHost), findsNothing);
+    final persisted = await tester.runAsync(() async {
+      final save = await IsarSetup.instance.saveDatas.get(0);
+      await IsarSetup.close();
+      return save;
+    });
+    expect(persisted?.activeCharacterIds, hasLength(2));
+    expect(Isar.getInstance('wuxia_save_slot1'), isNull);
   });
 
   testWidgets('StageListScreen 快速重演消费 headless 当前掌门快照', (tester) async {

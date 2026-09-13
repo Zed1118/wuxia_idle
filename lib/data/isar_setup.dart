@@ -1036,11 +1036,13 @@ class IsarSetup {
       await File(
         '${directory.path}/$name.isar',
       ).copy('${probeDir.path}/$probeName.isar');
-      probe = await Isar.open(
-        _allSchemas,
-        directory: probeDir.path,
-        name: probeName,
-        inspector: false,
+      probe = await openSlotReadProbe<Isar>(
+        () => Isar.open(
+          _allSchemas,
+          directory: probeDir.path,
+          name: probeName,
+          inspector: false,
+        ),
       );
       return await read(probe);
     } finally {
@@ -1049,6 +1051,30 @@ class IsarSetup {
       } finally {
         await probeDir.delete(recursive: true);
       }
+    }
+  }
+
+  /// Keeps native probe-open failures separate from application read failures.
+  @visibleForTesting
+  static Future<T> openSlotReadProbe<T>(Future<T> Function() open) async {
+    try {
+      return await open();
+    } on IsarError catch (error, stackTrace) {
+      // Isar exposes native errors only as text. Match the actual MDBX invalid
+      // file signature; schema, library, permission and resource errors retain
+      // their original type instead of being misreported as damaged saves.
+      if (!error.message.startsWith(
+        'Cannot open Environment: MdbxError (-30793): MDBX_INVALID:',
+      )) {
+        rethrow;
+      }
+      Error.throwWithStackTrace(
+        UnreadableSaveException(
+          'Existing slot is not a valid database',
+          cause: error,
+        ),
+        stackTrace,
+      );
     }
   }
 

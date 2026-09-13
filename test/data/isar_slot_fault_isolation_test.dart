@@ -107,6 +107,9 @@ void main() {
         expect(slots, hasLength(3));
         expect(slots[0].isEmpty, isFalse);
         expect(slots[1].isEmpty, isFalse);
+        expect(slots[0].readError, isA<UnsupportedSaveVersionException>());
+        expect(slots[1].readError, isA<UnreadableSaveException>());
+        expect(slots[2].isAvailable, isTrue);
         expect(slots[2].slotName, 'preserved-3');
         expect(await slotFile(1).readAsBytes(), futureBefore);
         expectReleased();

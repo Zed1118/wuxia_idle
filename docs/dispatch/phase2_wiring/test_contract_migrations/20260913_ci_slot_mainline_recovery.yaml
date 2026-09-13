@@ -1,0 +1,12 @@
+schema_version: 1
+ticket: phase2-ci-slot-mainline-recovery-20260913
+base_sha: 198ec8641a81ce45110fcc997ba000b54fcd7688
+summary: 保留可见重打的真实入口与参与者契约，改为真实时间等待并验证失败清理。
+
+migrations:
+  - deleted: expect(finder, findsOneWidget);
+    replacement: Widget not found within ${timeout.inMilliseconds}ms of real time
+    reason: 单行断言展开为仍要求 findsOneWidget 的同一断言并增加真实时间超时原因，未降低匹配数量或删去页面存在性要求。
+  - deleted: testWidgets('StageListScreen 可见重打消费 bot/realtime 与同一门人快照', (tester) async {
+    replacement: testWidgets('StageListScreen 可见重打消费 bot/realtime 与同一门人快照', (tester) async {
+    reason: 原用例保留原名并调用同一真实生产流程helper，全部原参与者与bot断言保留；另增真实延迟及确定性阻塞后的页面卸载、存档读取关闭守卫。

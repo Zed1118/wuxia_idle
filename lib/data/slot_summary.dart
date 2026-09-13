@@ -1,11 +1,14 @@
 /// Existing slot cannot be read safely. The original file is retained.
 class UnreadableSaveException implements Exception {
-  const UnreadableSaveException(this.reason);
+  const UnreadableSaveException(this.reason, {this.cause});
 
   final String reason;
+  final Object? cause;
 
   @override
-  String toString() => 'UnreadableSaveException($reason)';
+  String toString() => cause == null
+      ? 'UnreadableSaveException($reason)'
+      : 'UnreadableSaveException($reason, cause: $cause)';
 }
 
 /// 存档槽只读摘要快照(给存档选择屏用)。

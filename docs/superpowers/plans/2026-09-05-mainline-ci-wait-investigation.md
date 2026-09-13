@@ -1,5 +1,19 @@
 # Mainline CI wait investigation
 
+## Current continuation — 2026-09-13
+
+- User goal: proceed in the reported order through CI recovery, native old-save verification, controlled integration, performance and the remaining Phase 2 gates. This first delivery unit fixes both concrete failures from CI `34732200859` at `198ec8641a81ce45110fcc997ba000b54fcd7688`; the older scope/budget statements below describe the September 5 run only.
+- Current branch: `codex/p2-player-flow-20260910`. `main` and `origin/main` remain `342d1927529b8306582431be597ef1975bd69deb`. Preserve the four existing user files from the external `baseline.json`; candidate validation does not authorize discarding them or substituting for formal clean/human/Windows acceptance.
+- Native failure: Linux rejects the disposable bad-file probe with `MdbxError (-30793): MDBX_INVALID` before the existing missing-SaveData classification. The precise native-open signature now becomes `UnreadableSaveException`, retaining its cause and stack. Other Isar/setup/read/version errors retain their original type. No migration, schema, value or original-save write changes.
+- Mainline failure: CI reported a missing `Phase0aMainlineBattleHost` at the pre-`try` lookup, followed by a ten-minute timeout. A one-second settings-load delay in the real event loop reproduced that missing-host assertion on the unchanged 120-pump wait. A five-second wall-clock wait and unconditional tree disposal now preserve the real StageListScreen/participant/Isar/host path and original bot/identity assertions.
+- Cleanup counterexample: removing tree disposal made the new timeout-cleanup test fail on the remaining ProviderScope, then remain running for over 60 seconds. Only that controlled runner was terminated at 71 seconds and the exact original bytes restored. Its signal exit code was zero despite failed assertions and shutdown errors; it is a stopped RED experiment, never a passing test. This supports the failure mechanism, but does not prove which I/O operation was slow in the remote run.
+- Independent review caught a scheduling race in the initial 300ms-delay/30ms-timeout cleanup fixture. The final fixture uses a Completer that remains blocked until tree disposal, so CPU load cannot accidentally satisfy the expected timeout. The separate one-second delayed successful-entry test remains intact.
+- Focused verification: 9/9 files, 57 PASS, zero failure/skip/missing files, unchanged source hashes; full-project `flutter analyze --no-pub lib test tool` reports zero issues. Original fast entry, delayed entry, bounded missing-host cleanup, actual slot bytes/isolation and future-version rejection are covered. Full coverage regression and exact-SHA Linux CI remain pending at this checkpoint.
+- Next: freeze this repair candidate, validate the test-contract migration and full coverage suite under the shared lock, then push only the candidate and inspect its exact-SHA CI. Start native old-save checks only after CI succeeds. Main merge and release remain separate operations; formal M0–M9 remains 1/10.
+- Evidence: `/Users/a10506/Documents/Codex/2026-09-13/p2-ci-recovery/` (`baseline.json`, `slot-error-repair.json`, controlled RED/mutation logs, `targeted-summary.json`, `analyze.log`, forthcoming full/CI results).
+
+## Historical September 5 run
+
 - Authorization: initial local investigation was followed by explicit user approval to review, commit and integrate this patch, then execute frozen-version Black Wind Ridge desktop acceptance (2026-09-05 voice session).
 - Branch: `codex/mainline-ci-wait-investigation-20260905`, baseline `58ae40bb`.
 - Scope: test-wait hardening review and main integration, followed by M2 three-row desktop evidence on one unchanged production package. One integration full suite and push-triggered CI are authorized as necessary integration verification; no CI rerun/cancellation, production rule changes, or original-save writes.
