@@ -11,16 +11,16 @@ class SweepReadinessService {
 
   Future<SweepReadinessState> getStatus({DateTime? now}) async {
     final at = now ?? DateTime.now();
-    final save = await _requireSaveData();
-    final state = _normalize(save, at);
-    if (_needsPersist(save, state)) {
-      await isar.writeTxn(() async {
+    return isar.writeTxn(() async {
+      final save = await _requireSaveData();
+      final state = _normalize(save, at);
+      if (_needsPersist(save, state)) {
         save.sweepReadinessPoints = state.points;
         save.sweepReadinessLastRecoveredAt = state.lastRecoveredAt;
         await isar.saveDatas.put(save);
-      });
-    }
-    return state;
+      }
+      return state;
+    });
   }
 
   Future<bool> trySpendMainlineStages(int stageCount, {DateTime? now}) async {

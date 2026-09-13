@@ -584,9 +584,8 @@ void main() {
       container.invalidate(isarProvider);
       // 持订阅保活 + 触发 lazy-init 建档(createdAt 由 systemClock 给真 now,
       // 与注入 tick 时间无关,断言只核 lastTickAt 非空且回读一致)。
-      // activeSectEventsProvider 同样须保活:tick callback 内
-      // `ref.read(activeSectEventsProvider.future)` 无监听会被 dispose 在
-      // Isar watch 首发前(对齐生产「sect screen 开着」有监听态,见计划文件发现项)。
+      // 此例保留「sect screen 开着」的有监听状态；没有 UI 监听的主页启动
+      // 另由 sect_monthly_startup_liveness_test 覆盖，不预热数据流。
       final sub = container.listen(currentSectProvider, (_, _) {});
       final subA = container.listen(activeSectEventsProvider, (_, _) {});
       addTearDown(sub.close);
@@ -606,15 +605,7 @@ void main() {
   });
 }
 
-// 覆盖缺口说明(2026-07-19 夜批):
-// `debugSpawnSectEvent(WidgetRef)` / `maybeRunSectMonthlyTick(WidgetRef)` 两个
-// widget 入口(~15 行)未覆盖。尝试 widget 测试驱动时,函数体内
-// `ref.read(currentSectProvider.future)`(StreamProvider + Isar watch)在
-// widget test fake-async 环境下恒挂起——四种体例(交替 pump / 预建档 /
-// host watch 保活 / pumpWidget 进 runAsync)均不治,根因即项目 memory
-// `feedback_isar_widget_test_deadlock`(Isar + widget test 不用)。
-// 两函数的可测内核已由本文件 G 组覆盖:_runSectMonthlyTick 全链路
-// (maybeRun 本体 = clock 读 + coordinator.tick 一行转发);debugSpawn 的
-// pool 判空/事件构造/put 为纯转发,生产由 kDebugMode 门控 dev 入口调用。
-// 复测方向:若后续要给 StreamProvider.future 读加统一保活封装或改
-// maybeRun/debugSpawn 收 Ref,可在那时补测。
+// 2026-09-13：无 UI 监听的 StreamProvider.future 等待是实际启动挂起，
+// 并非仅 widget fake-async 限制。月度命令现直接查询 Isar；
+// main_menu_native_startup_test 通过 runAsync 覆盖真实主页调用、解锁及重开。
+// debugSpawnSectEvent 的独立 widget 入口仍未在本次补测。

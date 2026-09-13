@@ -77,9 +77,23 @@ final monthlyTickCoordinatorProvider = Provider<MonthlyTickCoordinator>((ref) {
 Future<void> _runSectMonthlyTick(Ref ref, DateTime now) async {
   final isar = ref.read(isarProvider);
   if (isar == null) return;
-  final sect = await ref.read(currentSectProvider.future);
-  if (sect == null) return;
-  final active = await ref.read(activeSectEventsProvider.future);
+  // Startup has no UI subscription to keep the sect streams running. Read a
+  // fresh snapshot directly; read(stream.future) can pause before its first row.
+  final existing = await isar.sects.get(1);
+  final sect =
+      existing ??
+      await isar.writeTxn<Sect>(() async {
+        final current = await isar.sects.get(1);
+        if (current != null) return current;
+        final fresh = _defaultSect(ref.read(systemClockProvider).now());
+        await isar.sects.put(fresh);
+        return fresh;
+      });
+  final active = await isar.sectEvents
+      .filter()
+      .statusEqualTo(SectEventStatus.pending)
+      .sortByTriggeredAtDesc()
+      .findAll();
   final svc = ref.read(sectMonthlyTickServiceProvider);
 
   final ids = await ref.read(activeCharacterIdsProvider.future);
