@@ -144,3 +144,6 @@ jobs:
 
       - name: Build macOS debug app
         run: flutter build macos --debug --no-pub
+
+      - name: Test macOS short-sound pool
+        run: bash test/native/run_macos_sfx_pool_tests.sh "${RUNNER_TEMP}/macos-sfx-tests"

@@ -4,14 +4,22 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 
 import 'audio_backend.dart';
+import 'macos_sfx_pool.dart';
 
 /// BGM uses one serialized player; SFX use a fixed, overlapping voice pool.
 class AudioPlayersBackend implements AudioBackend {
   AudioPlayersBackend({int sfxPoolSize = 5})
     : assert(sfxPoolSize > 0),
-      _sfxPool = List.generate(sfxPoolSize, (_) => _SfxVoice());
+      _nativeSfx = _usesMacosSfx ? MacosSfxPool(maxVoices: sfxPoolSize) : null,
+      _sfxPool = _usesMacosSfx
+          ? []
+          : List.generate(sfxPoolSize, (_) => _SfxVoice());
+
+  static bool get _usesMacosSfx =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.macOS;
 
   final AudioPlayer _bgm = _createPlayer();
+  final MacosSfxPool? _nativeSfx;
   final List<_SfxVoice> _sfxPool;
   int _sfxCursor = 0;
   bool _disposed = false;
@@ -100,6 +108,7 @@ class AudioPlayersBackend implements AudioBackend {
   @override
   Future<void> playSfx(String assetPath, double volume) {
     if (_disposed) return Future.value();
+    if (_nativeSfx case final native?) return native.play(assetPath, volume);
     int? availableIndex;
     int? idleIndex;
     int? matchingIdleIndex;
@@ -135,6 +144,13 @@ class AudioPlayersBackend implements AudioBackend {
   }
 
   Future<void> _disposePlayers() async {
+    await Future.wait([
+      if (_nativeSfx case final native?) native.dispose(),
+      _disposeAudioPlayers(),
+    ]);
+  }
+
+  Future<void> _disposeAudioPlayers() async {
     await Future.wait([
       _settled(_bgmWork),
       for (final voice in _sfxPool) _settled(voice.work),

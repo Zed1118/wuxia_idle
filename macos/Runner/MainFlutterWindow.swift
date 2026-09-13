@@ -2,6 +2,9 @@ import Cocoa
 import FlutterMacOS
 
 class MainFlutterWindow: NSWindow {
+  private let sfxPool = MacosSfxPool()
+  private var sfxChannel: FlutterMethodChannel?
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     var windowFrame = self.frame
@@ -39,6 +42,7 @@ class MainFlutterWindow: NSWindow {
     self.setFrame(windowFrame, display: true)
 
     RegisterGeneratedPlugins(registry: flutterViewController)
+    registerSfxChannel(flutterViewController)
 
     // 锁死窗口尺寸:防 Flutter 引擎首帧后异步 resize 盖过(min==max 钳死)。
     if let f = forced {
@@ -61,5 +65,48 @@ class MainFlutterWindow: NSWindow {
         self?.setFrame(f, display: true)
       }
     }
+  }
+
+  private func registerSfxChannel(_ controller: FlutterViewController) {
+    let channel = FlutterMethodChannel(
+      name: "com.pen.wuxia/macos_sfx", binaryMessenger: controller.engine.binaryMessenger
+    )
+    let pool = sfxPool
+    channel.setMethodCallHandler { call, result in
+      guard let args = call.arguments as? [String: Any],
+            let poolId = args["poolId"] as? String, !poolId.isEmpty else {
+        result(FlutterError(code: "macos_sfx_arguments", message: "Missing poolId.", details: nil))
+        return
+      }
+      switch call.method {
+      case "play":
+        guard let maxVoices = args["maxVoices"] as? Int,
+              let assetPath = args["assetPath"] as? String,
+              let volume = args["volume"] as? Double else {
+          result(FlutterError(code: "macos_sfx_arguments", message: "Invalid play arguments.", details: nil))
+          return
+        }
+        pool.play(poolId: poolId, maxVoices: maxVoices, assetPath: assetPath, volume: volume) { outcome in
+          switch outcome {
+          case .success(let value):
+            result([
+              "started": value.started,
+              "voiceCount": value.voiceCount,
+              "activeVoices": value.activeVoices,
+            ])
+          case .failure(let error):
+            result(FlutterError(
+              code: "macos_sfx_play_failed", message: error.localizedDescription,
+              details: String(reflecting: error)
+            ))
+          }
+        }
+      case "dispose":
+        pool.dispose(poolId: poolId) { result(nil) }
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    sfxChannel = channel
   }
 }

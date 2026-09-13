@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/audio/audio_players_backend.dart';
@@ -192,6 +193,36 @@ void main() {
     AudioCache.instance = previousCache;
     native.uninstall();
   });
+
+  test(
+    'macOS routes short sounds to its pool while BGM keeps its player',
+    () async {
+      const sfxChannel = MethodChannel('com.pen.wuxia/macos_sfx');
+      final sfxCalls = <MethodCall>[];
+      native.messenger.setMockMethodCallHandler(sfxChannel, (call) async {
+        sfxCalls.add(call);
+        return call.method == 'play' ? {'started': true} : null;
+      });
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      final macBackend = AudioPlayersBackend(sfxPoolSize: 2);
+      try {
+        native.holdPreparations = false;
+        await macBackend.playSfx('hit.mp3', 0.8);
+        expect(sfxCalls.map((call) => call.method), ['play']);
+        expect((sfxCalls.single.arguments as Map)['maxVoices'], 2);
+        expect(native.count('setSourceUrl'), 0);
+        await macBackend.playBgm('music.mp3', 0.4);
+        expect(native.count('setSourceUrl'), 1);
+        expect(native.count('resume'), 1);
+        await macBackend.dispose();
+        expect(sfxCalls.map((call) => call.method), ['play', 'dispose']);
+      } finally {
+        await macBackend.dispose();
+        debugDefaultTargetPlatformOverride = null;
+        native.messenger.setMockMethodCallHandler(sfxChannel, null);
+      }
+    },
+  );
 
   test(
     'bursts keep preparation bounded while allowing independent voices',
