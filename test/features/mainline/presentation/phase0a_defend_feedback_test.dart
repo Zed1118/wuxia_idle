@@ -290,6 +290,13 @@ void main() {
           controller.roster.nameOf(controller.state.player.id),
           participant.name,
         );
+        final battleRoute = ModalRoute.of(
+          tester.element(find.byType(Phase0aMainlineBattleHost)),
+        )!;
+        // A fast local load can lose before the route fully enters. Exercise
+        // the complete reverse transition, as a normally played battle does.
+        await tester.pump(battleRoute.transitionDuration);
+        expect(battleRoute.animation!.status, AnimationStatus.completed);
         while (controller.outcome == Phase0aBattleOutcome.ongoing &&
             controller.state.tick < 601) {
           controller.step();
@@ -297,9 +304,19 @@ void main() {
         expect(controller.state.defendedEntity!.currentDurability, 0);
         expect(controller.state.player.isAlive, isTrue);
         await _pumpUntil(tester, find.byType(StageRetryDialogBody));
-        await tester.pump(const Duration(milliseconds: 400));
+        await _pumpWhile(
+          tester,
+          () => find
+              .byType(Phase0aBattleScreen, skipOffstage: false)
+              .evaluate()
+              .isNotEmpty,
+        );
         expect(find.text('镖货已被毁，未能守住。'), findsOneWidget);
         expect(find.byType(Phase0aBattleScreen), findsNothing);
+        expect(
+          find.byType(Phase0aMainlineBattleHost, skipOffstage: false),
+          findsNothing,
+        );
         expect(finished, isFalse);
         previousController = controller;
         await tester.tap(
@@ -311,8 +328,13 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 400));
       }
-      await tester.pumpAndSettle();
+      await _pumpWhile(tester, () => !finished);
       expect(finished, isTrue);
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 5),
+      );
       expect(find.byType(StageRetryDialogBody), findsNothing);
       expect(find.byType(Phase0aMainlineBattleHost), findsNothing);
       await tester.runAsync(() async {
@@ -347,15 +369,18 @@ void main() {
   });
 }
 
-Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+Future<void> _pumpWhile(WidgetTester tester, bool Function() waiting) async {
   final elapsed = Stopwatch()..start();
-  while (finder.evaluate().isEmpty &&
-      elapsed.elapsed < const Duration(seconds: 5)) {
+  while (waiting() && elapsed.elapsed < const Duration(seconds: 5)) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 10)),
     );
     await tester.pump(const Duration(milliseconds: 10));
   }
+}
+
+Future<void> _pumpUntil(WidgetTester tester, Finder finder) async {
+  await _pumpWhile(tester, () => finder.evaluate().isEmpty);
   expect(
     finder,
     findsOneWidget,
