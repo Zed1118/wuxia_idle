@@ -20,6 +20,51 @@ import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../domain/expedition_node.dart';
 import 'expedition_combat.dart';
 
+/// Full combat evidence before the expedition's existing timeout-as-defeat
+/// policy. A timed-out simulation must not count as a completed battle in a
+/// benchmark merely because [nodeOutcome] tells the service to stop the run.
+final class Phase0aExpeditionCombatResult {
+  const Phase0aExpeditionCombatResult._({
+    required this.mapping,
+    required this.headless,
+    required this.nodeOutcome,
+  });
+
+  factory Phase0aExpeditionCombatResult.fromHeadless({
+    required Phase0aStageMapping mapping,
+    required Phase0aHeadlessResult headless,
+  }) {
+    final memberId = mapping.combatants
+        .singleWhere((entry) => entry.actorId == mapping.initialState.player.id)
+        .snapshot
+        .characterId;
+    final terminal = headless.finalState.player;
+    final settlementOutcome = headless.timedOut
+        ? Phase0aBattleOutcome.defeat
+        : headless.outcome;
+    return Phase0aExpeditionCombatResult._(
+      mapping: mapping,
+      headless: headless,
+      nodeOutcome: Phase0aExpeditionCombatRunner.outcomeFromTerminal(
+        memberId: memberId,
+        outcome: headless.outcome,
+        hp: terminal.currentHealth,
+        qi: terminal.qiCurrent,
+        combatSettlement: Phase0aSettlementAdapter.fromMapping(
+          mapping: mapping,
+          outcome: settlementOutcome,
+          finalState: headless.finalState,
+          events: headless.events,
+        ),
+      ),
+    );
+  }
+
+  final Phase0aStageMapping mapping;
+  final Phase0aHeadlessResult headless;
+  final ExpeditionNodeOutcome nodeOutcome;
+}
+
 /// 远征的单角色 Phase 0A combat adapter；离线事务与奖励仍由 ExpeditionService 所有。
 final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
   Phase0aExpeditionCombatRunner(
@@ -37,15 +82,14 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
   final int? _expectedCharacterId;
   final List<int> _expectedEquipmentIds;
   final List<int> _expectedTechniqueIds;
-  List<CombatantSnapshot>? _baseTeam;
 
   static const int _uiYieldEveryTicks = 32;
 
   Future<List<CombatantSnapshot>> _base(List<int> ids) async {
     await _revalidateExpectedMember(ids);
-    return _baseTeam ??= await PlayerCombatantSnapshotAssembler(
-      isar: _isar,
-    ).loadExactRoster(ids);
+    // The preceding node can commit skill usage and cultivation growth. Read
+    // the current reserved participant so batching and reopening use one input.
+    return PlayerCombatantSnapshotAssembler(isar: _isar).loadExactRoster(ids);
   }
 
   Future<void> _revalidateExpectedMember(List<int> ids) async {
@@ -123,6 +167,20 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
     required Map<int, ExpeditionMemberVital> memberStates,
     required int nodeSeed,
     required int cycleIndex,
+  }) async => (await fightDetailed(
+    node: node,
+    memberStates: memberStates,
+    nodeSeed: nodeSeed,
+    cycleIndex: cycleIndex,
+  )).nodeOutcome;
+
+  /// Same production preparation and simulation as [fight], retaining original
+  /// ticks, events, ordered event records and the unadapted terminal outcome.
+  Future<Phase0aExpeditionCombatResult> fightDetailed({
+    required ExpeditionNode node,
+    required Map<int, ExpeditionMemberVital> memberStates,
+    required int nodeSeed,
+    required int cycleIndex,
   }) async {
     if (memberStates.length != 1) {
       throw StateError('Phase0a expedition requires one alive member');
@@ -164,21 +222,9 @@ final class Phase0aExpeditionCombatRunner implements ExpeditionCombat {
       maxTicks: GameRepository.instance.numbers.phase0aArena.maxSimulationTicks,
       yieldEveryTicks: _uiYieldEveryTicks,
     );
-    final terminal = result.finalState.player;
-    final settlementOutcome = result.outcome == Phase0aBattleOutcome.ongoing
-        ? Phase0aBattleOutcome.defeat
-        : result.outcome;
-    return outcomeFromTerminal(
-      memberId: member.key,
-      outcome: result.outcome,
-      hp: terminal.currentHealth,
-      qi: terminal.qiCurrent,
-      combatSettlement: Phase0aSettlementAdapter.fromMapping(
-        mapping: mapping,
-        outcome: settlementOutcome,
-        finalState: result.finalState,
-        events: result.events,
-      ),
+    return Phase0aExpeditionCombatResult.fromHeadless(
+      mapping: mapping,
+      headless: result,
     );
   }
 

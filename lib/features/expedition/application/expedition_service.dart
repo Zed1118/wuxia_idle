@@ -850,6 +850,12 @@ class ExpeditionService {
         ),
       );
       node = index;
+      // Commit real combat growth with this node's vitals/rewards before the
+      // next fight loads its snapshot. Otherwise a long offline batch uses
+      // stale proficiency while reopening between nodes uses the updated one.
+      // Non-combat nodes can still share a batch; all cursor/rollback guards
+      // remain in the existing transaction below.
+      if (combatSettlements.isNotEmpty) break;
     }
 
     final settledCount = node - startNode;
