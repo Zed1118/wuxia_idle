@@ -254,6 +254,61 @@ void main() {
         renderProofs.add((phase: phase, size: size, painter: painter!));
       }
 
+      final stateBeforeSetting = controller.state;
+      final eventsBeforeSetting = controller.events.toList();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Phase0aBattleScreen(
+            controller: controller,
+            autoStep: false,
+            reduceEffects: true,
+            numericSkillBindings: mapping.playerAdapter.numericSkillBindings,
+          ),
+        ),
+      );
+      final reducedProofs =
+          <({String phase, Size size, CustomPainter painter})>[];
+      for (final proof in renderProofs) {
+        final prefix = 'phase0a_skill_${proof.phase}_${school.name}_paint_';
+        final finder = find.byWidgetPredicate(
+          (widget) =>
+              widget is CustomPaint &&
+              widget.key is ValueKey &&
+              (widget.key! as ValueKey).value.toString().startsWith(prefix),
+        );
+        expect(finder, findsOneWidget);
+        final painter = tester.widget<CustomPaint>(finder).painter!;
+        final normalCanvas = TestRecordingCanvas();
+        final reducedCanvas = TestRecordingCanvas();
+        proof.painter.paint(normalCanvas, proof.size);
+        painter.paint(reducedCanvas, proof.size);
+        int draws(TestRecordingCanvas canvas) => canvas.invocations
+            .where(
+              (i) =>
+                  i.invocation.memberName.toString().startsWith('Symbol("draw'),
+            )
+            .length;
+        expect(
+          draws(reducedCanvas),
+          lessThan(draws(normalCanvas)),
+          reason: '$school ${proof.phase} must actually reduce draw calls',
+        );
+        expect(draws(reducedCanvas), greaterThan(0));
+        expect(painter.shouldRepaint(proof.painter), isTrue);
+        reducedProofs.add((
+          phase: '${proof.phase}-reduced',
+          size: proof.size,
+          painter: painter,
+        ));
+        debugPrint(
+          'reduced-effects-skill-proof ${school.name}/${proof.phase} '
+          '${draws(normalCanvas)} -> ${draws(reducedCanvas)}',
+        );
+      }
+      expect(controller.state, same(stateBeforeSetting));
+      expect(controller.events, eventsBeforeSetting);
+      renderProofs.addAll(reducedProofs);
+
       // 先取齐两个真实节点再做异步图片编码；编码期间战斗 ticker 可继续
       // 走时，但不应让第二段证据因自然过期而从 widget tree 消失。
       for (final proof in renderProofs) {

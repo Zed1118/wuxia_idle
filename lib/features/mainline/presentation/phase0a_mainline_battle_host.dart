@@ -336,6 +336,9 @@ class _Phase0aMainlineBattleHostState
     final waveEnemyCounts = _mapping?.waves
         .map((wave) => wave.enemies.length)
         .toList(growable: false);
+    final settings = ref.watch(gameplaySettingsProvider).value;
+    final reduceEffects = settings?.reduceEffects ?? false;
+    final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(
       mode: widget.stage.stageType.name,
       contentId: widget.stage.id,
@@ -343,6 +346,8 @@ class _Phase0aMainlineBattleHostState
       controller: controller,
       flow: encounterHost?.flow,
       configuration: {
+        'reduce_effects': reduceEffects,
+        'reduce_flashing': reduceFlashing,
         'active_limit':
             encounterHost?.mapping?.director.config.activeLimit ??
             waveEnemyCounts?.fold<int>(
@@ -355,9 +360,8 @@ class _Phase0aMainlineBattleHostState
         'wave_enemy_counts': waveEnemyCounts,
       },
       child: Phase0aBattleScreen(
-        reduceFlashing:
-            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-            true,
+        reduceFlashing: reduceFlashing,
+        reduceEffects: reduceEffects,
         controller: controller,
         numericSkillBindings: playerAdapter.numericSkillBindings,
         basicAttackRange: playerAdapter.attackRange,

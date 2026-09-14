@@ -8,6 +8,40 @@ import 'package:window_manager/window_manager.dart';
 
 import 'battle_frame_profile.dart';
 
+// Capture JSON metadata by value. Sorting map keys permits equivalent rebuilds,
+// while recursively copying lists/maps prevents later caller mutation from
+// rewriting the identity of frames that have already been collected.
+Object? _freezeProfileJson(Object? value) {
+  if (value is Map<String, Object?>) {
+    final keys = value.keys.toList()..sort();
+    return Map<String, Object?>.unmodifiable({
+      for (final key in keys) key: _freezeProfileJson(value[key]),
+    });
+  }
+  if (value is List) {
+    return List<Object?>.unmodifiable(value.map(_freezeProfileJson));
+  }
+  return value;
+}
+
+Map<String, Object?> _sceneSnapshot(Map<String, Object?> scene) =>
+    _freezeProfileJson(scene)! as Map<String, Object?>;
+
+String _configIdentity(BattleFrameProfileRunConfig config) => jsonEncode({
+  'run_id': config.runId,
+  'output_directory': config.outputDirectory,
+  'sample_us': config.sample.inMicroseconds,
+  'warmup_us': config.warmup.inMicroseconds,
+  'cooldown_us': config.cooldown.inMicroseconds,
+  'auto_close': config.autoClose,
+  'viewport_width': config.viewportWidth,
+  'viewport_height': config.viewportHeight,
+  'native_content_viewport': config.nativeContentViewport,
+  'diagnostics': config.diagnostics,
+  'scope': config.scope,
+  'content_id': config.contentId,
+});
+
 /// Validates a real battle interval separately from its raw frame timings.
 /// Neither menu frames nor a short/paused/finished fight can certify a run.
 final class ProductionProfileWindow {
@@ -124,7 +158,7 @@ final class ProductionBattleFrameProfile extends StatefulWidget {
     required bool combatOngoing,
   }) {
     final active = _active;
-    if (active != null && identical(owner, active.widget.owner)) {
+    if (active != null && identical(owner, active._owner)) {
       active._window.activity(
         active._elapsed.elapsed,
         paused: paused,
@@ -161,6 +195,14 @@ class _ProductionBattleFrameProfileState
   final List<Map<String, Object?>> _workloads = [];
   late final ProductionProfileWindow _window;
   late final BattleFrameProfileAccumulator _frames;
+  late final BattleFrameProfileRunConfig _config;
+  late final String _configKey;
+  late final Listenable _owner;
+  late final Map<String, Object?> Function() _readWorkload;
+  late final bool Function() _isCombatOngoing;
+  late final Map<String, Object?> _initialScene;
+  late final String _initialSceneKey;
+  late final Map<String, Object?> _sceneAtCaptureEnd;
   Timer? _finishTimer;
   Timer? _memoryTimer;
   Future<void>? _connection;
@@ -174,13 +216,20 @@ class _ProductionBattleFrameProfileState
   @override
   void initState() {
     super.initState();
-    _window = ProductionProfileWindow(widget.config);
+    _config = widget.config;
+    _configKey = _configIdentity(_config);
+    _owner = widget.owner;
+    _readWorkload = widget.readWorkload;
+    _isCombatOngoing = widget.isCombatOngoing;
+    _initialScene = _sceneSnapshot(widget.scene);
+    _initialSceneKey = jsonEncode(_initialScene);
+    _window = ProductionProfileWindow(_config);
     _frames = BattleFrameProfileAccumulator(
-      warmup: widget.config.warmup,
-      sampleDuration: widget.config.sample,
+      warmup: _config.warmup,
+      sampleDuration: _config.sample,
     );
-    if (!BattleFrameProfileProbe.claimProductionRun(widget.config)) return;
-    final directory = Directory(widget.config.outputDirectory);
+    if (!BattleFrameProfileProbe.claimProductionRun(_config)) return;
+    final directory = Directory(_config.outputDirectory);
     if ([
       'summary.json',
       'frames.jsonl',
@@ -198,7 +247,7 @@ class _ProductionBattleFrameProfileState
     ProductionBattleFrameProfile._active = this;
     _elapsed.start();
     WidgetsBinding.instance.addObserver(this);
-    widget.owner.addListener(_combatChanged);
+    _owner.addListener(_combatChanged);
     _combatChanged();
     SchedulerBinding.instance.addTimingsCallback(_recordFrames);
     _connection = _gc.connect();
@@ -207,10 +256,36 @@ class _ProductionBattleFrameProfileState
       const Duration(seconds: 1),
       (_) => _recordWorkload(),
     );
-    _finishTimer = Timer(
-      widget.config.total,
-      () => _queueFinish('timer_completed'),
-    );
+    _finishTimer = Timer(_config.total, () => _queueFinish('timer_completed'));
+  }
+
+  @override
+  void didUpdateWidget(ProductionBattleFrameProfile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_started || _finished) return;
+    _checkScene();
+    if (!identical(widget.owner, _owner)) {
+      _window.invalidReasons.add('battle_owner_changed');
+    }
+    if (_configIdentity(widget.config) != _configKey) {
+      _window.invalidReasons.add('profile_config_changed');
+    }
+    if (_window.invalidReasons.contains('battle_owner_changed') ||
+        _window.invalidReasons.contains('profile_config_changed')) {
+      // Never combine a new battle or run config with the old frame buffer.
+      // _queueFinish detaches the captured owner, not this replacement widget.
+      _queueFinish('profile_identity_changed');
+    }
+  }
+
+  Map<String, Object?> _checkScene() {
+    final scene = _sceneSnapshot(widget.scene);
+    if (jsonEncode(scene) != _initialSceneKey) {
+      // Latch across warmup, sample and cooldown, including changes restored
+      // before capture ends. A mixed presentation run is not a baseline.
+      _window.invalidReasons.add('scene_configuration_changed');
+    }
+    return scene;
   }
 
   @override
@@ -223,7 +298,7 @@ class _ProductionBattleFrameProfileState
     _elapsed.elapsed,
     paused: false,
     foreground: _foreground,
-    combatOngoing: widget.isCombatOngoing(),
+    combatOngoing: _isCombatOngoing(),
   );
 
   void _recordFrames(List<FrameTiming> timings) {
@@ -244,10 +319,11 @@ class _ProductionBattleFrameProfileState
       'record_type': 'memory_sample',
       'elapsed_ms': elapsed.inMilliseconds,
       'rss_bytes': ProcessInfo.currentRss,
-      'gate_eligible': elapsed >= widget.config.warmup,
+      'gate_eligible': elapsed >= _config.warmup,
     });
     try {
-      final value = widget.readWorkload();
+      _checkScene();
+      final value = _readWorkload();
       _window.workload(elapsed, value);
       _workloads.add({
         'elapsed_us': elapsed.inMicroseconds,
@@ -269,10 +345,11 @@ class _ProductionBattleFrameProfileState
   void _queueFinish(String reason) {
     if (!_started || _finished) return;
     _finished = true;
+    _sceneAtCaptureEnd = _checkScene();
     _finishTimer?.cancel();
     _memoryTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    widget.owner.removeListener(_combatChanged);
+    _owner.removeListener(_combatChanged);
     SchedulerBinding.instance.removeTimingsCallback(_recordFrames);
     _recordWorkload();
     _elapsed.stop();
@@ -298,12 +375,12 @@ class _ProductionBattleFrameProfileState
         reason: reason,
         sampledFrames: summary.sampledFrames,
       );
-      if (_width != widget.config.viewportWidth ||
-          _height != widget.config.viewportHeight ||
+      if (_width != _config.viewportWidth ||
+          _height != _config.viewportHeight ||
           _dpr == null) {
         invalid.add('viewport_mismatch');
       }
-      if (widget.config.diagnostics) invalid.add('diagnostic_run_not_baseline');
+      if (_config.diagnostics) invalid.add('diagnostic_run_not_baseline');
       if (_gc.status != 'GC_TELEMETRY_COLLECTED') {
         invalid.add('gc_telemetry_missing');
       }
@@ -315,21 +392,22 @@ class _ProductionBattleFrameProfileState
       final valid = invalid.isEmpty;
       final payload = <String, Object?>{
         'schema': 'production-host-profile-v1',
-        'run_id': widget.config.runId,
+        'run_id': _config.runId,
         'evidence_kind': 'normal_root_production_host',
         'entry_origin': 'normal_root',
-        'scene': widget.scene,
+        'scene': _initialScene,
+        'scene_at_capture_end': _sceneAtCaptureEnd,
         'capture_end_reason': reason,
         'capture_elapsed_us': _elapsed.elapsedMicroseconds,
-        'sample_seconds': widget.config.sample.inSeconds,
-        'cooldown_seconds': widget.config.cooldown.inSeconds,
+        'sample_seconds': _config.sample.inSeconds,
+        'cooldown_seconds': _config.cooldown.inSeconds,
         'cooldown_observation':
             'host_still_mounted; not proof of released battle pools',
         'sampling_status': valid ? 'COMPLETE' : 'INCOMPLETE',
         'invalid_reasons': invalid.toList()..sort(),
         ...summary.toJson(
-          totalSeconds: widget.config.total.inSeconds,
-          warmupSeconds: widget.config.warmup.inSeconds,
+          totalSeconds: _config.total.inSeconds,
+          warmupSeconds: _config.warmup.inSeconds,
         ),
         'raw_frame_streak_gate_passes': summary.passes,
         'frame_streak_gate_passes': valid && summary.passes,
@@ -350,7 +428,7 @@ class _ProductionBattleFrameProfileState
         'limitation':
             'Observed production load only; audio/presentation settings require separate evidence. Does not certify unconfigured density targets, released-pool memory, human feel or physical Windows.',
       };
-      final directory = Directory(widget.config.outputDirectory);
+      final directory = Directory(_config.outputDirectory);
       await directory.create(recursive: true);
       for (final entry in <String, Iterable<Object?>>{
         'frames.jsonl': _frames.samples.map((e) => e.toJson()),
@@ -375,7 +453,7 @@ class _ProductionBattleFrameProfileState
       debugPrint(
         'PRODUCTION_BATTLE_PROFILE_RESULT: ${directory.path} (${payload['sampling_status']})',
       );
-      if (reason == 'timer_completed' && widget.config.autoClose && mounted) {
+      if (reason == 'timer_completed' && _config.autoClose && mounted) {
         await windowManager.close();
       }
     } on Object catch (error) {
@@ -391,11 +469,13 @@ class _ProductionBattleFrameProfileState
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.maybeOf(context);
-    _width = media?.size.width;
-    _height = media?.size.height;
-    _dpr = media?.devicePixelRatio;
-    _window.viewport(_elapsed.elapsed, _width, _height, _dpr);
+    if (!_finished) {
+      final media = MediaQuery.maybeOf(context);
+      _width = media?.size.width;
+      _height = media?.size.height;
+      _dpr = media?.devicePixelRatio;
+      _window.viewport(_elapsed.elapsed, _width, _height, _dpr);
+    }
     return widget.child;
   }
 }

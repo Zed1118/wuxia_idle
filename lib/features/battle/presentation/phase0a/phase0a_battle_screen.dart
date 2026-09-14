@@ -47,6 +47,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
     required this.controller,
     this.autoStep = true,
     this.reduceFlashing = false,
+    this.reduceEffects = false,
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
@@ -66,6 +67,9 @@ final class Phase0aBattleScreen extends StatefulWidget {
 
   /// Visual-only preference supplied by the gameplay settings owner.
   final bool reduceFlashing;
+
+  /// Decorative painter detail only, with the full event stream retained.
+  final bool reduceEffects;
   final double feedbackHoldSeconds;
 
   /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
@@ -1267,6 +1271,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                               controller: controller,
                               stage: stage,
                               entries: _heldFeedback,
+                              reduceEffects: widget.reduceEffects,
                               feedbackFrame: _feedbackFrame,
                               numericSkillBindings: widget.numericSkillBindings,
                               defendedEntityLabel: _defendedEntityLabel,
@@ -2431,6 +2436,7 @@ class _FeedbackLayer extends StatefulWidget {
     required this.feedbackFrame,
     required this.numericSkillBindings,
     required this.defendedEntityLabel,
+    required this.reduceEffects,
   });
 
   final Phase0aBattleController controller;
@@ -2439,6 +2445,7 @@ class _FeedbackLayer extends StatefulWidget {
   final ValueListenable<int> feedbackFrame;
   final Phase0aNumericSkillBindings numericSkillBindings;
   final String defendedEntityLabel;
+  final bool reduceEffects;
 
   @override
   State<_FeedbackLayer> createState() => _FeedbackLayerState();
@@ -2838,6 +2845,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
               painter: _InkEffectPainter(
                 _InkEffect.palm,
                 progress: held.progress,
+                reduceEffects: widget.reduceEffects,
                 isCritical: entry.isCritical,
                 basicAttackSegmentId: entry.basicAttackSegmentId,
                 weaponArchetype: entry.weaponArchetype,
@@ -2894,6 +2902,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 progress: held.progress,
                 isUltimate: isUltimate,
                 isAoe: binding.targetType == TargetType.aoe,
+                reduceEffects: widget.reduceEffects,
               ),
             ),
           ),
@@ -2928,6 +2937,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
         child: CustomPaint(
           key: ValueKey('phase0a_gather_pull_$targetId'),
           painter: _GatherPullPainter(
+            reduceEffects: widget.reduceEffects,
             source: screenSource - Offset(left, top),
             target: screenTarget - Offset(left, top),
           ),
@@ -2981,6 +2991,7 @@ class _FeedbackLayerState extends State<_FeedbackLayer> {
                 effect,
                 defeatKind: entry.defeatKind,
                 progress: held.progress,
+                reduceEffects: widget.reduceEffects,
                 isCritical: entry.isCritical,
                 basicAttackSegmentId: entry.basicAttackSegmentId,
                 weaponArchetype: entry.weaponArchetype,
@@ -3312,6 +3323,7 @@ class _SkillVfxPainter extends CustomPainter {
     required this.progress,
     required this.isUltimate,
     required this.isAoe,
+    required this.reduceEffects,
   });
 
   final TechniqueSchool school;
@@ -3319,6 +3331,7 @@ class _SkillVfxPainter extends CustomPainter {
   final double progress;
   final bool isUltimate;
   final bool isAoe;
+  final bool reduceEffects;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3383,6 +3396,7 @@ class _SkillVfxPainter extends CustomPainter {
           ..lineTo(center.dx - half, center.dy)
           ..close();
         canvas.drawPath(diamond, ink);
+        if (reduceEffects) return;
         canvas.drawLine(
           Offset(center.dx - half * 0.72, center.dy),
           Offset(center.dx + half * 0.72, center.dy),
@@ -3402,13 +3416,15 @@ class _SkillVfxPainter extends CustomPainter {
           false,
           ink,
         );
-        canvas.drawArc(
-          rect.deflate(radius * 0.18),
-          -math.pi * 0.18,
-          math.pi * 1.08 * reveal,
-          false,
-          wash,
-        );
+        if (!reduceEffects) {
+          canvas.drawArc(
+            rect.deflate(radius * 0.18),
+            -math.pi * 0.18,
+            math.pi * 1.08 * reveal,
+            false,
+            wash,
+          );
+        }
         final tip =
             center +
             Offset(
@@ -3434,6 +3450,7 @@ class _SkillVfxPainter extends CustomPainter {
           }
         }
         canvas.drawPath(spiral, ink);
+        if (reduceEffects) return;
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: radius * 0.56),
           math.pi * 0.2,
@@ -3454,7 +3471,9 @@ class _SkillVfxPainter extends CustomPainter {
   ) {
     switch (school) {
       case TechniqueSchool.gangMeng:
-        const rays = 8;
+        final rays = reduceEffects
+            ? Phase0aPresentationTokens.reducedRadialSpokeCount
+            : 8;
         for (var i = 0; i < rays; i++) {
           final angle = math.pi * 2 * i / rays;
           final inner =
@@ -3474,6 +3493,7 @@ class _SkillVfxPainter extends CustomPainter {
         canvas.drawPath(strike, ink);
       case TechniqueSchool.lingQiao:
         for (var i = 0; i < 3; i++) {
+          if (reduceEffects && i != 1) continue;
           final inset = radius * (0.12 + i * 0.13);
           final rect = Rect.fromCircle(
             center: center + Offset((i - 1) * radius * 0.12, 0),
@@ -3494,6 +3514,7 @@ class _SkillVfxPainter extends CustomPainter {
         );
       case TechniqueSchool.yinRou:
         for (var i = 0; i < 3; i++) {
+          if (reduceEffects && i != 1) continue;
           canvas.drawCircle(
             center,
             radius * (0.22 + i * 0.27) * reveal,
@@ -3520,7 +3541,8 @@ class _SkillVfxPainter extends CustomPainter {
       oldDelegate.phase != phase ||
       oldDelegate.progress != progress ||
       oldDelegate.isUltimate != isUltimate ||
-      oldDelegate.isAoe != isAoe;
+      oldDelegate.isAoe != isAoe ||
+      oldDelegate.reduceEffects != reduceEffects;
 }
 
 enum _InkEffect { melee, palm, gather, clear, defeat }
@@ -3530,6 +3552,7 @@ class _InkEffectPainter extends CustomPainter {
     this.effect, {
     this.defeatKind,
     this.progress = 1,
+    required this.reduceEffects,
     this.isCritical = false,
     this.basicAttackSegmentId,
     this.weaponArchetype,
@@ -3537,6 +3560,7 @@ class _InkEffectPainter extends CustomPainter {
   });
 
   final _InkEffect effect;
+  final bool reduceEffects;
   final Phase0aDefeatKind? defeatKind;
   final double progress;
   final bool isCritical;
@@ -3623,6 +3647,7 @@ class _InkEffectPainter extends CustomPainter {
             ..strokeWidth = Phase0aPresentationTokens.vfxStrokeWidth * 1.35,
         );
         canvas.drawPath(falling, ink);
+        if (reduceEffects) break;
         for (
           var i = 0;
           i < Phase0aPresentationTokens.vfxResidualStrokeCount;
@@ -3702,6 +3727,7 @@ class _InkEffectPainter extends CustomPainter {
             size.height * 0.44,
           );
         canvas.drawPath(dryBrush, ink);
+        if (reduceEffects) break;
         canvas.drawArc(
           Rect.fromCircle(center: center, radius: size.width * 0.27),
           -1.35,
@@ -3711,6 +3737,7 @@ class _InkEffectPainter extends CustomPainter {
         );
       case _InkEffect.gather:
         for (var i = 0; i < 3; i++) {
+          if (reduceEffects && i != 0) continue;
           canvas.drawArc(
             Rect.fromCircle(
               center: center,
@@ -3729,9 +3756,11 @@ class _InkEffectPainter extends CustomPainter {
         );
       case _InkEffect.clear:
         final clearReveal = Curves.easeOut.transform(reveal);
-        for (var i = 0; i < Phase0aPresentationTokens.vfxSpokeCount; i++) {
-          final angle =
-              i * math.pi * 2 / Phase0aPresentationTokens.vfxSpokeCount;
+        final spokes = reduceEffects
+            ? Phase0aPresentationTokens.reducedRadialSpokeCount
+            : Phase0aPresentationTokens.vfxSpokeCount;
+        for (var i = 0; i < spokes; i++) {
+          final angle = i * math.pi * 2 / spokes;
           final start = Offset(
             center.dx + math.cos(angle) * size.width * 0.10,
             center.dy + math.sin(angle) * size.height * 0.10,
@@ -3754,6 +3783,7 @@ class _InkEffectPainter extends CustomPainter {
           size.width * (0.08 + clearReveal * 0.16),
           Paint()..color = WuxiaUi.ink.withValues(alpha: 0.72 * strokeAlpha),
         );
+        if (reduceEffects) break;
         for (var i = 0; i < Phase0aPresentationTokens.vfxInkSplatCount; i++) {
           final angle =
               (i + 0.5) *
@@ -3776,9 +3806,13 @@ class _InkEffectPainter extends CustomPainter {
         }
       case _InkEffect.defeat:
         final elite = defeatKind == Phase0aDefeatKind.elite;
-        final count = elite
-            ? Phase0aPresentationTokens.vfxEliteDefeatSplatCount
-            : Phase0aPresentationTokens.vfxNormalDefeatSplatCount;
+        final count = reduceEffects
+            ? (elite
+                  ? Phase0aPresentationTokens.reducedEliteDefeatSplatCount
+                  : Phase0aPresentationTokens.reducedNormalDefeatSplatCount)
+            : (elite
+                  ? Phase0aPresentationTokens.vfxEliteDefeatSplatCount
+                  : Phase0aPresentationTokens.vfxNormalDefeatSplatCount);
         if (elite) {
           canvas.drawCircle(
             center,
@@ -3961,9 +3995,12 @@ class _InkEffectPainter extends CustomPainter {
         final centerY = size.height * 0.50;
         canvas.drawLine(Offset(startX, centerY), Offset(endX, centerY), wash);
         final travel = endX - startX;
-        for (var index = 1; index <= 4; index++) {
+        final dots = reduceEffects
+            ? Phase0aPresentationTokens.reducedHiddenTrailDots
+            : 4;
+        for (var index = 1; index <= dots; index++) {
           canvas.drawCircle(
-            Offset(startX + travel * index / 5, centerY),
+            Offset(startX + travel * index / (dots + 1), centerY),
             Phase0aPresentationTokens.vfxInkSplatRadius * 0.55,
             ink,
           );
@@ -3980,14 +4017,20 @@ class _InkEffectPainter extends CustomPainter {
       oldDelegate.isCritical != isCritical ||
       oldDelegate.basicAttackSegmentId != basicAttackSegmentId ||
       oldDelegate.weaponArchetype != weaponArchetype ||
-      oldDelegate.visualSchool != visualSchool;
+      oldDelegate.visualSchool != visualSchool ||
+      oldDelegate.reduceEffects != reduceEffects;
 }
 
 class _GatherPullPainter extends CustomPainter {
-  const _GatherPullPainter({required this.source, required this.target});
+  const _GatherPullPainter({
+    required this.source,
+    required this.target,
+    required this.reduceEffects,
+  });
 
   final Offset source;
   final Offset target;
+  final bool reduceEffects;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -4056,28 +4099,30 @@ class _GatherPullPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..strokeWidth = Phase0aPresentationTokens.gatherPullStrokeWidth,
     );
-    canvas.drawPath(
-      echoPath,
-      Paint()
-        ..color = WuxiaUi.ink.withValues(alpha: 0.48)
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = Phase0aPresentationTokens.gatherPullEchoStrokeWidth,
-    );
-    for (final t in const <double>[0.32, 0.58, 0.78]) {
-      final point = Offset(
-        (1 - t) * (1 - t) * source.dx +
-            2 * (1 - t) * t * control.dx +
-            t * t * target.dx,
-        (1 - t) * (1 - t) * source.dy +
-            2 * (1 - t) * t * control.dy +
-            t * t * target.dy,
+    if (!reduceEffects) {
+      canvas.drawPath(
+        echoPath,
+        Paint()
+          ..color = WuxiaUi.ink.withValues(alpha: 0.48)
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = Phase0aPresentationTokens.gatherPullEchoStrokeWidth,
       );
-      canvas.drawCircle(
-        point,
-        Phase0aPresentationTokens.gatherPullDropletRadius * (1 - t * 0.45),
-        Paint()..color = WuxiaUi.qing.withValues(alpha: 0.68),
-      );
+      for (final t in const <double>[0.32, 0.58, 0.78]) {
+        final point = Offset(
+          (1 - t) * (1 - t) * source.dx +
+              2 * (1 - t) * t * control.dx +
+              t * t * target.dx,
+          (1 - t) * (1 - t) * source.dy +
+              2 * (1 - t) * t * control.dy +
+              t * t * target.dy,
+        );
+        canvas.drawCircle(
+          point,
+          Phase0aPresentationTokens.gatherPullDropletRadius * (1 - t * 0.45),
+          Paint()..color = WuxiaUi.qing.withValues(alpha: 0.68),
+        );
+      }
     }
     canvas.drawCircle(
       source,
@@ -4093,7 +4138,9 @@ class _GatherPullPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GatherPullPainter oldDelegate) =>
-      oldDelegate.source != source || oldDelegate.target != target;
+      oldDelegate.source != source ||
+      oldDelegate.target != target ||
+      oldDelegate.reduceEffects != reduceEffects;
 }
 
 class _GuardianMechanicPainter extends CustomPainter {

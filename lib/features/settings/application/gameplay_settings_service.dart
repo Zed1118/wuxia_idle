@@ -9,6 +9,7 @@ class GameplaySettingsService {
   static const _kBattlePlaybackSpeed = 'gameplay.battlePlaybackSpeed';
   static const _kTextDensity = 'gameplay.textDensity';
   static const _kReduceFlashing = 'gameplay.reduceFlashing';
+  static const _kReduceEffects = 'gameplay.reduceEffects';
 
   Future<GameplaySettings> load() async {
     final p = await SharedPreferences.getInstance();
@@ -25,6 +26,7 @@ class GameplaySettingsService {
           ) ??
           TextDensityPreference.standard,
       reduceFlashing: p.getBool(_kReduceFlashing) ?? false,
+      reduceEffects: p.getBool(_kReduceEffects) ?? false,
     );
   }
 
@@ -34,5 +36,6 @@ class GameplaySettingsService {
     await p.setString(_kBattlePlaybackSpeed, s.battlePlaybackSpeed.storageKey);
     await p.setString(_kTextDensity, s.textDensity.storageKey);
     await p.setBool(_kReduceFlashing, s.reduceFlashing);
+    await p.setBool(_kReduceEffects, s.reduceEffects);
   }
 }

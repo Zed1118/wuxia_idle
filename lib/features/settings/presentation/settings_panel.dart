@@ -600,6 +600,13 @@ class _GameplayComfortSection extends ConsumerWidget {
         ),
       ),
       SwitchListTile(
+        key: const ValueKey('settings_reduce_effects'),
+        title: const Text(UiStrings.settingsReduceEffects),
+        subtitle: const Text(UiStrings.settingsReduceEffectsHint),
+        value: settings.reduceEffects,
+        onChanged: (v) => save(settings.copyWith(reduceEffects: v)),
+      ),
+      SwitchListTile(
         title: const Text(UiStrings.settingsReduceFlashing),
         subtitle: const Text(UiStrings.settingsReduceFlashingHint),
         value: settings.reduceFlashing,

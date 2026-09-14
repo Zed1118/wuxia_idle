@@ -26,6 +26,7 @@ void main() {
         battlePlaybackSpeed: BattlePlaybackSpeed.brisk,
         textDensity: TextDensityPreference.compact,
         reduceFlashing: true,
+        reduceEffects: true,
       ),
     );
     final read = await svc.load();
@@ -33,6 +34,9 @@ void main() {
     expect(read.battlePlaybackSpeed, BattlePlaybackSpeed.brisk);
     expect(read.textDensity, TextDensityPreference.compact);
     expect(read.reduceFlashing, isTrue);
+    expect(read.reduceEffects, isTrue);
+    await svc.save(read.copyWith(reduceFlashing: false));
+    expect((await svc.load()).reduceEffects, isTrue);
   });
 
   test('新增舒适性选项默认值保持现状', () async {
@@ -42,6 +46,7 @@ void main() {
     expect(s.battlePlaybackSpeed, BattlePlaybackSpeed.normal);
     expect(s.textDensity, TextDensityPreference.standard);
     expect(s.reduceFlashing, isFalse);
+    expect(s.reduceEffects, isFalse);
     expect(s.scaledBattleIntervalMs(1000), 1000);
   });
 }

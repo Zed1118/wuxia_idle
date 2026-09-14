@@ -170,6 +170,9 @@ class _Phase0aTowerBattleHostState
     }
     final session = _session!;
     final flow = session.flow;
+    final settings = ref.watch(gameplaySettingsProvider).value;
+    final reduceEffects = settings?.reduceEffects ?? false;
+    final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(
       mode: 'tower',
       contentId: session.contentRef.contentId,
@@ -179,6 +182,8 @@ class _Phase0aTowerBattleHostState
       controller: controller,
       flow: flow,
       configuration: {
+        'reduce_effects': reduceEffects,
+        'reduce_flashing': reduceFlashing,
         'active_limit': session.activeLimit,
         'total_enemy_count': session.sourceEnemyDefIdsInEntryOrder.length,
         'wave_enemy_counts': flow is Phase0aWaveBattleFlow
@@ -188,9 +193,8 @@ class _Phase0aTowerBattleHostState
             : null,
       },
       child: Phase0aBattleScreen(
-        reduceFlashing:
-            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-            true,
+        reduceFlashing: reduceFlashing,
+        reduceEffects: reduceEffects,
         controller: controller,
         numericSkillBindings: _session!.playerAdapter.numericSkillBindings,
         basicAttackRange: _session!.playerAdapter.attackRange,

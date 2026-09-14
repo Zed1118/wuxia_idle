@@ -45,6 +45,220 @@ Set<String> finished(ProductionProfileWindow window) => window.reasonsAtEnd(
 );
 
 void main() {
+  group('capture identity', () {
+    late Directory output;
+    late _ObservedOwner owner;
+    late BattleFrameProfileRunConfig requested;
+
+    setUp(() {
+      output = Directory.systemTemp.createTempSync('production_identity_');
+      owner = _ObservedOwner();
+      requested = BattleFrameProfileProbe.configureFromArgs([
+        '--battle-profile-scope=production',
+        '--battle-profile-content-id=stage_01_03',
+        '--battle-profile-run-id=identity',
+        '--battle-profile-output=${output.path}',
+        '--battle-profile-warmup-seconds=0',
+        '--battle-profile-sample-seconds=60',
+        '--battle-profile-viewport=1280x720',
+      ])!;
+      BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+    });
+
+    tearDown(() async {
+      await ProductionBattleFrameProfile.flushPendingEvidence();
+      owner.dispose();
+      BattleFrameProfileProbe.configureFromArgs([]);
+      output.deleteSync(recursive: true);
+    });
+
+    Widget tree(
+      Map<String, Object?> scene, {
+      ValueNotifier<bool>? replacementOwner,
+      BattleFrameProfileRunConfig? replacementConfig,
+      Widget child = const SizedBox.shrink(),
+    }) => MediaQuery(
+      data: const MediaQueryData(size: Size(1280, 720), devicePixelRatio: 2),
+      child: ProductionBattleFrameProfile(
+        owner: replacementOwner ?? owner,
+        config: replacementConfig ?? requested,
+        scene: scene,
+        isCombatOngoing: () => (replacementOwner ?? owner).value,
+        readWorkload: () => {
+          'tick': 1,
+          'active_enemies': 12,
+          'combat_ongoing': (replacementOwner ?? owner).value,
+        },
+        child: child,
+      ),
+    );
+
+    Future<Map<String, dynamic>> finish(WidgetTester tester) async {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await ProductionBattleFrameProfile.flushPendingEvidence();
+      });
+      return jsonDecode(File('${output.path}/summary.json').readAsStringSync())
+          as Map<String, dynamic>;
+    }
+
+    testWidgets('nested scene changes remain rejected after restoring values', (
+      tester,
+    ) async {
+      final effects = <String, Object?>{'reduce_effects': false};
+      final layers = <Object?>['ink', 'warning'];
+      final scene = <String, Object?>{
+        'content_id': 'stage_01_03',
+        'configuration': {'effects': effects, 'layers': layers},
+      };
+      await tester.runAsync(() => tester.pumpWidget(tree(scene)));
+      try {
+        effects['reduce_effects'] = true;
+        layers.removeLast();
+        await tester.runAsync(() => tester.pumpWidget(tree(scene)));
+        effects['reduce_effects'] = false;
+        layers.add('warning');
+        await tester.runAsync(() => tester.pumpWidget(tree(scene)));
+      } finally {
+        final evidence = await finish(tester);
+        expect(
+          evidence['invalid_reasons'],
+          contains('scene_configuration_changed'),
+        );
+        expect(evidence['scene'], scene);
+        expect(evidence['scene_at_capture_end'], scene);
+        expect(evidence['composite_gate'], isFalse);
+      }
+    });
+
+    testWidgets(
+      'equivalent rebuilt configuration does not reject the capture',
+      (tester) async {
+        await tester.runAsync(
+          () => tester.pumpWidget(
+            tree({
+              'content_id': 'stage_01_03',
+              'configuration': {
+                'effects': {'reduce_effects': false, 'reduce_flashing': true},
+                'layers': ['ink', 'warning'],
+              },
+            }),
+          ),
+        );
+        try {
+          // Fresh maps, nested key order and equal config values are not drift.
+          await tester.runAsync(
+            () => tester.pumpWidget(
+              tree({
+                'configuration': {
+                  'layers': ['ink', 'warning'],
+                  'effects': {'reduce_flashing': true, 'reduce_effects': false},
+                },
+                'content_id': 'stage_01_03',
+              }, replacementConfig: _copyConfig(requested)),
+            ),
+          );
+          expect(ProductionBattleFrameProfile.isCapturing, isTrue);
+        } finally {
+          final evidence = await finish(tester);
+          expect(
+            evidence['invalid_reasons'],
+            isNot(contains('scene_configuration_changed')),
+          );
+          expect(
+            evidence['invalid_reasons'],
+            isNot(contains('profile_config_changed')),
+          );
+        }
+      },
+    );
+
+    testWidgets('owner replacement stops capture and detaches the old owner', (
+      tester,
+    ) async {
+      final replacement = _ObservedOwner();
+      addTearDown(replacement.dispose);
+      await tester.runAsync(() => tester.pumpWidget(tree(const {})));
+      try {
+        expect(owner.isObserved, isTrue);
+        await tester.runAsync(
+          () =>
+              tester.pumpWidget(tree(const {}, replacementOwner: replacement)),
+        );
+        expect(owner.isObserved, isFalse);
+        expect(replacement.isObserved, isFalse);
+        expect(ProductionBattleFrameProfile.isCapturing, isFalse);
+        owner.value = false;
+        replacement.value = false;
+      } finally {
+        final evidence = await finish(tester);
+        expect(evidence['invalid_reasons'], contains('battle_owner_changed'));
+        expect(evidence['capture_end_reason'], 'profile_identity_changed');
+        expect(evidence['composite_gate'], isFalse);
+      }
+    });
+
+    testWidgets('async write preserves start and capture-end snapshots', (
+      tester,
+    ) async {
+      final effects = <String, Object?>{'reduce_effects': false};
+      final layers = <Object?>['ink', 'warning'];
+      final scene = <String, Object?>{
+        'configuration': {'effects': effects, 'layers': layers},
+      };
+      await tester.runAsync(() => tester.pumpWidget(tree(scene)));
+      try {
+        effects['reduce_effects'] = true;
+        layers.removeAt(0);
+        await tester.runAsync(
+          () => tester.pumpWidget(
+            tree(
+              scene,
+              replacementConfig: _copyConfig(
+                requested,
+                outputDirectory: '${output.path}/wrong-output',
+                runId: 'wrong-run',
+              ),
+              child: Builder(
+                // Build runs after didUpdateWidget has ended the capture, but
+                // before its awaited telemetry/write can complete.
+                builder: (_) {
+                  effects['reduce_effects'] = false;
+                  layers.clear();
+                  return const SizedBox.shrink();
+                },
+              ),
+            ),
+          ),
+        );
+      } finally {
+        final evidence = await finish(tester);
+        expect(evidence['run_id'], 'identity');
+        expect(evidence['scene'], {
+          'configuration': {
+            'effects': {'reduce_effects': false},
+            'layers': ['ink', 'warning'],
+          },
+        });
+        expect(evidence['scene_at_capture_end'], {
+          'configuration': {
+            'effects': {'reduce_effects': true},
+            'layers': ['warning'],
+          },
+        });
+        expect(
+          evidence['invalid_reasons'],
+          containsAll([
+            'scene_configuration_changed',
+            'profile_config_changed',
+          ]),
+        );
+        expect(Directory('${output.path}/wrong-output').existsSync(), isFalse);
+        expect(evidence['composite_gate'], isFalse);
+      }
+    });
+  });
+
   testWidgets(
     'initial background, owner notifications and pause survive disposal',
     (tester) async {
@@ -270,3 +484,28 @@ void main() {
     }
   });
 }
+
+class _ObservedOwner extends ValueNotifier<bool> {
+  _ObservedOwner() : super(true);
+
+  bool get isObserved => hasListeners;
+}
+
+BattleFrameProfileRunConfig _copyConfig(
+  BattleFrameProfileRunConfig source, {
+  String? runId,
+  String? outputDirectory,
+}) => BattleFrameProfileRunConfig(
+  runId: runId ?? source.runId,
+  outputDirectory: outputDirectory ?? source.outputDirectory,
+  sample: source.sample,
+  warmup: source.warmup,
+  cooldown: source.cooldown,
+  autoClose: source.autoClose,
+  viewportWidth: source.viewportWidth,
+  viewportHeight: source.viewportHeight,
+  nativeContentViewport: source.nativeContentViewport,
+  diagnostics: source.diagnostics,
+  scope: source.scope,
+  contentId: source.contentId,
+);

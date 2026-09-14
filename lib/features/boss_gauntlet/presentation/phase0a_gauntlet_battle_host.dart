@@ -132,12 +132,17 @@ final class _Phase0aGauntletBattleHostState
     final waveEnemyCounts = _mapping!.waves
         .map((wave) => wave.enemies.length)
         .toList(growable: false);
+    final settings = ref.watch(gameplaySettingsProvider).value;
+    final reduceEffects = settings?.reduceEffects ?? false;
+    final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(
       mode: 'bossGauntlet',
       contentId: _contentId!,
       runtimeKind: 'legacy_waves',
       controller: controller,
       configuration: {
+        'reduce_effects': reduceEffects,
+        'reduce_flashing': reduceFlashing,
         'active_limit': waveEnemyCounts.fold<int>(
           0,
           (largest, count) => count > largest ? count : largest,
@@ -149,9 +154,8 @@ final class _Phase0aGauntletBattleHostState
         'wave_enemy_counts': waveEnemyCounts,
       },
       child: Phase0aBattleScreen(
-        reduceFlashing:
-            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-            true,
+        reduceFlashing: reduceFlashing,
+        reduceEffects: reduceEffects,
         controller: controller,
         numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
         basicAttackRange: _mapping!.playerAdapter.attackRange,

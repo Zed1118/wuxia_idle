@@ -200,6 +200,12 @@ abstract final class Phase0aPresentationTokens {
   static const int vfxResidualStrokeCount = 2;
   static const int vfxNormalDefeatSplatCount = 12;
   static const int vfxEliteDefeatSplatCount = 24;
+
+  /// Opt-in decorative detail budgets; never used by simulation or warnings.
+  static const int reducedNormalDefeatSplatCount = 3;
+  static const int reducedEliteDefeatSplatCount = 6;
+  static const int reducedRadialSpokeCount = 4;
+  static const int reducedHiddenTrailDots = 2;
   static const double vfxInkSplatRadius = 3.5;
   static const double vfxInkSplatTravelFraction = 0.22;
   static const double vfxInkWashMaxOpacity = 0.18;
