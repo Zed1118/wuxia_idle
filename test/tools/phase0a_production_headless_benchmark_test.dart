@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
-import 'package:wuxia_idle/features/battle/application/phase0a/combat_content_ref.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
@@ -43,33 +43,72 @@ void main() {
     }
     reference = await measureProductionHeadless(
       repository: repository,
-      content: const CombatContentRef.mainline('stage_01_03'),
+      content: const HeadlessBenchmarkContent.mainline('stage_01_03'),
       player: player,
       seed: 73,
       mode: HeadlessBenchmarkMode.sync,
     );
   });
 
-  test('manifest covers current 105 mainline and 49 tower entries exactly', () {
+  test('manifest covers 174 unique cases and 164 production content ids', () {
     final manifest = productionHeadlessManifest(repository);
     expect(
-      manifest.where((entry) => entry.kind == CombatContentKind.mainline),
+      manifest.where(
+        (entry) => entry.kind == HeadlessBenchmarkContentKind.mainline,
+      ),
       hasLength(105),
     );
     expect(
-      manifest.where((entry) => entry.kind == CombatContentKind.tower),
+      manifest.where(
+        (entry) => entry.kind == HeadlessBenchmarkContentKind.tower,
+      ),
       hasLength(49),
     );
-    expect(manifest.toSet(), hasLength(154));
-    expect(manifest.last, const CombatContentRef.tower('tower_49'));
+    expect(manifest, hasLength(174));
+    expect(manifest.toSet(), hasLength(174));
+    expect(manifest.map((entry) => entry.caseId).toSet(), hasLength(174));
+    expect(manifest.map((entry) => entry.contentId).toSet(), hasLength(164));
+    expect(
+      manifest
+          .where(
+            (entry) => entry.kind == HeadlessBenchmarkContentKind.lightFoot,
+          )
+          .toSet(),
+      {
+        for (var stage = 1; stage <= 5; stage++)
+          HeadlessBenchmarkContent.lightFoot('stage_light_foot_0$stage'),
+      },
+    );
+    expect(
+      manifest
+          .where(
+            (entry) => entry.kind == HeadlessBenchmarkContentKind.massBattle,
+          )
+          .toSet(),
+      {
+        for (var stage = 1; stage <= 5; stage++)
+          for (final formation in Formation.values)
+            HeadlessBenchmarkContent.massBattle(
+              'stage_mass_battle_0$stage',
+              formation: formation,
+            ),
+      },
+    );
+    expect(manifest.where((entry) => entry.formation != null), hasLength(15));
+    expect(
+      manifest
+          .where((entry) => entry.kind == HeadlessBenchmarkContentKind.tower)
+          .last,
+      const HeadlessBenchmarkContent.tower('tower_49'),
+    );
   });
 
   for (final entry in {
-    const CombatContentRef.mainline('stage_01_03'): 'typed_mainline',
-    const CombatContentRef.tower('tower_1'): 'typed_tower',
-    const CombatContentRef.tower('tower_7'): 'typed_tower',
-    const CombatContentRef.tower('tower_8'): 'legacy_tower',
-    const CombatContentRef.tower('tower_49'): 'legacy_tower',
+    const HeadlessBenchmarkContent.mainline('stage_01_03'): 'typed_mainline',
+    const HeadlessBenchmarkContent.tower('tower_1'): 'typed_tower',
+    const HeadlessBenchmarkContent.tower('tower_7'): 'typed_tower',
+    const HeadlessBenchmarkContent.tower('tower_8'): 'legacy_tower',
+    const HeadlessBenchmarkContent.tower('tower_49'): 'legacy_tower',
   }.entries) {
     test(
       '${entry.key.contentId} measures production route and preserves async/replay result',
@@ -111,7 +150,7 @@ void main() {
     () async {
       final zero = await measureProductionHeadless(
         repository: repository,
-        content: const CombatContentRef.tower('tower_8'),
+        content: const HeadlessBenchmarkContent.tower('tower_8'),
         player: player,
         seed: 0,
         mode: HeadlessBenchmarkMode.async,
@@ -252,6 +291,7 @@ HeadlessBenchmarkRun _copy(
   CombatSettlementSnapshot? settlement,
   int? simulationMicroseconds,
   String? encounterFacts,
+  String? waveFacts,
 }) => HeadlessBenchmarkRun(
   route: run.route,
   mode: run.mode,
@@ -261,4 +301,5 @@ HeadlessBenchmarkRun _copy(
   simulationMicroseconds: simulationMicroseconds ?? run.simulationMicroseconds,
   settlementMicroseconds: run.settlementMicroseconds,
   encounterFacts: encounterFacts ?? run.encounterFacts,
+  waveFacts: waveFacts ?? run.waveFacts,
 );

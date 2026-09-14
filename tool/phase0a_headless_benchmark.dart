@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 
@@ -16,7 +17,7 @@ import '../test/support/phase0a_production_headless_benchmark.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
-    'current production mainline and tower headless wall-clock baseline',
+    'current production mainline tower and activities headless wall-clock baseline',
     () async {
       final metadataPath = Platform.environment['PHASE0A_BENCHMARK_METADATA'];
       final outputPath = Platform.environment['PHASE0A_BENCHMARK_OUTPUT'];
@@ -49,7 +50,7 @@ void main() {
       );
       loadClock.stop();
       final manifest = productionHeadlessManifest(repository);
-      expect(manifest, hasLength(154));
+      expect(manifest, hasLength(174));
       final arena = repository.numbers.phase0aArena;
       final rows = <Map<String, Object?>>[];
       final profileIds = <String>[];
@@ -101,7 +102,7 @@ void main() {
                       requireSameHeadlessResult(reference, run);
                     } on StateError catch (error) {
                       throw StateError(
-                        '${profile.profileId}/${content.contentId}/seed=$seed/'
+                        '${profile.profileId}/${content.caseId}/seed=$seed/'
                         '${mode.name}/iteration=$iteration: $error',
                       );
                     }
@@ -113,6 +114,8 @@ void main() {
                     rows.add({
                       'profile_id': profile.profileId,
                       'content_id': content.contentId,
+                      'case_id': content.caseId,
+                      'formation': content.formation?.name,
                       'seed': seed,
                       'repetition': iteration,
                       ...run.toJson(arena.fixedDeltaSeconds),
@@ -137,9 +140,7 @@ void main() {
       );
       final grouped = <String, List<Map<String, Object?>>>{};
       for (final row in rows) {
-        grouped
-            .putIfAbsent('${row['route']}/${row['mode']}', () => [])
-            .add(row);
+        grouped.putIfAbsent(_groupId(row), () => []).add(row);
       }
       final groups = [
         for (final id in grouped.keys.toList()..sort())
@@ -152,6 +153,11 @@ void main() {
         'typed_tower/async',
         'legacy_tower/sync',
         'legacy_tower/async',
+        'legacy_light_foot/sync',
+        'legacy_light_foot/async',
+        for (final formation in Formation.values)
+          for (final mode in HeadlessBenchmarkMode.values)
+            'legacy_mass_battle/${formation.name}/${mode.name}',
       });
       final report = <String, Object?>{
         'schema_version': 1,
@@ -162,10 +168,7 @@ void main() {
           'config': config,
           'profile_ids': profileIds,
           'profile_values': profileValues,
-          'manifest': [
-            for (final content in manifest)
-              '${content.kind.name}/${content.contentId}',
-          ],
+          'manifest': [for (final content in manifest) content.caseId],
           'fixed_delta_seconds': arena.fixedDeltaSeconds,
           'max_simulation_ticks': arena.maxSimulationTicks,
           'cycle_index': 1,
@@ -175,10 +178,8 @@ void main() {
               'runner including event capture; async includes event-loop yield',
         },
         'scope':
-            'current mainline/tower production combat factories; founder inputs; no admission/reward persistence',
+            'current mainline/tower/lightFoot/massBattle production combat assembly; all three massBattle formations; founder inputs; no admission/reward persistence',
         'excluded': [
-          'light_foot',
-          'mass_battle',
           'gauntlet',
           'expedition',
           'boss_gauntlet',
@@ -197,6 +198,7 @@ void main() {
             'ticks',
             'full_arena_state',
             'spawn_and_objective_progress',
+            'wave_roster_and_transition_policy',
             'ordered_events',
             'ordered_event_records',
             'all_settlement_fields',
@@ -226,6 +228,10 @@ void main() {
     timeout: const Timeout(Duration(minutes: 20)),
   );
 }
+
+String _groupId(Map<String, Object?> row) => row['formation'] == null
+    ? '${row['route']}/${row['mode']}'
+    : '${row['route']}/${row['formation']}/${row['mode']}';
 
 Map<String, Object> _aggregate(String id, List<Map<String, Object?>> rows) {
   final ticks = rows.fold<int>(

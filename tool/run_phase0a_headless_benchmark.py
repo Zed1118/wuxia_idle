@@ -54,31 +54,71 @@ def validate_report(path, metadata):
     assert all(key[k] == v for k, v in metadata["comparison_key"].items())
     assert key["config"] == metadata["config"]
     manifest = key["manifest"]
-    assert len(manifest) == len(set(manifest)) == 154
+    assert len(manifest) == len(set(manifest)) == 174
     assert sum(x.startswith("mainline/") for x in manifest) == 105
-    assert {x for x in manifest if x.startswith("tower/")} == {f"tower/tower_{i}" for i in range(1, 50)}
+    assert {x for x in manifest if x.startswith("tower/")} == {f"tower/tower_{i}/default" for i in range(1, 50)}
+    assert {x for x in manifest if x.startswith("lightFoot/")} == {
+        f"lightFoot/stage_light_foot_{i:02d}/default" for i in range(1, 6)}
+    assert {x for x in manifest if x.startswith("massBattle/")} == {
+        f"massBattle/stage_mass_battle_{i:02d}/{formation}"
+        for i in range(1, 6) for formation in ("yanXing", "baGua", "fengShi")}
+    assert len({x.split("/")[1] for x in manifest}) == 164
     profiles = key["profile_ids"]
     assert set(profiles) == {f"{s}/mountain_wanderer/balanced_seed/20260820"
                              for s in ("gang_meng", "ling_qiao", "yin_rou")}
     config = metadata["config"]
-    expected = set(itertools.product(profiles, [x.split("/")[1] for x in manifest],
+    expected = set(itertools.product(profiles, manifest,
                                      config["seeds"], range(config["repetitions"]), ("sync", "async")))
     rows = report["runs"]
-    actual = [(r["profile_id"], r["content_id"], r["seed"], r["repetition"], r["mode"]) for r in rows]
+    actual = [(r["profile_id"], r["case_id"], r["seed"], r["repetition"], r["mode"]) for r in rows]
     assert len(actual) == len(set(actual)) == len(expected) and set(actual) == expected
     grouped = {}
     for row in rows:
-        route = ("typed_mainline" if row["content_id"].startswith("stage_") else
-                 "typed_tower" if int(row["content_id"].removeprefix("tower_")) <= 7 else "legacy_tower")
+        kind, content_id, variant = row["case_id"].split("/")
+        assert row["content_id"] == content_id
+        assert row["formation"] == (variant if kind == "massBattle" else None)
+        if kind == "mainline":
+            route = "typed_mainline"
+            assert variant == "default"
+        elif kind == "tower":
+            route = "typed_tower" if int(content_id.removeprefix("tower_")) <= 7 else "legacy_tower"
+            assert variant == "default"
+        elif kind == "lightFoot":
+            route = "legacy_light_foot"
+        else:
+            assert kind == "massBattle"
+            route = "legacy_mass_battle"
         assert row["route"] == route
         assert row["outcome"] in ("victory", "defeat", "ongoing")
         assert row["timed_out"] == (row["outcome"] == "ongoing") == (row["settlement"] is None)
         assert 0 < row["simulated_ticks"] <= key["max_simulation_ticks"]
         assert row["simulated_seconds"] == row["simulated_ticks"] * key["fixed_delta_seconds"]
         assert row["simulation_microseconds"] > 0 and row["assembly_microseconds"] > 0
-        grouped.setdefault(f"{route}/{row['mode']}", []).append(row)
+        wave = row["wave_state"]
+        if route.startswith("legacy_"):
+            assert isinstance(wave, dict) and wave["waves"] and all(wave["waves"])
+            actor_ids = [actor for roster in wave["waves"] for actor in roster]
+            assert len(actor_ids) == len(set(actor_ids))
+            started, cleared = wave["started_wave_indices"], wave["cleared_wave_indices"]
+            assert 1 <= len(started) <= len(wave["waves"])
+            assert started == list(range(1, len(started) + 1))
+            assert cleared == list(range(1, len(cleared) + 1))
+            assert len(cleared) == len(started) - (row["outcome"] != "victory")
+            if row["outcome"] == "victory":
+                assert len(cleared) == len(wave["waves"])
+            if kind == "massBattle":
+                policy = wave["transition_policy"]
+                assert set(policy) == {"heal_player_to_full", "qi_recovery_pct", "reset_attack_cooldown",
+                                       "reset_skill_cooldowns", "intermission_seconds"}
+                assert all(type(policy[k]) is bool for k in ("heal_player_to_full", "reset_attack_cooldown", "reset_skill_cooldowns"))
+                assert 0 <= policy["qi_recovery_pct"] <= 1 and policy["intermission_seconds"] >= 0
+            elif kind == "lightFoot":
+                assert len(wave["waves"]) == 1 and wave["transition_policy"] is None
+        group_id = (f"{route}/{variant}/{row['mode']}" if kind == "massBattle"
+                    else f"{route}/{row['mode']}")
+        grouped.setdefault(group_id, []).append(row)
     summaries = {g["id"]: g for g in report["groups"]}
-    assert len(summaries) == len(report["groups"]) == len(grouped) == 6
+    assert len(summaries) == len(report["groups"]) == len(grouped) == 14
     for identity, samples in grouped.items():
         summary = summaries[identity]
         ticks = sum(r["simulated_ticks"] for r in samples)
@@ -91,7 +131,7 @@ def validate_report(path, metadata):
         assert abs(summary["simulated_ticks_per_second"] - ticks * 1e6 / micros) < 1e-7
         assert abs(summary["completed_battles_per_second"] - completed * 1e6 / micros) < 1e-7
     assert report["correctness"]["same_seed_equal"] is True
-    assert report["correctness"]["compared_pairs"] == (154 * 3 * len(config["seeds"]) *
+    assert report["correctness"]["compared_pairs"] == (174 * 3 * len(config["seeds"]) *
                                                       (2 * (config["warmups"] + config["repetitions"]) - 1))
     return {"rows": len(rows), "groups": len(grouped), "unique_inputs": len(expected),
             "compared_pairs": report["correctness"]["compared_pairs"]}
@@ -165,7 +205,7 @@ def main():
                        "status": command_output(["git", "status", "--porcelain"]),
                        "source_sha256": digest(before)},
             "comparison_key": {
-                "benchmark_version": 1, "execution_mode": "flutter_tester_debug_jit",
+                "benchmark_version": 2, "execution_mode": "flutter_tester_debug_jit",
                 "hardware": hardware, "os": platform.platform(),
                 "flutter_framework_revision": version["frameworkRevision"],
                 "flutter_engine_revision": version["engineRevision"],

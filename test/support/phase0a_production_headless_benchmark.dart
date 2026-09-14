@@ -5,10 +5,14 @@ import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/combat_content_ref.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_flow.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_battle_snapshot_factory.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_flow.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_headless_runner.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_production_flow_assembler.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_settlement_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_model.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -21,9 +25,49 @@ import 'package:wuxia_idle/shared/battle_shared/combatant_skill_loadout.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/utils/math_random.dart';
 
-/// Benchmark scope is the current factories, not admission, rewards or saves.
-/// No route override is accepted: later tower floors remain on production legacy.
-List<CombatContentRef> productionHeadlessManifest(GameRepository repository) {
+enum HeadlessBenchmarkContentKind { mainline, tower, lightFoot, massBattle }
+
+/// Tool-only identity. Production content IDs are retained; formation is an
+/// additional scenario dimension, not a new stage or automation permission.
+final class HeadlessBenchmarkContent {
+  const HeadlessBenchmarkContent.mainline(this.contentId)
+    : kind = HeadlessBenchmarkContentKind.mainline,
+      formation = null;
+  const HeadlessBenchmarkContent.tower(this.contentId)
+    : kind = HeadlessBenchmarkContentKind.tower,
+      formation = null;
+  const HeadlessBenchmarkContent.lightFoot(this.contentId)
+    : kind = HeadlessBenchmarkContentKind.lightFoot,
+      formation = null;
+  const HeadlessBenchmarkContent.massBattle(
+    this.contentId, {
+    required Formation formation,
+  }) : kind = HeadlessBenchmarkContentKind.massBattle,
+       // Keep the constructor parameter non-nullable for this variant.
+       // ignore: prefer_initializing_formals
+       formation = formation;
+
+  final String contentId;
+  final HeadlessBenchmarkContentKind kind;
+  final Formation? formation;
+  String get variant => formation?.name ?? 'default';
+  String get caseId => '${kind.name}/$contentId/$variant';
+
+  @override
+  bool operator ==(Object other) =>
+      other is HeadlessBenchmarkContent &&
+      kind == other.kind &&
+      contentId == other.contentId &&
+      formation == other.formation;
+  @override
+  int get hashCode => Object.hash(kind, contentId, formation);
+}
+
+/// Current combat assembly scope, not admission, rewards or saves. No route
+/// override: later tower floors remain legacy and inner-demon stays manual-only.
+List<HeadlessBenchmarkContent> productionHeadlessManifest(
+  GameRepository repository,
+) {
   final stages =
       repository.stageDefs.values
           .where((stage) => stage.stageType == StageType.mainline)
@@ -32,38 +76,107 @@ List<CombatContentRef> productionHeadlessManifest(GameRepository repository) {
         ..sort();
   final floors = repository.towerFloors.toList()
     ..sort((a, b) => a.floorIndex.compareTo(b.floorIndex));
+  final activities =
+      repository.stageDefs.values
+          .where(
+            (stage) =>
+                stage.stageType == StageType.lightFoot ||
+                stage.stageType == StageType.massBattle,
+          )
+          .toList()
+        ..sort((a, b) => a.id.compareTo(b.id));
   return List.unmodifiable([
-    for (final id in stages) CombatContentRef.mainline(id),
+    for (final id in stages) HeadlessBenchmarkContent.mainline(id),
     for (final floor in floors)
-      CombatContentRef.tower('tower_${floor.floorIndex}'),
+      HeadlessBenchmarkContent.tower('tower_${floor.floorIndex}'),
+    for (final stage in activities)
+      if (stage.stageType == StageType.lightFoot)
+        HeadlessBenchmarkContent.lightFoot(stage.id)
+      else
+        for (final formation in Formation.values)
+          HeadlessBenchmarkContent.massBattle(stage.id, formation: formation),
   ]);
 }
 
 enum HeadlessBenchmarkMode { sync, async }
 
-typedef _SettlementBuilder =
+typedef HeadlessSettlementBuilder =
     CombatSettlementSnapshot Function({
       required Phase0aBattleOutcome outcome,
       required Phase0aArenaState finalState,
       required List<Phase0aEvent> events,
     });
 
-final class _Session {
-  const _Session(this.route, this.flow, this.bot, this.settle);
+final class ProductionHeadlessSession {
+  ProductionHeadlessSession(
+    this.route,
+    this.flow,
+    this.bot,
+    this.settle,
+    List<Phase0aCombatantInput> combatants,
+  ) : combatants = List.unmodifiable(combatants);
   final String route;
   final Phase0aBattleFlow flow;
   final Phase0aPlayerBotAdapter bot;
-  final _SettlementBuilder settle;
+  final HeadlessSettlementBuilder settle;
+  final List<Phase0aCombatantInput> combatants;
 }
 
-Future<_Session> _freshSession({
+Future<ProductionHeadlessSession> createProductionHeadlessSession({
   required GameRepository repository,
-  required CombatContentRef content,
+  required HeadlessBenchmarkContent content,
   required CombatantSnapshot player,
   required int seed,
 }) async {
   final rng = newMathRandom(seed: seed);
-  if (content.kind == CombatContentKind.mainline) {
+  if (content.kind == HeadlessBenchmarkContentKind.lightFoot ||
+      content.kind == HeadlessBenchmarkContentKind.massBattle) {
+    final stage = repository.stageDefs[content.contentId];
+    if (stage == null) {
+      throw ArgumentError('unknown activity: ${content.contentId}');
+    }
+    final mapping = content.kind == HeadlessBenchmarkContentKind.lightFoot
+        ? Phase0aStageContentMapper.mapLightFoot(
+            stage: stage,
+            playerSnapshot: player,
+            numbers: repository.numbers,
+            cycleIndex: 1,
+          )
+        : Phase0aStageContentMapper.mapMassBattle(
+            stage: stage,
+            playerSnapshot: player,
+            numbers: repository.numbers,
+            formation: content.formation!,
+            cycleIndex: 1,
+          );
+    final flow = Phase0aProductionFlowAssembler.assemble(
+      initialState: mapping.initialState,
+      waves: mapping.waves,
+      combatants: mapping.combatants,
+      moveBindings: mapping.moveBindings,
+      numbers: repository.numbers,
+      rng: rng,
+      playerAdapter: mapping.playerAdapter,
+      enemyAiAdapter: mapping.enemyAiAdapter,
+      waveTransitionPolicy: mapping.waveTransitionPolicy,
+    );
+    return ProductionHeadlessSession(
+      content.kind == HeadlessBenchmarkContentKind.lightFoot
+          ? 'legacy_light_foot'
+          : 'legacy_mass_battle',
+      flow,
+      Phase0aPlayerBotAdapter(playerAdapter: mapping.playerAdapter),
+      ({required outcome, required finalState, required events}) =>
+          Phase0aSettlementAdapter.fromMapping(
+            mapping: mapping,
+            outcome: outcome,
+            finalState: finalState,
+            events: events,
+          ),
+      mapping.combatants,
+    );
+  }
+  if (content.kind == HeadlessBenchmarkContentKind.mainline) {
     final stage = repository.stageDefs[content.contentId];
     if (stage == null || stage.stageType != StageType.mainline) {
       throw ArgumentError(
@@ -92,7 +205,7 @@ Future<_Session> _freshSession({
         'mainline benchmark requires production typed route: ${stage.id}',
       );
     }
-    return _Session(
+    return ProductionHeadlessSession(
       'typed_mainline',
       host.flow,
       Phase0aPlayerBotAdapter(
@@ -103,6 +216,7 @@ Future<_Session> _freshSession({
       ({required outcome, required finalState, required events}) => host
           .settle(outcome: outcome, finalState: finalState, events: events)
           .snapshot,
+      host.mapping!.combatants,
     );
   }
   final floor = repository.towerFloors.singleWhere(
@@ -110,7 +224,7 @@ Future<_Session> _freshSession({
   );
   final session = await createFreshPhase0aTowerCombatSession(
     Phase0aTowerCombatSessionBuildRequest(
-      contentRef: content,
+      contentRef: CombatContentRef.tower(content.contentId),
       floor: floor,
       playerSnapshot: player,
       numbers: repository.numbers,
@@ -118,13 +232,14 @@ Future<_Session> _freshSession({
       rng: rng,
     ),
   );
-  return _Session(
+  return ProductionHeadlessSession(
     session.routeMode == Phase0aTowerEncounterRouteMode.migrated
         ? 'typed_tower'
         : 'legacy_tower',
     session.flow,
     Phase0aPlayerBotAdapter(playerAdapter: session.playerAdapter),
     session.settle,
+    session.combatants,
   );
 }
 
@@ -138,12 +253,14 @@ final class HeadlessBenchmarkRun {
     required this.simulationMicroseconds,
     required this.settlementMicroseconds,
     this.encounterFacts,
+    this.waveFacts,
   });
   final String route;
   final HeadlessBenchmarkMode mode;
   final Phase0aHeadlessResult result;
   final CombatSettlementSnapshot? settlement;
   final String? encounterFacts;
+  final String? waveFacts;
   final int assemblyMicroseconds,
       simulationMicroseconds,
       settlementMicroseconds;
@@ -164,6 +281,7 @@ final class HeadlessBenchmarkRun {
     'encounter_state': encounterFacts == null
         ? null
         : jsonDecode(encounterFacts!),
+    'wave_state': waveFacts == null ? null : jsonDecode(waveFacts!),
     'settlement': settlement == null
         ? null
         : headlessSettlementFacts(settlement!),
@@ -174,7 +292,7 @@ final class HeadlessBenchmarkRun {
 /// checks and serialization. Async time includes the production event-loop yield.
 Future<HeadlessBenchmarkRun> measureProductionHeadless({
   required GameRepository repository,
-  required CombatContentRef content,
+  required HeadlessBenchmarkContent content,
   required CombatantSnapshot player,
   required int seed,
   required HeadlessBenchmarkMode mode,
@@ -182,7 +300,7 @@ Future<HeadlessBenchmarkRun> measureProductionHeadless({
   int yieldEveryTicks = 32, // Same cadence as Phase0aSweepHeadlessRunner.
 }) async {
   final clock = Stopwatch()..start();
-  final session = await _freshSession(
+  final session = await createProductionHeadlessSession(
     repository: repository,
     content: content,
     player: player,
@@ -227,6 +345,9 @@ Future<HeadlessBenchmarkRun> measureProductionHeadless({
     encounterFacts: session.flow is Phase0aEncounterFlow
         ? _encounterFacts(session.flow as Phase0aEncounterFlow)
         : null,
+    waveFacts: session.flow is Phase0aWaveBattleFlow
+        ? _waveFacts(session.flow as Phase0aWaveBattleFlow, result.events)
+        : null,
   );
 }
 
@@ -264,6 +385,7 @@ void requireSameHeadlessResult(
     if (a.ticks != b.ticks) 'ticks',
     if (a.finalState != b.finalState) 'finalState',
     if (expected.encounterFacts != actual.encounterFacts) 'encounterState',
+    if (expected.waveFacts != actual.waveFacts) 'waveState',
     if (!listEquals(a.events, b.events)) 'events',
     if (!listEquals(a.eventRecords, b.eventRecords)) 'eventRecords',
     if (!_sameSettlement(expected.settlement, actual.settlement)) 'settlement',
@@ -271,6 +393,33 @@ void requireSameHeadlessResult(
   if (differing.isNotEmpty) {
     throw StateError('headless same-seed mismatch: $differing');
   }
+}
+
+String _waveFacts(Phase0aWaveBattleFlow flow, List<Phase0aEvent> events) {
+  final policy = flow.waveTransitionPolicy;
+  return jsonEncode({
+    'waves': [
+      for (final wave in flow.waves)
+        [for (final enemy in wave.enemies) enemy.id],
+    ],
+    'started_wave_indices': [
+      for (final event in events.whereType<Phase0aWaveStarted>())
+        event.waveIndex,
+    ],
+    'cleared_wave_indices': [
+      for (final event in events.whereType<Phase0aWaveCleared>())
+        event.waveIndex,
+    ],
+    'transition_policy': policy == null
+        ? null
+        : {
+            'heal_player_to_full': policy.healPlayerToFull,
+            'qi_recovery_pct': policy.qiRecoveryPct,
+            'reset_attack_cooldown': policy.resetAttackCooldown,
+            'reset_skill_cooldowns': policy.resetSkillCooldowns,
+            'intermission_seconds': policy.intermissionSeconds,
+          },
+  });
 }
 
 String _encounterFacts(Phase0aEncounterFlow flow) {
