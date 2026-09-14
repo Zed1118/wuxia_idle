@@ -869,7 +869,10 @@ class ExpeditionService {
       if (row == null) return;
       // cursor 守卫（§4.4.3）：提交前校验 run 未被并发推进；被改则弃本批，
       // 交外层重试，避免把过期批结果覆盖到更新状态上（重复发奖/回退进度）。
-      if (row.currentNode != startNode ||
+      // A competing defeat can leave both cursor fields unchanged at the same
+      // `now`. Its durable terminal flag also guards against duplicate growth.
+      if (row.defeated ||
+          row.currentNode != startNode ||
           row.lastSettledAt != run.lastSettledAt) {
         return;
       }
