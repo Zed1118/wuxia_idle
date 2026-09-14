@@ -4,6 +4,7 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../../data/defs/taohua_island_config.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import 'island_settle_service.dart';
 
 /// 建筑升级操作的失败/成功原因。
@@ -47,8 +48,9 @@ enum SelectRecipeResult {
 ///   然后读 Isar 做银两 / 材料检查，全过则原子写 Isar。
 /// - [selectRecipe]：检查 isProcessor / recipeExists / realmUnlock，全过则原子写 Isar。
 ///
-/// 失败路径**无任何副作用**：事务内同步普通收益后重查门槛，失败回滚
-/// 同事务内全部收益与建筑写入。
+/// Action guards roll back the action transaction, including its passive/island
+/// accrual and building writes. Due expedition progress is settled separately
+/// before that transaction starts.
 class IslandActionService {
   IslandActionService._();
 
@@ -91,7 +93,7 @@ class IslandActionService {
   /// - [buildingType]：要升级的建筑类型。
   /// - [founderRealmIndex]：祖师境界 index（0=学徒…6=武圣）。
   ///
-  /// 返回 [UpgradeResult]；失败时 Isar 无任何改动。
+  /// Returns [UpgradeResult]; a failed action rolls back its transaction.
   static Future<UpgradeResult> upgrade({
     required SaveData save,
     required BuildingType buildingType,
@@ -103,56 +105,60 @@ class IslandActionService {
     final isar = IsarSetup.instance;
     final upgradedAt = now ?? DateTime.now();
     try {
-      return await isar.writeTxn(() async {
-        final current = await IslandSettleService.loadAfterPassiveInTxn(
-          upgradedAt,
-          database: isar,
-        );
-        final building = current.islandBuildings.firstWhere(
-          (state) => state.type == buildingType,
-        );
-        final realm = await IslandSettleService.founderRealmIndex(
-          current,
-          database: isar,
-        );
-        final silver = await isar.inventoryItems.getByDefId('item_silver');
-        final material = await isar.inventoryItems.getByDefId(
-          bCfg.upgradeMaterialItem,
-        );
-        final blocked = upgradeBlockReason(
-          cfg: bCfg,
-          level: building.level,
-          founderRealmIndex: realm,
-          silver: silver?.quantity ?? 0,
-          material: material?.quantity ?? 0,
-        );
-        if (blocked != null) throw _ActionBlocked(blocked);
+      return await ExpeditionTimeline.runAfterCatchUp(
+        isar: isar,
+        now: upgradedAt,
+        action: () => isar.writeTxn(() async {
+          final current = await IslandSettleService.loadAfterPassiveInTxn(
+            upgradedAt,
+            database: isar,
+          );
+          final building = current.islandBuildings.firstWhere(
+            (state) => state.type == buildingType,
+          );
+          final realm = await IslandSettleService.founderRealmIndex(
+            current,
+            database: isar,
+          );
+          final silver = await isar.inventoryItems.getByDefId('item_silver');
+          final material = await isar.inventoryItems.getByDefId(
+            bCfg.upgradeMaterialItem,
+          );
+          final blocked = upgradeBlockReason(
+            cfg: bCfg,
+            level: building.level,
+            founderRealmIndex: realm,
+            silver: silver?.quantity ?? 0,
+            material: material?.quantity ?? 0,
+          );
+          if (blocked != null) throw _ActionBlocked(blocked);
 
-        final silverNeeded = bCfg.upgradeSilverFor(building.level);
-        final materialNeeded = bCfg.upgradeMaterialFor(building.level);
-        await IslandSettleService.settleInTxn(
-          current,
-          upgradedAt,
-          realmIndex: realm,
-          database: isar,
-        );
-        // Settlement replaces the embedded list; mutate its new state, never
-        // the pre-settlement reference. The elapsed window uses the old level.
-        current.islandBuildings
-                .firstWhere((state) => state.type == buildingType)
-                .level +=
-            1;
-        await isar.saveDatas.put(current);
-        if (silver != null) {
-          silver.quantity -= silverNeeded;
-          await isar.inventoryItems.put(silver);
-        }
-        if (material != null) {
-          material.quantity -= materialNeeded;
-          await isar.inventoryItems.put(material);
-        }
-        return UpgradeResult.ok;
-      });
+          final silverNeeded = bCfg.upgradeSilverFor(building.level);
+          final materialNeeded = bCfg.upgradeMaterialFor(building.level);
+          await IslandSettleService.settleInTxn(
+            current,
+            upgradedAt,
+            realmIndex: realm,
+            database: isar,
+          );
+          // Settlement replaces the embedded list; mutate its new state, never
+          // the pre-settlement reference. The elapsed window uses the old level.
+          current.islandBuildings
+                  .firstWhere((state) => state.type == buildingType)
+                  .level +=
+              1;
+          await isar.saveDatas.put(current);
+          if (silver != null) {
+            silver.quantity -= silverNeeded;
+            await isar.inventoryItems.put(silver);
+          }
+          if (material != null) {
+            material.quantity -= materialNeeded;
+            await isar.inventoryItems.put(material);
+          }
+          return UpgradeResult.ok;
+        }),
+      );
     } on _ActionBlocked<UpgradeResult> catch (blocked) {
       return blocked.result;
     }
@@ -167,7 +173,7 @@ class IslandActionService {
   /// - [recipeId]：要激活的配方 ID。
   /// - [founderRealmIndex]：祖师境界 index。
   ///
-  /// 返回 [SelectRecipeResult]；失败时 Isar 无任何改动。
+  /// Returns [SelectRecipeResult]; a failed action rolls back its transaction.
   static Future<SelectRecipeResult> selectRecipe({
     required SaveData save,
     required BuildingType buildingType,
@@ -192,31 +198,35 @@ class IslandActionService {
     final isar = IsarSetup.instance;
     final selectedAt = now ?? DateTime.now();
     try {
-      return await isar.writeTxn(() async {
-        final current = await IslandSettleService.loadAfterPassiveInTxn(
-          selectedAt,
-          database: isar,
-        );
-        final realm = await IslandSettleService.founderRealmIndex(
-          current,
-          database: isar,
-        );
-        if (recipe.realmUnlockIndex > realm) {
-          throw const _ActionBlocked(SelectRecipeResult.realmLocked);
-        }
-        await IslandSettleService.settleInTxn(
-          current,
-          selectedAt,
-          realmIndex: realm,
-          database: isar,
-        );
-        current.islandBuildings
-                .firstWhere((state) => state.type == buildingType)
-                .activeRecipeId =
-            recipeId;
-        await isar.saveDatas.put(current);
-        return SelectRecipeResult.ok;
-      });
+      return await ExpeditionTimeline.runAfterCatchUp(
+        isar: isar,
+        now: selectedAt,
+        action: () => isar.writeTxn(() async {
+          final current = await IslandSettleService.loadAfterPassiveInTxn(
+            selectedAt,
+            database: isar,
+          );
+          final realm = await IslandSettleService.founderRealmIndex(
+            current,
+            database: isar,
+          );
+          if (recipe.realmUnlockIndex > realm) {
+            throw const _ActionBlocked(SelectRecipeResult.realmLocked);
+          }
+          await IslandSettleService.settleInTxn(
+            current,
+            selectedAt,
+            realmIndex: realm,
+            database: isar,
+          );
+          current.islandBuildings
+                  .firstWhere((state) => state.type == buildingType)
+                  .activeRecipeId =
+              recipeId;
+          await isar.saveDatas.put(current);
+          return SelectRecipeResult.ok;
+        }),
+      );
     } on _ActionBlocked<SelectRecipeResult> catch (blocked) {
       return blocked.result;
     }

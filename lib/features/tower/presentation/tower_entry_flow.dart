@@ -65,6 +65,7 @@ import '../../weapon_codex/application/equipment_catalog_hook.dart';
 import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../seclusion/application/offline_passive_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../activity/application/durable_activity_automation_service.dart';
@@ -506,156 +507,170 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       settlementSnapshot.playerCharacterId != participantId) {
     throw StateError('Tower victory participant cannot be proven');
   }
-  final progressService = TowerProgressService(isar: isar);
-  final personalRecordService = TowerPersonalRecordService(isar: isar);
-  final progress = await progressService.getOrCreate(
-    saveDataId: IsarSetup.currentSlotId,
-  );
-  final maxFloor = GameRepository.instance.towerMaxFloor;
-  final isFirstClear =
-      floor.floorIndex == progress.highestClearedFloor + 1 &&
-      floor.floorIndex >= 1 &&
-      floor.floorIndex <= maxFloor;
-  final cycle = progress.currentCycleIndex;
   final now = settlementAt ?? DateTime.now();
-  final occurrenceId = rewardOccurrenceId?.trim().isNotEmpty == true
-      ? rewardOccurrenceId!.trim()
-      : 'tower:$cycle:${floor.floorIndex}:$participantId:'
-            '${now.microsecondsSinceEpoch}';
-
-  var drops = const DropResult(equipments: <Equipment>[], items: []);
-  if (isFirstClear && GameRepository.isLoaded) {
-    final dropService = DropService(
-      equipmentDefLookup: GameRepository.instance.getEquipment,
-      defaultObtainedFrom: UiStrings.towerDropSource,
-    );
-    final rng = ref.read(rngProvider);
-    drops = dropService.rollTowerRewards(floor, rng);
-    final bonus = dropService.rollRareBonus(
-      baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
-      config: GameRepository.instance.numbers.rareBonusDrop,
-      rng: rng,
-      poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
-          .where((equipment) => equipment.tier == tier)
-          .toList(growable: false),
-      obtainedFrom: UiStrings.dropSourceRareBonus,
-    );
-    if (bonus != null) {
-      drops = DropResult(
-        equipments: [...drops.equipments, bonus],
-        items: drops.items,
+  return ExpeditionTimeline.runAfterCatchUp(
+    isar: isar,
+    now: now,
+    action: () async {
+      final progressService = TowerProgressService(isar: isar);
+      final personalRecordService = TowerPersonalRecordService(isar: isar);
+      final progress = await progressService.getOrCreate(
+        saveDataId: IsarSetup.currentSlotId,
       );
-    }
-  }
+      final maxFloor = GameRepository.instance.towerMaxFloor;
+      final isFirstClear =
+          floor.floorIndex == progress.highestClearedFloor + 1 &&
+          floor.floorIndex >= 1 &&
+          floor.floorIndex <= maxFloor;
+      final cycle = progress.currentCycleIndex;
+      final occurrenceId = rewardOccurrenceId?.trim().isNotEmpty == true
+          ? rewardOccurrenceId!.trim()
+          : 'tower:$cycle:${floor.floorIndex}:$participantId:'
+                '${now.microsecondsSinceEpoch}';
 
-  final claimPlan = RewardClaimPlan.forSettlement(
-    contentKind: RewardContentKind.tower,
-    contentId: 'tower_floor_${floor.floorIndex}_cycle_$cycle',
-    saveDataId: IsarSetup.currentSlotId,
-    participantId: participantId,
-    occurrenceId: occurrenceId,
-    includesFirstClear: isFirstClear,
-  );
-  late TowerClearResult clearResult;
-  late TowerCombatResolution resolution;
-  var skillDrop = SkillDropResult.none;
-  final rewardClaims = DurableRewardClaimService(isar);
-  Future<void> applyInTxn(bool grantsFirstClear) async {
-    clearResult = await progressService.recordClearInTxn(
-      floorIndex: floor.floorIndex,
-      now: now,
-      elapsedMs: elapsedMs,
-      maxFloor: maxFloor,
-    );
-    if (clearResult.isFirstClear != isFirstClear) {
-      throw StateError('Tower first-clear snapshot changed during settlement');
-    }
-    await personalRecordService.recordVictoryInTxn(
-      saveDataId: IsarSetup.currentSlotId,
-      participantId: participantId,
-      floorIndex: floor.floorIndex,
-      elapsedMs: elapsedMs,
-      now: now,
-    );
-    await afterProgressInTxnForTest?.call();
-    // Progress remains authoritative even when a first-clear receipt exists.
-    // The receipt only suppresses the exclusive grant and its displayed drops.
-    if (!grantsFirstClear) {
-      drops = const DropResult(equipments: <Equipment>[], items: []);
-    }
-    resolution = await applyTowerCombatResolution(
-      ref: ref,
-      floor: floor,
-      grantsFirstClearExperience: grantsFirstClear,
-      expectedParticipantId: participantId,
-      settlementSnapshot: settlementSnapshot,
-      transactionOwned: true,
-      settlementAt: now,
-    );
-    if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
-      skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
-        floor: floor,
-        svc: SkillUnlockService(
-          isar,
-          fragmentThreshold:
-              GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
-        ),
-        towerFragmentDropProb:
-            GameRepository.instance.numbers.skillUnlock.towerFragmentDropProb,
-        rng: ref.read(mathRandomProvider),
-      );
-    }
-    await _persistTowerDropsInTxn(
-      isar: isar,
-      drops: drops,
-      floor: floor,
-      now: now,
-    );
-    await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
-      saveDataId: IsarSetup.currentSlotId,
-      defIds: [for (final equipment in drops.equipments) equipment.defId],
-      from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
-      now: now,
-    );
-  }
-
-  if (durableActivitySettlement == null) {
-    final disposition = await rewardClaims.claimSettlement(
-      plan: claimPlan,
-      sourceSettlementId: occurrenceId,
-      at: now,
-      applyInTxn: applyInTxn,
-    );
-    if (disposition != RewardClaimDisposition.applied) {
-      throw StateError('Tower reward settlement was already applied');
-    }
-  } else {
-    final disposition = await durableActivitySettlement.service
-        .commitSettlement(
-          runId: durableActivitySettlement.runId,
-          outcome: DurableActivityOutcome.victory,
-          now: now,
-          applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
-              plan: claimPlan,
-              sourceSettlementId: occurrenceId,
-              at: now,
-              applyInTxn: applyInTxn,
-            );
-            if (rewardDisposition != RewardClaimDisposition.applied) {
-              throw StateError('Tower reward settlement was already applied');
-            }
-          },
+      var drops = const DropResult(equipments: <Equipment>[], items: []);
+      if (isFirstClear && GameRepository.isLoaded) {
+        final dropService = DropService(
+          equipmentDefLookup: GameRepository.instance.getEquipment,
+          defaultObtainedFrom: UiStrings.towerDropSource,
         );
-    if (disposition != DurableActivitySettlementDisposition.applied) {
-      throw StateError('Tower durable settlement was already applied');
-    }
-  }
-  return (
-    clearResult: clearResult,
-    resolution: resolution,
-    skillDrop: skillDrop,
-    drops: drops,
+        final rng = ref.read(rngProvider);
+        drops = dropService.rollTowerRewards(floor, rng);
+        final bonus = dropService.rollRareBonus(
+          baseTier: RealmUtils.equipmentTierCapOf(floor.requiredRealm),
+          config: GameRepository.instance.numbers.rareBonusDrop,
+          rng: rng,
+          poolForTier: (tier) => GameRepository.instance.equipmentDefs.values
+              .where((equipment) => equipment.tier == tier)
+              .toList(growable: false),
+          obtainedFrom: UiStrings.dropSourceRareBonus,
+        );
+        if (bonus != null) {
+          drops = DropResult(
+            equipments: [...drops.equipments, bonus],
+            items: drops.items,
+          );
+        }
+      }
+
+      final claimPlan = RewardClaimPlan.forSettlement(
+        contentKind: RewardContentKind.tower,
+        contentId: 'tower_floor_${floor.floorIndex}_cycle_$cycle',
+        saveDataId: IsarSetup.currentSlotId,
+        participantId: participantId,
+        occurrenceId: occurrenceId,
+        includesFirstClear: isFirstClear,
+      );
+      late TowerClearResult clearResult;
+      late TowerCombatResolution resolution;
+      var skillDrop = SkillDropResult.none;
+      final rewardClaims = DurableRewardClaimService(isar);
+      Future<void> applyInTxn(bool grantsFirstClear) async {
+        clearResult = await progressService.recordClearInTxn(
+          floorIndex: floor.floorIndex,
+          now: now,
+          elapsedMs: elapsedMs,
+          maxFloor: maxFloor,
+        );
+        if (clearResult.isFirstClear != isFirstClear) {
+          throw StateError(
+            'Tower first-clear snapshot changed during settlement',
+          );
+        }
+        await personalRecordService.recordVictoryInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          participantId: participantId,
+          floorIndex: floor.floorIndex,
+          elapsedMs: elapsedMs,
+          now: now,
+        );
+        await afterProgressInTxnForTest?.call();
+        // Progress remains authoritative even when a first-clear receipt exists.
+        // The receipt only suppresses the exclusive grant and its displayed drops.
+        if (!grantsFirstClear) {
+          drops = const DropResult(equipments: <Equipment>[], items: []);
+        }
+        resolution = await applyTowerCombatResolution(
+          ref: ref,
+          floor: floor,
+          grantsFirstClearExperience: grantsFirstClear,
+          expectedParticipantId: participantId,
+          settlementSnapshot: settlementSnapshot,
+          transactionOwned: true,
+          settlementAt: now,
+        );
+        if (floor.dropSkillFragmentId != null && GameRepository.isLoaded) {
+          skillDrop = await runTowerSkillDropHookAfterVictoryInTxn(
+            floor: floor,
+            svc: SkillUnlockService(
+              isar,
+              fragmentThreshold:
+                  GameRepository.instance.numbers.skillUnlock.fragmentThreshold,
+            ),
+            towerFragmentDropProb: GameRepository
+                .instance
+                .numbers
+                .skillUnlock
+                .towerFragmentDropProb,
+            rng: ref.read(mathRandomProvider),
+          );
+        }
+        await _persistTowerDropsInTxn(
+          isar: isar,
+          drops: drops,
+          floor: floor,
+          now: now,
+        );
+        await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          defIds: [for (final equipment in drops.equipments) equipment.defId],
+          from: UiStrings.weaponCodexSourceTowerFloor(floor.floorIndex),
+          now: now,
+        );
+      }
+
+      if (durableActivitySettlement == null) {
+        final disposition = await rewardClaims.claimSettlement(
+          plan: claimPlan,
+          sourceSettlementId: occurrenceId,
+          at: now,
+          applyInTxn: applyInTxn,
+        );
+        if (disposition != RewardClaimDisposition.applied) {
+          throw StateError('Tower reward settlement was already applied');
+        }
+      } else {
+        final disposition = await durableActivitySettlement.service
+            .commitSettlement(
+              runId: durableActivitySettlement.runId,
+              outcome: DurableActivityOutcome.victory,
+              now: now,
+              applyInTxn: () async {
+                final rewardDisposition = await rewardClaims
+                    .claimSettlementInTxn(
+                      plan: claimPlan,
+                      sourceSettlementId: occurrenceId,
+                      at: now,
+                      applyInTxn: applyInTxn,
+                    );
+                if (rewardDisposition != RewardClaimDisposition.applied) {
+                  throw StateError(
+                    'Tower reward settlement was already applied',
+                  );
+                }
+              },
+            );
+        if (disposition != DurableActivitySettlementDisposition.applied) {
+          throw StateError('Tower durable settlement was already applied');
+        }
+      }
+      return (
+        clearResult: clearResult,
+        resolution: resolution,
+        skillDrop: skillDrop,
+        drops: drops,
+      );
+    },
   );
 }
 
@@ -706,15 +721,19 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
   }
   final now = settlementAt ?? DateTime.now();
   if (!transactionOwned) {
-    return isar.writeTxn(
-      () => applyTowerCombatResolution(
-        ref: ref,
-        floor: floor,
-        grantsFirstClearExperience: grantsFirstClearExperience,
-        expectedParticipantId: resolvedParticipantId,
-        settlementSnapshot: combatSettlement,
-        transactionOwned: true,
-        settlementAt: now,
+    return ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(
+        () => applyTowerCombatResolution(
+          ref: ref,
+          floor: floor,
+          grantsFirstClearExperience: grantsFirstClearExperience,
+          expectedParticipantId: resolvedParticipantId,
+          settlementSnapshot: combatSettlement,
+          transactionOwned: true,
+          settlementAt: now,
+        ),
       ),
     );
   }

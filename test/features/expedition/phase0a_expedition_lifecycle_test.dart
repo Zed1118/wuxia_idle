@@ -198,7 +198,7 @@ void main() {
             );
             // Dispatch through the real typed request. No unlocks, stat edits,
             // weakened enemies, fabricated victories or skipped preceding nodes.
-            final departedAt = DateTime.utc(2026, 9, 14);
+            final departedAt = DateTime.now().toUtc();
             final service = ExpeditionService(IsarSetup.instance);
             // A real immediate recall advances the second scenario's serial without
             // clearing any node, opening a manual gate, or editing saved counters.
@@ -273,8 +273,9 @@ void main() {
               var totalNodes = 0;
               ExpeditionSettlementResult? last;
               Phase0aExpeditionCombatRunner? retainedRunner;
-              // maxBatches=1 exposes each existing service transaction to the cold
-              // replay. The ordinary route retains the production batch defaults.
+              // Bound both loop levels to one node for the cold/retained-runner
+              // routes. The ordinary route retains the production batch defaults;
+              // each node now commits independently within a public batch.
               for (var batch = 0; batch < 6; batch++) {
                 final currentService = ExpeditionService(
                   IsarSetup.instance,
@@ -293,7 +294,7 @@ void main() {
                   combat: combat,
                   config: config,
                   now: now,
-                  maxNodesPerBatch: cold
+                  maxNodesPerBatch: cold || singleBatch
                       ? 1
                       : ExpeditionService.defaultMaxNodesPerBatch,
                   maxBatches: cold || singleBatch ? 1 : 4096,

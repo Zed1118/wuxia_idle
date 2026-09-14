@@ -4329,6 +4329,12 @@ class UiStrings {
       '召回后本次远征结束：已踏平节点的奖励照常入账，当前未完成的节点作废。';
   static const String expeditionRecallConfirm = '召回';
   static const String expeditionRecallRacedSnack = '召回恰逢结算入账，队伍未动——请再试一次';
+  static const String expeditionTimelineConflictHint = '旧远征时间记录冲突，请到远征处理';
+  static const String expeditionTimelineConflictTitle = '处理旧远征时间记录';
+  static const String expeditionTimelineConflictBody =
+      '这次远征尚未结算的节点无法还原，不会追算。你可以保留会话，或结束该次远征，仅领取已经结算的奖励。';
+  static const String expeditionTimelineConflictKeep = '保留会话';
+  static const String expeditionTimelineConflictEnd = '结束远征，领取已结算奖励';
 
   // ── 百草岭远征 · 江湖地图统一地点详情 ──────────────────────
   static const String expeditionLocationDetailTitle = '百草岭·地点详情';

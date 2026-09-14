@@ -15,6 +15,7 @@ import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../character_panel/application/lineage_info_provider.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../inheritance/application/founder_buff_providers.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
 import '../application/ascend_service_providers.dart';
@@ -212,10 +213,16 @@ class _AscensionScreenState extends ConsumerState<AscensionScreen> {
       // pre-flight 调,因 performAscend 内 founder isActive=false 会清装备槽。
       final isContinuation = await svc.isLineageContinuation();
 
-      final result = await isar.writeTxn(
-        () => svc.performAscend(
-          Map.of(_assignments),
-          promotedDiscipleId: promotedDiscipleId,
+      final now = DateTime.now();
+      final result = await ExpeditionTimeline.runAfterCatchUp(
+        isar: isar,
+        now: now,
+        action: () => isar.writeTxn(
+          () => svc.performAscend(
+            Map.of(_assignments),
+            promotedDiscipleId: promotedDiscipleId,
+            now: now,
+          ),
         ),
       );
 

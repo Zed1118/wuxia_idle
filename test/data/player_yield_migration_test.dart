@@ -190,8 +190,13 @@ void main() {
       );
       expect(
         LegacyPlayerYieldSaveDataSchema.properties.keys.toSet(),
-        SaveDataSchema.properties.keys.toSet()
-          ..removeAll({'passiveLastSettledAt', 'passiveMojianshiRemainder'}),
+        SaveDataSchema.properties.keys.toSet()..removeAll({
+          'passiveLastSettledAt',
+          'passiveMojianshiRemainder',
+          'pendingPassiveRecapExperience',
+          'pendingPassiveRecapMojianshi',
+          'pendingPassiveRecapStartedAt',
+        }),
       );
       expect(
         LegacyPlayerYieldCharacterSchema.properties.keys.toSet(),
@@ -241,6 +246,9 @@ void main() {
         final save = (await raw.saveDatas.get(0))!;
         expect(save.saveVersion, '0.49.0');
         expect(save.passiveLastSettledAt, isNull);
+        expect(save.pendingPassiveRecapExperience, isNull);
+        expect(save.pendingPassiveRecapMojianshi, isNull);
+        expect(save.pendingPassiveRecapStartedAt, isNull);
         expect(save.passiveMojianshiRemainder.isNaN, isTrue);
         final characters = await raw.characters.where().findAll();
         expect(characters, hasLength(2));

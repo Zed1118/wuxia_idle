@@ -8,6 +8,8 @@ import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../cultivation/application/progression_gate_service.dart';
+import '../../expedition/application/expedition_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../taohua_island/application/island_settle_service.dart';
 import '../domain/retreat_session.dart';
@@ -59,25 +61,28 @@ class OfflinePassiveService {
     bool recoverInjuries = false,
     bool updatePresence = false,
     bool settleIslandBeforeGrowth = false,
-  }) => isar.writeTxn(
-    () => settleWithinTxn(
-      isar: isar,
-      now: now,
-      recoverInjuries: recoverInjuries,
-      updatePresence: updatePresence,
-      settleIslandBeforeGrowth: settleIslandBeforeGrowth,
-    ),
+    ExpeditionService? expeditionService,
+  }) => ExpeditionTimeline.settlePassiveWindow(
+    isar: isar,
+    now: now,
+    recoverInjuries: recoverInjuries,
+    updatePresence: updatePresence,
+    settleIslandBeforeGrowth: settleIslandBeforeGrowth,
+    service: expeditionService,
   );
 
   /// Caller must own the Isar write transaction. Read the character again after
   /// this call before applying another reward: passive experience can advance it.
   /// External growth and succession also settle an already opened island at the
   /// current realm before they change it. Routine heartbeats leave its window.
+  /// Reward writers may update presence to protect injury timing. Only the
+  /// actual presence consumer opts into consuming the durable recap.
   static Future<PassiveYield?> settleWithinTxn({
     required Isar isar,
     required DateTime now,
     bool recoverInjuries = false,
     bool updatePresence = false,
+    bool consumeRecap = false,
     bool settleIslandBeforeGrowth = false,
   }) async {
     final save = await isar.saveDatas.get(0);
@@ -89,6 +94,7 @@ class OfflinePassiveService {
 
     final anchor = save.passiveLastSettledAt ?? save.lastOnlineAt;
     if (now.isBefore(anchor)) return null;
+    await ExpeditionTimeline.assertPassiveBoundary(isar, now);
     _validateRemainder(save.passiveMojianshiRemainder);
     _validateRemainder(character.passiveExperienceRemainder);
 
@@ -104,11 +110,14 @@ class OfflinePassiveService {
         await _settleIslandIfInitialized(isar, save, now, character.realmTier);
       }
       save.passiveLastSettledAt = now;
+      final recap = consumeRecap && !now.isBefore(save.lastOnlineAt)
+          ? _consumeRecap(save, now)
+          : null;
       if (updatePresence && !now.isBefore(save.lastOnlineAt)) {
         save.lastOnlineAt = now;
       }
       await isar.saveDatas.put(save);
-      return null;
+      return recap;
     }
 
     if (save.passiveLastSettledAt == null &&
@@ -186,6 +195,17 @@ class OfflinePassiveService {
       }
     }
 
+    if (elapsed > 0) {
+      save.pendingPassiveRecapStartedAt ??= anchor;
+      save.pendingPassiveRecapExperience =
+          (save.pendingPassiveRecapExperience ?? 0) + accrual.experience;
+      save.pendingPassiveRecapMojianshi =
+          (save.pendingPassiveRecapMojianshi ?? 0) + accrual.mojianshi;
+    }
+    final recap = consumeRecap && !now.isBefore(save.lastOnlineAt)
+        ? _consumeRecap(save, now)
+        : null;
+
     save.totalPassiveMojianshi += accrual.mojianshi;
     save.totalPassiveExperience += accrual.experience;
     save.passiveLastSettledAt = now;
@@ -194,6 +214,7 @@ class OfflinePassiveService {
     }
     await isar.characters.put(character);
     await isar.saveDatas.put(save);
+    if (recap != null) return recap;
     if (elapsed == 0) return null;
     return (
       mojianshi: accrual.mojianshi,
@@ -216,6 +237,24 @@ class OfflinePassiveService {
     if (anchor != null && now.isBefore(anchor)) return;
     save.passiveLastSettledAt = now;
     await isar.saveDatas.put(save);
+  }
+
+  static PassiveYield? _consumeRecap(SaveData save, DateTime now) {
+    final start = save.pendingPassiveRecapStartedAt;
+    if (start == null || now.isBefore(start)) return null;
+    final result = (
+      experience: save.pendingPassiveRecapExperience ?? 0,
+      mojianshi: save.pendingPassiveRecapMojianshi ?? 0,
+      awayHours:
+          now.difference(start).inMicroseconds / Duration.microsecondsPerHour,
+      settledHours:
+          now.difference(start).inMicroseconds / Duration.microsecondsPerHour,
+      isCapped: false,
+    );
+    save.pendingPassiveRecapExperience = 0;
+    save.pendingPassiveRecapMojianshi = 0;
+    save.pendingPassiveRecapStartedAt = null;
+    return result;
   }
 
   static void _validateRemainder(double value) {

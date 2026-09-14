@@ -39,6 +39,7 @@ import '../domain/expedition_milestone_record.dart';
 import '../domain/expedition_node.dart';
 import '../domain/expedition_run.dart';
 import 'expedition_combat.dart';
+import 'expedition_timeline.dart';
 import 'phase0a_expedition_combat_runner.dart';
 
 /// 百草岭远征应用服务（§4.1/§9.1）。
@@ -127,6 +128,23 @@ class ExpeditionService {
     int cycleIndex = 1,
     DateTime? now,
     ActivityParticipationRequest? strictRequest,
+  }) => ExpeditionTimeline.serialize(
+    _isar,
+    () => _dispatchLocked(
+      characterIds: characterIds,
+      policy: policy,
+      cycleIndex: cycleIndex,
+      now: now,
+      strictRequest: strictRequest,
+    ),
+  );
+
+  Future<int> _dispatchLocked({
+    required List<int> characterIds,
+    required ExpeditionPolicy policy,
+    int cycleIndex = 1,
+    DateTime? now,
+    ActivityParticipationRequest? strictRequest,
   }) async {
     if (characterIds.length != 1) {
       throw StateError('远征派遣：路线 C 只允许单人，got ${characterIds.length}');
@@ -138,9 +156,22 @@ class ExpeditionService {
       throw StateError('远征派遣：周目须 ≥1，got $cycleIndex');
     }
 
+    final requestedAt = now ?? DateTime.now();
     return _isar.writeTxn(() async {
-      final save = await _isar.saveDatas.get(0);
-      if (save == null) throw StateError('远征派遣：无存档');
+      final initialSave = await _isar.saveDatas.get(0);
+      if (initialSave == null) throw StateError('远征派遣：无存档');
+      var save = initialSave;
+      // A clock rollback cannot backdate a newly dispatched run behind already
+      // awarded passive time and manufacture an impossible pending history.
+      final established =
+          save.passiveLastSettledAt != null ||
+          save.lastOnlineAt != save.createdAt;
+      final anchor = established
+          ? save.passiveLastSettledAt ?? save.lastOnlineAt
+          : null;
+      final at = anchor != null && anchor.isAfter(requestedAt)
+          ? anchor
+          : requestedAt;
 
       final runs = await _isar.expeditionRuns.where().findAll();
       if (runs.any((r) => r.saveDataId == save.id)) {
@@ -167,6 +198,9 @@ class ExpeditionService {
           'Expedition dispatch is blocked by a pending manual milestone',
         );
       }
+
+      await OfflinePassiveService.settleWithinTxn(isar: _isar, now: at);
+      save = (await _isar.saveDatas.get(0))!;
 
       final occupancy = await CharacterOccupancyService(_isar).snapshot();
       final scheduling = strictRequest == null
@@ -260,7 +294,7 @@ class ExpeditionService {
         ..saveDataId = save.id
         ..policy = policy
         ..seed = newSerial
-        ..departedAt = now ?? DateTime.now()
+        ..departedAt = at
         ..lastSettledAt = null
         ..currentNode = 0
         ..cycleIndex = cycleIndex
@@ -683,13 +717,48 @@ class ExpeditionService {
   ///
   /// 节点完成时刻按 `departedAt + 累计节点时长` 绝对锚定，故推进是
   /// `(run 状态, now)` 的确定函数：**在线分段 == 一次性离线**、重复调用**幂等**
-  /// （已完成节点不再兑现）自然成立。单批最多 [maxNodesPerBatch] 个节点一事务；
+  /// （已完成节点不再兑现）自然成立。每节点提交，单次不超过 [maxNodesPerBatch] 个节点；
   /// 战败即停；系统时间回拨以 `max(lastSettledAt, now)` 处理不产生负进度。
   Future<ExpeditionSettlementResult> settle({
     required ExpeditionCombat combat,
     required ExpeditionConfig config,
     DateTime? now,
     int maxNodesPerBatch = defaultMaxNodesPerBatch,
+    @visibleForTesting Future<void> Function()? beforeCommitForTest,
+  }) => ExpeditionTimeline.serialize(_isar, () async {
+    if (maxNodesPerBatch < 1) {
+      throw ArgumentError.value(
+        maxNodesPerBatch,
+        'maxNodesPerBatch',
+        'must be positive',
+      );
+    }
+    final at = now ?? DateTime.now();
+    var total = 0;
+    late ExpeditionSettlementResult last;
+    for (var i = 0; i < maxNodesPerBatch; i++) {
+      last = await _settle(
+        combat: combat,
+        config: config,
+        now: at,
+        beforeCommitForTest: beforeCommitForTest,
+      );
+      total += last.nodesSettled;
+      if (last.caughtUp || last.nodesSettled == 0) break;
+    }
+    return ExpeditionSettlementResult(
+      nodesSettled: total,
+      currentNode: last.currentNode,
+      caughtUp: last.caughtUp,
+      defeated: last.defeated,
+      manualMilestoneGate: last.manualMilestoneGate,
+    );
+  });
+
+  Future<ExpeditionSettlementResult> _settle({
+    required ExpeditionCombat combat,
+    required ExpeditionConfig config,
+    DateTime? now,
     @visibleForTesting Future<void> Function()? beforeCommitForTest,
   }) async {
     final effectiveNow = now ?? DateTime.now();
@@ -728,6 +797,39 @@ class ExpeditionService {
       );
     }
 
+    final nodeAt = run.departedAt.add(
+      Duration(
+        minutes: ExpeditionRules.cumulativeMinutesToCompleteNode(
+          startNode + 1,
+          normalMinutes: config.normalNodeMinutes,
+          eliteMinutes: config.eliteNodeMinutes,
+        ),
+      ),
+    );
+    final prepared = await _isar.writeTxn(() async {
+      final row = await _isar.expeditionRuns.get(run.id);
+      if (row == null ||
+          row.defeated ||
+          row.currentNode != startNode ||
+          row.lastSettledAt != run.lastSettledAt) {
+        return false;
+      }
+      await ExpeditionTimeline.settleBeforeNodeInTxn(
+        isar: _isar,
+        run: row,
+        at: nodeAt,
+      );
+      return true;
+    });
+    if (!prepared) {
+      return ExpeditionSettlementResult(
+        nodesSettled: 0,
+        currentNode: startNode,
+        caughtUp: false,
+        defeated: false,
+      );
+    }
+
     // 成员工作副本（fresh: currentNode==0 → 满血起）。
     final caps = await combat.memberCaps(
       run.members.map((m) => m.characterId).toList(),
@@ -744,10 +846,9 @@ class ExpeditionService {
       downed[m.characterId] = fresh ? false : m.isDowned;
     }
 
-    // 单批上限：本次最多结算 maxNodesPerBatch 个节点，余下 elapsed 留下批。
-    final batchEnd = (startNode + maxNodesPerBatch < targetNode)
-        ? startNode + maxNodesPerBatch
-        : targetNode;
+    // Each node commits before the next passive slice. This includes travel:
+    // a cold reopen must never find passive growth beyond a pending node.
+    final batchEnd = startNode + 1;
 
     // txn 外逐节点跑规则 + 战斗，攒本批增量。
     final newRewards = <RewardEntry>[];
@@ -850,12 +951,6 @@ class ExpeditionService {
         ),
       );
       node = index;
-      // Commit real combat growth with this node's vitals/rewards before the
-      // next fight loads its snapshot. Otherwise a long offline batch uses
-      // stale proficiency while reopening between nodes uses the updated one.
-      // Non-combat nodes can still share a batch; all cursor/rollback guards
-      // remain in the existing transaction below.
-      if (combatSettlements.isNotEmpty) break;
     }
 
     final settledCount = node - startNode;
@@ -891,7 +986,7 @@ class ExpeditionService {
         }
       }
       row.currentNode = node;
-      row.lastSettledAt = clampedNow;
+      row.lastSettledAt = nodeAt;
       if (defeated) row.defeated = true; // 战败即停落库（P1-5.2）
       for (final m in row.members) {
         final v = vitals[m.characterId];
@@ -938,6 +1033,23 @@ class ExpeditionService {
     DateTime? now,
     int maxNodesPerBatch = defaultMaxNodesPerBatch,
     int maxBatches = 4096,
+  }) => ExpeditionTimeline.serialize(
+    _isar,
+    () => _settleToNow(
+      combat: combat,
+      config: config,
+      now: now,
+      maxNodesPerBatch: maxNodesPerBatch,
+      maxBatches: maxBatches,
+    ),
+  );
+
+  Future<ExpeditionSettlementResult> _settleToNow({
+    required ExpeditionCombat combat,
+    required ExpeditionConfig config,
+    DateTime? now,
+    int maxNodesPerBatch = defaultMaxNodesPerBatch,
+    int maxBatches = 4096,
   }) async {
     var total = 0;
     var last = const ExpeditionSettlementResult(
@@ -957,9 +1069,19 @@ class ExpeditionService {
       last = r;
       final gate = r.manualMilestoneGate;
       if (gate != null) {
+        final run = await _activeRun();
+        final gateAt = run?.departedAt.add(
+          Duration(
+            minutes: ExpeditionRules.cumulativeMinutesToCompleteNode(
+              gate.nodeIndex,
+              normalMinutes: config.normalNodeMinutes,
+              eliteMinutes: config.eliteNodeMinutes,
+            ),
+          ),
+        );
         final automaticReturn = await recall(
           manualMilestoneGate: gate,
-          now: now,
+          now: gateAt ?? now,
         );
         if (!automaticReturn.returned) {
           return ExpeditionSettlementResult(
@@ -1010,13 +1132,33 @@ class ExpeditionService {
   /// 调用方（UI 已防重）可安全重试。
   Future<ExpeditionReturnResult> recall({
     bool defeated = false,
+    int? expectedRunId,
+    ExpeditionManualMilestoneGate? manualMilestoneGate,
+    DateTime? now,
+    @visibleForTesting Future<void> Function()? beforeCommitForTest,
+    @visibleForTesting Future<void> Function()? afterRewardsInTxnForTest,
+  }) => ExpeditionTimeline.serialize(
+    _isar,
+    () => _recall(
+      defeated: defeated,
+      expectedRunId: expectedRunId,
+      manualMilestoneGate: manualMilestoneGate,
+      now: now,
+      beforeCommitForTest: beforeCommitForTest,
+      afterRewardsInTxnForTest: afterRewardsInTxnForTest,
+    ),
+  );
+
+  Future<ExpeditionReturnResult> _recall({
+    bool defeated = false,
+    int? expectedRunId,
     ExpeditionManualMilestoneGate? manualMilestoneGate,
     DateTime? now,
     @visibleForTesting Future<void> Function()? beforeCommitForTest,
     @visibleForTesting Future<void> Function()? afterRewardsInTxnForTest,
   }) async {
     final run = await _activeRun();
-    if (run == null) {
+    if (run == null || (expectedRunId != null && run.id != expectedRunId)) {
       return const ExpeditionReturnResult(
         returned: false,
         deepestNode: 0,
@@ -1082,6 +1224,7 @@ class ExpeditionService {
       // 并发重读 + cursor 守卫：不一致即弃，事务回滚零副作用。
       final row = await _isar.expeditionRuns.get(run.id);
       if (row == null ||
+          row.defeated != run.defeated ||
           row.currentNode != run.currentNode ||
           row.lastSettledAt != run.lastSettledAt) {
         raced = true;
@@ -1093,6 +1236,10 @@ class ExpeditionService {
             sourceSettlementId: 'expedition-run:${run.id}',
             at: at,
             applyInTxn: (_) async {
+              // Close first within this same transaction. Passive growth at the
+              // return boundary no longer crosses an active node. Rollback also
+              // restores the run, so a failed claim cannot release its member.
+              await _isar.expeditionRuns.delete(run.id);
               await OfflinePassiveService.settleWithinTxn(
                 settleIslandBeforeGrowth: true,
                 isar: _isar,
@@ -1180,9 +1327,6 @@ class ExpeditionService {
                   );
                 }
               }
-
-              // 3. 关闭会话：删 run → 占用自动解除（占用由 active run 派生）。
-              await _isar.expeditionRuns.delete(run.id);
 
               // 4. 永久进度：百草岭历史最深节点（展示用 §3.3，07-21 审查 P1-5.7；
               // max 单调不回退）。

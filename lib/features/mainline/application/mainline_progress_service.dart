@@ -4,6 +4,7 @@ import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../seclusion/application/offline_passive_service.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../domain/mainline_progress.dart';
@@ -111,13 +112,17 @@ class MainlineProgressService {
     TutorialService? tutorialService,
     int cycle = 1,
   }) async {
-    await isar.writeTxn(
-      () => recordVictoryInTxn(
-        saveDataId: IsarSetup.currentSlotId,
-        stageId: stageId,
-        now: now,
-        tutorialService: tutorialService,
-        cycle: cycle,
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(
+        () => recordVictoryInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          stageId: stageId,
+          now: now,
+          tutorialService: tutorialService,
+          cycle: cycle,
+        ),
       ),
     );
   }

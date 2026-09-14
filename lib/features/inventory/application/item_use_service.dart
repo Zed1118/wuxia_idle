@@ -10,6 +10,7 @@ import '../../../core/domain/skill_unlock_entry.dart';
 import '../../../data/defs/item_def.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../cultivation/application/character_advancement_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../seclusion/application/offline_passive_service.dart';
 
 /// 材料经济 P2：道具"使用"派发服务。
@@ -31,7 +32,10 @@ class ItemUseService {
     bool Function(RealmTier, RealmLayer)? isLayerLocked,
     DateTime? now,
   }) async {
-    return isar.writeTxn(() async {
+    final passiveAt = def.type == ItemType.jingYanDan
+        ? now ?? DateTime.now()
+        : null;
+    Future<ItemUseResult> action() => isar.writeTxn(() async {
       final item = await isar.inventoryItems.getByDefId(def.defId);
       if (item == null || item.quantity <= 0) {
         return const ItemUseResult(kind: ItemUseKind.noStock);
@@ -42,7 +46,7 @@ class ItemUseService {
           await OfflinePassiveService.settleWithinTxn(
             settleIslandBeforeGrowth: true,
             isar: isar,
-            now: now ?? DateTime.now(),
+            now: passiveAt!,
           );
           final save = await isar.saveDatas.get(0);
           final founderId = save?.founderCharacterId;
@@ -150,6 +154,12 @@ class ItemUseService {
           return const ItemUseResult(kind: ItemUseKind.notUsable);
       }
     });
+    if (passiveAt == null) return action();
+    return ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: passiveAt,
+      action: action,
+    );
   }
 
   static Future<Character?> _findRecoveryTarget(Isar isar) async {

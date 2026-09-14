@@ -8,6 +8,7 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
+import '../../expedition/application/expedition_providers.dart';
 import 'offline_passive_service.dart';
 
 /// Keeps lifecycle presence separate from the persistent passive reward ledger.
@@ -44,6 +45,9 @@ class OnlinePresenceController {
 
   @visibleForTesting
   bool get isHeartbeatActive => _heartbeat != null;
+
+  @visibleForTesting
+  Future<void> get settlementsComplete => _settlements;
 
   /// Startup/return uses injury recovery. Heartbeats and the first blur pass
   /// false, preserving the established recovery trigger and presence boundary.
@@ -87,10 +91,15 @@ class OnlinePresenceController {
       now: now,
       recoverInjuries: recoverInjuries,
       updatePresence: true,
+      expeditionService: _ref.read(expeditionServiceProvider),
     );
     if (_disposed) return result;
     // A return can recover injuries even when a reward boundary already settled
     // all product time, so refresh consumers even if the result is null.
+    _ref.invalidate(activeExpeditionProvider);
+    _ref.invalidate(expeditionCandidatesProvider);
+    _ref.invalidate(pendingExpeditionMilestoneProvider);
+    _ref.invalidate(expeditionMaxDepthProvider);
     _ref.invalidate(characterByIdProvider);
     _ref.invalidate(allInventoryItemsProvider);
     _ref.invalidate(inventoryQuantityByDefIdProvider('item_mojianshi'));

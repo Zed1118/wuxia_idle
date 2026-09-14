@@ -106,6 +106,14 @@ class SaveData {
   /// Uncollected fractional material, shared by this save slot.
   double passiveMojianshiRemainder = 0;
 
+  /// Already awarded passive yield awaiting the next presence recap. These are
+  /// presentation counters, never a second entitlement. Nullable counters let
+  /// missing fields in old Isar schemas mean zero without a negative sentinel;
+  /// both accumulation and consumption share the original reward transaction.
+  int? pendingPassiveRecapExperience = 0;
+  int? pendingPassiveRecapMojianshi = 0;
+  DateTime? pendingPassiveRecapStartedAt;
+
   /// 桃花岛建筑状态列表（Task 5 · 0.30.0）。
   /// 空 = 未初始化（首开时按配置建 level1 建筑）。旧档读默认空列表。
   List<IslandBuildingState> islandBuildings = [];

@@ -167,7 +167,7 @@ void main() {
     );
     final id = profile.snapshot.characterId;
     final service = ExpeditionService(isar, rng: DefaultRng(seed: 73));
-    final departedAt = DateTime.utc(2026, 9, 14);
+    final departedAt = DateTime.now().toUtc();
     Future<int> dispatch() => service.dispatchRequest(
       request: ExpeditionService.dispatchRequestFor(characterId: id),
       policy: ExpeditionPolicy.yiZhanLiXing,
@@ -225,7 +225,25 @@ void main() {
     }
     expect(before.currentNode, inInclusiveRange(1, 3));
     expect(before.defeated, isFalse);
-    expect(before.lastSettledAt!.toUtc(), now);
+    final beforeNodeAt = departedAt.add(
+      Duration(
+        minutes: ExpeditionRules.cumulativeMinutesToCompleteNode(
+          before.currentNode,
+          normalMinutes: config.normalNodeMinutes,
+          eliteMinutes: config.eliteNodeMinutes,
+        ),
+      ),
+    );
+    final attemptedNodeAt = departedAt.add(
+      Duration(
+        minutes: ExpeditionRules.cumulativeMinutesToCompleteNode(
+          before.currentNode + 1,
+          normalMinutes: config.normalNodeMinutes,
+          eliteMinutes: config.eliteNodeMinutes,
+        ),
+      ),
+    );
+    expect(before.lastSettledAt!.toUtc(), beforeNodeAt);
     final character = (await isar.characters.get(id))!;
     final main = (await isar.techniques.get(character.mainTechniqueId!))!;
     final skillId = repository
@@ -269,7 +287,7 @@ void main() {
         expect(inner.nodesSettled, 0);
         final committed = (await service.activeRun())!;
         expect(committed.currentNode, before.currentNode);
-        expect(committed.lastSettledAt, before.lastSettledAt);
+        expect(committed.lastSettledAt!.toUtc(), attemptedNodeAt);
         expect(committed.defeated, isTrue);
         expect(committed.members.single.currentHp, 0);
         expect(committed.members.single.currentQi, 0);

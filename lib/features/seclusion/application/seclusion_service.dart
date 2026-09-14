@@ -14,6 +14,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/drop_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../../core/domain/technique.dart';
 import '../../cultivation/application/character_advancement_service.dart';
@@ -173,50 +174,54 @@ class SeclusionService {
   }) async {
     late RetreatSession created;
 
-    await isar.writeTxn(() async {
-      // 1. Keep the existing session and its accrued rewards until collection.
-      final old = await isar.retreatSessions
-          .filter()
-          .saveDataIdEqualTo(saveDataId)
-          .statusEqualTo(RetreatStatus.active)
-          .findFirst();
-      if (old != null) {
-        throw StateError(UiStrings.seclusionCollectBeforeSwitch);
-      }
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(() async {
+        // 1. Keep the existing session and its accrued rewards until collection.
+        final old = await isar.retreatSessions
+            .filter()
+            .saveDataIdEqualTo(saveDataId)
+            .statusEqualTo(RetreatStatus.active)
+            .findFirst();
+        if (old != null) {
+          throw StateError(UiStrings.seclusionCollectBeforeSwitch);
+        }
 
-      await OfflinePassiveService.settleWithinTxn(
-        settleIslandBeforeGrowth: true,
-        isar: isar,
-        now: now,
-      );
-      final ch = await isar.characters.get(characterId);
-      if (ch == null) throw StateError('Retreat participant does not exist');
-      if (!canEnterMap(
-        mapType: mapType,
-        charRealmTier: ch.realmTier,
-        maps: maps,
-      )) {
-        throw StateError(UiStrings.seclusionMapLocked);
-      }
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: isar,
+          now: now,
+        );
+        final ch = await isar.characters.get(characterId);
+        if (ch == null) throw StateError('Retreat participant does not exist');
+        if (!canEnterMap(
+          mapType: mapType,
+          charRealmTier: ch.realmTier,
+          maps: maps,
+        )) {
+          throw StateError(UiStrings.seclusionMapLocked);
+        }
 
-      // 2. 建新 session
-      final session = RetreatSession()
-        ..saveDataId = saveDataId
-        ..mapType = mapType
-        ..durationHours = 0
-        ..realmTierAtStart = ch.realmTier
-        ..startedAt = now
-        ..completedAt = null
-        ..status = RetreatStatus.active
-        ..actualRewards = [];
-      final sid = await isar.retreatSessions.put(session);
-      session.id = sid;
-      created = session;
+        // 2. 建新 session
+        final session = RetreatSession()
+          ..saveDataId = saveDataId
+          ..mapType = mapType
+          ..durationHours = 0
+          ..realmTierAtStart = ch.realmTier
+          ..startedAt = now
+          ..completedAt = null
+          ..status = RetreatStatus.active
+          ..actualRewards = [];
+        final sid = await isar.retreatSessions.put(session);
+        session.id = sid;
+        created = session;
 
-      // 3. 更新 character.currentRetreatSessionId
-      ch.currentRetreatSessionId = sid;
-      await isar.characters.put(ch);
-    });
+        // 3. 更新 character.currentRetreatSessionId
+        ch.currentRetreatSessionId = sid;
+        await isar.characters.put(ch);
+      }),
+    );
 
     return created;
   }
@@ -411,219 +416,226 @@ class SeclusionService {
     late RetreatSession settledSession;
     AdvancementResult? advancement;
 
-    await isar.writeTxn(() async {
-      final persistedSession = await isar.retreatSessions.get(session.id);
-      if (persistedSession == null ||
-          persistedSession.status != RetreatStatus.active) {
-        throw StateError('闭关会话已结算或不存在');
-      }
-      final owner = await resolveRetreatOwner(isar, persistedSession.id);
-      if (owner.id != characterId) {
-        throw StateError('Retreat participant does not match the session');
-      }
-      await OfflinePassiveService.settleWithinTxn(
-        isar: isar,
-        now: now,
-        settleIslandBeforeGrowth: true,
-      );
-      settledSession = persistedSession;
-      final synergyGrowthPct = await _detectSynergyGrowthPct(owner);
-      settlement = computeSettlement(
-        session: persistedSession,
-        config: config,
-        passiveConfig: GameRepository.instance.numbers.passiveIdle,
-        maps: maps,
-        now: now,
-        legacyRealmTier: charRealmTier,
-        charSchool: owner.school,
-        synergyInternalForceGrowthPct: synergyGrowthPct,
-        dropService: GameRepository.isLoaded
-            ? DropService(
-                equipmentDefLookup: GameRepository.instance.getEquipment,
-                defaultObtainedFrom: UiStrings.dropSourceSeclusion,
-                now: () => now,
-              )
-            : null,
-      );
-      outputs = settlement.retreat;
-
-      // 1. 写 mojianshi → InventoryItem
-      // defId 统一为 'item_mojianshi'，与 towers.yaml / stages.yaml drop 体系
-      // 及 tower_entry_flow._itemTypeOf 映射对齐，避免同 ItemType 多 defId 分裂。
-      final totalMojianshi = outputs.mojianshi + settlement.passive.mojianshi;
-      if (totalMojianshi > 0) {
-        await _addInventoryItem(
-          isar,
-          defId: 'item_mojianshi',
-          itemType: ItemType.moJianShi,
-          quantity: totalMojianshi,
-          now: now,
-        );
-      }
-
-      // 1b. 写 silver → InventoryItem（P4 材料经济 P1）
-      if (outputs.silver > 0) {
-        await _addInventoryItem(
-          isar,
-          defId: 'item_silver',
-          itemType: ItemType.silver,
-          quantity: outputs.silver,
-          now: now,
-        );
-      }
-
-      // 1c. 写通用物品产出（药材/调理品原料等）。
-      for (final entry in outputs.itemRewards.entries) {
-        await _addInventoryItem(
-          isar,
-          defId: entry.key,
-          itemType: ItemType.fromDefId(entry.key),
-          quantity: entry.value,
-          now: now,
-        );
-      }
-
-      // 1d. 写闭关掉落装备 → isar.equipments（B2 接通）。
-      for (final eq in outputs.equipmentDrops) {
-        await isar.equipments.put(eq);
-      }
-
-      // 2. 更新 session
-      final rewards = <RewardEntry>[];
-      if (totalMojianshi > 0) {
-        rewards.add(
-          RewardEntry()
-            ..rewardKey = 'item_mojianshi'
-            ..quantity = totalMojianshi,
-        );
-      }
-      for (final entry in outputs.itemRewards.entries) {
-        rewards.add(
-          RewardEntry()
-            ..rewardKey = entry.key
-            ..quantity = entry.value,
-        );
-      }
-      persistedSession
-        ..completedAt = now
-        ..status = RetreatStatus.completed
-        ..actualRewards = rewards;
-      await isar.retreatSessions.put(persistedSession);
-
-      // 3. 写 Character:internalForce(clamp old max) + insightPoints 累加 +
-      //    experience 写回 + 升层(W15 #30 第 2 期 + 第 3 期消费层接入),
-      //    清 currentRetreatSessionId。
-      //
-      // applyExperience 后置于 internalForce clamp:升层拉新 internalForceMax 时
-      // 不立即填新 cap,玩家走下次闭关自然填(GDD §5.1 反留存焦虑,升层奖励
-      // 不"回血")。
-      final ch = await isar.characters.get(characterId);
-      if (ch != null) {
-        if (outputs.internalForcePoints > 0) {
-          final next = ch.internalForce + outputs.internalForcePoints;
-          ch.internalForce = next > ch.internalForceMax
-              ? ch.internalForceMax
-              : next;
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(() async {
+        final persistedSession = await isar.retreatSessions.get(session.id);
+        if (persistedSession == null ||
+            persistedSession.status != RetreatStatus.active) {
+          throw StateError('闭关会话已结算或不存在');
         }
-        if (outputs.techniqueLearnPoints > 0) {
-          ch.insightPoints += outputs.techniqueLearnPoints;
+        final owner = await resolveRetreatOwner(isar, persistedSession.id);
+        if (owner.id != characterId) {
+          throw StateError('Retreat participant does not match the session');
         }
-        // 根因A(2026-05-29):闭关挂机折算 battleCount 喂出战装备共鸣度
-        // (人剑合一离线可推进)。rate × actualHours,加到 3 件出战装备。
-        final bcGain =
-            (GameRepository
-                        .instance
-                        .numbers
-                        .resonanceSeclusionBattleCountPerHour *
-                    outputs.actualHours)
-                .floor();
-        if (bcGain > 0) {
-          for (final eqId in [
-            ch.equippedWeaponId,
-            ch.equippedArmorId,
-            ch.equippedAccessoryId,
-          ]) {
-            if (eqId == null) continue;
-            final eq = await isar.equipments.get(eqId);
-            if (eq == null) continue;
-            eq.battleCount += bcGain;
-            await isar.equipments.put(eq);
+        await OfflinePassiveService.settleWithinTxn(
+          isar: isar,
+          now: now,
+          settleIslandBeforeGrowth: true,
+        );
+        settledSession = persistedSession;
+        final synergyGrowthPct = await _detectSynergyGrowthPct(owner);
+        settlement = computeSettlement(
+          session: persistedSession,
+          config: config,
+          passiveConfig: GameRepository.instance.numbers.passiveIdle,
+          maps: maps,
+          now: now,
+          legacyRealmTier: charRealmTier,
+          charSchool: owner.school,
+          synergyInternalForceGrowthPct: synergyGrowthPct,
+          dropService: GameRepository.isLoaded
+              ? DropService(
+                  equipmentDefLookup: GameRepository.instance.getEquipment,
+                  defaultObtainedFrom: UiStrings.dropSourceSeclusion,
+                  now: () => now,
+                )
+              : null,
+        );
+        outputs = settlement.retreat;
+
+        // 1. 写 mojianshi → InventoryItem
+        // defId 统一为 'item_mojianshi'，与 towers.yaml / stages.yaml drop 体系
+        // 及 tower_entry_flow._itemTypeOf 映射对齐，避免同 ItemType 多 defId 分裂。
+        final totalMojianshi = outputs.mojianshi + settlement.passive.mojianshi;
+        if (totalMojianshi > 0) {
+          await _addInventoryItem(
+            isar,
+            defId: 'item_mojianshi',
+            itemType: ItemType.moJianShi,
+            quantity: totalMojianshi,
+            now: now,
+          );
+        }
+
+        // 1b. 写 silver → InventoryItem（P4 材料经济 P1）
+        if (outputs.silver > 0) {
+          await _addInventoryItem(
+            isar,
+            defId: 'item_silver',
+            itemType: ItemType.silver,
+            quantity: outputs.silver,
+            now: now,
+          );
+        }
+
+        // 1c. 写通用物品产出（药材/调理品原料等）。
+        for (final entry in outputs.itemRewards.entries) {
+          await _addInventoryItem(
+            isar,
+            defId: entry.key,
+            itemType: ItemType.fromDefId(entry.key),
+            quantity: entry.value,
+            now: now,
+          );
+        }
+
+        // 1d. 写闭关掉落装备 → isar.equipments（B2 接通）。
+        for (final eq in outputs.equipmentDrops) {
+          await isar.equipments.put(eq);
+        }
+
+        // 2. 更新 session
+        final rewards = <RewardEntry>[];
+        if (totalMojianshi > 0) {
+          rewards.add(
+            RewardEntry()
+              ..rewardKey = 'item_mojianshi'
+              ..quantity = totalMojianshi,
+          );
+        }
+        for (final entry in outputs.itemRewards.entries) {
+          rewards.add(
+            RewardEntry()
+              ..rewardKey = entry.key
+              ..quantity = entry.value,
+          );
+        }
+        persistedSession
+          ..completedAt = now
+          ..status = RetreatStatus.completed
+          ..actualRewards = rewards;
+        await isar.retreatSessions.put(persistedSession);
+
+        // 3. 写 Character:internalForce(clamp old max) + insightPoints 累加 +
+        //    experience 写回 + 升层(W15 #30 第 2 期 + 第 3 期消费层接入),
+        //    清 currentRetreatSessionId。
+        //
+        // applyExperience 后置于 internalForce clamp:升层拉新 internalForceMax 时
+        // 不立即填新 cap,玩家走下次闭关自然填(GDD §5.1 反留存焦虑,升层奖励
+        // 不"回血")。
+        final ch = await isar.characters.get(characterId);
+        if (ch != null) {
+          if (outputs.internalForcePoints > 0) {
+            final next = ch.internalForce + outputs.internalForcePoints;
+            ch.internalForce = next > ch.internalForceMax
+                ? ch.internalForceMax
+                : next;
           }
-        }
-        InnerBreathDisorder.recover(character: ch, hours: outputs.actualHours);
-        // Task 8: 双层伤势疗养按整段真实经过时长累减。
-        // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
-        if (ch.injuryHoursRemaining > 0) {
-          final left = ch.injuryHoursRemaining - settlement.elapsedHours;
-          ch.injuryHoursRemaining = left < 0 ? 0 : left;
-        }
-        ch.lightInjuryStacks = 0;
-        final totalExperience =
-            outputs.experiencePoints + settlement.passive.experience;
-        if (totalExperience > 0) {
-          // 统一升层门禁：发布上限或心魔未通时，EXP 留账不消费。
-          final progress = await isar.mainlineProgress
-              .filter()
-              .saveDataIdEqualTo(persistedSession.saveDataId)
-              .findFirst();
-          final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-          final repository = GameRepository.instance;
-          advancement = CharacterAdvancementService.applyExperience(
-            ch,
-            totalExperience,
-            realmLookup: repository.getRealm,
-            isLayerLocked: (tier, layer) =>
-                ProgressionGateService.isLayerLocked(
-                  nextTier: tier,
-                  nextLayer: layer,
-                  releaseCap: repository.numbers.progressionReleaseCap,
-                  realmLookup: repository.getRealm,
-                  innerDemonDef: repository.numbers.innerDemon,
-                  clearedStageIds: clearedSet,
-                ),
-          );
-        }
-        ch.currentRetreatSessionId = null;
-        await isar.characters.put(ch);
-
-        // P1 #42 Phase 2:GameEvent 写入 — 闭关完成 + (升层时)境界突破。
-        // 同 writeTxn 内原子,不开嵌套 writeTxn(GameEventService 内部 put 不开)。
-        final events = GameEventService(isar);
-        final mapDef = _getDef(persistedSession.mapType, maps);
-        await events.recordRetreatCompleted(
-          characterId: characterId,
-          characterName: ch.name,
-          actualHours: outputs.actualHours.round(),
-          mapName: mapDef.mapName,
-        );
-        if (advancement != null && advancement!.didAdvance) {
-          await events.recordRealmBreakthrough(
+          if (outputs.techniqueLearnPoints > 0) {
+            ch.insightPoints += outputs.techniqueLearnPoints;
+          }
+          // 根因A(2026-05-29):闭关挂机折算 battleCount 喂出战装备共鸣度
+          // (人剑合一离线可推进)。rate × actualHours,加到 3 件出战装备。
+          final bcGain =
+              (GameRepository
+                          .instance
+                          .numbers
+                          .resonanceSeclusionBattleCountPerHour *
+                      outputs.actualHours)
+                  .floor();
+          if (bcGain > 0) {
+            for (final eqId in [
+              ch.equippedWeaponId,
+              ch.equippedArmorId,
+              ch.equippedAccessoryId,
+            ]) {
+              if (eqId == null) continue;
+              final eq = await isar.equipments.get(eqId);
+              if (eq == null) continue;
+              eq.battleCount += bcGain;
+              await isar.equipments.put(eq);
+            }
+          }
+          InnerBreathDisorder.recover(
             character: ch,
-            result: advancement!,
+            hours: outputs.actualHours,
           );
-          // P1 #42 Phase 2 §10 P1.y:仅主角(founder)达一流 → 推 step 6
-          // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算)。
-          if (ch.lineageRole == LineageRole.founder) {
-            final tutorialSvc = TutorialService(isar);
-            await tutorialSvc.advanceForRealmBreakthrough(
-              advancement!.tierAfter,
+          // Task 8: 双层伤势疗养按整段真实经过时长累减。
+          // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
+          if (ch.injuryHoursRemaining > 0) {
+            final left = ch.injuryHoursRemaining - settlement.elapsedHours;
+            ch.injuryHoursRemaining = left < 0 ? 0 : left;
+          }
+          ch.lightInjuryStacks = 0;
+          final totalExperience =
+              outputs.experiencePoints + settlement.passive.experience;
+          if (totalExperience > 0) {
+            // 统一升层门禁：发布上限或心魔未通时，EXP 留账不消费。
+            final progress = await isar.mainlineProgress
+                .filter()
+                .saveDataIdEqualTo(persistedSession.saveDataId)
+                .findFirst();
+            final clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+            final repository = GameRepository.instance;
+            advancement = CharacterAdvancementService.applyExperience(
+              ch,
+              totalExperience,
+              realmLookup: repository.getRealm,
+              isLayerLocked: (tier, layer) =>
+                  ProgressionGateService.isLayerLocked(
+                    nextTier: tier,
+                    nextLayer: layer,
+                    releaseCap: repository.numbers.progressionReleaseCap,
+                    realmLookup: repository.getRealm,
+                    innerDemonDef: repository.numbers.innerDemon,
+                    clearedStageIds: clearedSet,
+                  ),
             );
           }
-        }
-      }
+          ch.currentRetreatSessionId = null;
+          await isar.characters.put(ch);
 
-      await OfflinePassiveService.resumeAfterRetreatWithinTxn(
-        isar: isar,
-        now: now,
-      );
-      final save = await isar.saveDatas.get(0);
-      if (save != null) {
-        save.totalPassiveMojianshi += settlement.passive.mojianshi;
-        save.totalPassiveExperience += settlement.passive.experience;
-        save.lastOnlineAt = now;
-        await isar.saveDatas.put(save);
-      }
-    });
+          // P1 #42 Phase 2:GameEvent 写入 — 闭关完成 + (升层时)境界突破。
+          // 同 writeTxn 内原子,不开嵌套 writeTxn(GameEventService 内部 put 不开)。
+          final events = GameEventService(isar);
+          final mapDef = _getDef(persistedSession.mapType, maps);
+          await events.recordRetreatCompleted(
+            characterId: characterId,
+            characterName: ch.name,
+            actualHours: outputs.actualHours.round(),
+            mapName: mapDef.mapName,
+          );
+          if (advancement != null && advancement!.didAdvance) {
+            await events.recordRealmBreakthrough(
+              character: ch,
+              result: advancement!,
+            );
+            // P1 #42 Phase 2 §10 P1.y:仅主角(founder)达一流 → 推 step 6
+            // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算)。
+            if (ch.lineageRole == LineageRole.founder) {
+              final tutorialSvc = TutorialService(isar);
+              await tutorialSvc.advanceForRealmBreakthrough(
+                advancement!.tierAfter,
+              );
+            }
+          }
+        }
+
+        await OfflinePassiveService.resumeAfterRetreatWithinTxn(
+          isar: isar,
+          now: now,
+        );
+        final save = await isar.saveDatas.get(0);
+        if (save != null) {
+          save.totalPassiveMojianshi += settlement.passive.mojianshi;
+          save.totalPassiveExperience += settlement.passive.experience;
+          save.lastOnlineAt = now;
+          await isar.saveDatas.put(save);
+        }
+      }),
+    );
 
     session
       ..completedAt = settledSession.completedAt

@@ -16,6 +16,8 @@ import '../application/expedition_combat_selector.dart';
 import '../application/expedition_providers.dart';
 import '../application/expedition_service.dart';
 import '../application/expedition_startup.dart';
+import '../application/expedition_timeline.dart';
+import '../../seclusion/application/online_presence_controller.dart';
 import '../domain/expedition_rules.dart';
 import '../domain/expedition_run.dart';
 import '../domain/expedition_milestone_record.dart';
@@ -517,6 +519,7 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
 
   Future<void> _recall() async {
     if (_recalling) return;
+    final requestedRun = run;
     final service = ref.read(expeditionServiceProvider);
     if (service == null) return; // 测试旁路
     final confirmed = await PaperDialog.show<bool>(
@@ -549,25 +552,58 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       // 期间已成熟但未启动追平的节点须先入暂存再返程，否则被直接丢弃；
       // settle 报战败则按战败返程（兑现伤势，P1-5.2 召回路径缓解）。
       var defeated = false;
+      var resolvedTimelineConflict = false;
       ExpeditionReturnResult? automaticReturn;
       final isar = ref.read(isarProvider);
       final config = ref.read(expeditionConfigProvider);
-      if (isar != null && config != null && run.members.length == 1) {
-        final settle = await settleActiveExpeditionOnOpen(
-          service: service,
-          combat: expeditionCombatFor(
-            isar,
-            memberCount: run.members.length,
-            member: run.members.single,
-          ),
-          config: config,
+      try {
+        if (isar != null &&
+            config != null &&
+            requestedRun.members.length == 1) {
+          final settle = await settleActiveExpeditionOnOpen(
+            service: service,
+            combat: expeditionCombatFor(
+              isar,
+              memberCount: requestedRun.members.length,
+              member: requestedRun.members.single,
+            ),
+            config: config,
+            now: ref.read(systemClockProvider).now(),
+          );
+          defeated = settle.defeated;
+          automaticReturn = settle.automaticReturn;
+        }
+      } on ExpeditionTimelineConflict catch (conflict) {
+        if (conflict.runId != requestedRun.id) rethrow;
+        if (!mounted) return;
+        final endConfirmed = await PaperDialog.show<bool>(
+          context,
+          title: UiStrings.expeditionTimelineConflictTitle,
+          body: const Text(UiStrings.expeditionTimelineConflictBody),
+          actions: [
+            PlaqueButton(
+              label: UiStrings.expeditionTimelineConflictKeep,
+              onTap: () => Navigator.of(context).pop(false),
+            ),
+            PlaqueButton(
+              label: UiStrings.expeditionTimelineConflictEnd,
+              onTap: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+        if (endConfirmed != true || !mounted) return;
+        automaticReturn = await service.recall(
+          expectedRunId: requestedRun.id,
           now: ref.read(systemClockProvider).now(),
         );
-        defeated = settle.defeated;
-        automaticReturn = settle.automaticReturn;
+        resolvedTimelineConflict = automaticReturn.returned;
       }
       final result =
-          automaticReturn ?? await service.recall(defeated: defeated);
+          automaticReturn ??
+          await service.recall(
+            expectedRunId: requestedRun.id,
+            defeated: defeated,
+          );
       if (!mounted) return;
       if (!result.returned) {
         // 并发冲突（P1-5.4 cursor 守卫放弃）：未发奖未关会话。此前直接
@@ -581,8 +617,16 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
         );
         return;
       }
+      if (resolvedTimelineConflict) {
+        final presence = ref.read(onlinePresenceControllerProvider);
+        await presence.settlePassiveWindow(recoverInjuries: false);
+        presence.markStartupSettleDone();
+        if (!mounted) return;
+      }
       ref.invalidate(activeExpeditionProvider);
       ref.invalidate(expeditionCandidatesProvider);
+      ref.invalidate(pendingExpeditionMilestoneProvider);
+      ref.invalidate(expeditionMaxDepthProvider);
       await Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
           builder: (_) => ExpeditionRecapScreen(result: result),

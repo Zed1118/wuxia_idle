@@ -38,6 +38,7 @@ import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../seclusion/application/offline_passive_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import '../../../data/defs/boss_gauntlet_config.dart';
 import '../domain/boss_gauntlet_run.dart';
@@ -1019,116 +1020,120 @@ class GauntletService {
       throw StateError('断魂庄选奖：会话无可结算参战者');
     }
 
-    await _isar.writeTxn(() async {
-      final run = await _activeRun(save0.id);
-      if (run == null) return; // 幂等
-      if (run.sessionPhase != GauntletPhase.awaitingRewardChoice) return;
-      await OfflinePassiveService.settleWithinTxn(
-        settleIslandBeforeGrowth: true,
-        isar: _isar,
-        now: at,
-      );
-      final save = (await _isar.saveDatas.get(0))!;
-      final alreadyCleared = save.clearedGauntletIds.contains(gauntletId);
-      final disposition = await DurableRewardClaimService(_isar)
-          .claimSettlementInTxn(
-            plan: claimPlan,
-            sourceSettlementId: 'gauntlet-run:${run.id}',
-            at: at,
-            applyInTxn: (grantsFirstClear) async {
-              // 首通墓碑只能扣除首通加成，既有重复经验、领悟与选奖仍发放。
-              final rewardExp =
-                  ((grantsFirstClear
-                              ? config.firstClearRewardExp
-                              : config.firstClearRewardExp ~/ 2) *
-                          cycleRewardMult)
-                      .round();
-              final rewardInsight =
-                  ((grantsFirstClear
-                              ? config.firstClearRewardInsight
-                              : config.firstClearRewardInsight ~/ 2) *
-                          cycleRewardMult)
-                      .round();
-              // ① 选中命名装备入背包（owner=null·走标准 roll 路径）。
-              final eq = EquipmentFactory.fromDef(
-                eqDef,
-                rng: rng,
-                obtainedAt: at,
-                obtainedFrom: UiStrings.gauntletName,
-              );
-              await _isar.equipments.put(eq);
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () => _isar.writeTxn(() async {
+        final run = await _activeRun(save0.id);
+        if (run == null) return; // 幂等
+        if (run.sessionPhase != GauntletPhase.awaitingRewardChoice) return;
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: _isar,
+          now: at,
+        );
+        final save = (await _isar.saveDatas.get(0))!;
+        final alreadyCleared = save.clearedGauntletIds.contains(gauntletId);
+        final disposition = await DurableRewardClaimService(_isar)
+            .claimSettlementInTxn(
+              plan: claimPlan,
+              sourceSettlementId: 'gauntlet-run:${run.id}',
+              at: at,
+              applyInTxn: (grantsFirstClear) async {
+                // 首通墓碑只能扣除首通加成，既有重复经验、领悟与选奖仍发放。
+                final rewardExp =
+                    ((grantsFirstClear
+                                ? config.firstClearRewardExp
+                                : config.firstClearRewardExp ~/ 2) *
+                            cycleRewardMult)
+                        .round();
+                final rewardInsight =
+                    ((grantsFirstClear
+                                ? config.firstClearRewardInsight
+                                : config.firstClearRewardInsight ~/ 2) *
+                            cycleRewardMult)
+                        .round();
+                // ① 选中命名装备入背包（owner=null·走标准 roll 路径）。
+                final eq = EquipmentFactory.fromDef(
+                  eqDef,
+                  rng: rng,
+                  obtainedAt: at,
+                  obtainedFrom: UiStrings.gauntletName,
+                );
+                await _isar.equipments.put(eq);
 
-              // ② 参战全员经验（层锁受发布上限·同远征/闭关口径）+ 领悟点。
-              if (rewardExp > 0 || rewardInsight > 0) {
-                // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId，
-                // SaveData 单例 id=0 永查不到（07-21 审查 P1-5.5）。
-                final progress = await _isar.mainlineProgress
-                    .filter()
-                    .saveDataIdEqualTo(IsarSetup.currentSlotId)
-                    .findFirst();
-                final clearedSet =
-                    progress?.clearedStageIds.toSet() ?? <String>{};
-                for (final id in memberIds) {
-                  final ch = await _isar.characters.get(id);
-                  if (ch == null) continue; // §10：找不到角色仍安全结算
-                  if (rewardExp > 0) {
-                    CharacterAdvancementService.applyExperience(
-                      ch,
-                      rewardExp,
-                      realmLookup: repo.getRealm,
-                      isLayerLocked: (tier, layer) =>
-                          ProgressionGateService.isLayerLocked(
-                            nextTier: tier,
-                            nextLayer: layer,
-                            releaseCap: numbers.progressionReleaseCap,
-                            realmLookup: repo.getRealm,
-                            innerDemonDef: numbers.innerDemon,
-                            clearedStageIds: clearedSet,
-                          ),
+                // ② 参战全员经验（层锁受发布上限·同远征/闭关口径）+ 领悟点。
+                if (rewardExp > 0 || rewardInsight > 0) {
+                  // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId，
+                  // SaveData 单例 id=0 永查不到（07-21 审查 P1-5.5）。
+                  final progress = await _isar.mainlineProgress
+                      .filter()
+                      .saveDataIdEqualTo(IsarSetup.currentSlotId)
+                      .findFirst();
+                  final clearedSet =
+                      progress?.clearedStageIds.toSet() ?? <String>{};
+                  for (final id in memberIds) {
+                    final ch = await _isar.characters.get(id);
+                    if (ch == null) continue; // §10：找不到角色仍安全结算
+                    if (rewardExp > 0) {
+                      CharacterAdvancementService.applyExperience(
+                        ch,
+                        rewardExp,
+                        realmLookup: repo.getRealm,
+                        isLayerLocked: (tier, layer) =>
+                            ProgressionGateService.isLayerLocked(
+                              nextTier: tier,
+                              nextLayer: layer,
+                              releaseCap: numbers.progressionReleaseCap,
+                              realmLookup: repo.getRealm,
+                              innerDemonDef: numbers.innerDemon,
+                              clearedStageIds: clearedSet,
+                            ),
+                      );
+                    }
+                    if (rewardInsight > 0) ch.insightPoints += rewardInsight;
+                    await _isar.characters.put(ch);
+                  }
+                }
+
+                // ③ 首通专属秘籍受独立 receipt 防重；通关时间属于进度记录。
+                if (grantsFirstClear && !alreadyCleared) {
+                  save.skillUnlockProgress = List.of(save.skillUnlockProgress);
+                  if (!save.skillUnlockProgress.isUnlocked(
+                    config.firstClearRewardSkillId,
+                  )) {
+                    save.skillUnlockProgress.markUnlocked(
+                      config.firstClearRewardSkillId,
                     );
                   }
-                  if (rewardInsight > 0) ch.insightPoints += rewardInsight;
-                  await _isar.characters.put(ch);
                 }
-              }
-
-              // ③ 首通专属秘籍受独立 receipt 防重；通关时间属于进度记录。
-              if (grantsFirstClear && !alreadyCleared) {
-                save.skillUnlockProgress = List.of(save.skillUnlockProgress);
-                if (!save.skillUnlockProgress.isUnlocked(
-                  config.firstClearRewardSkillId,
-                )) {
-                  save.skillUnlockProgress.markUnlocked(
-                    config.firstClearRewardSkillId,
-                  );
+                if (isFirstClear && !alreadyCleared) {
+                  save.duanhunFirstClearedAt = at;
                 }
-              }
-              if (isFirstClear && !alreadyCleared) {
-                save.duanhunFirstClearedAt = at;
-              }
-              // ④ 记通关（防重键·首通秘籍不重复掉落靠此·§inv5）。
-              if (!alreadyCleared) {
-                save.clearedGauntletIds = [
-                  ...save.clearedGauntletIds,
-                  gauntletId,
-                ];
-              }
-              // ④b 批 B：记已全通最高周目（周目解锁判定读侧·旧档缺失 cycleIndex 读 0 不写）。
-              if (run.cycleIndex > save.duanhunClearedCyclesMax) {
-                save.duanhunClearedCyclesMax = run.cycleIndex;
-              }
-              await _isar.saveDatas.put(save);
+                // ④ 记通关（防重键·首通秘籍不重复掉落靠此·§inv5）。
+                if (!alreadyCleared) {
+                  save.clearedGauntletIds = [
+                    ...save.clearedGauntletIds,
+                    gauntletId,
+                  ];
+                }
+                // ④b 批 B：记已全通最高周目（周目解锁判定读侧·旧档缺失 cycleIndex 读 0 不写）。
+                if (run.cycleIndex > save.duanhunClearedCyclesMax) {
+                  save.duanhunClearedCyclesMax = run.cycleIndex;
+                }
+                await _isar.saveDatas.put(save);
 
-              // ⑤ 返还托管补给 + 关会话。
-              await _returnEscrow(run);
-              await _isar.bossGauntletRuns.delete(run.id);
-              await afterRewardInTxnForTest?.call();
-            },
-          );
-      if (disposition != RewardClaimDisposition.applied) {
-        throw StateError('断魂庄选奖：本次奖励已结算');
-      }
-    });
+                // ⑤ 返还托管补给 + 关会话。
+                await _returnEscrow(run);
+                await _isar.bossGauntletRuns.delete(run.id);
+                await afterRewardInTxnForTest?.call();
+              },
+            );
+        if (disposition != RewardClaimDisposition.applied) {
+          throw StateError('断魂庄选奖：本次奖励已结算');
+        }
+      }),
+    );
   }
 
   /// 断魂庄失败结算（§6.3）：战败 / 认输离庄统一入口。单 `writeTxn`——只发「已击败
@@ -1149,6 +1154,7 @@ class GauntletService {
     GauntletAutomationAdmission? automationAdmission,
     int? durableRunId,
   }) async {
+    final at = now ?? DateTime.now();
     final save0 = await _isar.saveDatas.get(0);
     if (save0 == null) return GauntletDefeatSummary.empty; // 幂等：无存档
     final run0 = await _activeRun(save0.id);
@@ -1194,95 +1200,99 @@ class GauntletService {
     final repo = GameRepository.instance;
     final injuryPolicy = AttributeEffectPolicy(numbers.attributeEffects);
 
-    await _isar.writeTxn(() async {
-      final BossGauntletRun? run;
-      if (automationAdmission == null) {
-        run = await _activeRun(save0.id);
-        if (run == null) return; // 幂等
-      } else {
-        final save = await _isar.saveDatas.get(0);
-        final exactRun = await _isar.bossGauntletRuns.get(
-          automationAdmission.runId,
-        );
-        if (save == null || exactRun == null) {
-          throw StateError('Gauntlet automation defeat state disappeared');
-        }
-        _requireAdmittedRunState(
-          admission: automationAdmission,
-          save: save,
-          run: exactRun,
-          expectedPhase: GauntletPhase.inBattle,
-        );
-        run = exactRun;
-      }
-
-      await OfflinePassiveService.settleWithinTxn(
-        settleIslandBeforeGrowth: true,
-        isar: _isar,
-        now: now ?? DateTime.now(),
-        updatePresence: applyInjuries,
-      );
-      // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
-      // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId（P1-5.5）。
-      var clearedSet = const <String>{};
-      if (eliteExp > 0) {
-        final progress = await _isar.mainlineProgress
-            .filter()
-            .saveDataIdEqualTo(IsarSetup.currentSlotId)
-            .findFirst();
-        clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
-      }
-
-      for (final id in memberIds) {
-        final ch = await _isar.characters.get(id);
-        if (ch == null) continue; // §10：找不到角色仍安全结算
-        // ① 已击败精英经验（含倒下者·层锁·同远征口径）。领悟点/装备/秘籍/最终奖励全失。
-        if (eliteExp > 0) {
-          CharacterAdvancementService.applyExperience(
-            ch,
-            eliteExp,
-            realmLookup: repo.getRealm,
-            isLayerLocked: (tier, layer) =>
-                ProgressionGateService.isLayerLocked(
-                  nextTier: tier,
-                  nextLayer: layer,
-                  releaseCap: numbers.progressionReleaseCap,
-                  realmLookup: repo.getRealm,
-                  innerDemonDef: numbers.innerDemon,
-                  clearedStageIds: clearedSet,
-                ),
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () => _isar.writeTxn(() async {
+        final BossGauntletRun? run;
+        if (automationAdmission == null) {
+          run = await _activeRun(save0.id);
+          if (run == null) return; // 幂等
+        } else {
+          final save = await _isar.saveDatas.get(0);
+          final exactRun = await _isar.bossGauntletRuns.get(
+            automationAdmission.runId,
           );
+          if (save == null || exactRun == null) {
+            throw StateError('Gauntlet automation defeat state disappeared');
+          }
+          _requireAdmittedRunState(
+            admission: automationAdmission,
+            save: save,
+            run: exactRun,
+            expectedPhase: GauntletPhase.inBattle,
+          );
+          run = exactRun;
         }
-        // ② 正常战败附伤；系统迁移清场显式关闭，避免非玩家失败造成惩罚。
-        if (applyInjuries) {
-          if (downedById[id] == true) {
-            final hours = injuryPolicy.heavyInjuryHours(
-              baseHours: numbers.injury.heavyRecoveryHours,
-              constitution: ch.attributes.constitution,
-            );
-            InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
-          } else {
-            InjuryService.accumulateLightInjury(
+
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: _isar,
+          now: at,
+          updatePresence: applyInjuries,
+        );
+        // 精英经验层锁需 cleared 集（仅 eliteExp>0 时查）。
+        // 主线进度行以槽号（IsarSetup.currentSlotId）为 saveDataId（P1-5.5）。
+        var clearedSet = const <String>{};
+        if (eliteExp > 0) {
+          final progress = await _isar.mainlineProgress
+              .filter()
+              .saveDataIdEqualTo(IsarSetup.currentSlotId)
+              .findFirst();
+          clearedSet = progress?.clearedStageIds.toSet() ?? <String>{};
+        }
+
+        for (final id in memberIds) {
+          final ch = await _isar.characters.get(id);
+          if (ch == null) continue; // §10：找不到角色仍安全结算
+          // ① 已击败精英经验（含倒下者·层锁·同远征口径）。领悟点/装备/秘籍/最终奖励全失。
+          if (eliteExp > 0) {
+            CharacterAdvancementService.applyExperience(
               ch,
-              maxStacks: numbers.injury.lightMaxStacks,
+              eliteExp,
+              realmLookup: repo.getRealm,
+              isLayerLocked: (tier, layer) =>
+                  ProgressionGateService.isLayerLocked(
+                    nextTier: tier,
+                    nextLayer: layer,
+                    releaseCap: numbers.progressionReleaseCap,
+                    realmLookup: repo.getRealm,
+                    innerDemonDef: numbers.innerDemon,
+                    clearedStageIds: clearedSet,
+                  ),
             );
           }
+          // ② 正常战败附伤；系统迁移清场显式关闭，避免非玩家失败造成惩罚。
+          if (applyInjuries) {
+            if (downedById[id] == true) {
+              final hours = injuryPolicy.heavyInjuryHours(
+                baseHours: numbers.injury.heavyRecoveryHours,
+                constitution: ch.attributes.constitution,
+              );
+              InjuryService.applyHeavyInjury(ch, recoveryHours: hours);
+            } else {
+              InjuryService.accumulateLightInjury(
+                ch,
+                maxStacks: numbers.injury.lightMaxStacks,
+              );
+            }
+          }
+          await _isar.characters.put(ch);
         }
-        await _isar.characters.put(ch);
-      }
 
-      // ③ 返还托管补给（已用不返·§6.3）+ 关会话。
-      await _returnEscrow(run);
-      if (durableRunId != null) {
-        await _commitDurableDispatchInTxn(
-          durableRunId: durableRunId,
-          gauntletRunId: run.id,
-          outcome: DurableActivityOutcome.defeat,
-          at: now ?? DateTime.now(),
-        );
-      }
-      await _isar.bossGauntletRuns.delete(run.id);
-    });
+        // ③ 返还托管补给（已用不返·§6.3）+ 关会话。
+        await _returnEscrow(run);
+        if (durableRunId != null) {
+          await _commitDurableDispatchInTxn(
+            durableRunId: durableRunId,
+            gauntletRunId: run.id,
+            outcome: DurableActivityOutcome.defeat,
+            at: now ?? DateTime.now(),
+          );
+        }
+        await _isar.bossGauntletRuns.delete(run.id);
+      }),
+    );
 
     return GauntletDefeatSummary(
       elitesDefeated: elitesDefeated,

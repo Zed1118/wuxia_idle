@@ -9,6 +9,7 @@ import '../../../shared/utils/rng_provider.dart';
 import '../../battle/application/phase0a/phase0a_bot_tactic.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
 import '../../combat_shared/application/post_combat_invalidation.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../mainline/application/mainline_providers.dart';
 import '../../mainline/presentation/stage_entry_flow.dart'
     show
@@ -215,21 +216,29 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
       durableActivitySettlement: context,
     );
   } else {
-    final progress = TowerProgressService(isar: IsarSetup.instance);
-    final disposition = await service.commitSettlement(
-      runId: admission.run.id,
-      outcome: DurableActivityOutcome.defeat,
-      applyInTxn: () async {
-        await applyTowerCombatResolution(
-          ref: ref,
-          floor: floor,
-          grantsFirstClearExperience: false,
-          expectedParticipantId: admission.snapshot.characterId,
-          settlementSnapshot: settlement,
-          transactionOwned: true,
-        );
-        await progress.recordDefeatInTxn(now: DateTime.now());
-      },
+    final isar = IsarSetup.instance;
+    final now = DateTime.now();
+    final progress = TowerProgressService(isar: isar);
+    final disposition = await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => service.commitSettlement(
+        runId: admission.run.id,
+        outcome: DurableActivityOutcome.defeat,
+        now: now,
+        applyInTxn: () async {
+          await applyTowerCombatResolution(
+            ref: ref,
+            floor: floor,
+            grantsFirstClearExperience: false,
+            expectedParticipantId: admission.snapshot.characterId,
+            settlementSnapshot: settlement,
+            transactionOwned: true,
+            settlementAt: now,
+          );
+          await progress.recordDefeatInTxn(now: now);
+        },
+      ),
     );
     if (disposition != DurableActivitySettlementDisposition.applied) {
       throw StateError('Tower durable defeat was already applied');

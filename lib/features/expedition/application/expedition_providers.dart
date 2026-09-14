@@ -19,7 +19,7 @@ part 'expedition_providers.g.dart';
 ///
 /// 沿 nullable propagation 链（`lineup_providers` 体例）：isar 为 null 时 service
 /// 也为 null，widget 端 `service == null` 短路。战斗协作者
-/// 有跨节点缓存、按结算次创建，不入 provider（避免陈旧缓存）。
+/// 按追平调用创建；每个节点从已提交的存档重新读取战斗快照。
 @riverpod
 ExpeditionService? expeditionService(Ref ref) {
   final isar = ref.watch(isarProvider);

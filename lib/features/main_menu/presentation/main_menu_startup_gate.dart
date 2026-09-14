@@ -1,9 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../expedition/application/expedition_startup.dart';
+import '../../expedition/application/expedition_timeline.dart';
+import '../../../shared/strings.dart';
 import '../../expedition/application/journey_unlock.dart';
 import '../../progressive_unlock/application/progressive_unlock_providers.dart';
 import '../../progressive_unlock/presentation/progressive_unlock_seal.dart';
@@ -54,6 +56,14 @@ class _MainMenuStartupGateState extends ConsumerState<MainMenuStartupGate> {
           monthlyTick: maybeRunSectMonthlyTick(ref),
           expeditionSettlement: maybeSettleExpedition(ref),
           journeyUnlock: maybeUnlockJianghuJourney(ref),
+          onTimelineConflict: (_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(UiStrings.expeditionTimelineConflictHint),
+              ),
+            );
+          },
           observeProgressiveUnlocks: () async {
             if (!mounted) return;
             await _observeProgressiveUnlocks();
@@ -87,20 +97,37 @@ class _MainMenuStartupGateState extends ConsumerState<MainMenuStartupGate> {
   }
 }
 
-/// Existing startup writers remain concurrent. U11 observes only after every
-/// writer has settled so a same-frame journey unlock cannot be missed.
+/// Existing startup writers remain concurrent. U11 observes persisted facts
+/// after writers settle or explicitly report the handled timeline conflict.
+/// Establishing that observation does not mean the expedition caught up.
 Future<void> runMainMenuStartupSequence({
   required Future<void> offlineRecap,
   required Future<void> monthlyTick,
   required Future<void> expeditionSettlement,
   required Future<void> journeyUnlock,
   required Future<void> Function() observeProgressiveUnlocks,
+  void Function(ExpeditionTimelineConflict conflict)? onTimelineConflict,
 }) async {
+  ExpeditionTimelineConflict? conflict;
+  Future<void> waitForWriter(Future<void> writer) async {
+    try {
+      await writer;
+    } on ExpeditionTimelineConflict catch (error) {
+      if (onTimelineConflict == null) rethrow;
+      conflict ??= error;
+    }
+  }
+
+  // Handle only the known legacy conflict per writer. A different writer's
+  // ordinary failure must still propagate even when a conflict finishes first.
   await Future.wait([
-    offlineRecap,
-    monthlyTick,
-    expeditionSettlement,
-    journeyUnlock,
+    waitForWriter(offlineRecap),
+    waitForWriter(monthlyTick),
+    waitForWriter(expeditionSettlement),
+    waitForWriter(journeyUnlock),
   ]);
+  if (conflict != null) {
+    onTimelineConflict!(conflict!);
+  }
   await observeProgressiveUnlocks();
 }

@@ -90,6 +90,7 @@ import '../../battle_record/domain/boss_memory_source.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../seclusion/application/offline_passive_service.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../../shared/battle_shared/reward_claim_key.dart';
 import 'phase0a_mainline_battle_host.dart';
@@ -2111,494 +2112,514 @@ applyVictoryResolution({
     }
     return null;
   }
-  final stats = CombatStatsSummary.fromSettlement(combatSettlement);
-
-  final participantIds = combatSettlement.participantCharacterIds;
-  final save = await isar.saveDatas.get(0);
-  final ids = expectedParticipantId == null
-      ? (save?.activeCharacterIds ?? const <int>[])
-            .where(participantIds.contains)
-            .toList(growable: false)
-      : _requireExactSettlementParticipant(
-          playerCharacterId: combatSettlement.playerCharacterId,
-          expectedParticipantId: expectedParticipantId,
-        );
-  if (ids.isEmpty) return null;
-  if (expectedParticipantId == null &&
-      (await isar.characters.getAll(
-        ids,
-      )).every((character) => character == null)) {
-    return null;
-  }
-
-  final characters = <Character>[];
-  final equipsByCh = <int, List<Equipment>>{};
-  final techsByCh = <int, List<Technique>>{};
-  final NumbersConfig numbers;
-  final DropService dropSvc;
-  final Rng settlementRng;
-  if (durableActivityDependencies != null) {
-    numbers = durableActivityDependencies.numbers;
-    dropSvc = durableActivityDependencies.dropService;
-    settlementRng = durableActivityDependencies.rng;
-  } else {
-    numbers = ref!.read(numbersConfigProvider);
-    dropSvc = ref.read(dropServiceProvider);
-    settlementRng = ref.read(rngProvider);
-  }
-
-  await MainlineProgressService(
-    isar: isar,
-  ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
-  if (durableSettlement != null || durableActivitySettlement != null) {
-    await EncounterService(
-      isar: isar,
-      attributeGainCap: numbers.adventureAttributeLifetimeCap,
-      attributeEffects: numbers.attributeEffects,
-    ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
-  }
-
-  // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
-  // 含 stageId 即 repeat,不含即首通 → bossDefeated 防刷)。
-  final mainlineProgressSnapshot = await isar.mainlineProgress
-      .filter()
-      .saveDataIdEqualTo(IsarSetup.currentSlotId)
-      .findFirst();
-  final settlement = CombatProgressionSettlementService(
-    GameRepository.instance,
-  );
-  final isFirstClearStage =
-      !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ?? false);
-  // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
-  var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
-  var skillDrop = SkillDropResult.none;
-
-  final bossName = stage.enemyTeam.isNotEmpty
-      ? stage.enemyTeam.last.name
-      : stage.name;
   final now = settlementAt ?? DateTime.now();
-  final rewardContentKind = switch (stage.stageType) {
-    StageType.mainline => RewardContentKind.mainline,
-    StageType.tower => RewardContentKind.tower,
-    StageType.innerDemon => RewardContentKind.innerDemon,
-    StageType.lightFoot => RewardContentKind.lightFoot,
-    StageType.massBattle => RewardContentKind.massBattle,
-    StageType.pvp => throw StateError('Legacy PVP cannot produce U09 rewards'),
-  };
-  final occurrenceId = switch ((durableSettlement, durableActivitySettlement)) {
-    (final mainline?, _) => mainline.identity.canonical,
-    (_, final activity?) => 'durable-activity:${activity.runId}',
-    _ =>
-      rewardOccurrenceId?.trim().isNotEmpty == true
-          ? rewardOccurrenceId!.trim()
-          : 'ephemeral:${stage.id}:${combatSettlement.playerCharacterId}:'
-                '${now.microsecondsSinceEpoch}',
-  };
-  final rewardClaimPlan = RewardClaimPlan.forSettlement(
-    contentKind: rewardContentKind,
-    contentId: stage.id,
-    saveDataId: IsarSetup.currentSlotId,
-    participantId: combatSettlement.playerCharacterId,
-    occurrenceId: occurrenceId,
-    includesFirstClear: isFirstClearStage,
-  );
-  final rewardClaims = DurableRewardClaimService(isar);
-  final settlementTutorialService = durableActivityDependencies != null
-      ? durableActivityDependencies.tutorialService
-      : ref!.read(tutorialServiceProvider);
-  final math.Random settlementSkillDropRng =
-      durableActivityDependencies?.skillDropRng ??
-      ref!.read(mathRandomProvider);
-  final durableReputation =
-      durableSettlement == null && durableActivitySettlement == null
-      ? null
-      : durableActivityDependencies != null
-      ? durableActivityDependencies.reputationService
-      : ref!.read(reputationServiceProvider);
-  late BattleResolutionResult result;
-  late List<AdvancementEntry> advancements;
-  late HeroCameraData? heroCamera;
-  late DropResult grantedDrops;
-  Future<void> persistResolutionInTxn(bool grantsFirstClear) async {
-    await OfflinePassiveService.settleWithinTxn(
-      settleIslandBeforeGrowth: true,
-      isar: isar,
-      now: now,
-      updatePresence: true,
-    );
-    for (final cid in ids) {
-      final c = await isar.characters.get(cid);
-      if (c == null) {
-        if (expectedParticipantId != null) {
-          throw StateError('Expected settlement participant disappeared: $cid');
-        }
-        continue;
-      }
-      characters.add(c);
+  return ExpeditionTimeline.runAfterCatchUp(
+    isar: isar,
+    now: now,
+    action: () async {
+      final stats = CombatStatsSummary.fromSettlement(combatSettlement);
 
-      final eqs = <Equipment>[];
-      for (final eqId in [
-        c.equippedWeaponId,
-        c.equippedArmorId,
-        c.equippedAccessoryId,
-      ]) {
-        if (eqId == null) continue;
-        final e = await isar.equipments.get(eqId);
-        if (e == null || e.ownerCharacterId != c.id) {
-          if (expectedParticipantId != null) {
-            throw StateError(
-              'Expected settlement participant equipment invalid',
+      final participantIds = combatSettlement.participantCharacterIds;
+      final save = await isar.saveDatas.get(0);
+      final ids = expectedParticipantId == null
+          ? (save?.activeCharacterIds ?? const <int>[])
+                .where(participantIds.contains)
+                .toList(growable: false)
+          : _requireExactSettlementParticipant(
+              playerCharacterId: combatSettlement.playerCharacterId,
+              expectedParticipantId: expectedParticipantId,
+            );
+      if (ids.isEmpty) return null;
+      if (expectedParticipantId == null &&
+          (await isar.characters.getAll(
+            ids,
+          )).every((character) => character == null)) {
+        return null;
+      }
+
+      final characters = <Character>[];
+      final equipsByCh = <int, List<Equipment>>{};
+      final techsByCh = <int, List<Technique>>{};
+      final NumbersConfig numbers;
+      final DropService dropSvc;
+      final Rng settlementRng;
+      if (durableActivityDependencies != null) {
+        numbers = durableActivityDependencies.numbers;
+        dropSvc = durableActivityDependencies.dropService;
+        settlementRng = durableActivityDependencies.rng;
+      } else {
+        numbers = ref!.read(numbersConfigProvider);
+        dropSvc = ref.read(dropServiceProvider);
+        settlementRng = ref.read(rngProvider);
+      }
+
+      await MainlineProgressService(
+        isar: isar,
+      ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      if (durableSettlement != null || durableActivitySettlement != null) {
+        await EncounterService(
+          isar: isar,
+          attributeGainCap: numbers.adventureAttributeLifetimeCap,
+          attributeEffects: numbers.attributeEffects,
+        ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+      }
+
+      // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
+      // 含 stageId 即 repeat,不含即首通 → bossDefeated 防刷)。
+      final mainlineProgressSnapshot = await isar.mainlineProgress
+          .filter()
+          .saveDataIdEqualTo(IsarSetup.currentSlotId)
+          .findFirst();
+      final settlement = CombatProgressionSettlementService(
+        GameRepository.instance,
+      );
+      final isFirstClearStage =
+          !(mainlineProgressSnapshot?.clearedStageIds.contains(stage.id) ??
+              false);
+      // P1.1 候选 3-a:writeTxn 内 push notice,函数末 return 给 caller 传 dialog。
+      var resonanceUpgrades = const <ResonanceUpgradeNotice>[];
+      var skillDrop = SkillDropResult.none;
+
+      final bossName = stage.enemyTeam.isNotEmpty
+          ? stage.enemyTeam.last.name
+          : stage.name;
+      final rewardContentKind = switch (stage.stageType) {
+        StageType.mainline => RewardContentKind.mainline,
+        StageType.tower => RewardContentKind.tower,
+        StageType.innerDemon => RewardContentKind.innerDemon,
+        StageType.lightFoot => RewardContentKind.lightFoot,
+        StageType.massBattle => RewardContentKind.massBattle,
+        StageType.pvp => throw StateError(
+          'Legacy PVP cannot produce U09 rewards',
+        ),
+      };
+      final occurrenceId = switch ((
+        durableSettlement,
+        durableActivitySettlement,
+      )) {
+        (final mainline?, _) => mainline.identity.canonical,
+        (_, final activity?) => 'durable-activity:${activity.runId}',
+        _ =>
+          rewardOccurrenceId?.trim().isNotEmpty == true
+              ? rewardOccurrenceId!.trim()
+              : 'ephemeral:${stage.id}:${combatSettlement.playerCharacterId}:'
+                    '${now.microsecondsSinceEpoch}',
+      };
+      final rewardClaimPlan = RewardClaimPlan.forSettlement(
+        contentKind: rewardContentKind,
+        contentId: stage.id,
+        saveDataId: IsarSetup.currentSlotId,
+        participantId: combatSettlement.playerCharacterId,
+        occurrenceId: occurrenceId,
+        includesFirstClear: isFirstClearStage,
+      );
+      final rewardClaims = DurableRewardClaimService(isar);
+      final settlementTutorialService = durableActivityDependencies != null
+          ? durableActivityDependencies.tutorialService
+          : ref!.read(tutorialServiceProvider);
+      final math.Random settlementSkillDropRng =
+          durableActivityDependencies?.skillDropRng ??
+          ref!.read(mathRandomProvider);
+      final durableReputation =
+          durableSettlement == null && durableActivitySettlement == null
+          ? null
+          : durableActivityDependencies != null
+          ? durableActivityDependencies.reputationService
+          : ref!.read(reputationServiceProvider);
+      late BattleResolutionResult result;
+      late List<AdvancementEntry> advancements;
+      late HeroCameraData? heroCamera;
+      late DropResult grantedDrops;
+      Future<void> persistResolutionInTxn(bool grantsFirstClear) async {
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: isar,
+          now: now,
+          updatePresence: true,
+        );
+        for (final cid in ids) {
+          final c = await isar.characters.get(cid);
+          if (c == null) {
+            if (expectedParticipantId != null) {
+              throw StateError(
+                'Expected settlement participant disappeared: $cid',
+              );
+            }
+            continue;
+          }
+          characters.add(c);
+
+          final eqs = <Equipment>[];
+          for (final eqId in [
+            c.equippedWeaponId,
+            c.equippedArmorId,
+            c.equippedAccessoryId,
+          ]) {
+            if (eqId == null) continue;
+            final e = await isar.equipments.get(eqId);
+            if (e == null || e.ownerCharacterId != c.id) {
+              if (expectedParticipantId != null) {
+                throw StateError(
+                  'Expected settlement participant equipment invalid',
+                );
+              }
+              continue;
+            }
+            eqs.add(e);
+          }
+          equipsByCh[c.id] = eqs;
+
+          final ts = await isar.techniques
+              .where()
+              .filter()
+              .ownerCharacterIdEqualTo(c.id)
+              .findAll();
+          // W13 fix: Isar @embedded list 反序列化为 fixed-length,
+          // skillUsageCount.increment 走 add 分支会抛 UnsupportedError。
+          // 转 growable copy 让后续 _accumulateSkillUsage 可写。
+          for (final t in ts) {
+            t.skillUsageCount = List.of(t.skillUsageCount);
+          }
+          techsByCh[c.id] = ts;
+        }
+        if (characters.isEmpty) {
+          throw StateError('Settlement participants disappeared');
+        }
+
+        result = CombatResolutionService.resolveSnapshot(
+          settlement: combatSettlement,
+          participatingCharacters: characters,
+          equipmentsByCharacter: equipsByCh,
+          techniquesByCharacter: techsByCh,
+          stageDef: stage,
+          // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
+          // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
+          rng: settlementRng,
+          progressToNextMap: numbers.cultivationProgressToNext,
+          techniqueDefLookup: GameRepository.instance.getTechnique,
+          dropService: dropSvc,
+          numbersConfig: numbers,
+          // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
+          // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
+          isHardFight: stage.isBossStage,
+          // 第八阶段 E·稀有彩头:阶池 + realm→装备阶映射注入(本关固定掉落外额外 roll)。
+          equipmentPoolByTier: (tier) => GameRepository
+              .instance
+              .equipmentDefs
+              .values
+              .where((e) => e.tier == tier)
+              .toList(growable: false),
+          equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
+          // 周目平衡 2026-06-26:二周目起提高稀有彩头概率 + 普通掉落材料加成。
+          cycle: cycle,
+        );
+
+        final currentProgress = await isar.mainlineProgress
+            .filter()
+            .saveDataIdEqualTo(IsarSetup.currentSlotId)
+            .findFirst();
+        final clearedSet =
+            currentProgress?.clearedStageIds.toSet() ?? <String>{};
+        // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
+        advancements = settlement.applyExperience(
+          characters: characters,
+          experienceReward: stage.baseExpReward,
+          clearedStageIds: clearedSet,
+        );
+
+        final founderId = save?.founderCharacterId;
+        final battleEventOwnerId = characters.length == 1
+            ? characters.single.id
+            : founderId;
+
+        heroCamera = deriveHeroCameraDataFromDamageTotals(
+          damageByCharacterId: combatSettlement.damageByCharacterId,
+          characters: characters,
+          bossName: bossName,
+        );
+
+        grantedDrops = DropResult(
+          equipments: result.dropResult.equipments,
+          items: result.dropResult.items
+              .where(
+                (item) => !shouldSkipScrollDrop(
+                  item.defId,
+                  isFirstClear: grantsFirstClear,
+                ),
+              )
+              .toList(growable: false),
+        );
+        // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
+        await isar.characters.putAll(characters);
+        for (final list in techsByCh.values) {
+          if (list.isNotEmpty) await isar.techniques.putAll(list);
+        }
+        for (final list in equipsByCh.values) {
+          if (list.isNotEmpty) await isar.equipments.putAll(list);
+        }
+        // drops：装备 owner=null 入背包 + items 写/更新 inventoryItems
+        if (grantedDrops.equipments.isNotEmpty) {
+          await isar.equipments.putAll(grantedDrops.equipments);
+        }
+        for (final item in grantedDrops.items) {
+          final existing = await isar.inventoryItems.getByDefId(item.defId);
+          if (existing != null) {
+            existing.quantity += item.quantity;
+            existing.lastObtainedAt = now;
+            await isar.inventoryItems.put(existing);
+          } else {
+            await isar.inventoryItems.put(
+              InventoryItem()
+                ..defId = item.defId
+                ..itemType = _itemTypeOfMainline(item.defId)
+                ..quantity = item.quantity
+                ..firstObtainedAt = now
+                ..lastObtainedAt = now,
             );
           }
-          continue;
         }
-        eqs.add(e);
-      }
-      equipsByCh[c.id] = eqs;
 
-      final ts = await isar.techniques
-          .where()
-          .filter()
-          .ownerCharacterIdEqualTo(c.id)
-          .findAll();
-      // W13 fix: Isar @embedded list 反序列化为 fixed-length,
-      // skillUsageCount.increment 走 add 分支会抛 UnsupportedError。
-      // 转 growable copy 让后续 _accumulateSkillUsage 可写。
-      for (final t in ts) {
-        t.skillUsageCount = List.of(t.skillUsageCount);
-      }
-      techsByCh[c.id] = ts;
-    }
-    if (characters.isEmpty) {
-      throw StateError('Settlement participants disappeared');
-    }
-
-    result = CombatResolutionService.resolveSnapshot(
-      settlement: combatSettlement,
-      participatingCharacters: characters,
-      equipmentsByCharacter: equipsByCh,
-      techniquesByCharacter: techsByCh,
-      stageDef: stage,
-      // 随机源走 rngProvider(不 inline new):稀有彩头 roll 在此链路上,
-      // inline 的 DefaultRng 测试 override 不到,会把精确掉落数断言打成随机红。
-      rng: settlementRng,
-      progressToNextMap: numbers.cultivationProgressToNext,
-      techniqueDefLookup: GameRepository.instance.getTechnique,
-      dropService: dropSvc,
-      numbersConfig: numbers,
-      // 双层伤势：Boss/心魔关算硬仗，resolve 内部据此判定伤势 mutate character。
-      // 受影响 character 经下方 writeTxn putAll(characters) 自然落库，无需额外 txn。
-      isHardFight: stage.isBossStage,
-      // 第八阶段 E·稀有彩头:阶池 + realm→装备阶映射注入(本关固定掉落外额外 roll)。
-      equipmentPoolByTier: (tier) => GameRepository
-          .instance
-          .equipmentDefs
-          .values
-          .where((e) => e.tier == tier)
-          .toList(growable: false),
-      equipmentTierForRealm: RealmUtils.equipmentTierCapOf,
-      // 周目平衡 2026-06-26:二周目起提高稀有彩头概率 + 普通掉落材料加成。
-      cycle: cycle,
-    );
-
-    final currentProgress = await isar.mainlineProgress
-        .filter()
-        .saveDataIdEqualTo(IsarSetup.currentSlotId)
-        .findFirst();
-    final clearedSet = currentProgress?.clearedStageIds.toSet() ?? <String>{};
-    // 主线重打仍发经验；首通门控只约束掉落与 Boss 事件。
-    advancements = settlement.applyExperience(
-      characters: characters,
-      experienceReward: stage.baseExpReward,
-      clearedStageIds: clearedSet,
-    );
-
-    final founderId = save?.founderCharacterId;
-    final battleEventOwnerId = characters.length == 1
-        ? characters.single.id
-        : founderId;
-
-    heroCamera = deriveHeroCameraDataFromDamageTotals(
-      damageByCharacterId: combatSettlement.damageByCharacterId,
-      characters: characters,
-      bossName: bossName,
-    );
-
-    grantedDrops = DropResult(
-      equipments: result.dropResult.equipments,
-      items: result.dropResult.items
-          .where(
-            (item) => !shouldSkipScrollDrop(
-              item.defId,
-              isFirstClear: grantsFirstClear,
-            ),
-          )
-          .toList(growable: false),
-    );
-    // in-place 副作用（battleCount / skillUsage / 主修 progress + layer + EXP）
-    await isar.characters.putAll(characters);
-    for (final list in techsByCh.values) {
-      if (list.isNotEmpty) await isar.techniques.putAll(list);
-    }
-    for (final list in equipsByCh.values) {
-      if (list.isNotEmpty) await isar.equipments.putAll(list);
-    }
-    // drops：装备 owner=null 入背包 + items 写/更新 inventoryItems
-    if (grantedDrops.equipments.isNotEmpty) {
-      await isar.equipments.putAll(grantedDrops.equipments);
-    }
-    for (final item in grantedDrops.items) {
-      final existing = await isar.inventoryItems.getByDefId(item.defId);
-      if (existing != null) {
-        existing.quantity += item.quantity;
-        existing.lastObtainedAt = now;
-        await isar.inventoryItems.put(existing);
-      } else {
-        await isar.inventoryItems.put(
-          InventoryItem()
-            ..defId = item.defId
-            ..itemType = _itemTypeOfMainline(item.defId)
-            ..quantity = item.quantity
-            ..firstObtainedAt = now
-            ..lastObtainedAt = now,
+        // 主线专属 equipmentObtained 与公共成长事件在同一事务写入。
+        final events = GameEventService(isar);
+        for (final drop in grantedDrops.equipments) {
+          final def = GameRepository.instance.getEquipment(drop.defId);
+          await events.recordEquipmentObtained(
+            characterId: battleEventOwnerId,
+            equipmentId: drop.id,
+            equipmentDefId: drop.defId,
+            equipmentName: def.name,
+            source: stage.name,
+            equipment: drop,
+          );
+        }
+        resonanceUpgrades = await settlement.recordCommonEvents(
+          isar: isar,
+          characters: characters,
+          equipmentsByCharacter: equipsByCh,
+          resonanceUpgradedEquipmentIds: result.resonanceUpgradedEquipmentIds,
+          advancements: advancements,
+          founderId: founderId,
+          bossVictory: stage.isBossStage && grantsFirstClear
+              ? BossVictoryEventContext(
+                  stageId: stage.id,
+                  stageName: stage.name,
+                  bossName: stage.enemyTeam.isNotEmpty
+                      ? stage.enemyTeam.last.name
+                      : stage.name,
+                  warbornEquipment: founderId == null
+                      ? const []
+                      : equipsByCh[founderId] ?? const [],
+                )
+              : null,
         );
-      }
-    }
 
-    // 主线专属 equipmentObtained 与公共成长事件在同一事务写入。
-    final events = GameEventService(isar);
-    for (final drop in grantedDrops.equipments) {
-      final def = GameRepository.instance.getEquipment(drop.defId);
-      await events.recordEquipmentObtained(
-        characterId: battleEventOwnerId,
-        equipmentId: drop.id,
-        equipmentDefId: drop.defId,
-        equipmentName: def.name,
-        source: stage.name,
-        equipment: drop,
-      );
-    }
-    resonanceUpgrades = await settlement.recordCommonEvents(
-      isar: isar,
-      characters: characters,
-      equipmentsByCharacter: equipsByCh,
-      resonanceUpgradedEquipmentIds: result.resonanceUpgradedEquipmentIds,
-      advancements: advancements,
-      founderId: founderId,
-      bossVictory: stage.isBossStage && grantsFirstClear
-          ? BossVictoryEventContext(
-              stageId: stage.id,
-              stageName: stage.name,
-              bossName: stage.enemyTeam.isNotEmpty
-                  ? stage.enemyTeam.last.name
-                  : stage.name,
-              warbornEquipment: founderId == null
-                  ? const []
-                  : equipsByCh[founderId] ?? const [],
-            )
-          : null,
-    );
-
-    await MainlineProgressService(isar: isar).recordVictoryInTxn(
-      saveDataId: IsarSetup.currentSlotId,
-      stageId: stage.id,
-      now: now,
-      tutorialService: settlementTutorialService,
-      cycle: cycle,
-    );
-    skillDrop = await runStageSkillDropHookAfterVictoryInTxn(
-      stage: stage,
-      svc: SkillUnlockService(
-        isar,
-        fragmentThreshold: numbers.skillUnlock.fragmentThreshold,
-      ),
-      clearedStageIds: clearedSet,
-      grantsFirstClear: grantsFirstClear,
-      towerFragmentDropProb: numbers.skillUnlock.towerFragmentDropProb,
-      rng: settlementSkillDropRng,
-    );
-    await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
-      saveDataId: IsarSetup.currentSlotId,
-      defIds: [
-        for (final equipment in grantedDrops.equipments) equipment.defId,
-      ],
-      from: stage.name,
-      now: now,
-    );
-    final currentSave = await isar.saveDatas.get(0);
-    if (currentSave != null) {
-      await grantMilestoneForClearedStageInTxn(
-        isar: isar,
-        save: currentSave,
-        clearedStageId: stage.id,
-      );
-    }
-
-    if (durableSettlement == null && durableActivitySettlement == null) {
-      await afterRewardWritesInTxnForTest?.call();
-      return;
-    }
-
-    await EncounterService(
-      isar: isar,
-      attributeGainCap: numbers.adventureAttributeLifetimeCap,
-      attributeEffects: numbers.attributeEffects,
-    ).recordKillInTxn(
-      saveDataId: IsarSetup.currentSlotId,
-      defeatedSchools: stage.enemyTeam
-          .map((enemy) => enemy.school)
-          .toList(growable: false),
-    );
-
-    if (stage.isBossStage) {
-      final rosterNames = <String>[];
-      final rosterPortraits = <String>[];
-      for (final characterId in save?.activeCharacterIds ?? const <int>[]) {
-        final character = await isar.characters.get(characterId);
-        if (character == null) continue;
-        rosterNames.add(character.name);
-        rosterPortraits.add(character.portraitPath ?? '');
-      }
-      String? treasureName;
-      EquipmentTier? treasureTier;
-      if (grantedDrops.equipments.isNotEmpty) {
-        final best = grantedDrops.equipments.reduce(
-          (left, right) => left.tier.index >= right.tier.index ? left : right,
+        await MainlineProgressService(isar: isar).recordVictoryInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          stageId: stage.id,
+          now: now,
+          tutorialService: settlementTutorialService,
+          cycle: cycle,
         );
-        treasureTier = best.tier;
-        treasureName =
-            GameRepository.instance.equipmentDefs[best.defId]?.name ??
-            best.defId;
-      }
-      await BossMemoryService(isar: isar).recordBossVictoryInTxn(
-        saveDataId: IsarSetup.currentSlotId,
-        bossKey: mainlineBossKey(stage.id),
-        source: BossMemorySource.mainline,
-        groupIndex: mainlineGroupIndex(stage.id),
-        bossName: bossName,
-        totalDamage: stats.totalDamage,
-        critCount: stats.critCount,
-        totalTicks: stats.totalTicks,
-        topContributorName: heroCamera?.heroName,
-        topContributorDamage: heroCamera?.topDamage,
-        treasureName: treasureName,
-        treasureTier: treasureTier,
-        rosterNames: rosterNames,
-        rosterPortraits: rosterPortraits,
-        now: now,
-      );
-    }
-
-    final reputation = durableReputation;
-    if (stage.isBossStage && stage.factionId != null && reputation != null) {
-      final triggers = numbers.jianghu.triggers;
-      await reputation.applyDeltaInTxn(
-        1,
-        stage.factionId!,
-        -triggers.stageBossKillDelta,
-        now: now,
-      );
-      for (final rival in GameRepository.instance.rivalFactionIds(
-        stage.factionId!,
-      )) {
-        await reputation.applyDeltaInTxn(
-          1,
-          rival,
-          triggers.stageBossKillRivalDelta,
+        skillDrop = await runStageSkillDropHookAfterVictoryInTxn(
+          stage: stage,
+          svc: SkillUnlockService(
+            isar,
+            fragmentThreshold: numbers.skillUnlock.fragmentThreshold,
+          ),
+          clearedStageIds: clearedSet,
+          grantsFirstClear: grantsFirstClear,
+          towerFragmentDropProb: numbers.skillUnlock.towerFragmentDropProb,
+          rng: settlementSkillDropRng,
+        );
+        await EquipmentCatalogService(isar: isar).recordAcquisitionsInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          defIds: [
+            for (final equipment in grantedDrops.equipments) equipment.defId,
+          ],
+          from: stage.name,
           now: now,
         );
-      }
-    }
-    await afterRewardWritesInTxnForTest?.call();
-  }
+        final currentSave = await isar.saveDatas.get(0);
+        if (currentSave != null) {
+          await grantMilestoneForClearedStageInTxn(
+            isar: isar,
+            save: currentSave,
+            clearedStageId: stage.id,
+          );
+        }
 
-  if (durableSettlement == null && durableActivitySettlement == null) {
-    final disposition = await rewardClaims.claimSettlement(
-      plan: rewardClaimPlan,
-      sourceSettlementId: occurrenceId,
-      at: now,
-      applyInTxn: persistResolutionInTxn,
-    );
-    if (disposition == RewardClaimDisposition.alreadyApplied) return null;
-  } else if (durableSettlement != null) {
-    final disposition =
-        await MainlinePendingJianghuAffairService(
-          durableSettlement.service,
-        ).commitCore(
-          identity: durableSettlement.identity,
-          now: now,
-          applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
-              plan: rewardClaimPlan,
-              sourceSettlementId: occurrenceId,
-              at: now,
-              applyInTxn: persistResolutionInTxn,
+        if (durableSettlement == null && durableActivitySettlement == null) {
+          await afterRewardWritesInTxnForTest?.call();
+          return;
+        }
+
+        await EncounterService(
+          isar: isar,
+          attributeGainCap: numbers.adventureAttributeLifetimeCap,
+          attributeEffects: numbers.attributeEffects,
+        ).recordKillInTxn(
+          saveDataId: IsarSetup.currentSlotId,
+          defeatedSchools: stage.enemyTeam
+              .map((enemy) => enemy.school)
+              .toList(growable: false),
+        );
+
+        if (stage.isBossStage) {
+          final rosterNames = <String>[];
+          final rosterPortraits = <String>[];
+          for (final characterId in save?.activeCharacterIds ?? const <int>[]) {
+            final character = await isar.characters.get(characterId);
+            if (character == null) continue;
+            rosterNames.add(character.name);
+            rosterPortraits.add(character.portraitPath ?? '');
+          }
+          String? treasureName;
+          EquipmentTier? treasureTier;
+          if (grantedDrops.equipments.isNotEmpty) {
+            final best = grantedDrops.equipments.reduce(
+              (left, right) =>
+                  left.tier.index >= right.tier.index ? left : right,
             );
-            if (rewardDisposition != RewardClaimDisposition.applied) {
-              throw StateError(
-                'Mainline reward settlement was already applied',
-              );
-            }
-            return planMainlinePendingJianghuAffairsInTxn(
-              isar: isar,
+            treasureTier = best.tier;
+            treasureName =
+                GameRepository.instance.equipmentDefs[best.defId]?.name ??
+                best.defId;
+          }
+          await BossMemoryService(isar: isar).recordBossVictoryInTxn(
+            saveDataId: IsarSetup.currentSlotId,
+            bossKey: mainlineBossKey(stage.id),
+            source: BossMemorySource.mainline,
+            groupIndex: mainlineGroupIndex(stage.id),
+            bossName: bossName,
+            totalDamage: stats.totalDamage,
+            critCount: stats.critCount,
+            totalTicks: stats.totalTicks,
+            topContributorName: heroCamera?.heroName,
+            topContributorDamage: heroCamera?.topDamage,
+            treasureName: treasureName,
+            treasureTier: treasureTier,
+            rosterNames: rosterNames,
+            rosterPortraits: rosterPortraits,
+            now: now,
+          );
+        }
+
+        final reputation = durableReputation;
+        if (stage.isBossStage &&
+            stage.factionId != null &&
+            reputation != null) {
+          final triggers = numbers.jianghu.triggers;
+          await reputation.applyDeltaInTxn(
+            1,
+            stage.factionId!,
+            -triggers.stageBossKillDelta,
+            now: now,
+          );
+          for (final rival in GameRepository.instance.rivalFactionIds(
+            stage.factionId!,
+          )) {
+            await reputation.applyDeltaInTxn(
+              1,
+              rival,
+              triggers.stageBossKillRivalDelta,
+              now: now,
+            );
+          }
+        }
+        await afterRewardWritesInTxnForTest?.call();
+      }
+
+      if (durableSettlement == null && durableActivitySettlement == null) {
+        final disposition = await rewardClaims.claimSettlement(
+          plan: rewardClaimPlan,
+          sourceSettlementId: occurrenceId,
+          at: now,
+          applyInTxn: persistResolutionInTxn,
+        );
+        if (disposition == RewardClaimDisposition.alreadyApplied) return null;
+      } else if (durableSettlement != null) {
+        final disposition =
+            await MainlinePendingJianghuAffairService(
+              durableSettlement.service,
+            ).commitCore(
               identity: durableSettlement.identity,
-              stage: stage,
-              saveDataId: IsarSetup.currentSlotId,
-              encounterService: EncounterService(
-                isar: isar,
-                attributeGainCap: numbers.adventureAttributeLifetimeCap,
-                attributeEffects: numbers.attributeEffects,
-              ),
-              encounters: GameRepository.instance.allEncounters,
-              rng: ref!.read(rngProvider),
-              festivalToday: ref.read(todayFestivalProvider),
+              now: now,
+              applyInTxn: () async {
+                final rewardDisposition = await rewardClaims
+                    .claimSettlementInTxn(
+                      plan: rewardClaimPlan,
+                      sourceSettlementId: occurrenceId,
+                      at: now,
+                      applyInTxn: persistResolutionInTxn,
+                    );
+                if (rewardDisposition != RewardClaimDisposition.applied) {
+                  throw StateError(
+                    'Mainline reward settlement was already applied',
+                  );
+                }
+                return planMainlinePendingJianghuAffairsInTxn(
+                  isar: isar,
+                  identity: durableSettlement.identity,
+                  stage: stage,
+                  saveDataId: IsarSetup.currentSlotId,
+                  encounterService: EncounterService(
+                    isar: isar,
+                    attributeGainCap: numbers.adventureAttributeLifetimeCap,
+                    attributeEffects: numbers.attributeEffects,
+                  ),
+                  encounters: GameRepository.instance.allEncounters,
+                  rng: ref!.read(rngProvider),
+                  festivalToday: ref.read(todayFestivalProvider),
+                );
+              },
             );
-          },
-        );
-    if (disposition != MainlineCoreCommitDisposition.applied) {
-      throw StateError('Mainline settlement core was already applied');
-    }
-  } else {
-    final disposition = await durableActivitySettlement!.service
-        .commitSettlement(
-          runId: durableActivitySettlement.runId,
-          outcome: DurableActivityOutcome.victory,
-          now: now,
-          applyInTxn: () async {
-            final rewardDisposition = await rewardClaims.claimSettlementInTxn(
-              plan: rewardClaimPlan,
-              sourceSettlementId: occurrenceId,
-              at: now,
-              applyInTxn: persistResolutionInTxn,
+        if (disposition != MainlineCoreCommitDisposition.applied) {
+          throw StateError('Mainline settlement core was already applied');
+        }
+      } else {
+        final disposition = await durableActivitySettlement!.service
+            .commitSettlement(
+              runId: durableActivitySettlement.runId,
+              outcome: DurableActivityOutcome.victory,
+              now: now,
+              applyInTxn: () async {
+                final rewardDisposition = await rewardClaims
+                    .claimSettlementInTxn(
+                      plan: rewardClaimPlan,
+                      sourceSettlementId: occurrenceId,
+                      at: now,
+                      applyInTxn: persistResolutionInTxn,
+                    );
+                if (rewardDisposition != RewardClaimDisposition.applied) {
+                  throw StateError(
+                    'Activity reward settlement was already applied',
+                  );
+                }
+              },
             );
-            if (rewardDisposition != RewardClaimDisposition.applied) {
-              throw StateError(
-                'Activity reward settlement was already applied',
-              );
-            }
-          },
-        );
-    if (disposition != DurableActivitySettlementDisposition.applied) {
-      throw StateError('Durable activity settlement was already applied');
-    }
-  }
+        if (disposition != DurableActivitySettlementDisposition.applied) {
+          throw StateError('Durable activity settlement was already applied');
+        }
+      }
 
-  // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
-  // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
-  final extraDisplayTiers = await computeFirstAcquisitionTiers(
-    isar,
-    grantedDrops,
-  );
+      // 第七阶段 批一 Task 6:计算利器首次获得的 extraDisplayTiers
+      // (须在 putAll 入库后调用,判据:库存总数 ≤ 本次掉落件数)。
+      final extraDisplayTiers = await computeFirstAcquisitionTiers(
+        isar,
+        grantedDrops,
+      );
 
-  return (
-    drops: grantedDrops,
-    advancements: advancements,
-    resonanceUpgrades: resonanceUpgrades,
-    stats: stats,
-    heroCamera: heroCamera,
-    extraDisplayTiers: extraDisplayTiers,
-    characters: List<Character>.unmodifiable(characters),
-    skillDrop: skillDrop,
+      return (
+        drops: grantedDrops,
+        advancements: advancements,
+        resonanceUpgrades: resonanceUpgrades,
+        stats: stats,
+        heroCamera: heroCamera,
+        extraDisplayTiers: extraDisplayTiers,
+        characters: List<Character>.unmodifiable(characters),
+        skillDrop: skillDrop,
+      );
+    },
   );
 }
 
@@ -2641,144 +2662,152 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     return const [];
   }
 
-  final participantIds = combatSettlement.participantCharacterIds;
-  final save = await isar.saveDatas.get(0);
-  final ids = expectedParticipantId == null
-      ? (save?.activeCharacterIds ?? const <int>[])
-            .where(participantIds.contains)
-            .toList(growable: false)
-      : _requireExactSettlementParticipant(
-          playerCharacterId: combatSettlement.playerCharacterId,
-          expectedParticipantId: expectedParticipantId,
-        );
-  if (ids.isEmpty) return const [];
-
-  final characters = <Character>[];
-  final equipsByCh = <int, List<Equipment>>{};
-  final techsByCh = <int, List<Technique>>{};
-  final NumbersConfig numbers;
-  final DropService dropSvc;
-  final Rng settlementRng;
-  if (durableActivityDependencies != null) {
-    numbers = durableActivityDependencies.numbers;
-    dropSvc = durableActivityDependencies.dropService;
-    settlementRng = durableActivityDependencies.rng;
-  } else {
-    numbers = ref!.read(numbersConfigProvider);
-    dropSvc = ref.read(dropServiceProvider);
-    settlementRng = ref.read(rngProvider);
-  }
   final now = settlementAt ?? DateTime.now();
-  var injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{};
-  BattleResolutionResult? result;
+  return ExpeditionTimeline.runAfterCatchUp(
+    isar: isar,
+    now: now,
+    action: () async {
+      final participantIds = combatSettlement.participantCharacterIds;
+      final save = await isar.saveDatas.get(0);
+      final ids = expectedParticipantId == null
+          ? (save?.activeCharacterIds ?? const <int>[])
+                .where(participantIds.contains)
+                .toList(growable: false)
+          : _requireExactSettlementParticipant(
+              playerCharacterId: combatSettlement.playerCharacterId,
+              expectedParticipantId: expectedParticipantId,
+            );
+      if (ids.isEmpty) return const [];
 
-  // 写回 Isar：受影响的 character + 所有 technique + 所有装备。
-  // durable activity 把这些业务写入与 receipt 同事务提交，恢复不重放。
-  Future<void> persistDefeatInTxn() async {
-    await OfflinePassiveService.settleWithinTxn(
-      settleIslandBeforeGrowth: true,
-      isar: isar,
-      now: now,
-      updatePresence: true,
-    );
-    for (final cid in ids) {
-      final c = await isar.characters.get(cid);
-      if (c == null) {
-        if (expectedParticipantId != null) {
-          throw StateError('Expected defeat participant disappeared: $cid');
-        }
-        continue;
+      final characters = <Character>[];
+      final equipsByCh = <int, List<Equipment>>{};
+      final techsByCh = <int, List<Technique>>{};
+      final NumbersConfig numbers;
+      final DropService dropSvc;
+      final Rng settlementRng;
+      if (durableActivityDependencies != null) {
+        numbers = durableActivityDependencies.numbers;
+        dropSvc = durableActivityDependencies.dropService;
+        settlementRng = durableActivityDependencies.rng;
+      } else {
+        numbers = ref!.read(numbersConfigProvider);
+        dropSvc = ref.read(dropServiceProvider);
+        settlementRng = ref.read(rngProvider);
       }
-      characters.add(c);
+      var injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{};
+      BattleResolutionResult? result;
 
-      final eqs = <Equipment>[];
-      for (final eqId in [
-        c.equippedWeaponId,
-        c.equippedArmorId,
-        c.equippedAccessoryId,
-      ]) {
-        if (eqId == null) continue;
-        final e = await isar.equipments.get(eqId);
-        if (e == null || e.ownerCharacterId != c.id) {
-          if (expectedParticipantId != null) {
-            throw StateError('Expected defeat participant equipment invalid');
-          }
-          continue;
-        }
-        eqs.add(e);
-      }
-      equipsByCh[c.id] = eqs;
-
-      final ts = await isar.techniques
-          .where()
-          .filter()
-          .ownerCharacterIdEqualTo(c.id)
-          .findAll();
-      // W13 fix: Isar @embedded list 反序列化为 fixed-length（同 _applyVictoryResolution）
-      for (final t in ts) {
-        t.skillUsageCount = List.of(t.skillUsageCount);
-      }
-      techsByCh[c.id] = ts;
-    }
-    if (characters.isEmpty) return;
-
-    injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
-      for (final character in characters)
-        character.id: (
-          heavyHours: character.injuryHoursRemaining,
-          lightStacks: character.lightInjuryStacks,
-        ),
-    };
-
-    result = CombatResolutionService.resolveSnapshot(
-      settlement: combatSettlement,
-      participatingCharacters: characters,
-      equipmentsByCharacter: equipsByCh,
-      techniquesByCharacter: techsByCh,
-      stageDef: stage,
-      // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
-      rng: settlementRng,
-      progressToNextMap: numbers.cultivationProgressToNext,
-      techniqueDefLookup: GameRepository.instance.getTechnique,
-      dropService: dropSvc,
-      numbersConfig: numbers,
-      // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
-      // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。
-      isHardFight: stage.isBossStage,
-    );
-
-    await isar.characters.putAll(characters);
-    for (final list in techsByCh.values) {
-      if (list.isNotEmpty) await isar.techniques.putAll(list);
-    }
-    for (final list in equipsByCh.values) {
-      if (list.isNotEmpty) await isar.equipments.putAll(list);
-    }
-  }
-
-  if (durableActivitySettlement == null) {
-    await isar.writeTxn(persistDefeatInTxn);
-  } else {
-    final disposition = await durableActivitySettlement.service
-        .commitSettlement(
-          runId: durableActivitySettlement.runId,
-          outcome: DurableActivityOutcome.defeat,
+      // 写回 Isar：受影响的 character + 所有 technique + 所有装备。
+      // durable activity 把这些业务写入与 receipt 同事务提交，恢复不重放。
+      Future<void> persistDefeatInTxn() async {
+        await OfflinePassiveService.settleWithinTxn(
+          settleIslandBeforeGrowth: true,
+          isar: isar,
           now: now,
-          applyInTxn: persistDefeatInTxn,
+          updatePresence: true,
         );
-    if (disposition != DurableActivitySettlementDisposition.applied) {
-      throw StateError('Durable activity defeat was already applied');
-    }
-  }
+        for (final cid in ids) {
+          final c = await isar.characters.get(cid);
+          if (c == null) {
+            if (expectedParticipantId != null) {
+              throw StateError('Expected defeat participant disappeared: $cid');
+            }
+            continue;
+          }
+          characters.add(c);
 
-  if (result == null) return const [];
+          final eqs = <Equipment>[];
+          for (final eqId in [
+            c.equippedWeaponId,
+            c.equippedArmorId,
+            c.equippedAccessoryId,
+          ]) {
+            if (eqId == null) continue;
+            final e = await isar.equipments.get(eqId);
+            if (e == null || e.ownerCharacterId != c.id) {
+              if (expectedParticipantId != null) {
+                throw StateError(
+                  'Expected defeat participant equipment invalid',
+                );
+              }
+              continue;
+            }
+            eqs.add(e);
+          }
+          equipsByCh[c.id] = eqs;
 
-  // 构造损失摘要（Boss 散功 + 心魔惩罚）
-  return buildDefeatLossEntries(
-    characters: characters,
-    techsByCh: techsByCh,
-    result: result!,
-    injuryBeforeByCharacterId: injuryBeforeByCharacterId,
+          final ts = await isar.techniques
+              .where()
+              .filter()
+              .ownerCharacterIdEqualTo(c.id)
+              .findAll();
+          // W13 fix: Isar @embedded list 反序列化为 fixed-length（同 _applyVictoryResolution）
+          for (final t in ts) {
+            t.skillUsageCount = List.of(t.skillUsageCount);
+          }
+          techsByCh[c.id] = ts;
+        }
+        if (characters.isEmpty) return;
+
+        injuryBeforeByCharacterId = <int, InjuryBeforeSnapshot>{
+          for (final character in characters)
+            character.id: (
+              heavyHours: character.injuryHoursRemaining,
+              lightStacks: character.lightInjuryStacks,
+            ),
+        };
+
+        result = CombatResolutionService.resolveSnapshot(
+          settlement: combatSettlement,
+          participatingCharacters: characters,
+          equipmentsByCharacter: equipsByCh,
+          techniquesByCharacter: techsByCh,
+          stageDef: stage,
+          // 同胜利路径:随机源走 rngProvider,保持可注入(战败结算亦有 rng 消费)。
+          rng: settlementRng,
+          progressToNextMap: numbers.cultivationProgressToNext,
+          techniqueDefLookup: GameRepository.instance.getTechnique,
+          dropService: dropSvc,
+          numbersConfig: numbers,
+          // 双层伤势：Boss/心魔关算硬仗，战败同样可累伤势。
+          // 受影响 character 经下方 writeTxn putAll(characters) 自然落库。
+          isHardFight: stage.isBossStage,
+        );
+
+        await isar.characters.putAll(characters);
+        for (final list in techsByCh.values) {
+          if (list.isNotEmpty) await isar.techniques.putAll(list);
+        }
+        for (final list in equipsByCh.values) {
+          if (list.isNotEmpty) await isar.equipments.putAll(list);
+        }
+      }
+
+      if (durableActivitySettlement == null) {
+        await isar.writeTxn(persistDefeatInTxn);
+      } else {
+        final disposition = await durableActivitySettlement.service
+            .commitSettlement(
+              runId: durableActivitySettlement.runId,
+              outcome: DurableActivityOutcome.defeat,
+              now: now,
+              applyInTxn: persistDefeatInTxn,
+            );
+        if (disposition != DurableActivitySettlementDisposition.applied) {
+          throw StateError('Durable activity defeat was already applied');
+        }
+      }
+
+      if (result == null) return const [];
+
+      // 构造损失摘要（Boss 散功 + 心魔惩罚）
+      return buildDefeatLossEntries(
+        characters: characters,
+        techsByCh: techsByCh,
+        result: result!,
+        injuryBeforeByCharacterId: injuryBeforeByCharacterId,
+      );
+    },
   );
 }
 

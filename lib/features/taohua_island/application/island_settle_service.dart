@@ -9,6 +9,7 @@ import '../../../data/isar_setup.dart';
 import '../../../core/domain/island_building_state.dart';
 import '../../../core/domain/island_building_type.dart';
 import '../../../data/defs/taohua_island_config.dart';
+import '../../expedition/application/expedition_timeline.dart';
 import '../../seclusion/application/offline_passive_service.dart';
 import 'island_production_service.dart';
 
@@ -76,12 +77,16 @@ class IslandSettleService {
   /// 内部调用 writeTxn 完成持久化（与 offline_passive_service 体例一致）。
   static Future<void> ensureInitialized(SaveData save, DateTime now) async {
     final isar = IsarSetup.instance;
-    await isar.writeTxn(() async {
-      final current = await loadAfterPassiveInTxn(now, database: isar);
-      if (_ensureBuildings(current, now)) {
-        await isar.saveDatas.put(current);
-      }
-    });
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(() async {
+        final current = await loadAfterPassiveInTxn(now, database: isar);
+        if (_ensureBuildings(current, now)) {
+          await isar.saveDatas.put(current);
+        }
+      }),
+    );
   }
 
   static bool _ensureBuildings(SaveData save, DateTime now) {
@@ -131,11 +136,15 @@ class IslandSettleService {
   /// - 调用 [IslandProductionService.settle] 得到新状态后写回 Isar。
   static Future<void> settle(SaveData save, DateTime now) async {
     final isar = IsarSetup.instance;
-    await isar.writeTxn(() async {
-      final current = await loadAfterPassiveInTxn(now, database: isar);
-      await settleInTxn(current, now, database: isar);
-      await isar.saveDatas.put(current);
-    });
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(() async {
+        final current = await loadAfterPassiveInTxn(now, database: isar);
+        await settleInTxn(current, now, database: isar);
+        await isar.saveDatas.put(current);
+      }),
+    );
   }
 
   /// Caller owns the transaction. Resolve pending passive realm changes before
@@ -191,57 +200,61 @@ class IslandSettleService {
     final cfg = GameRepository.instance.numbers.taohuaIsland;
     final gainedMap = <String, int>{};
 
-    await isar.writeTxn(() async {
-      final current = await loadAfterPassiveInTxn(now, database: isar);
-      await settleInTxn(current, now, database: isar);
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: isar,
+      now: now,
+      action: () => isar.writeTxn(() async {
+        final current = await loadAfterPassiveInTxn(now, database: isar);
+        await settleInTxn(current, now, database: isar);
 
-      for (final state in current.islandBuildings) {
-        final bCfg = cfg.buildings[state.type]!;
-        if (bCfg.kind == BuildingKind.source) {
-          final qty = state.stored.floor();
-          final output = bCfg.outputItem;
-          if (qty > 0 && output != null) {
-            gainedMap[output] = (gainedMap[output] ?? 0) + qty;
-            state.stored -= qty;
+        for (final state in current.islandBuildings) {
+          final bCfg = cfg.buildings[state.type]!;
+          if (bCfg.kind == BuildingKind.source) {
+            final qty = state.stored.floor();
+            final output = bCfg.outputItem;
+            if (qty > 0 && output != null) {
+              gainedMap[output] = (gainedMap[output] ?? 0) + qty;
+              state.stored -= qty;
+            }
+          } else {
+            for (final stock in state.productStocks) {
+              final qty = stock.stored.floor();
+              if (qty <= 0) continue;
+              final output = stock.outputItemId;
+              gainedMap[output] = (gainedMap[output] ?? 0) + qty;
+              stock.stored -= qty;
+            }
+            state.productStocks = state.productStocks
+                .where((stock) => stock.stored > 0)
+                .toList();
           }
-        } else {
-          for (final stock in state.productStocks) {
-            final qty = stock.stored.floor();
-            if (qty <= 0) continue;
-            final output = stock.outputItemId;
-            gainedMap[output] = (gainedMap[output] ?? 0) + qty;
-            stock.stored -= qty;
+        }
+        await isar.saveDatas.put(current);
+
+        // 写入背包（与 offline_passive_service 相同路径）
+        for (final entry in gainedMap.entries) {
+          final defId = entry.key;
+          final qty = entry.value;
+          final itemType = ItemType.fromDefId(defId);
+
+          final existing = await isar.inventoryItems.getByDefId(defId);
+          if (existing != null) {
+            existing.quantity += qty;
+            existing.lastObtainedAt = now;
+            await isar.inventoryItems.put(existing);
+          } else {
+            await isar.inventoryItems.put(
+              InventoryItem()
+                ..defId = defId
+                ..itemType = itemType
+                ..quantity = qty
+                ..firstObtainedAt = now
+                ..lastObtainedAt = now,
+            );
           }
-          state.productStocks = state.productStocks
-              .where((stock) => stock.stored > 0)
-              .toList();
         }
-      }
-      await isar.saveDatas.put(current);
-
-      // 写入背包（与 offline_passive_service 相同路径）
-      for (final entry in gainedMap.entries) {
-        final defId = entry.key;
-        final qty = entry.value;
-        final itemType = ItemType.fromDefId(defId);
-
-        final existing = await isar.inventoryItems.getByDefId(defId);
-        if (existing != null) {
-          existing.quantity += qty;
-          existing.lastObtainedAt = now;
-          await isar.inventoryItems.put(existing);
-        } else {
-          await isar.inventoryItems.put(
-            InventoryItem()
-              ..defId = defId
-              ..itemType = itemType
-              ..quantity = qty
-              ..firstObtainedAt = now
-              ..lastObtainedAt = now,
-          );
-        }
-      }
-    });
+      }),
+    );
 
     if (gainedMap.isEmpty) {
       return const IslandHarvest({});

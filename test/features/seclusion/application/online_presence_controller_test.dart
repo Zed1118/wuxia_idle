@@ -158,12 +158,8 @@ void main() {
       expect(item, isNull); // 未结算
     });
 
-    Future<void> flushLifecycleWrite() async {
-      // Lifecycle handlers enqueue their Isar write after a microtask. Wait for
-      // that enqueue, then use the transaction queue as a completion barrier.
-      await Future<void>.delayed(Duration.zero);
-      await IsarSetup.instance.writeTxn(() async {});
-    }
+    Future<void> flushLifecycleWrite(OnlinePresenceController ctl) =>
+        ctl.settlementsComplete;
 
     test(
       'blur before startup settlement preserves the offline window',
@@ -174,7 +170,7 @@ void main() {
         final ctl = shortBeat(clock: () => now);
 
         ctl.onAppBlurred();
-        await flushLifecycleWrite();
+        await flushLifecycleWrite(ctl);
         expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
         expect(ctl.isHeartbeatActive, isFalse);
 
@@ -194,17 +190,17 @@ void main() {
       ctl.markStartupSettleDone();
 
       ctl.onAppBlurred();
-      await flushLifecycleWrite();
+      await flushLifecycleWrite(ctl);
       expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
 
       now = t0.add(const Duration(hours: 4));
       ctl.onAppBlurred();
-      await flushLifecycleWrite();
+      await flushLifecycleWrite(ctl);
       expect((await IsarSetup.currentSaveData())!.lastOnlineAt, t0);
 
       now = t0.add(const Duration(hours: 8));
       ctl.onAppFocused();
-      await flushLifecycleWrite();
+      await flushLifecycleWrite(ctl);
       final deadline = DateTime.now().add(const Duration(seconds: 5));
       while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
           DateTime.now().isBefore(deadline)) {
@@ -285,7 +281,7 @@ void main() {
         expect(character.innerBreathDisorderHoursRemaining, 6);
 
         ctl.onAppBlurred();
-        await flushLifecycleWrite();
+        await flushLifecycleWrite(ctl);
         now = t0.add(const Duration(hours: 3));
         ctl.onAppFocused();
         final focusDeadline = DateTime.now().add(const Duration(seconds: 5));
