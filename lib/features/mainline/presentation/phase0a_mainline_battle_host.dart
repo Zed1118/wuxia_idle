@@ -29,6 +29,7 @@ import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+import '../../debug/application/phase0a_production_profile.dart';
 
 /// Phase 1 纵切实机接线(拍板 α 灰度门)的主线 0A 战斗宿主。
 ///
@@ -331,23 +332,46 @@ class _Phase0aMainlineBattleHostState
     if (visualRoster == null || playerAdapter == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Phase0aBattleScreen(
-      reduceFlashing:
-          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-          true,
+    final encounterHost = _encounterHost;
+    final waveEnemyCounts = _mapping?.waves
+        .map((wave) => wave.enemies.length)
+        .toList(growable: false);
+    return Phase0aProductionProfile.wrap(
+      mode: widget.stage.stageType.name,
+      contentId: widget.stage.id,
+      runtimeKind: encounterHost == null ? 'legacy_waves' : 'typed_encounter',
       controller: controller,
-      numericSkillBindings: playerAdapter.numericSkillBindings,
-      basicAttackRange: playerAdapter.attackRange,
-      checkpointXById: _encounterHost?.checkpointXById ?? const {},
-      checkpointGuidanceCopy: _checkpointGuidanceCopy,
-      defendGuidanceCopy: _defendGuidanceCopy,
-      botCommandBuilder: widget.controller == ActivityController.playerBot
-          ? Phase0aPlayerBotAdapter(
-              playerAdapter: playerAdapter,
-              objectiveContinuationCommandBuilder:
-                  _encounterHost?.objectiveContinuationCommandBuilder,
-            ).commandFor
-          : null,
+      flow: encounterHost?.flow,
+      configuration: {
+        'active_limit':
+            encounterHost?.mapping?.director.config.activeLimit ??
+            waveEnemyCounts?.fold<int>(
+              0,
+              (largest, count) => count > largest ? count : largest,
+            ),
+        'total_enemy_count':
+            encounterHost?.mapping?.director.state.totalCount ??
+            waveEnemyCounts?.fold<int>(0, (total, count) => total + count),
+        'wave_enemy_counts': waveEnemyCounts,
+      },
+      child: Phase0aBattleScreen(
+        reduceFlashing:
+            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+            true,
+        controller: controller,
+        numericSkillBindings: playerAdapter.numericSkillBindings,
+        basicAttackRange: playerAdapter.attackRange,
+        checkpointXById: _encounterHost?.checkpointXById ?? const {},
+        checkpointGuidanceCopy: _checkpointGuidanceCopy,
+        defendGuidanceCopy: _defendGuidanceCopy,
+        botCommandBuilder: widget.controller == ActivityController.playerBot
+            ? Phase0aPlayerBotAdapter(
+                playerAdapter: playerAdapter,
+                objectiveContinuationCommandBuilder:
+                    _encounterHost?.objectiveContinuationCommandBuilder,
+              ).commandFor
+            : null,
+      ),
     );
   }
 }

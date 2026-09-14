@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/domain/enums.dart';
 import '../../../../data/narrative_loader.dart';
+import '../../../debug/application/production_battle_frame_profile.dart';
 import '../../../../shared/audio/audio_assets.dart';
 import '../../../../shared/audio/sound_manager.dart';
 import '../../../../shared/strings.dart';
@@ -1007,6 +1008,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   void _onFrame(Duration elapsed) {
+    if (!kReleaseMode && ProductionBattleFrameProfile.isCapturing) {
+      ProductionBattleFrameProfile.recordActivity(
+        widget.controller,
+        paused: _paused,
+        foreground: _applicationActive,
+        combatOngoing:
+            widget.controller.outcome == Phase0aBattleOutcome.ongoing,
+      );
+    }
     // 暂停中:世界零推进(反馈计时/domain 步进均冻结)。
     if (_paused) return;
     final previous = _lastElapsed;

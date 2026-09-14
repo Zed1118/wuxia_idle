@@ -12,6 +12,7 @@ import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+import '../../debug/application/phase0a_production_profile.dart';
 import '../application/gauntlet_providers.dart';
 import '../application/phase0a_gauntlet_stage_runner.dart';
 
@@ -36,6 +37,7 @@ final class _Phase0aGauntletBattleHostState
   String? _setupError;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
+  String? _contentId;
   bool _notified = false;
 
   @override
@@ -50,8 +52,9 @@ final class _Phase0aGauntletBattleHostState
         }
         final plan = await service.preparePhase0aStage(config: widget.config);
         final numbers = GameRepository.instance.numbers;
+        final contentId = 'gauntlet_${plan.stage}';
         final mapping = Phase0aStageContentMapper.mapExpedition(
-          contentId: 'gauntlet_${plan.stage}',
+          contentId: contentId,
           enemyTeam: plan.enemyDefs,
           playerSnapshot: plan.playerSnapshot,
           numbers: numbers,
@@ -80,6 +83,7 @@ final class _Phase0aGauntletBattleHostState
         controller.addListener(_onChanged);
         setState(() {
           _mapping = mapping;
+          _contentId = contentId;
           _controller = controller;
         });
       } catch (error) {
@@ -125,13 +129,33 @@ final class _Phase0aGauntletBattleHostState
     if (controller == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Phase0aBattleScreen(
-      reduceFlashing:
-          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-          true,
+    final waveEnemyCounts = _mapping!.waves
+        .map((wave) => wave.enemies.length)
+        .toList(growable: false);
+    return Phase0aProductionProfile.wrap(
+      mode: 'bossGauntlet',
+      contentId: _contentId!,
+      runtimeKind: 'legacy_waves',
       controller: controller,
-      numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
-      basicAttackRange: _mapping!.playerAdapter.attackRange,
+      configuration: {
+        'active_limit': waveEnemyCounts.fold<int>(
+          0,
+          (largest, count) => count > largest ? count : largest,
+        ),
+        'total_enemy_count': waveEnemyCounts.fold<int>(
+          0,
+          (total, count) => total + count,
+        ),
+        'wave_enemy_counts': waveEnemyCounts,
+      },
+      child: Phase0aBattleScreen(
+        reduceFlashing:
+            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+            true,
+        controller: controller,
+        numericSkillBindings: _mapping!.playerAdapter.numericSkillBindings,
+        basicAttackRange: _mapping!.playerAdapter.attackRange,
+      ),
     );
   }
 }

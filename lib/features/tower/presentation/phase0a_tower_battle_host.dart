@@ -9,10 +9,12 @@ import '../../../shared/battle_shared/combatant_snapshot.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../battle/application/phase0a/combat_content_ref.dart';
+import '../../battle/application/phase0a/phase0a_wave_battle_flow.dart';
 import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
+import '../../debug/application/phase0a_production_profile.dart';
 import '../application/phase0a_tower_encounter_host.dart';
 import '../application/tower_providers.dart';
 
@@ -166,13 +168,33 @@ class _Phase0aTowerBattleHostState
     if (controller == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Phase0aBattleScreen(
-      reduceFlashing:
-          ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
-          true,
+    final session = _session!;
+    final flow = session.flow;
+    return Phase0aProductionProfile.wrap(
+      mode: 'tower',
+      contentId: session.contentRef.contentId,
+      runtimeKind: session.routeMode == Phase0aTowerEncounterRouteMode.migrated
+          ? 'typed_encounter'
+          : 'legacy_waves',
       controller: controller,
-      numericSkillBindings: _session!.playerAdapter.numericSkillBindings,
-      basicAttackRange: _session!.playerAdapter.attackRange,
+      flow: flow,
+      configuration: {
+        'active_limit': session.activeLimit,
+        'total_enemy_count': session.sourceEnemyDefIdsInEntryOrder.length,
+        'wave_enemy_counts': flow is Phase0aWaveBattleFlow
+            ? flow.waves
+                  .map((wave) => wave.enemies.length)
+                  .toList(growable: false)
+            : null,
+      },
+      child: Phase0aBattleScreen(
+        reduceFlashing:
+            ref.watch(gameplaySettingsProvider).asData?.value.reduceFlashing ??
+            true,
+        controller: controller,
+        numericSkillBindings: _session!.playerAdapter.numericSkillBindings,
+        basicAttackRange: _session!.playerAdapter.attackRange,
+      ),
     );
   }
 }

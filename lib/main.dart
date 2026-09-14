@@ -36,8 +36,9 @@ Future<void> main(List<String> args) async {
   // 视觉验收直达:--dart-define=VISUAL_ROUTE=<id>。debug + profile 均生效
   // (profile 下 kDebugMode=false → 隐藏 debug chrome,出干净 Steam 截图);
   // release / 无参数 → 短路(kReleaseMode),走下方正常启动,零影响。
+  BattleFrameProfileRunConfig? profile;
   if (!kReleaseMode) {
-    final profile = BattleFrameProfileProbe.configureFromArgs(args);
+    profile = BattleFrameProfileProbe.configureFromArgs(args);
     if (profile != null) {
       await windowManager.ensureInitialized();
       if (!profile.nativeContentViewport) {
@@ -49,6 +50,7 @@ Future<void> main(List<String> args) async {
     }
     final routeId = visualRouteIdFromInputs(args);
     final route = parseVisualRoute(routeId);
+    BattleFrameProfileProbe.recordEntryOrigin(visual: route != null);
     if (route != null) {
       runApp(VisualRouteApp(route: route, routeId: routeId));
       return;
@@ -59,9 +61,13 @@ Future<void> main(List<String> args) async {
   // 放 visual-route 短路之后 → 验收模式（VISUAL_WINDOW_W/H 锁尺寸）不受干扰。
   if (!kIsWeb) {
     await windowManager.ensureInitialized();
-    await const WindowManagerController().apply(
-      await DisplaySettingsService().load(),
-    );
+    // An explicitly requested production sample owns this launch's viewport.
+    // Do not overwrite saved preferences or replace its normal app entry.
+    if (profile?.scope != 'production') {
+      await const WindowManagerController().apply(
+        await DisplaySettingsService().load(),
+      );
+    }
   }
 
   // M4 PoC #46 美术 Stage 2 收官:启动初始化迁入 SplashScreen,

@@ -1,4 +1,8 @@
 import 'dart:math';
+import 'dart:convert';
+import 'dart:io';
+import 'package:wuxia_idle/features/debug/application/production_battle_frame_profile.dart';
+import 'package:wuxia_idle/features/debug/application/battle_frame_profile.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -143,6 +147,192 @@ void main() {
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('requested production profile wraps the actual ready host', (
+    tester,
+  ) async {
+    final output = Directory.systemTemp.createTempSync('production_host_');
+    addTearDown(() => output.deleteSync(recursive: true));
+    BattleFrameProfileProbe.configureFromArgs([
+      '--battle-profile-scope=production',
+      '--battle-profile-content-id=stage_01_01',
+      '--battle-profile-run-id=production-host-green',
+      '--battle-profile-output=${output.path}',
+      '--battle-profile-sample-seconds=60',
+      '--battle-profile-viewport=1280x720',
+    ]);
+    BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+    addTearDown(() => BattleFrameProfileProbe.configureFromArgs([]));
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.runAsync(() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Phase0aMainlineBattleHost(
+              stage: repo.getStage('stage_01_01'),
+              playerSnapshotForTest: _makeCh1Player(repo.numbers),
+              seedForTest: 20260905,
+              onVictory: (_) {},
+              onDefeat: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    });
+    try {
+      for (
+        var i = 0;
+        i < 50 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
+        i++
+      ) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      expect(find.byType(Phase0aBattleScreen), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.byType(Phase0aBattleScreen),
+          matching: find.byKey(
+            const ValueKey('production_battle_frame_profile'),
+          ),
+        ),
+        findsOneWidget,
+      );
+    } finally {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await ProductionBattleFrameProfile.flushPendingEvidence();
+      });
+    }
+    final evidence =
+        jsonDecode(File('${output.path}/summary.json').readAsStringSync())
+            as Map;
+    expect(evidence['entry_origin'], 'normal_root');
+    expect((evidence['scene'] as Map)['content_id'], 'stage_01_01');
+    expect((evidence['scene'] as Map)['runtime_kind'], 'typed_encounter');
+    expect(evidence['sampling_status'], 'INCOMPLETE');
+    expect(evidence['capture_end_reason'], 'host_disposed');
+    expect(evidence['invalid_reasons'], contains('capture_ended_early'));
+    expect(evidence['composite_gate'], isFalse);
+    final loads = File('${output.path}/workload.jsonl')
+        .readAsLinesSync()
+        .where((s) => s.isNotEmpty)
+        .map((s) => jsonDecode(s) as Map)
+        .toList();
+    expect(loads.first['spawn_total'], greaterThan(0));
+    expect(loads.first['tick'], isA<int>());
+    expect(ProductionBattleFrameProfile.isCapturing, isFalse);
+  });
+
+  testWidgets('production sampling preserves same-seed domain and settlement', (
+    tester,
+  ) async {
+    final output = Directory.systemTemp.createTempSync(
+      'production_determinism_',
+    );
+    addTearDown(() => output.deleteSync(recursive: true));
+    addTearDown(() => BattleFrameProfileProbe.configureFromArgs([]));
+    await tester.binding.setSurfaceSize(const Size(1280, 720));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    Future<List<Object?>> run(bool profile) async {
+      BattleFrameProfileProbe.configureFromArgs(
+        profile
+            ? [
+                '--battle-profile-scope=production',
+                '--battle-profile-content-id=stage_01_01',
+                '--battle-profile-run-id=domain-equivalence',
+                '--battle-profile-output=${output.path}',
+                '--battle-profile-warmup-seconds=0',
+                '--battle-profile-sample-seconds=60',
+                '--battle-profile-viewport=1280x720',
+              ]
+            : [],
+      );
+      BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+      CombatSettlementSnapshot? terminal;
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(
+              home: Phase0aMainlineBattleHost(
+                stage: repo.getStage('stage_01_01'),
+                playerSnapshotForTest: _makeCh1Player(repo.numbers),
+                seedForTest: 20260825,
+                controller: ActivityController.playerBot,
+                onVictory: (s) => terminal = s,
+                onDefeat: (s) => terminal = s,
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+      });
+      try {
+        final controller = tester
+            .widget<Phase0aBattleScreen>(find.byType(Phase0aBattleScreen))
+            .controller;
+        final observations = <Object?>[];
+        for (var i = 0; terminal == null && i < 180; i++) {
+          await tester.pump(const Duration(seconds: 1));
+          observations.add(controller.state);
+        }
+        expect(terminal, isNotNull);
+        expect(controller.events, isNotEmpty);
+        if (profile) {
+          final probe = tester.widget<ProductionBattleFrameProfile>(
+            find.byType(ProductionBattleFrameProfile),
+          );
+          final load = probe.readWorkload();
+          expect(load['tick'], controller.state.tick);
+          expect(load['spawn_removed'], greaterThan(0));
+          expect(
+            load['spawn_total'],
+            (load['spawn_active'] as int) +
+                (load['spawn_warning'] as int) +
+                (load['spawn_pending'] as int) +
+                (load['spawn_removed'] as int),
+          );
+          expect(load['combat_ongoing'], isFalse);
+        }
+        final t = terminal!;
+        return <Object?>[
+          observations,
+          controller.events.toList(),
+          t.result,
+          t.totalTicks,
+          t.hadActions,
+          t.playerCharacterId,
+          t.totalDamage,
+          t.criticalCount,
+          t.damageByCharacterId,
+          t.participants
+              .map((p) => [p.characterId, p.currentHp, p.maxHp])
+              .toList(),
+          t.skillCasts.map((s) => [s.tick, s.characterId, s.skillId]).toList(),
+        ];
+      } finally {
+        await tester.runAsync(() async {
+          await tester.pumpWidget(const SizedBox.shrink());
+          await ProductionBattleFrameProfile.flushPendingEvidence();
+        });
+      }
+    }
+
+    final baseline = await run(false);
+    final observed = await run(true);
+    expect(observed, baseline);
+    final evidence =
+        jsonDecode(File('${output.path}/summary.json').readAsStringSync())
+            as Map;
+    expect(
+      evidence['invalid_reasons'],
+      contains('combat_finished_during_sample'),
+    );
+    expect(evidence['sampling_status'], 'INCOMPLETE');
+    expect(evidence['composite_gate'], isFalse);
   });
 
   group('Phase0a 心魔镜像装配', () {

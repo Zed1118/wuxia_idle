@@ -26,6 +26,8 @@ final class BattleFrameProfileRunConfig {
     required this.viewportHeight,
     required this.nativeContentViewport,
     this.diagnostics = false,
+    this.scope = 'visual',
+    this.contentId,
   });
 
   final String runId;
@@ -38,6 +40,8 @@ final class BattleFrameProfileRunConfig {
   final double viewportHeight;
   final bool nativeContentViewport;
   final bool diagnostics;
+  final String scope;
+  final String? contentId;
 
   Duration get total => warmup + sample + cooldown;
 
@@ -91,6 +95,15 @@ final class BattleFrameProfileRunConfig {
         'Battle profile requires viewport formatted as WIDTHxHEIGHT.',
       );
     }
+    final scope = values['battle-profile-scope'] ?? 'visual';
+    final contentId = values['battle-profile-content-id'];
+    if (!{'visual', 'production'}.contains(scope) ||
+        (scope == 'production' && (contentId == null || contentId.isEmpty)) ||
+        (scope != 'production' && contentId != null)) {
+      throw const FormatException(
+        'Production profiling requires an explicit content-id and scope.',
+      );
+    }
     return BattleFrameProfileRunConfig(
       runId: runId,
       outputDirectory: output,
@@ -103,6 +116,8 @@ final class BattleFrameProfileRunConfig {
       nativeContentViewport:
           values['battle-profile-native-content-viewport'] == 'true',
       diagnostics: values['battle-profile-diagnostics'] == 'true',
+      scope: scope,
+      contentId: contentId,
     );
   }
 }
@@ -545,7 +560,7 @@ final class BattleFrameProfileDiagnostics {
   }
 }
 
-final class _BattleProfileGcCollector {
+final class BattleProfileGcCollector {
   final List<Map<String, Object?>> events = <Map<String, Object?>>[];
   VmService? _service;
   StreamSubscription<Event>? _subscription;
@@ -589,14 +604,48 @@ class BattleFrameProfileProbe extends StatefulWidget {
 
   final Widget child;
   static BattleFrameProfileRunConfig? _runtimeConfig;
+  static bool _normalRoot = false;
+  static bool _productionClaimed = false;
+
+  static BattleFrameProfileRunConfig? productionConfigFor(String contentId) {
+    final config = _runtimeConfig;
+    return _normalRoot &&
+            config?.scope == 'production' &&
+            config?.contentId == contentId
+        ? config
+        : null;
+  }
+
+  static void recordEntryOrigin({required bool visual}) {
+    if (visual && _runtimeConfig?.scope == 'production') {
+      throw StateError(
+        'A visual-route entry cannot provide production profile evidence.',
+      );
+    }
+    _normalRoot = !visual;
+  }
+
+  static bool claimProductionRun(BattleFrameProfileRunConfig config) {
+    if (!identical(config, _runtimeConfig) ||
+        config.scope != 'production' ||
+        !_normalRoot ||
+        _productionClaimed) {
+      return false;
+    }
+    _productionClaimed = true;
+    return true;
+  }
 
   static bool get diagnosticsEnabled => _runtimeConfig?.diagnostics == true;
 
   static BattleFrameProfileRunConfig? configureFromArgs(List<String> args) {
+    _normalRoot = false;
+    _productionClaimed = false;
     return _runtimeConfig = BattleFrameProfileRunConfig.tryParse(args);
   }
 
   static Widget maybeWrap(Widget child) {
+    if (_runtimeConfig?.scope == 'production') return child;
     const legacySeconds = int.fromEnvironment('BATTLE_FRAME_PROFILE_SECONDS');
     if (_runtimeConfig == null && legacySeconds <= 0) return child;
     return BattleFrameProfileProbe(child: child);
@@ -614,7 +663,7 @@ class _BattleFrameProfileProbeState extends State<BattleFrameProfileProbe> {
   );
 
   final Stopwatch _elapsed = Stopwatch();
-  final _gc = _BattleProfileGcCollector();
+  final _gc = BattleProfileGcCollector();
   final List<Map<String, Object>> _memorySamples = <Map<String, Object>>[];
   late final BattleFrameProfileRunConfig? _config;
   late final BattleFrameProfileAccumulator _profile;
