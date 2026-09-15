@@ -17,6 +17,28 @@ abstract final class Phase0aPresentationTokens {
   static const double backgroundParallaxScale = 1.3;
   static const double backgroundParallaxFactor = 0.24;
 
+  /// Decorative ranks only. These budgets never enter actor or spawn counts.
+  static const int crowdFarFigures = 20;
+  static const int crowdNearFigures = 12;
+  static const int crowdFigureBudget = crowdFarFigures + crowdNearFigures;
+  static const double crowdReferenceWidth = 1280;
+  static const double crowdMinScale = 0.65;
+  static const double crowdMaxScale = 1.2;
+  static const double crowdParallaxFactor = 0.12;
+  static const double crowdFarBaseline = 0.385;
+  static const double crowdNearBaseline = 0.445;
+  static const double crowdFarScale = 0.70;
+  static const double crowdFarOpacity = 0.32;
+  static const double crowdNearOpacity = 0.46;
+  static const double crowdInnerInset = 0.17;
+  static const double crowdBandWidth = 0.27;
+  static const double crowdWeaponStroke = 1.1;
+  static const double crowdSwaySkew = 0.022;
+  static const double crowdFlagFlutter = 2;
+  static const int crowdBannerEvery = 7;
+  static const double crowdAnimationCycleSeconds = 4;
+  static const int crowdAnimationSteps = 48;
+
   /// Camera follow dead zone in world units. A complete 120-unit advancing
   /// slash therefore reads primarily as actor travel while ordinary traversal
   /// still reaches camera follow and keeps the parallax reference moving.

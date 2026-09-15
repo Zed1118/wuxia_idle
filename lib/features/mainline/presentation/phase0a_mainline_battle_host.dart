@@ -28,6 +28,7 @@ import '../../battle/domain/phase0a/phase0a_wave.dart';
 import '../../battle/domain/phase0a/activity_participation_request.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_controller.dart';
 import '../../battle/presentation/phase0a/phase0a_battle_screen.dart';
+import '../../battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import '../../battle/presentation/phase0a/phase0a_visual_roster.dart';
 import '../../debug/application/phase0a_production_profile.dart';
 
@@ -339,6 +340,9 @@ class _Phase0aMainlineBattleHostState
     final settings = ref.watch(gameplaySettingsProvider).value;
     final reduceEffects = settings?.reduceEffects ?? false;
     final reduceFlashing = settings?.reduceFlashing ?? true;
+    final showBackgroundCrowds =
+        widget.stage.stageType == StageType.massBattle &&
+        (settings?.showBackgroundCrowds ?? true);
     return Phase0aProductionProfile.wrap(
       mode: widget.stage.stageType.name,
       contentId: widget.stage.id,
@@ -348,6 +352,10 @@ class _Phase0aMainlineBattleHostState
       configuration: {
         'reduce_effects': reduceEffects,
         'reduce_flashing': reduceFlashing,
+        'background_crowds_enabled': showBackgroundCrowds,
+        'background_crowd_figure_budget': showBackgroundCrowds
+            ? Phase0aPresentationTokens.crowdFigureBudget
+            : 0,
         'active_limit':
             encounterHost?.mapping?.director.config.activeLimit ??
             waveEnemyCounts?.fold<int>(
@@ -362,6 +370,7 @@ class _Phase0aMainlineBattleHostState
       child: Phase0aBattleScreen(
         reduceFlashing: reduceFlashing,
         reduceEffects: reduceEffects,
+        showBackgroundCrowds: showBackgroundCrowds,
         controller: controller,
         numericSkillBindings: playerAdapter.numericSkillBindings,
         basicAttackRange: playerAdapter.attackRange,

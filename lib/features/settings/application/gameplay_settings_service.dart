@@ -10,6 +10,7 @@ class GameplaySettingsService {
   static const _kTextDensity = 'gameplay.textDensity';
   static const _kReduceFlashing = 'gameplay.reduceFlashing';
   static const _kReduceEffects = 'gameplay.reduceEffects';
+  static const _kShowBackgroundCrowds = 'gameplay.showBackgroundCrowds';
 
   Future<GameplaySettings> load() async {
     final p = await SharedPreferences.getInstance();
@@ -27,6 +28,7 @@ class GameplaySettingsService {
           TextDensityPreference.standard,
       reduceFlashing: p.getBool(_kReduceFlashing) ?? false,
       reduceEffects: p.getBool(_kReduceEffects) ?? false,
+      showBackgroundCrowds: p.getBool(_kShowBackgroundCrowds) ?? true,
     );
   }
 
@@ -37,5 +39,6 @@ class GameplaySettingsService {
     await p.setString(_kTextDensity, s.textDensity.storageKey);
     await p.setBool(_kReduceFlashing, s.reduceFlashing);
     await p.setBool(_kReduceEffects, s.reduceEffects);
+    await p.setBool(_kShowBackgroundCrowds, s.showBackgroundCrowds);
   }
 }

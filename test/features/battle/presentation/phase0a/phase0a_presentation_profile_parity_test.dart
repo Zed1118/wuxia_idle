@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,6 +43,7 @@ import 'package:wuxia_idle/features/tower/presentation/phase0a_tower_battle_host
 import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/utils/math_random.dart';
+import 'package:wuxia_idle/shared/theme/wuxia_app_theme.dart';
 
 import '../../../../support/isar_test_support.dart';
 import '../../../../support/phase0a_ch1_founder_profile.dart';
@@ -49,10 +52,19 @@ import '../../../../support/phase0a_production_headless_benchmark.dart';
 const _seed = 20260820;
 const _settings = [
   GameplaySettings(),
+  GameplaySettings(showBackgroundCrowds: false),
   GameplaySettings(reduceEffects: true),
+  GameplaySettings(reduceEffects: true, showBackgroundCrowds: false),
   GameplaySettings(reduceFlashing: true),
+  GameplaySettings(reduceFlashing: true, showBackgroundCrowds: false),
   GameplaySettings(reduceEffects: true, reduceFlashing: true),
+  GameplaySettings(
+    reduceEffects: true,
+    reduceFlashing: true,
+    showBackgroundCrowds: false,
+  ),
 ];
+const _crowdLayerKey = ValueKey('phase0a_background_crowds');
 
 /// A read-only observer around the independent production headless flow. No
 /// copied reducer, event normalization, rounded state or fabricated terminal.
@@ -225,6 +237,13 @@ void main() {
   late CombatantSnapshot player;
 
   setUpAll(() async {
+    final visualFont = Platform.environment['WUXIA_CROWD_VISUAL_FONT'];
+    if (visualFont != null) {
+      final bytes = ByteData.sublistView(await File(visualFont).readAsBytes());
+      for (final family in ['Roboto', 'Ahem', 'sans-serif']) {
+        await (FontLoader(family)..addFont(Future.value(bytes))).load();
+      }
+    }
     await initializeTestIsarCore();
     repository = await GameRepository.loadAllDefs(
       loader: (path) => File(path).readAsString(),
@@ -311,6 +330,8 @@ void main() {
       expect(controller.state.tick, 0);
       expect(screen.reduceEffects, isFalse);
       expect(screen.reduceFlashing, isTrue);
+      expect(screen.showBackgroundCrowds, isFalse);
+      expect(find.byKey(_crowdLayerKey), findsNothing);
       expect(find.byType(ProductionBattleFrameProfile), findsOneWidget);
 
       await tester.runAsync(() async {
@@ -325,6 +346,8 @@ void main() {
       expect(screen.controller, same(controller));
       expect(screen.reduceEffects, initial.reduceEffects);
       expect(screen.reduceFlashing, initial.reduceFlashing);
+      expect(screen.showBackgroundCrowds, isFalse);
+      expect(find.byKey(_crowdLayerKey), findsNothing);
       expect(controller.state, initialState);
       expect(controller.events, isEmpty);
 
@@ -343,6 +366,8 @@ void main() {
       expect(screen.controller, same(controller));
       expect(screen.reduceEffects, initial.reduceEffects);
       expect(screen.reduceFlashing, initial.reduceFlashing);
+      expect(screen.showBackgroundCrowds, isFalse);
+      expect(find.byKey(_crowdLayerKey), findsNothing);
       expect(controller.state, initialState);
       expect(controller.events, isEmpty);
 
@@ -358,6 +383,8 @@ void main() {
       expect(screen.controller, same(controller));
       expect(screen.reduceEffects, updated.reduceEffects);
       expect(screen.reduceFlashing, updated.reduceFlashing);
+      expect(screen.showBackgroundCrowds, isFalse);
+      expect(find.byKey(_crowdLayerKey), findsNothing);
       expect(controller.state, initialState);
       expect(controller.events, isEmpty);
       final probe = tester.widget<ProductionBattleFrameProfile>(
@@ -435,6 +462,8 @@ void main() {
         expect(scope.read(gameplaySettingsProvider).hasError, isTrue);
         expect(screen.reduceEffects, isFalse);
         expect(screen.reduceFlashing, isTrue);
+        expect(screen.showBackgroundCrowds, isFalse);
+        expect(find.byKey(_crowdLayerKey), findsNothing);
         expect(screen.controller.state.tick, 0);
         expect(find.byType(SelectableText), findsNothing);
         expect(tester.takeException(), isNull);
@@ -444,6 +473,146 @@ void main() {
       }
     },
   );
+
+  testWidgets('mass battle crowd on off on invalidates the real profile', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 720);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final service = GameplaySettingsService();
+    const initial = GameplaySettings();
+    await service.save(initial);
+    final scope = ProviderContainer();
+    await scope.read(gameplaySettingsProvider.future);
+    final output = '${directory.path}/crowd-profile-switch';
+    BattleFrameProfileProbe.configureFromArgs([
+      '--battle-profile-scope=production',
+      '--battle-profile-content-id=stage_mass_battle_01',
+      '--battle-profile-run-id=crowd-profile-switch',
+      '--battle-profile-output=$output',
+      '--battle-profile-sample-seconds=60',
+      '--battle-profile-viewport=1280x720',
+    ]);
+    BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+    addTearDown(() => BattleFrameProfileProbe.configureFromArgs([]));
+    try {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: scope,
+            child: MaterialApp(
+              home: Phase0aMainlineBattleHost(
+                stage: repository.getStage('stage_mass_battle_01'),
+                seedForTest: _seed,
+                controller: ActivityController.playerBot,
+                massBattleFormation: Formation.yanXing,
+                onVictory: (_) =>
+                    fail('This profile probe stops before terminal'),
+                onDefeat: (_) =>
+                    fail('This profile probe stops before terminal'),
+              ),
+            ),
+          ),
+        );
+        for (
+          var attempt = 0;
+          attempt < 100 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
+          attempt++
+        ) {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          await tester.pump();
+        }
+      });
+      var screen = tester.widget<Phase0aBattleScreen>(
+        find.byType(Phase0aBattleScreen),
+      );
+      final controller = screen.controller;
+      expect(controller.state.tick, 0);
+      expect(screen.showBackgroundCrowds, isTrue);
+      expect(find.byKey(_crowdLayerKey), findsOneWidget);
+      final firstProbe = tester.widget<ProductionBattleFrameProfile>(
+        find.byType(ProductionBattleFrameProfile),
+      );
+      expect(
+        firstProbe.scene['configuration'],
+        containsPair('background_crowds_enabled', true),
+      );
+      expect(
+        firstProbe.scene['configuration'],
+        containsPair('background_crowd_figure_budget', 32),
+      );
+      controller.step(screen.botCommandBuilder!(controller.state));
+      expect(controller.state.tick, 1);
+      expect(controller.events, isNotEmpty);
+      final before = controller.state;
+      final events = controller.events.toList();
+      final records = controller.lastEventRecords.toList();
+
+      for (final visible in [false, true]) {
+        await tester.runAsync(() async {
+          await service.save(initial.copyWith(showBackgroundCrowds: visible));
+          scope.invalidate(gameplaySettingsProvider);
+          await scope.read(gameplaySettingsProvider.future);
+          await Future<void>.delayed(Duration.zero);
+          await tester.pump();
+        });
+        screen = tester.widget<Phase0aBattleScreen>(
+          find.byType(Phase0aBattleScreen),
+        );
+        expect(screen.controller, same(controller));
+        expect(screen.showBackgroundCrowds, visible);
+        expect(
+          find.byKey(_crowdLayerKey),
+          visible ? findsOneWidget : findsNothing,
+        );
+        expect(screen.reduceEffects, isFalse);
+        expect(screen.reduceFlashing, isFalse);
+        expect(controller.state, before);
+        expect(controller.events, events);
+        expect(controller.lastEventRecords, records);
+        final probe = tester.widget<ProductionBattleFrameProfile>(
+          find.byType(ProductionBattleFrameProfile),
+        );
+        expect(
+          probe.scene['configuration'],
+          containsPair('background_crowds_enabled', visible),
+        );
+        expect(
+          probe.scene['configuration'],
+          containsPair('background_crowd_figure_budget', visible ? 32 : 0),
+        );
+      }
+      expect(controller.outcome, Phase0aBattleOutcome.ongoing);
+      expect(tester.takeException(), isNull);
+    } finally {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await ProductionBattleFrameProfile.flushPendingEvidence();
+      });
+      scope.dispose();
+    }
+    final evidence =
+        jsonDecode(File('$output/summary.json').readAsStringSync()) as Map;
+    expect(evidence['sampling_status'], 'INCOMPLETE');
+    expect(
+      evidence['invalid_reasons'],
+      contains('scene_configuration_changed'),
+    );
+    expect(evidence['composite_gate'], isFalse);
+    // The scene ends in its original on state: a final-value-only comparison
+    // would miss the intervening off profile and incorrectly certify the run.
+    expect(
+      (evidence['scene'] as Map)['configuration'],
+      containsPair('background_crowds_enabled', true),
+    );
+    expect(
+      (evidence['scene_at_capture_end'] as Map)['configuration'],
+      containsPair('background_crowds_enabled', true),
+    );
+    debugPrint(jsonEncode({'crowd_profile_switch_evidence': evidence}));
+  });
 
   for (final route in _Route.values) {
     for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
@@ -479,9 +648,10 @@ void main() {
           ),
         );
 
-        // Four persisted combinations plus one full run that changes each
-        // preference in place. Every path must reach the genuine terminal.
-        for (var variant = 0; variant < 5; variant++) {
+        // Eight persisted crowd/effects/flashing combinations plus one full
+        // run changing all combinations in place. Every path reaches the
+        // genuine terminal; only massBattle may render a crowd layer.
+        for (var variant = 0; variant <= _settings.length; variant++) {
           SharedPreferences.setMockInitialValues({});
           final settingsService = GameplaySettingsService();
           final initial = _settings[variant % _settings.length];
@@ -574,12 +744,16 @@ void main() {
             ),
           };
           final runId = '${route.name}-${size.width.toInt()}-$variant';
+          final capture = GlobalKey();
           try {
             await tester.runAsync(() async {
               await tester.pumpWidget(
-                UncontrolledProviderScope(
-                  container: scope,
-                  child: MaterialApp(home: host),
+                RepaintBoundary(
+                  key: capture,
+                  child: UncontrolledProviderScope(
+                    container: scope,
+                    child: MaterialApp(theme: wuxiaAppTheme(), home: host),
+                  ),
                 ),
               );
               await tester.pump();
@@ -606,17 +780,34 @@ void main() {
               expect(screen.controller, same(controller));
               expect(screen.reduceEffects, preference.reduceEffects);
               expect(screen.reduceFlashing, preference.reduceFlashing);
+              final crowdVisible =
+                  route == _Route.massBattle && preference.showBackgroundCrowds;
+              expect(screen.showBackgroundCrowds, crowdVisible);
+              expect(
+                find.byKey(_crowdLayerKey),
+                crowdVisible ? findsOneWidget : findsNothing,
+              );
             }
 
             checkPreference(initial);
+            if (route == _Route.massBattle && variant < 2) {
+              await _captureCrowdViewport(
+                tester,
+                capture,
+                '${size.width.toInt()}-crowds-${initial.showBackgroundCrowds ? 'on' : 'off'}',
+              );
+              expect(controller.state, recorded.states.first);
+            }
+            var currentPreference = initial;
             final rawRecords = <CombatEventRecord>[];
             final switchAt = {
               for (var index = 0; index < _settings.length; index++)
-                (headless.ticks - 1) * (index + 1) ~/ 5: _settings[index],
+                (headless.ticks - 1) * (index + 1) ~/ (_settings.length + 1):
+                    _settings[index],
             };
             expect(switchAt, hasLength(_settings.length));
             for (var tick = 0; tick < headless.ticks; tick++) {
-              if (variant == 4 && switchAt.containsKey(tick)) {
+              if (variant == _settings.length && switchAt.containsKey(tick)) {
                 final preference = switchAt[tick]!;
                 final stateBefore = controller.state;
                 final eventsBefore = controller.events.toList();
@@ -628,6 +819,7 @@ void main() {
                   await tester.pump();
                 });
                 checkPreference(preference);
+                currentPreference = preference;
                 expect(controller.state, stateBefore);
                 expect(controller.events, eventsBefore);
               }
@@ -652,12 +844,16 @@ void main() {
               rawRecords.addAll(controller.lastEventRecords);
               // Let the real screen rebuild and paint repeatedly while the
               // fixed-step combat clock remains explicitly controlled.
-              if (tick % 60 == 0) await tester.pump();
+              if (tick % 60 == 0) {
+                await tester.pump();
+                checkPreference(currentPreference);
+              }
             }
             if (route == _Route.milestone) {
               await tester.runAsync(() => milestoneCompletion.future);
             }
             await tester.pump();
+            checkPreference(currentPreference);
             expect(controller.outcome, headless.outcome);
             expect(controller.events, headless.events);
             expect(rawRecords, headless.eventRecords);
@@ -682,7 +878,8 @@ void main() {
             'host_profile_parity': route.contentId,
             'seed': _seed,
             'viewport': '${size.width.toInt()}x${size.height.toInt()}',
-            'profiles': 5,
+            'profiles': _settings.length + 1,
+            'crowd_effects_flashing_combinations': _settings.length,
             'ticks_per_profile': headless.ticks,
             'events_per_profile': headless.events.length,
             'raw_records_per_profile': headless.eventRecords.length,
@@ -693,4 +890,26 @@ void main() {
       });
     }
   }
+}
+
+Future<void> _captureCrowdViewport(
+  WidgetTester tester,
+  GlobalKey key,
+  String name,
+) async {
+  final directory = Platform.environment['WUXIA_CROWD_VISUAL_OUTPUT'];
+  if (directory == null) return;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  await tester.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      final file = File('$directory/$name.png');
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(bytes!.buffer.asUint8List());
+    } finally {
+      image.dispose();
+    }
+  });
 }

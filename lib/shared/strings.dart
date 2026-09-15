@@ -2645,6 +2645,8 @@ class UiStrings {
   static const String settingsTextDensityCompact = '紧凑';
   static const String settingsReduceEffects = '降低特效密度';
   static const String settingsReduceEffectsHint = '减少装饰墨滴与重影，保留招式、伤害和危险提示';
+  static const String settingsBackgroundCrowds = '背景人群';
+  static const String settingsBackgroundCrowdsHint = '显示群战远景剪影，关闭可减轻画面负担';
   static const String settingsReduceFlashing = '减少闪烁';
   static const String settingsReduceFlashingHint = '降低战斗中的闪白与受击闪效果';
   // L1 显示设置（2026-06-15）:全屏 + 窗口分辨率预设。

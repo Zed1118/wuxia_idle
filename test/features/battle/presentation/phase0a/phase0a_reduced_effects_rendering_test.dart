@@ -52,6 +52,7 @@ void main() {
         await tester.binding.setSurfaceSize(viewport);
         addTearDown(() => tester.binding.setSurfaceSize(null));
         var reduced = false;
+        var crowds = true;
         late StateSetter update;
         await tester.pumpWidget(
           MaterialApp(
@@ -62,6 +63,7 @@ void main() {
                   controller: controller,
                   autoStep: false,
                   reduceEffects: reduced,
+                  showBackgroundCrowds: crowds,
                   feedbackHoldSeconds: 5,
                 );
               },
@@ -83,7 +85,19 @@ void main() {
           final normal = _criticalCues(tester);
           final state = controller.state;
           final events = controller.events.toList();
-          update(() => reduced = true);
+          expect(
+            find.byKey(const ValueKey('phase0a_background_crowds')),
+            findsOneWidget,
+          );
+          update(() => crowds = false);
+          await tester.pump();
+          expect(_criticalCues(tester), normal);
+          expect(controller.state, same(state));
+          expect(controller.events, events);
+          update(() {
+            crowds = true;
+            reduced = true;
+          });
           await tester.pump();
           expect(_criticalCues(tester), normal);
           expect(controller.state, same(state));

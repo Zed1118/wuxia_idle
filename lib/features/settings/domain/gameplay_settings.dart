@@ -48,6 +48,7 @@ class GameplaySettings {
     this.textDensity = TextDensityPreference.standard,
     this.reduceFlashing = false,
     this.reduceEffects = false,
+    this.showBackgroundCrowds = true,
   });
 
   /// 战斗交互重做 Phase 3:全局默认战斗模式。`true` = 纯挂机自动 / `false` =
@@ -60,18 +61,23 @@ class GameplaySettings {
   /// Reduce decorative ink detail only; combat and warning cues are unchanged.
   final bool reduceEffects;
 
+  /// Distant mass-battle silhouettes only; never changes combat participants.
+  final bool showBackgroundCrowds;
+
   GameplaySettings copyWith({
     bool? autoPlayDefault,
     BattlePlaybackSpeed? battlePlaybackSpeed,
     TextDensityPreference? textDensity,
     bool? reduceFlashing,
     bool? reduceEffects,
+    bool? showBackgroundCrowds,
   }) => GameplaySettings(
     autoPlayDefault: autoPlayDefault ?? this.autoPlayDefault,
     battlePlaybackSpeed: battlePlaybackSpeed ?? this.battlePlaybackSpeed,
     textDensity: textDensity ?? this.textDensity,
     reduceFlashing: reduceFlashing ?? this.reduceFlashing,
     reduceEffects: reduceEffects ?? this.reduceEffects,
+    showBackgroundCrowds: showBackgroundCrowds ?? this.showBackgroundCrowds,
   );
 
   int scaledBattleIntervalMs(int baseMs) {

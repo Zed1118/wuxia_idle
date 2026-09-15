@@ -26,6 +26,7 @@ import '../../domain/phase0a/phase0a_combat_intent.dart';
 import '../../domain/phase0a/phase0a_wave.dart';
 import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
+import 'phase0a_background_crowds.dart';
 import 'phase0a_actor_render_motion.dart';
 import 'phase0a_camera_dead_zone.dart';
 import 'phase0a_checkpoint_guidance.dart';
@@ -48,6 +49,7 @@ final class Phase0aBattleScreen extends StatefulWidget {
     this.autoStep = true,
     this.reduceFlashing = false,
     this.reduceEffects = false,
+    this.showBackgroundCrowds = false,
     this.feedbackHoldSeconds = Phase0aPresentationTokens.feedbackHoldSeconds,
     this.retryFlowBuilder,
     this.numericSkillBindings = const Phase0aNumericSkillBindings.empty(),
@@ -70,6 +72,9 @@ final class Phase0aBattleScreen extends StatefulWidget {
 
   /// Decorative painter detail only, with the full event stream retained.
   final bool reduceEffects;
+
+  /// Only the mass-battle host enables the distant decorative battle line.
+  final bool showBackgroundCrowds;
   final double feedbackHoldSeconds;
 
   /// 终局「再战」的新 flow 装配器;为 null 时终局不出现重试入口
@@ -98,6 +103,10 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   late final Ticker _ticker;
   late final ValueNotifier<int> _feedbackFrame;
   late final ValueNotifier<int> _indicatorFrame;
+  late final ValueNotifier<double> _backgroundCrowdPhase;
+  double _backgroundCrowdElapsedSeconds = 0;
+  Duration? _lastBackgroundCrowdElapsed;
+  bool _backgroundCrowdTickerEnabled = true;
   Duration? _lastElapsed;
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
@@ -141,6 +150,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _focusNode = FocusNode(debugLabel: 'phase0a-battle-input');
     _feedbackFrame = ValueNotifier<int>(0);
     _indicatorFrame = ValueNotifier<int>(0);
+    _backgroundCrowdPhase = ValueNotifier<double>(0);
     _syncActorRenderTargets();
     _resetCameraRenderPosition();
     widget.controller.addListener(_refresh);
@@ -154,7 +164,15 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _backgroundCrowdTickerEnabled = TickerMode.valuesOf(context).enabled;
+    _lastBackgroundCrowdElapsed = null;
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _lastBackgroundCrowdElapsed = null;
     _applicationActive = state == AppLifecycleState.resumed;
     if (!_applicationActive) {
       _clearHeldInput();
@@ -165,6 +183,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   @override
   void didUpdateWidget(covariant Phase0aBattleScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.showBackgroundCrowds != widget.showBackgroundCrowds) {
+      _lastBackgroundCrowdElapsed = null;
+    }
     if (oldWidget.controller == widget.controller) return;
     _cancelAutomaticAttackActivation();
     _automaticAttackEnabled = false;
@@ -172,6 +193,9 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     widget.controller.addListener(_refresh);
     _lastElapsed = null;
     _accumulatorSeconds = 0;
+    _backgroundCrowdElapsedSeconds = 0;
+    _backgroundCrowdPhase.value = 0;
+    _lastBackgroundCrowdElapsed = null;
     _heldFeedback.clear();
     _nextFeedbackId = 0;
     _hitFlashRemaining.clear();
@@ -204,6 +228,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _ticker.dispose();
     _feedbackFrame.dispose();
     _indicatorFrame.dispose();
+    _backgroundCrowdPhase.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -1011,7 +1036,36 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     return expired.isNotEmpty;
   }
 
+  void _advanceBackgroundCrowds(Duration elapsed) {
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    if (!widget.showBackgroundCrowds ||
+        _paused ||
+        !_backgroundCrowdTickerEnabled ||
+        (lifecycle != null && lifecycle != AppLifecycleState.resumed) ||
+        widget.controller.outcome != Phase0aBattleOutcome.ongoing) {
+      _lastBackgroundCrowdElapsed = null;
+      return;
+    }
+    final previous = _lastBackgroundCrowdElapsed;
+    _lastBackgroundCrowdElapsed = elapsed;
+    if (previous == null) return;
+    // Quantize this painter alone. Its anchor is reset on suspension even
+    // when no background frames arrive. The domain clock is untouched.
+    final delta =
+        (elapsed - previous).inMicroseconds / Duration.microsecondsPerSecond;
+    _backgroundCrowdElapsedSeconds =
+        (_backgroundCrowdElapsedSeconds + delta) %
+        Phase0aPresentationTokens.crowdAnimationCycleSeconds;
+    _backgroundCrowdPhase.value =
+        (_backgroundCrowdElapsedSeconds /
+                Phase0aPresentationTokens.crowdAnimationCycleSeconds *
+                Phase0aPresentationTokens.crowdAnimationSteps)
+            .floor() /
+        Phase0aPresentationTokens.crowdAnimationSteps;
+  }
+
   void _onFrame(Duration elapsed) {
+    _advanceBackgroundCrowds(elapsed);
     if (!kReleaseMode && ProductionBattleFrameProfile.isCapturing) {
       ProductionBattleFrameProfile.recordActivity(
         widget.controller,
@@ -1141,6 +1195,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     if (key == LogicalKeyboardKey.escape) {
       setState(() {
         _paused = !_paused;
+        _lastBackgroundCrowdElapsed = null;
         if (_paused) _clearHeldInput();
         if (!_paused) _lastElapsed = null; // 恢复首帧重建 delta 基准,不吞暂停时长
       });
@@ -1264,6 +1319,14 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                                 ],
                               ),
                             ),
+                            if (widget.showBackgroundCrowds)
+                              Phase0aBackgroundCrowds(
+                                key: const ValueKey(
+                                  'phase0a_background_crowds',
+                                ),
+                                cameraOffset: stage.cameraWorldRect.center,
+                                phase: _backgroundCrowdPhase,
+                              ),
                             ..._buildActors(controller, stage),
                             if (typedDefend != null)
                               _positionedDefendedEntity(stage, typedDefend),

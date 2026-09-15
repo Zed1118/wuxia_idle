@@ -600,6 +600,13 @@ class _GameplayComfortSection extends ConsumerWidget {
         ),
       ),
       SwitchListTile(
+        key: const ValueKey('settings_background_crowds'),
+        title: const Text(UiStrings.settingsBackgroundCrowds),
+        subtitle: const Text(UiStrings.settingsBackgroundCrowdsHint),
+        value: settings.showBackgroundCrowds,
+        onChanged: (v) => save(settings.copyWith(showBackgroundCrowds: v)),
+      ),
+      SwitchListTile(
         key: const ValueKey('settings_reduce_effects'),
         title: const Text(UiStrings.settingsReduceEffects),
         subtitle: const Text(UiStrings.settingsReduceEffectsHint),

@@ -14,12 +14,35 @@ import 'package:wuxia_idle/shared/theme/wuxia_app_theme.dart';
 void main() {
   setUpAll(_loadVisualFont);
   for (final viewport in [const Size(1280, 720), const Size(1440, 900)]) {
-    testWidgets(
-      '$viewport reduced effects persist through keyboard and mouse',
-      (tester) async {
+    for (final option in [
+      (
+        key: 'settings_reduce_effects',
+        prefKey: 'gameplay.reduceEffects',
+        label: '降低特效密度',
+        initialValue: false,
+        otherKey: 'gameplay.showBackgroundCrowds',
+        otherValue: false,
+        screenshotSuffix: 'settings',
+      ),
+      (
+        key: 'settings_background_crowds',
+        prefKey: 'gameplay.showBackgroundCrowds',
+        label: '背景人群',
+        initialValue: true,
+        otherKey: 'gameplay.reduceEffects',
+        otherValue: true,
+        screenshotSuffix: 'background-crowds-settings',
+      ),
+    ]) {
+      testWidgets('$viewport ${option.key} persists through keyboard and mouse', (
+        tester,
+      ) async {
         SharedPreferences.setMockInitialValues({
           'gameplay.reduceFlashing': true,
           'gameplay.battlePlaybackSpeed': 'brisk',
+          'gameplay.autoPlayDefault': false,
+          'gameplay.textDensity': 'compact',
+          option.otherKey: option.otherValue,
         });
         await tester.binding.setSurfaceSize(viewport);
         addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -48,31 +71,41 @@ void main() {
           );
           await tester.tap(find.text('open'));
           await tester.pumpAndSettle();
-          final tile = find.byKey(const ValueKey('settings_reduce_effects'));
+          final tile = find.byKey(ValueKey(option.key));
           expect(tile, findsOneWidget);
           await tester.ensureVisible(tile);
           await tester.pumpAndSettle();
-          expect(tester.widget<SwitchListTile>(tile).value, isFalse);
-          expect(tester.getSemantics(tile).label, contains('降低特效密度'));
-          expect(_toggleState(tester.getSemantics(tile)), isFalse);
+          expect(
+            tester.widget<SwitchListTile>(tile).value,
+            option.initialValue,
+          );
+          expect(tester.getSemantics(tile).label, contains(option.label));
+          expect(_toggleState(tester.getSemantics(tile)), option.initialValue);
           final mouse = await tester.createGesture(
             kind: PointerDeviceKind.mouse,
             pointer: 91,
           );
-          await mouse.addPointer(location: tester.getCenter(tile));
-          await tester.pump();
-          expect(
-            RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
-            SystemMouseCursors.click,
-          );
-          await mouse.removePointer();
-          await tester.tap(tile);
+          try {
+            await mouse.addPointer(location: tester.getCenter(tile));
+            await tester.pump();
+            expect(
+              RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
+              SystemMouseCursors.click,
+            );
+            await mouse.down(tester.getCenter(tile));
+            await mouse.up();
+          } finally {
+            await mouse.removePointer();
+          }
           await tester.pumpAndSettle();
           final prefs = await SharedPreferences.getInstance();
-          expect(prefs.getBool('gameplay.reduceEffects'), isTrue);
+          expect(prefs.getBool(option.prefKey), !option.initialValue);
+          expect(prefs.getBool(option.otherKey), option.otherValue);
           expect(prefs.getBool('gameplay.reduceFlashing'), isTrue);
           expect(prefs.getString('gameplay.battlePlaybackSpeed'), 'brisk');
-          expect(_toggleState(tester.getSemantics(tile)), isTrue);
+          expect(prefs.getBool('gameplay.autoPlayDefault'), isFalse);
+          expect(prefs.getString('gameplay.textDensity'), 'compact');
+          expect(_toggleState(tester.getSemantics(tile)), !option.initialValue);
           final directory = Platform.environment['WUXIA_EFFECTS_VISUAL_OUTPUT'];
           if (directory != null) {
             final boundary =
@@ -85,7 +118,7 @@ void main() {
               );
               image.dispose();
               final file = File(
-                '$directory/${viewport.width.toInt()}-settings.png',
+                '$directory/${viewport.width.toInt()}-${option.screenshotSuffix}.png',
               );
               await file.parent.create(recursive: true);
               await file.writeAsBytes(bytes!.buffer.asUint8List());
@@ -100,25 +133,32 @@ void main() {
             final focused = FocusManager.instance.primaryFocus?.context;
             if (focused != null &&
                 focused.findAncestorWidgetOfExactType<SwitchListTile>()?.key ==
-                    const ValueKey('settings_reduce_effects')) {
+                    ValueKey(option.key)) {
               break;
             }
           }
           final focused = FocusManager.instance.primaryFocus?.context;
           expect(
             focused?.findAncestorWidgetOfExactType<SwitchListTile>()?.key,
-            const ValueKey('settings_reduce_effects'),
+            ValueKey(option.key),
           );
           await tester.sendKeyEvent(LogicalKeyboardKey.space);
           await tester.pumpAndSettle();
-          expect(prefs.getBool('gameplay.reduceEffects'), isFalse);
+          expect(prefs.getBool(option.prefKey), option.initialValue);
+          expect(prefs.getBool(option.otherKey), option.otherValue);
+          expect(prefs.getBool('gameplay.reduceFlashing'), isTrue);
+          expect(prefs.getString('gameplay.battlePlaybackSpeed'), 'brisk');
+          expect(prefs.getBool('gameplay.autoPlayDefault'), isFalse);
+          expect(prefs.getString('gameplay.textDensity'), 'compact');
+          expect(_toggleState(tester.getSemantics(tile)), option.initialValue);
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox.shrink());
         } finally {
+          await tester.pumpWidget(const SizedBox.shrink());
           semantics.dispose();
         }
-      },
-    );
+      });
+    }
   }
 }
 
