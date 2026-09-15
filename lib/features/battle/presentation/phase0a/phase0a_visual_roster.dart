@@ -89,6 +89,55 @@ final class Phase0aVisualRoster {
         combatants: mapping.combatants,
       );
 
+  /// Reuse the approved full-body mass-battle art for every wave instance.
+  /// Portraits remain in domain snapshots; only this Host's visual roster
+  /// changes. Other legacy modes and explicit typed overrides keep their paths.
+  factory Phase0aVisualRoster.fromMassBattleMapping(
+    Phase0aStageMapping mapping,
+  ) => Phase0aVisualRoster.fromCombatants(
+    playerId: mapping.initialState.player.id,
+    combatants: mapping.combatants,
+    assetPathByActorId: {
+      for (final combatant in mapping.combatants)
+        if (combatant.actorId != mapping.initialState.player.id &&
+            _massBattleStandees.containsKey(combatant.snapshot.iconPath))
+          combatant.actorId: _massBattleStandees[combatant.snapshot.iconPath]!,
+    },
+  );
+
+  static const _massBattleStandees = {
+    'assets/enemies/massbattle_cunfei_a.png':
+        WuxiaUi.battleVillageBanditLeaderStandee,
+    'assets/enemies/massbattle_cunfei_b.png':
+        WuxiaUi.battleVillageBanditArcherStandee,
+    'assets/enemies/massbattle_cunfei_c.png':
+        WuxiaUi.battleVillageBanditSaberStandee,
+    'assets/enemies/massbattle_zhenkou_a.png':
+        WuxiaUi.battleTownBanditLeaderStandee,
+    'assets/enemies/massbattle_zhenkou_b.png':
+        WuxiaUi.battleTownBanditWandererStandee,
+    'assets/enemies/massbattle_zhenkou_c.png':
+        WuxiaUi.battleTownBanditAssassinStandee,
+    'assets/enemies/massbattle_xianjie_a.png':
+        WuxiaUi.battleRivalSectMasterStandee,
+    'assets/enemies/massbattle_xianjie_b.png':
+        WuxiaUi.battleRivalSectProtectorStandee,
+    'assets/enemies/massbattle_xianjie_c.png':
+        WuxiaUi.battleRivalSectDiscipleStandee,
+    'assets/enemies/massbattle_guanqi_a.png':
+        WuxiaUi.battleFrontierCommanderStandee,
+    'assets/enemies/massbattle_guanqi_b.png':
+        WuxiaUi.battleFrontierOutriderStandee,
+    'assets/enemies/massbattle_guanqi_c.png':
+        WuxiaUi.battleFrontierIronGuardStandee,
+    'assets/enemies/massbattle_canbu_a.png':
+        WuxiaUi.battleWesternRemnantGeneralStandee,
+    'assets/enemies/massbattle_canbu_b.png':
+        WuxiaUi.battleWesternFrenziedRiderStandee,
+    'assets/enemies/massbattle_canbu_c.png':
+        WuxiaUi.battleWesternRemnantAssassinStandee,
+  };
+
   /// D10 动态视觉名册合同:在 runtime 状态变化前为全量 [combatants]
   /// (含 reserve / warning / active)各构造恰一个视觉。
   ///
