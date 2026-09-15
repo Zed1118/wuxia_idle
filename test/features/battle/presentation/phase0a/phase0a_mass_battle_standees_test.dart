@@ -29,6 +29,7 @@ import 'package:wuxia_idle/shared/battle_shared/combat_settlement_snapshot.dart'
 import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_app_theme.dart';
 import 'package:wuxia_idle/shared/theme/wuxia_tokens.dart';
+import 'package:wuxia_idle/shared/widgets/combat_hp_bar.dart';
 
 import '../../../../support/isar_test_support.dart';
 import '../../../../support/phase0a_ch1_founder_profile.dart';
@@ -491,6 +492,9 @@ void main() {
           }
 
           checkScreenImages();
+          if (stageId == 'stage_mass_battle_05') {
+            await _expectBossLabelsClearOfOtherActorPixels(tester, screen);
+          }
           await _captureViewport(tester, capture, '$stageId-$viewport');
           expect(controller.state, recorded.states.first);
           final rawRecords = <CombatEventRecord>[];
@@ -583,6 +587,223 @@ void main() {
   }
 }
 
+Future<void> _resolveVisibleImages(
+  WidgetTester tester,
+  BuildContext context,
+) async {
+  await tester.runAsync(() async {
+    final images = tester.widgetList<Image>(find.byType(Image)).toList();
+    for (final image in images) {
+      Object? imageError;
+      await precacheImage(
+        image.image,
+        context,
+        onError: (error, _) => imageError = error,
+      );
+      expect(imageError, isNull);
+    }
+    await tester.pump();
+  });
+}
+
+List<double> _rectFacts(Rect rect) => [
+  rect.left,
+  rect.top,
+  rect.width,
+  rect.height,
+];
+
+/// Test actual image pixels in screen coordinates, not an actor's generous
+/// transparent box. Uses the decoded RenderImage, BoxFit.contain, alignment,
+/// image scale and its real ancestor transforms. This is a tick-0 UI witness.
+Future<void> _expectBossLabelsClearOfOtherActorPixels(
+  WidgetTester tester,
+  Phase0aBattleScreen screen,
+) async {
+  final controller = screen.controller;
+  expect(controller.state.tick, 0);
+  await _resolveVisibleImages(
+    tester,
+    tester.element(find.byType(Phase0aBattleScreen)),
+  );
+  final viewport = Offset.zero & tester.view.physicalSize;
+  final pairs = <Map<String, Object>>[];
+  var checkedBosses = 0;
+  var overlapPixels = 0;
+  for (final boss in controller.state.enemies) {
+    final visual = controller.roster.visualFor(boss.id);
+    if (!visual.isElite) continue;
+    final hpFinder = find.byKey(ValueKey('phase0a_hp_${boss.id}'));
+    if (hpFinder.evaluate().isEmpty) continue; // Offstage is not painted.
+    final infoFinder = find.byKey(ValueKey('phase0a_actor_info_${boss.id}'));
+    expect(infoFinder, findsOneWidget);
+    final nameFinder = find.descendant(
+      of: infoFinder,
+      matching: find.text(visual.name),
+    );
+    expect(nameFinder, findsOneWidget);
+    final name = tester.widget<Text>(nameFinder);
+    expect(name.data, visual.name);
+    expect(name.style!.fontSize, 13); // Preserve the existing readable type.
+    expect(
+      tester.renderObject<RenderParagraph>(nameFinder).didExceedMaxLines,
+      isFalse,
+    );
+    final hp = tester.widget<HpBar>(hpFinder);
+    expect(hp.current, boss.currentHealth);
+    expect(hp.max, boss.maxHealth);
+    expect(hp.showLabel, isTrue);
+    expect(hp.height, 14);
+    final valueFinder = find.descendant(
+      of: hpFinder,
+      matching: find.text('${boss.currentHealth}/${boss.maxHealth}'),
+    );
+    expect(valueFinder, findsOneWidget);
+    final nameHpRect = tester
+        .getRect(nameFinder)
+        .expandToInclude(tester.getRect(hpFinder));
+    final infoRect = tester.getRect(infoFinder);
+    final ownImage = find.descendant(
+      of: find.byKey(ValueKey('phase0a_actor_visual_${boss.id}')),
+      matching: find.byType(RawImage),
+    );
+    expect(ownImage, findsOneWidget);
+    final ownImageRect = tester.getRect(ownImage);
+    debugPrint(
+      jsonEncode({
+        'boss_label_owner_alignment': 'stage_mass_battle_05',
+        'viewport': '${viewport.width.toInt()}x${viewport.height.toInt()}',
+        'boss_id': boss.id,
+        'info_center_y': infoRect.center.dy,
+        'owner_image_center_y': ownImageRect.center.dy,
+      }),
+    );
+    // This real crowded opening has room beside the Boss. Keep the displaced
+    // block level with its owner even when a neighbor has a wider body.
+    expect(infoRect.center.dy, closeTo(ownImageRect.center.dy, .01));
+    expect(
+      infoRect.right <= ownImageRect.left ||
+          infoRect.left >= ownImageRect.right,
+      isTrue,
+    );
+    expect(infoRect.inflate(.001).contains(nameHpRect.topLeft), isTrue);
+    expect(infoRect.inflate(.001).contains(nameHpRect.bottomRight), isTrue);
+    expect(viewport.contains(infoRect.topLeft), isTrue);
+    expect(viewport.contains(infoRect.bottomRight), isTrue);
+    // Query the real hit path without dispatching a pointer command or
+    // advancing combat: moved info must still pass input to the stage.
+    final stageInput = tester.renderObject(
+      find.byKey(const ValueKey('phase0a_stage_input_layer')),
+    );
+    final infoRender = tester.renderObject(infoFinder);
+    final hitPath = tester.hitTestOnBinding(infoRect.center).path;
+    expect(hitPath.any((entry) => identical(entry.target, stageInput)), isTrue);
+    expect(
+      hitPath.any((entry) => identical(entry.target, infoRender)),
+      isFalse,
+    );
+    checkedBosses++;
+    for (final other in controller.state.enemies) {
+      if (other.id == boss.id) continue;
+      final otherVisual = find.byKey(
+        ValueKey('phase0a_actor_visual_${other.id}'),
+      );
+      if (otherVisual.evaluate().isEmpty) continue;
+      final rawFinder = find.descendant(
+        of: otherVisual,
+        matching: find.byType(RawImage),
+      );
+      expect(rawFinder, findsOneWidget);
+      final render = tester.renderObject<RenderImage>(rawFinder);
+      expect(render.image, isNotNull);
+      expect(render.fit, BoxFit.contain);
+      expect(render.centerSlice, isNull);
+      expect(render.repeat, ImageRepeat.noRepeat);
+      expect(render.matchTextDirection, isFalse);
+      final image = render.image!;
+      final pixels = (await tester.runAsync(
+        () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+      ))!;
+      final inputSize = Size(image.width.toDouble(), image.height.toDouble());
+      final fitted = applyBoxFit(
+        render.fit!,
+        inputSize / render.scale,
+        render.size,
+      );
+      final alignment = render.alignment.resolve(render.textDirection);
+      final sourceRect = alignment.inscribe(
+        fitted.source * render.scale,
+        Offset.zero & inputSize,
+      );
+      final targetRect = alignment.inscribe(
+        fitted.destination,
+        Offset.zero & render.size,
+      );
+      var opaquePixels = 0;
+      var obscuredPixels = 0;
+      final examples = <List<double>>[];
+      for (var y = 0; y < image.height; y++) {
+        for (var x = 0; x < image.width; x++) {
+          if (pixels.getUint8((y * image.width + x) * 4 + 3) < 128) continue;
+          final sourcePoint = Offset(x + .5, y + .5);
+          if (!sourceRect.contains(sourcePoint)) continue;
+          opaquePixels++;
+          final local = Offset(
+            targetRect.left +
+                (sourcePoint.dx - sourceRect.left) /
+                    sourceRect.width *
+                    targetRect.width,
+            targetRect.top +
+                (sourcePoint.dy - sourceRect.top) /
+                    sourceRect.height *
+                    targetRect.height,
+          );
+          final point = render.localToGlobal(local);
+          if (viewport.contains(point) && infoRect.contains(point)) {
+            obscuredPixels++;
+            if (examples.length < 3) examples.add([point.dx, point.dy]);
+          }
+        }
+      }
+      expect(opaquePixels, greaterThan(0), reason: other.id);
+      overlapPixels += obscuredPixels;
+      pairs.add({
+        'boss_id': boss.id,
+        'neighbor_id': other.id,
+        'name': visual.name,
+        'hp': '${hp.current}/${hp.max}',
+        'info_rect': _rectFacts(infoRect),
+        'name_hp_rect': _rectFacts(nameHpRect),
+        'image_box': _rectFacts(tester.getRect(rawFinder)),
+        'image_source_pixels': [image.width, image.height],
+        'image_paint_local_rect': _rectFacts(targetRect),
+        'alpha_threshold': 128,
+        'opaque_pixels': opaquePixels,
+        'opaque_pixels_under_info': obscuredPixels,
+        'example_screen_points': examples,
+      });
+    }
+  }
+  expect(checkedBosses, greaterThan(0));
+  expect(pairs, isNotEmpty);
+  debugPrint(
+    jsonEncode({
+      'boss_label_opaque_pixel_overlap': 'stage_mass_battle_05',
+      'viewport': '${viewport.width.toInt()}x${viewport.height.toInt()}',
+      'tick': controller.state.tick,
+      'measurement_scope': 'complete_actor_info_group',
+      'checked_bosses': checkedBosses,
+      'overlap_pixels': overlapPixels,
+      'pairs': pairs,
+    }),
+  );
+  expect(
+    overlapPixels,
+    0,
+    reason: 'Visible boss name/HP must not cover another enemy opaque pixel',
+  );
+}
+
 Future<void> _captureViewport(
   WidgetTester tester,
   GlobalKey key,
@@ -593,17 +814,8 @@ Future<void> _captureViewport(
   final context = key.currentContext!;
   // Resolve the actual rendered providers before the optional visual artifact.
   // This only waits for image IO: no combat clock or frame duration advances.
+  await _resolveVisibleImages(tester, context);
   await tester.runAsync(() async {
-    for (final image in tester.widgetList<Image>(find.byType(Image))) {
-      Object? imageError;
-      await precacheImage(
-        image.image,
-        context,
-        onError: (error, _) => imageError = error,
-      );
-      expect(imageError, isNull);
-    }
-    await tester.pump();
     final boundary = context.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 1);
     try {

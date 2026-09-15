@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
@@ -9,7 +12,6 @@ import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/posture.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_controller.dart';
 import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_battle_screen.dart';
-import 'package:wuxia_idle/features/battle/presentation/phase0a/phase0a_presentation_tokens.dart';
 import 'package:wuxia_idle/features/debug/application/phase0a_debug_battle_fixture.dart';
 import 'package:wuxia_idle/features/debug/presentation/phase0a_boss_mechanics_route_driver.dart';
 import 'package:wuxia_idle/features/debug/presentation/visual_route_host.dart';
@@ -19,6 +21,15 @@ import '../../../../support/test_data.dart';
 
 void main() {
   const viewports = [Size(1280, 720), Size(1440, 900)];
+
+  setUpAll(() async {
+    final font = Platform.environment['WUXIA_STANDEE_VISUAL_FONT'];
+    if (font == null) return;
+    final bytes = ByteData.sublistView(await File(font).readAsBytes());
+    for (final family in ['Roboto', 'Ahem', 'sans-serif']) {
+      await (FontLoader(family)..addFont(Future.value(bytes))).load();
+    }
+  });
 
   setUp(() async {
     await loadTestGameRepository();
@@ -64,126 +75,203 @@ void main() {
     expect(paintedPixels, greaterThan(0), reason: '$label painter 不得退化为空画布');
   }
 
-  testWidgets(
-    'guardian fixture renders a non-3v3 Phase0A ward and both VFX states',
-    (tester) async {
-      final fixture = (await tester.runAsync(
-        () => Phase0aDebugBattleFixture.load(
-          assetLoader: loadTestAsset,
-          numbers: GameRepository.instance.numbers,
-          assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
-        ),
-      ))!;
-      final controller = Phase0aBattleController(
-        flow: fixture.flow,
-        roster: fixture.roster,
-        fixedDeltaSeconds: fixture.fixedDeltaSeconds,
-      );
-      addTearDown(controller.dispose);
-      await tester.binding.setSurfaceSize(const Size(1280, 720));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Phase0aBattleScreen(
-            controller: controller,
-            autoStep: false,
-            feedbackHoldSeconds: 5,
+  for (final viewport in viewports) {
+    testWidgets(
+      'guardian fixture renders a non-3v3 Phase0A ward and both VFX states $viewport',
+      (tester) async {
+        final fixture = (await tester.runAsync(
+          () => Phase0aDebugBattleFixture.load(
+            assetLoader: loadTestAsset,
+            numbers: GameRepository.instance.numbers,
+            assetPath: 'data/phase0a_debug_guardian_mechanics.yaml',
           ),
-        ),
-      );
-      await tester.pump();
-
-      expect(
-        find.byKey(const ValueKey('phase0a_battle_screen')),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
-        findsOneWidget,
-      );
-      await expectPainterDrawsPixels(
-        tester,
-        find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
-        label: '守护阵环',
-      );
-      expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
-      expect(
-        find.text(UiStrings.surviveConditionRemaining(80, 80)),
-        findsOneWidget,
-      );
-      final guardianLabelLanes = tester.widgetList<Transform>(
-        find.byWidgetPredicate(
-          (widget) =>
-              widget is Transform &&
-              widget.key is ValueKey &&
-              (widget.key! as ValueKey).value.toString().startsWith(
-                'phase0a_guardian_label_lane_',
-              ),
-        ),
-      );
-      expect(guardianLabelLanes, hasLength(2));
-      final laneOffsets = guardianLabelLanes
-          .map((lane) => lane.transform.getTranslation().x)
-          .toList();
-      expect(laneOffsets.toSet(), {
-        -Phase0aPresentationTokens.guardianLabelLaneOffset,
-        Phase0aPresentationTokens.guardianLabelLaneOffset,
-      });
-
-      var breakSent = false;
-      var sawIntercept = false;
-      var sawCoop = false;
-      for (var i = 0; i < 80; i++) {
-        final charging = controller.state.enemies.first.chargingCast != null;
-        final events = controller.step(
-          !breakSent && charging
-              ? const Phase0aPlayerCommand(clear: true)
-              : null,
+        ))!;
+        final controller = Phase0aBattleController(
+          flow: fixture.flow,
+          roster: fixture.roster,
+          fixedDeltaSeconds: fixture.fixedDeltaSeconds,
         );
-        if (charging) breakSent = true;
-        await tester.pump();
-        sawIntercept =
-            sawIntercept ||
-            events.whereType<Phase0aGuardIntercepted>().isNotEmpty;
-        sawCoop =
-            sawCoop || events.whereType<Phase0aGuardianCoopStrike>().isNotEmpty;
-        if (events.whereType<Phase0aGuardIntercepted>().isNotEmpty) {
-          final interceptFinder = find.byWidgetPredicate(
-            (widget) =>
-                widget.key is ValueKey &&
-                (widget.key! as ValueKey).value.toString().startsWith(
-                  'phase0a_guard_intercept_',
-                ),
-          );
-          expect(interceptFinder, findsOneWidget);
-          await expectPainterDrawsPixels(
-            tester,
-            find.descendant(
-              of: interceptFinder,
-              matching: find.byType(CustomPaint),
+        addTearDown(controller.dispose);
+        await tester.binding.setSurfaceSize(viewport);
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        final capture = GlobalKey();
+        await tester.pumpWidget(
+          MaterialApp(
+            // Provide normal Material text inheritance for this isolated screen.
+            builder: (context, child) => Material(child: child),
+            home: RepaintBoundary(
+              key: capture,
+              child: Phase0aBattleScreen(
+                controller: controller,
+                autoStep: false,
+                feedbackHoldSeconds: 5,
+              ),
             ),
-            label: '守护截击轨迹',
+          ),
+        );
+        await tester.pump();
+
+        expect(
+          find.byKey(const ValueKey('phase0a_battle_screen')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
+          findsOneWidget,
+        );
+        await expectPainterDrawsPixels(
+          tester,
+          find.byKey(const ValueKey('phase0a_guardian_ward_ring')),
+          label: '守护阵环',
+        );
+        expect(find.text(UiStrings.guardianWardActiveLabel), findsOneWidget);
+        expect(
+          find.text(UiStrings.surviveConditionRemaining(80, 80)),
+          findsOneWidget,
+        );
+        final actorBodies = <Rect>[];
+        for (final actor in [
+          controller.state.player,
+          ...controller.state.enemies,
+        ]) {
+          final image = find.descendant(
+            of: find.byKey(ValueKey('phase0a_actor_visual_${actor.id}')),
+            matching: find.byType(Image),
+          );
+          expect(image, findsOneWidget);
+          final box = tester.renderObject<RenderBox>(image);
+          actorBodies.add(
+            MatrixUtils.transformRect(
+              box.getTransformTo(null),
+              Offset.zero & box.size,
+            ),
           );
         }
-        if (sawIntercept && sawCoop) break;
-      }
-      expect(sawIntercept, isTrue);
-      expect(sawCoop, isTrue);
-      final coopFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget.key is ValueKey &&
-            (widget.key! as ValueKey).value.toString().startsWith(
-              'phase0a_guardian_coop_',
+        final informationRects = <Rect>[];
+        for (final actor in controller.state.enemies) {
+          final information = find.byKey(
+            ValueKey('phase0a_actor_info_${actor.id}'),
+          );
+          expect(information, findsOneWidget);
+          expect(
+            find.descendant(
+              of: information,
+              matching: find.text(controller.roster.nameOf(actor.id)),
             ),
-      );
-      expect(coopFinder, findsOneWidget);
-      await expectPainterDrawsPixels(
-        tester,
-        find.descendant(of: coopFinder, matching: find.byType(CustomPaint)),
-        label: '守护协击轨迹',
-      );
-    },
-  );
+            findsOneWidget,
+          );
+          expect(
+            find.descendant(
+              of: information,
+              matching: find.byKey(ValueKey('phase0a_hp_${actor.id}')),
+            ),
+            findsOneWidget,
+          );
+          if (actor.guardianDefIds.isNotEmpty) {
+            expect(
+              find.descendant(
+                of: information,
+                matching: find.text(UiStrings.guardianWardActiveLabel),
+              ),
+              findsOneWidget,
+            );
+            expect(
+              find.descendant(
+                of: information,
+                matching: find.byKey(
+                  ValueKey('phase0a_vulnerability_guarded_${actor.id}'),
+                ),
+              ),
+              findsOneWidget,
+            );
+          }
+          final rect = tester.getRect(information);
+          // All three enemies stand to the right of the player, with a free
+          // information lane there. Their labels must not cross the player.
+          expect(
+            rect.left,
+            greaterThan(actorBodies.first.right),
+            reason: 'enemy information must stay beside its own group',
+          );
+          for (final body in actorBodies) {
+            expect(
+              rect.overlaps(body),
+              isFalse,
+              reason: '${actor.id} information must not cover an actual Image',
+            );
+          }
+          for (final other in informationRects) {
+            expect(
+              rect.overlaps(other),
+              isFalse,
+              reason: 'guardian and boss information must remain separate',
+            );
+          }
+          informationRects.add(rect);
+        }
+        expect(informationRects, hasLength(3));
+        await _captureMechanics(
+          tester,
+          capture,
+          'guardian-ward-${viewport.width.toInt()}x${viewport.height.toInt()}',
+        );
+
+        var breakSent = false;
+        var sawIntercept = false;
+        var sawCoop = false;
+        for (var i = 0; i < 80; i++) {
+          final charging = controller.state.enemies.first.chargingCast != null;
+          final events = controller.step(
+            !breakSent && charging
+                ? const Phase0aPlayerCommand(clear: true)
+                : null,
+          );
+          if (charging) breakSent = true;
+          await tester.pump();
+          sawIntercept =
+              sawIntercept ||
+              events.whereType<Phase0aGuardIntercepted>().isNotEmpty;
+          sawCoop =
+              sawCoop ||
+              events.whereType<Phase0aGuardianCoopStrike>().isNotEmpty;
+          if (events.whereType<Phase0aGuardIntercepted>().isNotEmpty) {
+            final interceptFinder = find.byWidgetPredicate(
+              (widget) =>
+                  widget.key is ValueKey &&
+                  (widget.key! as ValueKey).value.toString().startsWith(
+                    'phase0a_guard_intercept_',
+                  ),
+            );
+            expect(interceptFinder, findsOneWidget);
+            await expectPainterDrawsPixels(
+              tester,
+              find.descendant(
+                of: interceptFinder,
+                matching: find.byType(CustomPaint),
+              ),
+              label: '守护截击轨迹',
+            );
+          }
+          if (sawIntercept && sawCoop) break;
+        }
+        expect(sawIntercept, isTrue);
+        expect(sawCoop, isTrue);
+        final coopFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey &&
+              (widget.key! as ValueKey).value.toString().startsWith(
+                'phase0a_guardian_coop_',
+              ),
+        );
+        expect(coopFinder, findsOneWidget);
+        await expectPainterDrawsPixels(
+          tester,
+          find.descendant(of: coopFinder, matching: find.byType(CustomPaint)),
+          label: '守护协击轨迹',
+        );
+      },
+    );
+  }
 
   test(
     'boss visual route reaches and freezes unified posture vulnerability',
@@ -242,6 +330,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        // Provide normal Material text inheritance for this isolated screen.
+        builder: (context, child) => Material(child: child),
         home: Phase0aBossMechanicsPreview(
           controller: controller,
           fixedDeltaSeconds: fixture.fixedDeltaSeconds,
@@ -287,6 +377,8 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
+        // Provide normal Material text inheritance for this isolated screen.
+        builder: (context, child) => Material(child: child),
         home: Phase0aBattleScreen(
           controller: controller,
           autoStep: false,
@@ -397,12 +489,18 @@ void main() {
 
       await tester.binding.setSurfaceSize(viewport);
       addTearDown(() => tester.binding.setSurfaceSize(null));
+      final capture = GlobalKey();
       await tester.pumpWidget(
         MaterialApp(
-          home: Phase0aBattleScreen(
-            controller: bossController,
-            autoStep: false,
-            feedbackHoldSeconds: 5,
+          // Provide normal Material text inheritance for this isolated screen.
+          builder: (context, child) => Material(child: child),
+          home: RepaintBoundary(
+            key: capture,
+            child: Phase0aBattleScreen(
+              controller: bossController,
+              autoStep: false,
+              feedbackHoldSeconds: 5,
+            ),
           ),
         ),
       );
@@ -438,6 +536,11 @@ void main() {
         findsOneWidget,
       );
       expect(find.text(UiStrings.phase0aVulnerabilityOpen), findsNothing);
+      await _captureMechanics(
+        tester,
+        capture,
+        'boss-charge-${viewport.width.toInt()}x${viewport.height.toInt()}',
+      );
 
       bossController.step(const Phase0aPlayerCommand(clear: true));
       await tester.pump();
@@ -460,6 +563,49 @@ void main() {
         bossController.state.enemies.single.posture!.accumulated,
         greaterThan(0),
       );
+      await _captureMechanics(
+        tester,
+        capture,
+        'boss-posture-${viewport.width.toInt()}x${viewport.height.toInt()}',
+      );
     });
   }
+}
+
+Future<void> _captureMechanics(
+  WidgetTester tester,
+  GlobalKey key,
+  String name,
+) async {
+  final output = Platform.environment['WUXIA_STANDEE_VISUAL_OUTPUT'];
+  if (output == null) return;
+  final context = key.currentContext!;
+  await tester.runAsync(() async {
+    for (final image in tester.widgetList<Image>(find.byType(Image)).toList()) {
+      Object? imageError;
+      await precacheImage(
+        image.image,
+        context,
+        onError: (error, _) => imageError = error,
+      );
+      expect(
+        imageError,
+        isNull,
+        reason: 'mechanics screenshot must resolve actual assets',
+      );
+    }
+    // No elapsed simulation time: only flush resolved image painting.
+    await tester.pump();
+    final boundary = context.findRenderObject()! as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: 1);
+    try {
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      expect(bytes, isNotNull);
+      final file = File('$output/$name.png');
+      await file.parent.create(recursive: true);
+      await file.writeAsBytes(bytes!.buffer.asUint8List());
+    } finally {
+      image.dispose();
+    }
+  });
 }

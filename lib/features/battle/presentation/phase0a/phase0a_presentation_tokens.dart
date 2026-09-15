@@ -164,6 +164,10 @@ abstract final class Phase0aPresentationTokens {
   static const double actorWidth = 112;
   static const double actorHeight = 158;
   static const double actorImageHeight = 118;
+  static const double actorImageBottomInset = 4;
+  static const double actorInfoGap = 6;
+  static const double defendedEntityWidth = 92;
+  static const double defendedEntityHeight = 104;
   static const double actorHpWidth = 104;
   static const double actorHpHeight = 14;
   static const double actorNameFontSize = 13;

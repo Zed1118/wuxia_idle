@@ -28,6 +28,7 @@ import '../../../../shared/widgets/combat_hp_bar.dart';
 import 'phase0a_battle_controller.dart';
 import 'phase0a_background_crowds.dart';
 import 'phase0a_actor_render_motion.dart';
+import 'phase0a_actor_info_layout.dart';
 import 'phase0a_camera_dead_zone.dart';
 import 'phase0a_checkpoint_guidance.dart';
 import 'phase0a_offscreen_indicator.dart';
@@ -111,6 +112,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
   double _accumulatorSeconds = 0;
   final List<_HeldFeedback> _heldFeedback = <_HeldFeedback>[];
   int _nextFeedbackId = 0;
+  final Map<String, Offset> _actorInfoOffsets = {};
   final Map<String, double> _hitFlashRemaining = <String, double>{};
   final Map<String, double> _hpEmphasisRemaining = <String, double>{};
   final Map<String, double> _actionPulseRemaining = <String, double>{};
@@ -202,6 +204,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     _hpEmphasisRemaining.clear();
     _actionPulseRemaining.clear();
     _actorRenderMotions.clear();
+    _actorInfoOffsets.clear();
     _actorPaintOrder.clear();
     _lastActorLayerTick = null;
     _syncActorRenderTargets();
@@ -1139,6 +1142,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       if (!mounted) return;
       widget.controller.restart(newFlow);
       _actorRenderMotions.clear();
+      _actorInfoOffsets.clear();
       _actorPaintOrder.clear();
       _lastActorLayerTick = null;
       _syncActorRenderTargets();
@@ -1508,9 +1512,96 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       stage,
       renderPositions,
     );
+    final bodies = <Rect>[];
+    final anchors = <Phase0aActorInfoAnchor>[];
+    final information = <Widget>[];
+    for (final actor in actors) {
+      final position = renderPositions[actor.id]!;
+      if (!stage.isWorldPointVisible(position)) continue;
+      final foot = stage.worldToScreen(position);
+      final scale = stage.depthScale(position.y);
+      final rect = Rect.fromLTWH(
+        foot.dx - Phase0aPresentationTokens.actorWidth * scale / 2,
+        foot.dy - Phase0aPresentationTokens.actorHeight * scale,
+        Phase0aPresentationTokens.actorWidth * scale,
+        Phase0aPresentationTokens.actorHeight * scale,
+      );
+      final body = phase0aActorBodyEnvelope(rect);
+      bodies.add(body);
+      final guardianOffset = _guardianLabelOffsetX(
+        controller.state.enemies,
+        actor,
+      );
+      final visual = controller.roster.visualFor(actor.id);
+      final info = _ActorInformation(
+        key: ValueKey('phase0a_actor_info_${actor.id}'),
+        actor: actor,
+        visual: visual,
+        isHealthEmphasized: _hpEmphasisRemaining.containsKey(actor.id),
+        guardianWardActive: _hasActiveGuardian(controller, actor),
+        isGuardian: guardianOffset != 0,
+      );
+      if (!info.hasInformation) continue;
+      anchors.add(
+        Phase0aActorInfoAnchor(
+          id: actor.id,
+          actorRect: rect,
+          bodyRect: body,
+          preferredOffsetX: guardianOffset,
+          priority: visual.isElite || actor.chargingCast != null,
+        ),
+      );
+      information.add(
+        LayoutId(
+          key: ValueKey('phase0a_actor_info_slot_${actor.id}'),
+          id: actor.id,
+          child: info,
+        ),
+      );
+    }
+    final defend = controller.defendObjectiveProgress;
+    if (defend != null) {
+      final foot = stage.worldToScreen(defend.position);
+      bodies.add(
+        Rect.fromLTWH(
+          foot.dx - Phase0aPresentationTokens.defendedEntityWidth / 2,
+          foot.dy - Phase0aPresentationTokens.defendedEntityHeight,
+          Phase0aPresentationTokens.defendedEntityWidth,
+          Phase0aPresentationTokens.defendedEntityHeight,
+        ),
+      );
+    }
+    final hasConditionBanner =
+        defend != null ||
+        controller.surviveObjectiveProgress != null ||
+        controller.pursueObjectiveProgress != null ||
+        controller.state.winCondition?.isSurviveTicks == true;
     return [
       for (final actor in actors)
         _positionedActor(controller, stage, actor, renderPositions[actor.id]!),
+      if (anchors.isNotEmpty)
+        Positioned.fill(
+          child: IgnorePointer(
+            key: const ValueKey('phase0a_actor_information_layer'),
+            child: CustomMultiChildLayout(
+              delegate: Phase0aActorInfoLayout(
+                anchors: anchors,
+                bodyObstacles: bodies,
+                availableRect: Rect.fromLTRB(
+                  Phase0aPresentationTokens.hudInset,
+                  hasConditionBanner
+                      ? stage.safeRect.top
+                      : Phase0aPresentationTokens.hudInset,
+                  stage.viewport.width - Phase0aPresentationTokens.hudInset,
+                  stage.viewport.height -
+                      Phase0aPresentationTokens.battleHudReservedHeight,
+                ),
+                retainedOffsets: _actorInfoOffsets,
+              ),
+              children: information,
+            ),
+          ),
+        ),
     ];
   }
 
@@ -1519,8 +1610,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     Phase0aDefendObjectiveProgress progress,
   ) {
     final foot = stage.worldToScreen(progress.position);
-    const width = 92.0;
-    const height = 104.0;
+    const width = Phase0aPresentationTokens.defendedEntityWidth;
+    const height = Phase0aPresentationTokens.defendedEntityHeight;
     final ratio = progress.maxDurability == 0
         ? 0.0
         : progress.currentDurability / progress.maxDurability;
@@ -1614,21 +1705,7 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
     final scale = stage.depthScale(renderPosition.y);
     final width = Phase0aPresentationTokens.actorWidth * scale;
     final height = Phase0aPresentationTokens.actorHeight * scale;
-    final guardianLabelOffsetX = _guardianLabelOffsetX(
-      controller.state.enemies,
-      actor,
-    );
-    final guardianWardActive =
-        actor.side == Phase0aSide.enemy &&
-        actor.guardianWardMult != null &&
-        actor.guardianDefIds.isNotEmpty &&
-        controller.state.enemies.any(
-          (guardian) =>
-              guardian.isAlive &&
-              actor.guardianDefIds.any(
-                (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
-              ),
-        );
+    final guardianWardActive = _hasActiveGuardian(controller, actor);
     return Positioned(
       key: ValueKey('phase0a_actor_position_${actor.id}'),
       left: foot.dx - width / 2,
@@ -1651,12 +1728,8 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
                   isHitFlashing:
                       !widget.reduceFlashing &&
                       _hitFlashRemaining.containsKey(actor.id),
-                  isHealthEmphasized: _hpEmphasisRemaining.containsKey(
-                    actor.id,
-                  ),
                   isActionPulsing: _actionPulseRemaining.containsKey(actor.id),
                   isSelectedTarget: actor.id == _contextTargetId,
-                  guardianLabelOffsetX: guardianLabelOffsetX,
                 ),
               ),
               Align(
@@ -1671,6 +1744,21 @@ class _Phase0aBattleScreenState extends State<Phase0aBattleScreen>
       ),
     );
   }
+
+  static bool _hasActiveGuardian(
+    Phase0aBattleController controller,
+    Phase0aActor actor,
+  ) =>
+      actor.side == Phase0aSide.enemy &&
+      actor.guardianWardMult != null &&
+      actor.guardianDefIds.isNotEmpty &&
+      controller.state.enemies.any(
+        (guardian) =>
+            guardian.isAlive &&
+            actor.guardianDefIds.any(
+              (id) => guardian.id == id || guardian.id.startsWith('${id}_w'),
+            ),
+      );
 
   static double _guardianLabelOffsetX(
     List<Phase0aActor> enemies,
@@ -1823,21 +1911,17 @@ class _ActorStandee extends StatelessWidget {
     required this.actor,
     required this.visual,
     required this.isHitFlashing,
-    required this.isHealthEmphasized,
     required this.isActionPulsing,
     required this.isSelectedTarget,
     required this.guardianWardActive,
-    required this.guardianLabelOffsetX,
   });
 
   final Phase0aActor actor;
   final Phase0aActorVisual visual;
   final bool isHitFlashing;
-  final bool isHealthEmphasized;
   final bool isActionPulsing;
   final bool isSelectedTarget;
   final bool guardianWardActive;
-  final double guardianLabelOffsetX;
 
   @override
   Widget build(BuildContext context) {
@@ -1870,15 +1954,6 @@ class _ActorStandee extends StatelessWidget {
                   Duration.microsecondsPerSecond)
               .round(),
     );
-    final showThreatLabel =
-        enemy &&
-        (visual.isElite ||
-            isHealthEmphasized ||
-            actor.vulnerabilityMult != null ||
-            actor.chargingCast != null ||
-            actor.staggerTicksRemaining > 0 ||
-            guardianWardActive ||
-            guardianLabelOffsetX != 0);
     return Stack(
       alignment: Alignment.bottomCenter,
       clipBehavior: Clip.none,
@@ -1926,7 +2001,7 @@ class _ActorStandee extends StatelessWidget {
           ),
         ),
         Positioned(
-          bottom: 4,
+          bottom: Phase0aPresentationTokens.actorImageBottomInset,
           height: Phase0aPresentationTokens.actorImageHeight,
           left: 0,
           right: 0,
@@ -1991,142 +2066,138 @@ class _ActorStandee extends StatelessWidget {
             ],
           ),
         ),
-        if (showThreatLabel)
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            child: Transform.translate(
-              key: guardianLabelOffsetX == 0
-                  ? null
-                  : ValueKey('phase0a_guardian_label_lane_${actor.id}'),
-              offset: Offset(guardianLabelOffsetX, 0),
-              child: _HitEmphasisFrame(
-                key: isHealthEmphasized
-                    ? ValueKey('phase0a_hp_emphasis_${actor.id}')
-                    : null,
-                active: isHealthEmphasized,
-                accentColor: accent,
-                idleFillColor: WuxiaUi.ink.withValues(
-                  alpha: Phase0aPresentationTokens.enemyLabelIdleFillOpacity,
-                ),
-                idleBorderColor: accent.withValues(
-                  alpha: Phase0aPresentationTokens.enemyLabelIdleBorderOpacity,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      visual.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: visual.isElite ? WuxiaUi.gold : WuxiaUi.paper,
-                        fontSize: Phase0aPresentationTokens.actorNameFontSize,
-                        fontWeight: FontWeight.w700,
-                        shadows: const [
-                          Shadow(color: WuxiaUi.ink, blurRadius: 3),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: Phase0aPresentationTokens.actorLabelGap,
-                    ),
-                    SizedBox(
-                      width: Phase0aPresentationTokens.actorHpWidth,
-                      child: HpBar(
-                        key: ValueKey('phase0a_hp_${actor.id}'),
-                        current: actor.currentHealth,
-                        max: actor.maxHealth,
-                        height: Phase0aPresentationTokens.actorHpHeight,
-                        tightLabel: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        if (enemy &&
-            actor.posture != null &&
-            (actor.vulnerabilityMult != null ||
-                actor.posture!.isVulnerable ||
-                actor.posture!.accumulated > 0))
-          Positioned(
-            left: 0,
-            right: 0,
-            top:
-                Phase0aPresentationTokens.actorHpHeight +
-                Phase0aPresentationTokens.actorNameFontSize +
-                Phase0aPresentationTokens.bossStatusGap * 2,
-            child: Center(
-              child: _PostureBar(
-                key: ValueKey(
-                  actor.posture!.isVulnerable
-                      ? 'phase0a_vulnerability_open_${actor.id}'
-                      : actor.vulnerabilityMult != null
-                      ? 'phase0a_vulnerability_guarded_${actor.id}'
-                      : 'phase0a_posture_bar_${actor.id}',
-                ),
-                actorId: actor.id,
-                accumulated: actor.posture!.accumulated,
-                capacity: actor.posture!.config.capacity,
-                isVulnerable: actor.posture!.isVulnerable,
-                guarded: actor.vulnerabilityMult != null,
-              ),
-            ),
-          ),
-        if (enemy && actor.chargingCast != null)
-          Positioned(
-            left: 0,
-            right: 0,
-            top:
-                Phase0aPresentationTokens.actorHpHeight +
-                Phase0aPresentationTokens.actorNameFontSize +
-                Phase0aPresentationTokens.bossStatusGap * 9,
-            child: Center(
-              child: _BossStatusTag(
-                key: ValueKey('phase0a_charge_warning_${actor.id}'),
-                label:
-                    '${UiStrings.phase0aBossChargeWarning} ${actor.chargeTicksRemaining}',
-                accent: WuxiaUi.jiang,
-              ),
-            ),
-          ),
-        if (enemy && actor.staggerTicksRemaining > 0)
-          Positioned(
-            left: 0,
-            right: 0,
-            top:
-                Phase0aPresentationTokens.actorHpHeight +
-                Phase0aPresentationTokens.actorNameFontSize +
-                Phase0aPresentationTokens.bossStatusGap * 9,
-            child: Center(
-              child: _BossStatusTag(
-                key: ValueKey('phase0a_staggered_${actor.id}'),
-                label:
-                    '${UiStrings.phase0aStaggered} ${actor.staggerTicksRemaining}',
-                accent: WuxiaUi.gold,
-              ),
-            ),
-          ),
-        if (enemy && guardianWardActive)
-          Positioned(
-            left: 0,
-            right: 0,
-            top:
-                Phase0aPresentationTokens.actorHpHeight +
-                Phase0aPresentationTokens.actorNameFontSize +
-                Phase0aPresentationTokens.bossStatusGap * 5,
-            child: Center(
-              child: _BossStatusTag(
-                key: ValueKey('phase0a_guardian_ward_${actor.id}'),
-                label: UiStrings.guardianWardActiveLabel,
-                accent: WuxiaUi.gold,
-              ),
-            ),
-          ),
       ],
+    );
+  }
+}
+
+/// All persistent information for one enemy moves as a single measured block.
+class _ActorInformation extends StatelessWidget {
+  const _ActorInformation({
+    super.key,
+    required this.actor,
+    required this.visual,
+    required this.isHealthEmphasized,
+    required this.guardianWardActive,
+    required this.isGuardian,
+  });
+
+  final Phase0aActor actor;
+  final Phase0aActorVisual visual;
+  final bool isHealthEmphasized;
+  final bool guardianWardActive;
+  final bool isGuardian;
+
+  bool get _showThreatLabel =>
+      actor.side == Phase0aSide.enemy &&
+      (visual.isElite ||
+          isHealthEmphasized ||
+          actor.vulnerabilityMult != null ||
+          actor.chargingCast != null ||
+          actor.staggerTicksRemaining > 0 ||
+          guardianWardActive ||
+          isGuardian);
+
+  bool get _showPosture =>
+      actor.side == Phase0aSide.enemy &&
+      actor.posture != null &&
+      (actor.vulnerabilityMult != null ||
+          actor.posture!.isVulnerable ||
+          actor.posture!.accumulated > 0);
+
+  bool get hasInformation => _showThreatLabel || _showPosture;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = visual.isElite ? WuxiaUi.gold : WuxiaUi.jiang;
+    final children = <Widget>[
+      if (_showThreatLabel)
+        _HitEmphasisFrame(
+          key: isHealthEmphasized
+              ? ValueKey('phase0a_hp_emphasis_${actor.id}')
+              : null,
+          active: isHealthEmphasized,
+          accentColor: accent,
+          idleFillColor: WuxiaUi.ink.withValues(
+            alpha: Phase0aPresentationTokens.enemyLabelIdleFillOpacity,
+          ),
+          idleBorderColor: accent.withValues(
+            alpha: Phase0aPresentationTokens.enemyLabelIdleBorderOpacity,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                visual.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: visual.isElite ? WuxiaUi.gold : WuxiaUi.paper,
+                  fontSize: Phase0aPresentationTokens.actorNameFontSize,
+                  fontWeight: FontWeight.w700,
+                  shadows: const [Shadow(color: WuxiaUi.ink, blurRadius: 3)],
+                ),
+              ),
+              const SizedBox(height: Phase0aPresentationTokens.actorLabelGap),
+              SizedBox(
+                width: Phase0aPresentationTokens.actorHpWidth,
+                child: HpBar(
+                  key: ValueKey('phase0a_hp_${actor.id}'),
+                  current: actor.currentHealth,
+                  max: actor.maxHealth,
+                  height: Phase0aPresentationTokens.actorHpHeight,
+                  tightLabel: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      if (_showPosture)
+        _PostureBar(
+          key: ValueKey(
+            actor.posture!.isVulnerable
+                ? 'phase0a_vulnerability_open_${actor.id}'
+                : actor.vulnerabilityMult != null
+                ? 'phase0a_vulnerability_guarded_${actor.id}'
+                : 'phase0a_posture_bar_${actor.id}',
+          ),
+          actorId: actor.id,
+          accumulated: actor.posture!.accumulated,
+          capacity: actor.posture!.config.capacity,
+          isVulnerable: actor.posture!.isVulnerable,
+          guarded: actor.vulnerabilityMult != null,
+        ),
+      if (guardianWardActive)
+        _BossStatusTag(
+          key: ValueKey('phase0a_guardian_ward_${actor.id}'),
+          label: UiStrings.guardianWardActiveLabel,
+          accent: WuxiaUi.gold,
+        ),
+      if (actor.side == Phase0aSide.enemy && actor.chargingCast != null)
+        _BossStatusTag(
+          key: ValueKey('phase0a_charge_warning_${actor.id}'),
+          label:
+              '${UiStrings.phase0aBossChargeWarning} ${actor.chargeTicksRemaining}',
+          accent: WuxiaUi.jiang,
+        ),
+      if (actor.side == Phase0aSide.enemy && actor.staggerTicksRemaining > 0)
+        _BossStatusTag(
+          key: ValueKey('phase0a_staggered_${actor.id}'),
+          label: '${UiStrings.phase0aStaggered} ${actor.staggerTicksRemaining}',
+          accent: WuxiaUi.gold,
+        ),
+    ];
+    return RepaintBoundary(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var index = 0; index < children.length; index++) ...[
+            if (index > 0)
+              const SizedBox(height: Phase0aPresentationTokens.bossStatusGap),
+            children[index],
+          ],
+        ],
+      ),
     );
   }
 }
