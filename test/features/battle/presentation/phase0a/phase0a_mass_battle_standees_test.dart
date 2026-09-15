@@ -35,17 +35,24 @@ import '../../../../support/phase0a_ch1_founder_profile.dart';
 import '../../../../support/phase0a_production_headless_benchmark.dart';
 
 const _seed = 20260820;
-const _stageIds = [
+const _massBattleStageIds = [
   'stage_mass_battle_01',
   'stage_mass_battle_02',
   'stage_mass_battle_03',
   'stage_mass_battle_04',
   'stage_mass_battle_05',
 ];
+const _lightFootStageIds = [
+  'stage_light_foot_01',
+  'stage_light_foot_02',
+  'stage_light_foot_03',
+  'stage_light_foot_04',
+  'stage_light_foot_05',
+];
 
 // Independent, explicit asset expectations: deriving a battle_ filename from
 // the same production algorithm would fail to catch a wrong template binding.
-const _standeeByPortrait = {
+const _massBattleStandeeByPortrait = {
   'assets/enemies/massbattle_cunfei_a.png':
       WuxiaUi.battleVillageBanditLeaderStandee,
   'assets/enemies/massbattle_cunfei_b.png':
@@ -76,6 +83,28 @@ const _standeeByPortrait = {
       WuxiaUi.battleWesternFrenziedRiderStandee,
   'assets/enemies/massbattle_canbu_c.png':
       WuxiaUi.battleWesternRemnantAssassinStandee,
+};
+const _lightFootStandeeByPortrait = {
+  'assets/enemies/lightfoot_shuikou_a.png': WuxiaUi.battleFerryBanditStandee,
+  'assets/enemies/lightfoot_shuikou_b.png': WuxiaUi.battleFerryBoatmanStandee,
+  'assets/enemies/lightfoot_shuikou_c.png': WuxiaUi.battleFerrySaberStandee,
+  'assets/enemies/lightfoot_yexun_a.png': WuxiaUi.battleNightPatrolStandee,
+  'assets/enemies/lightfoot_yexun_b.png': WuxiaUi.battleRooftopConstableStandee,
+  'assets/enemies/lightfoot_yexun_c.png': WuxiaUi.battleRooftopAssassinStandee,
+  'assets/enemies/lightfoot_zhuke_a.png':
+      WuxiaUi.battleJiangnanSwordsmanStandee,
+  'assets/enemies/lightfoot_zhuke_b.png': WuxiaUi.battleBambooSaberStandee,
+  'assets/enemies/lightfoot_zhuke_c.png': WuxiaUi.battleBambooWandererStandee,
+  'assets/enemies/lightfoot_pubu_a.png':
+      WuxiaUi.battleMountainStreamSwordStandee,
+  'assets/enemies/lightfoot_pubu_b.png': WuxiaUi.battleWaterfallSaberStandee,
+  'assets/enemies/lightfoot_pubu_c.png': WuxiaUi.battleCliffWandererStandee,
+  'assets/enemies/lightfoot_changfeng_a.png':
+      WuxiaUi.battleGateCommanderStandee,
+  'assets/enemies/lightfoot_changfeng_b.png':
+      WuxiaUi.battleLongWindSwordStandee,
+  'assets/enemies/lightfoot_changfeng_c.png':
+      WuxiaUi.battleLongRoadSaberStandee,
 };
 
 /// Observe the independently assembled production flow without replacing any
@@ -157,7 +186,7 @@ void main() {
     () {
       final seenPortraits = <String>{};
       var checkedEnemies = 0;
-      for (final stageId in _stageIds) {
+      for (final stageId in _massBattleStageIds) {
         final stage = repository.getStage(stageId);
         for (final formation in Formation.values) {
           final mapping = Phase0aStageContentMapper.mapMassBattle(
@@ -187,7 +216,7 @@ void main() {
           for (final combatant in enemies) {
             final portrait = combatant.snapshot.iconPath!;
             seenPortraits.add(portrait);
-            final expected = _standeeByPortrait[portrait];
+            final expected = _massBattleStandeeByPortrait[portrait];
             expect(expected, isNotNull, reason: 'Unmapped $portrait');
             final visual = roster.visualFor(combatant.actorId);
             expect(
@@ -201,13 +230,13 @@ void main() {
           }
         }
       }
-      expect(seenPortraits, _standeeByPortrait.keys.toSet());
+      expect(seenPortraits, _massBattleStandeeByPortrait.keys.toSet());
       expect(seenPortraits, hasLength(15));
       expect(checkedEnemies, 288);
       debugPrint(
         jsonEncode({
           'mass_battle_standee_static': 'five_stages_all_formations',
-          'stages': _stageIds.length,
+          'stages': _massBattleStageIds.length,
           'formations': Formation.values
               .map((formation) => formation.name)
               .toList(),
@@ -218,7 +247,71 @@ void main() {
     },
   );
 
-  for (final stageId in _stageIds) {
+  test(
+    'all five light foot rosters retain every template and terrain mapping',
+    () {
+      final seenPortraits = <String>{};
+      final seenTerrains = <String>{};
+      var checkedEnemies = 0;
+      for (final stageId in _lightFootStageIds) {
+        final stage = repository.getStage(stageId);
+        final mapping = Phase0aStageContentMapper.mapLightFoot(
+          stage: stage,
+          playerSnapshot: player,
+          numbers: repository.numbers,
+          cycleIndex: 1,
+        );
+        seenTerrains.add(stage.terrainBiome!.name);
+        final beforeState = mapping.initialState;
+        final beforeSnapshots = [
+          for (final combatant in mapping.combatants) combatant.snapshot,
+        ];
+        final roster = Phase0aVisualRoster.fromLightFootMapping(mapping);
+        expect(mapping.initialState, beforeState);
+        expect([
+          for (final combatant in mapping.combatants) combatant.snapshot,
+        ], beforeSnapshots);
+        expect(
+          roster.visualFor(mapping.initialState.player.id).assetPath,
+          WuxiaUi.battleFounderFallback,
+        );
+        final enemies = mapping.combatants.where(
+          (combatant) => combatant.actorId != mapping.initialState.player.id,
+        );
+        expect(enemies, hasLength(stage.enemyTeam.length));
+        for (final combatant in enemies) {
+          final portrait = combatant.snapshot.iconPath!;
+          seenPortraits.add(portrait);
+          final expected = _lightFootStandeeByPortrait[portrait];
+          expect(expected, isNotNull, reason: 'Unmapped $portrait');
+          final visual = roster.visualFor(combatant.actorId);
+          expect(
+            visual.assetPath,
+            expected,
+            reason: '$stageId ${combatant.actorId}',
+          );
+          expect(visual.name, combatant.snapshot.name);
+          expect(visual.isElite, combatant.snapshot.isBoss);
+          checkedEnemies++;
+        }
+      }
+      expect(seenPortraits, _lightFootStandeeByPortrait.keys.toSet());
+      expect(seenPortraits, hasLength(15));
+      expect(checkedEnemies, 15);
+      expect(seenTerrains, {'water', 'rooftop', 'bamboo'});
+      debugPrint(
+        jsonEncode({
+          'light_foot_standee_static': 'five_stages_all_templates',
+          'stages': _lightFootStageIds.length,
+          'enemy_instances': checkedEnemies,
+          'templates': seenPortraits.length,
+          'terrain_biomes': seenTerrains.toList()..sort(),
+        }),
+      );
+    },
+  );
+
+  for (final stageId in [..._massBattleStageIds, ..._lightFootStageIds]) {
     for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
       final viewport = '${size.width.toInt()}x${size.height.toInt()}';
       testWidgets('$stageId $viewport binds full standees and preserves '
@@ -227,13 +320,27 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
         final stage = repository.getStage(stageId);
+        final isMassBattle = stage.stageType == StageType.massBattle;
+        final standeeByPortrait = isMassBattle
+            ? _massBattleStandeeByPortrait
+            : _lightFootStandeeByPortrait;
+        if (!isMassBattle) {
+          expect(stage.stageType, StageType.lightFoot);
+          expect(stage.terrainBiome, isNotNull);
+          expect(
+            repository.numbers.lightFoot.terrainModifiers[stage.terrainBiome],
+            isNotNull,
+          );
+        }
         final reference = (await tester.runAsync(
           () => createProductionHeadlessSession(
             repository: repository,
-            content: HeadlessBenchmarkContent.massBattle(
-              stageId,
-              formation: Formation.yanXing,
-            ),
+            content: isMassBattle
+                ? HeadlessBenchmarkContent.massBattle(
+                    stageId,
+                    formation: Formation.yanXing,
+                  )
+                : HeadlessBenchmarkContent.lightFoot(stageId),
             player: player,
             seed: _seed,
           ),
@@ -279,7 +386,9 @@ void main() {
                       stage: stage,
                       seedForTest: _seed,
                       controller: ActivityController.playerBot,
-                      massBattleFormation: Formation.yanXing,
+                      massBattleFormation: isMassBattle
+                          ? Formation.yanXing
+                          : null,
                       onVictory: complete,
                       onDefeat: complete,
                     ),
@@ -303,6 +412,11 @@ void main() {
           final controller = screen.controller;
           expect(controller.state, recorded.states.first);
           expect(controller.state.tick, 0);
+          expect(screen.showBackgroundCrowds, isMassBattle);
+          expect(
+            find.byKey(const ValueKey('phase0a_background_crowds')),
+            isMassBattle ? findsOneWidget : findsNothing,
+          );
           final expectedAssets = <String, String>{};
           final enemyPortraits = <String>{};
           for (final combatant in reference.combatants) {
@@ -311,7 +425,7 @@ void main() {
             if (!isPlayer) enemyPortraits.add(portrait!);
             final expected = isPlayer
                 ? WuxiaUi.battleFounderFallback
-                : _standeeByPortrait[portrait];
+                : standeeByPortrait[portrait];
             expect(expected, isNotNull, reason: 'Unmapped $portrait');
             expectedAssets[combatant.actorId] = expected!;
             final visual = controller.roster.visualFor(combatant.actorId);
@@ -328,11 +442,16 @@ void main() {
             stage.enemyTeam.map((enemy) => enemy.iconPath).toSet(),
           );
           expect(enemyPortraits, hasLength(3));
-          final enemyCount = stage.massBattleEnemyCounts!.reduce(
-            (a, b) => a + b,
-          );
+          final enemyCount = isMassBattle
+              ? stage.massBattleEnemyCounts!.reduce((a, b) => a + b)
+              : stage.enemyTeam.length;
           expect(reference.combatants, hasLength(enemyCount + 1));
-          expect(enemyCount, greaterThan(controller.state.enemies.length));
+          expect(
+            enemyCount,
+            isMassBattle
+                ? greaterThan(controller.state.enemies.length)
+                : controller.state.enemies.length,
+          );
 
           final residentImageActorIds = <String>{};
           final nonOffstageImageActorIds = <String>{};
@@ -409,9 +528,24 @@ void main() {
           expect(tester.takeException(), isNull);
           debugPrint(
             jsonEncode({
-              'mass_battle_standee_host': stageId,
+              (isMassBattle
+                      ? 'mass_battle_standee_host'
+                      : 'light_foot_standee_host'):
+                  stageId,
               'seed': _seed,
-              'formation': Formation.yanXing.name,
+              'formation': isMassBattle ? Formation.yanXing.name : null,
+              'terrain_biome': stage.terrainBiome?.name,
+              if (!isMassBattle)
+                'terrain_adjusted_combatants': {
+                  for (final combatant in reference.combatants)
+                    combatant.actorId: {
+                      'critical_rate': combatant.snapshot.criticalRate,
+                      'evasion_rate': combatant.snapshot.evasionRate,
+                      'defense_rate': combatant.snapshot.defenseRate,
+                      'attack_power_multiplier':
+                          combatant.snapshot.attackPowerMultiplier,
+                    },
+                },
               'viewport': viewport,
               'roster_enemy_count': enemyCount,
               'portrait_templates': enemyPortraits.toList()..sort(),

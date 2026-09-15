@@ -170,9 +170,14 @@ class _Phase0aMainlineBattleHostState
           throw StateError('migrated encounter host must expose a mapping');
         }
         final roster = encounterHost == null
-            ? widget.stage.stageType == StageType.massBattle
-                  ? Phase0aVisualRoster.fromMassBattleMapping(mapping!)
-                  : Phase0aVisualRoster.fromMapping(mapping!)
+            ? switch (widget.stage.stageType) {
+                StageType.massBattle =>
+                  Phase0aVisualRoster.fromMassBattleMapping(mapping!),
+                StageType.lightFoot => Phase0aVisualRoster.fromLightFootMapping(
+                  mapping!,
+                ),
+                _ => Phase0aVisualRoster.fromMapping(mapping!),
+              }
             : Phase0aVisualRoster.fromCombatants(
                 playerId: selectedMapping!.initialState.player.id,
                 combatants: selectedMapping.combatants,

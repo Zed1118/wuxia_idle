@@ -138,6 +138,46 @@ final class Phase0aVisualRoster {
         WuxiaUi.battleWesternRemnantAssassinStandee,
   };
 
+  /// Use the approved full-body light-foot art without changing terrain,
+  /// combat snapshots, or the explicit typed encounter overrides.
+  factory Phase0aVisualRoster.fromLightFootMapping(
+    Phase0aStageMapping mapping,
+  ) => Phase0aVisualRoster.fromCombatants(
+    playerId: mapping.initialState.player.id,
+    combatants: mapping.combatants,
+    assetPathByActorId: {
+      for (final combatant in mapping.combatants)
+        if (combatant.actorId != mapping.initialState.player.id &&
+            _lightFootStandees.containsKey(combatant.snapshot.iconPath))
+          combatant.actorId: _lightFootStandees[combatant.snapshot.iconPath]!,
+    },
+  );
+
+  static const _lightFootStandees = {
+    'assets/enemies/lightfoot_shuikou_a.png': WuxiaUi.battleFerryBanditStandee,
+    'assets/enemies/lightfoot_shuikou_b.png': WuxiaUi.battleFerryBoatmanStandee,
+    'assets/enemies/lightfoot_shuikou_c.png': WuxiaUi.battleFerrySaberStandee,
+    'assets/enemies/lightfoot_yexun_a.png': WuxiaUi.battleNightPatrolStandee,
+    'assets/enemies/lightfoot_yexun_b.png':
+        WuxiaUi.battleRooftopConstableStandee,
+    'assets/enemies/lightfoot_yexun_c.png':
+        WuxiaUi.battleRooftopAssassinStandee,
+    'assets/enemies/lightfoot_zhuke_a.png':
+        WuxiaUi.battleJiangnanSwordsmanStandee,
+    'assets/enemies/lightfoot_zhuke_b.png': WuxiaUi.battleBambooSaberStandee,
+    'assets/enemies/lightfoot_zhuke_c.png': WuxiaUi.battleBambooWandererStandee,
+    'assets/enemies/lightfoot_pubu_a.png':
+        WuxiaUi.battleMountainStreamSwordStandee,
+    'assets/enemies/lightfoot_pubu_b.png': WuxiaUi.battleWaterfallSaberStandee,
+    'assets/enemies/lightfoot_pubu_c.png': WuxiaUi.battleCliffWandererStandee,
+    'assets/enemies/lightfoot_changfeng_a.png':
+        WuxiaUi.battleGateCommanderStandee,
+    'assets/enemies/lightfoot_changfeng_b.png':
+        WuxiaUi.battleLongWindSwordStandee,
+    'assets/enemies/lightfoot_changfeng_c.png':
+        WuxiaUi.battleLongRoadSaberStandee,
+  };
+
   /// D10 动态视觉名册合同:在 runtime 状态变化前为全量 [combatants]
   /// (含 reserve / warning / active)各构造恰一个视觉。
   ///
