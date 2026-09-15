@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -115,6 +116,9 @@ StageDef _lightFootFlowStage() => const StageDef(
 
 void main() {
   late GameRepository repo;
+
+  // The battle host reads the real settings service before starting its ticker.
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   setUpAll(() async {
     repo = await loadTestGameRepository();

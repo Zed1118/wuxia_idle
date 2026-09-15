@@ -45,6 +45,7 @@ Future<({int exitCode, Map<String, Object?> json})> _run({
   List<String> extraArgs = const [],
   String? rawCandidate,
   String? rawBaseline,
+  bool usePubRunner = false,
 }) async {
   final directory = await Directory.systemTemp.createTemp('headless_compare_');
   try {
@@ -59,8 +60,11 @@ Future<({int exitCode, Map<String, Object?> json})> _run({
       args.addAll(['--baseline', baselineFile.path]);
     }
     final process = await Process.run('dart', [
-      'run',
-      '--verbosity=error',
+      // This CLI imports only dart: libraries. Direct execution retains its
+      // argument parsing, JSON output and exit codes without repeating package
+      // build hooks for every invalid-input case. Keep the documented launch
+      // path covered explicitly below.
+      if (usePubRunner) ...['run', '--verbosity=error'],
       'tool/compare_phase0a_headless_baseline.dart',
       ...args,
       ...thresholdArgs,
@@ -86,6 +90,9 @@ void main() {
     final result = await _run();
     expect(result.exitCode, 0);
     expect(result.json['status'], 'NOT_EVALUATED');
+    final documented = await _run(usePubRunner: true);
+    expect(documented.exitCode, result.exitCode);
+    expect(documented.json, result.json);
   });
 
   test(

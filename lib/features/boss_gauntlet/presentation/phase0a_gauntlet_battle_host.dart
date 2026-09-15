@@ -35,6 +35,7 @@ final class Phase0aGauntletBattleHost extends ConsumerStatefulWidget {
 final class _Phase0aGauntletBattleHostState
     extends ConsumerState<Phase0aGauntletBattleHost> {
   String? _setupError;
+  bool _initialSettingsResolved = false;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
   String? _contentId;
@@ -117,6 +118,14 @@ final class _Phase0aGauntletBattleHostState
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = ref.watch(gameplaySettingsProvider);
+    // Resolve the first preference read before mounting the battle ticker.
+    // Later refreshes, including retries after errors, retain the same screen.
+    if (settingsState.hasValue ||
+        settingsState.hasError ||
+        !settingsState.isLoading) {
+      _initialSettingsResolved = true;
+    }
     if (_setupError != null) {
       return Scaffold(
         appBar: AppBar(title: const Text(UiStrings.gauntletName)),
@@ -126,13 +135,13 @@ final class _Phase0aGauntletBattleHostState
       );
     }
     final controller = _controller;
-    if (controller == null) {
+    if (controller == null || !_initialSettingsResolved) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final waveEnemyCounts = _mapping!.waves
         .map((wave) => wave.enemies.length)
         .toList(growable: false);
-    final settings = ref.watch(gameplaySettingsProvider).value;
+    final settings = settingsState.value;
     final reduceEffects = settings?.reduceEffects ?? false;
     final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(

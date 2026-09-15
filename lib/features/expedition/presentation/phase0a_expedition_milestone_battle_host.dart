@@ -40,6 +40,7 @@ final class Phase0aExpeditionMilestoneBattleHost
 final class _Phase0aExpeditionMilestoneBattleHostState
     extends ConsumerState<Phase0aExpeditionMilestoneBattleHost> {
   String? _setupError;
+  bool _initialSettingsResolved = false;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
   ExpeditionManualMilestonePlan? _plan;
@@ -148,6 +149,14 @@ final class _Phase0aExpeditionMilestoneBattleHostState
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = ref.watch(gameplaySettingsProvider);
+    // Resolve the first preference read before mounting the battle ticker.
+    // Later refreshes, including retries after errors, retain the same screen.
+    if (settingsState.hasValue ||
+        settingsState.hasError ||
+        !settingsState.isLoading) {
+      _initialSettingsResolved = true;
+    }
     if (_setupError != null) {
       return Scaffold(
         appBar: AppBar(title: const Text(UiStrings.expeditionBaicaoName)),
@@ -160,14 +169,14 @@ final class _Phase0aExpeditionMilestoneBattleHostState
       );
     }
     final controller = _controller;
-    if (controller == null) {
+    if (controller == null || !_initialSettingsResolved) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final plan = _plan!;
     final waveEnemyCounts = _mapping!.waves
         .map((wave) => wave.enemies.length)
         .toList(growable: false);
-    final settings = ref.watch(gameplaySettingsProvider).value;
+    final settings = settingsState.value;
     final reduceEffects = settings?.reduceEffects ?? false;
     final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(

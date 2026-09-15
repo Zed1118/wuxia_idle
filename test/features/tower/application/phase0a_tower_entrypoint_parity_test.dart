@@ -27,6 +27,7 @@ import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
@@ -76,6 +77,7 @@ void main() {
     repo = await loadTestGameRepository();
   });
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     temp = await Directory.systemTemp.createTemp('tower_target_parity_');
     await IsarSetup.init(directory: temp, inspector: false);
     await Phase2SeedService(isar: IsarSetup.instance).seedP3();

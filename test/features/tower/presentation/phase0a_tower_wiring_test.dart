@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
@@ -48,6 +49,9 @@ CombatantSnapshot _player(NumbersConfig numbers) => testCombatantSnapshot(
 
 void main() {
   late GameRepository repo;
+
+  // The battle host reads the real settings service before starting its ticker.
+  setUp(() => SharedPreferences.setMockInitialValues({}));
 
   setUpAll(() async {
     repo = await loadTestGameRepository();

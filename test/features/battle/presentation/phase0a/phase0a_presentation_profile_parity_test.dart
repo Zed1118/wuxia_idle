@@ -231,6 +231,87 @@ Future<ProductionHeadlessSession> _headlessSession({
   );
 }
 
+Widget _profileHost({
+  required _Route route,
+  required GameRepository repository,
+  required CombatantSnapshot player,
+  required ValueChanged<CombatSettlementSnapshot> complete,
+  required VoidCallback milestoneCompleted,
+}) {
+  final milestonePlan = ExpeditionManualMilestonePlan(
+    recordKey: 'ui-only-unpersisted-plan',
+    routeId: ExpeditionService.contentId,
+    milestoneId: repository.expeditionConfig!
+        .teamForNode(nodeSeed: _seed, elite: true)
+        .id,
+    nodeIndex: 5,
+    nodeSeed: _seed,
+    cycleIndex: 1,
+    member: ActivityMemberSnapshot()..characterId = player.characterId,
+    playerSnapshot: player,
+  );
+  final gauntletConfig = repository.bossGauntletConfig!;
+  return switch (route) {
+    _Route.mainline ||
+    _Route.lightFoot ||
+    _Route.massBattle => Phase0aMainlineBattleHost(
+      stage: repository.getStage(route.contentId),
+      seedForTest: _seed,
+      controller: ActivityController.playerBot,
+      massBattleFormation: route == _Route.massBattle
+          ? Formation.yanXing
+          : null,
+      onVictory: complete,
+      onDefeat: complete,
+    ),
+    _Route.towerTyped || _Route.towerLegacy => Phase0aTowerBattleHost(
+      floor: repository.getTowerFloor(route == _Route.towerTyped ? 1 : 8),
+      participantId: player.characterId,
+      cycleIndexForTest: 1,
+      seedForTest: _seed,
+      onVictory: complete,
+      onDefeat: complete,
+    ),
+    _Route.gauntlet => ProviderScope(
+      overrides: [
+        gauntletServiceProvider.overrideWithValue(
+          _GauntletPlanFixture((
+            playerSnapshot: player,
+            enemyDefs: gauntletConfig.enemiesForTeam(
+              gauntletConfig.stages.first.enemyTeamId,
+            ),
+            seed: _seed,
+            isBoss: gauntletConfig.stages.first.role == 'boss',
+            cycleIndex: 1,
+            stage: 1,
+          )),
+        ),
+      ],
+      child: Phase0aGauntletBattleHost(
+        config: gauntletConfig,
+        onCompleted: (value) => complete(value.settlement.combatSettlement),
+      ),
+    ),
+    _Route.milestone => ProviderScope(
+      overrides: [
+        expeditionServiceProvider.overrideWithValue(
+          _MilestonePlanFixture(milestonePlan, complete),
+        ),
+      ],
+      child: Phase0aExpeditionMilestoneBattleHost(
+        request: ExpeditionService.manualMilestoneRequestFor(
+          milestoneId: milestonePlan.milestoneId,
+          characterId: player.characterId,
+        ),
+        onCompleted: (completed) {
+          expect(completed, isFalse);
+          milestoneCompleted();
+        },
+      ),
+    ),
+  };
+}
+
 void main() {
   late GameRepository repository;
   late Directory directory;
@@ -270,209 +351,291 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  testWidgets('pending settings and delayed refresh retain the same battle', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(1280, 720);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    SharedPreferences.setMockInitialValues({});
-    final service = _DelayedSettingsService();
-    const initial = GameplaySettings(reduceEffects: true);
-    const updated = GameplaySettings(reduceFlashing: true);
-    await service.save(initial);
-    final scope = ProviderContainer(
-      overrides: [gameplaySettingsServiceProvider.overrideWithValue(service)],
-    );
-    final output = '${directory.path}/delayed-settings';
-    BattleFrameProfileProbe.configureFromArgs([
-      '--battle-profile-scope=production',
-      '--battle-profile-content-id=stage_01_01',
-      '--battle-profile-run-id=delayed-settings',
-      '--battle-profile-output=$output',
-      '--battle-profile-sample-seconds=60',
-      '--battle-profile-viewport=1280x720',
-    ]);
-    BattleFrameProfileProbe.recordEntryOrigin(visual: false);
-    addTearDown(() => BattleFrameProfileProbe.configureFromArgs([]));
-    try {
-      await tester.runAsync(() async {
-        await tester.pumpWidget(
-          UncontrolledProviderScope(
-            container: scope,
-            child: MaterialApp(
-              home: Phase0aMainlineBattleHost(
-                stage: repository.getStage('stage_01_01'),
-                seedForTest: _seed,
-                controller: ActivityController.playerBot,
-                onVictory: (_) => fail('No battle time has elapsed'),
-                onDefeat: (_) => fail('No battle time has elapsed'),
-              ),
-            ),
-          ),
+  for (final route in _Route.values) {
+    testWidgets(
+      '${route.name} initial settings wait and refresh retain the same battle',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 720);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        SharedPreferences.setMockInitialValues({});
+        final service = _DelayedSettingsService();
+        const initial = GameplaySettings(reduceEffects: true);
+        const updated = GameplaySettings(reduceFlashing: true);
+        await service.save(initial);
+        final scope = ProviderContainer(
+          overrides: [
+            gameplaySettingsServiceProvider.overrideWithValue(service),
+          ],
         );
-        for (
-          var attempt = 0;
-          attempt < 100 && find.byType(Phase0aBattleScreen).evaluate().isEmpty;
-          attempt++
-        ) {
-          await Future<void>.delayed(const Duration(milliseconds: 10));
-          await tester.pump();
-        }
-      });
-      var screen = tester.widget<Phase0aBattleScreen>(
-        find.byType(Phase0aBattleScreen),
-      );
-      final controller = screen.controller;
-      final initialState = controller.state;
-      expect(service.loads, hasLength(1));
-      expect(scope.read(gameplaySettingsProvider).isLoading, isTrue);
-      expect(controller.state.tick, 0);
-      expect(screen.reduceEffects, isFalse);
-      expect(screen.reduceFlashing, isTrue);
-      expect(screen.showBackgroundCrowds, isFalse);
-      expect(find.byKey(_crowdLayerKey), findsNothing);
-      expect(find.byType(ProductionBattleFrameProfile), findsOneWidget);
-
-      await tester.runAsync(() async {
-        service.loads.single.complete();
-        await scope.read(gameplaySettingsProvider.future);
-        await Future<void>.delayed(Duration.zero);
-        await tester.pump();
-      });
-      screen = tester.widget<Phase0aBattleScreen>(
-        find.byType(Phase0aBattleScreen),
-      );
-      expect(screen.controller, same(controller));
-      expect(screen.reduceEffects, initial.reduceEffects);
-      expect(screen.reduceFlashing, initial.reduceFlashing);
-      expect(screen.showBackgroundCrowds, isFalse);
-      expect(find.byKey(_crowdLayerKey), findsNothing);
-      expect(controller.state, initialState);
-      expect(controller.events, isEmpty);
-
-      await tester.runAsync(() async {
-        await service.save(updated);
-        scope.invalidate(gameplaySettingsProvider);
-        await tester.pump();
-        await Future<void>.delayed(Duration.zero);
-        await tester.pump();
-      });
-      expect(service.loads, hasLength(2));
-      expect(scope.read(gameplaySettingsProvider).isLoading, isTrue);
-      screen = tester.widget<Phase0aBattleScreen>(
-        find.byType(Phase0aBattleScreen),
-      );
-      expect(screen.controller, same(controller));
-      expect(screen.reduceEffects, initial.reduceEffects);
-      expect(screen.reduceFlashing, initial.reduceFlashing);
-      expect(screen.showBackgroundCrowds, isFalse);
-      expect(find.byKey(_crowdLayerKey), findsNothing);
-      expect(controller.state, initialState);
-      expect(controller.events, isEmpty);
-
-      await tester.runAsync(() async {
-        service.loads.last.complete();
-        await scope.read(gameplaySettingsProvider.future);
-        await Future<void>.delayed(Duration.zero);
-        await tester.pump();
-      });
-      screen = tester.widget<Phase0aBattleScreen>(
-        find.byType(Phase0aBattleScreen),
-      );
-      expect(screen.controller, same(controller));
-      expect(screen.reduceEffects, updated.reduceEffects);
-      expect(screen.reduceFlashing, updated.reduceFlashing);
-      expect(screen.showBackgroundCrowds, isFalse);
-      expect(find.byKey(_crowdLayerKey), findsNothing);
-      expect(controller.state, initialState);
-      expect(controller.events, isEmpty);
-      final probe = tester.widget<ProductionBattleFrameProfile>(
-        find.byType(ProductionBattleFrameProfile),
-      );
-      expect(
-        probe.scene['configuration'],
-        containsPair('reduce_effects', false),
-      );
-      expect(
-        probe.scene['configuration'],
-        containsPair('reduce_flashing', true),
-      );
-      expect(tester.takeException(), isNull);
-    } finally {
-      await tester.runAsync(() async {
-        await tester.pumpWidget(const SizedBox.shrink());
-        await ProductionBattleFrameProfile.flushPendingEvidence();
-      });
-      scope.dispose();
-    }
-    final evidence =
-        jsonDecode(File('$output/summary.json').readAsStringSync()) as Map;
-    expect(evidence['sampling_status'], 'INCOMPLETE');
-    expect(
-      evidence['invalid_reasons'],
-      contains('scene_configuration_changed'),
-    );
-    expect(evidence['composite_gate'], isFalse);
-  });
-
-  testWidgets(
-    'settings read failure preserves the conservative battle fallback',
-    (tester) async {
-      tester.view.physicalSize = const Size(1280, 720);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final scope = ProviderContainer(
-        overrides: [
-          gameplaySettingsProvider.overrideWith(
-            (ref) => Future<GameplaySettings>.error(
-              StateError('local settings fixture'),
-            ),
-          ),
-        ],
-      );
-      try {
-        await tester.runAsync(() async {
-          await tester.pumpWidget(
-            UncontrolledProviderScope(
-              container: scope,
-              child: MaterialApp(
-                home: Phase0aMainlineBattleHost(
-                  stage: repository.getStage('stage_01_01'),
-                  seedForTest: _seed,
-                  onVictory: (_) => fail('No battle time has elapsed'),
-                  onDefeat: (_) => fail('No battle time has elapsed'),
+        final output = '${directory.path}/delayed-settings-${route.name}';
+        BattleFrameProfileProbe.configureFromArgs([
+          '--battle-profile-scope=production',
+          '--battle-profile-content-id=${route.contentId}',
+          '--battle-profile-run-id=delayed-settings-${route.name}',
+          '--battle-profile-output=$output',
+          '--battle-profile-sample-seconds=60',
+          '--battle-profile-viewport=1280x720',
+        ]);
+        BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+        addTearDown(() => BattleFrameProfileProbe.configureFromArgs([]));
+        try {
+          await tester.runAsync(() async {
+            await tester.pumpWidget(
+              UncontrolledProviderScope(
+                container: scope,
+                child: MaterialApp(
+                  home: _profileHost(
+                    route: route,
+                    repository: repository,
+                    player: player,
+                    complete: (_) =>
+                        fail('Battle must not advance while settings load'),
+                    milestoneCompleted: () =>
+                        fail('Battle must not complete while settings load'),
+                  ),
                 ),
               ),
-            ),
-          );
-          for (
-            var attempt = 0;
-            attempt < 100 &&
-                find.byType(Phase0aBattleScreen).evaluate().isEmpty;
-            attempt++
-          ) {
-            await Future<void>.delayed(const Duration(milliseconds: 10));
+            );
+            for (
+              var attempt = 0;
+              attempt < 100 &&
+                  find.byType(Phase0aBattleScreen).evaluate().isEmpty;
+              attempt++
+            ) {
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+              await tester.pump();
+            }
+          });
+          expect(service.loads, hasLength(1));
+          expect(scope.read(gameplaySettingsProvider).isLoading, isTrue);
+          expect(find.byType(Phase0aBattleScreen), findsNothing);
+          expect(find.byType(ProductionBattleFrameProfile), findsNothing);
+          // Time really advances in the widget binding while preference I/O is
+          // pending. No ticker, domain step, or capture may begin in this window.
+          await tester.pump(const Duration(seconds: 2));
+          expect(find.byType(Phase0aBattleScreen), findsNothing);
+          expect(find.byType(ProductionBattleFrameProfile), findsNothing);
+
+          await tester.runAsync(() async {
+            service.loads.single.complete();
+            await scope.read(gameplaySettingsProvider.future);
+            await Future<void>.delayed(Duration.zero);
             await tester.pump();
-          }
-        });
-        final screen = tester.widget<Phase0aBattleScreen>(
-          find.byType(Phase0aBattleScreen),
+          });
+          var screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          final controller = screen.controller;
+          final initialState = controller.state;
+          expect(controller.state.tick, 0);
+          expect(screen.reduceEffects, initial.reduceEffects);
+          expect(screen.reduceFlashing, initial.reduceFlashing);
+          expect(screen.showBackgroundCrowds, route == _Route.massBattle);
+          expect(find.byType(ProductionBattleFrameProfile), findsOneWidget);
+          expect(controller.events, isEmpty);
+          final initialProbe = tester.widget<ProductionBattleFrameProfile>(
+            find.byType(ProductionBattleFrameProfile),
+          );
+          expect(
+            initialProbe.scene['configuration'],
+            containsPair('reduce_effects', initial.reduceEffects),
+          );
+          expect(
+            initialProbe.scene['configuration'],
+            containsPair('reduce_flashing', initial.reduceFlashing),
+          );
+
+          await tester.runAsync(() async {
+            await service.save(updated);
+            scope.invalidate(gameplaySettingsProvider);
+            await tester.pump();
+            await Future<void>.delayed(Duration.zero);
+            await tester.pump();
+          });
+          expect(service.loads, hasLength(2));
+          expect(scope.read(gameplaySettingsProvider).isLoading, isTrue);
+          screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          expect(screen.controller, same(controller));
+          expect(screen.reduceEffects, initial.reduceEffects);
+          expect(screen.reduceFlashing, initial.reduceFlashing);
+          expect(screen.showBackgroundCrowds, route == _Route.massBattle);
+          expect(
+            find.byKey(_crowdLayerKey),
+            route == _Route.massBattle ? findsOneWidget : findsNothing,
+          );
+          expect(controller.state, initialState);
+          expect(controller.events, isEmpty);
+
+          await tester.runAsync(() async {
+            service.loads.last.complete();
+            await scope.read(gameplaySettingsProvider.future);
+            await Future<void>.delayed(Duration.zero);
+            await tester.pump();
+          });
+          screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          expect(screen.controller, same(controller));
+          expect(screen.reduceEffects, updated.reduceEffects);
+          expect(screen.reduceFlashing, updated.reduceFlashing);
+          expect(screen.showBackgroundCrowds, route == _Route.massBattle);
+          expect(
+            find.byKey(_crowdLayerKey),
+            route == _Route.massBattle ? findsOneWidget : findsNothing,
+          );
+          expect(controller.state, initialState);
+          expect(controller.events, isEmpty);
+          final probe = tester.widget<ProductionBattleFrameProfile>(
+            find.byType(ProductionBattleFrameProfile),
+          );
+          expect(
+            probe.scene['configuration'],
+            containsPair('reduce_effects', false),
+          );
+          expect(
+            probe.scene['configuration'],
+            containsPair('reduce_flashing', true),
+          );
+          expect(tester.takeException(), isNull);
+        } finally {
+          await tester.runAsync(() async {
+            await tester.pumpWidget(const SizedBox.shrink());
+            await ProductionBattleFrameProfile.flushPendingEvidence();
+          });
+          scope.dispose();
+        }
+        final evidence =
+            jsonDecode(File('$output/summary.json').readAsStringSync()) as Map;
+        expect(evidence['sampling_status'], 'INCOMPLETE');
+        expect(
+          evidence['invalid_reasons'],
+          contains('scene_configuration_changed'),
         );
-        expect(scope.read(gameplaySettingsProvider).hasError, isTrue);
-        expect(screen.reduceEffects, isFalse);
-        expect(screen.reduceFlashing, isTrue);
-        expect(screen.showBackgroundCrowds, isFalse);
-        expect(find.byKey(_crowdLayerKey), findsNothing);
-        expect(screen.controller.state.tick, 0);
-        expect(find.byType(SelectableText), findsNothing);
-        expect(tester.takeException(), isNull);
-      } finally {
-        await tester.runAsync(() => tester.pumpWidget(const SizedBox.shrink()));
-        scope.dispose();
-      }
-    },
-  );
+        expect(evidence['composite_gate'], isFalse);
+      },
+    );
+  }
+
+  for (final automaticRetry in [false, true]) {
+    testWidgets(
+      'settings read failure retains fallback battle (automaticRetry=$automaticRetry)',
+      (tester) async {
+        tester.view.physicalSize = const Size(1280, 720);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final retry = Completer<GameplaySettings>();
+        var reads = 0;
+        final scope = ProviderContainer(
+          overrides: [
+            gameplaySettingsProvider.overrideWith(
+              (ref) => reads++ == 0
+                  ? Future<GameplaySettings>.error(
+                      automaticRetry
+                          ? Exception('local settings fixture')
+                          : StateError('local settings fixture'),
+                    )
+                  : retry.future,
+            ),
+          ],
+        );
+        try {
+          await tester.runAsync(() async {
+            await tester.pumpWidget(
+              UncontrolledProviderScope(
+                container: scope,
+                child: MaterialApp(
+                  home: Phase0aMainlineBattleHost(
+                    stage: repository.getStage('stage_01_01'),
+                    seedForTest: _seed,
+                    onVictory: (_) => fail('No battle time has elapsed'),
+                    onDefeat: (_) => fail('No battle time has elapsed'),
+                  ),
+                ),
+              ),
+            );
+            for (
+              var attempt = 0;
+              attempt < 100 &&
+                  find.byType(Phase0aBattleScreen).evaluate().isEmpty;
+              attempt++
+            ) {
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+              await tester.pump();
+            }
+          });
+          var screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          expect(scope.read(gameplaySettingsProvider).hasError, isTrue);
+          expect(
+            scope.read(gameplaySettingsProvider).isLoading,
+            automaticRetry,
+          );
+          expect(screen.reduceEffects, isFalse);
+          expect(screen.reduceFlashing, isTrue);
+          expect(screen.showBackgroundCrowds, isFalse);
+          expect(find.byKey(_crowdLayerKey), findsNothing);
+          expect(screen.controller.state.tick, 0);
+          expect(find.byType(SelectableText), findsNothing);
+          final controller = screen.controller;
+          final screenState = tester.state(find.byType(Phase0aBattleScreen));
+          await tester.runAsync(() async {
+            if (automaticRetry) {
+              // Let Riverpod's real default retry timer run. The second read stays
+              // pending until completed below; the live screen must survive it.
+              for (var attempt = 0; attempt < 100 && reads < 2; attempt++) {
+                await Future<void>.delayed(const Duration(milliseconds: 10));
+                await tester.pump();
+              }
+            } else {
+              scope.invalidate(gameplaySettingsProvider);
+            }
+            await tester.pump();
+            await Future<void>.delayed(Duration.zero);
+            await tester.pump();
+          });
+          expect(reads, 2);
+          expect(scope.read(gameplaySettingsProvider).isLoading, isTrue);
+          expect(scope.read(gameplaySettingsProvider).hasValue, isFalse);
+          screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          expect(screen.controller, same(controller));
+          expect(
+            tester.state(find.byType(Phase0aBattleScreen)),
+            same(screenState),
+          );
+          expect(screen.reduceFlashing, isTrue);
+          await tester.runAsync(() async {
+            retry.complete(const GameplaySettings());
+            await scope.read(gameplaySettingsProvider.future);
+            await Future<void>.delayed(Duration.zero);
+            await tester.pump();
+          });
+          screen = tester.widget<Phase0aBattleScreen>(
+            find.byType(Phase0aBattleScreen),
+          );
+          expect(screen.controller, same(controller));
+          expect(
+            tester.state(find.byType(Phase0aBattleScreen)),
+            same(screenState),
+          );
+          expect(screen.reduceFlashing, isFalse);
+          expect(controller.state.tick, 0);
+          expect(controller.events, isEmpty);
+          expect(tester.takeException(), isNull);
+        } finally {
+          await tester.runAsync(
+            () => tester.pumpWidget(const SizedBox.shrink()),
+          );
+          scope.dispose();
+        }
+      },
+    );
+  }
 
   testWidgets('mass battle crowd on off on invalidates the real profile', (
     tester,
@@ -667,82 +830,16 @@ void main() {
             terminalCalls++;
           }
 
-          final milestonePlan = ExpeditionManualMilestonePlan(
-            recordKey: 'ui-only-unpersisted-plan',
-            routeId: ExpeditionService.contentId,
-            milestoneId: repository.expeditionConfig!
-                .teamForNode(nodeSeed: _seed, elite: true)
-                .id,
-            nodeIndex: 5,
-            nodeSeed: _seed,
-            cycleIndex: 1,
-            member: ActivityMemberSnapshot()..characterId = player.characterId,
-            playerSnapshot: player,
+          final host = _profileHost(
+            route: route,
+            repository: repository,
+            player: player,
+            complete: complete,
+            milestoneCompleted: () {
+              milestoneCallbacks++;
+              milestoneCompletion.complete();
+            },
           );
-          final gauntletConfig = repository.bossGauntletConfig!;
-          final host = switch (route) {
-            _Route.mainline ||
-            _Route.lightFoot ||
-            _Route.massBattle => Phase0aMainlineBattleHost(
-              stage: repository.getStage(route.contentId),
-              seedForTest: _seed,
-              controller: ActivityController.playerBot,
-              massBattleFormation: route == _Route.massBattle
-                  ? Formation.yanXing
-                  : null,
-              onVictory: complete,
-              onDefeat: complete,
-            ),
-            _Route.towerTyped || _Route.towerLegacy => Phase0aTowerBattleHost(
-              floor: repository.getTowerFloor(
-                route == _Route.towerTyped ? 1 : 8,
-              ),
-              participantId: player.characterId,
-              cycleIndexForTest: 1,
-              seedForTest: _seed,
-              onVictory: complete,
-              onDefeat: complete,
-            ),
-            _Route.gauntlet => ProviderScope(
-              overrides: [
-                gauntletServiceProvider.overrideWithValue(
-                  _GauntletPlanFixture((
-                    playerSnapshot: player,
-                    enemyDefs: gauntletConfig.enemiesForTeam(
-                      gauntletConfig.stages.first.enemyTeamId,
-                    ),
-                    seed: _seed,
-                    isBoss: gauntletConfig.stages.first.role == 'boss',
-                    cycleIndex: 1,
-                    stage: 1,
-                  )),
-                ),
-              ],
-              child: Phase0aGauntletBattleHost(
-                config: gauntletConfig,
-                onCompleted: (value) =>
-                    complete(value.settlement.combatSettlement),
-              ),
-            ),
-            _Route.milestone => ProviderScope(
-              overrides: [
-                expeditionServiceProvider.overrideWithValue(
-                  _MilestonePlanFixture(milestonePlan, complete),
-                ),
-              ],
-              child: Phase0aExpeditionMilestoneBattleHost(
-                request: ExpeditionService.manualMilestoneRequestFor(
-                  milestoneId: milestonePlan.milestoneId,
-                  characterId: player.characterId,
-                ),
-                onCompleted: (completed) {
-                  expect(completed, isFalse);
-                  milestoneCallbacks++;
-                  milestoneCompletion.complete();
-                },
-              ),
-            ),
-          };
           final runId = '${route.name}-${size.width.toInt()}-$variant';
           final capture = GlobalKey();
           try {

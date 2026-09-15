@@ -147,3 +147,6 @@ jobs:
 
       - name: Test macOS short-sound pool
         run: bash test/native/run_macos_sfx_pool_tests.sh "${RUNNER_TEMP}/macos-sfx-tests"
+
+      - name: Test macOS window termination
+        run: bash test/native/run_macos_window_termination_tests.sh "${RUNNER_TEMP}/macos-window-termination-tests"

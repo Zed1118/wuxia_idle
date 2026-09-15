@@ -1,9 +1,18 @@
 import Cocoa
 import FlutterMacOS
+import window_manager
 
 class MainFlutterWindow: NSWindow {
   private let sfxPool = MacosSfxPool()
   private var sfxChannel: FlutterMethodChannel?
+
+  func prepareForApplicationTermination() {
+    // The actual plugin owns the delegate after ensureInitialized. Its late
+    // AppKit events must not message an engine that has already shut down.
+    // Preserve the delegate/close policy and leave other delegate types alone.
+    guard let manager = delegate as? window_manager.WindowManager else { return }
+    manager.onEvent = nil
+  }
 
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()

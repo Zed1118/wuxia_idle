@@ -56,6 +56,7 @@ class Phase0aTowerBattleHost extends ConsumerStatefulWidget {
 class _Phase0aTowerBattleHostState
     extends ConsumerState<Phase0aTowerBattleHost> {
   String? _setupError;
+  bool _initialSettingsResolved = false;
   Phase0aBattleController? _controller;
   Phase0aTowerCombatSession? _session;
   bool _exitNotified = false;
@@ -151,6 +152,14 @@ class _Phase0aTowerBattleHostState
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = ref.watch(gameplaySettingsProvider);
+    // Resolve the first preference read before mounting the battle ticker.
+    // Later refreshes, including retries after errors, retain the same screen.
+    if (settingsState.hasValue ||
+        settingsState.hasError ||
+        !settingsState.isLoading) {
+      _initialSettingsResolved = true;
+    }
     if (_setupError != null) {
       return Scaffold(
         appBar: AppBar(
@@ -165,12 +174,12 @@ class _Phase0aTowerBattleHostState
       );
     }
     final controller = _controller;
-    if (controller == null) {
+    if (controller == null || !_initialSettingsResolved) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final session = _session!;
     final flow = session.flow;
-    final settings = ref.watch(gameplaySettingsProvider).value;
+    final settings = settingsState.value;
     final reduceEffects = settings?.reduceEffects ?? false;
     final reduceFlashing = settings?.reduceFlashing ?? true;
     return Phase0aProductionProfile.wrap(

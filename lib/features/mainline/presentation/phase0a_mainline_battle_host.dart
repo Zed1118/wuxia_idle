@@ -87,6 +87,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
 class _Phase0aMainlineBattleHostState
     extends ConsumerState<Phase0aMainlineBattleHost> {
   String? _setupError;
+  bool _initialSettingsResolved = false;
   Phase0aBattleController? _controller;
   Phase0aStageMapping? _mapping;
   Phase0aEncounterHost? _encounterHost;
@@ -320,6 +321,14 @@ class _Phase0aMainlineBattleHostState
 
   @override
   Widget build(BuildContext context) {
+    final settingsState = ref.watch(gameplaySettingsProvider);
+    // Resolve the first preference read before mounting the battle ticker.
+    // Later refreshes, including retries after errors, retain the same screen.
+    if (settingsState.hasValue ||
+        settingsState.hasError ||
+        !settingsState.isLoading) {
+      _initialSettingsResolved = true;
+    }
     if (_setupError != null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.stage.name)),
@@ -332,7 +341,7 @@ class _Phase0aMainlineBattleHostState
       );
     }
     final controller = _controller;
-    if (controller == null) {
+    if (controller == null || !_initialSettingsResolved) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final visualRoster = _visualRoster;
@@ -344,7 +353,7 @@ class _Phase0aMainlineBattleHostState
     final waveEnemyCounts = _mapping?.waves
         .map((wave) => wave.enemies.length)
         .toList(growable: false);
-    final settings = ref.watch(gameplaySettingsProvider).value;
+    final settings = settingsState.value;
     final reduceEffects = settings?.reduceEffects ?? false;
     final reduceFlashing = settings?.reduceFlashing ?? true;
     final showBackgroundCrowds =

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/application/character_providers.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -52,6 +53,7 @@ void main() {
   });
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({});
     // CachingAssetBundle retains Futures created in a prior widget test's
     // fake-async zone. That zone cannot service later narrative listeners.
     rootBundle.evict('data/narratives/chapters/chapter_01.yaml');
