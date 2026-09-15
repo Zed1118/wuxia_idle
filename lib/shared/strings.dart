@@ -1946,6 +1946,13 @@ class UiStrings {
   static String mainlineRouteStageNode(int stageIndex) => '$stageIndex';
 
   static String stageListEnemyCount(int count) => '$count 名敌人';
+  static String stageCatalogEnemySummary(int total, int activeLimit) =>
+      '共 $total 名敌人 · 同屏上限 $activeLimit 名';
+  static String prebattleCatalogReinforcements(int threshold) =>
+      '连续增援：在场敌人降至 $threshold 名及以下时，后备敌人陆续登场。';
+  static const String prebattleCatalogSingleDeployment = '敌人同批登场。';
+  static String prebattleCatalogSpawnDependencies(int count) =>
+      '其中 $count 名敌人须先击败指定前敌才会登场。';
   static String stageListEnemyWaves(int waveCount, int enemyCount) =>
       '$waveCount 波 · 共 $enemyCount 名敌人';
   static String prebattleMainlineWaveSummary(

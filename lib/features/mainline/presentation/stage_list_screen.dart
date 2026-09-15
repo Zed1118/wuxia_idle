@@ -19,6 +19,7 @@ import '../../loot_preview/domain/drop_rumor.dart';
 import '../../loot_preview/domain/stage_difficulty.dart';
 import '../../loot_preview/presentation/loot_summary_line.dart';
 import '../../loot_preview/presentation/stage_intel_dialog.dart';
+import '../../loot_preview/presentation/stage_enemy_summary.dart';
 import '../../loot_preview/presentation/stage_preview_card.dart'
     show difficultyLabelColor;
 import '../../loot_preview/presentation/weakness_hint_line.dart';
@@ -1218,19 +1219,11 @@ class _StageRow extends StatelessWidget {
   String _subtitleFor(StageDef def, StageStatus status) {
     if (status == StageStatus.locked) return UiStrings.stageListPrevHint;
     final repo = GameRepository.instance;
-    final encounter = repo.combatEncounterForStage(def.id);
-    if (encounter != null) {
-      return UiStrings.stageListEnemyCount(encounter.spawnEntries.length);
-    }
-    final waves = repo.numbers.mainlineWave;
-    if (waves.isEnabled) {
-      final profile = waves.profileFor(isBossStage: def.isBossStage);
-      return UiStrings.stageListEnemyWaves(
-        profile.waveCount,
-        profile.totalEnemyCount,
-      );
-    }
-    return UiStrings.stageListEnemyCount(def.enemyTeam.length);
+    return StageEnemySummary.fromStage(
+      def,
+      mainlineWaves: repo.numbers.mainlineWave,
+      catalog: repo.combatCatalog,
+    ).listText;
   }
 }
 

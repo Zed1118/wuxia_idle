@@ -5,9 +5,9 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
-import '../../../shared/theme/colors.dart';
 import '../../../shared/theme/wuxia_tokens.dart';
 import '../../../shared/widgets/wuxia_ui/paper_dialog.dart';
+import '../../../shared/widgets/wuxia_ui/panel_surface.dart';
 import '../../../shared/widgets/wuxia_ui/plaque_button.dart';
 import '../../../shared/battle_shared/cycle_trait_intel.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
@@ -16,6 +16,7 @@ import '../../mainline/application/new_save_goal_guidance.dart';
 import '../../mainline/presentation/new_save_goal_guidance_view.dart';
 import '../domain/drop_rumor.dart';
 import 'loot_rumor_dialog.dart';
+import 'stage_enemy_summary.dart';
 
 /// 战前情报弹窗（opt-in 纯查看）：关卡行 info 图标触发。
 ///
@@ -74,11 +75,12 @@ class StageIntelContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainlineWaves = GameRepository.instance.numbers.mainlineWave;
-    final waveProfile =
-        stage.stageType == StageType.mainline && mainlineWaves.isEnabled
-        ? mainlineWaves.profileFor(isBossStage: stage.isBossStage)
-        : null;
+    final repository = GameRepository.instance;
+    final enemySummary = StageEnemySummary.fromStage(
+      stage,
+      mainlineWaves: repository.numbers.mainlineWave,
+      catalog: repository.combatCatalog,
+    );
     final responseLines = _teamPreparationLines(
       stage.enemyTeam,
       isBossStage: stage.isBossStage,
@@ -109,13 +111,7 @@ class StageIntelContent extends StatelessWidget {
           title: UiStrings.prebattleIntelEnemySection,
           child: _EnemyIntelList(
             enemies: stage.enemyTeam,
-            waveSummary: waveProfile == null
-                ? null
-                : UiStrings.prebattleMainlineWaveSummary(
-                    waveProfile.waveCount,
-                    waveProfile.totalEnemyCount,
-                    bossFinal: stage.isBossStage,
-                  ),
+            summaryLines: enemySummary.detailLines,
           ),
         ),
         if (cycleTraits.isNotEmpty)
@@ -137,7 +133,7 @@ class StageIntelContent extends StatelessWidget {
           title: UiStrings.prebattleIntelRiskSection,
           child: _RiskIntel(
             stage: stage,
-            enemyCount: waveProfile?.totalEnemyCount,
+            enemyCount: enemySummary.totalEnemyCount,
           ),
         ),
         _IntelSection(
@@ -210,20 +206,20 @@ class _IntelLines extends StatelessWidget {
 }
 
 class _EnemyIntelList extends StatelessWidget {
-  const _EnemyIntelList({required this.enemies, this.waveSummary});
+  const _EnemyIntelList({required this.enemies, required this.summaryLines});
 
   final List<EnemyDef> enemies;
-  final String? waveSummary;
+  final List<String> summaryLines;
 
   @override
   Widget build(BuildContext context) {
-    if (enemies.isEmpty) {
+    if (enemies.isEmpty && summaryLines.isEmpty) {
       return const _IntelLine(UiStrings.prebattleIntelNoEnemy);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (waveSummary != null) _IntelLine(waveSummary!),
+        for (final line in summaryLines) _IntelLine(line),
         for (final enemy in enemies) _IntelLine(_enemyLine(enemy)),
       ],
     );
@@ -274,8 +270,8 @@ class _IntelLine extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         text,
-        style: const TextStyle(
-          color: WuxiaColors.textPrimary,
+        style: TextStyle(
+          color: PanelSurface.of(context).primary,
           fontSize: 13,
           height: 1.25,
         ),

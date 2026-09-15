@@ -1,15 +1,24 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
 import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/drop_entry.dart';
+import 'package:wuxia_idle/data/defs/mainline_wave_def.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/loot_preview/domain/drop_rumor.dart';
 import 'package:wuxia_idle/features/loot_preview/presentation/stage_intel_dialog.dart';
+import 'package:wuxia_idle/features/loot_preview/presentation/stage_enemy_summary.dart';
 import 'package:wuxia_idle/features/mainline/application/new_save_goal_guidance.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_production_encounter_factory.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_repository_runtime_binding_adapter.dart';
 import 'package:wuxia_idle/shared/strings.dart';
+import '../../support/combatant_snapshot_fixture.dart';
 import '../../support/test_data.dart';
 
 void main() {
@@ -19,11 +28,16 @@ void main() {
     }
   });
 
-  StageDef stage({bool boss = false, List<EnemyDef>? enemies}) {
+  StageDef stage({
+    bool boss = false,
+    List<EnemyDef>? enemies,
+    StageType type = StageType.mainline,
+    String id = 'stage_test',
+  }) {
     return StageDef(
-      id: 'stage_test',
+      id: id,
       name: '试剑坡',
-      stageType: StageType.mainline,
+      stageType: type,
       chapterIndex: 1,
       requiredRealm: RealmTier.sanLiu,
       enemyTeam:
@@ -106,6 +120,162 @@ void main() {
     c.lightInjuryStacks = 2;
     return c;
   }
+
+  testWidgets('真实首关情报显示 catalog 的 25 总敌人和 10 同屏上限', (tester) async {
+    final repository = GameRepository.instance;
+    final firstStage = repository.getStage('stage_01_01');
+    final encounter = repository.combatEncounterForStage(firstStage.id)!;
+    expect(encounter.spawnEntries, hasLength(25));
+    expect(encounter.spawnConfig.activeLimit, 10);
+
+    await pumpIntel(tester, firstStage);
+
+    expect(find.text('共 25 名敌人 · 同屏上限 10 名'), findsOneWidget);
+    expect(
+      find.text(
+        UiStrings.prebattleCatalogReinforcements(
+          encounter.spawnConfig.reinforcementThreshold,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('3 波 · 共 9 名敌人'), findsNothing);
+    expect(find.text(UiStrings.prebattleRiskOutnumbered), findsOneWidget);
+  });
+
+  test('共享概要的主线 fallback 保留旧波次和未配置波次的敌人队伍', () {
+    final waves = GameRepository.instance.numbers.mainlineWave;
+    for (final boss in [false, true]) {
+      final profile = waves.profileFor(isBossStage: boss);
+      final summary = StageEnemySummary.fromStage(
+        stage(boss: boss),
+        mainlineWaves: waves,
+        catalog: GameRepository.instance.combatCatalog,
+      );
+      expect(summary.totalEnemyCount, profile.totalEnemyCount);
+      expect(
+        summary.listText,
+        UiStrings.stageListEnemyWaves(
+          profile.waveCount,
+          profile.totalEnemyCount,
+        ),
+      );
+      expect(summary.detailLines, [
+        UiStrings.prebattleMainlineWaveSummary(
+          profile.waveCount,
+          profile.totalEnemyCount,
+          bossFinal: boss,
+        ),
+      ]);
+    }
+    final fallback = StageEnemySummary.fromStage(
+      stage(),
+      mainlineWaves: MainlineWaveDef.empty(),
+    );
+    expect(fallback.totalEnemyCount, stage().enemyTeam.length);
+    expect(fallback.listText, UiStrings.stageListEnemyCount(1));
+    expect(fallback.detailLines, isEmpty);
+  });
+
+  test('真实首关概要与 production factory 实际装配名单及同屏配置一致', () async {
+    final repository = GameRepository.instance;
+    final firstStage = repository.getStage('stage_01_01');
+    final host = await createFreshPhase0aMainlineEncounter(
+      Phase0aMainlineEncounterHostBuildRequest(
+        stage: firstStage,
+        playerMapping: Phase0aStageContentMapper.mapPlayerOnly(
+          contentId: firstStage.id,
+          playerSnapshot: testCombatantSnapshot(
+            includeProductionBasicAttack: true,
+          ),
+          numbers: repository.numbers,
+        ),
+        numbers: repository.numbers,
+        cycleIndex: 1,
+        rng: Random(7),
+        runtimeBindingSource:
+            const Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
+              loader: loadPhase0aMainlineRuntimeBindingBundleFromRepository,
+            ),
+      ),
+    );
+    final mapping = host!.mapping!;
+    final summary = StageEnemySummary.fromStage(
+      firstStage,
+      mainlineWaves: repository.numbers.mainlineWave,
+      catalog: repository.combatCatalog,
+    );
+    expect(summary.totalEnemyCount, mapping.combatants.length - 1);
+    expect(
+      summary.listText,
+      UiStrings.stageCatalogEnemySummary(
+        mapping.combatants.length - 1,
+        mapping.director.config.activeLimit,
+      ),
+    );
+  });
+
+  for (final type in [
+    StageType.innerDemon,
+    StageType.lightFoot,
+    StageType.massBattle,
+  ]) {
+    testWidgets('$type 情报与列表概要保留特殊模式，不套主线 catalog 或波次', (tester) async {
+      // Even a colliding catalog id must not reroute a special mode.
+      final special = stage(type: type, id: 'stage_01_01');
+      final summary = StageEnemySummary.fromStage(
+        special,
+        mainlineWaves: GameRepository.instance.numbers.mainlineWave,
+        catalog: GameRepository.instance.combatCatalog,
+      );
+      expect(summary.totalEnemyCount, special.enemyTeam.length);
+      expect(summary.listText, UiStrings.stageListEnemyCount(1));
+      expect(summary.detailLines, isEmpty);
+      await pumpIntel(tester, special);
+      expect(find.textContaining('山道悍匪'), findsOneWidget);
+      expect(find.textContaining('同屏上限'), findsNothing);
+      expect(find.text('3 波 · 共 9 名敌人'), findsNothing);
+      expect(find.text(UiStrings.prebattleRiskOutnumbered), findsNothing);
+    });
+  }
+
+  testWidgets('catalog 单敌关不沿用旧波次的敌众风险', (tester) async {
+    final repository = GameRepository.instance;
+    final singleStage = repository.getStage('stage_13_01');
+    final encounter = repository.combatEncounterForStage(singleStage.id)!;
+    expect(encounter.spawnEntries, hasLength(1));
+    await pumpIntel(tester, singleStage);
+    expect(
+      find.text(
+        UiStrings.stageCatalogEnemySummary(
+          encounter.spawnEntries.length,
+          encounter.spawnConfig.activeLimit,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text(UiStrings.prebattleCatalogSingleDeployment),
+      findsOneWidget,
+    );
+    expect(find.text(UiStrings.prebattleRiskOutnumbered), findsNothing);
+  });
+
+  testWidgets('catalog 前敌依赖展示真实依赖人数，不换算为固定波数', (tester) async {
+    final repository = GameRepository.instance;
+    final dependencyStage = repository.getStage('stage_13_02');
+    final encounter = repository.combatEncounterForStage(dependencyStage.id)!;
+    final dependentCount = encounter.spawnEntries
+        .where((entry) => entry.spawnAfterDefeated.isNotEmpty)
+        .length;
+    expect(dependentCount, greaterThan(0));
+    await pumpIntel(tester, dependencyStage);
+    expect(
+      find.text(UiStrings.prebattleCatalogSpawnDependencies(dependentCount)),
+      findsOneWidget,
+    );
+    expect(find.textContaining(' 波 · 共 '), findsNothing);
+  });
 
   testWidgets('战前情报显敌阵/应对/风险/掉落，去整备难度冗余', (tester) async {
     await pumpIntel(tester, stage());
