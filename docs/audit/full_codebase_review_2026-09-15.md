@@ -3,7 +3,7 @@
 - 审查对象：候选 `6a70e7914eba29dbf8cd020d77e56993f194d533`（`codex/p2-player-flow-20260910` 2026-09-15 18:11 tip；main 仍 `342d19275`）
 - 审查方式：只读。快照导出后逐模块通读 `lib/`（689 文件 162,720 行）、`data/`、`docs/dispatch` 两张登记表、抽样 `test/`（966 文件 223,372 行）与 `docs/`（1,849 个 md 207,244 行）；所有数字为本会话脚本实测，行号指向候选快照。
 - 触发问题：用户「我感觉进度推不动」。本报告回答三件事：① 为什么正式分子卡在 1/10；② 代码本身健康度；③ 下一步该拍什么板。
-- **2026-09-15 晚订正（v2）**：Codex 复核后本报告 §0/§1/§3.3/§3.4/§5 按实证改写。核心纠正：候选内已存在合法新档真路径首胜守卫 `test/diagnostics/mainline_real_first_victory_navigation_test.dart`（09-06 建、09-12 更新，与候选同 blob），CI run 34973784383（`5c1105cfa`，候选直系后代，data/ 与战斗 domain 零差异）testID 555 `success`：4000 血 / 装备攻 174 / 25 杀 / 剩 2234 血 / 243 拍。09-05 的 0/36 是 09-06 修复前证据，已过时。原版「新档打不过第一关」「无守卫」两条撤回；未改动的结论见各节标注。
+- **2026-09-15 晚订正（v2）**：Codex 复核后本报告 §0/§1/§3.3/§3.4/§5 按实证改写。核心纠正：候选内已存在合法新档真路径首胜守卫 `test/diagnostics/mainline_real_first_victory_navigation_test.dart`（09-06 建、09-12 更新，与候选同 blob），CI run 34973784383（`5c1105cfa`，候选直系后代，data/ 与战斗 domain 零差异）testID 555 `success`：4000 血 / 装备攻 174 / 25 杀 / 剩 2234 血 / 243 拍。09-05 的 0/36 是 09-06 修复前证据，已过时。原版「新档打不过第一关」「无守卫」两条撤回；未改动的结论见各节标注。**v2.1**：Codex 二轮复核后再改三处残留（§1.1 败因归属、§1.1 「28 次后撤」、§2 五门 blocker 与「第一关过不去」旧句）。
 
 ---
 
@@ -21,12 +21,12 @@
 |---|---|
 | **`test/diagnostics/mainline_real_first_victory_navigation_test.dart`（候选内，与 `6a70e7914` 同 blob）** | 生产 `OnboardingService.createFoundingMaster`（刚猛 / 山野行者 / 均衡命格，seed 20260820）→ 真实 `StageListScreen` 点「山门之外」→ 真实键盘事件（WASD/J/R/1/空格，风箏走位脚本，seed 20260906，1280×720）→ 断言 `victory` 并续关。CI run 34973784383 testID 555 **success**：4000 血 / 装备攻 174 / 25 杀 / 剩 2234 血 / 243 拍 / 玩家 30 次出手 16 次命中。**只覆盖 `stage_01_01`**（循环 `index <= 1`）。 |
 | `docs/audit/phase2_m2_priority_acceptance_2026-09-05.md` :15-22（**已过时**：早于 09-06 `4ed04ae42` 控制/首胜修复） | 当时合法新档在 `stage_01_01` 0/9、`stage_01_03 黑风岭` 0/9、`风雨渡口` 9/9。首关结论已被上行证据推翻；黑风岭至今没有新档级复测 |
-| `~/Documents/Codex/2026-09-05/.../fresh-save-probe.json`、同报告 :28（**已过时**） | 当时 5 次 883 伤害叠死、×0.25 敌血仍败——属修复前 bot/控制问题，不再作为「关难」证据 |
+| `~/Documents/Codex/2026-09-05/.../fresh-save-probe.json`、同报告 :28（**已过时**） | 当时 5 次 883 伤害叠死、×0.25 敌血仍败。**败因未做归属**：修复前后没有逐项对照，不能直接归为 bot/控制问题，也不再作为「关难」证据 |
 | `data/combat/encounters/chapter_01_templates.yaml` :3-6 | 第一关模板「25 total, 10 active」；第二关 25/10；第三关黑风岭 **40 敌 / 12 同屏** |
 | `data/stages.yaml` :34-51（legacy） | 第一关原设计：**1 个** 1500 HP / 80 攻的流民 |
 | `data/numbers.yaml` :1941-1960（`mainline_wave`，v1.49「战斗爽感批」） | 普通关 2+3+4 = 9 敌分三波，敌血 ×0.10 |
 
-同一关「有几个敌人」在仓库里有三份真相：legacy 1 / wave 9 / catalog 25。生产实战走 catalog 25，脚本化新档可通。**未回答的问题**：(i) 通关需要的操作是否对真人过于苛刻（守卫脚本要 28 次首效前后撤、每 10 拍一次 R、贴身即空格），(ii) 黑风岭 40/12 对新档是否可通，(iii) 情报弹窗为何仍显示旧波次。这三点是下一轮该定位的，不是「必须降数值」。
+同一关「有几个敌人」在仓库里有三份真相：legacy 1 / wave 9 / catalog 25。生产实战走 catalog 25，脚本化新档可通。**未回答的问题**：(i) 通关操作容错如何（守卫脚本逐拍决策：贴身且普攻冷却中即后撤、每 10 拍一次 R、贴身即空格；`retreatsBeforeFirstEffect: 28` 是逐拍满足条件的累计计数，**不是 28 次独立操作，也不证明必须如此操作**——容错要用「减少精细操作、放慢反应」的变体另行测），(ii) 黑风岭 40/12 对新档是否可通，(iii) 情报弹窗为何仍显示旧波次。这三点是下一轮该定位的，不是「必须降数值」。
 
 ### 1.2 根因链（按 git 时间）
 
@@ -56,11 +56,11 @@
 
 顶层 gate 依赖：M9 ← {M0,M2,M3,M4,M5,M6,M7,M8}；M8 ← M7；M7 正式关闭 ← {M2,M3,M4,M5,M6}。
 
-M2、M3、M4、M5、M6 五个门的 blocker **全部**是 `human_desktop_acceptance: deferred_by_user` + `windows_profile_acceptance: deferred`；M0 blocker 是 `remaining_measurement_playtest_Windows_and_clean_integration_evidence`。
+五个门的 blocker（v2.1 按 registry 实测改写，原「全部是 deferred_by_user + Windows」过度概括）：M2 `blocked`——`first_stage_and_blackwind_playability_requires_human_strategy_validation_or_new_approved_tuning` + `real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff`；M3 `engineering_integrated_human_deferred`——`perform_deferred_human_desktop_acceptance`；M4 `blocked`——`unified_M4_audit_human_visual_audio_acceptance_and_Windows_profile`；M5、M6 `deferred_by_user`，blocker 为空；M0——`remaining_measurement_playtest_Windows_and_clean_integration_evidence`。共同点是都需要真人桌面验收，但 M2 的第一条 blocker 文本仍写着 09-05 的可玩性问题，与 §1 v2 证据不同步。
 
 结论：分母 10 里有 6 个门在设计上只接受「用户本人坐下来玩 + Windows 实机」作为关闭证据。工程侧已经把 M3（5/5 武器）、M5（42/42 cell）、M6（1/1）、M7 主线（105/105）做到 engineering-integrated，但都写着 `engineering_completion_does_not_claim_formal_*`。**用户看到 1/10 不动，是因为仪表盘量的是用户自己没做的那件事。** 与此同时 Codex 为了「有事可做」持续产出 READY 单（83%），每单几十个证据文件，形成「活动量极高、分子不动」的假象。
 
-第二层：M2 的 human acceptance 本身又被 §1 的不可玩缺陷卡住——用户即使坐下来玩，第一关也过不去。所以 §1 是 §2 的前置。
+第二层：M2 的 human acceptance 前置是 §1——不是「第一关过不去」（v2.1 删旧句），而是「连续推进与操作容错证据不足」：真人验收前应先有一条合法新档从第一关顺序推进到黑风岭的路径（保留真实奖励/成长/装备/解锁，不用出生属性直跳第三关），否则验收没有基线。
 
 ---
 
