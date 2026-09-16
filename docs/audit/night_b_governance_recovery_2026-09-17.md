@@ -54,3 +54,38 @@
 - 额外核对唯一“直接删”候选 `f16c09efc` 完整 diff，仅 import 顺序改变。E2 目录另有无关 `decision_session.sh`，不存在的是本批 capture 工具与场景，不是整个 tools/playtest 目录。
 - 下一步：检查最终仅八个新增白名单文件、生成 stdout 收据并冻结。
 - 阻塞：§6 指定路径例外仍未确认；未运行 Flutter/Dart 三项门禁，不能声明协调者 Gate PASS。
+
+## 最终恢复点与收工摘要
+
+状态：**审计本体 B-1/B-2/B-3/B-4 完成；整单交付 `[BLOCKED]`，等待交付路径矛盾澄清。** B-3 收口提交 `14a299473`，提交后 `date` 为 `2026-09-17 00:20:14 CST`。没有超时开启新目标。
+
+结果与下一步：
+
+1. 登记簿 167 项历史交付均有入链证据，逐项建议更新 integrated_candidate_chain；正式 M0–M9 仍独立。
+2. numbers 1796 叶子中 202 为静态零引用，233 有生产双端证据，1361 待人判；任何删 key 仍需用户拍板。
+3. 21 孤立分支建议归档 20、直接删 1、原样 cherry-pick 0；本单没有执行处置。
+4. M2 blocker 已更新，旧证据年代有漂移；M0/M3 接线证据过时；M4 补齐采样与合格基线的区别。没有改门状态。
+
+白名单验证使用 `git diff --name-status c307b3ffcb155af58d4efb9179e36453297b1360..HEAD`：本单应且仅应为八个 `A`，四个新 Markdown 与四个新 Python，全部满足 `docs/audit/[^/]+.md` / `tools/audit/[^/]+.py`。不改任何基线已有文件。最终检查由下面收据脚本再次强制执行，工作区非干净或 diff 检查失败会拒绝生成。
+
+### 收据生成与尚未交付的指定路径
+
+新增 `tools/audit/night_b_receipt.py`，只向 stdout 输出 schema v1 审计收据，不创建 YAML 文件。所有实现提交后执行：
+
+```sh
+python3 tools/audit/night_b_receipt.py
+```
+
+脚本读取当前最终 HEAD，计算完整 changed_files；实跑 `git diff --check <base>..<head>` 和 schema 原文固定管道：
+
+```sh
+LC_ALL=C git -c core.quotePath=false --no-pager diff --no-ext-diff --no-textconv --no-renames --binary --full-index --no-color <base_sha>..<head_sha> | shasum -a 256
+```
+
+收据的 `break_red` 为空块，`audit_verification` 为实测退出码与散列；analyze_last_line、format_last_line、full_test_last_line 如实写“未运行”。`error_block_count: 0` 仅是固定非负整数字段在未运行场景的占位，**不是通过了零失败测试**。本单没有原始 Flutter reporter 日志。
+
+当前任务单允许未运行三项检查，但 `/Users/a10506/.claude/skills/afk/scripts/gate.sh:657-660` 在 `--skip-full` 下仍对撞 analyze/format，因此本单没有宣称 Gate PASS。协调者须明确如何接纳该审计单的未运行字段，不能把旧日志冒充当前 tip 原文。
+
+另一个 schema 边界：若收据本身提交进受哈希的补丁，它不可能同时稳定写入自身最终 commit SHA 与包含自身的 patch SHA。schema 末节提供 `--receipt <path>` 外置输入机制；stdout 生成器可在最终 tip 冻结后生成匹配该 tip 的收据，避免递归自引用。本单未擅自扩展白名单来保存外置 YAML。
+
+未交付的指定路径为 `docs/superpowers/plans/2026-09-16-night-b-governance.md`、`docs/dispatch/reports/2026-09-16_night_B_receipt.yaml`、`/Users/a10506/Documents/Codex/2026-09-16/night-B/summary.md`。本文件是白名单内的恢复点与摘要，不冒充上述文件已经生成。下一位执行者先取得这三个路径的明确例外及收据最终 tip 约定，然后补交；无需重做已完成的审计，只重验 refs/输入哈希是否改变。
