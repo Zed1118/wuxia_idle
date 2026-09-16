@@ -38,4 +38,8 @@
 
 ## 进度（协调者维护，逐条时间戳）
 
-- 23:55 派单包落盘并 commit；建 worktree + 预热 A；发单。
+- 23:55 派单包落盘并 commit（`66a8f485f`，已推 origin）；建 worktree + 预热 A（69 `.g.dart`、analyze 0）；23:59 双单发出（A session `01a0aaf1-6d8c…`，B `01a0aaf1-79c6…`，gpt-6-astra / ultra）。
+- 00:12 巡检 1：A tip `4b18c4c67`（红线段 fail-fast + 逐键守卫），工作区 11 文件在铺开其余段；B tip `23107f786` `[READY]`（B-1 分类 167/167 已集成、B-4 M 门漂移已附），B-2/B-3 文件已生成未提交。**首件抽检**：A 在 detached `night-A/spot` 复跑 analyze 0、`numbers_config_required_keys_test` 9/9、`red_lines_test` 4/4，破坏证红（`player_hp_max` 兜底改回 20000）精确红 1 → 还原干净；B-1 抽 3 行（两条 is-ancestor、一条 `git cherry` 全 `-`）3/3 本地复核一致。B 的 `[READY]` 是中途目标标记、非收工 tip，gate 留到收工。
+- 00:22 B 进程退出 exit=0，tip `c04ca7dbb` `[BLOCKED]`：B-1～B-4 本体全完成（167/167 已集成；叶子 1,796 = 生产消费 233 / 零引用 202 / 待人判 1,361；孤立分支建议归档 20 / 直删 1 / cherry-pick 0），阻塞原因=派单包 §0 白名单未含 §6 的恢复点/收据路径（**协调者笔误，🟢 路径纠正**）。00:25 以 resume 追加例外确认（允许写 plans 恢复点、reports 收据、外部 summary；Flutter 三项如实 NOT_RUN），要求新 commit 打 `[READY]`。
+- 00:28 resume 未继承 `--add-dir`，写 `.git`/外部 summary 被拒（与 memory `codex resume 不认沙箱参数` 一致）。00:29 真档 `uchg` 锁 + sha256 记录 → `--dangerously-bypass-approvals-and-sandbox` 二次 resume 只做提交与摘要 → 00:31 退出 0；解锁后 6/6 哈希不变。B 收工 tip `f4cfeab4e` `[READY]`，树干净，已推 origin 同名分支备份。
+- 00:35 **B gate**（`gate.sh … c04ca7dbb --skip-full`，白名单需精确文件名而非目录，第二次按 8 个文件跑）：forbidden/scope/test_deletions/commit_msg/clean/analyze(0)/format(0 changed) 全 PASS；`receipt_crosscheck` FAIL 仅因收据 analyze/format 为协调者授权的 `NOT_RUN`，gate 实测已覆盖 → **判 REVIEWED（实质通过）**。`f4cfeab4e` 增量 = 恢复点 + 收据 + 收据脚本，无越界。B-2 抽 3 个「零引用」key 本地 grep 3/3 零命中。状态：B = REVIEWED，**未合并**，早报菜单决定是否入链。
