@@ -21,6 +21,7 @@ ENDPOINTS = (
     "reviewed_candidate_commit", "tip_commit", "validated_tip",
     "validated_code_tip", "validated_commit", "code_candidate_commit",
 )
+CORRECTIONS = ("correction_commit", "correction_commits", "integration_correction_commit")
 # 这项没有提交字段、READY 标记或含任务 ID 的提交主题；精确主题及任务
 # 登记 diff 已人工核对。仍要求本次 git log 命中且命中提交为目标链祖先。
 REVIEWED_QUERIES = {
@@ -57,6 +58,10 @@ def values(value):
     return [str(value)] if value is not None else []
 
 
+def unique_merges(target, sha):
+    return int(git("rev-list", "--count", "--merges", f"{target}..{sha}").stdout)
+
+
 def md(value):
     return str(value).replace("|", "\\|").replace("\n", "<br>")
 
@@ -87,7 +92,7 @@ def run(target):
             "clues": {}, "refs": [], "invalid_commit_clues": [],
             "judgement": "未能判定", "method": None, "evidence": [],
         }
-        for key in ENDPOINTS + ("integration_commit", "integration_commits"):
+        for key in ENDPOINTS + ("integration_commit", "integration_commits") + CORRECTIONS:
             if key in task:
                 row["clues"][key] = task[key]
                 for value in values(task[key]):
@@ -163,12 +168,12 @@ def run(target):
                         continue
                     result = git("cherry", target_sha, sha)
                     entries = result.stdout.splitlines()
-                    if entries and all(line.startswith("- ") for line in entries):
+                    if entries and all(line.startswith("- ") for line in entries) and unique_merges(target_sha, sha) == 0:
                         row["judgement"] = "已集成"
                         row["method"] = "全补丁等价"
                         row["evidence"].append({
                             "kind": "cherry", "sha": sha, "target": target_sha,
-                            "minus": len(entries), "plus": 0, "output": entries,
+                            "minus": len(entries), "plus": 0, "output": entries, "unique_merge_count": 0,
                             "command": f"git cherry {target_sha} {sha}",
                         })
                         # 同主题链上提交提供额外 ancestry 抽检入口。
@@ -193,6 +198,29 @@ def run(target):
             row["reason"] = (
                 "没有充分的任务完成端点、链上集成或替代证据；分支存在亦不能自动证明仍应合入。"
             )
+        # 登记在完成端点之外的后续修正也必须入链，不能只证明基础实现已合。
+        if row["judgement"] == "已集成":
+            for key in CORRECTIONS:
+                for value in values(task.get(key)):
+                    sha = resolve(value)
+                    if sha and ancestor(sha, target_sha) == 0:
+                        row["evidence"].append({
+                            "kind": "ancestor", "sha": sha, "target": target_sha,
+                            "exit": 0, "clue": key,
+                            "command": f"git merge-base --is-ancestor {sha} {target_sha}",
+                        })
+                        continue
+                    entries = git("cherry", target_sha, sha).stdout.splitlines() if sha else []
+                    if entries and all(line.startswith("- ") for line in entries) and unique_merges(target_sha, sha) == 0:
+                        row["evidence"].append({
+                            "kind": "cherry", "sha": sha, "target": target_sha,
+                            "minus": len(entries), "plus": 0, "output": entries, "unique_merge_count": 0,
+                            "clue": key, "command": f"git cherry {target_sha} {sha}",
+                        })
+                    else:
+                        row["judgement"] = "未能判定"
+                        row["method"] = "后续修正未证实"
+                        row["reason"] = f"基础交付已有证据，但 {key}={value} 未能证明进入冻结链。"
         rows.append(row)
     return {
         "base_sha": BASE, "target_ref": target, "target_sha": target_sha,
@@ -225,7 +253,7 @@ def markdown(result):
     out.extend(f"| {key} | {value} |" for key, value in result["methods"].items())
     out += [
         "", "分类边界：已集成指登记任务的历史交付已进入候选链/main，或源分支全部差异补丁已等价进入；不表示当前功能未经后续调整、不表示 formal M0–M9、真人或 Windows 验收关闭。`base_commit`、测试计数和 READY 字样本身均不作为集成证据。登记簿当前结构可机器定位，无需改写。",
-        "", "已过时仅接受明确替代证据；待合必须有尚未纳入且仍有效的交付证据。没有为了凑三类而强行分配条目。祖先命令退出码 `0` 为真、`1` 为假；全补丁等价另外列出 `git cherry` 的 `-`/`+` 数，未把源 SHA 非祖先误报为待合。", "",
+        "", "已过时仅接受明确替代证据；待合必须有尚未纳入且仍有效的交付证据。没有为了凑三类而强行分配条目。祖先命令退出码 `0` 为真、`1` 为假；全补丁等价另外列出 `git cherry` 的 `-`/`+` 数，未把源 SHA 非祖先误报为待合。登记的 correction_commit(s) / integration_correction_commit 另行逐一核对祖先或全补丁等价，不能只凭基础实现宣称修正已集成。", "",
         "## 逐条表", "",
         "| 任务 id | 里程碑 | 登记分支与提交线索 | 判定 | 本次机器证据 |",
         "|---|---|---|---|---|",
@@ -247,6 +275,9 @@ def markdown(result):
                 suffix = f" → `{entry['sha']}` {entry['subject']}"
             elif entry["kind"] == "cherry":
                 suffix = f" → -={entry['minus']}，+=0；源提交非祖先，全部差异补丁等价"
+                if entry.get("clue"):
+                    suffix += f"（{entry['clue']}）"
+                suffix += f"；`git rev-list --count --merges {entry['target']}..{entry['sha']}` → 0"
             evidence.append(f"`{entry['command']}`{suffix}")
         for clue in row["invalid_commit_clues"]:
             evidence.append(f"登记 {clue['field']}=`{clue['value']}` 无法解析；未用该值作证")
