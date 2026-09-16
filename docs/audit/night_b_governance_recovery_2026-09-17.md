@@ -34,3 +34,13 @@
 - 独立审阅发现应补登记的后续修正，现已对 9 个任务追加 12 条 correction 证据：9 条祖先、3 条全补丁等价；7 项原全补丁等价另验独有 merge 数均 0。
 - 10 个主题命中都指向实际交付/收口；59 项集成提交类另抽核源文件与计划，未见基础提交冒充整任务的反例。
 - 重生成报告后计数保持 167 已集成、其余 0；原不可解析 SHA 未被静默修写。B-1 本体复核完成，下一步收 B-2/B-3。
+
+## B-2 已完成
+
+- B-1 补证提交：`5c90dd64c`；提交后 `date` 为 `2026-09-17 00:18:43 CST`。
+- 最后完成：`numbers_yaml_unused_keys_2026-09-17.md` 与 `tools/audit/numbers_key_usage.py`。1796 标量叶子＝233 生产消费＋0 仅测试消费＋202 零引用＋1361 待人判；847 归一路径、497 末段名；零引用对应 87 路径/51 末段名。
+- 已跑验证：代理两次完整 JSON 对象一致；主代理再次运行 JSON 并验证 Markdown 与同源生成结果逐字一致。只扫描 Git 跟踪源文件，固定 lib 基线保护通过；14 组动态消费排除证据在报告中。
+- 主代理独立零引用抽样：用 `random.Random(20260917).sample(zero_rows, 8)` 抽取 tower.difficulty_curve[5].recommended_realm、equipment.tiers[2].tier_name、inheritance.unlock_rules.can_take_disciple_at、validation_examples.example_c.attacker.realm_diff_modifier、equipment.tiers[5].armor.speed_min、equipment.tiers[4].armor.speed_min、tower.difficulty_curve[0].recommended_realm、equipment.tiers[4].weapon.attack_min，逐条 `git grep -n -F -- <末段> lib` 均 0 行/exit 1。
+- 主代理另验 opening_qi、equipment_attack_factor、constitution_factor 三条解析/消费双端，3/3 成立。Python 语法检查通过。未删除任何配置。
+- 下一步：提交 B-3、最终白名单/补丁收据验证。
+- 阻塞：审计本体无；§6 指定路径仍未获例外确认。
