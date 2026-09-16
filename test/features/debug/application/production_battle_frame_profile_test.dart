@@ -40,7 +40,7 @@ ProductionProfileWindow continuous({int sample = 60, int cooldown = 30}) {
 
 Set<String> finished(ProductionProfileWindow window) => window.reasonsAtEnd(
   elapsed: window.config.total,
-  reason: 'timer_completed',
+  reason: 'sample_complete',
   sampledFrames: window.config.sample.inSeconds * 60,
 );
 
@@ -76,6 +76,7 @@ void main() {
       Map<String, Object?> scene, {
       ValueNotifier<bool>? replacementOwner,
       BattleFrameProfileRunConfig? replacementConfig,
+      BattleFrameProfileDiagnostics Function()? diagnosticsFactory,
       Widget child = const SizedBox.shrink(),
     }) => MediaQuery(
       data: const MediaQueryData(size: Size(1280, 720), devicePixelRatio: 2),
@@ -83,6 +84,7 @@ void main() {
         owner: replacementOwner ?? owner,
         config: replacementConfig ?? requested,
         scene: scene,
+        diagnosticsFactory: diagnosticsFactory,
         isCombatOngoing: () => (replacementOwner ?? owner).value,
         readWorkload: () => {
           'tick': 1,
@@ -197,6 +199,90 @@ void main() {
         expect(evidence['composite_gate'], isFalse);
       }
     });
+
+    testWidgets('changing the legality declaration invalidates capture', (
+      tester,
+    ) async {
+      await tester.runAsync(() => tester.pumpWidget(tree(const {})));
+      try {
+        await tester.runAsync(
+          () => tester.pumpWidget(
+            tree(
+              const {},
+              replacementConfig: _copyConfig(requested, legalCharacter: false),
+            ),
+          ),
+        );
+      } finally {
+        final evidence = await finish(tester);
+        expect(evidence['capture_end_reason'], 'profile_identity_changed');
+        expect(evidence['invalid_reasons'], contains('profile_config_changed'));
+        expect(evidence['capture_window_valid'], isFalse);
+      }
+    });
+
+    for (final diagnosticsEnabled in [false, true]) {
+      testWidgets(
+        'production diagnostics are opt-in and flushed: $diagnosticsEnabled',
+        (tester) async {
+          requested = BattleFrameProfileProbe.configureFromArgs([
+            '--battle-profile-scope=production',
+            '--battle-profile-content-id=stage_01_03',
+            '--battle-profile-run-id=identity',
+            '--battle-profile-output=${output.path}',
+            '--battle-profile-sample-seconds=60',
+            '--battle-profile-viewport=1280x720',
+            '--battle-profile-diagnostics=$diagnosticsEnabled',
+          ])!;
+          BattleFrameProfileProbe.recordEntryOrigin(visual: false);
+          var created = 0;
+          var connectionAttempts = 0;
+          await tester.runAsync(
+            () => tester.pumpWidget(
+              tree(
+                const {},
+                diagnosticsFactory: () {
+                  created++;
+                  return BattleFrameProfileDiagnostics(
+                    connect: () async {
+                      connectionAttempts++;
+                      throw StateError('No VM service in this widget test');
+                    },
+                  );
+                },
+              ),
+            ),
+          );
+          final evidence = await finish(tester);
+          expect(created, diagnosticsEnabled ? 1 : 0);
+          expect(connectionAttempts, diagnosticsEnabled ? 1 : 0);
+          expect(evidence['diagnostics_enabled'], diagnosticsEnabled);
+          expect(evidence['capture_window_valid'], isFalse);
+          for (final name in [
+            'timeline.json',
+            'cpu-profile.json',
+            'diagnostics-status.json',
+          ]) {
+            expect(
+              File('${output.path}/$name').existsSync(),
+              diagnosticsEnabled,
+            );
+          }
+          if (diagnosticsEnabled) {
+            expect(
+              evidence['invalid_reasons'],
+              contains('diagnostic_run_not_baseline'),
+            );
+            final diagnostics = evidence['diagnostics'] as Map;
+            expect(diagnostics['timeline_status'], 'MISSING');
+            expect(diagnostics['cpu_status'], 'MISSING');
+            expect(diagnostics['baseline_eligible'], isFalse);
+          } else {
+            expect(evidence, isNot(contains('diagnostics')));
+          }
+        },
+      );
+    }
 
     testWidgets('async write preserves start and capture-end snapshots', (
       tester,
@@ -347,6 +433,26 @@ void main() {
   });
 
   test(
+    'battle input focus loss in the sample remains invalid after returning',
+    () {
+      final window = continuous();
+      window.inputFocus(const Duration(seconds: 30), hasPrimaryFocus: false);
+      window.inputFocus(const Duration(seconds: 31), hasPrimaryFocus: true);
+      expect(finished(window), contains('battle_input_focus_lost'));
+      final outsideSample = continuous();
+      outsideSample.inputFocus(
+        const Duration(seconds: 3),
+        hasPrimaryFocus: false,
+      );
+      outsideSample.inputFocus(
+        const Duration(seconds: 75),
+        hasPrimaryFocus: false,
+      );
+      expect(finished(outsideSample), isEmpty);
+    },
+  );
+
+  test(
     'fast raw frames do not certify short, early or missing battle samples',
     () {
       expect(
@@ -373,10 +479,36 @@ void main() {
       expect(
         window.reasonsAtEnd(
           elapsed: window.config.total,
-          reason: 'timer_completed',
+          reason: 'sample_complete',
           sampledFrames: 1,
         ),
         contains('insufficient_frames'),
+      );
+      for (final frames in [0, 2880, 2999]) {
+        expect(
+          window.reasonsAtEnd(
+            elapsed: window.config.total,
+            reason: 'sample_complete',
+            sampledFrames: frames,
+          ),
+          contains('insufficient_frames'),
+        );
+      }
+      expect(
+        window.reasonsAtEnd(
+          elapsed: window.config.total,
+          reason: 'sample_complete',
+          sampledFrames: 3000,
+        ),
+        isEmpty,
+      );
+      expect(
+        window.reasonsAtEnd(
+          elapsed: const Duration(seconds: 72),
+          reason: 'sample_complete',
+          sampledFrames: 3600,
+        ),
+        contains('capture_ended_early'),
       );
     },
   );
@@ -495,6 +627,7 @@ BattleFrameProfileRunConfig _copyConfig(
   BattleFrameProfileRunConfig source, {
   String? runId,
   String? outputDirectory,
+  bool? legalCharacter,
 }) => BattleFrameProfileRunConfig(
   runId: runId ?? source.runId,
   outputDirectory: outputDirectory ?? source.outputDirectory,
@@ -508,4 +641,6 @@ BattleFrameProfileRunConfig _copyConfig(
   diagnostics: source.diagnostics,
   scope: source.scope,
   contentId: source.contentId,
+  legalCharacter: legalCharacter ?? source.legalCharacter,
+  keyboardPolicy: source.keyboardPolicy,
 );

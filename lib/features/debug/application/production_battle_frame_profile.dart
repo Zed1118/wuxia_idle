@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'battle_frame_profile.dart';
+import 'production_profile_keyboard_driver.dart';
 
 // Capture JSON metadata by value. Sorting map keys permits equivalent rebuilds,
 // while recursively copying lists/maps prevents later caller mutation from
@@ -40,6 +41,8 @@ String _configIdentity(BattleFrameProfileRunConfig config) => jsonEncode({
   'diagnostics': config.diagnostics,
   'scope': config.scope,
   'content_id': config.contentId,
+  'legal_character': config.legalCharacter,
+  'keyboard_policy': config.keyboardPolicy,
 });
 
 /// Validates a real battle interval separately from its raw frame timings.
@@ -68,6 +71,12 @@ final class ProductionProfileWindow {
     if (paused) invalidReasons.add('paused_during_sample');
     if (!foreground) invalidReasons.add('backgrounded_during_sample');
     if (!combatOngoing) invalidReasons.add('combat_finished_during_sample');
+  }
+
+  void inputFocus(Duration elapsed, {required bool hasPrimaryFocus}) {
+    if (isSampling(elapsed) && !hasPrimaryFocus) {
+      invalidReasons.add('battle_input_focus_lost');
+    }
   }
 
   void viewport(Duration elapsed, double? width, double? height, double? dpr) {
@@ -115,7 +124,7 @@ final class ProductionProfileWindow {
     required int sampledFrames,
   }) => {
     ...invalidReasons,
-    if (reason != 'timer_completed' || elapsed < config.total)
+    if (reason != 'sample_complete' || elapsed < config.total)
       'capture_ended_early',
     if (config.sample < const Duration(seconds: 60)) 'sample_shorter_than_60s',
     if (config.cooldown < const Duration(seconds: 30))
@@ -137,6 +146,8 @@ final class ProductionBattleFrameProfile extends StatefulWidget {
     required this.scene,
     required this.readWorkload,
     required this.isCombatOngoing,
+    this.diagnosticsFactory,
+    this.keyboardDriverFactory,
   });
 
   final Widget child;
@@ -146,10 +157,56 @@ final class ProductionBattleFrameProfile extends StatefulWidget {
   final Map<String, Object?> Function() readWorkload;
   final bool Function() isCombatOngoing;
 
+  @visibleForTesting
+  final BattleFrameProfileDiagnostics Function()? diagnosticsFactory;
+
+  final ProductionProfileKeyboardDriver Function(bool Function() isForeground)?
+  keyboardDriverFactory;
+
   static _ProductionBattleFrameProfileState? _active;
   static final Set<Future<void>> _pendingWrites = {};
 
   static bool get isCapturing => _active != null;
+
+  /// Reads the production camera's existing Offstage decision. This counts
+  /// onstage living actor boundaries, not pixel visibility through other actors
+  /// or the HUD. Call only after build, while the child tree is mounted.
+  static Map<String, Object?> observeVisibleEnemies(
+    BuildContext context,
+    Iterable<String> activeEnemyIds,
+  ) {
+    final clock = Stopwatch()..start();
+    final targets = {for (final id in activeEnemyIds) 'phase0a_actor_$id': id};
+    final visible = <String>{};
+    var visited = 0;
+    void visit(Element element) {
+      if (visible.length == targets.length) return;
+      visited++;
+      final widget = element.widget;
+      if (widget is Offstage && widget.offstage) return;
+      if (widget is RepaintBoundary) {
+        final key = widget.key;
+        if (key is ValueKey<String>) {
+          final id = targets[key.value];
+          if (id != null) visible.add(id);
+          // Actor descendants cannot contain another actor boundary. Pruning
+          // also avoids walking dead/player standees and their image subtrees.
+          if (key.value.startsWith('phase0a_actor_')) return;
+        }
+      }
+      element.visitChildren(visit);
+    }
+
+    context.visitChildElements(visit);
+    clock.stop();
+    return {
+      'visible_active_enemies': visible.length,
+      'visible_enemy_ids': visible.toList()..sort(),
+      'visibility_observer_status': 'observed',
+      'visibility_observer_elapsed_us': clock.elapsedMicroseconds,
+      'visibility_observer_visited_elements': visited,
+    };
+  }
 
   static void recordActivity(
     Object owner, {
@@ -159,11 +216,20 @@ final class ProductionBattleFrameProfile extends StatefulWidget {
   }) {
     final active = _active;
     if (active != null && identical(owner, active._owner)) {
+      final inputActivityChanged =
+          active._paused != paused || active._battleForeground != foreground;
+      active._paused = paused;
+      active._battleForeground = foreground;
+      if (inputActivityChanged) active._keyboardDriver?.refreshForeground();
       active._window.activity(
         active._elapsed.elapsed,
         paused: paused,
         foreground: foreground && active._foreground,
         combatOngoing: combatOngoing,
+      );
+      active._window.inputFocus(
+        active._elapsed.elapsed,
+        hasPrimaryFocus: active._battleFocusNode?.hasPrimaryFocus ?? false,
       );
       active._window.viewport(
         active._elapsed.elapsed,
@@ -205,6 +271,10 @@ class _ProductionBattleFrameProfileState
   late final Map<String, Object?> _sceneAtCaptureEnd;
   Timer? _finishTimer;
   Timer? _memoryTimer;
+  Timer? _diagnosticsFinishTimer;
+  BattleFrameProfileDiagnostics? _diagnostics;
+  ProductionProfileKeyboardDriver? _keyboardDriver;
+  FocusNode? _battleFocusNode;
   Future<void>? _connection;
   bool _started = false;
   bool _finished = false;
@@ -212,6 +282,8 @@ class _ProductionBattleFrameProfileState
   double? _height;
   double? _dpr;
   bool _foreground = false;
+  bool _battleForeground = true;
+  bool _paused = false;
 
   @override
   void initState() {
@@ -246,17 +318,43 @@ class _ProductionBattleFrameProfileState
         WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
     ProductionBattleFrameProfile._active = this;
     _elapsed.start();
+    _keyboardDriver = widget.keyboardDriverFactory?.call(
+      () =>
+          _foreground &&
+          _battleForeground &&
+          (_battleFocusNode?.hasPrimaryFocus ?? false) &&
+          !_paused &&
+          !_finished &&
+          _isCombatOngoing(),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Focus autofocus applies in a microtask after the battle has mounted.
+      scheduleMicrotask(() {
+        if (!mounted || _finished) return;
+        _bindBattleFocus();
+        if (_isCombatOngoing()) _keyboardDriver?.start();
+      });
+    });
+    if (_config.diagnostics) {
+      _diagnostics =
+          widget.diagnosticsFactory?.call() ?? BattleFrameProfileDiagnostics();
+      unawaited(_diagnostics!.start());
+      _diagnosticsFinishTimer = Timer(
+        _config.warmup + _config.sample,
+        () => unawaited(_diagnostics!.finish()),
+      );
+    }
     WidgetsBinding.instance.addObserver(this);
     _owner.addListener(_combatChanged);
     _combatChanged();
     SchedulerBinding.instance.addTimingsCallback(_recordFrames);
     _connection = _gc.connect();
-    _recordWorkload();
+    _recordWorkload(observeVisibility: false);
     _memoryTimer = Timer.periodic(
       const Duration(seconds: 1),
       (_) => _recordWorkload(),
     );
-    _finishTimer = Timer(_config.total, () => _queueFinish('timer_completed'));
+    _finishTimer = Timer(_config.total, () => _queueFinish('sample_complete'));
   }
 
   @override
@@ -294,12 +392,41 @@ class _ProductionBattleFrameProfileState
     _combatChanged();
   }
 
-  void _combatChanged() => _window.activity(
-    _elapsed.elapsed,
-    paused: false,
-    foreground: _foreground,
-    combatOngoing: _isCombatOngoing(),
-  );
+  void _combatChanged() {
+    _keyboardDriver?.refreshForeground();
+    _window.activity(
+      _elapsed.elapsed,
+      paused: _paused,
+      foreground: _foreground,
+      combatOngoing: _isCombatOngoing(),
+    );
+  }
+
+  void _bindBattleFocus() {
+    void visit(Element element) {
+      if (_battleFocusNode != null) return;
+      final widget = element.widget;
+      if (widget is Offstage && widget.offstage) return;
+      if (widget is Focus && widget.focusNode != null) {
+        _battleFocusNode = widget.focusNode;
+        return;
+      }
+      element.visitChildren(visit);
+    }
+
+    context.visitChildElements(visit);
+    _battleFocusNode?.addListener(_battleInputFocusChanged);
+    _battleInputFocusChanged();
+  }
+
+  void _battleInputFocusChanged() {
+    if (_finished) return;
+    _keyboardDriver?.refreshForeground();
+    _window.inputFocus(
+      _elapsed.elapsed,
+      hasPrimaryFocus: _battleFocusNode?.hasPrimaryFocus ?? false,
+    );
+  }
 
   void _recordFrames(List<FrameTiming> timings) {
     for (final timing in timings) {
@@ -309,11 +436,12 @@ class _ProductionBattleFrameProfileState
         raster: timing.rasterDuration,
         totalSpan: timing.totalSpan,
         rssBytes: ProcessInfo.currentRss,
+        frameTiming: timing,
       );
     }
   }
 
-  void _recordWorkload() {
+  void _recordWorkload({bool observeVisibility = true}) {
     final elapsed = _elapsed.elapsed;
     _memory.add({
       'record_type': 'memory_sample',
@@ -324,6 +452,27 @@ class _ProductionBattleFrameProfileState
     try {
       _checkScene();
       final value = _readWorkload();
+      final activeEnemyIds = value['active_enemy_ids'];
+      final visible = observeVisibility && activeEnemyIds is List<String>
+          ? ProductionBattleFrameProfile.observeVisibleEnemies(
+              context,
+              activeEnemyIds,
+            )
+          : <String, Object?>{
+              'visible_active_enemies': observeVisibility ? null : 0,
+              'visible_enemy_ids': observeVisibility ? null : <String>[],
+              'visibility_observer_status': observeVisibility
+                  ? 'missing_active_enemy_ids'
+                  : 'outside_periodic_observation',
+              'visibility_observer_elapsed_us': 0,
+              'visibility_observer_visited_elements': 0,
+            };
+      if (observeVisibility) {
+        _window.inputFocus(
+          elapsed,
+          hasPrimaryFocus: _battleFocusNode?.hasPrimaryFocus ?? false,
+        );
+      }
       _window.workload(elapsed, value);
       _workloads.add({
         'elapsed_us': elapsed.inMicroseconds,
@@ -331,7 +480,10 @@ class _ProductionBattleFrameProfileState
         'logical_height': _height,
         'device_pixel_ratio': _dpr,
         'foreground': _foreground,
+        'battle_input_focus_bound': _battleFocusNode != null,
+        'battle_input_has_primary_focus': _battleFocusNode?.hasPrimaryFocus,
         ...value,
+        ...visible,
       });
     } on Object catch (error) {
       _window.invalidReasons.add('workload_read_failed');
@@ -345,13 +497,16 @@ class _ProductionBattleFrameProfileState
   void _queueFinish(String reason) {
     if (!_started || _finished) return;
     _finished = true;
+    _keyboardDriver?.stop();
+    _battleFocusNode?.removeListener(_battleInputFocusChanged);
     _sceneAtCaptureEnd = _checkScene();
     _finishTimer?.cancel();
     _memoryTimer?.cancel();
+    _diagnosticsFinishTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _owner.removeListener(_combatChanged);
     SchedulerBinding.instance.removeTimingsCallback(_recordFrames);
-    _recordWorkload();
+    _recordWorkload(observeVisibility: false);
     _elapsed.stop();
     if (identical(ProductionBattleFrameProfile._active, this)) {
       ProductionBattleFrameProfile._active = null;
@@ -367,6 +522,7 @@ class _ProductionBattleFrameProfileState
 
   Future<void> _writeEvidence(String reason) async {
     try {
+      await _diagnostics?.finish();
       await _connection;
       await _gc.close();
       final summary = _frames.summary;
@@ -395,6 +551,11 @@ class _ProductionBattleFrameProfileState
         'run_id': _config.runId,
         'evidence_kind': 'normal_root_production_host',
         'entry_origin': 'normal_root',
+        'diagnostics_enabled': _config.diagnostics,
+        'capture_window_valid': valid,
+        if (_diagnostics != null) 'diagnostics': _diagnostics!.status,
+        if (_keyboardDriver != null)
+          'keyboard_driver': _keyboardDriver!.metadata,
         'scene': _initialScene,
         'scene_at_capture_end': _sceneAtCaptureEnd,
         'capture_end_reason': reason,
@@ -413,6 +574,13 @@ class _ProductionBattleFrameProfileState
         'frame_streak_gate_passes': valid && summary.passes,
         'composite_gate': valid && summary.passes && rssGate,
         'gate_scope': 'observed frame timings and in-host RSS only',
+        'visible_enemy_observation':
+            '1Hz living actor RepaintBoundary scan; skips production Offstage '
+            'subtrees. Camera-onstage only, not proof of unobscured pixels. '
+            'Observer elapsed time and visited elements are recorded per sample.',
+        'input_focus_observation':
+            'Exact first explicit FocusNode under the battle wrapper; primary '
+            'focus required, including when the application remains resumed.',
         'gc_telemetry_status': _gc.status,
         'gc_event_count': _gc.events.length,
         'rss_start_bytes': rss.isEmpty ? null : rss.first,
@@ -430,6 +598,7 @@ class _ProductionBattleFrameProfileState
       };
       final directory = Directory(_config.outputDirectory);
       await directory.create(recursive: true);
+      await _diagnostics?.writeEvidence(directory);
       for (final entry in <String, Iterable<Object?>>{
         'frames.jsonl': _frames.samples.map((e) => e.toJson()),
         'workload.jsonl': _workloads,
@@ -453,7 +622,7 @@ class _ProductionBattleFrameProfileState
       debugPrint(
         'PRODUCTION_BATTLE_PROFILE_RESULT: ${directory.path} (${payload['sampling_status']})',
       );
-      if (reason == 'timer_completed' && _config.autoClose && mounted) {
+      if (reason == 'sample_complete' && _config.autoClose && mounted) {
         await windowManager.close();
       }
     } on Object catch (error) {
@@ -464,6 +633,7 @@ class _ProductionBattleFrameProfileState
   @override
   void dispose() {
     _queueFinish('host_disposed');
+    _keyboardDriver?.dispose();
     super.dispose();
   }
 
