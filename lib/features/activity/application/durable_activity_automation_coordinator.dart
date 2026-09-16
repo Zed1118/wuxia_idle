@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/isar_setup.dart';
@@ -67,7 +68,8 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
   final settlementDependencies =
       dependencies?.settlement ??
       DurableActivityCombatSettlementDependencies(
-        numbers: ref!.read(numbersConfigProvider),
+        clock: ref!.read(systemClockProvider),
+        numbers: ref.read(numbersConfigProvider),
         dropService: ref.read(dropServiceProvider),
         rng: ref.read(rngProvider),
         skillDropRng: ref.read(mathRandomProvider),
@@ -255,6 +257,7 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
 TowerSettlementDependencies _towerSettlementDependencies(WidgetRef ref) =>
     TowerSettlementDependencies(
       readIsar: () => ref.read(isarProvider),
+      readClock: () => ref.read(systemClockProvider),
       readNumbers: () => ref.read(numbersConfigProvider),
       readDropService: () => ref.read(dropServiceProvider),
       readRng: () => ref.read(rngProvider),

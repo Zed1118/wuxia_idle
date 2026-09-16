@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/character.dart';
@@ -91,7 +92,7 @@ Future<void> _endRetreatEarly(
       characterId: owner.id,
       config: GameRepository.instance.numbers.retreat,
       maps: GameRepository.instance.seclusionMaps,
-      now: DateTime.now(),
+      now: ref.read(systemClockProvider).now(),
     );
     ref.invalidate(activeRetreatSessionProvider);
     ref.invalidate(characterByIdProvider);

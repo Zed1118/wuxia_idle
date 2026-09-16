@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/experimental/scope.dart';
 
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/narrative_loader.dart';
 import '../../../data/isar_provider.dart';
@@ -456,6 +457,7 @@ Future<TowerBattleExit> _runPhase0aTowerBattle({
 TowerSettlementDependencies _towerSettlementDependencies(WidgetRef ref) =>
     TowerSettlementDependencies(
       readIsar: () => ref.read(isarProvider),
+      readClock: () => ref.read(systemClockProvider),
       readNumbers: () => ref.read(numbersConfigProvider),
       readDropService: () => ref.read(dropServiceProvider),
       readRng: () => ref.read(rngProvider),

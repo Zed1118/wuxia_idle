@@ -1,9 +1,11 @@
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../shared/strings.dart';
+import '../../../shared/utils/rng.dart';
 import 'milestone_equipment_grant_service.dart';
 
 /// F1 里程碑装备 post-victory hook(镜像 runDiscipleJoinHookAfterVictory)。
@@ -45,6 +47,8 @@ Future<List<String>> grantMilestoneForClearedStageInTxn({
   required Isar isar,
   required SaveData save,
   required String clearedStageId,
+  SystemClock? clock,
+  Rng? rng,
 }) async {
   if (!GameRepository.isLoaded) return const [];
   final tag =
@@ -52,6 +56,8 @@ Future<List<String>> grantMilestoneForClearedStageInTxn({
   if (tag == null) return const [];
   return MilestoneEquipmentGrantService(
     isar: isar,
+    now: clock?.now,
+    rng: rng,
   ).grantForTagInTxn(save, tag, obtainedFrom: _obtainedFromForTag(tag));
 }
 

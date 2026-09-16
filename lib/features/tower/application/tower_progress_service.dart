@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
@@ -46,7 +47,10 @@ class TowerProgressService {
   /// 顺带懒补发（design §6.4「功能上线前已完成的旧档按现有通关记录一次性
   /// 补发」）：既有行最高层已越过里程碑层但防重集合缺记录 → 补发断魂帖。
   /// 防重集合保证只补一次；无需补时不开写事务。
-  Future<TowerProgress> getOrCreate({required int saveDataId}) async {
+  Future<TowerProgress> getOrCreate({
+    required int saveDataId,
+    SystemClock clock = const SystemClock(),
+  }) async {
     final existing = await isar.towerProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -61,12 +65,15 @@ class TowerProgressService {
                 !save.grantedTicketMilestoneIds.contains(_ticketMilestoneId(f)),
           );
       if (needsBackfill) {
-        await backfillTicketMilestones(saveDataId: saveDataId);
+        await backfillTicketMilestones(
+          saveDataId: saveDataId,
+          now: clock.now(),
+        );
       }
       return existing;
     }
 
-    final now = DateTime.now();
+    final now = clock.now();
     final fresh = TowerProgress()
       ..saveDataId = saveDataId
       ..highestClearedFloor = 0

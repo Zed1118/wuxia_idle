@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
@@ -114,6 +115,7 @@ Future<SweepBattleOutcome?> _settleMainlineReplayVictory({
   // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
   final outcome = await applyVictoryResolution(
     dependencies: MainlineSettlementDependencies(
+      readClock: () => ref.read(systemClockProvider),
       readNumbers: () => ref.read(numbersConfigProvider),
       readDropService: () => ref.read(dropServiceProvider),
       readRng: () => ref.read(rngProvider),
@@ -266,6 +268,7 @@ Future<SweepBattleOutcome?> settleTowerSweepVictory({
 TowerSettlementDependencies _towerSettlementDependencies(WidgetRef ref) =>
     TowerSettlementDependencies(
       readIsar: () => ref.read(isarProvider),
+      readClock: () => ref.read(systemClockProvider),
       readNumbers: () => ref.read(numbersConfigProvider),
       readDropService: () => ref.read(dropServiceProvider),
       readRng: () => ref.read(rngProvider),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
@@ -18,7 +19,10 @@ import 'offline_passive_service.dart';
 final onlinePresenceControllerProvider = Provider<OnlinePresenceController>((
   ref,
 ) {
-  final controller = OnlinePresenceController(ref);
+  final controller = OnlinePresenceController(
+    ref,
+    clock: ref.watch(systemClockProvider).now,
+  );
   // 负责 cancel 心跳 Timer:widget 测 ProviderScope 卸载时经此回收,防 pending timer。
   ref.onDispose(controller.dispose);
   return controller;
@@ -29,7 +33,7 @@ class OnlinePresenceController {
     this._ref, {
     DateTime Function()? clock,
     Duration heartbeatInterval = const Duration(seconds: 60),
-  }) : _clock = clock ?? DateTime.now,
+  }) : _clock = clock ?? (const SystemClock()).now,
        _heartbeatInterval = heartbeatInterval;
 
   final Ref _ref;

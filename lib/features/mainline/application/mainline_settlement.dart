@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -66,6 +67,9 @@ final class DurableActivityCombatSettlementDependencies {
     required this.skillDropRng,
     required this.tutorialService,
     required this.reputationService,
+    this.clock = const SystemClock(),
+    this.eventRandom,
+    this.milestoneRng,
   });
 
   final NumbersConfig numbers;
@@ -74,11 +78,17 @@ final class DurableActivityCombatSettlementDependencies {
   final math.Random skillDropRng;
   final TutorialService? tutorialService;
   final ReputationService? reputationService;
+  final SystemClock clock;
+  final math.Random? eventRandom;
+  final Rng? milestoneRng;
 
   MainlineSettlementDependencies asMainlineDependencies({
     Rng Function()? readPendingAffairRng,
     Festival? Function()? readFestivalToday,
   }) => MainlineSettlementDependencies(
+    readClock: () => clock,
+    readEventRandom: () => eventRandom,
+    readMilestoneRng: () => milestoneRng,
     readNumbers: () => numbers,
     readDropService: () => dropService,
     readRng: () => rng,
@@ -97,6 +107,9 @@ final class MainlineSettlementDependencies {
     required DropService Function() readDropService,
     required Rng Function() readRng,
     required math.Random Function() readMathRandom,
+    SystemClock Function()? readClock,
+    math.Random? Function()? readEventRandom,
+    Rng? Function()? readMilestoneRng,
     required TutorialService? Function() readTutorialService,
     required ReputationService? Function() readReputationService,
     required Festival? Function() readFestivalToday,
@@ -104,6 +117,9 @@ final class MainlineSettlementDependencies {
   }) : _readNumbers = readNumbers,
        _readDropService = readDropService,
        _readRng = readRng,
+       _readClock = readClock,
+       _readEventRandom = readEventRandom,
+       _readMilestoneRng = readMilestoneRng,
        _readMathRandom = readMathRandom,
        _readTutorialService = readTutorialService,
        _readReputationService = readReputationService,
@@ -114,6 +130,9 @@ final class MainlineSettlementDependencies {
   final DropService Function() _readDropService;
   final Rng Function() _readRng;
   final math.Random Function() _readMathRandom;
+  final SystemClock Function()? _readClock;
+  final math.Random? Function()? _readEventRandom;
+  final Rng? Function()? _readMilestoneRng;
   final TutorialService? Function() _readTutorialService;
   final ReputationService? Function() _readReputationService;
   final Festival? Function() _readFestivalToday;
@@ -123,6 +142,13 @@ final class MainlineSettlementDependencies {
   DropService get dropService => _readDropService();
   Rng get rng => _readRng();
   math.Random get mathRandom => _readMathRandom();
+  SystemClock get clock => _readClock?.call() ?? const SystemClock();
+
+  /// 事件文案单独注入，默认保持旧随机源，不消耗技能残页的随机序列。
+  math.Random? get eventRandom => _readEventRandom?.call();
+
+  /// 里程碑属性使用独立随机源；未注入时保留授予服务原有默认行为。
+  Rng? get milestoneRng => _readMilestoneRng?.call();
   TutorialService? get tutorialService => _readTutorialService();
   ReputationService? get reputationService => _readReputationService();
   Festival? get festivalToday => _readFestivalToday();
@@ -451,7 +477,7 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
     }
     return null;
   }
-  final now = settlementAt ?? DateTime.now();
+  final now = settlementAt ?? dependencies.clock.now();
   return ExpeditionTimeline.runAfterCatchUp(
     isar: isar,
     now: now,
@@ -491,7 +517,10 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
           isar: isar,
           attributeGainCap: numbers.adventureAttributeLifetimeCap,
           attributeEffects: numbers.attributeEffects,
-        ).getOrCreate(saveDataId: IsarSetup.currentSlotId);
+        ).getOrCreate(
+          saveDataId: IsarSetup.currentSlotId,
+          clock: SystemClock.fixed(now),
+        );
       }
 
       // P1 #42 Phase 2:isFirstClear snapshot(writeTxn 之前 read MainlineProgress,
@@ -704,7 +733,11 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
         }
 
         // 主线专属 equipmentObtained 与公共成长事件在同一事务写入。
-        final events = GameEventService(isar);
+        final events = GameEventService(
+          isar,
+          clock: SystemClock.fixed(now),
+          random: dependencies.eventRandom,
+        );
         for (final drop in grantedDrops.equipments) {
           final def = GameRepository.instance.getEquipment(drop.defId);
           await events.recordEquipmentObtained(
@@ -718,6 +751,8 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
         }
         resonanceUpgrades = await settlement.recordCommonEvents(
           isar: isar,
+          clock: SystemClock.fixed(now),
+          random: dependencies.eventRandom,
           characters: characters,
           equipmentsByCharacter: equipsByCh,
           resonanceUpgradedEquipmentIds: result.resonanceUpgradedEquipmentIds,
@@ -767,6 +802,8 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
         if (currentSave != null) {
           await grantMilestoneForClearedStageInTxn(
             isar: isar,
+            clock: SystemClock.fixed(now),
+            rng: dependencies.milestoneRng,
             save: currentSave,
             clearedStageId: stage.id,
           );
@@ -980,7 +1017,7 @@ Future<List<DefeatLossEntry>> applyParticipantDefeatResolution({
     return const [];
   }
 
-  final now = settlementAt ?? DateTime.now();
+  final now = settlementAt ?? dependencies.clock.now();
   return ExpeditionTimeline.runAfterCatchUp(
     isar: isar,
     now: now,

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../equipment/application/drop_service.dart';
@@ -12,7 +13,9 @@ final numbersConfigProvider = Provider<NumbersConfig>(
 
 /// 战斗结算共享的掉落服务，不依赖已退役队伍战状态或 notifier。
 final dropServiceProvider = Provider<DropService>(
-  (ref) =>
-      DropService(equipmentDefLookup: GameRepository.instance.getEquipment),
+  (ref) => DropService(
+    equipmentDefLookup: GameRepository.instance.getEquipment,
+    now: ref.read(systemClockProvider).now,
+  ),
   name: 'dropServiceProvider',
 );

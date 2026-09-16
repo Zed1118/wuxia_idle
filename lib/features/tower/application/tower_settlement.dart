@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -65,10 +66,14 @@ class TowerSettlementDependencies {
     required DropService Function() readDropService,
     required Rng Function() readRng,
     required math.Random Function() readMathRandom,
+    SystemClock Function()? readClock,
+    math.Random? Function()? readEventRandom,
   }) : _readIsar = readIsar,
        _readNumbers = readNumbers,
        _readDropService = readDropService,
        _readRng = readRng,
+       _readClock = readClock,
+       _readEventRandom = readEventRandom,
        _readMathRandom = readMathRandom;
 
   final Isar? Function() _readIsar;
@@ -76,12 +81,18 @@ class TowerSettlementDependencies {
   final DropService Function() _readDropService;
   final Rng Function() _readRng;
   final math.Random Function() _readMathRandom;
+  final SystemClock Function()? _readClock;
+  final math.Random? Function()? _readEventRandom;
 
   Isar? get isar => _readIsar();
   NumbersConfig get numbers => _readNumbers();
   DropService get dropService => _readDropService();
   Rng get rng => _readRng();
   math.Random get mathRandom => _readMathRandom();
+  SystemClock get clock => _readClock?.call() ?? const SystemClock();
+
+  /// 事件文案单独注入，默认保持旧随机源，不消耗技能残页的随机序列。
+  math.Random? get eventRandom => _readEventRandom?.call();
 }
 
 /// U09 九霄塔胜利的单一原子结算边界。
@@ -108,7 +119,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       settlementSnapshot.playerCharacterId != participantId) {
     throw StateError('Tower victory participant cannot be proven');
   }
-  final now = settlementAt ?? DateTime.now();
+  final now = settlementAt ?? dependencies.clock.now();
   return ExpeditionTimeline.runAfterCatchUp(
     isar: isar,
     now: now,
@@ -117,6 +128,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
       final personalRecordService = TowerPersonalRecordService(isar: isar);
       final progress = await progressService.getOrCreate(
         saveDataId: IsarSetup.currentSlotId,
+        clock: SystemClock.fixed(now),
       );
       final maxFloor = GameRepository.instance.towerMaxFloor;
       final isFirstClear =
@@ -134,6 +146,7 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
         final dropService = DropService(
           equipmentDefLookup: GameRepository.instance.getEquipment,
           defaultObtainedFrom: UiStrings.towerDropSource,
+          now: SystemClock.fixed(now).now,
         );
         final rng = dependencies.rng;
         drops = dropService.rollTowerRewards(floor, rng);
@@ -218,6 +231,8 @@ Future<TowerVictorySettlement> applyTowerVictorySettlement({
         }
         await persistTowerDropsInTxn(
           isar: isar,
+          clock: SystemClock.fixed(now),
+          random: dependencies.eventRandom,
           drops: drops,
           floor: floor,
           now: now,
@@ -320,7 +335,7 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
   if (combatSettlement.playerCharacterId != resolvedParticipantId) {
     return empty;
   }
-  final now = settlementAt ?? DateTime.now();
+  final now = settlementAt ?? dependencies.clock.now();
   if (!transactionOwned) {
     return ExpeditionTimeline.runAfterCatchUp(
       isar: isar,
@@ -436,6 +451,8 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
 
     resonanceUpgrades = await settlement.recordCommonEvents(
       isar: isar,
+      clock: SystemClock.fixed(now),
+      random: dependencies.eventRandom,
       characters: characters,
       equipmentsByCharacter: equipsByCh,
       resonanceUpgradedEquipmentIds: battleResult.resonanceUpgradedEquipmentIds,
@@ -487,6 +504,8 @@ Future<TowerCombatResolution> applyTowerCombatResolution({
 
 Future<void> persistTowerDropsInTxn({
   required Isar isar,
+  SystemClock clock = const SystemClock(),
+  math.Random? random,
   required DropResult drops,
   required TowerFloorDef? floor,
   required DateTime now,
@@ -515,7 +534,7 @@ Future<void> persistTowerDropsInTxn({
   }
 
   if (drops.equipments.isNotEmpty && floor != null) {
-    final events = GameEventService(isar);
+    final events = GameEventService(isar, clock: clock, random: random);
     final source = UiStrings.towerFloorLabel(floor.floorIndex);
     for (final drop in drops.equipments) {
       final def = GameRepository.instance.getEquipment(drop.defId);

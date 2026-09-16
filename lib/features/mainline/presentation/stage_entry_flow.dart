@@ -9,6 +9,7 @@ import '../../../data/defs/encounter_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/encounter_event_loader.dart';
 import '../../../data/isar_setup.dart';
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -1823,6 +1824,7 @@ MainlineSettlementDependencies _mainlineSettlementDependencies(
     );
   }
   return MainlineSettlementDependencies(
+    readClock: () => ref!.read(systemClockProvider),
     readNumbers: () => ref!.read(numbersConfigProvider),
     readDropService: () => ref!.read(dropServiceProvider),
     readRng: () => ref!.read(rngProvider),

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/attributes.dart';
@@ -121,7 +122,10 @@ class EncounterService {
   final AttributeEffectRules? attributeEffects;
 
   /// 获取或创建进度行。
-  Future<EncounterProgress> getOrCreate({required int saveDataId}) async {
+  Future<EncounterProgress> getOrCreate({
+    required int saveDataId,
+    SystemClock clock = const SystemClock(),
+  }) async {
     final existing = await isar.encounterProgress
         .filter()
         .saveDataIdEqualTo(saveDataId)
@@ -133,7 +137,7 @@ class EncounterService {
       ..triggeredEncounterIds = []
       ..schoolKillCounts = []
       ..unlockedSkillIds = []
-      ..createdAt = DateTime.now();
+      ..createdAt = clock.now();
     await isar.writeTxn(() => isar.encounterProgress.put(fresh));
     return fresh;
   }
