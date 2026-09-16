@@ -272,7 +272,8 @@ def main():
     parser.add_argument("--markdown", action="store_true")
     args = parser.parse_args()
     result = run(args.target)
-    print(markdown(result) if args.markdown else json.dumps(result, ensure_ascii=False, indent=2))
+    output = markdown(result) if args.markdown else json.dumps(result, ensure_ascii=False, indent=2)
+    print(output.rstrip())
 
 
 if __name__ == "__main__":

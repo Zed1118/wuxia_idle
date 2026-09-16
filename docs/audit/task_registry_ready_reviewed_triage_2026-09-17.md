@@ -221,3 +221,60 @@ python3 tools/audit/task_registry_triage.py --markdown
 
 本次执行 YAML 解析、Git 对象解析、逐项祖先/补丁核对及报告行数检查；没有运行 Flutter analyze/format/test，没有启动游戏或读取真实存档。数字均由本次脚本运行产生。
 
+## 附录：M 门 blocker 文本与实况对照
+
+本附录冻结为 `c307b3ffcb155af58d4efb9179e36453297b1360`。只核对源码、Git 祖先关系并重新汇总既有原始 JSON，未运行游戏或测试。外部日志属于已有采样，本次读取重算不等于重新执行。
+
+下表“登记簿”统一指 `docs/dispatch/phase0a_overhaul/task_registry.yaml`；`mapper` 指 `lib/features/battle/application/phase0a/phase0a_stage_content_mapper.dart`；`reducer` 指 `lib/features/battle/domain/phase0a/phase0a_combat_reducer.dart`。“未声明”表示对应任务没有 `blockers` 字段，不等于没有阻塞。顶层正式门仍由登记簿:6–12 声明为 10 门、仅 M1 关闭；不得依据工程证据晋升正式门。
+
+| 门 / 权威任务 | blocker 完整原文及位置 | 冻结链实况与证据 | 是否漂移 | 建议替换文案（只建议） |
+|---|---|---|---|---|
+| M0 / P2-M0-DECISION-TUNING-CLOSEOUT | `remaining_measurement_playtest_Windows_and_clean_integration_evidence`（登记簿:6227） | evidence:6223 仍是 `connected_verified_uncommitted_candidate`，但 `8bb82d2c4` 已是冻结链祖先（exit 0）。mapper:108 读 weaponMapping、:138 建 qiLedger、:163 接 attackTimelineConfig；reducer:676 构造 ActionTimeline、:988 消费 Qi ledger。`docs/dispatch/phase0a_overhaul/decision_registry.yaml:351` 的七心魔身份拍板仍 deferred。 | blocker 大方向仍成立；“未提交”接线 evidence 漂移。 | “时间轴与真气生产映射已进入统一候选；剩余测量与调优验证、七心魔逐身份拍板、同冻结版真人及 Windows 证据和正式集成签字待补。”接线证据改指 `8bb82d2c4`。 |
+| M1 / formal_milestone_gate.closed_milestones | 未声明；已关闭清单包含 `M1`（登记簿:11–12）。 | 与 `PROGRESS.md:6` 正式门口径一致；`29f04073` 为冻结链祖先（exit 0）。历史任务仍 ready_reviewed 是 B-1 状态治理问题。 | 未发现正式门文本漂移。 | 保持关闭；历史任务状态按 B-1 建议更新。 |
+| M2 / P2-M2-HUMAN-G2-ACCEPTANCE | ① `第一章新档连续推进与操作容错证据不足：本配置（gang_meng / mountain_wanderer / balanced_seed）01_01/01_02 风筝可通；01_03 黑风岭固定种子连续链 0/1，118 拍败；粗放/慢反应（每 3 拍决策）/站桩三变体在 01_01、01_02 全败；真人验证待补。` ② `real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff`（登记簿:6252–6253） | 任务单所指旧英文 blocker 在冻结文件中精确搜索 0 命中。真实首胜守卫在 `test/diagnostics/mainline_real_first_victory_navigation_test.dart:64,82,245,281,287`；`4ed04ae42`、`c4aa90f7e`、`5de42e21`、`e6161d566` 均为冻结链祖先（exit 0）。本次重读 chain 6 行、tolerance 12 行，详下方复算。 | blocker 已更新，不能再称仍为 09-05 原文；evidence:6247 `first_stage_not_won`、:6249 `0_of_36` 仍是旧采样。首条 blocker 尚未列第二开局和 E/F 子变体。 | “固定种子下刚猛/山野及灵巧/护送两开局前两关可通，黑风岭分别 118/189 拍败，04/05 未进入；操作容错变体详原始日志；同冻结版真人控制、可读性与流程签字待补。09-05 的 0/36 单列历史，不代表当前复测。” |
+| M3 / P2-M3-WEAPON-COMBAT-DEPTH-GATE | `perform_deferred_human_desktop_acceptance`（登记簿:6271） | `f3076cef` 已在链中；status:6262 是 engineering_integrated_human_deferred。evidence:6276 的 `production_action_timeline_consumers: 0` 与 mapper:163、reducer:635,676,1040 的生产消费冲突；接线提交 `8bb82d2c4` 已在链中。 | 真人 blocker 仍成立；零消费者 evidence 漂移。 | “五武器生产画像及时间轴/真气映射已在统一候选；真实玩家五武器手感、Boss 读招和防御反馈仍待同冻结版人工签字。”另更新消费者证据，不以 grep 代替行为验收。 |
+| M4 / P2-M4-ENGINEERING-AND-HUMAN-GATE | `unified_M4_audit_human_visual_audio_acceptance_and_Windows_profile`（登记簿:6350） | :6344–6346 仍是旧夹具记录；`a68933d`、`4e0caa62b`、`181ec076c` 均在冻结链中。本次重算外部生产矩阵：34 行、32 valid、17 baseline eligible、合格基线 17 PASS、tower_1 合格基线 0。`PROGRESS.md:14` 与外部生产矩阵 summary:33–40 仍列余格、具体 painter 归因、soak、真人/Windows。 | 正式 blocker 仍成立，工程进展文本陈旧。 | “生产矩阵已有 17/34 格合格基线且均过性能门；余 17 格（含 tower_1 全部基线）、环境/音频/焦点资格、具体 painter 归因、soak、真人视听及物理 Windows 待补；旧 24 敌夹具单列。” |
+| M5 / P2-M5-HUMAN-ACCEPTANCE-GATE | 未声明；`status: deferred_by_user`（登记簿:6357），依赖 P2-M5-ENGINEERING-INTEGRATION-AUDIT（:6363）。 | :6370–6371 仍明确真人/Windows deferred；集成 `e10cdcc528a14d8a35dc2d836ee45d714bf0ce30` 是冻结链祖先。未重新跑六模式行为，不将旧矩阵数字列作本次实测。 | 未发现正式等待文本失效。 | 如需补字段：“六种侧活动已有工程集成证据；同冻结版真人桌面交互、视听及 Windows 正式验收待补。” |
+| M6 / P2-M6-HUMAN-ACCEPTANCE-GATE | 未声明；`status: deferred_by_user`（登记簿:6378），依赖 P2-M6-ENGINEERING-INTEGRATION-GATE（:6384）。 | 工程候选 `a6a5ce1e9f67fc9711c009fdb22e887d6ba10527`（:5721）为冻结链祖先；:6387–6388 仍真人/Windows deferred。工程门历史 ready_reviewed 留 B-1 处理。 | 未发现正式等待文本失效。 | 如需补字段：“生产导航、交互与战报已有工程集成；同冻结版自然人跨模式体验、桌面语义及 Windows 验收待补。” |
+| M7 / P2-M7-CONTENT-MIGRATION-GATE | 未声明；`status: in_progress`（登记簿:8212）、`dependency_semantics: formal_close_only`，依赖 M2/M3/M4/M5/M6（:8237–8243）。 | 本次重数 `data/combat/manifest/stage_assignments.yaml`：105 条、105 migrated，仅证明配置登记。:8215–8216 目标包括塔全量与 legacy 零消费，:8223 要求后续塔层授权；`lib/features/tower/application/phase0a_tower_encounter_host.dart:370` 仍有 legacy mapper。 | 正式开放/依赖未发现漂移；链与 main 的工程进展需分列。 | 如需补字段：“主线配置登记已齐；后续塔层须另批授权并提供生产路径证据，legacy 接缝未完全退役；正式关闭仍依赖 M2–M6 人工/平台门。” |
+| M8 / P2-M8-RELEASE-QUALITY-GATE | 未声明；`status: planned`、`acceptance_result: not_started`，依赖 M7（登记簿:8310–8316）。 | M7 正式开放；`PROGRESS.md:13–14` 将副本迁移、真实三档及真人/Windows分列，仍有剩余塔/legacy。专项工程证据不等于正式 M8 启动/关闭。 | planned 未被证伪；not_started 应限定“正式门”，不能解读为没有相关专项工作。 | “正式 M8 未启动；M7 及同冻结版性能、长离线/迁移/经济/物理 Windows 发布质量证据未齐。专项工程证据仅作输入。” |
+| M9 / P2-M9-RELEASE-CLOSEOUT-GATE | 未声明；`status: planned`、`acceptance_result: not_started`，依赖 M0/M2/M3/M4/M5/M6/M7/M8（登记簿:8323–8336）。 | 顶层仅 M1 关闭；:8338 要求所有前驱门及人工签字。自动守卫、采样或 READY 标记不满足此条件。 | 未发现漂移。 | “待 M0、M2–M8 正式关闭后冻结 RC，并完成发布候选人工签字。” |
+
+### 附录复核命令与实测结果
+
+```bash
+# 命中数 0；rg stdout 为空，exit 1
+git show c307b3ffcb155af58d4efb9179e36453297b1360:docs/dispatch/phase0a_overhaul/task_registry.yaml | rg -c 'first_stage_and_blackwind_playability_requires_human_strategy_validation_or_new_approved_tuning'
+# 以下每个 SHA 实测 exit 0
+for sha in 29f04073 4ed04ae42 8bb82d2c4 c4aa90f7e 5de42e21 e6161d566 a68933d 4e0caa62b 181ec076c f3076cef e10cdcc5 a6a5ce1e9; do
+  git merge-base --is-ancestor "$sha" c307b3ffcb155af58d4efb9179e36453297b1360
+  printf '%s exit=%s\n' "$sha" "$?"
+done
+python3 - <<'PY'
+import collections, hashlib, json, pathlib, yaml
+r = yaml.safe_load(pathlib.Path('docs/dispatch/phase0a_overhaul/task_registry.yaml').read_text())
+print(r['formal_milestone_gate'])
+a = yaml.safe_load(pathlib.Path('data/combat/manifest/stage_assignments.yaml').read_text())['stage_assignments']
+print(len(a), collections.Counter(x['migration_state'] for x in a))
+b = pathlib.Path('/Users/a10506/Documents/Codex/2026-09-15/p2-onboarding-chain/batch2')
+for name in ['chain.jsonl', 'tolerance.jsonl']:
+    raw = (b / name).read_bytes()
+    rows = [json.loads(line) for line in raw.splitlines() if line.strip()]
+    print(name, len(rows), hashlib.sha256(raw).hexdigest())
+    for line, row in enumerate(rows, 1):
+        print(line, {k: row.get(k) for k in ['stage', 'policy', 'school', 'origin', 'outcome', 'ticks']})
+m = pathlib.Path('/Users/a10506/Documents/Codex/2026-09-16/p2-m4-production-matrix/matrix-summary.json')
+rows = json.loads(m.read_text())['rows']
+print('M4 rows/valid/eligible/eligible_PASS/tower1_eligible', len(rows),
+      sum(x['valid'] for x in rows), sum(x['baseline_eligible'] for x in rows),
+      sum(x['baseline_eligible'] and x['gate'] == 'PASS' for x in rows),
+      sum(x['content'] == 'tower_1' and x['baseline_eligible'] for x in rows))
+print('M4 sha256', hashlib.sha256(m.read_bytes()).hexdigest())
+PY
+```
+
+本次输出：主线 `105 / migrated:105`；chain 6 行，刚猛 243/202 拍胜、118 拍败，灵巧 224/83 拍胜、189 拍败；tolerance 12 行，原 A–D 两关各胜/败/败/败，E 两关 110/83 拍败，F 236 拍胜/89 拍败；M4 `34 / 32 / 17 / 17 / 0`。这不证明所有合法开局和普通玩家的体验。
+
+外部文件本次 SHA-256：chain `d6167d07915c6f054a7964698bd08856d6fbaf35a0a4023ba279edb35f6a0de3`；tolerance `b10f0375d11eddd19b5b8d66b82d2d2dc8065aea24d50a5ad5c9b1cbc0e47601`；M4 matrix `83828b89af8b4281c820990fe2d18272082e126e27afa8ee7f80e83dca5c2fbc`。若文件后来变化，按此哈希识别本次读数，不将后续结果冒充冻结样本。
+
+本附录只建议修正证据年代和 blocker 精度，不建议改变正式门状态。
