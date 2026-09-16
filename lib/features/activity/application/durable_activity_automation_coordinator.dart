@@ -11,7 +11,7 @@ import '../../combat_shared/application/combat_content_providers.dart';
 import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../expedition/application/expedition_timeline.dart';
 import '../../mainline/application/mainline_providers.dart';
-import '../../mainline/presentation/stage_entry_flow.dart'
+import '../../mainline/application/mainline_settlement.dart'
     show
         DurableActivityCombatSettlementDependencies,
         applyParticipantDefeatResolution,
@@ -122,22 +122,20 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
       : DurableActivityExecutionOutcome.defeat;
   if (executionOutcome == DurableActivityExecutionOutcome.victory) {
     await applyVictoryResolution(
-      ref: ref,
+      dependencies: settlementDependencies.asMainlineDependencies(),
       stage: stage,
       cycle: admission.run.cycleIndex,
       settlementSnapshot: settlement,
       expectedParticipantId: admission.snapshot.characterId,
       durableActivitySettlement: context,
-      durableActivityDependencies: settlementDependencies,
     );
   } else {
     await applyParticipantDefeatResolution(
-      ref: ref,
+      dependencies: settlementDependencies.asMainlineDependencies(),
       stage: stage,
       settlementSnapshot: settlement,
       expectedParticipantId: admission.snapshot.characterId,
       durableActivitySettlement: context,
-      durableActivityDependencies: settlementDependencies,
     );
   }
   if (ref != null) {

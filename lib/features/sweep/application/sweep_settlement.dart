@@ -2,16 +2,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/domain/enums.dart' show isTechniqueScrollDefId;
 import '../../../shared/utils/math_random.dart';
+import '../../../shared/utils/rng_provider.dart';
+import '../../festival/application/festival_service_providers.dart';
+import '../../jianghu/application/jianghu_providers.dart';
 import '../../combat_shared/application/combat_content_providers.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../cultivation/domain/skill_unlock_service.dart';
-import '../../cultivation/presentation/stage_skill_drop_hook.dart';
+import '../../cultivation/application/stage_skill_drop_hook.dart';
 import '../../mainline/application/mainline_progress_service.dart';
-import '../../mainline/presentation/stage_entry_flow.dart'
-    show applyVictoryResolution;
+import '../../mainline/application/mainline_settlement.dart'
+    show MainlineSettlementDependencies, applyVictoryResolution;
 import '../../mainline/application/mainline_providers.dart';
 import '../../tower/application/tower_progress_service.dart';
 import '../../../data/defs/tower_floor_def.dart';
@@ -106,7 +109,15 @@ Future<SweepBattleOutcome?> _settleMainlineReplayVictory({
 }) async {
   // 周目平衡 2026-06-26:扫荡透传 cycle → 二周目起提高稀有彩头概率 + 材料加成。
   final outcome = await applyVictoryResolution(
-    ref: ref,
+    dependencies: MainlineSettlementDependencies(
+      readNumbers: () => ref.read(numbersConfigProvider),
+      readDropService: () => ref.read(dropServiceProvider),
+      readRng: () => ref.read(rngProvider),
+      readMathRandom: () => ref.read(mathRandomProvider),
+      readTutorialService: () => ref.read(tutorialServiceProvider),
+      readReputationService: () => ref.read(reputationServiceProvider),
+      readFestivalToday: () => ref.read(todayFestivalProvider),
+    ),
     stage: stage,
     cycle: cycle,
     settlementSnapshot: settlementSnapshot,

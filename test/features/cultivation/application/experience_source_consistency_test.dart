@@ -41,7 +41,7 @@ void main() {
 
   test('production wiring points cover all experience scenarios', () async {
     const combatPaths = {
-      'mainline': 'lib/features/mainline/presentation/stage_entry_flow.dart',
+      'mainline': 'lib/features/mainline/application/mainline_settlement.dart',
       'tower': 'lib/features/tower/presentation/tower_entry_flow.dart',
     };
     for (final entry in combatPaths.entries) {
@@ -113,7 +113,7 @@ void main() {
     'mainline replay and tower first-clear policies are real call arguments',
     () async {
       const mainlinePath =
-          'lib/features/mainline/presentation/stage_entry_flow.dart';
+          'lib/features/mainline/application/mainline_settlement.dart';
       const towerPath = 'lib/features/tower/presentation/tower_entry_flow.dart';
       final mainline = DartSourceContract.parse(
         await File(mainlinePath).readAsString(),
