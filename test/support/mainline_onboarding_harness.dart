@@ -38,7 +38,15 @@ const onboardingFounderSeed = 20260820;
 const onboardingCombatSeed = 20260906;
 const onboardingTickLimit = 2400;
 
-enum OnboardingPolicy { baseline, coarse, slow, stationary }
+enum OnboardingPolicy {
+  baseline,
+  coarse,
+  slow,
+  stationary,
+  // E deliberately reruns C's existing kite decisions every third tick.
+  kiteSlow,
+  kiteNoDodge,
+}
 
 Future<void> onboardingWaitFor(
   WidgetTester tester,
@@ -357,6 +365,11 @@ Future<Map<String, Object?>> driveOnboardingBattle(
   var nextClearAttempt = 0;
   var nextSkillAttempt = 5;
   var decisions = 0;
+  var spaceKeyEvents = 0;
+  final decisionInterval =
+      policy == OnboardingPolicy.slow || policy == OnboardingPolicy.kiteSlow
+      ? 3
+      : 1;
   try {
     for (
       var tick = 0;
@@ -364,7 +377,7 @@ Future<Map<String, Object?>> driveOnboardingBattle(
           controller.outcome == Phase0aBattleOutcome.ongoing;
       tick++
     ) {
-      if (policy != OnboardingPolicy.slow || tick % 3 == 0) {
+      if (tick % decisionInterval == 0) {
         decisions++;
         final p = controller.state.player.position;
         final enemies =
@@ -434,8 +447,11 @@ Future<Map<String, Object?>> driveOnboardingBattle(
               nextSkillAttempt = tick + 10;
             }
           }
-          if (close && controller.state.player.defenseCooldownRemaining == 0) {
+          if (policy != OnboardingPolicy.kiteNoDodge &&
+              close &&
+              controller.state.player.defenseCooldownRemaining == 0) {
             await tester.sendKeyEvent(LogicalKeyboardKey.space);
+            spaceKeyEvents++;
           }
         }
       }
@@ -515,6 +531,10 @@ Future<Map<String, Object?>> driveOnboardingBattle(
     'aliveCountDefinition':
         'active living roster; visible count additionally uses production camera Offstage after each rendered pump',
     'decisions': decisions,
+    'decisionIntervalTicks': decisionInterval,
+    'spaceKeyEvents': spaceKeyEvents,
+    if (policy == OnboardingPolicy.kiteSlow)
+      'equivalentExistingPolicy': OnboardingPolicy.slow.name,
     'firstEffects': controller.events
         .whereType<Phase0aActionTimelineChanged>()
         .where(
@@ -557,14 +577,21 @@ Future<List<Map<String, Object?>>> runOnboardingTolerance(
   WidgetTester tester, {
   required File checkpoint,
   required String stageId,
+  List<OnboardingPolicy> policies = const [
+    OnboardingPolicy.baseline,
+    OnboardingPolicy.coarse,
+    OnboardingPolicy.slow,
+    OnboardingPolicy.stationary,
+  ],
 }) async {
+  expect(policies, isNotEmpty);
   final sealedBytes = (await tester.runAsync(checkpoint.readAsBytes))!;
   final records = <Map<String, Object?>>[];
   Map<String, Object?>? expectedProgress;
   Map<String, Object?>? expectedSnapshot;
   await tester.binding.setSurfaceSize(const Size(1280, 720));
   try {
-    for (final policy in OnboardingPolicy.values) {
+    for (final policy in policies) {
       late Directory directory;
       await tester.runAsync(() async {
         await initializeTestIsarCore();
@@ -606,9 +633,11 @@ Future<List<Map<String, Object?>>> runOnboardingTolerance(
           'checkpointByteLength': sealedBytes.length,
           'checkpointBytesEqual': true,
           'entryProgress': before,
-          'sameEntryAsA': true,
+          'referencePolicy': policies.first.name,
+          'sameEntryAsReference': true,
+          if (policies.first == OnboardingPolicy.baseline) 'sameEntryAsA': true,
           'rngScope':
-              'fresh identical seed for every policy, including A; original continuous-run RNG cursor is not restored',
+              'fresh identical seed for every selected policy; original continuous-run RNG cursor is not restored',
         });
         expect(row['completed'], isTrue);
         expect(row['ticks']! as int, greaterThan(0));
@@ -637,7 +666,7 @@ Future<List<Map<String, Object?>>> runOnboardingTolerance(
         await tester.runAsync(() => directory.delete(recursive: true));
       }
     }
-    expect(records, hasLength(OnboardingPolicy.values.length));
+    expect(records, hasLength(policies.length));
     expect(
       listEquals((await tester.runAsync(checkpoint.readAsBytes))!, sealedBytes),
       isTrue,
