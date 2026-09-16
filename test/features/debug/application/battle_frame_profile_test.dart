@@ -56,6 +56,96 @@ void main() {
     expect(BattleFrameProfileProbe.diagnosticsEnabled, isFalse);
   });
 
+  test('character legality is an explicit nullable declaration', () {
+    const args = <String>[
+      '--battle-profile-scope=production',
+      '--battle-profile-content-id=stage_01_01',
+      '--battle-profile-run-id=legality',
+      '--battle-profile-output=out',
+      '--battle-profile-sample-seconds=60',
+      '--battle-profile-viewport=1280x720',
+    ];
+    expect(BattleFrameProfileRunConfig.tryParse(args)!.legalCharacter, isNull);
+    for (final value in [true, false]) {
+      expect(
+        BattleFrameProfileRunConfig.tryParse([
+          ...args,
+          '--battle-profile-legal-character=$value',
+        ])!.legalCharacter,
+        value,
+      );
+    }
+    for (final value in ['', 'TRUE', '1', 'yes', 'null']) {
+      expect(
+        () => BattleFrameProfileRunConfig.tryParse([
+          ...args,
+          '--battle-profile-legal-character=$value',
+        ]),
+        throwsFormatException,
+      );
+    }
+  });
+
+  test(
+    'keyboard capture requires explicit production and engineering consent',
+    () {
+      const args = <String>[
+        '--battle-profile-run-id=keyboard',
+        '--battle-profile-output=out',
+        '--battle-profile-sample-seconds=60',
+        '--battle-profile-viewport=1280x720',
+      ];
+      const production = <String>[
+        ...args,
+        '--battle-profile-scope=production',
+        '--battle-profile-content-id=stage_01_01',
+      ];
+      expect(
+        BattleFrameProfileRunConfig.tryParse(production)!.keyboardPolicy,
+        isNull,
+      );
+      expect(
+        BattleFrameProfileRunConfig.tryParse([
+          ...production,
+          '--battle-profile-keyboard-policy=baseline',
+        ])!.keyboardPolicy,
+        'baseline',
+      );
+      expect(
+        BattleFrameProfileRunConfig.tryParse([
+          ...production,
+          '--battle-profile-legal-character=false',
+          '--battle-profile-keyboard-policy=survive',
+        ])!.keyboardPolicy,
+        'survive',
+      );
+      for (final extra in [
+        <String>['--battle-profile-keyboard-policy=survive'],
+        <String>[
+          '--battle-profile-keyboard-policy=survive',
+          '--battle-profile-legal-character=true',
+        ],
+        <String>['--battle-profile-keyboard-policy=unknown'],
+        <String>['--battle-profile-keyboard-policy='],
+      ]) {
+        expect(
+          () => BattleFrameProfileRunConfig.tryParse([...production, ...extra]),
+          throwsFormatException,
+        );
+      }
+      for (final policy in ['baseline', 'survive']) {
+        expect(
+          () => BattleFrameProfileRunConfig.tryParse([
+            ...args,
+            '--battle-profile-legal-character=false',
+            '--battle-profile-keyboard-policy=$policy',
+          ]),
+          throwsFormatException,
+        );
+      }
+    },
+  );
+
   test('optional frame phases preserve scheduling gaps and frame identity', () {
     final timing = FrameTiming(
       vsyncStart: 1000,

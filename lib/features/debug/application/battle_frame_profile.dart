@@ -28,6 +28,8 @@ final class BattleFrameProfileRunConfig {
     this.diagnostics = false,
     this.scope = 'visual',
     this.contentId,
+    this.legalCharacter,
+    this.keyboardPolicy,
   });
 
   final String runId;
@@ -42,6 +44,8 @@ final class BattleFrameProfileRunConfig {
   final bool diagnostics;
   final String scope;
   final String? contentId;
+  final bool? legalCharacter;
+  final String? keyboardPolicy;
 
   Duration get total => warmup + sample + cooldown;
 
@@ -97,11 +101,27 @@ final class BattleFrameProfileRunConfig {
     }
     final scope = values['battle-profile-scope'] ?? 'visual';
     final contentId = values['battle-profile-content-id'];
+    final legalCharacter = values['battle-profile-legal-character'];
+    if (legalCharacter != null && !{'true', 'false'}.contains(legalCharacter)) {
+      throw const FormatException(
+        'Battle profile legal-character must be true or false when declared.',
+      );
+    }
     if (!{'visual', 'production'}.contains(scope) ||
         (scope == 'production' && (contentId == null || contentId.isEmpty)) ||
         (scope != 'production' && contentId != null)) {
       throw const FormatException(
         'Production profiling requires an explicit content-id and scope.',
+      );
+    }
+    final keyboardPolicy = values['battle-profile-keyboard-policy'];
+    if (keyboardPolicy != null &&
+        (scope != 'production' ||
+            !{'baseline', 'survive'}.contains(keyboardPolicy) ||
+            (keyboardPolicy == 'survive' && legalCharacter != 'false'))) {
+      throw const FormatException(
+        'Keyboard profiling requires production scope and baseline or survive; '
+        'survive requires legal-character=false.',
       );
     }
     return BattleFrameProfileRunConfig(
@@ -118,6 +138,8 @@ final class BattleFrameProfileRunConfig {
       diagnostics: values['battle-profile-diagnostics'] == 'true',
       scope: scope,
       contentId: contentId,
+      legalCharacter: legalCharacter == null ? null : legalCharacter == 'true',
+      keyboardPolicy: keyboardPolicy,
     );
   }
 }
