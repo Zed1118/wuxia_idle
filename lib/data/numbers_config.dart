@@ -1759,8 +1759,7 @@ class HitTierConfig {
 /// 散落的 15000/20000 字面量。玩家 build（founder buff / 师承遗物 / 心法相生
 /// 乘法叠加）可能把派生值推过红线,各 clamp 点统一读这里。
 ///
-/// fixture（test 简化 numbers yaml）不带 `red_lines` 段时回落 §5.4 默认值,
-/// 沿 [InnerDemonMirrorCaps.fromYaml] 防御 fallback 体例。
+/// 红线字段必须由配置显式声明，缺失时携带完整路径立即拒绝加载。
 class RedLinesConfig {
   final int playerHpMax;
   final int internalForceMax;
@@ -1788,18 +1787,32 @@ class RedLinesConfig {
 
   factory RedLinesConfig.fromYaml(Map<String, dynamic> y) {
     return RedLinesConfig(
-      playerHpMax: (y['player_hp_max'] as num?)?.toInt() ?? 20000,
-      internalForceMax: (y['internal_force_max'] as num?)?.toInt() ?? 15000,
-      bossHpMax: (y['boss_hp_max'] as num?)?.toInt() ?? 60000,
+      playerHpMax:
+          (y['player_hp_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.player_hp_max'),
+      internalForceMax:
+          (y['internal_force_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.internal_force_max'),
+      bossHpMax:
+          (y['boss_hp_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.boss_hp_max'),
       equipmentBaseAttackMax:
-          (y['equipment_base_attack_max'] as num?)?.toInt() ?? 2000,
+          (y['equipment_base_attack_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.equipment_base_attack_max'),
       skillPowerMultiplierMax:
-          (y['skill_power_multiplier_max'] as num?)?.toInt() ?? 8000,
+          (y['skill_power_multiplier_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.skill_power_multiplier_max'),
       damageReadabilityMax:
-          (y['damage_readability_max'] as num?)?.toInt() ?? 1000000,
+          (y['damage_readability_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.damage_readability_max'),
       normalDamageTypicalTarget:
-          (y['normal_damage_typical_target'] as num?)?.toInt() ?? 8000,
-      combinedRateCap: (y['combined_rate_cap'] as num?)?.toDouble() ?? 0.95,
+          (y['normal_damage_typical_target'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'combat.red_lines.normal_damage_typical_target',
+          ),
+      combinedRateCap:
+          (y['combined_rate_cap'] as num?)?.toDouble() ??
+          _missingRequiredValue('combat.red_lines.combined_rate_cap'),
     );
   }
 }
@@ -3860,3 +3873,7 @@ class LineageOnboardingConfig {
     );
   }
 }
+
+/// 配置缺项与武器映射加载器保持相同异常类型，不提供隐式数值。
+Never _missingRequiredValue(String path) =>
+    throw ArgumentError.value(null, path, '必须显式配置，不能缺失或为 null');
