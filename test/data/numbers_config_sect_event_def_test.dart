@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 
-/// T19b 技术债清账:SectEventDef 强类型 fromYaml 解析 + 缺字段 default 兜底测族。
+/// 门派事件强类型解析：整段缺省保持兼容，显式段缺数值字段立即拒绝。
 void main() {
   group('SectEventDef.fromYaml 全字段解析', () {
     final yaml = <String, dynamic>{
@@ -61,13 +61,35 @@ void main() {
 
     test('R2.5 缺 reputation 子段 → 子段 default(winDelta=10)', () {
       final def = SectEventDef.fromYaml(<String, dynamic>{
-        'tournament': {'cooldown_days': 7},
+        'tournament': {
+          'trigger_probability': 0.30,
+          'cooldown_days': 7,
+          'trigger_realm_min': 'yiLiu',
+          'expire_days': 7,
+        },
+        'active_events_max': 3,
       });
       expect(def.tournament.cooldownDays, 7);
       expect(
         def.reputation.winDelta,
         10,
         reason: 'reputation 段缺 → 走 SectReputationDef.empty 默认',
+      );
+    });
+
+    test('显式 tournament 缺 trigger_probability 明确拒绝加载', () {
+      expect(
+        () => SectEventDef.fromYaml(<String, dynamic>{
+          'tournament': {'cooldown_days': 7},
+          'active_events_max': 3,
+        }),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.toString(),
+            '缺失字段路径',
+            contains('sect_event.tournament.trigger_probability'),
+          ),
+        ),
       );
     });
   });

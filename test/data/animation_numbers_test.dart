@@ -23,6 +23,7 @@ void main() {
 
   test('fromYaml 解析 projectile_ms/battle_effect_ms/hit_flash_ms', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -43,8 +44,9 @@ void main() {
     expect(n.hitFlashMs, 120);
   });
 
-  test('fromYaml 缺 projectile_ms/battle_effect_ms/hit_flash_ms 走默认', () {
+  test('生产完整配置保留 projectile_ms/battle_effect_ms/hit_flash_ms 数值', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -75,6 +77,7 @@ void main() {
 
   test('fromYaml 解析 key_moment_hold_ms', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -91,8 +94,9 @@ void main() {
     expect(n.keyMomentHoldMs, 555);
   });
 
-  test('fromYaml 缺 key_moment_hold_ms 走默认 400', () {
+  test('生产完整配置保留 key_moment_hold_ms=400', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -119,6 +123,7 @@ void main() {
 
   test('fromYaml 解析 sweep_inter_battle_gap_ms', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -141,8 +146,12 @@ void main() {
     expect(n.victoryHandoffDelayMs, 777);
   });
 
-  test('fromYaml 缺可选动画参数走默认值', () {
+  test('完整显式配置保留原默认扫荡与可读动画参数的映射断言', () {
     final n = AnimationNumbers.fromYaml(<String, dynamic>{
+      ...loadTestNumbersSection(['animation']),
+      // 保留旧默认值断言；这些测试值与当前生产节奏的数值相互独立。
+      'readable_action_interval_ms': 1800,
+      'readable_victory_min_ms': 10000,
       'attack_rush_ms': 1,
       'attack_hold_ms': 1,
       'attack_retreat_ms': 1,
@@ -171,6 +180,7 @@ void main() {
 
     test('fromYaml 解析三 key', () {
       final n = AnimationNumbers.fromYaml(<String, dynamic>{
+        ...loadTestNumbersSection(['animation']),
         'attack_rush_ms': 1,
         'attack_hold_ms': 1,
         'attack_retreat_ms': 1,
@@ -191,8 +201,9 @@ void main() {
       expect(n.firstClearBossChargeHoldMs, 333);
     });
 
-    test('fromYaml 缺三 key 走默认', () {
+    test('生产完整配置保留首通展示三时长', () {
       final n = AnimationNumbers.fromYaml(<String, dynamic>{
+        ...loadTestNumbersSection(['animation']),
         'attack_rush_ms': 1,
         'attack_hold_ms': 1,
         'attack_retreat_ms': 1,
@@ -210,6 +221,34 @@ void main() {
       expect(n.firstClearBossChargeHoldMs, 700);
     });
   });
+
+  for (final key in [
+    'projectile_ms',
+    'battle_effect_ms',
+    'hit_flash_ms',
+    'key_moment_hold_ms',
+    'sweep_inter_battle_gap_ms',
+    'readable_action_interval_ms',
+    'readable_victory_min_ms',
+    'victory_handoff_delay_ms',
+    'first_clear_opening_hold_ms',
+    'first_clear_first_skill_hold_ms',
+    'first_clear_boss_charge_hold_ms',
+  ]) {
+    test('显式动画配置缺 $key 明确拒绝加载', () {
+      final yaml = loadTestNumbersSection(['animation'])..remove(key);
+      expect(
+        () => AnimationNumbers.fromYaml(yaml),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.toString(),
+            '缺失字段路径',
+            contains('animation.$key'),
+          ),
+        ),
+      );
+    });
+  }
 
   // 飘字随速度缩放:防快档(rapid/快进)飘字时长 > 拍间隔致跨拍重叠。
   // 慢档(relaxed/normal)飘字 1000 ≤ 拍长,手感保持不变。

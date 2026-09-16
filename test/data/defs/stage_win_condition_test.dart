@@ -58,6 +58,20 @@ void main() {
       expect(s.winCondition, isNull);
     });
 
+    test('缺 isBossStage 明确拒绝加载且标明关卡字段', () {
+      final yaml = baseStageYaml()..remove('isBossStage');
+      expect(
+        () => StageDef.fromYaml(yaml),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.toString(),
+            '缺失字段路径',
+            contains('isBossStage'),
+          ),
+        ),
+      );
+    });
+
     test('配 surviveTicks → 解析进 StageDef', () {
       final y = baseStageYaml()
         ..['winCondition'] = {'type': 'surviveTicks', 'ticks': 40};

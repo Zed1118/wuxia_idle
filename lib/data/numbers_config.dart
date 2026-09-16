@@ -498,7 +498,9 @@ class NumbersConfig {
                       as Map<String, dynamic>?)?['lifetime_cap_per_character']
                   as num?)
               ?.toInt() ??
-          5,
+          _missingRequiredValue(
+            'character.adventure_attribute_bonus.lifetime_cap_per_character',
+          ),
       rarityTiers: _parseRarityTiers(
         (y['character'] as Map<String, dynamic>?)?['rarity_distribution']
             as List?,
@@ -508,7 +510,7 @@ class NumbersConfig {
                       as Map<String, dynamic>?)?['ultimate_power_threshold']
                   as num?)
               ?.toInt() ??
-          5000,
+          _missingRequiredValue('skill_loadout.ultimate_power_threshold'),
       cycleEvolution: CycleEvolutionConfig.fromYaml(
         y['cycle_evolution'] as Map<String, dynamic>?,
       ),
@@ -626,8 +628,16 @@ class NumbersConfig {
           maxBattleCount: ((s['battle_count_range'] as List)[1] as num?)
               ?.toInt(),
           bonusMultiplier: (s['bonus_multiplier'] as num).toDouble(),
-          unlocksJointSkill: (s['unlocks_joint_skill'] as bool?) ?? false,
-          hasSwordSongEffect: (s['has_sword_song_effect'] as bool?) ?? false,
+          unlocksJointSkill:
+              (s['unlocks_joint_skill'] as bool?) ??
+              _missingRequiredValue(
+                'equipment.resonance.stages[].unlocks_joint_skill',
+              ),
+          hasSwordSongEffect:
+              (s['has_sword_song_effect'] as bool?) ??
+              _missingRequiredValue(
+                'equipment.resonance.stages[].has_sword_song_effect',
+              ),
         ),
     ];
   }
@@ -696,7 +706,11 @@ class FounderAncestorBuff {
 
   factory FounderAncestorBuff.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return disabled;
-    final enabled = (y['enabled_when_alive'] as bool?) ?? false;
+    final enabled =
+        (y['enabled_when_alive'] as bool?) ??
+        _missingRequiredValue(
+          'inheritance.founder_ancestor_buff.enabled_when_alive',
+        );
     final swb = y['sect_wide_buff'] as Map<String, dynamic>?;
     if (swb == null) {
       return FounderAncestorBuff(
@@ -710,13 +724,35 @@ class FounderAncestorBuff {
     }
     return FounderAncestorBuff(
       enabledWhenAlive: enabled,
-      internalForceMaxPct: ((swb['internal_force_max_pct'] as num?) ?? 0)
-          .toDouble(),
-      maxHpPct: ((swb['max_hp_pct'] as num?) ?? 0).toDouble(),
-      critRateBonus: ((swb['crit_rate_bonus'] as num?) ?? 0).toDouble(),
-      cultivationProgressPct: ((swb['cultivation_progress_pct'] as num?) ?? 0)
-          .toDouble(),
-      applyToDisciplesOnly: (swb['apply_to_disciples_only'] as bool?) ?? false,
+      internalForceMaxPct:
+          ((swb['internal_force_max_pct'] as num?) ??
+                  _missingRequiredValue(
+                    'inheritance.founder_ancestor_buff.sect_wide_buff.internal_force_max_pct',
+                  ))
+              .toDouble(),
+      maxHpPct:
+          ((swb['max_hp_pct'] as num?) ??
+                  _missingRequiredValue(
+                    'inheritance.founder_ancestor_buff.sect_wide_buff.max_hp_pct',
+                  ))
+              .toDouble(),
+      critRateBonus:
+          ((swb['crit_rate_bonus'] as num?) ??
+                  _missingRequiredValue(
+                    'inheritance.founder_ancestor_buff.sect_wide_buff.crit_rate_bonus',
+                  ))
+              .toDouble(),
+      cultivationProgressPct:
+          ((swb['cultivation_progress_pct'] as num?) ??
+                  _missingRequiredValue(
+                    'inheritance.founder_ancestor_buff.sect_wide_buff.cultivation_progress_pct',
+                  ))
+              .toDouble(),
+      applyToDisciplesOnly:
+          (swb['apply_to_disciples_only'] as bool?) ??
+          _missingRequiredValue(
+            'inheritance.founder_ancestor_buff.sect_wide_buff.apply_to_disciples_only',
+          ),
     );
   }
 
@@ -772,14 +808,24 @@ class HeritageItems {
     if (y.isEmpty) return defaults;
     return HeritageItems(
       piecesPerGenerationMin:
-          (y['pieces_per_generation_min'] as num?)?.toInt() ?? 1,
+          (y['pieces_per_generation_min'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'inheritance.heritage_items.pieces_per_generation_min',
+          ),
       piecesPerGenerationMax:
-          (y['pieces_per_generation_max'] as num?)?.toInt() ?? 2,
+          (y['pieces_per_generation_max'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'inheritance.heritage_items.pieces_per_generation_max',
+          ),
       transferTrigger:
           (y['transfer_trigger'] as String?) ?? 'ascend_to_wusheng',
       multiDiscipleAllocation:
           (y['multi_disciple_allocation'] as String?) ?? 'player_pick',
-      stackAcrossGenerations: (y['stack_across_generations'] as bool?) ?? false,
+      stackAcrossGenerations:
+          (y['stack_across_generations'] as bool?) ??
+          _missingRequiredValue(
+            'inheritance.heritage_items.stack_across_generations',
+          ),
       conflictSlotResolution:
           (y['conflict_slot_resolution'] as String?) ?? 'auto_swap',
     );
@@ -887,7 +933,9 @@ class EnhancementConfig {
         xinxueJiejing['guaranteed_success_costs'] as List,
       ),
       crystalGainPerFailure: (xinxueJiejing['gain_per_failure'] as num).toInt(),
-      neverDegrade: enhancement['never_degrade'] as bool? ?? true,
+      neverDegrade:
+          enhancement['never_degrade'] as bool? ??
+          _missingRequiredValue('equipment.enhancement.never_degrade'),
     );
   }
 
@@ -1097,7 +1145,9 @@ class ForgingSlotConfig {
     return ForgingSlotConfig(
       slotIndex: (y['slot_index'] as num).toInt(),
       unlockAtEnhanceLevel: (y['unlock_at_enhance_level'] as num).toInt(),
-      fucaiCost: (y['fucai_cost'] as num?)?.toInt() ?? 0,
+      fucaiCost:
+          (y['fucai_cost'] as num?)?.toInt() ??
+          _missingRequiredValue('equipment.forging.slots[].fucai_cost'),
       availableTypes: available,
       bonusValue: bonus,
       excludePreviousSlotType: y['constraint'] != null,
@@ -1478,20 +1528,45 @@ class QiConfig {
 
   factory QiConfig.fromYaml(Map<String, dynamic> y) {
     final config = QiConfig(
-      baseMax: (y['base_max'] as num?)?.toInt() ?? 100,
-      openingQi: (y['opening_qi'] as num?)?.toInt() ?? 40,
-      enemyOpeningQi: (y['enemy_opening_qi'] as num?)?.toInt() ?? 20,
-      bossOpeningBonus: (y['boss_opening_bonus'] as num?)?.toInt() ?? 20,
+      baseMax:
+          (y['base_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.base_max'),
+      openingQi:
+          (y['opening_qi'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.opening_qi'),
+      enemyOpeningQi:
+          (y['enemy_opening_qi'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.enemy_opening_qi'),
+      bossOpeningBonus:
+          (y['boss_opening_bonus'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.boss_opening_bonus'),
       towerBossOpeningBonus:
-          (y['tower_boss_opening_bonus'] as num?)?.toInt() ?? 40,
-      openingCap: (y['opening_cap'] as num?)?.toInt() ?? 80,
-      minMax: (y['min_max'] as num?)?.toInt() ?? 80,
-      maxCap: (y['max_cap'] as num?)?.toInt() ?? 140,
-      schoolBonus: (y['school_bonus'] as num?)?.toInt() ?? 5,
-      chainRecoveryPct: (y['chain_recovery_pct'] as num?)?.toDouble() ?? 0.25,
-      gainMultiplierCap: (y['gain_multiplier_cap'] as num?)?.toDouble() ?? 1.5,
-      costReductionCap: (y['cost_reduction_cap'] as num?)?.toDouble() ?? 0.2,
-      deltaAbsCap: (y['delta_abs_cap'] as num?)?.toInt() ?? 100,
+          (y['tower_boss_opening_bonus'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.tower_boss_opening_bonus'),
+      openingCap:
+          (y['opening_cap'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.opening_cap'),
+      minMax:
+          (y['min_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.min_max'),
+      maxCap:
+          (y['max_cap'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.max_cap'),
+      schoolBonus:
+          (y['school_bonus'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.school_bonus'),
+      chainRecoveryPct:
+          (y['chain_recovery_pct'] as num?)?.toDouble() ??
+          _missingRequiredValue('combat.qi.chain_recovery_pct'),
+      gainMultiplierCap:
+          (y['gain_multiplier_cap'] as num?)?.toDouble() ??
+          _missingRequiredValue('combat.qi.gain_multiplier_cap'),
+      costReductionCap:
+          (y['cost_reduction_cap'] as num?)?.toDouble() ??
+          _missingRequiredValue('combat.qi.cost_reduction_cap'),
+      deltaAbsCap:
+          (y['delta_abs_cap'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.qi.delta_abs_cap'),
     );
     if (config.minMax <= 0 ||
         config.baseMax < config.minMax ||
@@ -1536,15 +1611,39 @@ class InnerBreathDisorderConfig {
 
   factory InnerBreathDisorderConfig.fromYaml(Map<String, dynamic> y) {
     final config = InnerBreathDisorderConfig(
-      maxHours: (y['max_hours'] as num?)?.toDouble() ?? 12,
+      maxHours:
+          (y['max_hours'] as num?)?.toDouble() ??
+          _missingRequiredValue('conditions.inner_breath_disorder.max_hours'),
       maxInnerForcePenaltyPct:
-          (y['max_inner_force_penalty_pct'] as num?)?.toDouble() ?? 0.2,
-      maxOpeningQiPenalty: (y['max_opening_qi_penalty'] as num?)?.toInt() ?? 20,
+          (y['max_inner_force_penalty_pct'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.max_inner_force_penalty_pct',
+          ),
+      maxOpeningQiPenalty:
+          (y['max_opening_qi_penalty'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.max_opening_qi_penalty',
+          ),
       battleRecoveryHours:
-          (y['battle_recovery_hours'] as num?)?.toDouble() ?? 1,
-      dispelHours: (y['dispel_hours'] as num?)?.toDouble() ?? 6,
-      bossDefeatHours: (y['boss_defeat_hours'] as num?)?.toDouble() ?? 8,
-      innerDemonHours: (y['inner_demon_hours'] as num?)?.toDouble() ?? 12,
+          (y['battle_recovery_hours'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.battle_recovery_hours',
+          ),
+      dispelHours:
+          (y['dispel_hours'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.dispel_hours',
+          ),
+      bossDefeatHours:
+          (y['boss_defeat_hours'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.boss_defeat_hours',
+          ),
+      innerDemonHours:
+          (y['inner_demon_hours'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'conditions.inner_breath_disorder.inner_demon_hours',
+          ),
     );
     if (config.maxHours <= 0 ||
         config.maxInnerForcePenaltyPct < 0 ||
@@ -1585,14 +1684,28 @@ class ReadableFirstClearConfig {
 
   factory ReadableFirstClearConfig.fromYaml(Map? y) {
     if (y == null) return const ReadableFirstClearConfig();
-    final normalHp = (y['enemy_hp_multiplier'] as num?)?.toDouble() ?? 1.0;
+    final normalHp =
+        (y['enemy_hp_multiplier'] as num?)?.toDouble() ??
+        _missingRequiredValue(
+          'combat.readable_first_clear.enemy_hp_multiplier',
+        );
     final bossHp =
         (y['boss_enemy_hp_multiplier'] as num?)?.toDouble() ?? normalHp;
-    final attack = (y['enemy_attack_multiplier'] as num?)?.toDouble() ?? 1.0;
+    final attack =
+        (y['enemy_attack_multiplier'] as num?)?.toDouble() ??
+        _missingRequiredValue(
+          'combat.readable_first_clear.enemy_attack_multiplier',
+        );
     final openingCooldown =
-        (y['opening_auto_skill_cooldown_turns'] as num?)?.toInt() ?? 0;
+        (y['opening_auto_skill_cooldown_turns'] as num?)?.toInt() ??
+        _missingRequiredValue(
+          'combat.readable_first_clear.opening_auto_skill_cooldown_turns',
+        );
     final autoSkillPower =
-        (y['auto_skill_power_multiplier'] as num?)?.toDouble() ?? 1.0;
+        (y['auto_skill_power_multiplier'] as num?)?.toDouble() ??
+        _missingRequiredValue(
+          'combat.readable_first_clear.auto_skill_power_multiplier',
+        );
     if (normalHp <= 0 || bossHp <= 0 || attack <= 0) {
       throw StateError('combat.readable_first_clear 倍率必须 > 0');
     }
@@ -1614,8 +1727,7 @@ class ReadableFirstClearConfig {
 
 /// P0 破招:Boss 招牌技蓄力/被破招踉跄配置(numbers.yaml `combat.boss_charge`)。
 ///
-/// fixture（test 简化 numbers yaml）不带 `boss_charge` 段时回落默认值,
-/// 沿 [RedLinesConfig.fromYaml] 防御 fallback 体例。
+/// 与红线配置一致，缺少必需字段时立即抛出带路径的异常。
 class BossChargeConfig {
   final int defaultChargeTicks;
   final int defaultStaggerTicks;
@@ -1632,10 +1744,18 @@ class BossChargeConfig {
     this.interruptPowerCap = 0.5,
   });
   factory BossChargeConfig.fromYaml(Map y) => BossChargeConfig(
-    defaultChargeTicks: (y['default_charge_ticks'] as num?)?.toInt() ?? 3,
-    defaultStaggerTicks: (y['default_stagger_ticks'] as num?)?.toInt() ?? 2,
-    staggerDefenseDown: (y['stagger_defense_down'] as num?)?.toDouble() ?? 0.3,
-    interruptPowerCap: (y['interrupt_power_cap'] as num?)?.toDouble() ?? 0.5,
+    defaultChargeTicks:
+        (y['default_charge_ticks'] as num?)?.toInt() ??
+        _missingRequiredValue('combat.boss_charge.default_charge_ticks'),
+    defaultStaggerTicks:
+        (y['default_stagger_ticks'] as num?)?.toInt() ??
+        _missingRequiredValue('combat.boss_charge.default_stagger_ticks'),
+    staggerDefenseDown:
+        (y['stagger_defense_down'] as num?)?.toDouble() ??
+        _missingRequiredValue('combat.boss_charge.stagger_defense_down'),
+    interruptPowerCap:
+        (y['interrupt_power_cap'] as num?)?.toDouble() ??
+        _missingRequiredValue('combat.boss_charge.interrupt_power_cap'),
   );
 }
 
@@ -1647,7 +1767,9 @@ class DefenseBreakConfig {
   final int windowTicks;
   const DefenseBreakConfig({this.windowTicks = 3});
   factory DefenseBreakConfig.fromYaml(Map y) => DefenseBreakConfig(
-    windowTicks: (y['window_ticks'] as num?)?.toInt() ?? 3,
+    windowTicks:
+        (y['window_ticks'] as num?)?.toInt() ??
+        _missingRequiredValue('combat.defense_break.window_ticks'),
   );
 }
 
@@ -1661,8 +1783,12 @@ class WeaknessConfig {
   final double maxMult;
   const WeaknessConfig({this.minMult = 0.5, this.maxMult = 2.0});
   factory WeaknessConfig.fromYaml(Map y) => WeaknessConfig(
-    minMult: (y['min_mult'] as num?)?.toDouble() ?? 0.5,
-    maxMult: (y['max_mult'] as num?)?.toDouble() ?? 2.0,
+    minMult:
+        (y['min_mult'] as num?)?.toDouble() ??
+        _missingRequiredValue('combat.weakness.min_mult'),
+    maxMult:
+        (y['max_mult'] as num?)?.toDouble() ??
+        _missingRequiredValue('combat.weakness.max_mult'),
   );
 }
 
@@ -1740,10 +1866,18 @@ class HitTierConfig {
     required this.closeupPulseMs,
   });
   factory HitTierConfig.fromYaml(Map y) => HitTierConfig(
-    captionPeakSize: (y['caption_peak_size'] as num?)?.toInt() ?? 68,
-    captionGlowBlur: (y['caption_glow_blur'] as num?)?.toDouble() ?? 12.0,
-    closeupScale: (y['closeup_scale'] as num?)?.toDouble() ?? 1.10,
-    closeupPulseMs: (y['closeup_pulse_ms'] as num?)?.toInt() ?? 220,
+    captionPeakSize:
+        (y['caption_peak_size'] as num?)?.toInt() ??
+        _missingRequiredValue('animation.hit_tier.caption_peak_size'),
+    captionGlowBlur:
+        (y['caption_glow_blur'] as num?)?.toDouble() ??
+        _missingRequiredValue('animation.hit_tier.caption_glow_blur'),
+    closeupScale:
+        (y['closeup_scale'] as num?)?.toDouble() ??
+        _missingRequiredValue('animation.hit_tier.closeup_scale'),
+    closeupPulseMs:
+        (y['closeup_pulse_ms'] as num?)?.toInt() ??
+        _missingRequiredValue('animation.hit_tier.closeup_pulse_ms'),
   );
   static const HitTierConfig defaults = HitTierConfig(
     captionPeakSize: 68,
@@ -2318,7 +2452,9 @@ class MaxHpFormula {
   factory MaxHpFormula.fromYaml(Map<String, dynamic> y) {
     return MaxHpFormula(
       base: (y['base'] as num).toInt(),
-      realmLevelFactor: (y['realm_level_factor'] as num?)?.toInt() ?? 156,
+      realmLevelFactor:
+          (y['realm_level_factor'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.max_hp_formula.realm_level_factor'),
       constitutionFactor: (y['constitution_factor'] as num).toInt(),
     );
   }
@@ -2548,26 +2684,41 @@ class AnimationNumbers {
       actionIntervalMs: (y['action_interval_ms'] as num).toInt(),
       fastForwardIntervalMs: (y['fast_forward_interval_ms'] as num).toInt(),
       readableActionIntervalMs:
-          (y['readable_action_interval_ms'] as num?)?.toInt() ?? 1800,
+          (y['readable_action_interval_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.readable_action_interval_ms'),
       readableVictoryMinMs:
-          (y['readable_victory_min_ms'] as num?)?.toInt() ?? 10000,
+          (y['readable_victory_min_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.readable_victory_min_ms'),
       victoryHandoffDelayMs:
-          (y['victory_handoff_delay_ms'] as num?)?.toInt() ?? 500,
+          (y['victory_handoff_delay_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.victory_handoff_delay_ms'),
       shakeOffsetPx: (y['shake_offset_px'] as num).toDouble(),
       shakeDurationMs: (y['shake_duration_ms'] as num).toInt(),
       criticalFontScale: (y['critical_font_scale'] as num).toDouble(),
-      projectileMs: (y['projectile_ms'] as num?)?.toInt() ?? 260,
-      battleEffectMs: (y['battle_effect_ms'] as num?)?.toInt() ?? 520,
-      hitFlashMs: (y['hit_flash_ms'] as num?)?.toInt() ?? 150,
-      keyMomentHoldMs: (y['key_moment_hold_ms'] as num?)?.toInt() ?? 400,
+      projectileMs:
+          (y['projectile_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.projectile_ms'),
+      battleEffectMs:
+          (y['battle_effect_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.battle_effect_ms'),
+      hitFlashMs:
+          (y['hit_flash_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.hit_flash_ms'),
+      keyMomentHoldMs:
+          (y['key_moment_hold_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.key_moment_hold_ms'),
       firstClearOpeningHoldMs:
-          (y['first_clear_opening_hold_ms'] as num?)?.toInt() ?? 900,
+          (y['first_clear_opening_hold_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.first_clear_opening_hold_ms'),
       firstClearFirstSkillHoldMs:
-          (y['first_clear_first_skill_hold_ms'] as num?)?.toInt() ?? 800,
+          (y['first_clear_first_skill_hold_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.first_clear_first_skill_hold_ms'),
       firstClearBossChargeHoldMs:
-          (y['first_clear_boss_charge_hold_ms'] as num?)?.toInt() ?? 700,
+          (y['first_clear_boss_charge_hold_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.first_clear_boss_charge_hold_ms'),
       sweepInterBattleGapMs:
-          (y['sweep_inter_battle_gap_ms'] as num?)?.toInt() ?? 150,
+          (y['sweep_inter_battle_gap_ms'] as num?)?.toInt() ??
+          _missingRequiredValue('animation.sweep_inter_battle_gap_ms'),
       hitTier: HitTierConfig.fromYaml(y['hit_tier'] as Map? ?? const {}),
     );
   }
@@ -2995,14 +3146,30 @@ class EnmityCombatModifier {
   factory EnmityCombatModifier.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return EnmityCombatModifier(
-      threshold: (y['threshold'] as num?)?.toInt() ?? 0,
+      threshold:
+          (y['threshold'] as num?)?.toInt() ??
+          _missingRequiredValue('jianghu.enmity_combat_modifier.threshold'),
       playerAttackPowerMult:
-          (y['player_attack_power_mult'] as num?)?.toDouble() ?? 1.0,
+          (y['player_attack_power_mult'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'jianghu.enmity_combat_modifier.player_attack_power_mult',
+          ),
       enemyAttackPowerMult:
-          (y['enemy_attack_power_mult'] as num?)?.toDouble() ?? 1.0,
-      severeThreshold: (y['severe_threshold'] as num?)?.toInt() ?? 0,
-      severeMult: (y['severe_mult'] as num?)?.toDouble() ?? 1.0,
-      clampMax: (y['clamp_max'] as num?)?.toDouble() ?? 1.0,
+          (y['enemy_attack_power_mult'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'jianghu.enmity_combat_modifier.enemy_attack_power_mult',
+          ),
+      severeThreshold:
+          (y['severe_threshold'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'jianghu.enmity_combat_modifier.severe_threshold',
+          ),
+      severeMult:
+          (y['severe_mult'] as num?)?.toDouble() ??
+          _missingRequiredValue('jianghu.enmity_combat_modifier.severe_mult'),
+      clampMax:
+          (y['clamp_max'] as num?)?.toDouble() ??
+          _missingRequiredValue('jianghu.enmity_combat_modifier.clamp_max'),
     );
   }
 }
@@ -3031,13 +3198,18 @@ class JianghuTriggers {
   factory JianghuTriggers.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return JianghuTriggers(
-      stageBossKillDelta: (y['stage_boss_kill_delta'] as num?)?.toInt() ?? 0,
+      stageBossKillDelta:
+          (y['stage_boss_kill_delta'] as num?)?.toInt() ??
+          _missingRequiredValue('jianghu.triggers.stage_boss_kill_delta'),
       stageBossKillRivalDelta:
-          (y['stage_boss_kill_rival_delta'] as num?)?.toInt() ?? 0,
+          (y['stage_boss_kill_rival_delta'] as num?)?.toInt() ??
+          _missingRequiredValue('jianghu.triggers.stage_boss_kill_rival_delta'),
       encounterNpcDeltaMin:
-          (y['encounter_npc_delta_min'] as num?)?.toInt() ?? 0,
+          (y['encounter_npc_delta_min'] as num?)?.toInt() ??
+          _missingRequiredValue('jianghu.triggers.encounter_npc_delta_min'),
       encounterNpcDeltaMax:
-          (y['encounter_npc_delta_max'] as num?)?.toInt() ?? 0,
+          (y['encounter_npc_delta_max'] as num?)?.toInt() ??
+          _missingRequiredValue('jianghu.triggers.encounter_npc_delta_max'),
     );
   }
 }
@@ -3082,7 +3254,9 @@ class SectEventDef {
       sectLevel: SectLevelDef.fromYaml(
         (y['sect_level'] as Map?)?.cast<String, dynamic>() ?? const {},
       ),
-      activeEventsMax: (y['active_events_max'] as num?)?.toInt() ?? 3,
+      activeEventsMax:
+          (y['active_events_max'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.active_events_max'),
     );
   }
 }
@@ -3116,10 +3290,16 @@ class SectTournamentDef {
   factory SectTournamentDef.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectTournamentDef(
-      triggerProbability: (y['trigger_probability'] as num?)?.toDouble() ?? 0.0,
-      cooldownDays: (y['cooldown_days'] as num?)?.toInt() ?? 30,
+      triggerProbability:
+          (y['trigger_probability'] as num?)?.toDouble() ??
+          _missingRequiredValue('sect_event.tournament.trigger_probability'),
+      cooldownDays:
+          (y['cooldown_days'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.tournament.cooldown_days'),
       triggerRealmMin: (y['trigger_realm_min'] as String?) ?? 'yiLiu',
-      expireDays: (y['expire_days'] as num?)?.toInt() ?? 7,
+      expireDays:
+          (y['expire_days'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.tournament.expire_days'),
       narrativeIds:
           (y['narrative_ids'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
@@ -3156,12 +3336,24 @@ class SectReputationDef {
   factory SectReputationDef.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectReputationDef(
-      initial: (y['initial'] as num?)?.toInt() ?? 50,
-      winDelta: (y['win_delta'] as num?)?.toInt() ?? 10,
-      lossDelta: (y['loss_delta'] as num?)?.toInt() ?? -5,
-      decayPerMonthIdle: (y['decay_per_month_idle'] as num?)?.toInt() ?? 5,
-      max: (y['max'] as num?)?.toInt() ?? 100,
-      min: (y['min'] as num?)?.toInt() ?? 0,
+      initial:
+          (y['initial'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.initial'),
+      winDelta:
+          (y['win_delta'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.win_delta'),
+      lossDelta:
+          (y['loss_delta'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.loss_delta'),
+      decayPerMonthIdle:
+          (y['decay_per_month_idle'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.decay_per_month_idle'),
+      max:
+          (y['max'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.max'),
+      min:
+          (y['min'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.reputation.min'),
     );
   }
 }
@@ -3186,9 +3378,15 @@ class SectLevelDef {
   factory SectLevelDef.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectLevelDef(
-      max: (y['max'] as num?)?.toInt() ?? 7,
-      initial: (y['initial'] as num?)?.toInt() ?? 1,
-      promoteWinsThreshold: (y['promote_wins_threshold'] as num?)?.toInt() ?? 3,
+      max:
+          (y['max'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.sect_level.max'),
+      initial:
+          (y['initial'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.sect_level.initial'),
+      promoteWinsThreshold:
+          (y['promote_wins_threshold'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_event.sect_level.promote_wins_threshold'),
     );
   }
 }
@@ -3279,9 +3477,15 @@ class SectRankPromoteThresholdConfig {
     if (y.isEmpty) return empty;
     return SectRankPromoteThresholdConfig(
       innerMinContribution:
-          (y['inner_min_contribution'] as num?)?.toInt() ?? 10,
+          (y['inner_min_contribution'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'sect_management.rank_promote_threshold.inner_min_contribution',
+          ),
       elderMinContribution:
-          (y['elder_min_contribution'] as num?)?.toInt() ?? 30,
+          (y['elder_min_contribution'] as num?)?.toInt() ??
+          _missingRequiredValue(
+            'sect_management.rank_promote_threshold.elder_min_contribution',
+          ),
     );
   }
 }
@@ -3312,13 +3516,22 @@ class SectRecruitConfig {
   factory SectRecruitConfig.fromYaml(Map<String, dynamic> y) {
     if (y.isEmpty) return empty;
     return SectRecruitConfig(
-      encounterBaseProb: (y['encounter_base_prob'] as num?)?.toDouble() ?? 0.15,
+      encounterBaseProb:
+          (y['encounter_base_prob'] as num?)?.toDouble() ??
+          _missingRequiredValue('sect_management.recruit.encounter_base_prob'),
       stageBossRecruitProb:
-          (y['stage_boss_recruit_prob'] as num?)?.toDouble() ?? 0.40,
+          (y['stage_boss_recruit_prob'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'sect_management.recruit.stage_boss_recruit_prob',
+          ),
       stageBossFailRecoverProb:
-          (y['stage_boss_fail_recover_prob'] as num?)?.toDouble() ?? 0.30,
+          (y['stage_boss_fail_recover_prob'] as num?)?.toDouble() ??
+          _missingRequiredValue(
+            'sect_management.recruit.stage_boss_fail_recover_prob',
+          ),
       missionRecruitProb:
-          (y['mission_recruit_prob'] as num?)?.toDouble() ?? 0.50,
+          (y['mission_recruit_prob'] as num?)?.toDouble() ??
+          _missingRequiredValue('sect_management.recruit.mission_recruit_prob'),
     );
   }
 }
@@ -3342,7 +3555,9 @@ class SectTerritoryNumbersConfig {
     if (y.isEmpty) return empty;
     final raw = y['max_per_sect_by_level'] as List?;
     return SectTerritoryNumbersConfig(
-      demoInitialCount: (y['demo_initial_count'] as num?)?.toInt() ?? 6,
+      demoInitialCount:
+          (y['demo_initial_count'] as num?)?.toInt() ??
+          _missingRequiredValue('sect_management.territory.demo_initial_count'),
       maxPerSectByLevel: raw == null || raw.isEmpty
           ? const [1, 2, 3, 5, 8, 12, 18]
           : raw.map((e) => (e as num).toInt()).toList(growable: false),
@@ -3464,9 +3679,12 @@ class SkillUnlockConfig {
   factory SkillUnlockConfig.fromYaml(Map<String, dynamic>? y) {
     if (y == null || y.isEmpty) return empty;
     return SkillUnlockConfig(
-      fragmentThreshold: (y['fragment_threshold'] as num?)?.toInt() ?? 5,
+      fragmentThreshold:
+          (y['fragment_threshold'] as num?)?.toInt() ??
+          _missingRequiredValue('skill_unlock.fragment_threshold'),
       towerFragmentDropProb:
-          (y['tower_fragment_drop_prob'] as num?)?.toDouble() ?? 0.20,
+          (y['tower_fragment_drop_prob'] as num?)?.toDouble() ??
+          _missingRequiredValue('skill_unlock.tower_fragment_drop_prob'),
     );
   }
 }

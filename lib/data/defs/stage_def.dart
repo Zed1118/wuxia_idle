@@ -138,7 +138,13 @@ class StageDef {
       enemyTeam: ((y['enemyTeam'] as List?) ?? const [])
           .map((e) => EnemyDef.fromYaml(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false),
-      isBossStage: y['isBossStage'] as bool? ?? false,
+      isBossStage:
+          y['isBossStage'] as bool? ??
+          (throw ArgumentError.value(
+            null,
+            'stages.${y['id']}.isBossStage',
+            '必须显式配置，不能缺失或为 null',
+          )),
       prevStageId: y['prevStageId'] as String?,
       narrativeOpeningId: y['narrativeOpeningId'] as String?,
       narrativeVictoryId: y['narrativeVictoryId'] as String?,

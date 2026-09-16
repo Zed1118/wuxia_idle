@@ -11,9 +11,22 @@
 
 ## 恢复点
 
-- 状态：A-1 进行中。
-- 最后完成：核实工作区干净、分支与基线一致、dylib 就绪；红线 8 个 key 均在生产配置。
-- 下一步：验证并单独提交红线段，然后处理其余兜底。
+- 状态：A-1 已完成并验证，待 A-2。
+- 最后完成：红线段已独立提交 `4b18c4c67`；其余 94 个 numbers 兜底和关卡首领开关已收紧，旧测试显式 fixture 已迁移且原断言保留。数值残留 2 处、布尔残留 2 处已登记。
+- 下一步：A-1 READY 提交后执行 date；未越 06:00 CST 时进入 A-2 主线与塔结算搬迁。
 - 已跑验证：新增守卫 `00:00 +9: All tests passed!`；恢复字面量 mutation 为 `00:00 +8 -1: Some tests failed.`，1 失败且已精确还原。旧红线测试 4 项通过（原始日志见 `../logs/A-1_red_lines_existing.log`）。
 - 环境：原 SDK 缓存只读；使用外置可写 `../flutter-sdk` 同版本副本，`CI=true` 禁用遥测写入，不修改系统 SDK 或全局设置。
-- 阻塞：无。旧红线测试的缺段 fixture 改为显式完整 fixture，原有 8 项数值断言全部保留；新增逐 key 删除拒绝加载守卫覆盖新契约。
+- 阻塞：A-1 无。A-3 下游服务注入范围与最终收据自引用 SHA 两项已向用户异步澄清，不阻塞 A-1/A-2。旧红线测试的缺段 fixture 改为显式完整 fixture，原有 8 项数值断言全部保留；新增逐 key 删除拒绝加载守卫覆盖新契约。
+
+
+### A-1 当前验证记录
+
+- 新必填字段守卫：`00:00 +114: All tests passed!`（`A-1_required_keys_targeted.log`）。
+- 旧 fixture 相关 10 个文件逐个单跑：112 项通过；首次动画 fixture 尚未显式给旧断言值而失败，补显式输入后原断言通过；首轮失败日志保留。
+- 全仓分析：`No issues found! (ran in 2.8s)`（`A-1_analyze.log`）。
+- 整仓格式：`Formatted 1846 files (0 changed) in 4.89 seconds.`（`A-1_format.log`，退出 0）。
+- 全量：`flutter --suppress-analytics test --no-pub` → `08:22 +6917: All tests passed!`，退出 0、无失败/跳过；原始输出 `../logs/A-1_full_test.log`、退出码 `A-1_full_test.exit`。
+- 验证统一环境：`PATH=/Users/a10506/Documents/Codex/2026-09-16/night-A/flutter-sdk/bin:$PATH`、`CI=true`；命令均在本 worktree 运行。遥测关闭只处理沙盒外配置不可写，不更换 SDK 版本。
+- 已为 723 个受保护文件建立 SHA-256 指纹，当前复核零字节变化；最终收工再次复核。
+
+- A-1 收口审计：全部 218 条旧断言原样保留；将新增缺项异常替换归一后，其余 numbers 配置代码与基线完全一致。原始审计 `../logs/A-1_diff_audit.log`。
