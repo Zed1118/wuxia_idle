@@ -1,6 +1,6 @@
 # Worktree / 分支台账（2026-09-16）
 
-> 只读分类，按 CLAUDE.md §8.4「孤立集成债 vs main 发布债」口径。**本台账不删除任何 worktree/分支**，删与不删由用户拍板。
+> 分类按 CLAUDE.md §8.4「孤立集成债 vs main 发布债」口径。分类阶段不删除；**2026-09-16 用户拍板「按推荐处理，86 个也一起清」后已执行清理**，结果见末节「执行记录」。下文分类表保留为清理前快照。
 > 基准：main `342d19275`，统一候选链 `origin/codex/p2-player-flow-20260910` = `522c3ad40`。
 > 判据：① tip 是 main/链祖先 → 已进；② `git cherry` 对链按 patch-id 全等价 → 内容已进、仅历史形状不同；③ 有链上没有的补丁 → 孤立。
 > 未进入其他 worktree 读工作区脏净状态（会话隔离），脏净需删除前逐个 `git status` 确认。
@@ -71,9 +71,11 @@
 
 `~/.codex/worktrees/a0d7/挂机武侠`@`58ae40bbc`, `~/.codex/worktrees/config-strict-20260907/挂机武侠`@`6c162e4bd`, `~/.codex/worktrees/gauntlet-rng-posture/挂机武侠`@`0d3a21833`, `~/.codex/worktrees/isar-deferred-triage-20260907/挂机武侠`@`df3be1365`, `~/.codex/worktrees/isar-missing-fields-048-20260907/挂机武侠`@`ecc75dba9`, `~/.codex/worktrees/isar-prerequisites-20260907/挂机武侠`@`ba29fc33d`, `~/.codex/worktrees/p2-m0-decision-batch-20260904`@`eea54b970`, `~/.codex/worktrees/p2-m7-tower-foundation-20260905/挂机武侠`@`431f28532`, `~/.codex/worktrees/tower-p0-20260907/挂机武侠`@`ba8144e14`, `~/<主仓>`@`5c1105cfa`, `~/<主仓>-ci-budget-20260912`@`198ec8641`, `~/<主仓>-save-migration-main-20260912`@`342d19275`, `~/Documents/Codex/2026-09-13/p2-ci-recovery/m4-54aed-worktree`@`e743b6026`, `~/Documents/Codex/2026-09-15/p2-native-lifecycle/source`@`e743b6026`, `~/Documents/Codex/2026-09-15/p2-native-readiness/source`@`5c1105cfa`, `~/Documents/Codex/2026-09-15/p2-onboarding-chain/batch1/source`@`50e6f5383`, `~/Documents/Codex/2026-09-15/p2-onboarding-chain/batch2/source`@`e6161d566`, `~/Documents/Codex/2026-09-16/p2-m4-production-matrix/wt`@`522c3ad40`
 
-## 建议的清理顺序（待用户拍板后执行）
+## 执行记录（2026-09-16 用户拍板后）
 
-1. 先删 ① ②（共 86 个）中不在保留名单的：逐个 `git -C <path> status --porcelain` 为空才 `git worktree remove`，再 `git branch -d`（远端分支另议）。
-2. ③ 文档类：决定哪些审计/提案值得进 `docs/audit`（建议：n4 假绿审计、n6 死字段清点、mutation 探针、e2 真机管线工具），cherry-pick 后再删。
-3. ③ 代码类：`ink-vfx` 样片与 `parallax-raster` 两条由用户拍板保留或放弃；其余按判定删除。
+- **③ 代码类两条真孤立**：打归档标签并推送后删除本地分支——`archive/ink-vfx-vertical-slices-20260824` → `00da01d4a`、`archive/p2-m4-parallax-raster-boundary-20260831` → `a814385b6`。样片/优化候选随时可从标签恢复。
+- **worktree**：`git worktree remove`（不带 `--force`，脏树/未跟踪文件会被拒绝）移除 **82 个**，**0 个被拒**；随后 `git worktree prune`。82 = 名单内 81（① ② 中不在保留名单的 + 两条归档）+ 1 条误删：`codex/tower-multi-recon-20260912` 的目录被手敲进批次误删，其分支与 commit `1aaa08940` 保留，需要时 `git worktree add` 即可复原。
+- **本地分支**：删除前逐条现场重验（main 祖先 9 / 链祖先 1 / 归档标签指向 tip 2 / `git cherry` 对链全 `-` 67），**删除 79 个，0 失败**；远端分支未动。
+- **清理后剩余 35 个 worktree**：主 checkout 1 + 保留名单 `~/Documents/Codex/` 下 6 + `review-followup-20260912`（locked）1 + ③ 未合入 27 = 文档类 21（原 23 减 `tower-multi-recon` 目录与本 locked worktree）+ 代码类 6（原 8 减归档 2；均在上表判定「可删」但本轮未拍板：`m2-d01`、`m5-r02`、`defense-break-posture`、`posture-wiring`、`b1-layer-sort-comment`、`p2-defend-feedback-quick-gather`）。本地分支 107 个。
+- **未做**：③ 文档类 cherry-pick 进 `docs/audit`（n4 假绿审计、n6 死字段清点、mutation 探针、e2 真机管线工具）仍待用户拍板；主 checkout 本地 `codex/p2-player-flow-20260910` 落后 origin 13 个提交，需用户在主仓 `git pull --ff-only`。
 

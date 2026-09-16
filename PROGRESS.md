@@ -15,7 +15,7 @@
   - 本配置实测：01_01/01_02 风筝可通；合法刚猛 / mountain_wanderer / balanced_seed，创建 seed=20260820、战斗 seed=20260906。
   - 01_03 黑风岭固定种子连续链胜率 0/1，118 拍败；04/05 未进入。
   - 粗放/慢反应（每 3 拍决策）/站桩三变体在 01_01、01_02 全败；自动诊断不代签真人验收。
-- **在途 worktree 台账**：117 个 worktree 按 §8.4 分类（18 已在链上 / 68 按 patch-id 全等价 / 31 孤立，其中含代码 8 条逐条判定），只分类不删除，见 `docs/audit/worktree_ledger_2026-09-16.md`。
+- **在途 worktree 台账**：117 个按 §8.4 分类（18 已在链上 / 68 patch-id 全等价 / 31 孤立）；2026-09-16 用户拍板后已清理：两条真孤立代码打 `archive/*` 标签，移除 worktree 82（0 被拒）、本地分支 79（逐条现场重验），剩 35 个 worktree（保留名单 8 + ③ 未合入 27）。③ 文档类 cherry-pick 与主仓 `git pull --ff-only` 待用户。见 `docs/audit/worktree_ledger_2026-09-16.md` 末节。
 - **恢复点与证据**：`docs/superpowers/plans/2026-09-05-mainline-ci-wait-investigation.md`；CI/测试/原生包及事故现场 `/Users/a10506/Documents/Codex/2026-09-13/p2-ci-recovery/`，本次续验在 `resume-native/`。原生意外后已停线保全，现仅在明确授权的副本范围恢复。
 ### 历史集成记录（以下为当时状态）
 - **2026-09-07 存档清查前置集成**：B 配置严格校验与 C 断魂庄种子/架势写回已在候选 `5b20a154f` 合并，存档版本 `0.47.0`；完整 analyze 0 issue、定向 14 文件 142/142、全量 895 文件 6200/6200、format 1663 文件 0 改动、macOS release 构建通过。原始证据：`/Users/a10506/Documents/Codex/2026-09-07/isar-prerequisites-integration/`。玩家架势尚未生产启用；不代签真人/Windows，不变更正式里程碑。`0.48.0` 后续集成见下一条。
