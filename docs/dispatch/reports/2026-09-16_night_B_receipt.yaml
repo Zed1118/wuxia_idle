@@ -1,0 +1,21 @@
+schema_version: 1
+base_sha: "c307b3ffcb155af58d4efb9179e36453297b1360"
+head_sha: "c04ca7dbb25384dc4a638323a9acabad20b33c16"
+changed_files:
+  - "docs/audit/night_b_governance_recovery_2026-09-17.md"
+  - "docs/audit/numbers_yaml_unused_keys_2026-09-17.md"
+  - "docs/audit/orphan_doc_branches_triage_2026-09-17.md"
+  - "docs/audit/task_registry_ready_reviewed_triage_2026-09-17.md"
+  - "tools/audit/night_b_receipt.py"
+  - "tools/audit/numbers_key_usage.py"
+  - "tools/audit/orphan_doc_branches_triage.py"
+  - "tools/audit/task_registry_triage.py"
+full_test_last_line: "NOT_RUN"
+error_block_count: 0
+analyze_last_line: "NOT_RUN"
+format_last_line: "NOT_RUN"
+break_red:
+audit_verification:
+  kind: "git_diff_check_and_patch_sha256"
+  diff_check_exit: 0
+  patch_sha256: "0dc4a26f1c4acdf83c182955ebc9b16bef8ba28e3aa23df5dae7cd6e034f7035"

@@ -1,5 +1,9 @@
 # 夜批 B 审计恢复点（2026-09-17）
 
+> 续令更新：协调者已明确追加计划、收据与仓库外摘要三个可写路径，并允许收据采用提交前最后一个 commit；Flutter 三项统一 `NOT_RUN`。下列 BLOCKED/待确认段落是 `c04ca7dbb` 时的历史记录。当前补交恢复点见 `docs/superpowers/plans/2026-09-16-night-b-governance.md`；不改写历史提交。
+
+> 补交实况：计划和收据已写入，但本轮沙箱拒绝创建共享 `.git/worktrees/wt2/index.lock`，且拒绝写仓外 `night-B/summary.md`；未产生新提交，工作区非干净。授权冲突已经解除，当前阻塞是环境写权限，详上述正式恢复点。
+
 ## 范围与交付路径冲突
 
 基线 `c307b3ffcb155af58d4efb9179e36453297b1360`，分支 `codex/night-b-governance-20260916`。仅新建本单 `docs/audit/*.md`、`tools/audit/*.py`；不改代码、登记簿及已有审计文件，不 push/merge/rebase/revert，不启动 GUI 或读取真实存档。
