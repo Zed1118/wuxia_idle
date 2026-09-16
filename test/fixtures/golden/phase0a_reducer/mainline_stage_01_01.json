@@ -1,0 +1,5530 @@
+{
+  "contentId": "stage_01_01",
+  "route": "typed_mainline",
+  "profileId": "gang_meng/mountain_wanderer/balanced_seed/20260820",
+  "seed": 73,
+  "fixedDeltaSeconds": 0.1,
+  "sampledSteps": 400,
+  "finalSimulationTick": 82,
+  "finalOutcome": "defeat",
+  "eventCount": 176,
+  "terminalEmptyFrames": 318,
+  "mechanism": {},
+  "frames": [
+    {
+      "step": 1,
+      "tickBefore": 0,
+      "tickAfter": 1,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 1,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 2,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 3,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 4,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 5,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 6,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 7,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_07",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 8,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_08",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 9,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_09",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 10,
+          "tick": 1,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_10",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "tickBefore": 1,
+      "tickAfter": 2,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 3,
+      "tickBefore": 2,
+      "tickAfter": 3,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 4,
+      "tickBefore": 3,
+      "tickAfter": 4,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 5,
+      "tickBefore": 4,
+      "tickAfter": 5,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 6,
+      "tickBefore": 5,
+      "tickAfter": 6,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 7,
+      "tickBefore": 6,
+      "tickAfter": 7,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 8,
+      "tickBefore": 7,
+      "tickAfter": 8,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 9,
+      "tickBefore": 8,
+      "tickAfter": 9,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 10,
+      "tickBefore": 9,
+      "tickAfter": 10,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 11,
+      "tickBefore": 10,
+      "tickAfter": 11,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 12,
+      "tickBefore": 11,
+      "tickAfter": 12,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 13,
+      "tickBefore": 12,
+      "tickAfter": 13,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 14,
+      "tickBefore": 13,
+      "tickAfter": 14,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 15,
+      "tickBefore": 14,
+      "tickAfter": 15,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 16,
+      "tickBefore": 15,
+      "tickAfter": 16,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 17,
+      "tickBefore": 16,
+      "tickAfter": 17,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 18,
+      "tickBefore": 17,
+      "tickAfter": 18,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 19,
+      "tickBefore": 18,
+      "tickAfter": 19,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 20,
+      "tickBefore": 19,
+      "tickAfter": 20,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 21,
+      "tickBefore": 20,
+      "tickAfter": 21,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 11,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 12,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 13,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 14,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 15,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 16,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 17,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_07",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 18,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_08",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 19,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_09",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 20,
+          "tick": 21,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_10",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 22,
+      "tickBefore": 21,
+      "tickAfter": 22,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 21,
+          "tick": 22,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 22,
+          "tick": 22,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:22:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        },
+        {
+          "indexInTick": 2,
+          "seq": 23,
+          "tick": 22,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:22:basic",
+          "eventType": "interrupted",
+          "phase": "interrupted",
+          "actionTick": 0
+        },
+        {
+          "indexInTick": 3,
+          "seq": 24,
+          "tick": 22,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:22:skill:gather",
+          "reason": "skill",
+          "applied": -23,
+          "overflow": 0,
+          "current": 32,
+          "windowId": null
+        },
+        {
+          "indexInTick": 4,
+          "seq": 25,
+          "tick": 22,
+          "type": "Phase0aGatherStarted",
+          "actor": "player",
+          "skillId": "skill_phase0a_gather",
+          "actorPosition": {
+            "x": 121.0,
+            "y": 0.0
+          },
+          "centerPosition": {
+            "x": 121.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 26,
+          "tick": 22,
+          "type": "Phase0aGatherApplied",
+          "actor": "player",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -350.3238272760316,
+                "y": 117.47578102852998
+              },
+              "targetPosition": {
+                "x": 62.78114180812558,
+                "y": 14.510842526690736
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -230.75321901525285,
+                "y": 136.19250194745706
+              },
+              "targetPosition": {
+                "x": 65.04751892162375,
+                "y": 21.663791477346443
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -111.22104427085615,
+                "y": 115.21147869319427
+              },
+              "targetPosition": {
+                "x": 67.25139167052548,
+                "y": 26.666216504122634
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 5.812381937190965,
+                "y": 131.86266528793266
+              },
+              "targetPosition": {
+                "x": 81.52704317292,
+                "y": 45.18722916187137
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 118.35601012694643,
+                "y": 110.13606076167856
+              },
+              "targetPosition": {
+                "x": 119.5600202345646,
+                "y": 59.98271799672916
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 232.92893218813452,
+                "y": 132.92893218813452
+              },
+              "targetPosition": {
+                "x": 159.6458778463339,
+                "y": 45.89658076029454
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 350.9204061549955,
+                "y": 115.80941822538253
+              },
+              "targetPosition": {
+                "x": 174.58622919702105,
+                "y": 26.991036298081028
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -350.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 61.0,
+                "y": 0.0
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -110.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 61.0,
+                "y": 0.0
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 120.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 120.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 6,
+          "seq": 27,
+          "tick": 22,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "gather",
+          "availability": "cooldown",
+          "cooldownRemaining": 5.0,
+          "qiCurrent": 32,
+          "qiRequired": 23
+        },
+        {
+          "indexInTick": 7,
+          "seq": 28,
+          "tick": 22,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "clear",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 32,
+          "qiRequired": 45
+        },
+        {
+          "indexInTick": 8,
+          "seq": 29,
+          "tick": 22,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:22:skill:phase0a_skill_1",
+          "reason": "skill",
+          "applied": -31,
+          "overflow": 0,
+          "current": 1,
+          "windowId": null
+        },
+        {
+          "indexInTick": 9,
+          "seq": 30,
+          "tick": 22,
+          "type": "Phase0aSkillStarted",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill"
+        },
+        {
+          "indexInTick": 10,
+          "seq": 31,
+          "tick": 22,
+          "type": "Phase0aPostureChanged",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "eventType": "postureDamageApplied",
+          "amount": 2.4,
+          "accumulated": 2.4,
+          "capacity": 14.0,
+          "vulnerabilityTicksRemaining": 0,
+          "hitKind": "heavy",
+          "targetPosition": {
+            "x": 174.58622919702105,
+            "y": 26.991036298081028
+          }
+        },
+        {
+          "indexInTick": 11,
+          "seq": 32,
+          "tick": 22,
+          "type": "Phase0aSkillApplied",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+              "resolvedDamage": 1495,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 174.58622919702105,
+                "y": 26.991036298081028
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 12,
+          "seq": 33,
+          "tick": 22,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "cooldown",
+          "cooldownRemaining": 1.1,
+          "qiCurrent": 1,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 23,
+      "tickBefore": 22,
+      "tickAfter": 23,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 24,
+      "tickBefore": 23,
+      "tickAfter": 24,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 25,
+      "tickBefore": 24,
+      "tickAfter": 25,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 26,
+      "tickBefore": 25,
+      "tickAfter": 26,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 27,
+      "tickBefore": 26,
+      "tickAfter": 27,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 28,
+      "tickBefore": 27,
+      "tickAfter": 28,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 29,
+      "tickBefore": 28,
+      "tickAfter": 29,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 30,
+      "tickBefore": 29,
+      "tickAfter": 30,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 34,
+          "tick": 30,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 35,
+          "tick": 30,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 31,
+      "tickBefore": 30,
+      "tickAfter": 31,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 36,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 37,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 38,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 39,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 40,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 41,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 42,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_07",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 43,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_08",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 44,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_09",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 45,
+          "tick": 31,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_10",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 32,
+      "tickBefore": 31,
+      "tickAfter": 32,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 46,
+          "tick": 32,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 1,
+          "seq": 47,
+          "tick": 32,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 48,
+          "tick": 32,
+          "type": "Phase0aHitLanded",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 830,
+          "remainingHealth": 670,
+          "actorPosition": {
+            "x": 121.0,
+            "y": 0.0
+          },
+          "targetPosition": {
+            "x": 120.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 49,
+          "tick": 32,
+          "type": "Phase0aPostureChanged",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "eventType": "postureDamageApplied",
+          "amount": 1.6,
+          "accumulated": 1.6,
+          "capacity": 14.0,
+          "vulnerabilityTicksRemaining": 0,
+          "hitKind": "light",
+          "targetPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 50,
+          "tick": 32,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 25,
+          "windowId": null
+        }
+      ]
+    },
+    {
+      "step": 33,
+      "tickBefore": 32,
+      "tickAfter": 33,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 34,
+      "tickBefore": 33,
+      "tickAfter": 34,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 51,
+          "tick": 34,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 25,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 35,
+      "tickBefore": 34,
+      "tickAfter": 35,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 52,
+          "tick": 35,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "eventType": "phaseChanged",
+          "phase": "recovery",
+          "actionTick": 5
+        }
+      ]
+    },
+    {
+      "step": 36,
+      "tickBefore": 35,
+      "tickAfter": 36,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 37,
+      "tickBefore": 36,
+      "tickAfter": 37,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 53,
+          "tick": 37,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:30:basic",
+          "eventType": "completed",
+          "phase": "completed",
+          "actionTick": 7
+        }
+      ]
+    },
+    {
+      "step": 38,
+      "tickBefore": 37,
+      "tickAfter": 38,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 54,
+          "tick": 38,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 55,
+          "tick": 38,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:38:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 39,
+      "tickBefore": 38,
+      "tickAfter": 39,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 40,
+      "tickBefore": 39,
+      "tickAfter": 40,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 56,
+          "tick": 40,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:38:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 1,
+          "seq": 57,
+          "tick": 40,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:38:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 58,
+          "tick": 40,
+          "type": "Phase0aHitLanded",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 830,
+          "remainingHealth": 0,
+          "actorPosition": {
+            "x": 121.0,
+            "y": 0.0
+          },
+          "targetPosition": {
+            "x": 120.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 59,
+          "tick": 40,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 60,
+          "tick": 40,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:38:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 49,
+          "windowId": null
+        },
+        {
+          "indexInTick": 5,
+          "seq": 61,
+          "tick": 40,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 6,
+          "seq": 62,
+          "tick": 40,
+          "type": "Phase0aDefenseResolved",
+          "attackId": "stage_01_01/ch1_encounter_01_roadbreak/actor-000:40:player",
+          "attacker": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "target": "player",
+          "branch": "baseMitigation",
+          "incomingDamage": 883,
+          "counterDamage": 0,
+          "shieldRemaining": 0,
+          "nonRecursive": true,
+          "targetPosition": {
+            "x": 121.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 63,
+          "tick": 40,
+          "type": "Phase0aHitLanded",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "target": "player",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 883,
+          "remainingHealth": 3117,
+          "actorPosition": {
+            "x": 72.48428484010465,
+            "y": 12.09236877224228
+          },
+          "targetPosition": {
+            "x": 121.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 8,
+          "seq": 64,
+          "tick": 40,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 9,
+          "seq": 65,
+          "tick": 40,
+          "type": "Phase0aDefenseResolved",
+          "attackId": "stage_01_01/ch1_encounter_01_roadbreak/actor-001:40:player",
+          "attacker": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "target": "player",
+          "branch": "baseMitigation",
+          "incomingDamage": 883,
+          "counterDamage": 0,
+          "shieldRemaining": 0,
+          "nonRecursive": true,
+          "targetPosition": {
+            "x": 121.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 10,
+          "seq": 66,
+          "tick": 40,
+          "type": "Phase0aHitLanded",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "target": "player",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 883,
+          "remainingHealth": 2234,
+          "actorPosition": {
+            "x": 74.37293243468646,
+            "y": 18.05315956445537
+          },
+          "targetPosition": {
+            "x": 121.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 11,
+          "seq": 67,
+          "tick": 40,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-009",
+          "reason": "kill",
+          "applied": 5,
+          "overflow": 0,
+          "current": 54,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 12,
+          "seq": 68,
+          "tick": 40,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "clear",
+          "availability": "ready",
+          "cooldownRemaining": null,
+          "qiCurrent": 54,
+          "qiRequired": 45
+        },
+        {
+          "indexInTick": 13,
+          "seq": 69,
+          "tick": 40,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "ready",
+          "cooldownRemaining": null,
+          "qiCurrent": 54,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 41,
+      "tickBefore": 40,
+      "tickAfter": 41,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 70,
+          "tick": 41,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:38:basic",
+          "eventType": "cancelled",
+          "phase": "cancelled",
+          "actionTick": 3
+        },
+        {
+          "indexInTick": 1,
+          "seq": 71,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:41:skill:clear",
+          "reason": "skill",
+          "applied": -45,
+          "overflow": 0,
+          "current": 9,
+          "windowId": null
+        },
+        {
+          "indexInTick": 2,
+          "seq": 72,
+          "tick": 41,
+          "type": "Phase0aClearStarted",
+          "actor": "player",
+          "skillId": "skill_phase0a_clear",
+          "actorPosition": {
+            "x": 121.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 73,
+          "tick": 41,
+          "type": "Phase0aClearApplied",
+          "actor": "player",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 72.48428484010465,
+                "y": 12.09236877224228
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 74.37293243468646,
+                "y": 18.05315956445537
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 76.20949305877123,
+                "y": 22.22184708676886
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 88.10586931076666,
+                "y": 37.656024301559476
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 119.80001686213717,
+                "y": 49.98559833060763
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+              "resolvedDamage": 2670,
+              "isCritical": true,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 153.20489820527825,
+                "y": 38.247150633578784
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 165.65519099751754,
+                "y": 22.492530248400854
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+              "resolvedDamage": 1780,
+              "isCritical": false,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 71.0,
+                "y": 0.0
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+              "resolvedDamage": 2670,
+              "isCritical": true,
+              "defeated": true,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 121.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 71.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 4,
+          "seq": 74,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 72.48428484010465,
+            "y": 12.09236877224228
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 75,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 74.37293243468646,
+            "y": 18.05315956445537
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 76,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 76.20949305877123,
+            "y": 22.22184708676886
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 77,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 88.10586931076666,
+            "y": 37.656024301559476
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 78,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 119.80001686213717,
+            "y": 49.98559833060763
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 79,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 153.20489820527825,
+            "y": 38.247150633578784
+          }
+        },
+        {
+          "indexInTick": 10,
+          "seq": 80,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 165.65519099751754,
+            "y": 22.492530248400854
+          }
+        },
+        {
+          "indexInTick": 11,
+          "seq": 81,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 71.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 12,
+          "seq": 82,
+          "tick": 41,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 71.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 13,
+          "seq": 83,
+          "tick": 41,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "clear",
+          "availability": "cooldown",
+          "cooldownRemaining": 8.0,
+          "qiCurrent": 9,
+          "qiRequired": 45
+        },
+        {
+          "indexInTick": 14,
+          "seq": 84,
+          "tick": 41,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 9,
+          "qiRequired": 31
+        },
+        {
+          "indexInTick": 15,
+          "seq": 85,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-000",
+          "reason": "kill",
+          "applied": 5,
+          "overflow": 0,
+          "current": 14,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 16,
+          "seq": 86,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-001",
+          "reason": "kill",
+          "applied": 5,
+          "overflow": 0,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 17,
+          "seq": 87,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-002",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 18,
+          "seq": 88,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-003",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 19,
+          "seq": 89,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-004",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 20,
+          "seq": 90,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-005",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 21,
+          "seq": 91,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-006",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 22,
+          "seq": 92,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-007",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 23,
+          "seq": 93,
+          "tick": 41,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-008",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 19,
+          "windowId": "player:0"
+        }
+      ]
+    },
+    {
+      "step": 42,
+      "tickBefore": 41,
+      "tickAfter": 42,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 94,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_11",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 95,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_12",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 96,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_13",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 97,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_blade_14",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-013",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 98,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-014",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 99,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-015",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 100,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 101,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-017",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 102,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-018",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 103,
+          "tick": 42,
+          "type": "Phase0aSpawnWarningStarted",
+          "entryId": "ch1_s01_crossbow_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-019",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 43,
+      "tickBefore": 42,
+      "tickAfter": 43,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 44,
+      "tickBefore": 43,
+      "tickAfter": 44,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 45,
+      "tickBefore": 44,
+      "tickAfter": 45,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 46,
+      "tickBefore": 45,
+      "tickAfter": 46,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 47,
+      "tickBefore": 46,
+      "tickAfter": 47,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 48,
+      "tickBefore": 47,
+      "tickAfter": 48,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 49,
+      "tickBefore": 48,
+      "tickAfter": 49,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 50,
+      "tickBefore": 49,
+      "tickAfter": 50,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 51,
+      "tickBefore": 50,
+      "tickAfter": 51,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 52,
+      "tickBefore": 51,
+      "tickAfter": 52,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 53,
+      "tickBefore": 52,
+      "tickAfter": 53,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 54,
+      "tickBefore": 53,
+      "tickAfter": 54,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 55,
+      "tickBefore": 54,
+      "tickAfter": 55,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 56,
+      "tickBefore": 55,
+      "tickAfter": 56,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 57,
+      "tickBefore": 56,
+      "tickAfter": 57,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 58,
+      "tickBefore": 57,
+      "tickAfter": 58,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 59,
+      "tickBefore": 58,
+      "tickAfter": 59,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 60,
+      "tickBefore": 59,
+      "tickAfter": 60,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 61,
+      "tickBefore": 60,
+      "tickAfter": 61,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 62,
+      "tickBefore": 61,
+      "tickAfter": 62,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 104,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_11",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 105,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_12",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 106,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_13",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 107,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_blade_14",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-013",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 108,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-014",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 109,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-015",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 110,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 111,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-017",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 112,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-018",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 113,
+          "tick": 62,
+          "type": "Phase0aEnemyEntered",
+          "entryId": "ch1_s01_crossbow_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-019",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 63,
+      "tickBefore": 62,
+      "tickAfter": 63,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 114,
+          "tick": 63,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 115,
+          "tick": 63,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:63:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 64,
+      "tickBefore": 63,
+      "tickAfter": 64,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 65,
+      "tickBefore": 64,
+      "tickAfter": 65,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 116,
+          "tick": 65,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:63:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 1,
+          "seq": 117,
+          "tick": 65,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:63:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 118,
+          "tick": 65,
+          "type": "Phase0aHitLanded",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 839,
+          "remainingHealth": 361,
+          "actorPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "targetPosition": {
+            "x": 384.0,
+            "y": 102.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 119,
+          "tick": 65,
+          "type": "Phase0aPostureChanged",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "eventType": "postureDamageApplied",
+          "amount": 1.6,
+          "accumulated": 1.6,
+          "capacity": 14.0,
+          "vulnerabilityTicksRemaining": 0,
+          "hitKind": "light",
+          "targetPosition": {
+            "x": 384.0,
+            "y": 102.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 120,
+          "tick": 65,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:63:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 43,
+          "windowId": null
+        },
+        {
+          "indexInTick": 5,
+          "seq": 121,
+          "tick": 65,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "ready",
+          "cooldownRemaining": null,
+          "qiCurrent": 43,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 66,
+      "tickBefore": 65,
+      "tickAfter": 66,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 122,
+          "tick": 66,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:63:basic",
+          "eventType": "cancelled",
+          "phase": "cancelled",
+          "actionTick": 3
+        },
+        {
+          "indexInTick": 1,
+          "seq": 123,
+          "tick": 66,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:66:skill:phase0a_skill_1",
+          "reason": "skill",
+          "applied": -31,
+          "overflow": 0,
+          "current": 12,
+          "windowId": null
+        },
+        {
+          "indexInTick": 2,
+          "seq": 124,
+          "tick": 66,
+          "type": "Phase0aSkillStarted",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 125,
+          "tick": 66,
+          "type": "Phase0aSkillApplied",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 520.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 392.0,
+                "y": 96.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 4,
+          "seq": 126,
+          "tick": 66,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "cooldown",
+          "cooldownRemaining": 1.1,
+          "qiCurrent": 12,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 67,
+      "tickBefore": 66,
+      "tickAfter": 67,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 68,
+      "tickBefore": 67,
+      "tickAfter": 68,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 69,
+      "tickBefore": 68,
+      "tickAfter": 69,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 70,
+      "tickBefore": 69,
+      "tickAfter": 70,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 71,
+      "tickBefore": 70,
+      "tickAfter": 71,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 127,
+          "tick": 71,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 128,
+          "tick": 71,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:71:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 72,
+      "tickBefore": 71,
+      "tickAfter": 72,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 129,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_11",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 1,
+          "seq": 130,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_12",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "entryPosition": {
+            "x": -240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 2,
+          "seq": 131,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_13",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 132,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_blade_14",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-013",
+          "entryPosition": {
+            "x": 0.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 133,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_01",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-014",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 134,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_02",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-015",
+          "entryPosition": {
+            "x": 240.0,
+            "y": 140.0
+          }
+        },
+        {
+          "indexInTick": 6,
+          "seq": 135,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_03",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "entryPosition": {
+            "x": 360.0,
+            "y": 120.0
+          }
+        },
+        {
+          "indexInTick": 7,
+          "seq": 136,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_04",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-017",
+          "entryPosition": {
+            "x": -360.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 137,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_05",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-018",
+          "entryPosition": {
+            "x": -120.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 9,
+          "seq": 138,
+          "tick": 72,
+          "type": "Phase0aSpawnGraceExpired",
+          "entryId": "ch1_s01_crossbow_06",
+          "enemyId": "stage_01_01/ch1_encounter_01_roadbreak/actor-019",
+          "entryPosition": {
+            "x": 120.0,
+            "y": 0.0
+          }
+        }
+      ]
+    },
+    {
+      "step": 73,
+      "tickBefore": 72,
+      "tickAfter": 73,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 139,
+          "tick": 73,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "gather",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 12,
+          "qiRequired": 23
+        },
+        {
+          "indexInTick": 1,
+          "seq": 140,
+          "tick": 73,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:71:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 141,
+          "tick": 73,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:71:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 3,
+          "seq": 142,
+          "tick": 73,
+          "type": "Phase0aHitLanded",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 839,
+          "remainingHealth": 0,
+          "actorPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "targetPosition": {
+            "x": 448.0,
+            "y": 54.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 4,
+          "seq": 143,
+          "tick": 73,
+          "type": "Phase0aEnemyDefeated",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": 448.0,
+            "y": 54.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 144,
+          "tick": 73,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:71:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 36,
+          "windowId": null
+        },
+        {
+          "indexInTick": 6,
+          "seq": 145,
+          "tick": 73,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:stage_01_01/ch1_encounter_01_roadbreak/actor-016",
+          "reason": "kill",
+          "applied": 0,
+          "overflow": 5,
+          "current": 36,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 7,
+          "seq": 146,
+          "tick": 73,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "gather",
+          "availability": "ready",
+          "cooldownRemaining": null,
+          "qiCurrent": 36,
+          "qiRequired": 23
+        }
+      ]
+    },
+    {
+      "step": 74,
+      "tickBefore": 73,
+      "tickAfter": 74,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 147,
+          "tick": 74,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:71:basic",
+          "eventType": "cancelled",
+          "phase": "cancelled",
+          "actionTick": 3
+        },
+        {
+          "indexInTick": 1,
+          "seq": 148,
+          "tick": 74,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:74:skill:gather",
+          "reason": "skill",
+          "applied": -23,
+          "overflow": 0,
+          "current": 13,
+          "windowId": null
+        },
+        {
+          "indexInTick": 2,
+          "seq": 149,
+          "tick": 74,
+          "type": "Phase0aGatherStarted",
+          "actor": "player",
+          "skillId": "skill_phase0a_gather",
+          "actorPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "centerPosition": {
+            "x": 520.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 3,
+          "seq": 150,
+          "tick": 74,
+          "type": "Phase0aGatherApplied",
+          "actor": "player",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -241.10037983468396,
+                "y": 103.78641543200234
+              },
+              "targetPosition": {
+                "x": 460.55018991734204,
+                "y": 8.106792283998809
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -121.98561736931129,
+                "y": 118.26050846276786
+              },
+              "targetPosition": {
+                "x": 460.99280868465564,
+                "y": 10.869745768616069
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -2.055337567881402,
+                "y": 97.8853757939777
+              },
+              "targetPosition": {
+                "x": 461.02766878394067,
+                "y": 11.057312103011114
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-013",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 115.87389102248038,
+                "y": 108.8031831862553
+              },
+              "targetPosition": {
+                "x": 462.0630544887598,
+                "y": 15.598408406872363
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-014",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 234.9391542265381,
+                "y": 85.5182537320386
+              },
+              "targetPosition": {
+                "x": 462.5304228867309,
+                "y": 17.24087313398073
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-015",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 347.33126291998974,
+                "y": 86.33436854000513
+              },
+              "targetPosition": {
+                "x": 466.3343685400051,
+                "y": 26.832815729997474
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-017",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": -240.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 460.0,
+                "y": 0.0
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-018",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 0.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 460.0,
+                "y": 0.0
+              }
+            },
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-019",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 240.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 460.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 4,
+          "seq": 151,
+          "tick": 74,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "gather",
+          "availability": "cooldown",
+          "cooldownRemaining": 5.0,
+          "qiCurrent": 13,
+          "qiRequired": 23
+        }
+      ]
+    },
+    {
+      "step": 75,
+      "tickBefore": 74,
+      "tickAfter": 75,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 76,
+      "tickBefore": 75,
+      "tickAfter": 76,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 77,
+      "tickBefore": 76,
+      "tickAfter": 77,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 78,
+      "tickBefore": 77,
+      "tickAfter": 78,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 152,
+          "tick": 78,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 13,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 79,
+      "tickBefore": 78,
+      "tickAfter": 79,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 153,
+          "tick": 79,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 154,
+          "tick": 79,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:79:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 80,
+      "tickBefore": 79,
+      "tickAfter": 80,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 81,
+      "tickBefore": 80,
+      "tickAfter": 81,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 155,
+          "tick": 81,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:79:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 1,
+          "seq": 156,
+          "tick": 81,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:79:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 157,
+          "tick": 81,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:79:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 37,
+          "windowId": null
+        },
+        {
+          "indexInTick": 3,
+          "seq": 158,
+          "tick": 81,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 4,
+          "seq": 159,
+          "tick": 81,
+          "type": "Phase0aDefenseResolved",
+          "attackId": "stage_01_01/ch1_encounter_01_roadbreak/actor-010:81:player",
+          "attacker": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "target": "player",
+          "branch": "baseMitigation",
+          "incomingDamage": 883,
+          "counterDamage": 0,
+          "shieldRemaining": 0,
+          "nonRecursive": true,
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 160,
+          "tick": 81,
+          "type": "Phase0aHitLanded",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-010",
+          "target": "player",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 883,
+          "remainingHealth": 1351,
+          "actorPosition": {
+            "x": 470.45849159778504,
+            "y": 6.755660236665674
+          },
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 6,
+          "seq": 161,
+          "tick": 81,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 7,
+          "seq": 162,
+          "tick": 81,
+          "type": "Phase0aDefenseResolved",
+          "attackId": "stage_01_01/ch1_encounter_01_roadbreak/actor-011:81:player",
+          "attacker": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "target": "player",
+          "branch": "baseMitigation",
+          "incomingDamage": 883,
+          "counterDamage": 0,
+          "shieldRemaining": 0,
+          "nonRecursive": true,
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 163,
+          "tick": 81,
+          "type": "Phase0aHitLanded",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "target": "player",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 883,
+          "remainingHealth": 468,
+          "actorPosition": {
+            "x": 470.82734057054637,
+            "y": 9.058121473846724
+          },
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 9,
+          "seq": 164,
+          "tick": 81,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "ready",
+          "cooldownRemaining": null,
+          "qiCurrent": 37,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 82,
+      "tickBefore": 81,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 165,
+          "tick": 82,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:79:basic",
+          "eventType": "cancelled",
+          "phase": "cancelled",
+          "actionTick": 3
+        },
+        {
+          "indexInTick": 1,
+          "seq": 166,
+          "tick": 82,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:82:skill:phase0a_skill_1",
+          "reason": "skill",
+          "applied": -31,
+          "overflow": 0,
+          "current": 6,
+          "windowId": null
+        },
+        {
+          "indexInTick": 2,
+          "seq": 167,
+          "tick": 82,
+          "type": "Phase0aSkillStarted",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 168,
+          "tick": 82,
+          "type": "Phase0aPostureChanged",
+          "actor": "player",
+          "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+          "eventType": "postureDamageApplied",
+          "amount": 2.4,
+          "accumulated": 2.4,
+          "capacity": 14.0,
+          "vulnerabilityTicksRemaining": 0,
+          "hitKind": "heavy",
+          "targetPosition": {
+            "x": 470.82734057054637,
+            "y": 9.058121473846724
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 169,
+          "tick": 82,
+          "type": "Phase0aSkillApplied",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill",
+          "outcomes": [
+            {
+              "target": "stage_01_01/ch1_encounter_01_roadbreak/actor-011",
+              "resolvedDamage": 1495,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": 520.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": 470.82734057054637,
+                "y": 9.058121473846724
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 5,
+          "seq": 170,
+          "tick": 82,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "cooldown",
+          "cooldownRemaining": 1.1,
+          "qiCurrent": 6,
+          "qiRequired": 31
+        },
+        {
+          "indexInTick": 6,
+          "seq": 171,
+          "tick": 82,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 7,
+          "seq": 172,
+          "tick": 82,
+          "type": "Phase0aDefenseResolved",
+          "attackId": "stage_01_01/ch1_encounter_01_roadbreak/actor-012:82:player",
+          "attacker": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "target": "player",
+          "branch": "baseMitigation",
+          "incomingDamage": 1325,
+          "counterDamage": 0,
+          "shieldRemaining": 0,
+          "nonRecursive": true,
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 8,
+          "seq": 173,
+          "tick": 82,
+          "type": "Phase0aHitLanded",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-012",
+          "target": "player",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 1325,
+          "remainingHealth": 0,
+          "actorPosition": {
+            "x": 470.8563906532839,
+            "y": 9.214426752509262
+          },
+          "targetPosition": {
+            "x": 520.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 9,
+          "seq": 174,
+          "tick": 82,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-013",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 10,
+          "seq": 175,
+          "tick": 82,
+          "type": "Phase0aAttackStarted",
+          "actor": "stage_01_01/ch1_encounter_01_roadbreak/actor-014",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": null,
+          "visualSchool": null
+        },
+        {
+          "indexInTick": 11,
+          "seq": 176,
+          "tick": 82,
+          "type": "Phase0aBattleDefeat"
+        }
+      ]
+    },
+    {
+      "step": 83,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 84,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 85,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 86,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 87,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 88,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 89,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 90,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 91,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 92,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 93,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 94,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 95,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 96,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 97,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 98,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 99,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 100,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 101,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 102,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 103,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 104,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 105,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 106,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 107,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 108,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 109,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 110,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 111,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 112,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 113,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 114,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 115,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 116,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 117,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 118,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 119,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 120,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 121,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 122,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 123,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 124,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 125,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 126,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 127,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 128,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 129,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 130,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 131,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 132,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 133,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 134,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 135,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 136,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 137,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 138,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 139,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 140,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 141,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 142,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 143,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 144,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 145,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 146,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 147,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 148,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 149,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 150,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 151,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 152,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 153,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 154,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 155,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 156,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 157,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 158,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 159,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 160,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 161,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 162,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 163,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 164,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 165,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 166,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 167,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 168,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 169,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 170,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 171,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 172,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 173,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 174,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 175,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 176,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 177,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 178,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 179,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 180,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 181,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 182,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 183,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 184,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 185,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 186,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 187,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 188,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 189,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 190,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 191,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 192,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 193,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 194,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 195,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 196,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 197,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 198,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 199,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 200,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 201,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 202,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 203,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 204,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 205,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 206,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 207,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 208,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 209,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 210,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 211,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 212,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 213,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 214,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 215,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 216,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 217,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 218,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 219,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 220,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 221,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 222,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 223,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 224,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 225,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 226,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 227,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 228,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 229,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 230,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 231,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 232,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 233,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 234,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 235,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 236,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 237,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 238,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 239,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 240,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 241,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 242,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 243,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 244,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 245,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 246,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 247,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 248,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 249,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 250,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 251,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 252,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 253,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 254,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 255,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 256,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 257,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 258,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 259,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 260,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 261,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 262,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 263,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 264,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 265,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 266,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 267,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 268,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 269,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 270,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 271,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 272,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 273,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 274,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 275,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 276,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 277,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 278,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 279,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 280,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 281,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 282,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 283,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 284,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 285,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 286,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 287,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 288,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 289,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 290,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 291,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 292,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 293,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 294,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 295,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 296,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 297,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 298,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 299,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 300,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 301,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 302,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 303,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 304,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 305,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 306,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 307,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 308,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 309,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 310,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 311,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 312,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 313,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 314,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 315,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 316,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 317,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 318,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 319,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 320,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 321,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 322,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 323,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 324,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 325,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 326,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 327,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 328,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 329,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 330,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 331,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 332,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 333,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 334,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 335,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 336,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 337,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 338,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 339,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 340,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 341,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 342,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 343,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 344,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 345,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 346,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 347,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 348,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 349,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 350,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 351,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 352,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 353,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 354,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 355,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 356,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 357,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 358,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 359,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 360,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 361,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 362,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 363,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 364,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 365,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 366,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 367,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 368,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 369,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 370,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 371,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 372,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 373,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 374,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 375,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 376,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 377,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 378,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 379,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 380,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 381,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 382,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 383,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 384,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 385,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 386,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 387,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 388,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 389,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 390,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 391,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 392,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 393,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 394,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 395,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 396,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 397,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 398,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 399,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    },
+    {
+      "step": 400,
+      "tickBefore": 82,
+      "tickAfter": 82,
+      "outcome": "defeat",
+      "events": []
+    }
+  ]
+}
