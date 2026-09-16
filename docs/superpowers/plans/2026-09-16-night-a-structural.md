@@ -11,10 +11,10 @@
 
 ## 恢复点
 
-- 状态：A-1、A-2、A-3 READY；A-4 正在实施，仅新增测试与 fixture。
-- 最后完成：A-3 直接结算调用链注入与 15 个新增守卫；完整返回和全部持久字段确定性通过，主线时钟破坏证红 2 失败且已精确还原。
-- 下一步：完成三场景生产装配事件流 golden，默认两次通过并做 reducer 破坏证红；随后完成本目标全量及最终收据。
-- 已跑验证：A-3 完整套件 `07:33 +6932: All tests passed!`，退出 0；分析 `No issues found! (ran in 5.4s)`；格式 `Formatted 1854 files (0 changed) in 4.17 seconds.`；主线注入退回真实时钟 `00:02 +3 -2: Some tests failed.`，退出 1并还原。
+- 状态：A-1、A-2、A-3、A-4 READY；正在生成最终收工收据。
+- 最后完成：A-4 三场景生产装配事件流 golden；完整套件 6935 项通过，伤害变异触发 3 失败，已精确还原。
+- 下一步：按已授权内外收据分工生成收据并提交；在最终 tip 复跑全量、分析、格式及双向破坏证红，还原后覆盖外置收据和摘要。
+- 已跑验证：A-4 完整套件 `07:44 +6935: All tests passed!`，退出 0；分析 `No issues found! (ran in 3.0s)`；格式 `Formatted 1855 files (0 changed) in 5.25 seconds.`；伤害加 1 触发 `00:00 +0 -3: Some tests failed.`，退出 1 且原字节还原。
 - 环境：原 SDK 缓存只读；使用外置可写 `../flutter-sdk` 同版本副本，`CI=true` 禁用遥测写入，不修改系统 SDK 或全局设置。
 - 阻塞：原 A-3 范围冲突已由本轮协调者明确授权解除。允许事件服务、首次塔与奇遇进度、公共事件直接调用链增加可选注入口，默认未传参行为保持；其余残留不扩大修改。仓库内代码收据与外置最终 tip 收据方案亦已明确获准。
 
@@ -109,3 +109,10 @@
 - 30 类事件及 131 个自有字段全覆盖；嵌套技能结果 7 字段、普攻段 4 字段、坐标原值及全部事件顺序保留。三份基准共 651383 字节。
 - reducer 普通命中伤害临时加 1：`00:00 +0 -3: Some tests failed.`，退出 1，3 失败；原字节及 fixture SHA 验证恢复，恢复后 `00:00 +3: All tests passed!`。日志 `A-4_break_red.log/.json`、`A-4_golden_restored.log`。
 - 初次分析仅有新增测试的 avoid_print，已改为 debugPrint，未使用 ignore；复跑 `No issues found! (ran in 3.0s)`，格式 `Formatted 1855 files (0 changed) in 5.25 seconds.`，均退出 0。原始尝试日志保留；完整套件正在执行。
+
+### A-4 收口
+
+- 代码与 fixture 提交 `b0f72a114`；完整套件 `07:44 +6935: All tests passed!`，退出 0，无失败或跳过，原始输出 `../logs/A-4_full_test.log`、退出码 `A-4_full_test.exit`。比 A-3 增加 3 个测试。
+- 三份基准生成及默认两次复测、破坏证红与恢复复测均已完成。全量在 avoid_print 修正后执行；分析与格式复跑均通过。
+- 723 个禁区文件 SHA256 零变化；A-4 相对 A-3 READY 的 lib 差异为 0；两个 entry-flow 反向引用为 0，数字兜底 grep 1 + 1 = 登记表 2 行。证据 `../logs/A-4_scope_audit.json`。
+- 原 251 个旧测试断言完整保留，无弱化、删除、skip 或 ignore；最终收据校验不代替协调者独立复测。
