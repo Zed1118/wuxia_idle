@@ -11,12 +11,13 @@
 
 ## 恢复点
 
-- 状态：A-1 已完成并验证；A-2 正在实施。
-- 最后完成：红线段已独立提交 `4b18c4c67`；其余 94 个 numbers 兜底和关卡首领开关已收紧，旧测试显式 fixture 已迁移且原断言保留。数值残留 2 处、布尔残留 2 处已登记。
-- 下一步：分别形成主线、塔两份可评审提交，迁移 application 消费者和源码守卫，再做双向破坏证红及全量验证。
-- 已跑验证：新增守卫 `00:00 +9: All tests passed!`；恢复字面量 mutation 为 `00:00 +8 -1: Some tests failed.`，1 失败且已精确还原。旧红线测试 4 项通过（原始日志见 `../logs/A-1_red_lines_existing.log`）。
+- 状态：A-1、A-2 已完成并验证；A-3 开始前核实下游时钟范围阻塞。
+- 最后完成：主线与塔结算各一份提交；presentation 薄包装与 application 消费者接线完成。主线掉落写入移除触发 10 项失败、塔推进归零触发 2 项失败，均已逐字节还原。
+- 下一步：按 A-3 窄范围核实完整返回确定性；若范围外事件服务时钟确实阻断验收，登记 BLOCKED 并收工，不通过漏字段或挑无装备分支绕过。
+- 已跑验证：A-1 新守卫 `00:00 +114: All tests passed!`；A-2 定向共 51 项通过，全量 `08:01 +6917: All tests passed!`，退出 0；分析 `No issues found! (ran in 4.4s)`；格式 `Formatted 1851 files (0 changed) in 4.56 seconds.`。
 - 环境：原 SDK 缓存只读；使用外置可写 `../flutter-sdk` 同版本副本，`CI=true` 禁用遥测写入，不修改系统 SDK 或全局设置。
-- 阻塞：A-1 无。A-3 下游服务注入范围与最终收据自引用 SHA 两项已向用户异步澄清，不阻塞 A-1/A-2。旧红线测试的缺段 fixture 改为显式完整 fixture，原有 8 项数值断言全部保留；新增逐 key 删除拒绝加载守卫覆盖新契约。
+- 阻塞：A-1、A-2 无。A-3 的 GameEventService 会在返回装备上写入不可注入的真实时间，需要范围外服务注入才能保证含装备履历的完整结果确定性。已向用户异步澄清，未收到回复，不视为扩大授权。最终收据 SHA 自引用按内置代码收据与外置最终 tip 收据分别记录。
+
 
 
 ### A-1 当前验证记录
@@ -42,3 +43,23 @@
 
 - 主线切片：定向 `00:06 +26: All tests passed!`，退出 0（`A-2_mainline_targeted.log`）；依赖/回调适配归一后 9 个函数体、2 份共享 hook、镜头推导均等价（`A-2_mainline_move_audit.log`）。
 - 集成前分析：`No issues found! (ran in 5.4s)`（`A-2_analyze_precommit.log`）。塔消费者与源码路径将在下一提交接入；当前主线提交快照仍保留原塔文件。
+
+- 主线迁层已提交 `a8af2a73e`；塔定向 `00:01 +5: All tests passed!`，活动 4、扫荡 4、四份源码契约 12 项分别单跑绿，总定向 51 项。全仓分析 `No issues found! (ran in 4.4s)`。
+- 两个目标 entry-flow 在所有 application 的反向依赖为 0。当前无关反向依赖保留如下：
+
+| 文件位置 | 依赖内容 | 处理 |
+|---|---|---|
+| `main_menu/application/main_menu_status_summary_provider.dart:14` | `seclusion/presentation/seclusion_gate.dart` | 无关，本单不迁移 |
+| `debug/application/phase0a_debug_battle_fixture.dart:23` | `phase0a_visual_roster.dart` | 调试表现装配，保留 |
+| `debug/application/production_profile_keyboard_driver.dart:7` | `phase0a_battle_controller.dart` | 调试键盘驱动，保留 |
+| `debug/application/phase0a_production_profile.dart:7` | `phase0a_battle_controller.dart` | 调试生产画像，保留 |
+| `debug/application/phase0a_production_profile.dart:8` | `phase0a_battle_screen.dart` | 调试生产画像，保留 |
+
+- 塔搬迁归一核验：两函数及掉落持久化正文相同，依赖取值和回调命名作明确适配；两行迁入的英文注释已译为简体中文。审计脚本/输出保留 `../logs/A-2_tower_move_audit.*`。
+### A-2 收口验证
+
+- 主线掉落写入移除：`00:06 +16 -10: Some tests failed.`，退出 1；塔推进归零：`00:01 +3 -2: Some tests failed.`，退出 1。原始日志 `../logs/A-2_break_remove_implementation.log`、`A-2_break_force_degenerate_value.log`，结构化结果 `A-2_break_red.json`；两次均 SHA-256 验证恢复。
+- 全量 `flutter --suppress-analytics test --no-pub`：`08:01 +6917: All tests passed!`，退出 0、无失败或跳过；`../logs/A-2_full_test.log`、`A-2_full_test.exit`。
+- 全仓分析 `No issues found! (ran in 4.4s)`，整仓格式 `Formatted 1851 files (0 changed) in 4.56 seconds.`，均退出 0；各原始日志存于 `../logs/`。
+- application 对两份 entry-flow 的反向 import 为 0；主线、塔业务搬迁审计复跑均一致。723 个受保护文件再次比对零字节变化。
+- 本次只修订自己的最后塔提交为 READY，保留主线、塔两份可独立评审提交。

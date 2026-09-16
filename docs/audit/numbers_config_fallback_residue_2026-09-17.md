@@ -9,7 +9,7 @@
 | key 路径 | 原样保留的兜底值 | 解析位置与消费者 | 生产事实与建议 |
 |---|---|---|---|
 | 🔴 `numbers.yaml: realms.level_diff_modifier.diff_3_or_more.attacker` | `1.0` | `lib/data/numbers_config.dart:2564`；`lib/shared/battle_shared/derived_stats.dart:45` | YAML 明确为 `null`，既有语义是跨三阶已碾压、攻击无需继续放大，数据层以单位元参与公式。不能在本单强制非空；后续拍板是否在 YAML 显式写出单位元并取消双源。 |
-| 🔴 `stages.yaml: stages[stage_01_05..stage_06_05].bossRecruit.baseProbability` | `0.40` | `lib/data/defs/stage_def.dart:210`；`lib/features/mainline/presentation/stage_entry_flow.dart:880`；`lib/features/sect/presentation/stage_boss_recruit_hook.dart:174` | 6 个招降关卡均只配置 `candidateRef`，没有 `baseProbability`。来源是 `stages.yaml`，并非 `numbers.yaml`；后续拍板是否让缺省概率统一消费已存在的 `sect_management.recruit.stage_boss_recruit_prob`。 |
+| 🔴 `stages.yaml: stages[stage_01_05..stage_06_05].bossRecruit.baseProbability` | `0.40` | `lib/data/defs/stage_def.dart:210`；`lib/features/mainline/application/mainline_settlement.dart:197`；`lib/features/sect/presentation/stage_boss_recruit_hook.dart:174` | 6 个招降关卡均只配置 `candidateRef`，没有 `baseProbability`。来源是 `stages.yaml`，并非 `numbers.yaml`；后续拍板是否让缺省概率统一消费已存在的 `sect_management.recruit.stage_boss_recruit_prob`。 |
 
 ## 布尔开关补充登记（不计入数值 grep 表）
 

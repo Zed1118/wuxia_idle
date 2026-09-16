@@ -9,6 +9,7 @@ void main() {
     'lib/features/mainline/presentation/stage_entry_flow.dart',
     'lib/features/mainline/application/mainline_settlement.dart',
     'lib/features/tower/presentation/tower_entry_flow.dart',
+    'lib/features/tower/application/tower_settlement.dart',
     'lib/features/combat_shared/application/combat_progression_settlement_service.dart',
     'lib/features/seclusion/application/seclusion_service.dart',
     'lib/features/seclusion/application/offline_passive_service.dart',

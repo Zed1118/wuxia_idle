@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/isar_setup.dart';
+import '../../../data/isar_provider.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
@@ -20,7 +21,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../sweep/application/phase0a_sweep_headless_runner.dart';
 import '../../tower/application/tower_progress_service.dart';
-import '../../tower/presentation/tower_entry_flow.dart';
+import '../../tower/application/tower_settlement.dart';
 import '../domain/durable_activity_combat_run.dart';
 import 'durable_activity_automation_providers.dart';
 import 'durable_activity_automation_service.dart';
@@ -205,7 +206,7 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
   if (outcome == DurableActivityExecutionOutcome.victory) {
     final elapsed = DateTime.now().difference(admission.run.startedAt);
     await applyTowerVictorySettlement(
-      ref: ref,
+      dependencies: _towerSettlementDependencies(ref),
       floor: floor,
       participantId: admission.snapshot.characterId,
       elapsedMs: elapsed.inMilliseconds,
@@ -226,7 +227,7 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
         now: now,
         applyInTxn: () async {
           await applyTowerCombatResolution(
-            ref: ref,
+            dependencies: _towerSettlementDependencies(ref),
             floor: floor,
             grantsFirstClearExperience: false,
             expectedParticipantId: admission.snapshot.characterId,
@@ -249,3 +250,13 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
   }
   return DurableActivityExecutionResult(outcome: outcome, run: current);
 }
+
+/// 延迟读取结算依赖，保留存储和快照前置检查的原有顺序。
+TowerSettlementDependencies _towerSettlementDependencies(WidgetRef ref) =>
+    TowerSettlementDependencies(
+      readIsar: () => ref.read(isarProvider),
+      readNumbers: () => ref.read(numbersConfigProvider),
+      readDropService: () => ref.read(dropServiceProvider),
+      readRng: () => ref.read(rngProvider),
+      readMathRandom: () => ref.read(mathRandomProvider),
+    );
