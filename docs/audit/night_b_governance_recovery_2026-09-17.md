@@ -44,3 +44,13 @@
 - 主代理另验 opening_qi、equipment_attack_factor、constitution_factor 三条解析/消费双端，3/3 成立。Python 语法检查通过。未删除任何配置。
 - 下一步：提交 B-3、最终白名单/补丁收据验证。
 - 阻塞：审计本体无；§6 指定路径仍未获例外确认。
+
+## B-3 已完成
+
+- B-2 收口提交：`40ae26eac`；提交后 `date` 为 `2026-09-17 00:19:19 CST`。
+- 最后完成：`orphan_doc_branches_triage_2026-09-17.md` 与 `tools/audit/orphan_doc_branches_triage.py`。21 条分支、逐分支独有提交合计 42（去重 40）；0 cherry-pick、20 归档后删、1 直接删建议。未做分支处置。
+- 已跑验证：固定 SHA 两轮元数据 JSON 相同，主代理独立复跑分支/提交数；21 个章节无占位符，完整 tip、merge-base、提交与文件列表在文档中。
+- 主代理以 `random.Random(20260917).sample(rows, 5)` 抽到编号 20、5、10、9、8：复核 E2 精确 shell blob 的 `bash -n` exit 0，capture/scenario 精确路径在链缺失；N4 自反断言仍在 test:219；durable policy 存在轻功/守城；gatherPull 存在坐标生产接线；黑风岭令牌现值四项各 1、合计 4。5/5 静态证据成立。
+- 额外核对唯一“直接删”候选 `f16c09efc` 完整 diff，仅 import 顺序改变。E2 目录另有无关 `decision_session.sh`，不存在的是本批 capture 工具与场景，不是整个 tools/playtest 目录。
+- 下一步：检查最终仅八个新增白名单文件、生成 stdout 收据并冻结。
+- 阻塞：§6 指定路径例外仍未确认；未运行 Flutter/Dart 三项门禁，不能声明协调者 Gate PASS。
