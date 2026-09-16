@@ -130,7 +130,10 @@ void main() {
 
     await pumpIntel(tester, firstStage);
 
-    expect(find.text('共 25 名敌人 · 同屏上限 10 名'), findsOneWidget);
+    expect(
+      find.text(UiStrings.stageCatalogEnemySummary(25, 10)),
+      findsOneWidget,
+    );
     expect(
       find.text(
         UiStrings.prebattleCatalogReinforcements(
@@ -139,7 +142,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('3 波 · 共 9 名敌人'), findsNothing);
+    expect(find.text(UiStrings.stageListEnemyWaves(3, 9)), findsNothing);
     expect(find.text(UiStrings.prebattleRiskOutnumbered), findsOneWidget);
   });
 

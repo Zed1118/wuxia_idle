@@ -124,12 +124,20 @@ void main() {
         'stage_01_05': 2,
       }.entries) {
         final stage = GameRepository.instance.getStage(entry.key);
+        final encounter = GameRepository.instance.combatEncounterForStage(
+          entry.key,
+        )!;
         final row = find
             .ancestor(of: find.text(stage.name), matching: find.byType(InkWell))
             .first;
         final count = find.descendant(
           of: row,
-          matching: find.text(UiStrings.stageListEnemyCount(entry.value)),
+          matching: find.text(
+            UiStrings.stageCatalogEnemySummary(
+              entry.value,
+              encounter.spawnConfig.activeLimit,
+            ),
+          ),
         );
         expect(count, findsOneWidget, reason: entry.key);
         await tester.ensureVisible(count);
