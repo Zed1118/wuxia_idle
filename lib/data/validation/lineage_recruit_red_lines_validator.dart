@@ -16,6 +16,34 @@ import '../numbers_config.dart';
 /// 越界抛 [StateError] 启动失败(fail-fast)。
 /// strict 由加载器显式传入；生产空输入抛错，默认 false 保留精简 fixture。
 
+/// 四项属性单项 / 总和落在 `numbers.character.attributes` 区间内
+/// (CLAUDE.md §12.2 #2)。区间来自 yaml,不在此写死。
+void _enforceAttributeProfileBounds({
+  required String label,
+  required AttributeProfile profile,
+  required AttributeBoundsConfig bounds,
+}) {
+  for (final entry in <String, int>{
+    'constitution': profile.constitution,
+    'enlightenment': profile.enlightenment,
+    'agility': profile.agility,
+    'fortune': profile.fortune,
+  }.entries) {
+    if (!bounds.containsPoint(entry.value)) {
+      throw StateError(
+        '$label attributeProfile.${entry.key}=${entry.value},'
+        '应 ∈ [${bounds.pointMin}, ${bounds.pointMax}]',
+      );
+    }
+  }
+  if (!bounds.containsTotal(profile.total)) {
+    throw StateError(
+      '$label attributeProfile.total=${profile.total},'
+      '应 ∈ [${bounds.totalMin}, ${bounds.totalMax}]',
+    );
+  }
+}
+
 /// Phase 3 Week 4 T53 + T55：师徒 3 角色红线。
 ///
 /// 校验项：
@@ -32,6 +60,7 @@ void enforceMasterRedLines({
   required List<MasterDef> masters,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
+  required AttributeBoundsConfig attributeBounds,
 }) {
   if (masters.length != 3) {
     throw StateError('师徒角色应为 3 条，实际 ${masters.length}');
@@ -72,25 +101,11 @@ void enforceMasterRedLines({
       throw StateError('师徒 ${m.id} defaultRealm=wuSheng，Demo 阶段不允许（飞升锚点）');
     }
     // AttributeProfile 范围
-    final ap = m.attributeProfile;
-    for (final entry in <String, int>{
-      'constitution': ap.constitution,
-      'enlightenment': ap.enlightenment,
-      'agility': ap.agility,
-      'fortune': ap.fortune,
-    }.entries) {
-      if (entry.value < 1 || entry.value > 10) {
-        throw StateError(
-          '师徒 ${m.id} attributeProfile.${entry.key}=${entry.value}，'
-          '应 ∈ [1, 10]',
-        );
-      }
-    }
-    if (ap.total < 16 || ap.total > 24) {
-      throw StateError(
-        '师徒 ${m.id} attributeProfile.total=${ap.total}，应 ∈ [16, 24]',
-      );
-    }
+    _enforceAttributeProfileBounds(
+      label: '师徒 ${m.id}',
+      profile: m.attributeProfile,
+      bounds: attributeBounds,
+    );
     // starting id 存在性 + 三系锁死
     final realmIdx = m.defaultRealm.index;
     for (final techId in m.startingTechniqueIds) {
@@ -141,6 +156,7 @@ void enforceFounderCreationRedLines({
   required FounderCreationConfig founderCreation,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
+  required AttributeBoundsConfig attributeBounds,
 }) {
   if (founderCreation.schools.isEmpty &&
       founderCreation.origins.isEmpty &&
@@ -222,24 +238,11 @@ void enforceFounderCreationRedLines({
     if (!fateIds.add(fate.id)) {
       throw StateError('founder_creation fatePool id 重复:${fate.id}');
     }
-    final ap = fate.attributeProfile;
-    for (final entry in <String, int>{
-      'constitution': ap.constitution,
-      'enlightenment': ap.enlightenment,
-      'agility': ap.agility,
-      'fortune': ap.fortune,
-    }.entries) {
-      if (entry.value < 1 || entry.value > 10) {
-        throw StateError(
-          'founder_creation ${fate.id} ${entry.key}=${entry.value},应 ∈ [1,10]',
-        );
-      }
-    }
-    if (ap.total < 16 || ap.total > 24) {
-      throw StateError(
-        'founder_creation ${fate.id} 总点 ${ap.total} 应 ∈ [16,24]',
-      );
-    }
+    _enforceAttributeProfileBounds(
+      label: 'founder_creation ${fate.id}',
+      profile: fate.attributeProfile,
+      bounds: attributeBounds,
+    );
   }
   if (founderCreation.fatePool.length < 3) {
     throw StateError('founder_creation fatePool 至少需要 3 份命盘');
@@ -262,6 +265,7 @@ void enforceRecruitCandidateRedLines({
   required Map<String, RecruitCandidateDef> recruitCandidates,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
+  required AttributeBoundsConfig attributeBounds,
 }) {
   if (recruitCandidates.isEmpty) {
     if (strict) {
@@ -288,25 +292,11 @@ void enforceRecruitCandidateRedLines({
       );
     }
     // AttributeProfile 范围
-    final ap = c.attributeProfile;
-    for (final entry in <String, int>{
-      'constitution': ap.constitution,
-      'enlightenment': ap.enlightenment,
-      'agility': ap.agility,
-      'fortune': ap.fortune,
-    }.entries) {
-      if (entry.value < 1 || entry.value > 10) {
-        throw StateError(
-          '收徒候选 ${c.id} attributeProfile.${entry.key}=${entry.value},'
-          '应 ∈ [1, 10]',
-        );
-      }
-    }
-    if (ap.total < 16 || ap.total > 24) {
-      throw StateError(
-        '收徒候选 ${c.id} attributeProfile.total=${ap.total},应 ∈ [16, 24]',
-      );
-    }
+    _enforceAttributeProfileBounds(
+      label: '收徒候选 ${c.id}',
+      profile: c.attributeProfile,
+      bounds: attributeBounds,
+    );
     // starting id 存在性 + 三系锁死
     final realmIdx = c.defaultRealm.index;
     for (final techId in c.startingTechniqueIds) {
@@ -356,6 +346,7 @@ void enforceSectCandidateRedLines({
   required Map<String, SectCandidateDef> sectCandidates,
   required Map<String, TechniqueDef> techniqueDefs,
   required Map<String, EquipmentDef> equipmentDefs,
+  required AttributeBoundsConfig attributeBounds,
 }) {
   if (sectCandidates.isEmpty) {
     if (strict) {
@@ -373,25 +364,11 @@ void enforceSectCandidateRedLines({
       throw StateError('门派招收候选 ${c.id} defaultRealm=wuSheng,不允许飞升锚点');
     }
     // AttributeProfile 范围
-    final ap = c.attributeProfile;
-    for (final entry in <String, int>{
-      'constitution': ap.constitution,
-      'enlightenment': ap.enlightenment,
-      'agility': ap.agility,
-      'fortune': ap.fortune,
-    }.entries) {
-      if (entry.value < 1 || entry.value > 10) {
-        throw StateError(
-          '门派招收候选 ${c.id} attributeProfile.${entry.key}=${entry.value},'
-          '应 ∈ [1, 10]',
-        );
-      }
-    }
-    if (ap.total < 16 || ap.total > 24) {
-      throw StateError(
-        '门派招收候选 ${c.id} attributeProfile.total=${ap.total},应 ∈ [16, 24]',
-      );
-    }
+    _enforceAttributeProfileBounds(
+      label: '门派招收候选 ${c.id}',
+      profile: c.attributeProfile,
+      bounds: attributeBounds,
+    );
     // starting id 存在性 + 三系锁死(CLAUDE.md §5.3)
     final realmIdx = c.defaultRealm.index;
     for (final techId in c.startingTechniqueIds) {

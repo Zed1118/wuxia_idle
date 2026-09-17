@@ -875,18 +875,21 @@ class GameRepository {
       masters: masters,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
+      attributeBounds: numbers.attributeBounds,
     );
     enforceFounderCreationRedLines(
       strict: strict,
       founderCreation: founderCreation,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
+      attributeBounds: numbers.attributeBounds,
     );
     enforceRecruitCandidateRedLines(
       strict: strict,
       recruitCandidates: recruitCandidates,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
+      attributeBounds: numbers.attributeBounds,
     );
 
     // 第七阶段批三 P2：命名弟子拜入配置红线（stage 存在唯一 / slot 合法 /
@@ -905,6 +908,7 @@ class GameRepository {
       sectCandidates: sectCandidates,
       techniqueDefs: techniqueDefs,
       equipmentDefs: equipmentDefs,
+      attributeBounds: numbers.attributeBounds,
     );
 
     // P4.1 1.1 Q6B:Boss 招降 bossRecruit 校验(三重校:isBossStage 守 + candidateRef

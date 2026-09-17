@@ -236,6 +236,12 @@ class NumbersConfig {
   /// (GDD 2%)——刻意如此,不要「修正」。yaml 侧同步有注释,改一处须同步另一处。
   final List<RarityTierRange> rarityTiers;
 
+  /// 角色四项属性单项 / 总和区间(numbers.yaml `character.attributes`,
+  /// CLAUDE.md §12.2 #2)。B2 复核 4A(2026-09-17):此前
+  /// `lineage_recruit_red_lines_validator.dart` 四处把 `[1,10]/[16,24]` 写死,
+  /// yaml 合同零消费;现由该校验器统一读此处,四键缺失即 fail-fast。
+  final AttributeBoundsConfig attributeBounds;
+
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
@@ -303,6 +309,7 @@ class NumbersConfig {
     required this.heritageItems,
     required this.ascension,
     required this.rarityTiers,
+    required this.attributeBounds,
     required this.dispersionCultivationPenalty,
     required this.defeatBossCultivationPenalty,
     required this.learningCost,
@@ -505,6 +512,10 @@ class NumbersConfig {
         (y['character'] as Map<String, dynamic>?)?['rarity_distribution']
             as List?,
       ),
+      attributeBounds: AttributeBoundsConfig.fromYaml(
+        (y['character'] as Map<String, dynamic>?)?['attributes']
+            as Map<String, dynamic>?,
+      ),
       loadoutUltimatePowerThreshold:
           ((y['skill_loadout']
                       as Map<String, dynamic>?)?['ultimate_power_threshold']
@@ -644,6 +655,56 @@ class NumbersConfig {
 }
 
 /// 一档稀有度对应的四项属性总点数区间(numbers.yaml `character.rarity_distribution`)。
+/// 角色四项属性的单项与总和区间(numbers.yaml `character.attributes`)。
+///
+/// 只承载区间;`distribution*` / `rerollable` 仍是程序化生成的设计指引,
+/// 本仓 18 个角色 def 为手写静态 profile,不在此解析。
+class AttributeBoundsConfig {
+  final int pointMin;
+  final int pointMax;
+  final int totalMin;
+  final int totalMax;
+
+  const AttributeBoundsConfig({
+    required this.pointMin,
+    required this.pointMax,
+    required this.totalMin,
+    required this.totalMax,
+  });
+
+  factory AttributeBoundsConfig.fromYaml(Map<String, dynamic>? y) {
+    int req(String key) =>
+        (y?[key] as num?)?.toInt() ??
+        _missingRequiredValue('character.attributes.$key');
+    final cfg = AttributeBoundsConfig(
+      pointMin: req('point_per_attribute_min'),
+      pointMax: req('point_per_attribute_max'),
+      totalMin: req('total_points_min'),
+      totalMax: req('total_points_max'),
+    );
+    if (cfg.pointMin > cfg.pointMax || cfg.totalMin > cfg.totalMax) {
+      throw ArgumentError.value(
+        y,
+        'character.attributes',
+        '区间下界不得大于上界:单项 [${cfg.pointMin}, ${cfg.pointMax}] '
+            '总和 [${cfg.totalMin}, ${cfg.totalMax}]',
+      );
+    }
+    if (cfg.totalMin < cfg.pointMin * 4 || cfg.totalMax > cfg.pointMax * 4) {
+      throw ArgumentError.value(
+        y,
+        'character.attributes',
+        '总和区间必须落在四项单项区间之和内:'
+            '[${cfg.pointMin * 4}, ${cfg.pointMax * 4}]',
+      );
+    }
+    return cfg;
+  }
+
+  bool containsPoint(int v) => v >= pointMin && v <= pointMax;
+  bool containsTotal(int v) => v >= totalMin && v <= totalMax;
+}
+
 class RarityTierRange {
   final RarityTier tier;
   final int minTotal;

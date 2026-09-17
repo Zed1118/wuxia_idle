@@ -99,6 +99,7 @@ void main() {
             founderCreation: FounderCreationConfig.empty,
             techniqueDefs: const {},
             equipmentDefs: const {},
+            attributeBounds: numbers.attributeBounds,
           ),
         ),
         (
@@ -110,6 +111,7 @@ void main() {
             recruitCandidates: const {},
             techniqueDefs: const {},
             equipmentDefs: const {},
+            attributeBounds: numbers.attributeBounds,
           ),
         ),
         (
@@ -121,6 +123,7 @@ void main() {
             sectCandidates: const {},
             techniqueDefs: const {},
             equipmentDefs: const {},
+            attributeBounds: numbers.attributeBounds,
           ),
         ),
         (

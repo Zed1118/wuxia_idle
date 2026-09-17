@@ -14,6 +14,10 @@ Map<String, dynamic> _productionNumbers() =>
 const _requiredNonRedLinePaths = <String>[
   'realms.level_diff_modifier.diff_3_or_more.attacker',
   'character.adventure_attribute_bonus.lifetime_cap_per_character',
+  'character.attributes.point_per_attribute_min',
+  'character.attributes.point_per_attribute_max',
+  'character.attributes.total_points_min',
+  'character.attributes.total_points_max',
   'skill_loadout.ultimate_power_threshold',
   'equipment.resonance.stages[].unlocks_joint_skill',
   'equipment.resonance.stages[].has_sword_song_effect',
