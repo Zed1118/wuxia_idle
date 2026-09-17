@@ -14,7 +14,7 @@ import subprocess
 import yaml
 
 
-BASELINE = "c307b3ffcb155af58d4efb9179e36453297b1360"
+BASELINE = "c64b165938d948a24ab64c7c71de950eea466758"
 LABELS = ("生产消费", "仅测试消费", "零引用", "疑似间接消费需人判")
 
 # 这些容器以 Map.entries/map 读取；具体数据键无字面量不能推断为零消费。
@@ -29,20 +29,20 @@ DYNAMIC_MAPS = {
 # 本次逐组读过的零字面量候选。证据以固定基线 lib 为前提；源码变化后不能套用。
 # 每组先排除原始 numbers Map 的通用下游读取，再核对具体字段式解析器。
 ZERO_GROUPS = (
-    (r"meta\.", "元数据", "NumbersConfig 只从 meta 取 version；其余未透传到字段。", ["lib/data/numbers_config.dart:346", "lib/data/numbers_config.dart:353"]),
-    (r"combat\.damage_formula\.", "基础公式文档开关", "DamageFormula 只按字段取两个系数，没有整表遍历。", ["lib/data/numbers_config.dart:2282"]),
-    (r"combat\.final_damage_formula\.", "最终公式文档开关", "CombatNumbers 构造器逐段解析，没有 final_damage_formula 入口。", ["lib/data/numbers_config.dart:1310"]),
+    (r"meta\.", "元数据", "NumbersConfig 只从 meta 取 version；未增加 meta 逐键守卫，其余未透传到字段。", ["lib/data/numbers_config.dart:346", "lib/data/numbers_config.dart:353"]),
+    (r"combat\.damage_formula\.", "基础公式文档开关", "DamageFormula 只按字段取两个系数，没有整表遍历或额外逐键守卫。", ["lib/data/numbers_config.dart:2429"]),
+    (r"combat\.final_damage_formula\.", "最终公式文档开关", "CombatNumbers 构造器逐段解析，没有 final_damage_formula 入口或该段逐键守卫。", ["lib/data/numbers_config.dart:1361"]),
     (r"equipment\.tiers\[", "装备阶模板", "NumbersConfig 的 equipment 读取是强化、开锋、共鸣、遗物与处置；实装装备定义来自独立 equipment.yaml。", ["lib/data/numbers_config.dart:376", "lib/data/game_repository.dart:220", "lib/data/game_repository.dart:228"]),
-    (r"equipment\.enhancement\.", "强化公式文档", "强化入口逐字段解析；success_curve 循环只取 level_range/success_rate/material_penalty，公式走 _fallbackFormula。", ["lib/data/numbers_config.dart:876", "lib/data/numbers_config.dart:947", "lib/data/numbers_config.dart:952"]),
-    (r"equipment\.resonance\.", "共鸣换主预留", "共鸣只取已列明的 stages、inheritance_retention、seclusion_battle_count_per_hour；stages 逐字段解析。", ["lib/data/numbers_config.dart:404", "lib/data/numbers_config.dart:617"]),
-    (r"techniques\.tiers\[", "心法阶名称", "tiers 遍历只取 tier 和 speed_bonus；不遍历行内所有 key/value。", ["lib/data/numbers_config.dart:551"]),
+    (r"equipment\.enhancement\.", "强化公式文档", "强化入口逐字段解析；success_curve 循环只取 level_range/success_rate/material_penalty，公式走 _fallbackFormula。", ["lib/data/numbers_config.dart:922", "lib/data/numbers_config.dart:995", "lib/data/numbers_config.dart:1000"]),
+    (r"equipment\.resonance\.", "共鸣换主预留", "共鸣只取 stages、inheritance_retention、seclusion_battle_count_per_hour；stages 新增缺值报错仍只校验显式读取字段。", ["lib/data/numbers_config.dart:404", "lib/data/numbers_config.dart:619"]),
+    (r"techniques\.tiers\[", "心法阶名称", "tiers 遍历只取 tier 和 speed_bonus；不遍历行内所有 key/value。", ["lib/data/numbers_config.dart:553"]),
     (r"skills\.reference_multipliers\.", "招式参考倍率", "NumbersConfig 无 skills 入口；实装 SkillDef 来自独立 skills.yaml。", ["lib/data/numbers_config.dart:345", "lib/data/game_repository.dart:222", "lib/data/game_repository.dart:238"]),
-    (r"character\.(attributes|adventure_attribute_bonus)\.", "角色设计与事件范围", "character 只取 lifetime_cap_per_character 和 rarity_distribution，未整表或动态取这些零命中字段。", ["lib/data/numbers_config.dart:492", "lib/data/numbers_config.dart:502"]),
-    (r"retreat\.time_of_day_bonus\[", "时段文档锚", "按 period 选行后只读 multiplier/target_attribute/applies_to_school；没有读取 time_range。", ["lib/data/numbers_config.dart:2682", "lib/data/numbers_config.dart:2744"]),
+    (r"character\.(attributes|adventure_attribute_bonus)\.", "角色设计与事件范围", "character 只取 lifetime_cap_per_character 和 rarity_distribution；新增缺值报错仅守卫前者，未整表或动态读取零命中字段。", ["lib/data/numbers_config.dart:492", "lib/data/numbers_config.dart:504"]),
+    (r"retreat\.time_of_day_bonus\[", "时段文档锚", "按 period 选行后只读 multiplier/target_attribute/applies_to_school；没有读取 time_range。", ["lib/data/numbers_config.dart:2847", "lib/data/numbers_config.dart:2912"]),
     (r"tower\.", "旧塔配置段", "NumbersConfig 无 tower 入口；实际楼层由独立 towers.yaml 读取，原始 Map 未被遍历消费。", ["lib/data/numbers_config.dart:345", "lib/data/game_repository.dart:224", "lib/data/game_repository.dart:270"]),
-    (r"inheritance\.(unlock_rules|heritage_items)\.", "传承预留字段", "inheritance 只接祖师 buff 和 HeritageItems；后者逐个读取六个字段，没有通用 Map 遍历。", ["lib/data/numbers_config.dart:428", "lib/data/numbers_config.dart:771"]),
+    (r"inheritance\.(unlock_rules|heritage_items)\.", "传承预留字段", "inheritance 只接祖师 buff 和 HeritageItems；后者仍逐个读取六个字段，缺值报错未扩展字段集合，没有通用 Map 遍历。", ["lib/data/numbers_config.dart:428", "lib/data/numbers_config.dart:807"]),
     (r"synergies\.", "旧相生数值段", "NumbersConfig 无 synergies 入口；实际相生定义来自独立 synergies.yaml，原始 Map 未被遍历消费。", ["lib/data/numbers_config.dart:345", "lib/data/game_repository.dart:373"]),
-    (r"validation_examples\.", "手工公式战例", "NumbersConfig 无 validation_examples 解析入口；raw 仅持有数据不构成消费。", ["lib/data/numbers_config.dart:345", "lib/data/numbers_config.dart:538"]),
+    (r"validation_examples\.", "手工公式战例", "NumbersConfig 无 validation_examples 解析入口；raw 仅持有数据不构成消费。", ["lib/data/numbers_config.dart:345", "lib/data/numbers_config.dart:540"]),
 )
 
 
@@ -152,7 +152,7 @@ def summarize_hits(hits):
             for file, lines in by_file.items()]
 
 
-def audit(root: Path):
+def audit(root: Path, baseline: str = BASELINE):
     yaml_path = root / "data/numbers.yaml"
     yaml_source = yaml_path.read_text(encoding="utf-8")
     rows = leaves_with_marks(yaml_source)
@@ -168,12 +168,12 @@ def audit(root: Path):
         if file.suffix == ".dart":
             parsed[relative] = lex_dart(source_files[relative])
     digest.update(b"data/numbers.yaml\0" + yaml_source.encode())
-    guard_command = ["git", "diff", "--quiet", BASELINE, "--", "lib"]
+    guard_command = ["git", "diff", "--quiet", baseline, "--", "lib"]
     guard_result = subprocess.run(guard_command, cwd=root, capture_output=True, check=False)
     if guard_result.returncode not in (0, 1):
         raise RuntimeError("不能核对固定基线 lib：" + guard_result.stderr.decode())
     baseline_paths = set(subprocess.check_output(
-        ["git", "ls-tree", "-rz", "--name-only", BASELINE, "--", "lib"], cwd=root
+        ["git", "ls-tree", "-rz", "--name-only", baseline, "--", "lib"], cwd=root
     ).decode().rstrip("\0").split("\0"))
     lib_baseline_matches = guard_result.returncode == 0 and baseline_paths == {
         file for file in source_files if file.startswith("lib/")
@@ -370,7 +370,7 @@ def audit(root: Path):
                                    "outputs": [result.stdout.splitlines() for result in outputs],
                                    "passed": all(result.returncode == 0 for result in outputs)
                                    and row["verdict"] == LABELS[0]})
-    return {"baseline": BASELINE, "input_sha256": digest.hexdigest(),
+    return {"baseline": baseline, "input_sha256": digest.hexdigest(),
             "numbers_sha256": hashlib.sha256(yaml_source.encode()).hexdigest(),
             "lib_baseline_guard": {"command": guard_command, "exit_code": guard_result.returncode,
                                    "tracked_paths_match": baseline_paths == {file for file in source_files if file.startswith("lib/")},
@@ -396,8 +396,8 @@ def markdown(data):
              f"基线：`{data['baseline']}`。本次读取现有工作树 `data/numbers.yaml`、`lib/`、`test/`，未读取 A 单文件。",
              f"输入联合 SHA-256：`{data['input_sha256']}`；YAML SHA-256：`{data['numbers_sha256']}`。", "",
              "## 复跑命令与口径", "", "```sh",
-             "python3 tools/audit/numbers_key_usage.py",
-             "python3 tools/audit/numbers_key_usage.py --format markdown",
+             f"python3 tools/audit/numbers_key_usage.py --baseline {data['baseline']}",
+             f"python3 tools/audit/numbers_key_usage.py --baseline {data['baseline']} --format markdown",
              "```", "",
              "依赖当前已有 Python 3 与 PyYAML；不运行 Flutter、不安装依赖、不写配置。JSON 输出到 stdout；第二条同源生成本报告。",
              "检索清单由 `git ls-files -z -- lib test` 固定，只读受版本管理文件；不纳入协调者 worktree 的未跟踪/ignored `.g.dart` 或构建产物。",
@@ -423,13 +423,13 @@ def markdown(data):
         lines.append(f"| `{prefix[:-1]}` | {len(subset)} | " + " | ".join(str(subtotal[label]) for label in LABELS) + " |")
     lines += ["", "## 动态消费排除证据", "",
               "入口复核：`lib/data/game_repository.dart:219` 加载 numbers，`:226` 交给 NumbersConfig，`:227` 另取 realms。"
-              "`NumbersConfig.raw` 的实际取值仅见 `lib/data/numbers_config.dart:340` 的 milestone_equipment_grants；`:538` 原样持有 Map 不视作消费。",
+              "`NumbersConfig.raw` 的实际取值仅见 `lib/data/numbers_config.dart:340` 的 milestone_equipment_grants；`:540` 原样持有 Map 不视作消费。",
               "可复核命令：`rg -n '\\.raw\\b|raw\\[|numbersRaw\\b' lib --glob '*.dart'`；"
               "`rg -n '\\.entries|\\.values|\\.map\\(|\\[key\\]' lib/data/numbers_config.dart`。"
               "命中的其他 raw 局部变量须按所在类区分，不能当作 NumbersConfig.raw。",
-              "另核对了开锋 bonus_value 的 entries（numbers_config.dart:1094）、动作链动态段（:2093）、"
-              "招式按 key 获取（:1999）、周目 assignment 双层动态键（:3648）；这几组没有进入零引用清单。",
-              f"基线保护实跑：`git diff --quiet {BASELINE} -- lib` 退出 `{data['lib_baseline_guard']['exit_code']}`，"
+              "另核对了开锋 bonus_value 的 entries（numbers_config.dart:1142）、动作链动态段（:2240）、"
+              "招式按 key 获取（:2146）、周目 assignment 双层动态键（:3883）；这几组没有进入零引用清单。",
+              f"基线保护实跑：`git diff --quiet {data['baseline']} -- lib` 退出 `{data['lib_baseline_guard']['exit_code']}`，"
               f"受版本管理路径清单一致为 `{str(data['lib_baseline_guard']['tracked_paths_match']).lower()}`。"
               "此保护失败时，以下人工排除结论不再用于自动判零。", "",
               "| 零引用候选组 | 本次叶子数 | 排除动态消费的理由 | 固定基线证据 |", "|---|---:|---|---|"]
@@ -468,9 +468,10 @@ def markdown(data):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument("--baseline", default=BASELINE, help="逐组人工复核所依据的 lib 基线 SHA")
     parser.add_argument("--format", choices=("json", "markdown"), default="json")
     args = parser.parse_args()
-    data = audit(args.root.resolve())
+    data = audit(args.root.resolve(), args.baseline)
     output = markdown(data) if args.format == "markdown" else json.dumps(data, ensure_ascii=False, indent=2)
     print(output.rstrip())
 
