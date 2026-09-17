@@ -67,3 +67,5 @@ B2 实测结论（链 tip 重锚后）：标量叶子 1796 / 归一路径 847；
 ## 末问
 
 值得封装：① 收据自引用口径（收据绑定最后审计提交 + 单独封装提交）已第二次出现，应写进 `receipt.schema.md`「生成顺序」与派单包模板，免得执行端每次停 BLOCKED；② gate `--whitelist` 必须含派单包白名单全部精确文件（含收据/恢复点），可让 gate 直接读派单包 §0 生成白名单，减少调用侧笔误。
+
+**入链（23:1x）**：`claude/dispatch-20260917` @ `5c05da57d` 快进推入 `origin/codex/p2-player-flow-20260910`（`29ddf974a..5c05da57d`，`ls-remote` 核实同 tip）；同 tip 备份到 `origin/claude/dispatch-20260917`。主 checkout 本地链仍在 `c64b16593`，需 `git pull --ff-only`。main 未动。
