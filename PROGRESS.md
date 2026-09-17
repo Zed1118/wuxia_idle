@@ -3,7 +3,8 @@
 > 总行数控制在 100 行内，超出归档到末尾。
 > **当前阶段：1.0 长线打磨期（质量优先 · 不设上线时间压力）** — Demo ✅(2026-05) → 1.0 内容周期 ✅(P1-P5+) → 打磨中。阶段一变只改本行；工作原则见 CLAUDE.md §7。
 ## 当前阶段
-- **2026-09-16 当前候选**：`codex/p2-player-flow-20260910` 代码 `564d3aaf6`（merge `181ec076c`，M4 生产矩阵采样器批经 Claude §8.2 终审：改动仅 lib/features/debug 采样器 + 测试 + 造档工具 9 文件、无中文/数值散写、format 0 changed、analyze 0 issue、采样后全量 950 文件 6785/0），此前 `e6161d566` 由 `5c1105cfa` 纯 fast-forward；main 仍 `342d19275`。正式 M0–M9 仍 **1/10（仅 M1）**。
+- **2026-09-17 当前候选**：`codex/p2-player-flow-20260910` 由 `c307b3ffc` 经 `--no-ff` 合入夜批 A `ebc8f55db`（numbers_config fail-fast、主线/塔结算迁 application、结算链时钟/随机源可注入、reducer 事件流 golden ×3）与 B `f4cfeab4e`（登记簿 167 三分类、numbers.yaml 零引用 202、孤立分支处置、M 门漂移表 + 4 个 tools/audit 脚本）；集成后本次实测 analyze 0 issue、format 1762 文件 0 changed、全量 `+6935` PASS / 0 FAIL、退出 0（08:06）；各单独立 gate 见 `docs/dispatch/reports/2026-09-17_night_report.md`。此前 `564d3aaf6` 状态归入下条；main 仍 `342d19275`。正式 M0–M9 仍 **1/10（仅 M1）**。A 遗留 🔴 待拍板：`realms.level_diff_modifier.diff_3_or_more.attacker` 为 null、`bossRecruit.baseProbability` 6 关缺键（`docs/audit/numbers_config_fallback_residue_2026-09-17.md`）。
+- **2026-09-16 前候选（历史）**：`codex/p2-player-flow-20260910` 代码 `564d3aaf6`（merge `181ec076c`，M4 生产矩阵采样器批经 Claude §8.2 终审：改动仅 lib/features/debug 采样器 + 测试 + 造档工具 9 文件、无中文/数值散写、format 0 changed、analyze 0 issue、采样后全量 950 文件 6785/0），此前 `e6161d566` 由 `5c1105cfa` 纯 fast-forward；main 仍 `342d19275`。正式 M0–M9 仍 **1/10（仅 M1）**。
 - **原生候选复验（本次实测）**：并发完整 `flutter test --no-pub` 942 文件 / 6756 PASS、0 失败/跳过/遗漏，终止 done.success=true，退出 0，墙钟 1041.843s；format 0 changed、analyze 0 issue。原生退出 5/5；exact Profile 独立工程新档正常进入主菜单与真实第一关，设置面板就绪，原生窗口关闭后进程退出 0（162.326s）；未触碰真实存档。证据 `/Users/a10506/Documents/Codex/2026-09-15/p2-onboarding-chain/batch1/summary.md`。
 - **新档连续链（2026-09-15 本次实测）**：候选 `codex/p2-onboarding-chain-20260915` 代码 `c4aa90f7e`；合法刚猛 / mountain_wanderer / balanced_seed，创建 seed=20260820、战斗 seed=20260906。01 胜 243 拍/余 HP 2234/25 杀，02 胜 202 拍/余 HP 2126/15 杀，03 败 118 拍/HP 0/4 杀；均 maxHp=4000、装备攻击=174，可见敌人峰值 10/10/12。真实经验 0→5→10、装备战斗次数 0→1→2、tutorialStep 0→1→2、journal prepared/loadoutVersion 1→2→3 已断言；04/05 未进入。
 - **操作容错（同一入场副本）**：A/B/C/D=风筝/粗放/每3拍决策/仅J站桩；01 结果 胜/败/败/败、拍数 243/48/110/48；02 结果 胜/败/败/败、拍数 171/52/83/48。八次入场与连续链进度/属性逐字段相同，副本独立且同 seed；每次重置随机流，故 A 重开数据与原连续流分开。仅本配置诊断，不代表全部开局或真人验收。
@@ -15,7 +16,7 @@
   - 本配置实测：01_01/01_02 风筝可通；合法刚猛 / mountain_wanderer / balanced_seed，创建 seed=20260820、战斗 seed=20260906。
   - 01_03 黑风岭固定种子连续链胜率 0/1，118 拍败；04/05 未进入。
   - 粗放/慢反应（每 3 拍决策）/站桩三变体在 01_01、01_02 全败；自动诊断不代签真人验收。
-- **在途 worktree 台账**：117 个按 §8.4 分类（18 已在链上 / 68 patch-id 全等价 / 31 孤立）；2026-09-16 用户拍板后已清理：两条真孤立代码打 `archive/*` 标签，移除 worktree 82（0 被拒）、本地分支 79（逐条现场重验），剩 35 个 worktree（保留名单 8 + ③ 未合入 27）。③ 文档类 cherry-pick 与主仓 `git pull --ff-only` 待用户。见 `docs/audit/worktree_ledger_2026-09-16.md` 末节。
+- **在途 worktree 台账**：2026-09-16 首轮清理后剩 35 个 worktree / 107 本地分支；2026-09-17 用户拍板 6A/7A 后：③ 文档类 21 条按 `docs/audit/orphan_doc_branches_triage_2026-09-17.md` 处置（20 打 `archive/codex/*` 标签后删、1 直删、cherry-pick 0），8 条无 worktree 含独有补丁的历史分支同样打归档标签后删（三验未过故不直删）；28 个归档标签已推 origin，worktree 38→17、本地分支 110→81。仍待：主仓 `git pull --ff-only`；64 条已全进链的无 worktree 分支未在本次菜单。见 `docs/audit/worktree_ledger_2026-09-16.md` 末节。
 - **恢复点与证据**：`docs/superpowers/plans/2026-09-05-mainline-ci-wait-investigation.md`；CI/测试/原生包及事故现场 `/Users/a10506/Documents/Codex/2026-09-13/p2-ci-recovery/`，本次续验在 `resume-native/`。原生意外后已停线保全，现仅在明确授权的副本范围恢复。
 ### 历史集成记录（以下为当时状态）
 - **2026-09-07 存档清查前置集成**：B 配置严格校验与 C 断魂庄种子/架势写回已在候选 `5b20a154f` 合并，存档版本 `0.47.0`；完整 analyze 0 issue、定向 14 文件 142/142、全量 895 文件 6200/6200、format 1663 文件 0 改动、macOS release 构建通过。原始证据：`/Users/a10506/Documents/Codex/2026-09-07/isar-prerequisites-integration/`。玩家架势尚未生产启用；不代签真人/Windows，不变更正式里程碑。`0.48.0` 后续集成见下一条。
