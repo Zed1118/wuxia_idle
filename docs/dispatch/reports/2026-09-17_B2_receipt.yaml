@@ -1,8 +1,9 @@
 schema_version: 1
 base_sha: "c64b165938d948a24ab64c7c71de950eea466758"
-head_sha: "e282f909c38daaa292eca39dce65ddd167cd771a"
+head_sha: "411e200f40e177a33bb59e12f859f14958a2a80a"
 changed_files:
   - "docs/audit/numbers_yaml_unused_keys_review_2026-09-17.md"
+  - "docs/dispatch/reports/2026-09-17_B2_receipt.yaml"
   - "docs/superpowers/plans/2026-09-17-b2-unused-keys-review.md"
   - "tools/audit/numbers_key_usage.py"
   - "tools/audit/numbers_unused_keys_review.py"
@@ -14,4 +15,4 @@ break_red:
 audit_verification:
   kind: "git_diff_check_and_patch_sha256"
   diff_check_exit: 0
-  patch_sha256: "4c92cfa1e51098f02c2d340c42e852d07899f5e4925b151cd8c8ec410753e014"
+  patch_sha256: "0dfd620cfbb7c22608453705c2ab6e4c2cc1156d65ad474402e4b0bdbb095dcb"
