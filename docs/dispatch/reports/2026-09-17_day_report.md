@@ -42,6 +42,22 @@ B2 实测结论（链 tip 重锚后）：标量叶子 1796 / 归一路径 847；
 | 5 | 待拍板 23 路径 | 5A 我按四段（tower / synergies / character 收徒 / inheritance）各出一句话方案对照，下轮逐段拍 · 5B 统一挂到 M7 塔 8–14 层迁移后再议 | **5A**（synergies/character/inheritance 各有明确替代源，可较快定；tower 段可单独 5B） |
 | 6 | 下一单 | **6A** NEXT #4：`tools/phase0minus_probe` 子包 analyze 1892 条噪声（pub get 或排除，派 codex ~20min） · 6B NEXT #3 真人试玩（用户主导） | **6A** |
 
+## 晚续（22:2x → 23:xx · 用户「全部按推荐执行，由你直接工作，不派 codex」）
+
+| 项 | 交付（commit） | 验证（本会话实测） | 状态 |
+|---|---|---|---|
+| 1A B2 入链 | `239c0540f` `--no-ff` 合入 `claude/dispatch-20260917` | 分支线性含 B2 5 commit | 完成（随 2A 推链） |
+| 3A 头注 UNUSED | `8d6a00299` `numbers.yaml` +14 注释行 | YAML 解析 sha 不变 `6d8cafb5…`；53/53 叶 `unused_marked`；verdict 不变 | 完成 |
+| 4A 合同转守卫 | `5335f8300` + `00ca60825`；`NumbersConfig.attributeBounds`；校验器 4 处硬编码改读配置；新守卫 `test/data/numbers_tier_contract_guard_test.dart`（5）、`test/data/validation/attribute_bounds_from_numbers_test.dart`（14）；required_keys +4 | analyze 0；定向 5/14/32/120 + chinese_literal_audit 2 全绿；commit 后破坏证红 2/2（装备越界、tier_name 改字）还原复绿；重扫 guard passed 零引用 202/87/51 → **99/68/41**，合同保留 106 叶全部脱离零引用 | 完成 |
+| 5A 待拍板对照 | `2626cf002` `docs/audit/numbers_unused_keys_pending_decision_2026-09-17.md` | 事实行号为 3A 后现值；含 4A 发现的装备命名奖励越阶 E 段 | 完成（🔴 待你按段回 `T-A S-A C-A I-A E-A`） |
+| 6A probe 噪声 | `07aaa05a2` 根 `analysis_options.yaml` 排除子包 | 根裸 analyze 1943 → 0；子包独立 analyze 0；CI 只扫 lib test tool 不受影响 | 完成 |
+| 批末全量 | `flutter test --no-pub`（`00ca60825`，冷 worktree） | `00ca60825` 冷 worktree 并发全量 **6971 PASS / 0 FAIL / 0 跳过**，`All tests passed!` exit 0，墙钟 23:06:57→23:15:37（8m40s）；format 1766 files 0 changed；analyze lib test 0 issue | **完成** |
+| 2A 入链 | 推 `claude/dispatch-20260917` → `origin/codex/p2-player-flow-20260910`（快进，origin 链 `29ddf974a` 为祖先） | 推送结果见本报告末行「入链」 | 见末行 |
+
+晚续代拍：① 4A 白名单形状——「命名奖励落在下一阶区间内」实测不成立（武器 490 跨阶间隙），改为包络断言（🟢 守卫口径，不动数值）；② 4A 首版 helper 触 `chinese_literal_audit`，改回 throw 内拼报文（🟢）；③ 全量首跑在 10 分钟后台上限前中止、改脱离会话重跑（🟢）。仍无 🔴 代拍：未改任何数值，`numbers.yaml` 只加注释。
+
+`numbers_unused_keys_review.py --check` 在 3A/4A 后按设计抛「审计源相对派单基线变化」——冻结报告 `3f309166…` 保留为 `c64b16593` 时点证据，不改写；下次 B 类审计以 `--baseline <新链 tip>` 重锚。
+
 ## 本批指标
 
 - 派单 1 / 完成 1 / gate 实质通过 1 / 合并 0 / 返修 0 / resume 0。Codex 单耗 190,593 tokens、墙钟 31m24s（21:49:31→22:20:55）。
