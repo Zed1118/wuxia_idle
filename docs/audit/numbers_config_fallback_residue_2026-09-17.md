@@ -27,3 +27,12 @@
 - `test/data/numbers_config_required_keys_test.dart` 单跑末行：`00:00 +114: All tests passed!`。原始输出：`/Users/a10506/Documents/Codex/2026-09-16/night-A/logs/A-1_required_keys_targeted.log`。
 
 既有整段缺省对象、非数值枚举/字符串缺省，以及本范围外配置类不在本单字面量兜底整改范围内，未扩大改动。
+
+## 2026-09-17 收口恢复点（BLOCKED）
+
+- 用户已批准两处按行为等价、单一事实源收口：境界差攻击单位元在 YAML 显式写 `1.0` 并强制加载；Boss 招降省略概率时由两处业务消费点读取 numbers 的既有 `0.40`。
+- 实施前核对发现测试约束冲突：`test/features/sect/stage_boss_recruit_test.dart:120`、`:142` 均直接断言省略概率时字段为 `0.40`。字段改为可空后必须替换这些断言及旧描述，Git 会记为删除行，与本次“test/ 删除行数必须为 0”冲突。等待用户明确是否允许必要替换，同时保留全部测试用例与覆盖；未用注释屏蔽、跳过或删测绕过。
+- Boss 概率业务读方确为 `mainline_settlement.dart:223` 与 `stage_boss_recruit_hook.dart:174`；另有 `lineage_recruit_red_lines_validator.dart:447` 范围校验，实施时需同步适配可空字段。同名 encounter 概率不属于本次消费链。
+- 独立分支 `codex/numbers-fallback-residue-20260917` 基于 `9879e833abe18b9fbba0c9c57758700ec0bf979d`；指定 worktree 已完成主仓 dylib 拷贝、pub get、build_runner。主仓快进及 64 条无 worktree 本地分支清理已先行完成。
+- 原始基线：`flutter test --no-pub test/features/sect/stage_boss_recruit_test.dart` 末行 `00:02 +12: All tests passed!`；`flutter test --no-pub test/data/game_repository_test.dart --plain-name LevelDiffModifier` 末行 `00:00 +1: All tests passed!`；均退出 0，使用临时测试存档。
+- 本恢复点仅登记阻塞，未修改生产/测试代码或 YAML，未执行四向破坏证红与批末全量；上表两行仍未收口。证据与逐条分支清单：`/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/delivery-report.md`。
