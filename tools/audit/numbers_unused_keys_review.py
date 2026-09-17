@@ -22,6 +22,7 @@ ORIGINAL = "docs/audit/numbers_yaml_unused_keys_2026-09-17.md"
 NC = "lib/data/numbers_config.dart"
 GR = "lib/data/game_repository.dart"
 CHOICES = ("删除候选", "头注 UNUSED", "保留（有合同）", "待拍板")
+POOL_PATHS = {f"equipment.tiers[].{slot}.attack_max" for slot in ("weapon", "armor", "accessory")}
 
 # 人工语义结论与定位；不是手填命中数。rg/sed 每次重新执行并保存完整输出。
 RULES = [
@@ -234,6 +235,7 @@ def build(root, baseline, include_pool=False):
 
     reviewed = review(zero)
     pool = []
+    pool_evidence = []
     if include_pool:
         all_terminals = defaultdict(set)
         for r in data["rows"]:
@@ -242,8 +244,10 @@ def build(root, baseline, include_pool=False):
         candidates = [r for r in data["rows"] if r["verdict"] == "疑似间接消费需人判"
                       and r["lib_literal_count"] == 0 and len(all_terminals[r["terminal"]]) == 1
                       and r["key"].split(".")[0] in tops]
-        # 本弹性尾只补捞已有明确人工语义规则的路径；其余保留原池并披露数量。
-        selected = [r for r in candidates if any(re.match(rule[0], r["normalized_key"]) for rule in RULES)]
+        # 本弹性尾只补捞已逐条核实的三种装备上界，其他候选不借宽泛前缀直接归类。
+        selected = [r for r in candidates if r["normalized_key"] in POOL_PATHS]
+        assert {r['normalized_key'] for r in selected} == POOL_PATHS
+        pool_evidence = [ev.rg("attack_max", ["lib"], fixed=True), ev.sed(NC, 1928, 1938)]
         pool = review(selected)
         pool_counts = (len({r["normalized_key"] for r in candidates}), len(candidates))
     else:
@@ -254,6 +258,7 @@ def build(root, baseline, include_pool=False):
     assert sum(x["leaves"] for x in totals.values()) == data["counts"]["verdicts"]["零引用"]
     return {"scan": data, "evidence": ev.items, "groups": groups, "common": common, "factory": factory,
             "review": reviewed, "pool": pool, "pool_candidates": pool_counts, "totals": totals,
+            "pool_evidence": pool_evidence,
             "old_suggestions": original_suggestions(root), "history_intents": history_intents, "generic_slices": generic_slices,
             "historical_substrings": historical_substrings,
             "old": sorted(old), "added": sorted(current - old), "removed": sorted(old - current)}
@@ -353,7 +358,8 @@ def render(result):
                   "④ " + ref(r["four"]) + "；仅 lib " + ref(r["history_lib"]) + "；当前路径首次查询 " + ref(r["first"]) + "；原文件 " + ref(r["first_source"]) + f"，完整路径已在该提交的 data/numbers.yaml:{','.join(map(str,r['first_lines']))} 核验。", ""]
     if result["pool_candidates"] is not None:
         lines += ["## 附录：待人判池补捞（B2-3）", "",
-                  f"在 B2-2 READY 提交之后执行。筛选按 lib 末段精确字面量 0、同末段仅一个顶级段、该顶级段已有主体零引用；满足 {result['pool_candidates'][0]} 路径 / {result['pool_candidates'][1]} 叶子，本次已复核 {len(result['pool'])} 路径 / {sum(r['leaves'] for r in result['pool'])} 叶子。正式四类计数完全不变。", ""] + table(result["pool"])
+                  f"在 B2-2 READY 提交 `c579d0766159d4bf875295e1b573bad074750a97` 之后执行。筛选按 lib 末段精确字面量 0、同末段仅一个顶级段、该顶级段已有主体零引用；满足 {result['pool_candidates'][0]} 路径 / {result['pool_candidates'][1]} 叶子，本次挑选并复核 {len(result['pool'])} 路径 / {sum(r['leaves'] for r in result['pool'])} 叶子，其余候选未扩审。正式四类计数完全不变。",
+                  "三条均保留（有合同），不新增删除候选。lib 原文命中来自红线上限字段的同名后缀，解析的是另一路径；装备阶模板本身仍没有读取入口。补充排除：" + "；".join(ref(q) for q in result["pool_evidence"]) + "。本附录不把有注释或子串命中的待人判条目提升为正式零引用。", ""] + table(result["pool"])
     lines += ["", "## 命令原文、命中数与完整结果", "",
               "以下输出不截断。rg 退出 1 表示零命中，其他错误直接终止生成；sed 行号由命令及引用给出，git 输出为 commit 证据。含行尾空白的输出以 JSON 字符串数组逐行无损表示，避免把历史 patch 的空白变成本单补丁格式错误；命中数仍按原始输出计。", ""]
     for q in result["evidence"]:

@@ -6,7 +6,7 @@
 
 ```sh
 python3 tools/audit/numbers_key_usage.py --baseline c64b165938d948a24ab64c7c71de950eea466758
-python3 tools/audit/numbers_unused_keys_review.py --check
+python3 tools/audit/numbers_unused_keys_review.py --check --include-pool
 ```
 
 标量叶子 **1796**；归一路径 **847**；末段名 **497**。
@@ -1442,6 +1442,37 @@ python3 tools/audit/numbers_unused_keys_review.py --check
 ③ 原始 [Q494](#q494)=5；合同补查 [Q475](#q475)=23；原文 `data/numbers.yaml:1661-1671` [Q476](#q476)=11。
 ④ [Q495](#q495)=1；仅 lib [Q496](#q496)=0；当前路径首次查询 [Q497](#q497)=1；原文件 [Q084](#q084)=1121，完整路径已在该提交的 data/numbers.yaml:1117 核验。
 
+### `equipment.tiers[].weapon.attack_max`
+
+① [Q522](#q522)=7；分目录 {'lib': 2, 'test': 3, 'tools': 2}；不限制扩展名 [Q523](#q523)=7；完整/后缀片段 [Q524](#q524)=0。
+② 公共 [Q001](#q001)=63、[Q002](#q002)=22、[Q003](#q003)=187、[Q004](#q004)=37；父级 [Q027](#q027)=119。
+③ 原始 [Q525](#q525)=22；合同补查 [Q139](#q139)=27；原文 `data/equipment.yaml:1-10` [Q140](#q140)=10；`GDD.md:153-168` [Q141](#q141)=16。
+④ [Q526](#q526)=3；仅 lib [Q527](#q527)=2；当前路径首次查询 [Q528](#q528)=2；原文件 [Q084](#q084)=1121，完整路径已在该提交的 data/numbers.yaml:405,412,419,426,433,440,447 核验。
+
+### `equipment.tiers[].armor.attack_max`
+
+① [Q522](#q522)=7；分目录 {'lib': 2, 'test': 3, 'tools': 2}；不限制扩展名 [Q523](#q523)=7；完整/后缀片段 [Q529](#q529)=0。
+② 公共 [Q001](#q001)=63、[Q002](#q002)=22、[Q003](#q003)=187、[Q004](#q004)=37；父级 [Q027](#q027)=119。
+③ 原始 [Q525](#q525)=22；合同补查 [Q139](#q139)=27；原文 `data/equipment.yaml:1-10` [Q140](#q140)=10；`GDD.md:153-168` [Q141](#q141)=16。
+④ [Q526](#q526)=3；仅 lib [Q527](#q527)=2；当前路径首次查询 [Q528](#q528)=2；原文件 [Q084](#q084)=1121，完整路径已在该提交的 data/numbers.yaml:406,413,420,427,434,441,448 核验。
+
+### `equipment.tiers[].accessory.attack_max`
+
+① [Q522](#q522)=7；分目录 {'lib': 2, 'test': 3, 'tools': 2}；不限制扩展名 [Q523](#q523)=7；完整/后缀片段 [Q530](#q530)=0。
+② 公共 [Q001](#q001)=63、[Q002](#q002)=22、[Q003](#q003)=187、[Q004](#q004)=37；父级 [Q027](#q027)=119。
+③ 原始 [Q525](#q525)=22；合同补查 [Q139](#q139)=27；原文 `data/equipment.yaml:1-10` [Q140](#q140)=10；`GDD.md:153-168` [Q141](#q141)=16。
+④ [Q526](#q526)=3；仅 lib [Q527](#q527)=2；当前路径首次查询 [Q528](#q528)=2；原文件 [Q084](#q084)=1121，完整路径已在该提交的 data/numbers.yaml:407,414,421,428,435,442,449 核验。
+
+## 附录：待人判池补捞（B2-3）
+
+在 B2-2 READY 提交 `c579d0766159d4bf875295e1b573bad074750a97` 之后执行。筛选按 lib 末段精确字面量 0、同末段仅一个顶级段、该顶级段已有主体零引用；满足 28 路径 / 72 叶子，本次挑选并复核 3 路径 / 21 叶子，其余候选未扩审。正式四类计数完全不变。
+三条均保留（有合同），不新增删除候选。lib 原文命中来自红线上限字段的同名后缀，解析的是另一路径；装备阶模板本身仍没有读取入口。补充排除：[Q520](#q520)=2；[Q521](#q521)=11。本附录不把有注释或子串命中的待人判条目提升为正式零引用。
+
+| 归一路径 | 叶子数 | 值（多叶给首→尾） | YAML 行 | ①末段 / 路径 | ②公共 / 父级 | ③原始 / 合同（文件:行） | ④提交数 / lib 数；首次加入 | 建议 | 理由 |
+|---|---:|---|---|---|---|---|---|---|---|
+| `equipment.tiers[].weapon.attack_max` | 7 | 150 → 2000 | 682,689,696,703,710,719,728 | [Q522](#q522)=7 / [Q524](#q524)=0 | [Q001](#q001)=63 / [Q027](#q027)=119 | [Q525](#q525)=22 / [Q139](#q139)=27；`data/equipment.yaml:7`; `data/equipment.yaml:14`; `data/equipment.yaml:15`; `data/equipment.yaml:17`; `data/equipment.yaml:18`; `data/equipment.yaml:24`; `data/equipment.yaml:109`; `data/equipment.yaml:280`; `data/equipment.yaml:546`; `data/equipment.yaml:641`; `data/equipment.yaml:739`; `data/equipment.yaml:935`; `data/equipment.yaml:1241`; `GDD.md:162`; `GDD.md:163`; `GDD.md:165`; `GDD.md:168`; `GDD.md:186`; `GDD.md:187`; `GDD.md:189`; `GDD.md:192`; `GDD.md:312`; `GDD.md:581`; `GDD.md:582`; `GDD.md:583`; `GDD.md:589`; `GDD.md:710` | [Q526](#q526)=3 / [Q527](#q527)=2；`fb99985ae0fe1f4ffe08eae4b26b0197d34b21a4` | 保留（有合同） | 独立装备 YAML 明确要求数值范围对齐该段；阶名也属于同表设计锚，零读取不解除合同。 |
+| `equipment.tiers[].armor.attack_max` | 7 | 0 → 0 | 683,690,697,704,711,720,729 | [Q522](#q522)=7 / [Q529](#q529)=0 | [Q001](#q001)=63 / [Q027](#q027)=119 | [Q525](#q525)=22 / [Q139](#q139)=27；`data/equipment.yaml:7`; `data/equipment.yaml:14`; `data/equipment.yaml:15`; `data/equipment.yaml:17`; `data/equipment.yaml:18`; `data/equipment.yaml:24`; `data/equipment.yaml:109`; `data/equipment.yaml:280`; `data/equipment.yaml:546`; `data/equipment.yaml:641`; `data/equipment.yaml:739`; `data/equipment.yaml:935`; `data/equipment.yaml:1241`; `GDD.md:162`; `GDD.md:163`; `GDD.md:165`; `GDD.md:168`; `GDD.md:186`; `GDD.md:187`; `GDD.md:189`; `GDD.md:192`; `GDD.md:312`; `GDD.md:581`; `GDD.md:582`; `GDD.md:583`; `GDD.md:589`; `GDD.md:710` | [Q526](#q526)=3 / [Q527](#q527)=2；`fb99985ae0fe1f4ffe08eae4b26b0197d34b21a4` | 保留（有合同） | 独立装备 YAML 明确要求数值范围对齐该段；阶名也属于同表设计锚，零读取不解除合同。 |
+| `equipment.tiers[].accessory.attack_max` | 7 | 40 → 850 | 684,691,698,705,712,721,730 | [Q522](#q522)=7 / [Q530](#q530)=0 | [Q001](#q001)=63 / [Q027](#q027)=119 | [Q525](#q525)=22 / [Q139](#q139)=27；`data/equipment.yaml:7`; `data/equipment.yaml:14`; `data/equipment.yaml:15`; `data/equipment.yaml:17`; `data/equipment.yaml:18`; `data/equipment.yaml:24`; `data/equipment.yaml:109`; `data/equipment.yaml:280`; `data/equipment.yaml:546`; `data/equipment.yaml:641`; `data/equipment.yaml:739`; `data/equipment.yaml:935`; `data/equipment.yaml:1241`; `GDD.md:162`; `GDD.md:163`; `GDD.md:165`; `GDD.md:168`; `GDD.md:186`; `GDD.md:187`; `GDD.md:189`; `GDD.md:192`; `GDD.md:312`; `GDD.md:581`; `GDD.md:582`; `GDD.md:583`; `GDD.md:589`; `GDD.md:710` | [Q526](#q526)=3 / [Q527](#q527)=2；`fb99985ae0fe1f4ffe08eae4b26b0197d34b21a4` | 保留（有合同） | 独立装备 YAML 明确要求数值范围对齐该段；阶名也属于同表设计锚，零读取不解除合同。 |
 
 ## 命令原文、命中数与完整结果
 
@@ -5801,7 +5832,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 ```text
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:28:    (r"meta\.", "头注 UNUSED", "存档时间戳，不是运行配置；已有纯文档说明。", "last_updated|纯文档", ["data/numbers.yaml"], [("data/numbers.yaml", 28, 34)]),
+tools/audit/numbers_unused_keys_review.py:29:    (r"meta\.", "头注 UNUSED", "存档时间戳，不是运行配置；已有纯文档说明。", "last_updated|纯文档", ["data/numbers.yaml"], [("data/numbers.yaml", 28, 34)]),
 ```
 
 <a id="q078"></a>
@@ -5816,7 +5847,7 @@ rg -n --with-filename --no-heading --sort path -F -- last_updated lib test tool 
 ```text
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:28:    (r"meta\.", "头注 UNUSED", "存档时间戳，不是运行配置；已有纯文档说明。", "last_updated|纯文档", ["data/numbers.yaml"], [("data/numbers.yaml", 28, 34)]),
+tools/audit/numbers_unused_keys_review.py:29:    (r"meta\.", "头注 UNUSED", "存档时间戳，不是运行配置；已有纯文档说明。", "last_updated|纯文档", ["data/numbers.yaml"], [("data/numbers.yaml", 28, 34)]),
 ```
 
 <a id="q079"></a>
@@ -7071,7 +7102,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 tools/audit/numbers_key_usage.py:336:                               "combat.damage_formula.skill_multiplier_added", "retreat.time_of_day_bonus")):
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:29:    (r"combat\.", "头注 UNUSED", "公式结构文档；布尔字段不是运行时开关，保留说明锚。", "纯文档|最终伤害|基础伤害|skill_multiplier_added", ["GDD.md", "data/numbers.yaml"], [("data/numbers.yaml", 99, 118), ("GDD.md", 319, 349)]),
+tools/audit/numbers_unused_keys_review.py:30:    (r"combat\.", "头注 UNUSED", "公式结构文档；布尔字段不是运行时开关，保留说明锚。", "纯文档|最终伤害|基础伤害|skill_multiplier_added", ["GDD.md", "data/numbers.yaml"], [("data/numbers.yaml", 99, 118), ("GDD.md", 319, 349)]),
 ```
 
 <a id="q088"></a>
@@ -7087,7 +7118,7 @@ rg -n --with-filename --no-heading --sort path -F -- skill_multiplier_added lib 
 tools/audit/numbers_key_usage.py:336:                               "combat.damage_formula.skill_multiplier_added", "retreat.time_of_day_bonus")):
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:29:    (r"combat\.", "头注 UNUSED", "公式结构文档；布尔字段不是运行时开关，保留说明锚。", "纯文档|最终伤害|基础伤害|skill_multiplier_added", ["GDD.md", "data/numbers.yaml"], [("data/numbers.yaml", 99, 118), ("GDD.md", 319, 349)]),
+tools/audit/numbers_unused_keys_review.py:30:    (r"combat\.", "头注 UNUSED", "公式结构文档；布尔字段不是运行时开关，保留说明锚。", "纯文档|最终伤害|基础伤害|skill_multiplier_added", ["GDD.md", "data/numbers.yaml"], [("data/numbers.yaml", 99, 118), ("GDD.md", 319, 349)]),
 ```
 
 <a id="q089"></a>
@@ -8476,7 +8507,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:31:    (r"equipment\.enhancement\.max_level_formula", "保留（有合同）", "GDD 强化上限合同仍存在；生产用角色层数实现，该字符串未被读取。", "强化等级上限", ["GDD.md"], [("GDD.md", 429, 429)]),
+tools/audit/numbers_unused_keys_review.py:32:    (r"equipment\.enhancement\.max_level_formula", "保留（有合同）", "GDD 强化上限合同仍存在；生产用角色层数实现，该字符串未被读取。", "强化等级上限", ["GDD.md"], [("GDD.md", 429, 429)]),
 ```
 
 <a id="q179"></a>
@@ -8489,7 +8520,7 @@ rg -n --with-filename --no-heading --sort path -F -- max_level_formula lib test 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:31:    (r"equipment\.enhancement\.max_level_formula", "保留（有合同）", "GDD 强化上限合同仍存在；生产用角色层数实现，该字符串未被读取。", "强化等级上限", ["GDD.md"], [("GDD.md", 429, 429)]),
+tools/audit/numbers_unused_keys_review.py:32:    (r"equipment\.enhancement\.max_level_formula", "保留（有合同）", "GDD 强化上限合同仍存在；生产用角色层数实现，该字符串未被读取。", "强化等级上限", ["GDD.md"], [("GDD.md", 429, 429)]),
 ```
 
 <a id="q180"></a>
@@ -8736,7 +8767,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 tools/audit/numbers_key_usage.py:338:            elif key.startswith("equipment.resonance.new_owner_retention"):
 tools/audit/numbers_key_usage.py:347:                     "apply_school_counter", "new_owner_retention", "daily_attempts",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:33:    (r"equipment\.resonance\.", "保留（有合同）", "换主清零仍是 GDD 合同，原注释明确预埋勿删；字段本身未读取。", "换主清零|new_owner_retention", ["GDD.md", "data/numbers.yaml", "docs/audit/full_audit_2026-06-16.md"], [("GDD.md", 469, 469), ("data/numbers.yaml", 832, 837)]),
+tools/audit/numbers_unused_keys_review.py:34:    (r"equipment\.resonance\.", "保留（有合同）", "换主清零仍是 GDD 合同，原注释明确预埋勿删；字段本身未读取。", "换主清零|new_owner_retention", ["GDD.md", "data/numbers.yaml", "docs/audit/full_audit_2026-06-16.md"], [("GDD.md", 469, 469), ("data/numbers.yaml", 832, 837)]),
 ```
 
 <a id="q197"></a>
@@ -8752,7 +8783,7 @@ rg -n --with-filename --no-heading --sort path -F -- new_owner_retention lib tes
 tools/audit/numbers_key_usage.py:338:            elif key.startswith("equipment.resonance.new_owner_retention"):
 tools/audit/numbers_key_usage.py:347:                     "apply_school_counter", "new_owner_retention", "daily_attempts",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:33:    (r"equipment\.resonance\.", "保留（有合同）", "换主清零仍是 GDD 合同，原注释明确预埋勿删；字段本身未读取。", "换主清零|new_owner_retention", ["GDD.md", "data/numbers.yaml", "docs/audit/full_audit_2026-06-16.md"], [("GDD.md", 469, 469), ("data/numbers.yaml", 832, 837)]),
+tools/audit/numbers_unused_keys_review.py:34:    (r"equipment\.resonance\.", "保留（有合同）", "换主清零仍是 GDD 合同，原注释明确预埋勿删；字段本身未读取。", "换主清零|new_owner_retention", ["GDD.md", "data/numbers.yaml", "docs/audit/full_audit_2026-06-16.md"], [("GDD.md", 469, 469), ("data/numbers.yaml", 832, 837)]),
 ```
 
 <a id="q198"></a>
@@ -10114,7 +10145,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:37:    (r"character\.attributes\.", "保留（有合同）", "属性上下限及不可重 roll 有设计合同；当前实现该规则不等于读取本字段。", "单项属性范围|rerollable|16-24|1-10|不可重 roll", ["CLAUDE.md", "GDD.md", "docs/spec/rarity_wiring_gap_2026-08-07.md"], [("CLAUDE.md", 564, 564), ("docs/spec/rarity_wiring_gap_2026-08-07.md", 115, 121)]),
+tools/audit/numbers_unused_keys_review.py:38:    (r"character\.attributes\.", "保留（有合同）", "属性上下限及不可重 roll 有设计合同；当前实现该规则不等于读取本字段。", "单项属性范围|rerollable|16-24|1-10|不可重 roll", ["CLAUDE.md", "GDD.md", "docs/spec/rarity_wiring_gap_2026-08-07.md"], [("CLAUDE.md", 564, 564), ("docs/spec/rarity_wiring_gap_2026-08-07.md", 115, 121)]),
 ```
 
 <a id="q294"></a>
@@ -10127,7 +10158,7 @@ rg -n --with-filename --no-heading --sort path -F -- rerollable lib test tool to
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:37:    (r"character\.attributes\.", "保留（有合同）", "属性上下限及不可重 roll 有设计合同；当前实现该规则不等于读取本字段。", "单项属性范围|rerollable|16-24|1-10|不可重 roll", ["CLAUDE.md", "GDD.md", "docs/spec/rarity_wiring_gap_2026-08-07.md"], [("CLAUDE.md", 564, 564), ("docs/spec/rarity_wiring_gap_2026-08-07.md", 115, 121)]),
+tools/audit/numbers_unused_keys_review.py:38:    (r"character\.attributes\.", "保留（有合同）", "属性上下限及不可重 roll 有设计合同；当前实现该规则不等于读取本字段。", "单项属性范围|rerollable|16-24|1-10|不可重 roll", ["CLAUDE.md", "GDD.md", "docs/spec/rarity_wiring_gap_2026-08-07.md"], [("CLAUDE.md", 564, 564), ("docs/spec/rarity_wiring_gap_2026-08-07.md", 115, 121)]),
 ```
 
 <a id="q295"></a>
@@ -10526,7 +10557,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 
 ```text
 tools/audit/numbers_key_usage.py:41:    (r"retreat\.time_of_day_bonus\[", "时段文档锚", "按 period 选行后只读 multiplier/target_attribute/applies_to_school；没有读取 time_range。", ["lib/data/numbers_config.dart:2847", "lib/data/numbers_config.dart:2912"]),
-tools/audit/numbers_unused_keys_review.py:39:    (r"retreat\.", "头注 UNUSED", "固定传统时辰的文档锚；代码按 period 与时钟规则实现，不读取该时间数组或 null。", "time_range|子时|正午", ["data/numbers.yaml", "GDD.md", "data_schema.md"], [("data/numbers.yaml", 1371, 1388), ("GDD.md", 542, 547)]),
+tools/audit/numbers_unused_keys_review.py:40:    (r"retreat\.", "头注 UNUSED", "固定传统时辰的文档锚；代码按 period 与时钟规则实现，不读取该时间数组或 null。", "time_range|子时|正午", ["data/numbers.yaml", "GDD.md", "data_schema.md"], [("data/numbers.yaml", 1371, 1388), ("GDD.md", 542, 547)]),
 ```
 
 <a id="q317"></a>
@@ -10540,7 +10571,7 @@ rg -n --with-filename --no-heading --sort path -F -- time_range lib test tool to
 
 ```text
 tools/audit/numbers_key_usage.py:41:    (r"retreat\.time_of_day_bonus\[", "时段文档锚", "按 period 选行后只读 multiplier/target_attribute/applies_to_school；没有读取 time_range。", ["lib/data/numbers_config.dart:2847", "lib/data/numbers_config.dart:2912"]),
-tools/audit/numbers_unused_keys_review.py:39:    (r"retreat\.", "头注 UNUSED", "固定传统时辰的文档锚；代码按 period 与时钟规则实现，不读取该时间数组或 null。", "time_range|子时|正午", ["data/numbers.yaml", "GDD.md", "data_schema.md"], [("data/numbers.yaml", 1371, 1388), ("GDD.md", 542, 547)]),
+tools/audit/numbers_unused_keys_review.py:40:    (r"retreat\.", "头注 UNUSED", "固定传统时辰的文档锚；代码按 period 与时钟规则实现，不读取该时间数组或 null。", "time_range|子时|正午", ["data/numbers.yaml", "GDD.md", "data_schema.md"], [("data/numbers.yaml", 1371, 1388), ("GDD.md", 542, 547)]),
 ```
 
 <a id="q318"></a>
@@ -11634,7 +11665,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:41:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
+tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
 ```
 
 <a id="q394"></a>
@@ -11647,7 +11678,7 @@ rg -n --with-filename --no-heading --sort path -F -- can_take_disciple_at lib te
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:41:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
+tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
 ```
 
 <a id="q395"></a>
@@ -11829,7 +11860,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:41:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
+tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
 ```
 
 <a id="q405"></a>
@@ -11842,7 +11873,7 @@ rg -n --with-filename --no-heading --sort path -F -- disciple_can_take_grand_dis
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:41:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
+tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.unlock_rules\.(can_take_disciple_at|disciple_can_take_grand_disciple_at)", "待拍板", "未能判定旧收徒境界门槛去留：文档解锁合同与当前剧情事件准入分叉。", "can_take_disciple_at|徒孙|一流|绝顶", ["data/recruit_candidates.yaml", "GDD.md"], [("data/recruit_candidates.yaml", 1, 4), ("GDD.md", 499, 505), ("data/numbers.yaml", 1565, 1581)]),
 ```
 
 <a id="q406"></a>
@@ -11924,7 +11955,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q412"></a>
@@ -11937,7 +11968,7 @@ rg -n --with-filename --no-heading --sort path -F -- can_pass_legacy_at lib test
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q413"></a>
@@ -12122,7 +12153,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q423"></a>
@@ -12135,7 +12166,7 @@ rg -n --with-filename --no-heading --sort path -F -- auto_buff_internal_force_ma
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q424"></a>
@@ -12214,7 +12245,7 @@ rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' 
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q430"></a>
@@ -12227,7 +12258,7 @@ rg -n --with-filename --no-heading --sort path -F -- resonance_retention lib tes
 命中/输出行数：1；退出码：0。
 
 ```text
-tools/audit/numbers_unused_keys_review.py:42:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
+tools/audit/numbers_unused_keys_review.py:43:    (r"inheritance\.", "头注 UNUSED", "旧传承字段是重复语义锚；活配置已在飞升或装备段，删除仍需单独批准。", "can_pass_legacy_at|重复声明|resonance_retention|auto_buff_internal_force_max|internal_force_max_bonus|inheritance_retention", ["data/numbers.yaml"], [("data/numbers.yaml", 1574, 1577), ("data/numbers.yaml", 1591, 1600), (NC, 404, 437), (NC, 807, 833)]),
 ```
 
 <a id="q431"></a>
@@ -12791,8 +12822,8 @@ test/data/inner_demon_dead_config_test.dart:18:      expect(numbers, isNot(conta
 test/features/inner_demon/domain/inner_demon_def_test.dart:9:          'failure_penalty': {'main_cultivation_multiplier': 0.90},
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:172:                                   "-Scultivation_multiplier", "--", "lib"])
-tools/audit/numbers_unused_keys_review.py:342:    lines += ["", "唯一非零 lib 历史末段检索为 cultivation_multiplier（3 个提交），实际 patch 都是心魔 main_cultivation_multiplier / sub_cultivation_multiplier 子串，与战例无关：" + ref(result["historical_substrings"]) + "。",
+tools/audit/numbers_unused_keys_review.py:173:                                   "-Scultivation_multiplier", "--", "lib"])
+tools/audit/numbers_unused_keys_review.py:347:    lines += ["", "唯一非零 lib 历史末段检索为 cultivation_multiplier（3 个提交），实际 patch 都是心魔 main_cultivation_multiplier / sub_cultivation_multiplier 子串，与战例无关：" + ref(result["historical_substrings"]) + "。",
 ```
 
 <a id="q469"></a>
@@ -12809,8 +12840,8 @@ test/data/inner_demon_dead_config_test.dart:18:      expect(numbers, isNot(conta
 test/features/inner_demon/domain/inner_demon_def_test.dart:9:          'failure_penalty': {'main_cultivation_multiplier': 0.90},
 tools/audit/numbers_key_usage.py:346:    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
 tools/audit/numbers_key_usage.py:450:              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
-tools/audit/numbers_unused_keys_review.py:172:                                   "-Scultivation_multiplier", "--", "lib"])
-tools/audit/numbers_unused_keys_review.py:342:    lines += ["", "唯一非零 lib 历史末段检索为 cultivation_multiplier（3 个提交），实际 patch 都是心魔 main_cultivation_multiplier / sub_cultivation_multiplier 子串，与战例无关：" + ref(result["historical_substrings"]) + "。",
+tools/audit/numbers_unused_keys_review.py:173:                                   "-Scultivation_multiplier", "--", "lib"])
+tools/audit/numbers_unused_keys_review.py:347:    lines += ["", "唯一非零 lib 历史末段检索为 cultivation_multiplier（3 个提交），实际 patch 都是心魔 main_cultivation_multiplier / sub_cultivation_multiplier 子串，与战例无关：" + ref(result["historical_substrings"]) + "。",
 ```
 
 <a id="q470"></a>
@@ -13549,6 +13580,197 @@ rg -n --with-filename --no-heading --sort path --glob '*.dart' --glob '*.py' --g
 
 ```sh
 rg -n --with-filename --no-heading --sort path --glob '*.dart' --glob '*.py' --glob '*.sh' -- 'validation_examples\.example_e\.expected_outcome|example_e\.expected_outcome' lib test tool tools
+```
+
+命中/输出行数：0；退出码：1。
+
+```text
+（无输出）
+```
+
+<a id="q520"></a>
+### Q520
+
+```sh
+rg -n --with-filename --no-heading --sort path -F -- attack_max lib
+```
+
+命中/输出行数：2；退出码：0。
+
+```text
+lib/data/numbers_config.dart:1934:          (y['equipment_base_attack_max'] as num?)?.toInt() ??
+lib/data/numbers_config.dart:1935:          _missingRequiredValue('combat.red_lines.equipment_base_attack_max'),
+```
+
+<a id="q521"></a>
+### Q521
+
+```sh
+sed -n 1928,1938p lib/data/numbers_config.dart
+```
+
+命中/输出行数：11；退出码：0。
+
+```text
+          (y['internal_force_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.internal_force_max'),
+      bossHpMax:
+          (y['boss_hp_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.boss_hp_max'),
+      equipmentBaseAttackMax:
+          (y['equipment_base_attack_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.equipment_base_attack_max'),
+      skillPowerMultiplierMax:
+          (y['skill_power_multiplier_max'] as num?)?.toInt() ??
+          _missingRequiredValue('combat.red_lines.skill_power_multiplier_max'),
+```
+
+<a id="q522"></a>
+### Q522
+
+```sh
+rg -n --with-filename --no-heading --sort path -F --glob '*.dart' --glob '*.py' --glob '*.sh' -- attack_max lib test tool tools
+```
+
+命中/输出行数：7；退出码：0。
+
+```text
+lib/data/numbers_config.dart:1934:          (y['equipment_base_attack_max'] as num?)?.toInt() ??
+lib/data/numbers_config.dart:1935:          _missingRequiredValue('combat.red_lines.equipment_base_attack_max'),
+test/data/numbers_config_red_lines_test.dart:19:        'equipment_base_attack_max': 2000,
+test/data/numbers_config_red_lines_test.dart:40:        'equipment_base_attack_max': 2000,
+test/features/equipment/application/equipment_factory_test.dart:121:  // 3. armor slot：attack_min=attack_max=0 时返回恒 0
+tools/audit/numbers_unused_keys_review.py:25:POOL_PATHS = {f"equipment.tiers[].{slot}.attack_max" for slot in ("weapon", "armor", "accessory")}
+tools/audit/numbers_unused_keys_review.py:250:        pool_evidence = [ev.rg("attack_max", ["lib"], fixed=True), ev.sed(NC, 1928, 1938)]
+```
+
+<a id="q523"></a>
+### Q523
+
+```sh
+rg -n --with-filename --no-heading --sort path -F -- attack_max lib test tool tools
+```
+
+命中/输出行数：7；退出码：0。
+
+```text
+lib/data/numbers_config.dart:1934:          (y['equipment_base_attack_max'] as num?)?.toInt() ??
+lib/data/numbers_config.dart:1935:          _missingRequiredValue('combat.red_lines.equipment_base_attack_max'),
+test/data/numbers_config_red_lines_test.dart:19:        'equipment_base_attack_max': 2000,
+test/data/numbers_config_red_lines_test.dart:40:        'equipment_base_attack_max': 2000,
+test/features/equipment/application/equipment_factory_test.dart:121:  // 3. armor slot：attack_min=attack_max=0 时返回恒 0
+tools/audit/numbers_unused_keys_review.py:25:POOL_PATHS = {f"equipment.tiers[].{slot}.attack_max" for slot in ("weapon", "armor", "accessory")}
+tools/audit/numbers_unused_keys_review.py:250:        pool_evidence = [ev.rg("attack_max", ["lib"], fixed=True), ev.sed(NC, 1928, 1938)]
+```
+
+<a id="q524"></a>
+### Q524
+
+```sh
+rg -n --with-filename --no-heading --sort path --glob '*.dart' --glob '*.py' --glob '*.sh' -- 'equipment\.tiers\.weapon\.attack_max|tiers\.weapon\.attack_max|weapon\.attack_max' lib test tool tools
+```
+
+命中/输出行数：0；退出码：1。
+
+```text
+（无输出）
+```
+
+<a id="q525"></a>
+### Q525
+
+```sh
+rg -n --with-filename --no-heading --sort path -F --glob '!docs/audit/numbers_yaml_unused_keys*' -- attack_max data GDD.md CLAUDE.md data_schema.md docs
+```
+
+命中/输出行数：22；退出码：0。
+
+```text
+data/numbers.yaml:174:    equipment_base_attack_max: 2000  # 装备基础攻击红线（§5.4，配置基础表值，不含强化/共鸣/开锋派生）
+data/numbers.yaml:682:      weapon:    {attack_min: 100, attack_max: 150, hp_min: 0,    hp_max: 0,    speed_min: 0,  speed_max: 10}
+data/numbers.yaml:683:      armor:     {attack_min: 0,   attack_max: 0,   hp_min: 100,  hp_max: 200,  speed_min: 0,  speed_max: 5}
+data/numbers.yaml:684:      accessory: {attack_min: 20,  attack_max: 40,  hp_min: 50,   hp_max: 100,  speed_min: 0,  speed_max: 8}
+data/numbers.yaml:689:      weapon:    {attack_min: 180, attack_max: 280, hp_min: 0,    hp_max: 50,   speed_min: 5,  speed_max: 20}
+data/numbers.yaml:690:      armor:     {attack_min: 0,   attack_max: 0,   hp_min: 250,  hp_max: 450,  speed_min: 0,  speed_max: 10}
+data/numbers.yaml:691:      accessory: {attack_min: 50,  attack_max: 90,  hp_min: 100,  hp_max: 200,  speed_min: 5,  speed_max: 15}
+data/numbers.yaml:696:      weapon:    {attack_min: 320, attack_max: 450, hp_min: 0,    hp_max: 100,  speed_min: 10, speed_max: 30}
+data/numbers.yaml:697:      armor:     {attack_min: 0,   attack_max: 0,   hp_min: 450,  hp_max: 750,  speed_min: 5,  speed_max: 15}
+data/numbers.yaml:698:      accessory: {attack_min: 100, attack_max: 160, hp_min: 200,  hp_max: 350,  speed_min: 10, speed_max: 25}
+data/numbers.yaml:703:      weapon:    {attack_min: 480, attack_max: 650, hp_min: 0,    hp_max: 150,  speed_min: 20, speed_max: 45}
+data/numbers.yaml:704:      armor:     {attack_min: 0,   attack_max: 0,   hp_min: 700,  hp_max: 1100, speed_min: 10, speed_max: 25}
+data/numbers.yaml:705:      accessory: {attack_min: 180, attack_max: 280, hp_min: 350,  hp_max: 550,  speed_min: 20, speed_max: 35}
+data/numbers.yaml:710:      weapon:    {attack_min: 700, attack_max: 950, hp_min: 50,   hp_max: 250,  speed_min: 30, speed_max: 60}
+data/numbers.yaml:711:      armor:     {attack_min: 0,   attack_max: 0,   hp_min: 1100, hp_max: 1600, speed_min: 15, speed_max: 35}
+data/numbers.yaml:712:      accessory: {attack_min: 280, attack_max: 420, hp_min: 550,  hp_max: 850,  speed_min: 30, speed_max: 50}
+data/numbers.yaml:719:      weapon:    {attack_min: 1000, attack_max: 1400, hp_min: 100, hp_max: 400, speed_min: 45, speed_max: 75}
+data/numbers.yaml:720:      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 1400, hp_max: 2000, speed_min: 25, speed_max: 50}
+data/numbers.yaml:721:      accessory: {attack_min: 420,  attack_max: 600,  hp_min: 750,  hp_max: 1100, speed_min: 45, speed_max: 70}
+data/numbers.yaml:728:      weapon:    {attack_min: 1500, attack_max: 2000, hp_min: 150, hp_max: 350, speed_min: 65, speed_max: 100}
+data/numbers.yaml:729:      armor:     {attack_min: 0,    attack_max: 0,    hp_min: 1750, hp_max: 2300, speed_min: 40, speed_max: 70}
+data/numbers.yaml:730:      accessory: {attack_min: 600,  attack_max: 850,  hp_min: 1000, hp_max: 1400, speed_min: 65, speed_max: 95}
+```
+
+<a id="q526"></a>
+### Q526
+
+```sh
+git log --oneline c64b165938d948a24ab64c7c71de950eea466758 -Sattack_max -- lib data/numbers.yaml
+```
+
+命中/输出行数：3；退出码：0。
+
+```text
+4b18c4c67 收口数值红线缺项为立即报错并补逐键守卫
+7e8849de4 feat(debug): add redline audit view
+fb99985ae [T01] 项目初始化与依赖配置
+```
+
+<a id="q527"></a>
+### Q527
+
+```sh
+git log --oneline c64b165938d948a24ab64c7c71de950eea466758 -Sattack_max -- lib
+```
+
+命中/输出行数：2；退出码：0。
+
+```text
+4b18c4c67 收口数值红线缺项为立即报错并补逐键守卫
+7e8849de4 feat(debug): add redline audit view
+```
+
+<a id="q528"></a>
+### Q528
+
+```sh
+git log --reverse '--format=%H %s' c64b165938d948a24ab64c7c71de950eea466758 -Sattack_max -- data/numbers.yaml
+```
+
+命中/输出行数：2；退出码：0。
+
+```text
+fb99985ae0fe1f4ffe08eae4b26b0197d34b21a4 [T01] 项目初始化与依赖配置
+7e8849de46e00286f1c4c5757618070d9421396e feat(debug): add redline audit view
+```
+
+<a id="q529"></a>
+### Q529
+
+```sh
+rg -n --with-filename --no-heading --sort path --glob '*.dart' --glob '*.py' --glob '*.sh' -- 'equipment\.tiers\.armor\.attack_max|tiers\.armor\.attack_max|armor\.attack_max' lib test tool tools
+```
+
+命中/输出行数：0；退出码：1。
+
+```text
+（无输出）
+```
+
+<a id="q530"></a>
+### Q530
+
+```sh
+rg -n --with-filename --no-heading --sort path --glob '*.dart' --glob '*.py' --glob '*.sh' -- 'equipment\.tiers\.accessory\.attack_max|tiers\.accessory\.attack_max|accessory\.attack_max' lib test tool tools
 ```
 
 命中/输出行数：0；退出码：1。
