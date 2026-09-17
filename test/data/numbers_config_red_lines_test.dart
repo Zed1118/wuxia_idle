@@ -5,7 +5,7 @@ import 'package:wuxia_idle/data/numbers_config.dart';
 import '../support/test_data.dart';
 
 /// 红线值统一到 numbers.yaml(2026-05-29 消 hardcode):RedLinesConfig.fromYaml
-/// 解析 + fixture 缺段 §5.4 default 兜底 + production yaml 真值 drift guard。
+/// 解析 + 显式 fixture 映射 + production yaml 真值 drift guard。
 ///
 /// 沿 numbers_config 强类型解析测体例。RedLinesConfig 是 derived_stats /
 /// stage_battle_setup / game_repository 各 clamp 点的单一真相源。
@@ -32,8 +32,17 @@ void main() {
       expect(rl.combinedRateCap, closeTo(0.95, 1e-9));
     });
 
-    test('R2 缺段 → §5.4 default 兜底(fixture 兼容)', () {
-      final rl = RedLinesConfig.fromYaml(const {});
+    test('R2 显式 fixture 保留全部红线值断言', () {
+      final rl = RedLinesConfig.fromYaml(const {
+        'player_hp_max': 20000,
+        'internal_force_max': 15000,
+        'boss_hp_max': 60000,
+        'equipment_base_attack_max': 2000,
+        'skill_power_multiplier_max': 8000,
+        'damage_readability_max': 1000000,
+        'normal_damage_typical_target': 8000,
+        'combined_rate_cap': 0.95,
+      });
       expect(rl.playerHpMax, 20000, reason: '§5.4 玩家血量红线 default');
       expect(rl.internalForceMax, 15000, reason: '§5.4 内力红线 default');
       expect(rl.bossHpMax, 60000, reason: '§5.4 Boss 血量红线 default');

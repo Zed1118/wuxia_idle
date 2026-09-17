@@ -348,9 +348,10 @@ void main() {
       expect(def.toString(), contains('enemies=1'));
     });
 
-    test('剧情主线关卡 enemyTeam 为空 + isBossStage 缺省 false', () {
+    test('剧情主线关卡 enemyTeam 为空 + isBossStage 显式 false', () {
       final def = StageDef.fromYaml({
         'id': 'mainline_ch1_stage_1',
+        'isBossStage': false,
         'name': '出山',
         'stageType': 'mainline',
         'chapterIndex': 1,
@@ -402,6 +403,7 @@ void main() {
     test('T33 新字段全填：prevStageId + narrativeOpeningId + narrativeVictoryId', () {
       final def = StageDef.fromYaml({
         'id': 'stage_01_02',
+        'isBossStage': false,
         'name': '林间伏击',
         'stageType': 'mainline',
         'chapterIndex': 1,
@@ -422,6 +424,7 @@ void main() {
     test('T33 新字段全缺省：章节首关（无 prev）+ 暂未挂剧情', () {
       final def = StageDef.fromYaml({
         'id': 'stage_01_01',
+        'isBossStage': false,
         'name': '山道试剑',
         'stageType': 'mainline',
         'chapterIndex': 1,

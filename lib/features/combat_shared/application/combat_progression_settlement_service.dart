@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../data/game_repository.dart';
@@ -68,8 +71,10 @@ class CombatProgressionSettlementService {
     required List<AdvancementEntry> advancements,
     required int? founderId,
     required BossVictoryEventContext? bossVictory,
+    SystemClock clock = const SystemClock(),
+    math.Random? random,
   }) async {
-    final events = GameEventService(isar);
+    final events = GameEventService(isar, clock: clock, random: random);
     final tutorial = TutorialService(isar);
     final charactersById = {
       for (final character in characters) character.id: character,

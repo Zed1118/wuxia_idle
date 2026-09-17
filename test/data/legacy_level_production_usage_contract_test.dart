@@ -13,7 +13,9 @@ void main() {
     ];
     const formerConsumers = <String>[
       'lib/features/mainline/presentation/stage_entry_flow.dart',
+      'lib/features/mainline/application/mainline_settlement.dart',
       'lib/features/tower/presentation/tower_entry_flow.dart',
+      'lib/features/tower/application/tower_settlement.dart',
       'lib/features/seclusion/application/seclusion_service.dart',
       'lib/features/seclusion/application/offline_passive_service.dart',
       'lib/features/inventory/application/item_use_service.dart',

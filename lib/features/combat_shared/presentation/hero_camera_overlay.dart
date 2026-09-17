@@ -2,29 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../domain/hero_camera_data.dart';
+
+export '../domain/hero_camera_data.dart' show HeroCameraData;
+
 import '../../../data/game_repository.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
-
-/// 引擎中立英雄镜头数据值对象。
-/// 由 caller 从 TopDamageContributor 组装，纯数据无副作用。
-class HeroCameraData {
-  final String? portraitPath;
-  final String heroName;
-  final String realmLabel;
-  final String bossName;
-  final int topDamage;
-
-  const HeroCameraData({
-    required this.portraitPath,
-    required this.heroName,
-    required this.realmLabel,
-    required this.bossName,
-    required this.topDamage,
-  });
-}
 
 /// Boss 首胜英雄镜头 overlay（第七阶段 批一）。
 ///

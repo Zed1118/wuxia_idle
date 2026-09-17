@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('mainline and tower delegate common progression settlement', () async {
     final paths = [
-      'lib/features/mainline/presentation/stage_entry_flow.dart',
-      'lib/features/tower/presentation/tower_entry_flow.dart',
+      'lib/features/mainline/application/mainline_settlement.dart',
+      'lib/features/tower/application/tower_settlement.dart',
     ];
     for (final path in paths) {
       final source = await File(path).readAsString();

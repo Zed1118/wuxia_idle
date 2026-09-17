@@ -1,0 +1,3115 @@
+{
+  "contentId": "tower_1",
+  "route": "typed_tower",
+  "profileId": "gang_meng/mountain_wanderer/balanced_seed/20260820",
+  "seed": 73,
+  "fixedDeltaSeconds": 0.1,
+  "sampledSteps": 400,
+  "finalSimulationTick": 11,
+  "finalOutcome": "victory",
+  "eventCount": 22,
+  "terminalEmptyFrames": 389,
+  "mechanism": {},
+  "frames": [
+    {
+      "step": 1,
+      "tickBefore": 0,
+      "tickAfter": 1,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 1,
+          "tick": 1,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 2,
+          "tick": 1,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:1:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        },
+        {
+          "indexInTick": 2,
+          "seq": 3,
+          "tick": 1,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:1:basic",
+          "eventType": "interrupted",
+          "phase": "interrupted",
+          "actionTick": 0
+        },
+        {
+          "indexInTick": 3,
+          "seq": 4,
+          "tick": 1,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:1:skill:gather",
+          "reason": "skill",
+          "applied": -23,
+          "overflow": 0,
+          "current": 32,
+          "windowId": null
+        },
+        {
+          "indexInTick": 4,
+          "seq": 5,
+          "tick": 1,
+          "type": "Phase0aGatherStarted",
+          "actor": "player",
+          "skillId": "skill_phase0a_gather",
+          "actorPosition": {
+            "x": -299.0,
+            "y": 0.0
+          },
+          "centerPosition": {
+            "x": -299.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 5,
+          "seq": 6,
+          "tick": 1,
+          "type": "Phase0aGatherApplied",
+          "actor": "player",
+          "outcomes": [
+            {
+              "target": "enemy_tower_01",
+              "resolvedDamage": 0,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "pulled",
+              "sourcePosition": {
+                "x": 241.5,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": -239.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 6,
+          "seq": 7,
+          "tick": 1,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "gather",
+          "availability": "cooldown",
+          "cooldownRemaining": 5.0,
+          "qiCurrent": 32,
+          "qiRequired": 23
+        },
+        {
+          "indexInTick": 7,
+          "seq": 8,
+          "tick": 1,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "clear",
+          "availability": "qi",
+          "cooldownRemaining": null,
+          "qiCurrent": 32,
+          "qiRequired": 45
+        },
+        {
+          "indexInTick": 8,
+          "seq": 9,
+          "tick": 1,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:1:skill:phase0a_skill_1",
+          "reason": "skill",
+          "applied": -31,
+          "overflow": 0,
+          "current": 1,
+          "windowId": null
+        },
+        {
+          "indexInTick": 9,
+          "seq": 10,
+          "tick": 1,
+          "type": "Phase0aSkillStarted",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill"
+        },
+        {
+          "indexInTick": 10,
+          "seq": 11,
+          "tick": 1,
+          "type": "Phase0aPostureChanged",
+          "actor": "player",
+          "target": "enemy_tower_01",
+          "eventType": "postureDamageApplied",
+          "amount": 2.4,
+          "accumulated": 2.4,
+          "capacity": 14.0,
+          "vulnerabilityTicksRemaining": 0,
+          "hitKind": "heavy",
+          "targetPosition": {
+            "x": -239.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 11,
+          "seq": 12,
+          "tick": 1,
+          "type": "Phase0aSkillApplied",
+          "actor": "player",
+          "hotkey": 1,
+          "skillId": "skill_gangmeng_jichu_skill",
+          "outcomes": [
+            {
+              "target": "enemy_tower_01",
+              "resolvedDamage": 1495,
+              "isCritical": false,
+              "defeated": false,
+              "statusApplied": "none",
+              "sourcePosition": {
+                "x": -299.0,
+                "y": 0.0
+              },
+              "targetPosition": {
+                "x": -239.0,
+                "y": 0.0
+              }
+            }
+          ]
+        },
+        {
+          "indexInTick": 12,
+          "seq": 13,
+          "tick": 1,
+          "type": "Phase0aSkillAvailabilityChanged",
+          "slot": "phase0a_skill_1",
+          "availability": "cooldown",
+          "cooldownRemaining": 1.1,
+          "qiCurrent": 1,
+          "qiRequired": 31
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "tickBefore": 1,
+      "tickAfter": 2,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 3,
+      "tickBefore": 2,
+      "tickAfter": 3,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 4,
+      "tickBefore": 3,
+      "tickAfter": 4,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 5,
+      "tickBefore": 4,
+      "tickAfter": 5,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 6,
+      "tickBefore": 5,
+      "tickAfter": 6,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 7,
+      "tickBefore": 6,
+      "tickAfter": 7,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 8,
+      "tickBefore": 7,
+      "tickAfter": 8,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 9,
+      "tickBefore": 8,
+      "tickAfter": 9,
+      "outcome": "ongoing",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 14,
+          "tick": 9,
+          "type": "Phase0aAttackStarted",
+          "actor": "player",
+          "moveKind": "light",
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 1,
+          "seq": 15,
+          "tick": 9,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:9:basic",
+          "eventType": "started",
+          "phase": "windup",
+          "actionTick": 0
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "tickBefore": 9,
+      "tickAfter": 10,
+      "outcome": "ongoing",
+      "events": []
+    },
+    {
+      "step": 11,
+      "tickBefore": 10,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": [
+        {
+          "indexInTick": 0,
+          "seq": 16,
+          "tick": 11,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:9:basic",
+          "eventType": "phaseChanged",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 1,
+          "seq": 17,
+          "tick": 11,
+          "type": "Phase0aActionTimelineChanged",
+          "actor": "player",
+          "actionId": "player:0:9:basic",
+          "eventType": "firstEffect",
+          "phase": "active",
+          "actionTick": 2
+        },
+        {
+          "indexInTick": 2,
+          "seq": 18,
+          "tick": 11,
+          "type": "Phase0aHitLanded",
+          "actor": "player",
+          "target": "enemy_tower_01",
+          "moveKind": "light",
+          "isCritical": false,
+          "isUltimate": false,
+          "resolvedDamage": 830,
+          "remainingHealth": 0,
+          "actorPosition": {
+            "x": -299.0,
+            "y": 0.0
+          },
+          "targetPosition": {
+            "x": -239.0,
+            "y": 0.0
+          },
+          "basicAttackSegment": null,
+          "weaponArchetype": "heavy",
+          "visualSchool": "gangMeng"
+        },
+        {
+          "indexInTick": 3,
+          "seq": 19,
+          "tick": 11,
+          "type": "Phase0aEnemyDefeated",
+          "target": "enemy_tower_01",
+          "defeatKind": "normal",
+          "targetPosition": {
+            "x": -239.0,
+            "y": 0.0
+          }
+        },
+        {
+          "indexInTick": 4,
+          "seq": 20,
+          "tick": 11,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "player:0:9:basic",
+          "reason": "basic",
+          "applied": 24,
+          "overflow": 0,
+          "current": 25,
+          "windowId": null
+        },
+        {
+          "indexInTick": 5,
+          "seq": 21,
+          "tick": 11,
+          "type": "Phase0aQiChanged",
+          "actor": "player",
+          "actionId": "kill:0:enemy_tower_01",
+          "reason": "kill",
+          "applied": 5,
+          "overflow": 0,
+          "current": 30,
+          "windowId": "player:0"
+        },
+        {
+          "indexInTick": 6,
+          "seq": 22,
+          "tick": 11,
+          "type": "Phase0aBattleVictory"
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 13,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 14,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 15,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 16,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 17,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 18,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 19,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 20,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 21,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 22,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 23,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 24,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 25,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 26,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 27,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 28,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 29,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 30,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 31,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 32,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 33,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 34,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 35,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 36,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 37,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 38,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 39,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 40,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 41,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 42,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 43,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 44,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 45,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 46,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 47,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 48,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 49,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 50,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 51,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 52,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 53,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 54,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 55,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 56,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 57,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 58,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 59,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 60,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 61,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 62,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 63,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 64,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 65,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 66,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 67,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 68,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 69,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 70,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 71,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 72,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 73,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 74,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 75,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 76,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 77,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 78,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 79,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 80,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 81,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 82,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 83,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 84,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 85,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 86,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 87,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 88,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 89,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 90,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 91,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 92,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 93,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 94,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 95,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 96,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 97,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 98,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 99,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 100,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 101,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 102,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 103,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 104,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 105,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 106,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 107,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 108,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 109,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 110,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 111,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 112,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 113,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 114,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 115,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 116,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 117,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 118,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 119,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 120,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 121,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 122,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 123,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 124,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 125,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 126,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 127,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 128,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 129,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 130,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 131,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 132,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 133,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 134,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 135,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 136,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 137,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 138,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 139,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 140,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 141,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 142,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 143,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 144,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 145,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 146,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 147,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 148,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 149,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 150,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 151,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 152,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 153,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 154,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 155,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 156,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 157,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 158,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 159,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 160,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 161,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 162,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 163,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 164,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 165,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 166,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 167,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 168,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 169,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 170,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 171,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 172,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 173,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 174,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 175,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 176,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 177,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 178,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 179,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 180,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 181,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 182,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 183,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 184,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 185,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 186,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 187,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 188,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 189,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 190,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 191,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 192,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 193,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 194,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 195,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 196,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 197,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 198,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 199,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 200,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 201,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 202,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 203,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 204,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 205,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 206,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 207,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 208,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 209,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 210,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 211,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 212,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 213,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 214,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 215,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 216,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 217,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 218,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 219,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 220,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 221,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 222,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 223,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 224,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 225,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 226,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 227,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 228,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 229,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 230,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 231,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 232,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 233,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 234,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 235,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 236,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 237,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 238,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 239,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 240,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 241,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 242,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 243,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 244,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 245,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 246,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 247,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 248,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 249,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 250,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 251,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 252,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 253,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 254,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 255,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 256,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 257,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 258,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 259,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 260,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 261,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 262,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 263,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 264,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 265,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 266,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 267,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 268,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 269,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 270,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 271,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 272,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 273,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 274,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 275,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 276,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 277,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 278,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 279,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 280,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 281,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 282,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 283,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 284,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 285,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 286,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 287,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 288,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 289,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 290,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 291,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 292,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 293,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 294,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 295,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 296,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 297,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 298,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 299,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 300,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 301,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 302,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 303,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 304,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 305,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 306,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 307,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 308,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 309,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 310,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 311,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 312,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 313,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 314,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 315,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 316,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 317,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 318,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 319,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 320,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 321,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 322,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 323,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 324,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 325,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 326,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 327,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 328,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 329,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 330,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 331,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 332,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 333,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 334,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 335,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 336,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 337,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 338,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 339,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 340,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 341,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 342,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 343,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 344,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 345,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 346,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 347,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 348,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 349,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 350,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 351,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 352,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 353,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 354,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 355,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 356,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 357,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 358,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 359,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 360,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 361,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 362,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 363,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 364,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 365,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 366,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 367,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 368,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 369,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 370,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 371,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 372,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 373,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 374,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 375,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 376,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 377,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 378,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 379,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 380,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 381,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 382,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 383,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 384,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 385,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 386,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 387,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 388,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 389,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 390,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 391,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 392,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 393,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 394,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 395,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 396,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 397,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 398,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 399,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    },
+    {
+      "step": 400,
+      "tickBefore": 11,
+      "tickAfter": 11,
+      "outcome": "victory",
+      "events": []
+    }
+  ]
+}

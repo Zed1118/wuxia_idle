@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../data/defs/stage_def.dart';
 import '../../../data/defs/tower_floor_def.dart';
 import '../../../data/isar_setup.dart';
+import '../../../data/isar_provider.dart';
 import '../../../shared/battle_shared/battle_result.dart';
 import '../../../shared/utils/math_random.dart';
 import '../../../shared/utils/rng_provider.dart';
@@ -11,7 +13,7 @@ import '../../combat_shared/application/combat_content_providers.dart';
 import '../../combat_shared/application/post_combat_invalidation.dart';
 import '../../expedition/application/expedition_timeline.dart';
 import '../../mainline/application/mainline_providers.dart';
-import '../../mainline/presentation/stage_entry_flow.dart'
+import '../../mainline/application/mainline_settlement.dart'
     show
         DurableActivityCombatSettlementDependencies,
         applyParticipantDefeatResolution,
@@ -20,7 +22,7 @@ import '../../tutorial/application/tutorial_providers.dart';
 import '../../jianghu/application/jianghu_providers.dart';
 import '../../sweep/application/phase0a_sweep_headless_runner.dart';
 import '../../tower/application/tower_progress_service.dart';
-import '../../tower/presentation/tower_entry_flow.dart';
+import '../../tower/application/tower_settlement.dart';
 import '../domain/durable_activity_combat_run.dart';
 import 'durable_activity_automation_providers.dart';
 import 'durable_activity_automation_service.dart';
@@ -66,7 +68,8 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
   final settlementDependencies =
       dependencies?.settlement ??
       DurableActivityCombatSettlementDependencies(
-        numbers: ref!.read(numbersConfigProvider),
+        clock: ref!.read(systemClockProvider),
+        numbers: ref.read(numbersConfigProvider),
         dropService: ref.read(dropServiceProvider),
         rng: ref.read(rngProvider),
         skillDropRng: ref.read(mathRandomProvider),
@@ -122,22 +125,20 @@ Future<DurableActivityExecutionResult> executeDurableActivityAutomation({
       : DurableActivityExecutionOutcome.defeat;
   if (executionOutcome == DurableActivityExecutionOutcome.victory) {
     await applyVictoryResolution(
-      ref: ref,
+      dependencies: settlementDependencies.asMainlineDependencies(),
       stage: stage,
       cycle: admission.run.cycleIndex,
       settlementSnapshot: settlement,
       expectedParticipantId: admission.snapshot.characterId,
       durableActivitySettlement: context,
-      durableActivityDependencies: settlementDependencies,
     );
   } else {
     await applyParticipantDefeatResolution(
-      ref: ref,
+      dependencies: settlementDependencies.asMainlineDependencies(),
       stage: stage,
       settlementSnapshot: settlement,
       expectedParticipantId: admission.snapshot.characterId,
       durableActivitySettlement: context,
-      durableActivityDependencies: settlementDependencies,
     );
   }
   if (ref != null) {
@@ -207,7 +208,7 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
   if (outcome == DurableActivityExecutionOutcome.victory) {
     final elapsed = DateTime.now().difference(admission.run.startedAt);
     await applyTowerVictorySettlement(
-      ref: ref,
+      dependencies: _towerSettlementDependencies(ref),
       floor: floor,
       participantId: admission.snapshot.characterId,
       elapsedMs: elapsed.inMilliseconds,
@@ -228,7 +229,7 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
         now: now,
         applyInTxn: () async {
           await applyTowerCombatResolution(
-            ref: ref,
+            dependencies: _towerSettlementDependencies(ref),
             floor: floor,
             grantsFirstClearExperience: false,
             expectedParticipantId: admission.snapshot.characterId,
@@ -251,3 +252,14 @@ Future<DurableActivityExecutionResult> executeTowerDurableActivityAutomation({
   }
   return DurableActivityExecutionResult(outcome: outcome, run: current);
 }
+
+/// 延迟读取结算依赖，保留存储和快照前置检查的原有顺序。
+TowerSettlementDependencies _towerSettlementDependencies(WidgetRef ref) =>
+    TowerSettlementDependencies(
+      readIsar: () => ref.read(isarProvider),
+      readClock: () => ref.read(systemClockProvider),
+      readNumbers: () => ref.read(numbersConfigProvider),
+      readDropService: () => ref.read(dropServiceProvider),
+      readRng: () => ref.read(rngProvider),
+      readMathRandom: () => ref.read(mathRandomProvider),
+    );

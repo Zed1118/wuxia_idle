@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -599,7 +600,7 @@ class SeclusionService {
 
           // P1 #42 Phase 2:GameEvent 写入 — 闭关完成 + (升层时)境界突破。
           // 同 writeTxn 内原子,不开嵌套 writeTxn(GameEventService 内部 put 不开)。
-          final events = GameEventService(isar);
+          final events = GameEventService(isar, clock: SystemClock.fixed(now));
           final mapDef = _getDef(persistedSession.mapType, maps);
           await events.recordRetreatCompleted(
             characterId: characterId,
@@ -650,6 +651,7 @@ class SeclusionService {
       saveDataId: settledSession.saveDataId,
       maps: maps,
       actualHours: outputs.actualHours,
+      now: now,
     );
 
     return (
@@ -730,6 +732,7 @@ class SeclusionService {
     required int saveDataId,
     required List<SeclusionMapDef> maps,
     required double actualHours,
+    required DateTime now,
   }) async {
     final svc = encounterService;
     if (svc == null) return;
@@ -739,7 +742,10 @@ class SeclusionService {
     final minutes = (actualHours * 60).floor();
     if (minutes <= 0) return;
     try {
-      await svc.getOrCreate(saveDataId: saveDataId);
+      await svc.getOrCreate(
+        saveDataId: saveDataId,
+        clock: SystemClock.fixed(now),
+      );
       await svc.recordIdleMinutes(
         saveDataId: saveDataId,
         biome: def.biome,

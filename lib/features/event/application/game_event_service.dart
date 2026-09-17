@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:isar_community/isar.dart';
 
+import '../../../core/application/system_clock_provider.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
@@ -36,7 +37,15 @@ class GameEventService {
   /// 走 math_random 注入点 `newMathRandom()`(K1 收口)。
   final Random? random;
 
-  GameEventService(this.isar, {this.loreLoader, this.random});
+  /// 结算调用可注入时钟；未传时仍逐次读取系统时间。
+  final SystemClock clock;
+
+  GameEventService(
+    this.isar, {
+    this.loreLoader,
+    this.random,
+    this.clock = const SystemClock(),
+  });
 
   /// P1 #44 · 占位符替换(简单 String.replaceAll)。
   String _applyPlaceholders(String template, Map<String, String> vars) {
@@ -91,7 +100,7 @@ class GameEventService {
           mapName,
         )
         ..relatedCharacterId = characterId
-        ..occurredAt = DateTime.now()
+        ..occurredAt = clock.now()
         ..isRead = false,
     );
   }
@@ -135,12 +144,12 @@ class GameEventService {
         ..summary = UiStrings.gameEventEquipmentSummary(equipmentName, source)
         ..relatedCharacterId = characterId
         ..relatedEntityIds = [equipmentDefId, equipmentId.toString()]
-        ..occurredAt = DateTime.now()
+        ..occurredAt = clock.now()
         ..isRead = false,
     );
 
     if (equipment != null) {
-      final now = DateTime.now();
+      final now = clock.now();
       final loreText = await _resolveContinuedLore(
         loreId: equipmentDefId,
         isBossDefeated: false,
@@ -223,7 +232,7 @@ class GameEventService {
           realmName,
         )
         ..relatedCharacterId = character.id
-        ..occurredAt = DateTime.now()
+        ..occurredAt = clock.now()
         ..isRead = false,
     );
   }
@@ -242,7 +251,7 @@ class GameEventService {
         ..summary = UiStrings.gameEventResonanceSummary(equipmentName, newStage)
         ..relatedCharacterId = characterId
         ..relatedEntityIds = [equipmentId.toString()]
-        ..occurredAt = DateTime.now()
+        ..occurredAt = clock.now()
         ..isRead = false,
     );
   }
@@ -269,12 +278,12 @@ class GameEventService {
         ..summary = UiStrings.gameEventBossSummary(bossName, stageName)
         ..relatedCharacterId = characterId
         ..relatedEntityIds = [stageId]
-        ..occurredAt = DateTime.now()
+        ..occurredAt = clock.now()
         ..isRead = false,
     );
 
     if (warbornEquipment.isNotEmpty) {
-      final now = DateTime.now();
+      final now = clock.now();
       for (final eq in warbornEquipment) {
         final loreText = await _resolveContinuedLore(
           loreId: eq.defId,

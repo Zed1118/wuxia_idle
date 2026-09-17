@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
-import '../../../shared/battle_shared/enum_localizations.dart' show EnumL10n;
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_image.dart';
@@ -11,31 +9,8 @@ import '../../equipment/application/drop_service.dart';
 import '../../equipment/presentation/treasure_drop_overlay.dart';
 import 'hero_camera_overlay.dart';
 
-/// Engine-neutral hero camera derivation for Phase 0A settlement snapshots.
-HeroCameraData? deriveHeroCameraDataFromDamageTotals({
-  required Map<int, int> damageByCharacterId,
-  required List<Character> characters,
-  required String bossName,
-}) {
-  Character? hero;
-  var topDamage = -1;
-  for (final character in characters) {
-    final damage = damageByCharacterId[character.id];
-    if (damage == null) continue;
-    if (hero == null || damage > topDamage) {
-      hero = character;
-      topDamage = damage;
-    }
-  }
-  if (hero == null) return null;
-  return HeroCameraData(
-    portraitPath: hero.portraitPath,
-    heroName: hero.name,
-    realmLabel: EnumL10n.realmTier(hero.realmTier),
-    bossName: bossName,
-    topDamage: topDamage,
-  );
-}
+export '../domain/hero_camera_data.dart'
+    show deriveHeroCameraDataFromDamageTotals;
 
 /// 简版「勝」淡入淡出(时序重排 spec 2026-06-12)。
 ///

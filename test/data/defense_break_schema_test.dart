@@ -3,6 +3,8 @@ import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/numbers_config.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 
+import '../support/test_data.dart';
+
 void main() {
   test('SkillDef.defenseBreakPct 默认 0、可从 yaml parse', () {
     const d = SkillDef(
@@ -44,10 +46,25 @@ void main() {
     expect(SkillDef.fromYaml(y).defenseBreakPct, 0.0);
   });
 
-  test('DefenseBreakConfig.fromYaml 解析 + fallback 默认', () {
+  test('DefenseBreakConfig.fromYaml 解析与生产配置数值保持一致', () {
     final c = DefenseBreakConfig.fromYaml({'window_ticks': 3});
     expect(c.windowTicks, 3);
-    final fb = DefenseBreakConfig.fromYaml({});
+    final fb = DefenseBreakConfig.fromYaml(
+      loadTestNumbersSection(['combat', 'defense_break']),
+    );
     expect(fb.windowTicks, 3);
+  });
+
+  test('破防窗口缺 window_ticks 明确拒绝加载', () {
+    expect(
+      () => DefenseBreakConfig.fromYaml({}),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.toString(),
+          '缺失字段路径',
+          contains('combat.defense_break.window_ticks'),
+        ),
+      ),
+    );
   });
 }
