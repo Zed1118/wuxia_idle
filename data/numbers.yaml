@@ -28,6 +28,7 @@
 meta:
   version: "0.2.0"             # 与 SaveData.saveVersion 对应；major.minor.patch
   description: "Demo 阶段数值配置 · 覆盖学徒到武圣全程"
+  # UNUSED(2026-09-17 B2 复核·头注): last_updated lib 零读取,纯存档时间戳。
   # ⚠ 纯文档（2026-08-07 N1 处置）：NumbersConfig.fromYaml 只取 meta['version']
   #   （numbers_config.dart:316,323），meta 其余 key 无任何读取点。last_updated 已
   #   长期不随改动更新（本行值停留在 2026-05-10），当作时间戳会误导，仅存档用。
@@ -103,10 +104,12 @@ combat:
   damage_formula:
     internal_force_factor: 0.4       # 内力对伤害的系数（GDD 原值，未变）· 真消费(damage_calculator)
     equipment_attack_factor: 1.0     # 装备攻击系数（GDD 原写 8，平衡后调为 1.0）· 真消费(damage_calculator)
+    # UNUSED(2026-09-17 B2 复核·头注): skill_multiplier_added 为公式结构文档,lib 零读取。
     skill_multiplier_added: true     # ⚠ 纯文档(审计 D7):NumbersConfig 不解析;招式倍率"作为加项"已硬编码在 damage_calculator
 
   # --- 最终伤害公式（GDD §5.4）---
   # 最终伤害 = 基础伤害 × 修炼度加成 × 流派克制 × 暴击系数 × (1-防御率) × 境界差修正
+  # UNUSED(2026-09-17 B2 复核·头注): final_damage_formula 五个 apply_* 均 lib 零读取,仅公式结构文档。
   # ⚠ 以下 apply_* flags 为纯公式结构文档（审计 D7 2026-06-24）：NumbersConfig 不解析此块，
   #   damage_calculator.dart 恒应用全部乘子（非可关闭开关）。改这些 true→false 不生效，勿误用。
   final_damage_formula:
@@ -1057,6 +1060,8 @@ skills:
 
   # 招式倍率参考范围（按招式类型）
   # 用于 SkillDef.powerMultiplier 字段配置时的指导值
+  # UNUSED(2026-09-17 B2 复核·头注): power_skill/ultimate 下 8 个 tier_*_range 为配置指导值,
+  #   lib 零读取(实装倍率来自 data/skills.yaml,红线由 enforceEncounterSkillRedLines 全局 ≤8000 兜底)。
   reference_multipliers:
     normal_attack:
       base: 500              # GDD §5.3 普通攻击固定倍率
@@ -1140,10 +1145,11 @@ character:
   # 后天弥补先天，但有硬上限
   adventure_attribute_bonus:
     lifetime_cap_per_character: 5     # 每个角色生涯总加成上限 +5(#4③ B2 已接 EncounterService.attributeGainCap)
+    # UNUSED(2026-09-17 B2 复核·头注): bonus_per_event_min/max lib 零读取,仅设计参考。
     # ⚠️ bonus_per_event_min/max/distribution/weights 未运行时消费(#4③ B7 核账):
     # applyOutcome 用各 data/encounters.yaml outcome 写死的 attributeDelta,以下为设计参考。
     bonus_per_event_min: 1            # 单次奇遇最少加 1 点
-    bonus_per_event_max: 3            # 单次奇遇最多加 3 点
+    bonus_per_event_max: 3            # 单次奇遇最多加 3 点 · UNUSED(B2 复核)
     distribution: "weighted"          # 大部分加 1，少数加 2-3
     weights: [0.65, 0.25, 0.10]      # 1 点/2 点/3 点的概率
 
@@ -1368,6 +1374,7 @@ retreat:
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换
+  # UNUSED(2026-09-17 B2 复核·头注): 三条 time_range lib 零读取,固定时辰文档锚。
   # ⚠ time_range 字段为固定时辰文档锚（审计 D6 2026-06-24）：NumbersConfig 只解析
   #   multiplier/effect/target_attribute/applies_to_school，**不解析 time_range**。
   #   实际时段判定硬编码在 seclusion_service.dart `_isZiShi`(h∈{23,0}) / `_isZhengWu`(h∈{11,12})。
@@ -1575,6 +1582,8 @@ inheritance:
   #       （本文件 :1830-1832，AscendService 经 numbers.ascension 消费，
   #        ascend_service.dart:60）**重复声明同一门槛**，且本处是死的那份。
   #       改本行不生效；要改飞升境界门槛请改 ascension 段。
+  # UNUSED(2026-09-17 B2 复核·头注): can_pass_legacy_at lib 零读取(活门槛在 ascension 段);
+  #   can_take_disciple_at / disciple_can_take_grand_disciple_at 为「收徒门槛设计 vs 剧情准入实装」分叉,待拍板。
   unlock_rules:
     can_take_disciple_at: yiLiu              # 突破到一流可收徒
     disciple_can_take_grand_disciple_at: jueDing  # 弟子突破到绝顶可收徒孙
@@ -1592,8 +1601,10 @@ inheritance:
   heritage_items:
     pieces_per_generation_min: 1             # 每代师父传 1-2 件
     pieces_per_generation_max: 2
+    # UNUSED(2026-09-17 B2 复核·头注): auto_buff_internal_force_max / resonance_retention lib 零读取
+    #   (HeritageItems 只读其余六字段;活的遗物 buff 与共鸣保留另有来源),仅设计锚。
     auto_buff_internal_force_max: 0.05       # 师承遗物自带 +5% 内力上限 buff
-    resonance_retention: 0.7                 # 共鸣度保留 70%
+    resonance_retention: 0.7                 # 共鸣度保留 70% · UNUSED(B2 复核)
     transfer_trigger: "ascend_to_wusheng"    # v1.5:仅武圣飞升触发(P2.3 已实装)
     multi_disciple_allocation: "player_pick" # v1.5:玩家逐件选分配(P2.3 已实装)
     stack_across_generations: false          # v1.5:只取当代不累代叠加(derived_stats 按 instance count 不按 prev len · spec p5_lineage_full §Q4 加 R5.8 防回退测)
@@ -1663,6 +1674,7 @@ synergies:
 # 用具体战例反向验证上述数值是否合理。如果改动 combat 段的系数，
 # 务必重新跑一遍这些战例确认未突破 GDD §5.2 红线。
 
+# UNUSED(2026-09-17 B2 复核·头注): 本段 66 个叶子 lib 零读取(20 个末段名唯一者已判零引用,其余同名待人判),手工战例文档。
 # ⚠ 纯文档（2026-08-07 N1 处置）：本段 example_a..e 不进 NumbersConfig.fromYaml
 #   解析（无 y['validation_examples'] 取值点），lib/data/validation/ 下的红线校验器
 #   校验的是已解析的配置对象，不读本段战例。test/combat/damage_calculator_test.dart
