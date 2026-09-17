@@ -1,0 +1,269 @@
+schema_version: 1
+base_sha: 9879e833abe18b9fbba0c9c57758700ec0bf979d
+continued_from_sha: 3d03993a591726b855f8f437c1b92eb9e0ede80e
+implementation_sha: 76031a91b938155ccf0b265af5fa2315cf8e0cca
+status: READY
+changed_files:
+- data/numbers.yaml
+- docs/audit/numbers_config_fallback_residue_2026-09-17.md
+- docs/dispatch/reports/2026-09-17_residue_receipt.yaml
+- lib/data/defs/stage_def.dart
+- lib/data/numbers_config.dart
+- lib/data/validation/lineage_recruit_red_lines_validator.dart
+- lib/features/mainline/application/mainline_settlement.dart
+- lib/features/sect/domain/stage_boss_recruit_probability.dart
+- lib/features/sect/presentation/stage_boss_recruit_hook.dart
+- lib/shared/battle_shared/derived_stats.dart
+- test/data/numbers_config_required_keys_test.dart
+- test/features/sect/stage_boss_recruit_probability_test.dart
+- test/features/sect/stage_boss_recruit_test.dart
+residue:
+  approval: 已解除：协调者 2026-09-17 授权断言等价替换；仅替换旧断言与紧邻注释，保留全部测试用例与覆盖。
+  attacker: numbers.yaml 仅第 245 行显式单位元 1.0；loader 缺 key/null 抛 ArgumentError 并含完整路径；公式可执行源码未变。
+  boss_recruit: BossRecruitConfig 保留可空覆盖值；主线结算和 victory hook 共用 resolveStageBossRecruitProbability，缺省读取 numbers 的既有 0.40；显式越界校验保留。
+  business_consumers:
+  - lib/features/mainline/application/mainline_settlement.dart
+  - lib/features/sect/presentation/stage_boss_recruit_hook.dart
+  other_reader: lib/data/validation/lineage_recruit_red_lines_validator.dart：范围校验，非第三个概率业务消费点。
+  test_deletion_command: git diff 9879e833abe18b9fbba0c9c57758700ec0bf979d HEAD -- test/ | grep -E '^-[^-]'
+  test_deleted_lines_raw: |
+    -        // baseProbability 省略 → 默认 0.40
+    -        expect(stage.bossRecruit!.baseProbability, 0.40);
+    -      // BossRecruitConfig 默认 baseProbability 0.40 跟 numbers.yaml 一致
+    -      expect(cfg.baseProbability, 0.40);
+  test_deletion_replacements:
+  - deleted: '-        // baseProbability 省略 → 默认 0.40'
+    replacement: // baseProbability 省略保留 null，有效概率经生产解析路径读取 numbers。
+  - deleted: '-        expect(stage.bossRecruit!.baseProbability, 0.40);'
+    replacement: 'expect(stage.bossRecruit!.baseProbability, isNull); 并新增 resolveStageBossRecruitProbability(config: stage.bossRecruit!,
+      numbers: repo.numbers) == repo.numbers.sectManagement.recruit.stageBossRecruitProb'
+  - deleted: '-      // BossRecruitConfig 默认 baseProbability 0.40 跟 numbers.yaml 一致'
+    replacement: // 构造时省略概率同样保留 null，通过生产解析路径消费 numbers。
+  - deleted: '-      expect(cfg.baseProbability, 0.40);'
+    replacement: 'expect(cfg.baseProbability, isNull); 并新增 resolveStageBossRecruitProbability(config: cfg, numbers: repo.numbers) ==
+      repo.numbers.sectManagement.recruit.stageBossRecruitProb'
+  test_deletion_count: 4
+  other_test_files_deleted_lines: 0
+  test_cases_removed: 0
+  added_test_count: 13
+before_after:
+- scope: battle
+  before: 1245
+  after: 1245
+  before_last_line: '00:48 +1245: All tests passed!'
+  after_last_line: '00:42 +1245: All tests passed!'
+- scope: realm-data
+  before: 1
+  after: 1
+  before_last_line: '00:00 +1: All tests passed!'
+  after_last_line: '00:00 +1: All tests passed!'
+- scope: realm-derived
+  before: 6
+  after: 6
+  before_last_line: '00:00 +6: All tests passed!'
+  after_last_line: '00:00 +6: All tests passed!'
+- scope: realm-damage
+  before: 10
+  after: 10
+  before_last_line: '00:01 +10: All tests passed!'
+  after_last_line: '00:01 +10: All tests passed!'
+break_red:
+- label: red-a-yaml-null
+  head: 76031a91b938155ccf0b265af5fa2315cf8e0cca
+  file: data/numbers.yaml
+  failed_count: 1
+  original_sha256: 229dfd701b134b9165d6e65313584d2cd4f83afc3381eeee0d12bc6ce8c76297
+  restored: true
+  command:
+  - flutter
+  - test
+  - --no-pub
+  - test/data/numbers_config_required_keys_test.dart
+  - --plain-name
+  - 生产数值配置无需任何红线兜底即可完整加载
+  - --file-reporter
+  - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-a-yaml-null.jsonl
+  last_line: '00:00 +0 -1: Some tests failed.'
+  error_blocks: 1
+  log: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-a-yaml-null.log
+- label: red-a-loader-fallback
+  head: 76031a91b938155ccf0b265af5fa2315cf8e0cca
+  file: lib/data/numbers_config.dart
+  failed_count: 2
+  original_sha256: 5cbfdfe948da31bb6ea58a4f25595296a9820b2bff1274c9268aac7d064da57b
+  restored: true
+  command:
+  - flutter
+  - test
+  - --no-pub
+  - test/data/numbers_config_required_keys_test.dart
+  - --plain-name
+  - realms.level_diff_modifier.diff_3_or_more.attacker
+  - --file-reporter
+  - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-a-loader-fallback.jsonl
+  last_line: '00:00 +0 -2: Some tests failed.'
+  error_blocks: 2
+  log: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-a-loader-fallback.log
+- label: red-b-numbers-drift
+  head: 76031a91b938155ccf0b265af5fa2315cf8e0cca
+  file: data/numbers.yaml
+  failed_count: 2
+  original_sha256: 229dfd701b134b9165d6e65313584d2cd4f83afc3381eeee0d12bc6ce8c76297
+  restored: true
+  command:
+  - flutter
+  - test
+  - --no-pub
+  - test/features/sect/stage_boss_recruit_probability_test.dart
+  - --plain-name
+  - 生产 YAML 仍保持已批准的四成招降边界
+  - --file-reporter
+  - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-b-numbers-drift.jsonl
+  last_line: '00:00 +0 -2: Some tests failed.'
+  error_blocks: 2
+  log: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-b-numbers-drift.log
+- label: red-b-stage-fallback
+  head: 76031a91b938155ccf0b265af5fa2315cf8e0cca
+  file: lib/data/defs/stage_def.dart
+  failed_count: 2
+  original_sha256: 90e0b43b3b4f24fa88b964fcc85e0b15af1de51c5fcc4a47d57aca497c17f5e0
+  restored: true
+  command:
+  - flutter
+  - test
+  - --no-pub
+  - test/features/sect/stage_boss_recruit_probability_test.dart
+  - --plain-name
+  - 缺省概率随 numbers 改变
+  - --file-reporter
+  - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-b-stage-fallback.jsonl
+  last_line: '00:01 +0 -2: Some tests failed.'
+  error_blocks: 2
+  log: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/red-b-stage-fallback.log
+verification:
+  format:
+    label: format
+    command:
+    - dart
+    - format
+    - --output=none
+    - --set-exit-if-changed
+    - lib
+    - test
+    exit: 0
+    seconds: 5.557
+    last_line: Formatted 1754 files (0 changed) in 3.93 seconds.
+    error_blocks: 0
+    done: null
+    test_done_count: 0
+    failed_test_ids: []
+    skipped_test_ids: []
+  analyze:
+    label: restored-analyze
+    command:
+    - flutter
+    - analyze
+    - --no-pub
+    - lib
+    - test
+    exit: 0
+    seconds: 3.861
+    last_line: No issues found! (ran in 3.2s)
+    error_blocks: 0
+    done: null
+    test_done_count: 0
+    failed_test_ids: []
+    skipped_test_ids: []
+  required_keys:
+    label: restored-required-keys
+    command:
+    - flutter
+    - test
+    - --no-pub
+    - test/data/numbers_config_required_keys_test.dart
+    - --file-reporter
+    - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/restored-required-keys.jsonl
+    exit: 0
+    seconds: 2.261
+    last_line: '00:00 +116: All tests passed!'
+    error_blocks: 0
+    done:
+      success: true
+      type: done
+      time: 1397
+    test_done_count: 116
+    failed_test_ids: []
+    skipped_test_ids: []
+  existing_recruit:
+    label: recruit-existing
+    command:
+    - flutter
+    - test
+    - --no-pub
+    - test/features/sect/stage_boss_recruit_test.dart
+    - --file-reporter
+    - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/recruit-existing.jsonl
+    exit: 0
+    seconds: 4.987
+    last_line: '00:02 +12: All tests passed!'
+    error_blocks: 0
+    done:
+      success: true
+      type: done
+      time: 4052
+    test_done_count: 12
+    failed_test_ids: []
+    skipped_test_ids: []
+  production_recruit:
+    label: restored-recruit-probability
+    command:
+    - flutter
+    - test
+    - --no-pub
+    - test/features/sect/stage_boss_recruit_probability_test.dart
+    - --file-reporter
+    - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/restored-recruit-probability.jsonl
+    exit: 0
+    seconds: 6.554
+    last_line: '00:04 +11: All tests passed!'
+    error_blocks: 0
+    done:
+      success: true
+      type: done
+      time: 5625
+    test_done_count: 11
+    failed_test_ids: []
+    skipped_test_ids: []
+  full:
+    label: full
+    command:
+    - flutter
+    - test
+    - --no-pub
+    - --file-reporter
+    - json:/Users/a10506/Documents/Codex/2026-09-17/residue/evidence/full.jsonl
+    exit: 0
+    seconds: 545.138
+    last_line: '09:02 +6948: All tests passed!'
+    error_blocks: 0
+    done:
+      success: true
+      type: done
+      time: 543576
+    test_done_count: 6948
+    failed_test_ids: []
+    skipped_test_ids: []
+  full_test_runs: 1
+  full_log: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/full.log
+  full_events: /Users/a10506/Documents/Codex/2026-09-17/residue/evidence/full.jsonl
+boundaries:
+  data_yaml_changes:
+  - data/numbers.yaml:245
+  stages_and_sect_candidates_unchanged: true
+  save_version_and_schema_unchanged: true
+  PROGRESS_GDD_strings_pubspec_unchanged: true
+  real_saves_accessed: false
+  main_checkout_preserved: 4 个用户文件保持原样；BACKLOG 与 plan 回贴后未提交；PROGRESS 保持链上版本。
+  merge: false
+  push_target: origin/codex/numbers-fallback-residue-20260917
+limits: 工程待评分支；未合并，不代表正式 M0–M9、Windows 或真人验收。布尔残留及其他历史登记项仍在原范围之外。

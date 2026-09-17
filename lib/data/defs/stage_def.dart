@@ -194,20 +194,18 @@ class StageDef {
 /// P4.1 1.1 Q6B · Boss 战胜后招降配置(spec §2 · 沿 `AffectsSectMembership` 体例)。
 ///
 /// `candidateRef` 引 `data/sect_candidates.yaml id`(红线 `_enforceBossRecruitRedLines`
-/// 守必存)· `baseProbability` 省略走 numbers.yaml `stage_boss_recruit_prob` 默认 0.40。
+/// 守必存)· `baseProbability` 省略或 null 时，由业务消费点统一读取
+/// numbers.yaml `stage_boss_recruit_prob`，此处只保留显式关卡覆盖值。
 class BossRecruitConfig {
   final String candidateRef;
-  final double baseProbability;
+  final double? baseProbability;
 
-  const BossRecruitConfig({
-    required this.candidateRef,
-    this.baseProbability = 0.40,
-  });
+  const BossRecruitConfig({required this.candidateRef, this.baseProbability});
 
   factory BossRecruitConfig.fromYaml(Map<String, dynamic> y) =>
       BossRecruitConfig(
         candidateRef: y['candidateRef'] as String,
-        baseProbability: (y['baseProbability'] as num?)?.toDouble() ?? 0.40,
+        baseProbability: (y['baseProbability'] as num?)?.toDouble(),
       );
 }
 

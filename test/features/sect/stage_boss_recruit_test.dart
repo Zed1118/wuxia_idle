@@ -14,6 +14,7 @@ import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/data/narrative_loader.dart';
 import 'package:wuxia_idle/features/sect/application/sect_member_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
+import 'package:wuxia_idle/features/sect/domain/stage_boss_recruit_probability.dart';
 import 'package:wuxia_idle/features/sect/presentation/stage_boss_recruit_hook.dart';
 import 'package:wuxia_idle/shared/utils/rng.dart';
 import "../../support/isar_test_support.dart";
@@ -116,8 +117,15 @@ void main() {
           reason: '${entry.key} 应配 bossRecruit(P4.1 1.1 Q6B PoC 3)',
         );
         expect(stage.bossRecruit!.candidateRef, entry.value);
-        // baseProbability 省略 → 默认 0.40
-        expect(stage.bossRecruit!.baseProbability, 0.40);
+        // baseProbability 省略保留 null，有效概率经生产解析路径读取 numbers。
+        expect(stage.bossRecruit!.baseProbability, isNull);
+        expect(
+          resolveStageBossRecruitProbability(
+            config: stage.bossRecruit!,
+            numbers: repo.numbers,
+          ),
+          repo.numbers.sectManagement.recruit.stageBossRecruitProb,
+        );
         // candidateRef 必在 sectCandidates(enforceBossRecruitRedLines(validation/) 已校)
         expect(repo.sectCandidates[entry.value], isNotNull);
       }
@@ -137,9 +145,13 @@ void main() {
         repo.numbers.sectManagement.recruit.stageBossFailRecoverProb,
         0.30,
       );
-      // BossRecruitConfig 默认 baseProbability 0.40 跟 numbers.yaml 一致
+      // 构造时省略概率同样保留 null，通过生产解析路径消费 numbers。
       const cfg = BossRecruitConfig(candidateRef: 'test');
-      expect(cfg.baseProbability, 0.40);
+      expect(cfg.baseProbability, isNull);
+      expect(
+        resolveStageBossRecruitProbability(config: cfg, numbers: repo.numbers),
+        repo.numbers.sectManagement.recruit.stageBossRecruitProb,
+      );
     });
   });
 

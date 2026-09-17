@@ -430,7 +430,7 @@ void enforceSectCandidateRedLines({
 /// - `bossRecruit.candidateRef` 必须在 sectCandidates 中(沿 Q6A
 ///   `enforceEncounterRedLines`(validation/) affectsSectMembership 体例 · 允许 fixture
 ///   sectCandidates 空 map 跳过 ref 校,但仍校第 1/3 条)
-/// - `bossRecruit.baseProbability` ∈ [0.0, 1.0]
+/// - 显式 `bossRecruit.baseProbability` ∈ [0.0, 1.0]；缺省由 numbers 提供
 void enforceBossRecruitRedLines({
   required Map<String, StageDef> stageDefs,
   required Map<String, SectCandidateDef> sectCandidates,
@@ -444,7 +444,8 @@ void enforceBossRecruitRedLines({
         '仅 Boss 关卡可配招降(spec §6 红线 ①)',
       );
     }
-    if (br.baseProbability < 0.0 || br.baseProbability > 1.0) {
+    final probability = br.baseProbability;
+    if (probability != null && (probability < 0.0 || probability > 1.0)) {
       throw StateError(
         'stage ${s.id} bossRecruit.baseProbability=${br.baseProbability},'
         '应 ∈ [0.0, 1.0](spec §6 红线 ③)',

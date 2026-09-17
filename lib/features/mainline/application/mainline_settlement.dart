@@ -44,6 +44,7 @@ import '../../jianghu/application/reputation_service.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
 import '../../seclusion/application/offline_passive_service.dart';
+import '../../sect/domain/stage_boss_recruit_probability.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../weapon_codex/application/equipment_catalog_service.dart';
 import '../domain/mainline_pending_jianghu_affair.dart';
@@ -220,7 +221,11 @@ planMainlinePendingJianghuAffairsInTxn({
       GameRepository.instance.sectCandidates.containsKey(
         bossRecruit.candidateRef,
       ) &&
-      rng.nextDouble() < bossRecruit.baseProbability) {
+      rng.nextDouble() <
+          resolveStageBossRecruitProbability(
+            config: bossRecruit,
+            numbers: GameRepository.instance.numbers,
+          )) {
     final sourceId =
         'stage-boss-recruit:${stage.id}:${bossRecruit.candidateRef}';
     refs.add(

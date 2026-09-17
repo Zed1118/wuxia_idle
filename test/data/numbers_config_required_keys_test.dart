@@ -12,6 +12,7 @@ Map<String, dynamic> _productionNumbers() =>
 
 // 数组路径逐项验证，防止只覆盖首项而遗漏局部缺键。
 const _requiredNonRedLinePaths = <String>[
+  'realms.level_diff_modifier.diff_3_or_more.attacker',
   'character.adventure_attribute_bonus.lifetime_cap_per_character',
   'skill_loadout.ultimate_power_threshold',
   'equipment.resonance.stages[].unlocks_joint_skill',
@@ -140,6 +141,25 @@ void main() {
   test('生产数值配置无需任何红线兜底即可完整加载', () {
     expect(() => NumbersConfig.fromYaml(_productionNumbers()), returnsNormally);
   });
+
+  test(
+    'realms.level_diff_modifier.diff_3_or_more.attacker 为 null 时拒绝加载并报告路径',
+    () {
+      const path = 'realms.level_diff_modifier.diff_3_or_more.attacker';
+      final copy = _productionNumbers();
+      _containingMaps(copy, path).single['attacker'] = null;
+      expect(
+        () => NumbersConfig.fromYaml(copy),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.toString(),
+            '空值路径',
+            contains(path),
+          ),
+        ),
+      );
+    },
+  );
 
   for (final key in redLines.keys.cast<String>()) {
     test('缺少 combat.red_lines.$key 时拒绝加载并报告路径', () {
