@@ -366,8 +366,9 @@ def render(result):
         raw_lines = q["output"].splitlines()
         quoted = any(line != line.rstrip() for line in raw_lines)
         display = json.dumps(raw_lines, ensure_ascii=False, indent=2) if quoted else q["output"]
+        fence = "`" * max(3, 1 + max((len(m) for m in re.findall(r"`+", display)), default=0))
         lines += [f"<a id=\"{q['id'].lower()}\"></a>", f"### {q['id']}", "", "```sh", q["command"], "```", "",
-                  f"命中/输出行数：{q['count']}；退出码：{q['exit']}。", "", "```json" if quoted else "```text", display or "（无输出）", "```", ""]
+                  f"命中/输出行数：{q['count']}；退出码：{q['exit']}。", "", fence + ("json" if quoted else "text"), display or "（无输出）", fence, ""]
     lines += ["## 验证与限制", "", "报告只写建议，没有删除或修改任何配置。Flutter test / analyze / format 均 NOT_RUN；本单验证为 Python 实跑、命令证据、确定性复生成及 Git 白名单/补丁检查。",
               "静态检索不能给出所有历史动态执行路径的绝对否定证明；存在规则分叉或未来参数意图的条目已标“未能判定”并留待拍板。本单 READY 仅表示审计产出可独立复核，不表示建议获准实施。", ""]
     return "\n".join(lines)

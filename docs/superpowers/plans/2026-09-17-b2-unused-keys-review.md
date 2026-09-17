@@ -43,7 +43,9 @@
 - 正式四类判定与主体建议计数不变；弹性尾不晋升正式零引用。
 - `python3 tools/audit/numbers_unused_keys_review.py --include-pool --write`：实跑 530 条去重命令。
 - `python3 tools/audit/numbers_unused_keys_review.py --include-pool --check`：逐字节一致；独立解析附录行数和叶子数通过。
-- 最终审计报告 SHA-256：`3f3091669a534a765bcb204022ca6c901a90885d28f1592dbfe82cc8ab88793f`。
+- 最终审计报告 SHA-256：`5b1d0bc8229b6f15fc1b76a7dfa4ea88322c517050e014dbd673b3ef94f94a0b`。
+- 完整证据回放发现被引用文档自身的代码围栏会影响 Markdown 显示，已改用比原文更长的围栏；原文未删改，计数与建议不变。
+- 修正后再次完整四层复生成，逐字节一致；根窗口从最终报告提取并重跑全部 367 条 rg/sed，命中数、退出码与完整原文 367/367 一致。总证据记录 530 条。
 - `git diff --check` 通过；不修改任何白名单外文件。
 
 ## 收据绑定阻塞
