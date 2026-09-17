@@ -28,6 +28,11 @@ analyzer:
     - "**/*.freezed.dart"
     # 2026-07 一次性难度诊断附件；Route C 已删除其依赖的旧 runner。
     - "docs/audit/early_difficulty_gate_probe_2026_07_05.dart"
+    # 独立 Flutter 子包(自带 pubspec/analysis_options,依赖 flame 等主仓不引入的
+    # 包);根目录裸 `flutter analyze` 会把它当主仓一部分、因缺自身 package_config
+    # 报千余条噪声(2026-09-17 实测 1943 条全在此)。CI 只 analyze lib test tool,
+    # 不受影响;子包自身用 `cd tools/phase0minus_probe && flutter analyze`。
+    - "tools/phase0minus_probe/**"
 
 linter:
   rules:
