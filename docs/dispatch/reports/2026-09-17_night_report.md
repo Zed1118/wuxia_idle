@@ -46,3 +46,16 @@ A 体量：49 文件 +32,614/−1,930，其中 27.5k 行是 3 个 golden JSON（
 ## 末问
 
 值得封装：① `codex exec resume` 无沙箱续跑的「真档锁 + 哈希核对」前后置步骤（本夜手工两次）→ 建议进 `/afk` scripts；② gate `test_deletions` 对「等量替换」的对账（列出 ± 配对）→ 可加 `--explain-deletions` 输出。
+
+## 拍板执行记录（2026-09-17 用户回复「按推荐处理，1A 2A 3A 5C 6A 7A 8B」）
+
+| # | 执行 | 实测 |
+|---|---|---|
+| 1A/2A | 从链 `c307b3ffc` 开集成分支，`--no-ff` 合入 A `ebc8f55db`、B `f4cfeab4e`（零冲突），cherry-pick 4 个夜批 docs commit，更新 PROGRESS 顶段后推为链 `codex/p2-player-flow-20260910` 新 tip | analyze `--no-pub lib test` 0 issue；format 1762 文件 0 changed；全量 `08:06 +6935: All tests passed!`、error block 0、退出 0。`flutter analyze` 全仓会报 `tools/phase0minus_probe/` 独立子包 1892 条（未 pub get，与本批无关） |
+| 3A / 8B | 无动作 | — |
+| 5C | 202 个零引用 key 入下一夜批「B-2 复核单」候选 | — |
+| 6A | 21 条 ③ 文档分支：20 打 `archive/codex/<分支>` 标签后删、`codex/p2-defense-vfx-fix-20260827` 直删；删前逐条核 tip 与处置表固定 tip 一致、21 个 worktree 均干净 | 29/29 处置 0 跳过 |
+| 7A | 8 条无 worktree 历史分支现算均含 1–3 个独有补丁（cherry `+`），三验不过 → **收窄为打归档标签后删**，不直接丢内容；tips：`83277eb42` `5fe5b3652` `0397f4d3e` `21ad6e60b` `3469ad375` `e6b733b60` `802511dc9` `1aaa08940` | 8/8 |
+| 标签 | 28 个 `archive/codex/*` 已推 origin | worktree 38→17，本地分支 110→81 |
+| 未做 | 第 4 项（两个 🔴 数值残留）等你定口径；主仓 `git pull --ff-only` 由你执行；64 条已全进链的无 worktree 分支不在本次菜单 | — |
+
