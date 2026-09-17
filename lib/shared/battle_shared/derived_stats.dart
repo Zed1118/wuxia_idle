@@ -10,9 +10,9 @@ import '../../data/numbers_config.dart';
 /// 所有方法纯函数，从 [GameRepository.instance] 读 49 行 RealmDef 表与
 /// numbers.yaml 的 `levelDiffModifier`，**不硬编码任何数值**。
 ///
-/// **差 3+ 阶 attacker 修正**：numbers.yaml `diff_3_or_more.attacker: null`，
-/// 数据层 [LevelDiffModifier.fromYaml] 兜底为 `1.0`（GDD §5.5「已碾压无须放大」），
-/// 公式层直接走数据层 [LevelDiffModifier.diff3OrMore]，**不再硬编码 1.0**。
+/// **差 3+ 阶 attacker 修正**：numbers.yaml 显式配置单位元 `1.0`，
+/// [LevelDiffModifier.fromYaml] 拒绝缺项与 null（GDD §5.5「已碾压无须放大」）。
+/// 公式层直接走 [LevelDiffModifier.diff3OrMore]，不另设数值来源。
 class RealmUtils {
   RealmUtils._();
 

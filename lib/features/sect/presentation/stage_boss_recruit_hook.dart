@@ -12,6 +12,7 @@ import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../../shared/utils/rng_provider.dart';
 import '../../narrative/presentation/narrative_reader_screen.dart';
+import '../domain/stage_boss_recruit_probability.dart';
 import 'sect_recruit_handler.dart';
 
 typedef StageBossRecruitFlow =
@@ -171,7 +172,10 @@ Future<void> runStageBossRecruitHookAfterVictory({
   if (save.triggeredBossRecruitStageIds.contains(stage.id)) return;
 
   // Q2=B rng pick(默认 40% · bossRecruit.baseProbability 可 stages.yaml 单 stage override)
-  final probability = stage.bossRecruit!.baseProbability;
+  final probability = resolveStageBossRecruitProbability(
+    config: stage.bossRecruit!,
+    numbers: GameRepository.instance.numbers,
+  );
   final Rng rollRng = rng ?? ref!.read(rngProvider);
   if (rollRng.nextDouble() >= probability) return;
 
