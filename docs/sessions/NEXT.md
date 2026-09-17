@@ -1,86 +1,79 @@
 # 新会话开局清单
 
-> 交接时间：2026-08-26 20:34 · 工作收口于 HEAD `b0644ce5` · 领先 `origin/main` 703 commit、**未 push**；主 checkout 工作树干净
-> 本清单自身的落盘 commit 排在 `b0644ce5` 之后，故实际 HEAD 会比它新 1 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
+> 交接时间：2026-09-17 20:05 · 工作收口于 HEAD `29ddf974a` · 与 origin `codex/p2-player-flow-20260910` 同步；主 checkout 脏文件仅 4 个用户文件（`AGENTS.md` / `CLAUDE.md` / `.qoder/settings.json` / `docs/_archive/CLAUDE_v2.00_frozen_2026-09-06.md`，设计如此）
+> 本清单自身的落盘 commit 排在 `29ddf974a` 之后，故实际 HEAD 会比它新 1 个纯文档 commit——**这不是漂移**，判据见【开局动作】第 4 步。
 
 ## 【本会话契约】（置顶，最高优先级）
 
 - **模式：只读**
 - **只读模式**：完成【开局动作】并提交【先报告】后，等用户指令才可动代码。
 - **范围围栏**：只做用户选定的任务。过程中发现的其他问题分两类处置——
-  - **非阻塞型** → 记入 `BACKLOG.md`，附 `file:line` 与复现步骤，**不动代码**；
-  - **阻塞型** → **停下报告**，不要记了账继续干。
-- **拍板点**（设计取舍、多方案选型、观感判断）：只读模式下停下列选项等用户，**禁代拍**。当前已有两条挂起待拍（见【下波候选】#2/#3），不得替用户决定。
-- **角色**：本会话是协调者，**不干具体的活**——实装下放 codex，我只做派单、复核、Gate、合并。
+  - **非阻塞型**（不影响当前任务正确性）→ 记入项目根 `BACKLOG.md`，附 file:line 与复现步骤，**不动代码**；
+  - **阻塞型**（当前任务建立在它之上）→ **停下报告**，不要记了账继续干。
+- **拍板点**（设计取舍、多方案选型、观感判断）：停下列选项等用户，禁代拍。
+- **主线分支是 `codex/p2-player-flow-20260910`（受控集成链），不是 main**；main `342d19275` 未经用户授权不合、不推。
 
 项目：挂机武侠（/Users/a10506/Desktop/Projects/挂机武侠）
 
-二阶段战斗核心接线：W0 差异分析已合 main，P1 统一姿态接线复核不过待返修，D 破防技崩溃待用户拍处置方案。
+夜批 A/B 与兜底收口已入链、分支治理收口完毕；当前无在途执行端任务，下一步以用户拍板为准。
 
 ## 【开局动作】
 
-1. 读 PROGRESS.md 顶段「二阶段结果仪表盘（2026-08-26 夜批收账后）」
-2. 读 `docs/sessions/2026-08-26_203415_姿态接线_p2-handoff-20260826b.md`
-3. `git worktree list` + `git branch --list 'codex/p2-*'`：确认在途分支。**当前 worktree 共 169 条**（历史债），二阶段在途的只有下列两条，别在不知情下重做。
+1. 读 PROGRESS.md 顶段「2026-09-17 当前候选」与「在途 worktree 台账」
+2. 读 `docs/sessions/2026-09-17_200441_夜批收账_p2-player-flow.md`
+3. `git worktree list` + `git branch --list 'worktree-*'`：确认有无在途分支。PROGRESS.md 只反映链上状态，在途工作不在其中，别在不知情的情况下重做一遍。
 4. **只 `git fetch`，不自动 rebase/autostash**。按下列顺序判定：
 
    ```bash
-   git status -sb | head -1
+   git status -sb | head -1                                                  # 先看脏不脏（预期只有 4 个用户文件）
    git fetch origin
-   git rev-list --left-right --count origin/main...HEAD
-   git merge-base --is-ancestor b0644ce5 HEAD && echo ANCESTOR_OK
+   git rev-list --left-right --count origin/codex/p2-player-flow-20260910...HEAD   # 看分叉
+   git merge-base --is-ancestor 29ddf974a HEAD && echo ANCESTOR_OK
    ```
 
-   - 工作树 dirty / 存在分叉 / 有其他活跃写者 → **停下报告**，不自行更新
-   - 本项目 `origin/main` 落后本地 703 commit 且 **push 未获授权**，故**不要** `merge --ff-only origin/main`，也不要 push
-   - `ANCESTOR_OK` 成立 → 快照有效，继续；不成立 → 快照作废，停下报告并重测基线
-5. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_multi_anchor_test_actual_attribution`、`feedback_flutter_test_batch_silent_skip`、`feedback_premature_completion_report`、`feedback_dispatch_first_orchestrator`
+   - 除 4 个用户文件外还有脏文件 / 存在分叉 / 有其他活跃写者 → **停下报告**，不自行更新
+   - 干净且可 fast-forward → 才 `git merge --ff-only origin/codex/p2-player-flow-20260910`
 
-## 【环境快照】（2026-08-26 本会话实测，禁转抄）
+   **接手前并发检查**：`git worktree list`（预期 14 个，见记录「已知问题」）· 本地与远端 tip 是否已超过 `29ddf974a` 之后 1 个文档 commit · 协调锁 `~/.claude/locks/` 是否仍被他人持有且心跳新鲜。任一显示活跃 → 先确认对方已停止，再动。
 
-- HEAD `b0644ce5`（本会话 main 新增 3 commit，全部纯文档，**0 行 `lib/`**；未 push）
-- **main 全量基线沿用 `6a0c2945` 的 `5611/5611`**（2026-08-26 夜批实测）——本会话实测 `git diff 6a0c2945..b0644ce5` 为：`PROGRESS.md` + 3 份派单包 + 1 份 spec + 1 个测试文件的**纯 `///` 注释块**（`test/data/phase2/ch1_candidate_combat_catalog_test.dart`，13 行全是注释），`lib/` 改动 0 文件，故基线仍成立，未重跑全量（属 handoff 0a「纯文档 session」情形）
-- **分支 `codex/p2-posture-wiring-20260826` @ `2c8015d9` 本会话实测**：`flutter analyze --no-pub lib test` **0 issue**；`dart format` 1523 文件 **0 changed**；全量 `flutter test --no-pub` **`5612 +/ 4 -`，耗时 5m41s，退出码 0（掩盖了失败）**
-  - 4 条失败（本会话从 `[E]` 块定位，非猜测）：
-    1. `test/features/battle/domain/phase0a/phase0a_source_contract_test.dart:89` 「不得出现数值参数默认值」——`phase0a_combat_reducer.dart` 出现 `"= 0,"`
-    2/3. `test/features/battle/presentation/phase0a/phase0a_battle_screen_test.dart:175` 「首屏威胁去噪 HUD(双视口)」1280×720 与 1440×900 均红——普通满血敌人 `wave1_blade` 常驻姓名「山贼刀客」被渲染
-    4. 同文件「键盘 J 普攻…目标血条强调保持后自动消退」——血条 key `phase0a_hp_wave1_archer` 未消退
-  - 根因：2/3/4 同源，新增 `_BossStatusTag` 姿态计数把普通敌人姓名/血条一并拉出；1 是红线契约违规
-- 在途 PR / 分支：
-  - `codex/p2-posture-wiring-20260826` @ `2c8015d9` `[READY]` — **复核不过，不可合**（worktree `挂机武侠-p2-posture`）
-  - `codex/p2-defense-break-reachability-20260826` @ `39ae8f83` `[BLOCKED]` — 仅审计+复现测，零 `lib/`；我复跑 1/1 通过；待用户拍处置（worktree `挂机武侠-p2-dbrk-diag`）
-  - `codex/p2-w0-wiring-delta-20260826` @ `130a57c6` — **已合 main**，可清
-  - 协调 worktree：`挂机武侠-coord-handoff2`（本次交接落盘用）、`挂机武侠-coord-decisions`、`挂机武侠-p2-break`（scratch，破坏证红待用）
-- 子系统状态：二阶段战斗核心三条接线（POSTURE / TIMELINE / QI）中，POSTURE 是第一条动工的，语义正确但 UI 回归未过；TIMELINE、QI 尚未开工。M0–M9 仍 `1/10`。
+   - `ANCESTOR_OK` **且** 与 origin 同步 → 快照有效，继续。
+   - `--is-ancestor` 不成立 → **快照作废**：停下报告差异，重测 analyze/test 基线，禁止转抄下方数字。
+5. 选读 memory：`reference_anti_hallucination`（固定）+ `feedback_night_batch_dispatch_protocol` + `feedback_wip_limit_over_executor_utilization` + `feedback_codex_batch_merge_via_integration_worktree` + `feedback_codex_worktree_dispatch_sandbox` + `feedback_test_bypasses_production_path`
+
+## 【环境快照】（上一会话实测；本会话改动代码后必须重测，禁转抄）
+
+- HEAD `29ddf974a`（本次 session 链上新增 30 commits：`c307b3ffc..29ddf974a`，已 push origin 同名分支；main 未动）
+- `flutter analyze --no-pub lib test` → EXIT 0 · `No issues found! (ran in 6.1s)`｜主 checkout 2026-09-17 20:04 实测
+- 全量 `flutter test --no-pub` → `07:38 +6948: All tests passed!`（+6948/0 失败 · 退出码未经 zsh pipestatus 捕获，以末行与 0 个 `[E]` 块为准 · 墙钟 20:04:04→20:11:46 = 7m42s）｜主 checkout 2026-09-17 实测
+  - **守恒核对**：夜批 A 后 +6935 → 兜底收口后 +6948（新增 13 = `stage_boss_recruit_probability_test` 等，见 `docs/dispatch/reports/2026-09-17_residue_receipt.yaml`）；主 checkout 数字须与此一致，不一致先查是哪一类
+- 在途 PR / 分支：无在途执行端任务。保留 worktree 14 个：主 checkout 1 · 协调者 `worktree-review-followup-20260912`（locked，与链分叉，只作历史记录不再作集成基线）· Codex 证据 `~/Documents/Codex/2026-09-1{3,5,6}/…` 6 个 · ③ 代码类 6 个待拍板（记录「已知问题」）· `.codex/worktrees/1454`
+- 数值/闸门/塔层/schema/saveVersion（0.50.0）本会话零改动；M0–M9 仍 1/10（仅 M1）
 
 ## 【下波候选】
 
 | # | 任务 | 模型 | 预估时长 | 备注 |
 |---|------|------|----------|------|
-| 1 | 把 P1 连同 4 条失败清单返 codex 返修（推荐） | opus 调度 + codex 执行 | 派单 10min / 执行 40-60min | 根因已定位到 `file:line`，返修范围小、不需重设计；返修后须由我复跑**全量**才谈合并 |
-| 2 | 用户拍 #4 真人试玩门槛 | — | — | A 合 main 前须过试玩（我的立场）/ B 豁免 / C 连已合的 TOKEN 一并回滚。方案 §0.1 要求 TUNING 值须经真人试玩定标，我生成候选时只跑了模拟 |
-| 3 | 用户拍 #5 破防技崩溃处置 | — | — | A 并入 POSTURE 批按姿态伤害处理（合 §5.3/§5.4）/ B 独立止血批 / C 砍字段 |
-| 4 | 定义 M0–M9 权重 | opus | 60-90min | 结构性问题：整条 TUNE-* 接线不推动 `1/10` 这个权威分母，不定义权重就无法回答「二阶段做到哪了」 |
-| 5 | worktree 债清理（169 条） | sonnet | 30-45min | 已续传第 2 轮，按 handoff 0c 本轮须强制处置；清理前三验（`is-ancestor` / `main..branch` 计数 0 / `branch --merged`） |
+| 1 | 拍板 6 个 ③ 代码类 worktree 处置（归档标签后删 / 保留）（推荐） | opus | 15min | 09-16 台账已判「可删」，连续两轮挂账；执行同 6A 脚本口径，先逐条核 tip |
+| 2 | B-2 零引用 key 复核单（派 codex，只读产清单） | codex | 60–90min | `docs/audit/numbers_yaml_unused_keys_2026-09-17.md` 202 条逐 key 查动态路径消费；不改 yaml |
+| 3 | 集中真人试玩 01_01 + 黑风岭并出报告 | 用户主导 | — | 用户曾定「试玩后置」，需用户点名 |
+| 4 | `tools/phase0minus_probe` 子包 analyze 噪声处理（pub get 或排除） | sonnet | 20min | 全仓 analyze 1892 条全在该子包 |
 
 ## 【硬约束沿用】
 
-- `flutter test` 退出码 0 不代表全绿，reporter 的 `-N` 打在刚跑完那条旁边而非失败那条 → memory `feedback_multi_anchor_test_actual_attribution`
-- 多路径批跑会静默漏跑文件，验收须逐文件数「All tests passed」出现次数 → memory `feedback_flutter_test_batch_silent_skip`
-- launch ≠ 成功，报「完成/全绿」前必跑验证并贴输出 → memory `feedback_premature_completion_report`
-- 能派就派，协调者只留 Gate 与终审，不承接实装 → memory `feedback_dispatch_first_orchestrator`
-- 执行端禁区逐个列进派单包：`data/numbers.yaml` / `GDD.md` / `PROGRESS.md` / `lib/shared/strings.dart` / `pubspec.yaml`；禁 push / 禁 merge / 禁碰 main / 禁 revert → memory `feedback_night_batch_dispatch_protocol`
-- commit message 中文动宾，合并 Gate ⓓ 明查 → memory `feedback_wuxia_commit_message_chinese_gate`
-- fresh worktree 必预热：`cp libisar.dylib` + `pub get` + `build_runner` → memory `feedback_fresh_worktree_libisar_dylib` / `feedback_wuxia_pen_build_runner`
-- 测试绕开生产路径是假绿最高发入口，自检「破坏那行，这条断言必然红吗」 → memory `feedback_test_bypasses_production_path`
-- 推荐不得为省工作量缩水范围 → memory `feedback_no_effort_saving_in_recommendations`
-- 开工与收尾各查一次在途 worktree/分支，PROGRESS 只反映 main → memory `feedback_phase0_check_inflight_worktrees`
+- 夜批派单/收账五步流程，git 为真相源，READY≠可合 → memory `feedback_night_batch_dispatch_protocol`
+- WIP 上限优先于执行端利用率；READY 待复核 ≤1 → memory `feedback_wip_limit_over_executor_utilization`
+- Codex 批合并走链 tip 开的集成 worktree，不在分叉的协调者分支上合 → memory `feedback_codex_batch_merge_via_integration_worktree`
+- codex `-s workspace-write` 需 `--add-dir <主仓>/.git`；resume 不继承 → memory `feedback_codex_worktree_dispatch_sandbox`
+- 破坏证红 commit 后做双向并精确还原 → memory `feedback_break_red_after_commit`
+- 数字一律本会话实测，禁转抄 → memory `reference_anti_hallucination`
+- 一律简体中文 → memory `feedback_reply_in_simplified_chinese`
+- 不动主 checkout 4 个用户文件；真实存档只读（sha256 允许） → memory `feedback_codex_worktree_dispatch_sandbox`
 
 ## 【防幻觉守则】
 
-- 本清单【环境快照】的数字是 2026-08-26 实测快照；改动代码后**必须重测**，禁转抄。
+- 本清单【环境快照】的数字是上一会话实测的快照；改动代码后**必须重测**，禁转抄。
 - 报「完成/已修复/0 引用/全绿」前必跑验证并贴输出，launch ≠ 成功。
-- 引用代码现 grep/codegraph 查带 `file:line`；不确定写「不知道」，不凭记忆硬答。
+- 引用代码现 grep/codegraph 查带 file:line；不确定写「不知道」，不凭记忆硬答。
 - 完整守则见 memory `reference_anti_hallucination`。
 
 ## 【先报告】（与置顶契约呼应）
@@ -93,4 +86,4 @@
 
 ## 【收尾】
 
-会话结束前跑 `/handoff`（Step 0-4 为 canonical 流程，此处不复述）。
+会话结束前跑 `/handoff`（Step 0-4 为 canonical 流程，此处不复述，防拷贝漂移）。
