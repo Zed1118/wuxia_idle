@@ -75,7 +75,7 @@
 | S | S-A | `49cf33494` | `synergies.effect_values` 10 叶删除；GDD 升 v1.77，§4.5 改为 `synergies.yaml` 12 组口径，原 5 行降为早期示例。 |
 | C | C-A | `a27a7ed04` | `distribution_mean/stddev` 加 UNUSED 头注，`numbers_key_usage.py` 实测两键 `unused_marked=true`。 |
 | E | E-A | `ffd6167e0` | `EquipmentDef.isNamedReward`（缺省 false，不进 Isar）；三件标 true；`equipment.tiers` 段头 + `data_schema.md §5.1` 明文规则；守卫删硬编码 id 集改读字段，新增「神物阶不得标记」断言。四向 mutation（摘标记 / 普通件标 true / 神物标 true / 神物越阶+标 true）各精确 1 条失败并还原。 |
-| I | **未执行，回到拍板** | — | 见下。 |
+| I | I-A′（用户「继续推进」取推荐） | `bc6cb8b8b` | `NumbersConfig.canTakeDiscipleAt`（必填、非法名 fail-fast）；`TutorialService.advanceForRealmBreakthrough` 改 `required threshold`，闭关升层/战斗结算两处生产调用方传 `numbers.canTakeDiscipleAt`；值 yiLiu 不变、行为 0 变。tutorial 测试改从生产配置取阈值 + 阈值参数化用例；新增源码契约测试（不写死 yiLiu / 两调用方接线 / 解析与 yaml 一致）。`grand_disciple` 键头注 UNUSED。四向 mutation（hook 回写死 yiLiu / 调用方传常量 / yaml 删键 / yaml 非法名）各红并还原。 |
 
 重扫（`numbers_key_usage.py --baseline HEAD`，C-A 后）：零引用 99 叶 → **60 叶**（= 99 − 29 tower − 10 synergies，守恒），其中已标注 57、未标注 3（`equipment.enhancement.max_level_formula` / `success_curve[4].success_formula` / `equipment.resonance.new_owner_retention`，均为 B2 审计单原「保留理由」行，不在 5A 范围）。
 
@@ -92,5 +92,5 @@
 | I-B | 两键删除 + GDD §7.1 改「收徒=剧情事件」 | 🔴 + `[GDD]`；但与 tutorial step 6 真门禁矛盾，**基于错误前提，不再推荐** |
 | I-C | 头注 UNUSED | 🟢；继续让 Dart 硬编码与 yaml 死键并存 |
 
-回复 `I-A′` / `I-C` 等即可；I-A′ 预估 30–40 min（含 tutorial 测试改读配置 + 破坏证红）。
+**已按 I-A′ 落地（`bc6cb8b8b`，见上表）。五段全部闭环。**
 
