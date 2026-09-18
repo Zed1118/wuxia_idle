@@ -43,6 +43,14 @@ class EquipmentDef {
   /// yaml 缺省 false。
   final bool isLineageHeritage;
 
+  /// 命名奖励溢价标记(2026-09-18 B2 复核 5A E-A 拍板为规则)。
+  ///
+  /// `true` 时允许基础数值越过本阶上界、但不得越过下一阶上界
+  /// (numbers.yaml `equipment.tiers` 段头明文;守卫
+  /// `test/data/numbers_tier_contract_guard_test.dart` 只读本字段钉包络)。
+  /// 仅作数值合同标记,不进 Isar、不影响掉落/装备/三系锁死;yaml 缺省 false。
+  final bool isNamedReward;
+
   const EquipmentDef({
     required this.id,
     required this.name,
@@ -63,6 +71,7 @@ class EquipmentDef {
     this.tagline,
     this.specialSkillCandidates = const [],
     this.isLineageHeritage = false,
+    this.isNamedReward = false,
   });
 
   factory EquipmentDef.fromYaml(Map<String, dynamic> y) {
@@ -110,6 +119,7 @@ class EquipmentDef {
         ),
       ),
       isLineageHeritage: (y['isLineageHeritage'] as bool?) ?? false,
+      isNamedReward: (y['isNamedReward'] as bool?) ?? false,
     );
   }
 

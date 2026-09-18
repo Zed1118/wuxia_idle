@@ -1394,6 +1394,8 @@ equipment:
     detailPath: assets/equipment/armor_special_bai_zhan_jia_detail.png
 
   # ── 断魂庄三选一命名奖励（好家伙/二流阶 · gauntlet_duanhun 三选一 · 各偏一流派）──
+  # isNamedReward: true = 命名奖励溢价(2026-09-18 5A E-A 规则):可越本阶上界、不得越下一阶上界,
+  #   守卫 numbers_tier_contract_guard_test 读此字段钉包络;数值本身不动。
   - id: weapon_haojiahuo_suo_mai_nang
     name: 锁脉囊
     tier: haoJiaHuo
@@ -1411,6 +1413,7 @@ equipment:
     iconPath: assets/equipment/weapon_haojiahuo_suo_mai_nang.png
     detailPath: assets/equipment/weapon_haojiahuo_suo_mai_nang_detail.png
     specialSkillCandidates: [skill_edge_haojiahuo_lingqiao]
+    isNamedReward: true
 
   - id: armor_haojiahuo_zhen_yue_tie_yi
     name: 镇岳铁衣
@@ -1427,6 +1430,7 @@ equipment:
     dropSourceTags: ["gauntlet_duanhun"]
     iconPath: assets/equipment/armor_haojiahuo_zhen_yue_tie_yi.png
     detailPath: assets/equipment/armor_haojiahuo_zhen_yue_tie_yi_detail.png
+    isNamedReward: true
 
   - id: accessory_haojiahuo_she_hun_ling
     name: 摄魂铃
@@ -1443,3 +1447,4 @@ equipment:
     dropSourceTags: ["gauntlet_duanhun"]
     iconPath: assets/equipment/accessory_haojiahuo_she_hun_ling.png
     detailPath: assets/equipment/accessory_haojiahuo_she_hun_ling_detail.png
+    isNamedReward: true

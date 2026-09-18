@@ -32,16 +32,13 @@ void main() {
   });
 
   group('equipment.tiers 区间合同', () {
-    /// 断魂庄三选一命名奖励(commit 10297311d,2026-07-19):有意越过 haoJiaHuo
-    /// 上界作为「命名奖励溢价」(武器 attack 360–490 跨在 450 与利器下界 480
-    /// 之间,不落在任一单阶区间内)。是否收回/抬阶属 🔴 待拍板(见
-    /// docs/audit/numbers_unused_keys_pending_decision_2026-09-17.md);守卫在此
-    /// 只钉包络「下界 ≥ 本阶 min、上界 ≤ 下一阶 max」,防溢价无声膨胀。
-    const namedRewardAllowlist = <String>{
-      'weapon_haojiahuo_suo_mai_nang',
-      'armor_haojiahuo_zhen_yue_tie_yi',
-      'accessory_haojiahuo_she_hun_ling',
-    };
+    /// 命名奖励溢价(2026-09-18 B2 复核 5A E-A 拍板为规则):`isNamedReward: true`
+    /// 的装备可越本阶上界、不得越下一阶上界(numbers.yaml `equipment.tiers` 段头
+    /// 明文)。标记由 equipment.yaml 字段声明、守卫只读字段,不再硬编码 id 集;
+    /// 首批三件为断魂庄三选一(commit 10297311d)。
+    late final namedRewards = repo.equipmentDefs.values
+        .where((d) => d.isNamedReward)
+        .toList();
 
     Map<String, dynamic> rangeOf(EquipmentTier tier, EquipmentSlot slot) =>
         Map<String, dynamic>.from(equipmentTiers[tier.name]![slot.name] as Map);
@@ -95,29 +92,33 @@ void main() {
       }
     });
 
-    test('白名单外的每件装备基础数值落在本阶同槽位区间内', () {
+    test('未标记 isNamedReward 的每件装备基础数值落在本阶同槽位区间内', () {
       final failures = <String>[];
       var checked = 0;
       for (final def in repo.equipmentDefs.values) {
-        if (namedRewardAllowlist.contains(def.id)) continue;
+        if (def.isNamedReward) continue;
         checked++;
         final v = violations(def, rangeOf(def.tier, def.slot));
         if (v.isNotEmpty) failures.add('${def.id}: ${v.join('; ')}');
       }
-      expect(checked, repo.equipmentDefs.length - namedRewardAllowlist.length);
+      expect(checked, repo.equipmentDefs.length - namedRewards.length);
       expect(failures, isEmpty, reason: failures.join('\n'));
     });
 
-    test('白名单三件命名奖励确实越本阶上界、但不越下一阶(liQi)上界', () {
-      for (final id in namedRewardAllowlist) {
-        final def = repo.equipmentDefs[id];
-        expect(def, isNotNull, reason: '$id 不在 equipment.yaml,白名单应同步收缩');
-        expect(def!.tier, EquipmentTier.haoJiaHuo, reason: id);
-        // 若某天它被拉回本阶区间,这条会红,提醒把 id 移出白名单。
+    test('isNamedReward 装备确实越本阶上界、但不越下一阶上界', () {
+      expect(namedRewards, isNotEmpty, reason: '生产至少有断魂庄三选一三件');
+      for (final def in namedRewards) {
+        final id = def.id;
+        // 若某天它被拉回本阶区间,这条会红,提醒把 isNamedReward 标记摘掉。
         expect(
           violations(def, rangeOf(def.tier, def.slot)),
           isNotEmpty,
-          reason: '$id 已回到本阶区间,白名单应收缩',
+          reason: '$id 已回到本阶区间,应摘掉 isNamedReward',
+        );
+        expect(
+          def.tier.index + 1,
+          lessThan(EquipmentTier.values.length),
+          reason: '$id 已是最高阶,没有「下一阶上界」可作包络,不得标 isNamedReward',
         );
         final next = EquipmentTier.values[def.tier.index + 1];
         expect(
