@@ -1094,8 +1094,11 @@ character:
     total_points_min: 16              # 总点数下限
     total_points_max: 24              # 总点数上限
     distribution: "normal"            # 正态分布（中段最常见）
-    distribution_mean: 5.5            # 正态分布均值
-    distribution_stddev: 1.5          # 标准差
+    # UNUSED(2026-09-18 B2 复核 5A C-A·头注): distribution_mean / distribution_stddev 为 GDD §4.1
+    #   程序化生成设计指引,本仓 18 个角色 def 全为手写静态 profile、lib 无生成器,零读取;
+    #   与同段 rarity_distribution.probability 列同口径保留(numbers_config.dart 注),未来接生成器时消费。
+    distribution_mean: 5.5            # 正态分布均值 · UNUSED(设计指引·无生成器)
+    distribution_stddev: 1.5          # 标准差 · UNUSED(设计指引·无生成器)
     rerollable: false                 # 不可重 roll（GDD 强制规则）
 
   # --- 6 档稀有度概率（GDD §4.1，强制规则）---
