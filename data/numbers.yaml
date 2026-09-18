@@ -1488,79 +1488,11 @@ festivals:
     - {festival: chongYang,   date: "2026-10-18"}  # 重阳   农历九月初九
 
 # =============================================================================
-# 8. 30 层爬塔"问鼎江湖"
+# 8. 爬塔（旧 30 层设计段已退役）
 # =============================================================================
-# GDD §8.2：每天 5 次挑战次数，通关层数决定排行榜位置
-#
-# ⚠️ UNUSED（2026-07-03 六维审查批次3 证实）：本 `tower:` 整段未被 NumbersConfig.fromYaml
-# 解析为字段（见 numbers_config.dart:18-19「其余段…tower…保留 raw」），lib/ 无任何消费。
-# daily_attempts / difficulty_curve / boss_multiplier 均为设计意图记录：爬塔实际难度走
-# towers.yaml，每日 5 次限制未实装。保留作 GDD §8.2 设计锚，勿据此以为已生效；接线或删除需拍板。
-
-tower:
-
-  # --- 每日挑战次数（GDD §8.2，强制规则）---
-  daily_attempts: 5
-  refresh_at: "00:00"                        # 本地时区午夜重置（详见 schema §4.10 时区规则）
-
-  # --- 30 层难度递增曲线 ---
-  # difficulty_multiplier 影响敌人 HP / 攻击 / 速度
-  # 设计原则：
-  #   1-10 简单：玩家境界刚到二流即可挑战
-  #   11-20 中等：需要二流圆熟 + 利器装备
-  #   21-30 困难：需要一流境界 + 强化高的装备
-  #   Boss 层（5/15/25 小，10/20/30 大）额外乘以 boss_multiplier
-
-  difficulty_curve:
-    # === 简单段 (1-10) ===
-    - layers: [1, 2, 3, 4, 5]
-      difficulty_range: [1.00, 1.20]         # 线性 1.0/1.05/1.10/1.15/1.20
-      tier: "简单前段"
-      recommended_realm: erLiu               # 推荐境界：二流·圆熟
-    - layers: [6, 7, 8, 9, 10]
-      difficulty_range: [1.25, 1.50]         # 1.25/1.30/1.35/1.40/1.50
-      tier: "简单后段"
-      recommended_realm: erLiu               # 二流·登峰
-
-    # === 中等段 (11-20) ===
-    - layers: [11, 12, 13, 14, 15]
-      difficulty_range: [1.60, 2.00]         # 1.60/1.70/1.80/1.85/2.00
-      tier: "中等前段"
-      recommended_realm: yiLiu               # 一流·启蒙
-    - layers: [16, 17, 18, 19, 20]
-      difficulty_range: [2.10, 2.60]         # 2.10/2.20/2.30/2.45/2.60
-      tier: "中等后段"
-      recommended_realm: yiLiu               # 一流·圆熟
-
-    # === 困难段 (21-30) · Demo 顶级挑战 ===
-    - layers: [21, 22, 23, 24, 25]
-      difficulty_range: [2.80, 3.40]         # 2.80/2.95/3.10/3.25/3.40
-      tier: "困难前段"
-      recommended_realm: yiLiu               # 一流·登峰
-    - layers: [26, 27, 28, 29, 30]
-      difficulty_range: [3.55, 4.20]         # 3.55/3.70/3.85/4.00/4.20
-      tier: "困难后段"
-      recommended_realm: jueDing             # 绝顶·启蒙（Demo 不开放绝顶但供爬塔挑战）
-
-  # --- Boss 层配置（GDD §8.2）---
-  # 6 个 Boss：3 小 + 3 大
-  boss_layers:
-    small_boss_layers: [5, 15, 25]           # 小 Boss
-    big_boss_layers: [10, 20, 30]            # 大 Boss
-    small_boss_multiplier: 1.5               # 小 Boss 数值 ×1.5
-    big_boss_multiplier: 2.0                 # 大 Boss 数值 ×2.0
-
-  # --- Boss 血量校验（GDD §5.4 红线 60000+，2026-06-14 由 50000 上调；终局周目膨胀可破 60000 但不进 1M）---
-  # 第 30 层大 Boss：base_hp 12000 × difficulty 4.20 × boss_mult 2.0 = 100,800 ✓
-  # 第 10 层大 Boss：base_hp 5000 × difficulty 1.50 × 2.0 = 15,000（前期 Boss 较低）
-  # 第 20 层大 Boss：base_hp 8500 × difficulty 2.60 × 2.0 = 44,200（中段 Boss，低于 60000+ 红线）
-  # 注：以上 base_hp 由 StageDef 中的具体敌人配置决定，此处仅校验
-
-  # --- 排行榜配置 ---
-  leaderboard:
-    sync_to_supabase: true                   # 通关后同步到 Supabase
-    sync_throttle_seconds: 60                # 节流：每 60 秒最多同步一次
-    track_metrics: ["highest_layer", "best_clear_time", "total_attempts"]
+# 2026-09-18 B2 复核 5A T-A：原 `tower:` 段（30 层 / 每天 5 次 / Boss 位 5·10·15·20·25·30 /
+#   6 段难度曲线 / sync_to_supabase）29 叶 lib/test 零读方，且与生产正面冲突，已整段删除。
+#   现行事实：塔层与 Boss 位见 data/towers.yaml（49 层）；规则见 GDD §8.2（不做每日次数、本地榜为准）。
 
 # =============================================================================
 # 9. 师徒传承

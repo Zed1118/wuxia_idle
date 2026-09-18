@@ -6,12 +6,13 @@
 /// `SupabaseLeaderboardSync implements LeaderboardSyncService` 并替换
 /// provider 注入,**0 victory hook 改动**。
 ///
-/// 接口设计对齐 numbers.yaml leaderboard.track_metrics 3 项
-/// (highest_layer / best_clear_time / total_attempts)+ 时间锚 clearedAt。
+/// 接口携带 3 项指标(highest_layer / best_clear_time / total_attempts)
+/// + 时间锚 clearedAt。原 numbers.yaml `tower.leaderboard` 段 2026-09-18 已删
+/// (B2 复核 5A T-A,零读方),指标集以本接口签名为唯一事实源。
 abstract class LeaderboardSyncService {
   /// 上报一次首通(victory hook 内调用)。
   ///
-  /// 实现端负责节流(numbers.yaml `leaderboard.sync_throttle_seconds=60`),
+  /// 实现端负责节流(节流间隔由实现端自定,当前 Noop 实现无网络请求),
   /// 即便短时间内多次调用也只发 1 次真实请求。
   Future<void> reportClear({
     required int highestFloor,
