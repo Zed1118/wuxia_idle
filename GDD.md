@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.76
+> **版本**:v1.77
+> **v1.77 变更**(2026-09-18 B2 复核 5A S-A · §4.5 心法相生改口径 · 0 改数值):§4.5 明确生产 12 组唯一数据源为 `data/synergies.yaml`(三类触发条件 + multipliers 六维,单项 0–0.30),原 5 行名门心法表降为「早期示例(未实装)」,同批删除 `numbers.yaml synergies.effect_values` 残留段(10 叶零读方)与退役 `tower` 段(29 叶零读方,T-A)。不改任何生产数值、schema 或战斗规则。
 > **v1.76 变更**(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):既有玩家可达塔扫荡入口现只对已首通层开放 typed `direct + playerBot + headless + sweep`；请求经当前掌门、exact snapshot、占用与精确装配准入后进入既有 Phase 0A sweep runner，并在共享 settlement 前重验同一参与者，报告归该人。异常身份/代际、生死、疗养、主修、占用、装配、进度、stale admission 与错人 settlement 均 fail closed。只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增战斗/结算真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
-> **v1.75 变更**(2026-08-25 二阶段 U14 六模式入口全状态路由子门):五个江湖活动地点在相关 provider loading/error 时均禁用地图 CTA 并置空回调，心魔角色入口在进度 loading/error 时隐藏；结合既有 hidden/locked/open/active/complete/zero-eligible 生产证据，入口全状态路由子门关闭，异步边界达到 `12/12`。塔、轻功、守城仍缺真实 automation runner/admission，故 U14 权威门仍 `0/1 BLOCKED`、顶层 M0–M9 仍 `1/10`；不新增 provider/policy/runner，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
@@ -271,7 +271,9 @@
 
 ### 4.5 心法相生（5-8 个隐藏组合）
 
-主修 + 辅修达到特定组合时，触发**隐藏彩蛋 buff**。Demo 阶段至少 5 个：
+主修 + 第 1 辅修达到触发条件时，触发**隐藏彩蛋 buff**。**生产 12 组唯一数据源为 `data/synergies.yaml`**（2026-09-18 B2 复核 5A S-A 改口径）：触发条件三类 `schoolPair`（主辅流派严格配对）/ `sameSchool`（同流派）/ `sameTier`（同阶），效果为 `multipliers` 六维百分比（attack / defense / speed / hp / internalForceMax / internalForceGrowth），单项红线 0–0.30。现行 12 组：阴阳调和、刚柔并济、阴影迅捷、同流派精进、同辈互补、刚阴互制、灵刚汇流、太极初成、灵阴化蝶、龙虎交泰、幽影穿花、金刚不坏。
+
+**早期示例（未实装，仅存设计史）**：以下 5 行为 Demo 前的名门心法示意，所依赖的九阳/九阴/降龙十八掌/打狗棒/易筋经/太极/紫霞不属本仓心法体系，除「阴阳调和」按流派配对重做外均未落地；原 `numbers.yaml synergies.effect_values` 残留段已同批删除。
 
 | 组合名 | 心法搭配 | 效果 |
 |--------|---------|------|

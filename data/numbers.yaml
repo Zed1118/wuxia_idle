@@ -1563,42 +1563,11 @@ inheritance:
       apply_to_disciples_only: false         # active 中 founder + disciples 全享
 
 # =============================================================================
-# 10. 心法相生组合（GDD §4.5）
+# 10. 心法相生组合（旧 effect_values 段已退役）
 # =============================================================================
-# 5 个隐藏组合的具体效果数值。组合判定逻辑见 SynergyDef，本段只给数值。
-#
-# ⚠️ UNUSED（2026-07-03 六维审查批次3 证实）：本 `synergies:` 整段未被 NumbersConfig.fromYaml
-# 解析，lib/ 无消费。相生组合真实数据源是独立文件 data/synergies.yaml（12 条目，multipliers
-# 格式，game_repository.dart:341 解析）。此处 5 条 effect_values 为历史残留，勿在此维护；删除需拍板。
-
-synergies:
-
-  effect_values:
-    # 阴阳调和（九阳 + 九阴）：全属性 +20%
-    yin_yang_he:
-      effect_type: "all_attr_pct"
-      effect_value: 0.20
-
-    # 丐帮传承（降龙十八掌 + 打狗棒法）：解锁"亢龙有悔"暴击
-    gai_bang_chuan_cheng:
-      effect_type: "unlock_skill_crit"
-      target_skill_id: "skill_kang_long_you_hui"
-      crit_rate_bonus: 0.50
-
-    # 少林正宗（易筋经 + 少林外功）：内力增长 +30%
-    shao_lin_zheng_zong:
-      effect_type: "internal_force_growth_pct"
-      effect_value: 0.30
-
-    # 武当圆融（太极拳 + 太极剑）：反伤 15%
-    wu_dang_yuan_rong:
-      effect_type: "reflect_pct"
-      effect_value: 0.15
-
-    # 华山合璧（紫霞神功 + 华山剑法）：暴击伤害 +50%
-    hua_shan_he_bi:
-      effect_type: "crit_dmg_pct"
-      effect_value: 0.50
+# 2026-09-18 B2 复核 5A S-A：原 `synergies.effect_values` 5 组（阴阳调和/丐帮传承/少林正宗/武当圆融/华山合璧）
+#   10 叶 lib/test 零读方，且其中 4 组依赖的心法不属本仓心法体系，已整段删除。
+#   相生组合唯一数据源：data/synergies.yaml（12 组，multipliers 格式，game_repository.dart 解析）；GDD §4.5 同步改口径。
 
 # =============================================================================
 # 11. 战例验证
