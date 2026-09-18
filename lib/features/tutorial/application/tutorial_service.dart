@@ -15,7 +15,8 @@ import '../domain/tutorial_hint_def.dart';
 /// - step 3 = stage_01_03 cleared(心法主修)
 /// - step 4 = stage_01_04 cleared(三流派克制)
 /// - step 5 = stage_01_05 cleared(Ch1 通关,闭关 + 师徒解锁)
-/// - step 6 = 主角境界突破到一流(GDD §7.1 收徒门槛,P1.y)
+/// - step 6 = 主角境界突破到收徒门槛(GDD §7.1「一流可收徒」,阈值读
+///   numbers.yaml `inheritance.unlock_rules.can_take_disciple_at`,P1.y)
 /// - step 7 = 第 1 次奇遇触发(GDD §7.2 武学领悟,P1.y)
 /// - step 8 = 第 1 次装备 enhanceLevel ≥10(GDD §6.5 开锋阶段锚点,P1.y)
 ///
@@ -90,15 +91,20 @@ class TutorialService {
     await isar.saveDatas.put(save);
   }
 
-  /// 主角境界突破 hook(到一流即推 step 6,GDD §7.1 收徒门槛,P1.y)。
+  /// 主角境界突破 hook(达到收徒门槛即推 step 6,GDD §7.1,P1.y)。
   ///
-  /// `tierAfter.index < RealmTier.yiLiu.index` 时 no-op(学徒 / 三流不触发);
-  /// 一流及以上首次命中即推 step 6,后续命中靠 [advanceToStep] 单调性 no-op。
+  /// [threshold] 由 caller 传 `repository.numbers.canTakeDiscipleAt`
+  /// (numbers.yaml `inheritance.unlock_rules.can_take_disciple_at`,2026-09-18
+  /// 5A I-A′ 起不再写死一流)。`tierAfter.index < threshold.index` 时 no-op;
+  /// 达阈值首次命中即推 step 6,后续命中靠 [advanceToStep] 单调性 no-op。
   ///
   /// **caller 持锁**:caller 必须在 `isar.writeTxn` 内 await 本方法,
   /// 与 `recordRealmBreakthrough` 同事务原子。
-  Future<void> advanceForRealmBreakthrough(RealmTier tierAfter) async {
-    if (tierAfter.index < RealmTier.yiLiu.index) return;
+  Future<void> advanceForRealmBreakthrough(
+    RealmTier tierAfter, {
+    required RealmTier threshold,
+  }) async {
+    if (tierAfter.index < threshold.index) return;
     await advanceToStep(6);
   }
 

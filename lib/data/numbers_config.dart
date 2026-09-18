@@ -242,6 +242,14 @@ class NumbersConfig {
   /// yaml 合同零消费;现由该校验器统一读此处,四键缺失即 fail-fast。
   final AttributeBoundsConfig attributeBounds;
 
+  /// 候选收徒解锁境界(numbers.yaml `inheritance.unlock_rules.can_take_disciple_at`,
+  /// GDD §7.1「一流可收徒」)。B2 复核 5A I-A′(2026-09-18):此前
+  /// `TutorialService.advanceForRealmBreakthrough` 写死 `RealmTier.yiLiu`,
+  /// 本键零消费;现由该 hook 的两个生产调用方(闭关升层 / 战斗结算升层)读此处,
+  /// 缺失或非法 tier 名即 fail-fast。命名弟子拜入(`lineage_onboarding`)是剧情事件,
+  /// 不受此门禁。
+  final RealmTier canTakeDiscipleAt;
+
   /// 技能装配大招槽阈值(numbers.yaml `skill_loadout.ultimate_power_threshold`,GDD §6)。
   /// 主修心法招 powerMultiplier ≥ 此值时自动填入大招槽，由 [SkillLoadout.autoFill] 消费。
   final int loadoutUltimatePowerThreshold;
@@ -310,6 +318,7 @@ class NumbersConfig {
     required this.ascension,
     required this.rarityTiers,
     required this.attributeBounds,
+    required this.canTakeDiscipleAt,
     required this.dispersionCultivationPenalty,
     required this.defeatBossCultivationPenalty,
     required this.learningCost,
@@ -514,6 +523,10 @@ class NumbersConfig {
       ),
       attributeBounds: AttributeBoundsConfig.fromYaml(
         (y['character'] as Map<String, dynamic>?)?['attributes']
+            as Map<String, dynamic>?,
+      ),
+      canTakeDiscipleAt: _parseCanTakeDiscipleAt(
+        (y['inheritance'] as Map<String, dynamic>?)?['unlock_rules']
             as Map<String, dynamic>?,
       ),
       loadoutUltimatePowerThreshold:
@@ -4155,6 +4168,18 @@ class LineageOnboardingConfig {
           .toList(growable: false),
     );
   }
+}
+
+/// `inheritance.unlock_rules.can_take_disciple_at` → [RealmTier];缺失 / 非法名 fail-fast。
+RealmTier _parseCanTakeDiscipleAt(Map<String, dynamic>? unlockRules) {
+  const path = 'inheritance.unlock_rules.can_take_disciple_at';
+  final raw = unlockRules?['can_take_disciple_at'] as String?;
+  if (raw == null) _missingRequiredValue(path);
+  final tier = RealmTier.values.asNameMap()[raw];
+  if (tier == null) {
+    throw ArgumentError.value(raw, path, '不是合法的 RealmTier 名');
+  }
+  return tier;
 }
 
 /// 配置缺项与武器映射加载器保持相同异常类型，不提供隐式数值。

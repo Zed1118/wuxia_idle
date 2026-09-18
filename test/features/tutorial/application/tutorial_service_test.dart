@@ -6,6 +6,7 @@ import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tutorial/application/tutorial_service.dart';
 import "../../../support/isar_test_support.dart";
+import '../../../support/test_data.dart';
 
 /// P1 #42 Phase 2 §10 P1.x · TutorialService 红线契约。
 ///
@@ -16,9 +17,14 @@ import "../../../support/isar_test_support.dart";
 /// - caller 持锁(本服务方法不开 writeTxn,test 端 writeTxn 包裹)
 void main() {
   late Directory tempDir;
+  // 收徒门槛读生产 numbers.yaml `inheritance.unlock_rules.can_take_disciple_at`
+  // (2026-09-18 5A I-A′):测试不钉具体 tier,守「≥ 阈值推 step 6、< 阈值 no-op」。
+  late RealmTier recruitThreshold;
 
   setUpAll(() async {
     await initializeTestIsarCore();
+    recruitThreshold =
+        (await loadTestGameRepository()).numbers.canTakeDiscipleAt;
   });
 
   setUp(() async {
@@ -146,60 +152,92 @@ void main() {
   // ── P1.y · step 6/7/8 业务门槛 hook ──────────────────────────────────
 
   group('§10 P1.y · 高阶 hook', () {
-    test('advanceForRealmBreakthrough(yiLiu) 从 step 5 → step 6', () async {
+    test('advanceForRealmBreakthrough(生产阈值) 从 step 5 → step 6', () async {
       await seedSave(initialStep: 5);
       final isar = IsarSetup.instance;
       final svc = TutorialService(isar);
 
       await isar.writeTxn(
-        () => svc.advanceForRealmBreakthrough(RealmTier.yiLiu),
+        () => svc.advanceForRealmBreakthrough(
+          recruitThreshold,
+          threshold: recruitThreshold,
+        ),
       );
 
       expect(await svc.getCurrentStep(), 6);
     });
 
-    test('advanceForRealmBreakthrough(yiLiu 及以上各 tier)均推 step 6', () async {
-      for (final tier in [
-        RealmTier.yiLiu,
-        RealmTier.jueDing,
-        RealmTier.zongShi,
-        RealmTier.wuSheng,
-      ]) {
+    test('advanceForRealmBreakthrough(≥ 生产阈值各 tier)均推 step 6', () async {
+      final tiers = RealmTier.values.where(
+        (t) => t.index >= recruitThreshold.index,
+      );
+      expect(tiers, isNotEmpty);
+      for (final tier in tiers) {
         await seedSave(initialStep: 5);
         final isar = IsarSetup.instance;
         final svc = TutorialService(isar);
 
-        await isar.writeTxn(() => svc.advanceForRealmBreakthrough(tier));
+        await isar.writeTxn(
+          () => svc.advanceForRealmBreakthrough(
+            tier,
+            threshold: recruitThreshold,
+          ),
+        );
 
         expect(
           await svc.getCurrentStep(),
           6,
-          reason: '$tier (>= yiLiu) 应推到 step 6',
+          reason: '$tier (>= ${recruitThreshold.name}) 应推到 step 6',
         );
         await IsarSetup.close();
         await IsarSetup.init(directory: tempDir, inspector: false);
       }
     });
 
-    test('advanceForRealmBreakthrough(三流及以下)→ no-op', () async {
+    test('advanceForRealmBreakthrough(< 生产阈值各 tier)→ no-op', () async {
+      final tiers = RealmTier.values.where(
+        (t) => t.index < recruitThreshold.index,
+      );
+      expect(tiers, isNotEmpty, reason: '阈值不该是最低阶,否则门禁形同虚设');
+      await seedSave(initialStep: 5);
+      final isar = IsarSetup.instance;
+      final svc = TutorialService(isar);
+
+      for (final tier in tiers) {
+        await isar.writeTxn(
+          () => svc.advanceForRealmBreakthrough(
+            tier,
+            threshold: recruitThreshold,
+          ),
+        );
+        expect(
+          await svc.getCurrentStep(),
+          5,
+          reason: '$tier < ${recruitThreshold.name} 不应推到 step 6',
+        );
+      }
+    });
+
+    test('advanceForRealmBreakthrough 阈值来自参数而非写死 yiLiu', () async {
       await seedSave(initialStep: 5);
       final isar = IsarSetup.instance;
       final svc = TutorialService(isar);
 
       await isar.writeTxn(
-        () => svc.advanceForRealmBreakthrough(RealmTier.xueTu),
+        () => svc.advanceForRealmBreakthrough(
+          RealmTier.yiLiu,
+          threshold: RealmTier.jueDing,
+        ),
       );
-      expect(await svc.getCurrentStep(), 5);
+      expect(await svc.getCurrentStep(), 5, reason: '阈值抬到绝顶后一流不再够');
 
       await isar.writeTxn(
-        () => svc.advanceForRealmBreakthrough(RealmTier.sanLiu),
+        () => svc.advanceForRealmBreakthrough(
+          RealmTier.sanLiu,
+          threshold: RealmTier.sanLiu,
+        ),
       );
-      expect(await svc.getCurrentStep(), 5);
-
-      await isar.writeTxn(
-        () => svc.advanceForRealmBreakthrough(RealmTier.erLiu),
-      );
-      expect(await svc.getCurrentStep(), 5, reason: '二流 < 一流 也不应推到 step 6');
+      expect(await svc.getCurrentStep(), 6, reason: '阈值降到三流后三流即够');
     });
 
     test('advanceForFirstAdventure → step 7', () async {

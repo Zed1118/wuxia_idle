@@ -613,12 +613,14 @@ class SeclusionService {
               character: ch,
               result: advancement!,
             );
-            // P1 #42 Phase 2 §10 P1.y:仅主角(founder)达一流 → 推 step 6
-            // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算)。
+            // P1 #42 Phase 2 §10 P1.y:仅主角(founder)达收徒门槛 → 推 step 6
+            // (GDD §7.1 收徒门槛是开派祖师的事,disciple 升层不算;阈值读
+            // numbers.yaml inheritance.unlock_rules.can_take_disciple_at)。
             if (ch.lineageRole == LineageRole.founder) {
               final tutorialSvc = TutorialService(isar);
               await tutorialSvc.advanceForRealmBreakthrough(
                 advancement!.tierAfter,
+                threshold: GameRepository.instance.numbers.canTakeDiscipleAt,
               );
             }
           }

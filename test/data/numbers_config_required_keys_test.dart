@@ -30,6 +30,7 @@ const _requiredNonRedLinePaths = <String>[
   'inheritance.heritage_items.pieces_per_generation_min',
   'inheritance.heritage_items.pieces_per_generation_max',
   'inheritance.heritage_items.stack_across_generations',
+  'inheritance.unlock_rules.can_take_disciple_at',
   'equipment.enhancement.never_degrade',
   'equipment.forging.slots[].fucai_cost',
   'combat.qi.base_max',

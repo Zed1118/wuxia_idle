@@ -120,7 +120,10 @@ class CombatProgressionSettlementService {
         result: entry.result,
       );
       if (founderId != null && character.id == founderId) {
-        await tutorial.advanceForRealmBreakthrough(entry.result.tierAfter);
+        await tutorial.advanceForRealmBreakthrough(
+          entry.result.tierAfter,
+          threshold: repository.numbers.canTakeDiscipleAt,
+        );
       }
     }
 

@@ -1511,22 +1511,24 @@ inheritance:
 
   # --- 解锁节奏（GDD §7.1）---
   #
-  # ❗ 未消费（2026-08-07 N1 实测）：本块三字段 lib/ 零读取点
-  #   （NumbersConfig 解析 inheritance 仅取 founder_ancestor_buff（numbers_config.dart:399）
-  #   与 heritage_items（:404））。逐字段现状：
-  #   · can_take_disciple_at / disciple_can_take_grand_disciple_at
-  #     ——描述的是"按境界解锁收徒"，而实装的收徒是一次性剧情事件
-  #       （recruitment_service.dart:47,79,172 走 SaveData.recruitmentOffered flag），
-  #       **完全没有境界门禁**。设计与实装分叉，不是失修。
+  # 2026-09-18 B2 复核 5A I-A′ 订正（推翻 2026-08-07「完全没有境界门禁」注——它只看了
+  #   recruitment_service.dart）。本仓有两条收徒路径，门禁归属不同：
+  #   · 候选收徒（recruit_candidates.yaml 三人）：入口是 tutorial step 6 banner →
+  #     RecruitmentDialog，step 6 由 TutorialService.advanceForRealmBreakthrough 在祖师
+  #     升层时推进，**阈值即本块 can_take_disciple_at**（NumbersConfig.canTakeDiscipleAt，
+  #     闭关升层 seclusion_service / 战斗结算 combat_progression_settlement_service 两处传入；
+  #     此前 Dart 写死 yiLiu，现改读此处，改本行即改门禁）。
+  #   · 命名弟子拜入（本文件 lineage_onboarding.disciple_joins，Ch6 终局 stage_06_05）：
+  #     剧情事件，2026-06-27 spec A 拍板不设境界门禁，不受本键约束。
   #   · can_pass_legacy_at ——与活配置 ascension.unlock_triggers.required_realm.tier
-  #       （本文件 :1830-1832，AscendService 经 numbers.ascension 消费，
-  #        ascend_service.dart:60）**重复声明同一门槛**，且本处是死的那份。
+  #       （AscendService 经 numbers.ascension 消费）**重复声明同一门槛**，且本处是死的那份。
   #       改本行不生效；要改飞升境界门槛请改 ascension 段。
-  # UNUSED(2026-09-17 B2 复核·头注): can_pass_legacy_at lib 零读取(活门槛在 ascension 段);
-  #   can_take_disciple_at / disciple_can_take_grand_disciple_at 为「收徒门槛设计 vs 剧情准入实装」分叉,待拍板。
+  # UNUSED(2026-09-17 B2 复核·头注): can_pass_legacy_at lib 零读取(活门槛在 ascension 段)。
+  # UNUSED(2026-09-18 5A I-A′·头注): disciple_can_take_grand_disciple_at 无二代收徒事件/入口,
+  #   lib 零读取;待徒孙收徒实装时接入。
   unlock_rules:
-    can_take_disciple_at: yiLiu              # 突破到一流可收徒
-    disciple_can_take_grand_disciple_at: jueDing  # 弟子突破到绝顶可收徒孙
+    can_take_disciple_at: yiLiu              # 候选收徒门槛:祖师突破到一流(tutorial step 6 真读)
+    disciple_can_take_grand_disciple_at: jueDing  # 弟子突破到绝顶可收徒孙 · UNUSED(无二代收徒)
     can_pass_legacy_at: wuSheng              # 武圣后传位（飞升渡劫）。2026-07-28 订正:旧注「Demo 不实现」已被推翻——多代飞升/真传位/遗物 transfer 在 P2.3+P5+ 早已完整实装,一直缺的只是 cap;发布上限 Ch19 抬至 45(武圣·熟练),Ch21 抬到 49 时飞升条件③(founder abs 49)首次可达。
 
   # --- Demo 简化（GDD §7.1）---
