@@ -68,4 +68,11 @@ B2 实测结论（链 tip 重锚后）：标量叶子 1796 / 归一路径 847；
 
 值得封装：① 收据自引用口径（收据绑定最后审计提交 + 单独封装提交）已第二次出现，应写进 `receipt.schema.md`「生成顺序」与派单包模板，免得执行端每次停 BLOCKED；② gate `--whitelist` 必须含派单包白名单全部精确文件（含收据/恢复点），可让 gate 直接读派单包 §0 生成白名单，减少调用侧笔误。
 
+**已封装（2026-09-18，用户「继续推进」，NEXT #4）**：改在 `~/.claude/skills/afk/`（skill 层，不进本仓）：
+- `scripts/receipt.schema.md`「生成顺序」新增第 6 步 + `head_sha` 字段释义：收据绑最后实质 commit S（带就绪标记），收据放独立包装 commit R（`R^ == S`，只含收据/恢复点，带就绪标记）；写完收据再改实质文件即产生新 S′ 必须重出收据。
+- `SKILL.md` 派单包必含清单加 ⑨（收据自引用口径抄进派单包正文）并把 ⑦ 的白名单写法钉死为 §0 逐行反引号精确路径、禁 glob / 禁目录授权。
+- `scripts/gate.sh` 新增 `--whitelist-from <派单包>`（解析 §0「可写范围（白名单」块：子项首反引号路径；绝对路径跳过并 INFO；glob / 目录 / 空列表 `FAIL: input` 直接中止；与 `--whitelist` 取并集）与 `--wrap-tip <R>`（`R^ == S` 否则 `FAIL: input`；新增检查项 `wrap_commit`：`S..R` 不得含 `lib/ test/ data/` 及禁区文件、须在白名单内、R 消息带 `[READY]/[BLOCKED]`；`--receipt` 省略时自动从 R 内取 `docs/dispatch/reports/*receipt*.yaml`）。
+- 验证（B2 真实夹具，`--skip-full`）：正例 `gate.sh <wt> c64b16593 411e200f4 --whitelist-from <B2 派单包> --wrap-tip 964c5be02` → 解析 5 路径、跳过 1 仓库外路径、`scope_whitelist` PASS、`wrap_commit` PASS、收据自动取自 R；与原版脚本手抄 `--whitelist` + `--receipt` 的结果逐项一致（唯一 FAIL 同为 `receipt_crosscheck: analyze_last_line,format_last_line`——B2 收据两字段写的是 `"NOT_RUN"`，见下）。负例三条各按设计拒收：night_B 派单包行内 glob → `FAIL: input`；`--wrap-tip dd8293368`（父非 S）→ `FAIL: input`；S=`0200bff0e` R=`bc6cb8b8b`（R 夹带 lib/test/data）→ `wrap_commit` 列出全部 8 个实质文件 + 缺就绪标记。
+- **顺带发现（未改，登记）**：B2 派单包写「不跑 `flutter`」而 `receipt.schema.md` 要求 analyze/format 真实末行，B2 收据从生成起就注定 crosscheck FAIL。审计单「禁 flutter」与收据 schema 需二选一：要么审计单允许跑 analyze/format（只读命令），要么 schema 给审计单开 `NOT_RUN` 口径并让 Gate 自跑替代对撞。待拍板。
+
 **入链（23:1x）**：`claude/dispatch-20260917` @ `5c05da57d` 快进推入 `origin/codex/p2-player-flow-20260910`（`29ddf974a..5c05da57d`，`ls-remote` 核实同 tip）；同 tip 备份到 `origin/claude/dispatch-20260917`。主 checkout 本地链仍在 `c64b16593`，需 `git pull --ff-only`。main 未动。
