@@ -66,3 +66,31 @@
 ## 回复格式
 
 `T-A S-A C-A I-A E-A`（推荐全选）或逐段改；I-A 执行前我会先量收徒关卡境界并回报，不满足再退 I-B/I-C。
+
+## 拍板结果（2026-09-18 用户「按推荐执行」）
+
+| 段 | 拍板 | 落地 commit | 结果 |
+|---|---|---|---|
+| T | T-A | `583e54f99` | `tower:` 29 叶整段删除，段头留指针；`leaderboard_sync_service.dart` 两处注释不再引用已删键。lib/test 零残留引用。 |
+| S | S-A | `49cf33494` | `synergies.effect_values` 10 叶删除；GDD 升 v1.77，§4.5 改为 `synergies.yaml` 12 组口径，原 5 行降为早期示例。 |
+| C | C-A | `a27a7ed04` | `distribution_mean/stddev` 加 UNUSED 头注，`numbers_key_usage.py` 实测两键 `unused_marked=true`。 |
+| E | E-A | `ffd6167e0` | `EquipmentDef.isNamedReward`（缺省 false，不进 Isar）；三件标 true；`equipment.tiers` 段头 + `data_schema.md §5.1` 明文规则；守卫删硬编码 id 集改读字段，新增「神物阶不得标记」断言。四向 mutation（摘标记 / 普通件标 true / 神物标 true / 神物越阶+标 true）各精确 1 条失败并还原。 |
+| I | **未执行，回到拍板** | — | 见下。 |
+
+重扫（`numbers_key_usage.py --baseline HEAD`，C-A 后）：零引用 99 叶 → **60 叶**（= 99 − 29 tower − 10 synergies，守恒），其中已标注 57、未标注 3（`equipment.enhancement.max_level_formula` / `success_curve[4].success_formula` / `equipment.resonance.new_owner_retention`，均为 B2 审计单原「保留理由」行，不在 5A 范围）。
+
+### I 段：前置量测不满足 + 新事实，需重新拍板
+
+**量测**：`lineage_onboarding.disciple_joins` 两条均在 `stage_06_05`（`numbers.yaml` lineage_onboarding 段），该关 `requiredRealm: sanLiu`（`data/stages.yaml:1509`）；主线 `requiredRealm` 梯度为每 3 章一阶（Ch1–3 xueTu / Ch4–6 sanLiu / Ch7–9 erLiu / Ch10–12 yiLiu …），`yiLiu` 首见于 Ch10。即命名弟子拜入（Ch6 终局）比 `can_take_disciple_at: yiLiu` 早两阶，**I-A 原形状「断言拜入关境界 ≥ 一流」对现行生产必红**，按对照单约定不执行。
+
+**新事实（2026-08-07 注「完全没有境界门禁」不准确）**：`recruit_candidates`（云寒青/柳拂陻/马智远）这条收徒路径的入口是 tutorial step 6 banner → `RecruitmentDialog`（`lib/features/recruitment/application/recruitment_providers.dart:19-22`），而 step 6 由 `TutorialService.advanceForRealmBreakthrough` 推进，**硬编码 `RealmTier.yiLiu`**（`lib/features/tutorial/application/tutorial_service.dart:100`；调用方 `seclusion_service.dart:620` 与 `combat_progression_settlement_service.dart:123`）。也就是说「一流可收徒」在生产里是**真门禁**，只是门禁值写死在 Dart 里、没读 numbers.yaml。2026-08-07 的注只看了 `recruitment_service.dart`。
+
+| 选项 | 一句话 | 代价 |
+|---|---|---|
+| **I-A′（推荐）** | `can_take_disciple_at` 接入生产：`TutorialService.advanceForRealmBreakthrough` 改读 `NumbersConfig`（新增 `inheritance.unlockRules.canTakeDiscipleAt` 解析），`RealmTier.yiLiu` 硬编码退役；现有 3 条 tutorial 测试改从配置取阈值；`disciple_can_take_grand_disciple_at` 无二代收徒事件 → 头注 UNUSED；numbers.yaml 2026-08-07 注改写为「命名弟子拜入=剧情事件（Ch6）无门禁；候选收徒=tutorial step 6 一流门禁，读本键」 | 🟡 lib 改动（值 yiLiu→yiLiu 不变，行为 0 变）；消除 CLAUDE.md §5.6「Dart 不写数值常量」的一处存量违例 |
+| I-A″ | I-A′ + 同时把 `disciple_joins` 关卡境界也纳入本键守卫（即把命名弟子拜入推迟到 ≥ 一流关，Ch10+） | 🔴 改玩法节奏（2026-06-27 spec A 拍板「终局 Ch6 一并拜入」被推翻），不推荐 |
+| I-B | 两键删除 + GDD §7.1 改「收徒=剧情事件」 | 🔴 + `[GDD]`；但与 tutorial step 6 真门禁矛盾，**基于错误前提，不再推荐** |
+| I-C | 头注 UNUSED | 🟢；继续让 Dart 硬编码与 yaml 死键并存 |
+
+回复 `I-A′` / `I-C` 等即可；I-A′ 预估 30–40 min（含 tutorial 测试改读配置 + 破坏证红）。
+
