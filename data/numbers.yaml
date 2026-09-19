@@ -28,11 +28,6 @@
 meta:
   version: "0.2.0"             # 与 SaveData.saveVersion 对应；major.minor.patch
   description: "Demo 阶段数值配置 · 覆盖学徒到武圣全程"
-  # UNUSED(2026-09-17 B2 复核·头注): last_updated lib 零读取,纯存档时间戳。
-  # ⚠ 纯文档（2026-08-07 N1 处置）：NumbersConfig.fromYaml 只取 meta['version']
-  #   （numbers_config.dart:316,323），meta 其余 key 无任何读取点。last_updated 已
-  #   长期不随改动更新（本行值停留在 2026-05-10），当作时间戳会误导，仅存档用。
-  last_updated: "2026-05-10"
   notes: "所有数值基于 GDD v1.1 §5.2 数值红线设计；公式系数见 combat 段"
 
 attribute_effects:
@@ -104,20 +99,9 @@ combat:
   damage_formula:
     internal_force_factor: 0.4       # 内力对伤害的系数（GDD 原值，未变）· 真消费(damage_calculator)
     equipment_attack_factor: 1.0     # 装备攻击系数（GDD 原写 8，平衡后调为 1.0）· 真消费(damage_calculator)
-    # UNUSED(2026-09-17 B2 复核·头注): skill_multiplier_added 为公式结构文档,lib 零读取。
-    skill_multiplier_added: true     # ⚠ 纯文档(审计 D7):NumbersConfig 不解析;招式倍率"作为加项"已硬编码在 damage_calculator
 
   # --- 最终伤害公式（GDD §5.4）---
   # 最终伤害 = 基础伤害 × 修炼度加成 × 流派克制 × 暴击系数 × (1-防御率) × 境界差修正
-  # UNUSED(2026-09-17 B2 复核·头注): final_damage_formula 五个 apply_* 均 lib 零读取,仅公式结构文档。
-  # ⚠ 以下 apply_* flags 为纯公式结构文档（审计 D7 2026-06-24）：NumbersConfig 不解析此块，
-  #   damage_calculator.dart 恒应用全部乘子（非可关闭开关）。改这些 true→false 不生效，勿误用。
-  final_damage_formula:
-    apply_cultivation_multiplier: true   # 应用心法修炼度（1.0~3.0）
-    apply_school_counter: true           # 应用流派克制（0.75/1.0/1.25）
-    apply_critical: true                 # 应用暴击（1.0 或 1.5~2.5）
-    apply_defense: true                  # 应用防御率（1 - defense_rate）
-    apply_realm_diff: true               # 应用境界差修正
 
   # --- 最大血量公式 ---
   # 内力与真气拆分后，内力不再提高血量；境界绝对等级承接原成长曲线。
@@ -740,6 +724,7 @@ equipment:
   # --- 强化系统（GDD §6.2）---
   enhancement:
     bonus_per_level: 0.05            # 每级 +5% 数值（GDD 原值）
+    # UNUSED(2026-09-19 二轮·头注): max_level_formula 为公式名文档锚,上限规则写死 enhancement_service._enhanceLevelCap(min(49, absoluteLevel))。
     max_level_formula: "absolute_level"  # 强化上限 = 持有者境界总层数（最高 +49）
 
     # 成功率与失败惩罚（GDD §6.2 表）
@@ -840,7 +825,7 @@ equipment:
 
     # 师承传承时的清零规则（GDD §6.4）
     inheritance_retention: 0.7       # 传给徒弟保留 70%（鼓励"一柄剑用一辈子"）
-    # ⚠️ 未消费(2026-06-16 审计 M7):当前无玩家间换主路径,lib 无读取。
+    # UNUSED(2026-06-16 审计 M7·头注):当前无玩家间换主路径,lib 无读取。
     # GDD §6.4 预埋字段,实装换主功能时再接;保留勿删(语义锚)。
     new_owner_retention: 0.0         # 玩家间换主直接清零
 
@@ -1065,22 +1050,10 @@ skills:
 
   # 招式倍率参考范围（按招式类型）
   # 用于 SkillDef.powerMultiplier 字段配置时的指导值
-  # UNUSED(2026-09-17 B2 复核·头注): power_skill/ultimate 下 8 个 tier_*_range 为配置指导值,
-  #   lib 零读取(实装倍率来自 data/skills.yaml,红线由 enforceEncounterSkillRedLines 全局 ≤8000 兜底)。
   reference_multipliers:
     normal_attack:
       base: 500              # GDD §5.3 普通攻击固定倍率
       note: "所有普通攻击统一 500，不随心法阶提升"
-    power_skill:
-      tier_1_2_range: [1000, 1800]   # 1-2 阶心法的强力技能
-      tier_3_4_range: [1500, 2500]   # 3-4 阶
-      tier_5_6_range: [2000, 3000]   # 5-6 阶
-      tier_7_range:   [2500, 3500]   # 7 阶（传说神功的强力技能）
-    ultimate:
-      tier_1_2_range: [3000, 4500]   # 1-2 阶心法的大招
-      tier_3_4_range: [4500, 6000]
-      tier_5_6_range: [5500, 7000]
-      tier_7_range:   [6500, 8000]   # 7 阶大招（如九阳"龙吟九霄"）
     joint_skill:
       base: 4500             # 人剑合一招式，固定基础倍率（共鸣度默契阶段解锁）
       note: "共鸣度 +20% 后解锁，不分心法阶"
@@ -1520,16 +1493,12 @@ inheritance:
   #     此前 Dart 写死 yiLiu，现改读此处，改本行即改门禁）。
   #   · 命名弟子拜入（本文件 lineage_onboarding.disciple_joins，Ch6 终局 stage_06_05）：
   #     剧情事件，2026-06-27 spec A 拍板不设境界门禁，不受本键约束。
-  #   · can_pass_legacy_at ——与活配置 ascension.unlock_triggers.required_realm.tier
-  #       （AscendService 经 numbers.ascension 消费）**重复声明同一门槛**，且本处是死的那份。
-  #       改本行不生效；要改飞升境界门槛请改 ascension 段。
-  # UNUSED(2026-09-17 B2 复核·头注): can_pass_legacy_at lib 零读取(活门槛在 ascension 段)。
   # UNUSED(2026-09-18 5A I-A′·头注): disciple_can_take_grand_disciple_at 无二代收徒事件/入口,
   #   lib 零读取;待徒孙收徒实装时接入。
+  # can_pass_legacy_at 已于 2026-09-19 删除:飞升门槛唯一事实源 = ascension.unlock_triggers.required_realm
   unlock_rules:
     can_take_disciple_at: yiLiu              # 候选收徒门槛:祖师突破到一流(tutorial step 6 真读)
     disciple_can_take_grand_disciple_at: jueDing  # 弟子突破到绝顶可收徒孙 · UNUSED(无二代收徒)
-    can_pass_legacy_at: wuSheng              # 武圣后传位（飞升渡劫）。2026-07-28 订正:旧注「Demo 不实现」已被推翻——多代飞升/真传位/遗物 transfer 在 P2.3+P5+ 早已完整实装,一直缺的只是 cap;发布上限 Ch19 抬至 45(武圣·熟练),Ch21 抬到 49 时飞升条件③(founder abs 49)首次可达。
 
   # --- Demo 简化（GDD §7.1）---
   demo_max_characters: 3                     # Demo 阶段最多 3 角色：祖师 + 大弟子 + 二弟子
@@ -1543,10 +1512,6 @@ inheritance:
   heritage_items:
     pieces_per_generation_min: 1             # 每代师父传 1-2 件
     pieces_per_generation_max: 2
-    # UNUSED(2026-09-17 B2 复核·头注): auto_buff_internal_force_max / resonance_retention lib 零读取
-    #   (HeritageItems 只读其余六字段;活的遗物 buff 与共鸣保留另有来源),仅设计锚。
-    auto_buff_internal_force_max: 0.05       # 师承遗物自带 +5% 内力上限 buff
-    resonance_retention: 0.7                 # 共鸣度保留 70% · UNUSED(B2 复核)
     transfer_trigger: "ascend_to_wusheng"    # v1.5:仅武圣飞升触发(P2.3 已实装)
     multi_disciple_allocation: "player_pick" # v1.5:玩家逐件选分配(P2.3 已实装)
     stack_across_generations: false          # v1.5:只取当代不累代叠加(derived_stats 按 instance count 不按 prev len · spec p5_lineage_full §Q4 加 R5.8 防回退测)
