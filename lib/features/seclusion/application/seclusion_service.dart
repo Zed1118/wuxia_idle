@@ -252,14 +252,14 @@ class SeclusionService {
     final solarBonus = config.isSolarTermDay(session.startedAt)
         ? config.solarTermMultiplier
         : 1.0;
-    final ziShiBonus = _isZiShi(session.startedAt)
+    final ziShiBonus = _isZiShi(session.startedAt, config)
         ? config.ziShiInternalForceMultiplier
         : 1.0;
     // CLAUDE.md §12.1 #7 v1.4:正午 + 角色主修 == applies_to_school(gangMeng)
     // 时,internalForcePoints 维度乘 zhengWuYangSchoolMultiplier(1.20)。
     // 非刚猛角色 / 非正午 → 系数 1.0 无加成。
     final zhengWuBonus =
-        (_isZhengWu(session.startedAt) &&
+        (_isZhengWu(session.startedAt, config) &&
             charSchool == config.zhengWuAppliesToSchool)
         ? config.zhengWuYangSchoolMultiplier
         : 1.0;
@@ -791,20 +791,16 @@ class SeclusionService {
     orElse: () => throw StateError('SeclusionMapDef 未找到: ${mapType.name}'),
   );
 
-  /// 是否为子时（23:00-01:00 含）。
+  /// 是否处于配置中的子时区间（左闭右开）。
   /// W15 #30 修正：原 `_timeDayBonus` 把子时×1.2 当全产出加成是 bug，
   /// yaml 实际定义 `effect: internal_force_growth` 只乘内力维度。
-  static bool _isZiShi(DateTime startedAt) {
-    final h = startedAt.hour;
-    return h == 23 || h == 0;
-  }
+  static bool _isZiShi(DateTime startedAt, RetreatConfig config) =>
+      config.isInTimePeriod('ziShi', startedAt);
 
-  /// 是否为正午(11:00-13:00,左闭右开 = h ∈ {11, 12})。
+  /// 是否处于配置中的正午区间（左闭右开）。
   /// CLAUDE.md §12.1 #7 v1.4:仅刚猛流派角色在正午时段闭关 internalForcePoints 维度 +20%。
-  static bool _isZhengWu(DateTime startedAt) {
-    final h = startedAt.hour;
-    return h == 11 || h == 12;
-  }
+  static bool _isZhengWu(DateTime startedAt, RetreatConfig config) =>
+      config.isInTimePeriod('zhengWu', startedAt);
 
   static double _clamp(double v, double lo, double hi) =>
       v < lo ? lo : (v > hi ? hi : v);

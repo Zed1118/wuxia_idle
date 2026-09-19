@@ -223,6 +223,10 @@ class NumbersConfig {
   /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
   final int adventureAttributeLifetimeCap;
 
+  /// 单次奇遇永久属性增量的加载期上下限。
+  final int bonusPerEventMin;
+  final int bonusPerEventMax;
+
   /// 六档稀有度的总点数区间(numbers.yaml `character.rarity_distribution`,GDD §4.1)。
   ///
   /// 按 `total_points_range` 升序;稀有度是四项属性**总点数的标签**,由
@@ -337,6 +341,8 @@ class NumbersConfig {
     required this.sectEvent,
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
+    required this.bonusPerEventMin,
+    required this.bonusPerEventMax,
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
@@ -364,8 +370,29 @@ class NumbersConfig {
     final realms = y['realms'] as Map<String, dynamic>;
     final equipment = y['equipment'] as Map<String, dynamic>;
     final techniques = y['techniques'] as Map<String, dynamic>;
+    final adventureBonus =
+        (y['character'] as Map<String, dynamic>)['adventure_attribute_bonus']
+            as Map<String, dynamic>;
+    final bonusPerEventMin =
+        adventureBonus['bonus_per_event_min'] as int? ??
+        _missingRequiredValue(
+          'character.adventure_attribute_bonus.bonus_per_event_min',
+        );
+    final bonusPerEventMax =
+        adventureBonus['bonus_per_event_max'] as int? ??
+        _missingRequiredValue(
+          'character.adventure_attribute_bonus.bonus_per_event_max',
+        );
+    if (bonusPerEventMin < 1 || bonusPerEventMin > bonusPerEventMax) {
+      throw ArgumentError(
+        'character.adventure_attribute_bonus 范围非法：'
+        '[$bonusPerEventMin, $bonusPerEventMax]',
+      );
+    }
 
     return NumbersConfig(
+      bonusPerEventMin: bonusPerEventMin,
+      bonusPerEventMax: bonusPerEventMax,
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
       attributeEffects: AttributeEffectRules.fromYaml(
@@ -969,13 +996,17 @@ class AscensionConfig {
 ///   - [crystalGuarantees]：心血结晶保底消耗（按 targetLevel 区间，部分段无保底）
 ///
 /// `successRate == null` 表示该段走 [_fallbackFormula]（GDD +20-49 段
-/// `max(0.30, 0.50 - 0.02 × (level - 19))`）。targetLevel 指**强化目标等级**
+/// 参数来自 `high_level_success`）。targetLevel 指**强化目标等级**
 /// （即当前 enhanceLevel + 1）。
 class EnhancementConfig {
   final List<EnhanceLevelBracket> successCurve;
   final List<MaterialCostBracket> mojianshiCost;
   final List<MaterialCostBracket> duancaiCost;
   final List<CrystalGuaranteeBracket> crystalGuarantees;
+  final double highLevelBaseRate;
+  final double highLevelStepPerLevel;
+  final int highLevelAnchorLevel;
+  final double highLevelFloorRate;
 
   /// 每次强化失败必得心血结晶数（GDD §6.3 = 1）。
   final int crystalGainPerFailure;
@@ -989,6 +1020,10 @@ class EnhancementConfig {
     required this.mojianshiCost,
     required this.duancaiCost,
     required this.crystalGuarantees,
+    required this.highLevelBaseRate,
+    required this.highLevelStepPerLevel,
+    required this.highLevelAnchorLevel,
+    required this.highLevelFloorRate,
     required this.crystalGainPerFailure,
     required this.neverDegrade,
   });
@@ -997,7 +1032,19 @@ class EnhancementConfig {
     required Map<String, dynamic> enhancement,
     required Map<String, dynamic> xinxueJiejing,
   }) {
+    final highLevelSuccess =
+        enhancement['high_level_success'] as Map<String, dynamic>? ??
+        _missingRequiredValue('equipment.enhancement.high_level_success');
+    num requiredHighLevelValue(String key) =>
+        highLevelSuccess[key] as num? ??
+        _missingRequiredValue('equipment.enhancement.high_level_success.$key');
     return EnhancementConfig(
+      highLevelBaseRate: requiredHighLevelValue('base_rate').toDouble(),
+      highLevelStepPerLevel: requiredHighLevelValue(
+        'step_per_level',
+      ).toDouble(),
+      highLevelAnchorLevel: requiredHighLevelValue('anchor_level').toInt(),
+      highLevelFloorRate: requiredHighLevelValue('floor_rate').toDouble(),
       successCurve: _parseSuccessCurve(enhancement['success_curve'] as List),
       mojianshiCost: _parseMaterialCost(enhancement['mojianshi_cost'] as List),
       duancaiCost: _parseMaterialCost(
@@ -1065,10 +1112,12 @@ class EnhancementConfig {
     throw StateError('success_curve 缺少 targetLevel=$targetLevel 的覆盖区间');
   }
 
-  /// GDD §12 #3 决议：+20-49 段公式 `max(0.30, 0.50 - 0.02 × (level - 19))`。
-  static double _fallbackFormula(int targetLevel) {
-    final raw = 0.50 - 0.02 * (targetLevel - 19);
-    return raw < 0.30 ? 0.30 : raw;
+  /// 按配置计算高阶成功率，并应用配置下限。
+  double _fallbackFormula(int targetLevel) {
+    final raw =
+        highLevelBaseRate -
+        highLevelStepPerLevel * (targetLevel - highLevelAnchorLevel);
+    return raw < highLevelFloorRate ? highLevelFloorRate : raw;
   }
 
   static List<EnhanceLevelBracket> _parseSuccessCurve(List raw) {
@@ -2845,10 +2894,44 @@ class LearningCostConfig {
   }
 }
 
+/// 闭关时段的分钟区间，支持跨午夜。
+class RetreatTimeRange {
+  final int startMinute;
+  final int endMinute;
+
+  const RetreatTimeRange({required this.startMinute, required this.endMinute});
+
+  factory RetreatTimeRange.fromYaml(Object? value, String path) {
+    final clock = RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$');
+    if (value is! List ||
+        value.length != 2 ||
+        value.any((time) => time is! String || !clock.hasMatch(time))) {
+      throw ArgumentError.value(value, path, '必须是两个 HH:MM 时刻');
+    }
+    int minuteOfDay(String time) {
+      final parts = time.split(':');
+      return int.parse(parts[0]) * Duration.minutesPerHour +
+          int.parse(parts[1]);
+    }
+
+    return RetreatTimeRange(
+      startMinute: minuteOfDay(value[0] as String),
+      endMinute: minuteOfDay(value[1] as String),
+    );
+  }
+
+  /// 左闭右开；结束时刻早于开始时刻时跨越午夜。
+  bool contains(DateTime time) {
+    final minute = time.hour * Duration.minutesPerHour + time.minute;
+    return startMinute <= endMinute
+        ? minute >= startMinute && minute < endMinute
+        : minute >= startMinute || minute < endMinute;
+  }
+}
+
 /// 闭关系统配置（numbers.yaml `retreat`，Phase 3 T47）。
 ///
-/// 包含 5 张地图定义、境界缩放系数、地图完整收益小时数、
-/// 基础装备掉落概率、节气日加成、子时内力加成（#30 闭关 3 维度接 service）。
+/// 包含地图、境界缩放、收益时长、掉落、节气与时辰加成。
 class RetreatConfig {
   final List<SeclusionMapDef> maps;
 
@@ -2899,6 +2982,10 @@ class RetreatConfig {
   /// 正午阳刚加成生效的角色主修流派(本批决议 gangMeng)。
   final TechniqueSchool zhengWuAppliesToSchool;
 
+  /// 生产配置必须提供；旧的纯倍率构造可不提供，但查询时立即抛错。
+  /// null 不代表任何默认时段，不能用于闭关结算。
+  final Map<String, RetreatTimeRange?>? timeOfDayRanges;
+
   const RetreatConfig({
     required this.maps,
     required this.realmScalePerTier,
@@ -2916,7 +3003,38 @@ class RetreatConfig {
     required this.zhengWuYangSchoolMultiplier,
     required this.zhengWuTargetAttribute,
     required this.zhengWuAppliesToSchool,
+    this.timeOfDayRanges,
   });
+
+  bool isInTimePeriod(String period, DateTime time) {
+    final ranges = timeOfDayRanges;
+    if (ranges == null || !ranges.containsKey(period)) {
+      throw StateError('retreat.time_of_day_bonus 缺少 $period 时段配置');
+    }
+    return ranges[period]?.contains(time) ?? false;
+  }
+
+  static Map<String, RetreatTimeRange?> _parseTimeRanges(List entries) {
+    final ranges = <String, RetreatTimeRange?>{};
+    for (final entry in entries.cast<Map>()) {
+      final period = entry['period'] as String;
+      final path = 'retreat.time_of_day_bonus[$period].time_range';
+      if (!entry.containsKey('time_range')) _missingRequiredValue(path);
+      if (ranges.containsKey(period)) {
+        throw ArgumentError.value(period, path, '时段不能重复');
+      }
+      final value = entry['time_range'];
+      ranges[period] = period == 'other' && value == null
+          ? null
+          : RetreatTimeRange.fromYaml(value, path);
+    }
+    for (final period in ['ziShi', 'zhengWu', 'other']) {
+      if (!ranges.containsKey(period)) {
+        _missingRequiredValue('retreat.time_of_day_bonus[$period]');
+      }
+    }
+    return Map.unmodifiable(ranges);
+  }
 
   factory RetreatConfig.fromYaml(Map<String, dynamic> y) {
     final rawMaps = y['maps'] as List;
@@ -2964,6 +3082,7 @@ class RetreatConfig {
       weights: equipmentTierWeights,
     );
     return RetreatConfig(
+      timeOfDayRanges: _parseTimeRanges(rawTimeOfDay),
       maps: [
         for (final m in rawMaps)
           SeclusionMapDef.fromYaml(m as Map<String, dynamic>),

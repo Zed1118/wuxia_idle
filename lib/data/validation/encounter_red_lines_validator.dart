@@ -29,6 +29,21 @@ void enforceEncounterSkillRedLines({
   required Map<String, EncounterDef> encounterDefs,
   required NumbersConfig numbers,
 }) {
+  // 加载期统一校验单次属性增量，范围只来自数值配置。
+  final bonusMin = numbers.bonusPerEventMin;
+  final bonusMax = numbers.bonusPerEventMax;
+  for (final encounter in encounterDefs.values) {
+    for (final outcome in encounter.outcomeMapping.values) {
+      if (outcome.type != OutcomeType.attributeBonus) continue;
+      final delta = outcome.attributeDelta;
+      if (delta < bonusMin || delta > bonusMax) {
+        throw StateError(
+          'encounter ${encounter.id} attributeDelta=$delta '
+          '越界 [$bonusMin, $bonusMax]',
+        );
+      }
+    }
+  }
   final skillPowerMax = numbers.combat.redLines.skillPowerMultiplierMax;
   final qiDeltaAbsCap = numbers.combat.qi.deltaAbsCap;
   // GDD §5.4 红线:全游戏招式 powerMultiplier ≤ 配置上限。覆盖 skills.yaml +
