@@ -59,162 +59,154 @@ void main() {
     );
   });
 
-  test(
-    'Phase 0A 满 build 真实路径全内容极值探针',
-    () async {
-      final stageEntries =
-          repo.stageDefs.values
-              .where((s) => s.stageType == StageType.mainline)
-              .map(Phase0aProductionPreflightManifest.classifyStage)
-              .toList()
-            ..sort((a, b) => a.id.compareTo(b.id));
-      final towerEntries =
-          repo.towerFloors
-              .map(Phase0aProductionPreflightManifest.classifyTower)
-              .toList()
-            ..sort((a, b) => a.id.compareTo(b.id));
-      final manifest = [...stageEntries, ...towerEntries];
-      final eligible =
-          manifest
-              .where((e) => e.status == Phase0aPreflightStatus.eligible)
-              .toList();
-      expect(stageEntries, hasLength(105));
-      expect(towerEntries, hasLength(49));
-      expect(eligible, hasLength(154));
+  test('Phase 0A 满 build 真实路径全内容极值探针', () async {
+    final stageEntries =
+        repo.stageDefs.values
+            .where((s) => s.stageType == StageType.mainline)
+            .map(Phase0aProductionPreflightManifest.classifyStage)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    final towerEntries =
+        repo.towerFloors
+            .map(Phase0aProductionPreflightManifest.classifyTower)
+            .toList()
+          ..sort((a, b) => a.id.compareTo(b.id));
+    final manifest = [...stageEntries, ...towerEntries];
+    final eligible = manifest
+        .where((e) => e.status == Phase0aPreflightStatus.eligible)
+        .toList();
+    expect(stageEntries, hasLength(105));
+    expect(towerEntries, hasLength(49));
+    expect(eligible, hasLength(154));
 
-      final cycleCfg = repo.numbers.cycleEvolution;
-      final arena = repo.numbers.phase0aArena;
-      final proficiencyStages = repo.numbers.skillProficiency.stages;
-      final topStage = proficiencyStages.last; // 最高熟练度档（huaJing/800/1.30）
+    final cycleCfg = repo.numbers.cycleEvolution;
+    final arena = repo.numbers.phase0aArena;
+    final proficiencyStages = repo.numbers.skillProficiency.stages;
+    final topStage = proficiencyStages.last; // 最高熟练度档（huaJing/800/1.30）
 
-      final rows = <_Run>[];
-      final profiles = <TechniqueSchool, Phase0aFullBuildProfile>{};
-      final stopwatch = Stopwatch()..start();
+    final rows = <_Run>[];
+    final profiles = <TechniqueSchool, Phase0aFullBuildProfile>{};
+    final stopwatch = Stopwatch()..start();
 
-      for (final school in _schools) {
-        final directory = await Directory.systemTemp.createTemp('phase0a_fb_');
-        try {
-          await IsarSetup.init(directory: directory, inspector: false);
-          final profile = await seedPhase0aFullBuildProfile(
-            isar: IsarSetup.instance,
-            school: school,
-          );
-          profiles[school] = profile;
-          // 最高熟练度档：全部已知招式 usage 拉到该档阈值。
-          final maxProfile = profile.snapshot.copyWith(
-            skillUses: {
-              for (final skill in profile.snapshot.availableSkills)
-                skill.id: topStage.minUses,
-            },
-          );
+    for (final school in _schools) {
+      final directory = await Directory.systemTemp.createTemp('phase0a_fb_');
+      try {
+        await IsarSetup.init(directory: directory, inspector: false);
+        final profile = await seedPhase0aFullBuildProfile(
+          isar: IsarSetup.instance,
+          school: school,
+        );
+        profiles[school] = profile;
+        // 最高熟练度档：全部已知招式 usage 拉到该档阈值。
+        final maxProfile = profile.snapshot.copyWith(
+          skillUses: {
+            for (final skill in profile.snapshot.availableSkills)
+              skill.id: topStage.minUses,
+          },
+        );
 
-          for (final entry in eligible) {
-            final isStage = entry.kind == Phase0aPreflightContentKind.stage;
-            final maxCycle = isStage
-                ? cycleCfg.maxCycleMainline
-                : cycleCfg.maxCycleTower;
-            for (final cycleIndex in [1, maxCycle]) {
-              final mapping = isStage
-                  ? Phase0aStageContentMapper.map(
-                      stage: repo.stageDefs[entry.id]!,
-                      playerSnapshot: maxProfile,
-                      numbers: repo.numbers,
-                      cycleIndex: cycleIndex,
-                    )
-                  : Phase0aStageContentMapper.mapTower(
-                      floor: repo.towerFloors.firstWhere(
-                        (floor) => 'tower_${floor.floorIndex}' == entry.id,
-                      ),
-                      playerSnapshot: maxProfile,
-                      numbers: repo.numbers,
-                      cycleIndex: cycleIndex,
-                    );
-              final observation = runPhase0aProfile(
-                profileId: school.name,
-                contentId: '${entry.key}#c$cycleIndex',
-                mapping: mapping,
-                numbers: repo.numbers,
-                playerSnapshot: maxProfile,
-                seed: _seed,
-                deltaSeconds: arena.fixedDeltaSeconds,
-                maxTicks: arena.maxSimulationTicks,
-              );
-              // 硬红线：每次结算单点伤害不进百万（§5.4 唯一硬线）。
-              expect(
-                observation.maxResolvedDamage,
-                lessThan(_damageRedLine),
-                reason:
-                    '§5.4 软红线越界：${school.name} ${entry.key} 周目$cycleIndex '
-                    '单点结算伤害 ${observation.maxResolvedDamage} ≥ $_damageRedLine',
-              );
-              expect(
-                ['victory', 'defeat', 'timeout'],
-                contains(observation.outcome),
-              );
-              expect(
-                observation.ticks,
-                lessThanOrEqualTo(arena.maxSimulationTicks),
-              );
-              rows.add(_Run(observation, school, entry.kind, cycleIndex));
-            }
+        for (final entry in eligible) {
+          final isStage = entry.kind == Phase0aPreflightContentKind.stage;
+          final maxCycle = isStage
+              ? cycleCfg.maxCycleMainline
+              : cycleCfg.maxCycleTower;
+          for (final cycleIndex in [1, maxCycle]) {
+            final mapping = isStage
+                ? Phase0aStageContentMapper.map(
+                    stage: repo.stageDefs[entry.id]!,
+                    playerSnapshot: maxProfile,
+                    numbers: repo.numbers,
+                    cycleIndex: cycleIndex,
+                  )
+                : Phase0aStageContentMapper.mapTower(
+                    floor: repo.towerFloors.firstWhere(
+                      (floor) => 'tower_${floor.floorIndex}' == entry.id,
+                    ),
+                    playerSnapshot: maxProfile,
+                    numbers: repo.numbers,
+                    cycleIndex: cycleIndex,
+                  );
+            final observation = runPhase0aProfile(
+              profileId: school.name,
+              contentId: '${entry.key}#c$cycleIndex',
+              mapping: mapping,
+              numbers: repo.numbers,
+              playerSnapshot: maxProfile,
+              seed: _seed,
+              deltaSeconds: arena.fixedDeltaSeconds,
+              maxTicks: arena.maxSimulationTicks,
+            );
+            // 硬红线：每次结算单点伤害不进百万（§5.4 唯一硬线）。
+            expect(
+              observation.maxResolvedDamage,
+              lessThan(_damageRedLine),
+              reason:
+                  '§5.4 软红线越界：${school.name} ${entry.key} 周目$cycleIndex '
+                  '单点结算伤害 ${observation.maxResolvedDamage} ≥ $_damageRedLine',
+            );
+            expect([
+              'victory',
+              'defeat',
+              'timeout',
+            ], contains(observation.outcome));
+            expect(
+              observation.ticks,
+              lessThanOrEqualTo(arena.maxSimulationTicks),
+            );
+            rows.add(_Run(observation, school, entry.kind, cycleIndex));
           }
-        } finally {
-          await IsarSetup.close();
-          await directory.delete(recursive: true);
         }
+      } finally {
+        await IsarSetup.close();
+        await directory.delete(recursive: true);
       }
-      stopwatch.stop();
+    }
+    stopwatch.stop();
 
-      // 矩阵规模：3 流派 × (105 主线 × 2 周目 + 49 塔 × 2 周目) = 924。
-      final expected =
-          _schools.length *
-          (stageEntries.length * 2 + towerEntries.length * 2);
-      expect(rows, hasLength(expected));
+    // 矩阵规模：3 流派 × (105 主线 × 2 周目 + 49 塔 × 2 周目) = 924。
+    final expected =
+        _schools.length * (stageEntries.length * 2 + towerEntries.length * 2);
+    expect(rows, hasLength(expected));
 
-      // 非超时率 ≥ 既有标准（诊断 2310 轮 0 超时）：满 build 更强，理应 0 超时。
-      final timeouts =
-          rows.where((r) => r.observation.outcome == 'timeout').length;
-      expect(
-        timeouts,
-        0,
-        reason: '满 build 出现超时局（既有 Ch1 诊断标准为 0），不放宽，逐条登记异常',
-      );
+    // 非超时率 ≥ 既有标准（诊断 2310 轮 0 超时）：满 build 更强，理应 0 超时。
+    final timeouts = rows
+        .where((r) => r.observation.outcome == 'timeout')
+        .length;
+    expect(timeouts, 0, reason: '满 build 出现超时局（既有 Ch1 诊断标准为 0），不放宽，逐条登记异常');
 
-      final globalMax = rows.reduce(
-        (a, b) =>
-            a.observation.maxResolvedDamage >= b.observation.maxResolvedDamage
-                ? a
-                : b,
-      );
-      final wallClock = stopwatch.elapsed;
+    final globalMax = rows.reduce(
+      (a, b) =>
+          a.observation.maxResolvedDamage >= b.observation.maxResolvedDamage
+          ? a
+          : b,
+    );
+    final wallClock = stopwatch.elapsed;
 
-      print(
-        'phase0a 满 build 极值探针: rounds=${rows.length}; '
-        'wins=${rows.where((r) => r.observation.outcome == "victory").length}; '
-        'defeats=${rows.where((r) => r.observation.outcome == "defeat").length}; '
-        'timeouts=$timeouts; globalMax=${globalMax.observation.maxResolvedDamage} '
-        '@ ${globalMax.school.name}/${globalMax.observation.contentId}; '
-        'wallClock=${wallClock.inSeconds}s',
-      );
+    print(
+      'phase0a 满 build 极值探针: rounds=${rows.length}; '
+      'wins=${rows.where((r) => r.observation.outcome == "victory").length}; '
+      'defeats=${rows.where((r) => r.observation.outcome == "defeat").length}; '
+      'timeouts=$timeouts; globalMax=${globalMax.observation.maxResolvedDamage} '
+      '@ ${globalMax.school.name}/${globalMax.observation.contentId}; '
+      'wallClock=${wallClock.inSeconds}s',
+    );
 
-      final markdown = _markdown(
-        rows: rows,
-        profiles: profiles,
-        eligibleCount: eligible.length,
-        stageCount: stageEntries.length,
-        towerCount: towerEntries.length,
-        topStage: topStage,
-        cycleCfg: cycleCfg,
-        wallClock: wallClock,
-        globalMax: globalMax,
-      );
-      if (Platform.environment[_writeReport] == '1') {
-        File(_reportPath).writeAsStringSync(markdown);
-        print('已写报告：$_reportPath');
-      }
-    },
-    timeout: const Timeout(Duration(minutes: 20)),
-  );
+    final markdown = _markdown(
+      rows: rows,
+      profiles: profiles,
+      eligibleCount: eligible.length,
+      stageCount: stageEntries.length,
+      towerCount: towerEntries.length,
+      topStage: topStage,
+      cycleCfg: cycleCfg,
+      wallClock: wallClock,
+      globalMax: globalMax,
+    );
+    if (Platform.environment[_writeReport] == '1') {
+      File(_reportPath).writeAsStringSync(markdown);
+      print('已写报告：$_reportPath');
+    }
+  }, timeout: const Timeout(Duration(minutes: 20)));
 }
 
 String _markdown({
@@ -245,7 +237,9 @@ String _markdown({
       '${topStage.id}（uses=${topStage.minUses}, ×${topStage.damageMult}）。',
     )
     ..writeln()
-    ..writeln('| school | weapon | armor | accessory | main | assists | eqAtk | hp | speed |')
+    ..writeln(
+      '| school | weapon | armor | accessory | main | assists | eqAtk | hp | speed |',
+    )
     ..writeln('|---|---|---|---|---|---|---:|---:|---:|');
   for (final school in _schools) {
     final p = profiles[school]!;
@@ -276,21 +270,17 @@ String _markdown({
     ..writeln('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|');
   for (final school in _schools) {
     for (final kind in Phase0aPreflightContentKind.values) {
-      final cycles =
-          (kind == Phase0aPreflightContentKind.stage
-                  ? cycleCfg.maxCycleMainline
-                  : cycleCfg.maxCycleTower);
+      final cycles = (kind == Phase0aPreflightContentKind.stage
+          ? cycleCfg.maxCycleMainline
+          : cycleCfg.maxCycleTower);
       for (final cycle in [1, cycles]) {
-        final rs =
-            rows
-                .where(
-                  (r) =>
-                      r.school == school &&
-                      r.kind == kind &&
-                      r.cycleIndex == cycle,
-                )
-                .map((r) => r.observation)
-                .toList();
+        final rs = rows
+            .where(
+              (r) =>
+                  r.school == school && r.kind == kind && r.cycleIndex == cycle,
+            )
+            .map((r) => r.observation)
+            .toList();
         if (rs.isEmpty) continue;
         final a = Phase0aProfileAggregate(rs);
         out.writeln(
@@ -397,19 +387,16 @@ String _markdown({
     ..writeln(
       holds
           ? '**软红线守住（max ${globalMax.observation.maxResolvedDamage} < 1e6）**：'
-              '满 build 经真实 Phase 0A reducer 横扫全部 ${rows.length} 轮，'
-              '无任何单点结算伤害触百万，§5.4 唯一硬线成立。'
+                '满 build 经真实 Phase 0A reducer 横扫全部 ${rows.length} 轮，'
+                '无任何单点结算伤害触百万，§5.4 唯一硬线成立。'
           : '**触线**：存在单点伤害 ≥ 1e6 的轮次，详见 Top 10 与异常段，立即上报不得削弱断言。',
     );
 
   // 异常登记。
   final anomalies =
-      rows
-          .where((r) => r.observation.outcome != 'victory')
-          .toList()
-        ..sort(
-          (a, b) => a.observation.contentId.compareTo(b.observation.contentId),
-        );
+      rows.where((r) => r.observation.outcome != 'victory').toList()..sort(
+        (a, b) => a.observation.contentId.compareTo(b.observation.contentId),
+      );
   out
     ..writeln()
     ..writeln('## 异常登记（只记录，不建议调值）')

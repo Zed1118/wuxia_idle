@@ -187,9 +187,7 @@ Future<Phase0aFullBuildProfile> seedPhase0aFullBuildProfile({
   });
   final mainTechnique = await isar.techniques.get(mainTechniqueId);
   if (mainTechnique?.cultivationLayer != CultivationLayer.jiJing) {
-    throw StateError(
-      '主修修炼度未达极境：${mainTechnique?.cultivationLayer.name}',
-    );
+    throw StateError('主修修炼度未达极境：${mainTechnique?.cultivationLayer.name}');
   }
 
   // 6. 辅修：按 tier 降序循环学习，直到生产返回 assistSlotsFull（派生槽上限）。
@@ -224,7 +222,9 @@ Future<Phase0aFullBuildProfile> seedPhase0aFullBuildProfile({
       resonanceBattleCount: resonanceBattleCount,
       ownerCharacterId: characterId,
     );
-    final equipmentId = await isar.writeTxn(() => isar.equipments.put(equipment));
+    final equipmentId = await isar.writeTxn(
+      () => isar.equipments.put(equipment),
+    );
     final outcome = await equipService.equip(
       characterId: characterId,
       equipmentId: equipmentId,
@@ -333,9 +333,7 @@ EquipmentDef _selectEquipment(
       )
       .toList();
   if (candidates.isEmpty) {
-    throw StateError(
-      '无神物 ${slot.name} 候选（bias=${bias?.name}）',
-    );
+    throw StateError('无神物 ${slot.name} 候选（bias=${bias?.name}）');
   }
   candidates.sort((a, b) {
     final byAttack = b.baseAttackMax.compareTo(a.baseAttackMax);
