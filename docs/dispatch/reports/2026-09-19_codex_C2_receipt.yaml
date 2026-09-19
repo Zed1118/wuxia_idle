@@ -1,0 +1,26 @@
+schema_version: 1
+base_sha: "36781fbbf1ca2336b8cf4ac1b94d6c1b71cf6730"
+head_sha: "378bdec826868441cf1b5b96902f5055923a8f55"
+changed_files:
+  - "data/numbers.yaml"
+  - "docs/superpowers/plans/2026-09-19-codex-c2-wiring.md"
+  - "lib/data/numbers_config.dart"
+  - "lib/data/validation/encounter_red_lines_validator.dart"
+  - "lib/features/seclusion/application/seclusion_service.dart"
+  - "test/combat/damage_calculator_test.dart"
+  - "test/data/encounter_attribute_delta_red_line_test.dart"
+  - "test/features/equipment/application/enhancement_service_test.dart"
+  - "test/features/seclusion/application/seclusion_time_of_day_test.dart"
+full_test_last_line: "17:43 +7025: All tests passed!"
+error_block_count: 0
+analyze_last_line: "No issues found! (ran in 75.9s)"
+format_last_line: "Formatted 1862 files (0 changed) in 75.09 seconds."
+break_red:
+  - direction: "remove_implementation"
+    mutation: "以下为各目标实现提交后分别执行的四次破坏验证，失败数按本方向汇总。目标 1：将 _fallbackFormula 新读取逻辑临时恢复为 0.50 - 0.02 * (targetLevel - 19)、下限 0.30；复跑 flutter test --no-pub test/features/equipment/application/enhancement_service_test.dart；失败 1 条：EnhancementConfig 查询表 读取 floor_rate 配置决定高阶强化成功率下限；目标 2：将奇遇增量校验的配置上下限读取临时改回常量 1 和 3；复跑 flutter test --no-pub test/data/encounter_attribute_delta_red_line_test.dart；失败 2 条：加载期校验真读取 bonus_per_event_min 的变更、加载期校验真读取 bonus_per_event_max 的变更；目标 3：将子时和正午判断临时恢复为固定小时条件；复跑 flutter test --no-pub test/features/seclusion/application/seclusion_time_of_day_test.dart；失败 2 条：修改两个时段配置会移动真实结算加成窗口、跨午夜区间保留分钟精度且左闭右开；目标 4：将五个战例上下文构造函数临时恢复为基线常量实现；复跑 flutter test --no-pub test/combat/damage_calculator_test.dart --plain-name example_；失败 10 条：example_a 的 cultivation_multiplier 变更进入真实伤害路径、example_a 的 school_counter 变更进入真实伤害路径、example_b 的 cultivation_multiplier 变更进入真实伤害路径、example_b 的 school_counter 变更进入真实伤害路径、example_c 的 cultivation_multiplier 变更进入真实伤害路径、example_c 的 school_counter 变更进入真实伤害路径、example_d 的 cultivation_multiplier 变更进入真实伤害路径、example_d 的 school_counter 变更进入真实伤害路径、example_e 的 cultivation_multiplier 变更进入真实伤害路径、example_e 的 school_counter 变更进入真实伤害路径。每次均完整还原，随后对应文件全量复跑通过（目标 1/2/3/4 分别为 29/9/22/62 条）；原始记录见工作树外 target1_break_red.json 至 target4_break_red.json。"
+    failed_count: 15
+    conclusion: "RED_CONFIRMED"
+  - direction: "force_degenerate_value"
+    mutation: "以下为各目标实现提交后分别执行的四次破坏验证，失败数按本方向汇总。目标 1：将 YAML high_level_success.floor_rate 临时从 0.30 改为 0.40；复跑 flutter test --no-pub test/features/equipment/application/enhancement_service_test.dart；失败 2 条：EnhancementConfig 查询表 高阶强化全部目标等级与原公式逐值相同、EnhancementConfig 查询表 successRateFor 4 段静态 + +20-49 公式段；目标 2：将 YAML bonus_per_event_max 临时从 3 改为 0；复跑 flutter test --no-pub test/data/encounter_attribute_delta_red_line_test.dart；失败 4 条：生产奇遇的 92 处属性增量全部通过加载期红线、加载期拒绝属性增量 5 并报告奇遇编号与增量、加载期拒绝属性增量 0 并报告奇遇编号与增量、加载期校验真读取 bonus_per_event_min 的变更；目标 3：将 YAML 子时时段开始值临时从 23:00 改为 22:00；复跑 flutter test --no-pub test/features/seclusion/application/seclusion_time_of_day_test.dart；失败 1 条：真实闭关结算边界 22:59；目标 4：将 YAML example_a.attacker.cultivation_multiplier 临时从 1.00 改为 1.75；复跑 flutter test --no-pub test/combat/damage_calculator_test.dart --plain-name '5 战例'；失败 1 条：5 战例 final_damage（误差 ≤ 5%） 战例 A：xueTu/ruMen 普攻 → ~826。每次均完整还原，随后对应文件全量复跑通过（目标 1/2/3/4 分别为 29/9/22/62 条）；原始记录见工作树外 target1_break_red.json 至 target4_break_red.json。"
+    failed_count: 8
+    conclusion: "RED_CONFIRMED"
