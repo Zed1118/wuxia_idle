@@ -1,0 +1,16 @@
+schema_version: 1
+base_sha: "36781fbbf1ca2336b8cf4ac1b94d6c1b71cf6730"
+head_sha: "42c6cc0ac95cffa242f1f9dea592e5206808b84f"
+changed_files:
+  - "data/numbers.yaml"
+  - "docs/superpowers/plans/2026-09-19-qoder-c1-delete-keys.md"
+  - "tools/audit/numbers_key_usage.py"
+full_test_last_line: "17:40 +6976: All tests passed!"
+error_block_count: 0
+analyze_last_line: "No issues found! (ran in 5.8s)"
+format_last_line: "Formatted 1860 files (0 changed) in 3.88 seconds."
+break_red:
+audit_verification:
+  kind: "git_diff_check_and_patch_sha256"
+  diff_check_exit: 0
+  patch_sha256: "221dbcc712f885e65cf667b44d36fd221ae62fcc6141e1cd8cf9ed81194ec390"
