@@ -969,13 +969,17 @@ class AscensionConfig {
 ///   - [crystalGuarantees]：心血结晶保底消耗（按 targetLevel 区间，部分段无保底）
 ///
 /// `successRate == null` 表示该段走 [_fallbackFormula]（GDD +20-49 段
-/// `max(0.30, 0.50 - 0.02 × (level - 19))`）。targetLevel 指**强化目标等级**
+/// 参数来自 `high_level_success`）。targetLevel 指**强化目标等级**
 /// （即当前 enhanceLevel + 1）。
 class EnhancementConfig {
   final List<EnhanceLevelBracket> successCurve;
   final List<MaterialCostBracket> mojianshiCost;
   final List<MaterialCostBracket> duancaiCost;
   final List<CrystalGuaranteeBracket> crystalGuarantees;
+  final double highLevelBaseRate;
+  final double highLevelStepPerLevel;
+  final int highLevelAnchorLevel;
+  final double highLevelFloorRate;
 
   /// 每次强化失败必得心血结晶数（GDD §6.3 = 1）。
   final int crystalGainPerFailure;
@@ -989,6 +993,10 @@ class EnhancementConfig {
     required this.mojianshiCost,
     required this.duancaiCost,
     required this.crystalGuarantees,
+    required this.highLevelBaseRate,
+    required this.highLevelStepPerLevel,
+    required this.highLevelAnchorLevel,
+    required this.highLevelFloorRate,
     required this.crystalGainPerFailure,
     required this.neverDegrade,
   });
@@ -997,7 +1005,19 @@ class EnhancementConfig {
     required Map<String, dynamic> enhancement,
     required Map<String, dynamic> xinxueJiejing,
   }) {
+    final highLevelSuccess =
+        enhancement['high_level_success'] as Map<String, dynamic>? ??
+        _missingRequiredValue('equipment.enhancement.high_level_success');
+    num requiredHighLevelValue(String key) =>
+        highLevelSuccess[key] as num? ??
+        _missingRequiredValue('equipment.enhancement.high_level_success.$key');
     return EnhancementConfig(
+      highLevelBaseRate: requiredHighLevelValue('base_rate').toDouble(),
+      highLevelStepPerLevel: requiredHighLevelValue(
+        'step_per_level',
+      ).toDouble(),
+      highLevelAnchorLevel: requiredHighLevelValue('anchor_level').toInt(),
+      highLevelFloorRate: requiredHighLevelValue('floor_rate').toDouble(),
       successCurve: _parseSuccessCurve(enhancement['success_curve'] as List),
       mojianshiCost: _parseMaterialCost(enhancement['mojianshi_cost'] as List),
       duancaiCost: _parseMaterialCost(
@@ -1065,10 +1085,12 @@ class EnhancementConfig {
     throw StateError('success_curve 缺少 targetLevel=$targetLevel 的覆盖区间');
   }
 
-  /// GDD §12 #3 决议：+20-49 段公式 `max(0.30, 0.50 - 0.02 × (level - 19))`。
-  static double _fallbackFormula(int targetLevel) {
-    final raw = 0.50 - 0.02 * (targetLevel - 19);
-    return raw < 0.30 ? 0.30 : raw;
+  /// 按配置计算高阶成功率，并应用配置下限。
+  double _fallbackFormula(int targetLevel) {
+    final raw =
+        highLevelBaseRate -
+        highLevelStepPerLevel * (targetLevel - highLevelAnchorLevel);
+    return raw < highLevelFloorRate ? highLevelFloorRate : raw;
   }
 
   static List<EnhanceLevelBracket> _parseSuccessCurve(List raw) {

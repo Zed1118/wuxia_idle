@@ -762,8 +762,14 @@ equipment:
       # +20 及以上：每级成功率 -2%，最低 30%（武圣后期高难度强化）
       - level_range: [20, 49]
         success_rate: null           # 由代码按 max(0.30, 0.50 - 0.02*(level-19)) 计算
-        success_formula: "max(0.30, 0.50 - 0.02 * (level - 19))"
+        # 成功率公式：max(0.30, 0.50 - 0.02 * (level - 19))
         material_penalty: "full"
+
+    high_level_success:
+      base_rate: 0.50
+      step_per_level: 0.02
+      anchor_level: 19
+      floor_rate: 0.30
 
     # 磨剑石消耗曲线（每级强化一次的消耗）
     # 设计原则：低强化便宜、高强化材料压力大，避免无脑强化

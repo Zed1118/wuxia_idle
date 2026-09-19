@@ -36,6 +36,68 @@ void main() {
   // ────────────────────────────────────────────────────────────────────────────
 
   group('EnhancementConfig 查询表', () {
+    test('缺少 high_level_success 配置时立即抛错', () {
+      final enhancement = loadTestNumbersSection(['equipment', 'enhancement'])
+        ..remove('high_level_success');
+      expect(
+        () => EnhancementConfig.fromYaml(
+          enhancement: enhancement,
+          xinxueJiejing: loadTestNumbersSection([
+            'equipment',
+            'xinxue_jiejing',
+          ]),
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
+
+    test('读取 floor_rate 配置决定高阶强化成功率下限', () {
+      final enhancement = loadTestNumbersSection(['equipment', 'enhancement']);
+      enhancement['high_level_success'] = {
+        'base_rate': 0.50,
+        'step_per_level': 0.02,
+        'anchor_level': 19,
+        'floor_rate': 0.4,
+      };
+      final changed = EnhancementConfig.fromYaml(
+        enhancement: enhancement,
+        xinxueJiejing: loadTestNumbersSection(['equipment', 'xinxue_jiejing']),
+      );
+      expect(changed.successRateFor(49), 0.4);
+    });
+
+    for (final key in [
+      'base_rate',
+      'step_per_level',
+      'anchor_level',
+      'floor_rate',
+    ]) {
+      test('高阶强化公式缺少 $key 时立即抛错', () {
+        final enhancement = loadTestNumbersSection([
+          'equipment',
+          'enhancement',
+        ]);
+        (enhancement['high_level_success'] as Map).remove(key);
+        expect(
+          () => EnhancementConfig.fromYaml(
+            enhancement: enhancement,
+            xinxueJiejing: loadTestNumbersSection([
+              'equipment',
+              'xinxue_jiejing',
+            ]),
+          ),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+    }
+
+    test('高阶强化全部目标等级与原公式逐值相同', () {
+      for (var level = 20; level <= 49; level++) {
+        final previous = 0.50 - 0.02 * (level - 19);
+        expect(cfg.successRateFor(level), previous < 0.30 ? 0.30 : previous);
+      }
+    });
+
     test('successRateFor 4 段静态 + +20-49 公式段', () {
       // +1-10 段 100% 成功
       expect(cfg.successRateFor(1), 1.0);
@@ -351,6 +413,10 @@ void main() {
       mojianshiCost: cfg.mojianshiCost,
       duancaiCost: cfg.duancaiCost,
       crystalGuarantees: cfg.crystalGuarantees,
+      highLevelBaseRate: cfg.highLevelBaseRate,
+      highLevelStepPerLevel: cfg.highLevelStepPerLevel,
+      highLevelAnchorLevel: cfg.highLevelAnchorLevel,
+      highLevelFloorRate: cfg.highLevelFloorRate,
       crystalGainPerFailure: cfg.crystalGainPerFailure,
       neverDegrade: false,
     );
