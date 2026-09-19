@@ -1,0 +1,18 @@
+schema_version: 1
+base_sha: "5d9bbdeafbc93361a6f0fa64d7a500c6e6b86b92"
+head_sha: "0b99ab02f80bb5da760d563b6af97223480c37c1"
+changed_files:
+  - "docs/audit/phase0a_full_build_extreme_probe_2026-09-19.md"
+  - "docs/superpowers/plans/2026-09-19-qoder-b-fullbuild-probe.md"
+  - "test/support/phase0a_full_build_profile.dart"
+  - "test/support/phase0a_full_build_profile_test.dart"
+  - "test/tools/phase0a_full_build_extreme_probe_test.dart"
+full_test_last_line: "08:27 +6978: All tests passed!"
+error_block_count: 0
+analyze_last_line: "No issues found! (ran in 3.3s)"
+format_last_line: "Formatted 1863 files (0 changed) in 3.73 seconds."
+break_red:
+audit_verification:
+  kind: "git_diff_check_and_patch_sha256"
+  diff_check_exit: 0
+  patch_sha256: "c838831ea2af5e12b1741f951519e485b1310c372bb834d6a42594bccbb95449"
