@@ -223,6 +223,10 @@ class NumbersConfig {
   /// #4③ B2:接入 [EncounterService.attributeGainCap],消除该 yaml key 零消费。
   final int adventureAttributeLifetimeCap;
 
+  /// 单次奇遇永久属性增量的加载期上下限。
+  final int bonusPerEventMin;
+  final int bonusPerEventMax;
+
   /// 六档稀有度的总点数区间(numbers.yaml `character.rarity_distribution`,GDD §4.1)。
   ///
   /// 按 `total_points_range` 升序;稀有度是四项属性**总点数的标签**,由
@@ -337,6 +341,8 @@ class NumbersConfig {
     required this.sectEvent,
     required this.sectManagement,
     required this.adventureAttributeLifetimeCap,
+    required this.bonusPerEventMin,
+    required this.bonusPerEventMax,
     required this.loadoutUltimatePowerThreshold,
     required this.cycleEvolution,
     required this.passiveIdle,
@@ -364,8 +370,29 @@ class NumbersConfig {
     final realms = y['realms'] as Map<String, dynamic>;
     final equipment = y['equipment'] as Map<String, dynamic>;
     final techniques = y['techniques'] as Map<String, dynamic>;
+    final adventureBonus =
+        (y['character'] as Map<String, dynamic>)['adventure_attribute_bonus']
+            as Map<String, dynamic>;
+    final bonusPerEventMin =
+        adventureBonus['bonus_per_event_min'] as int? ??
+        _missingRequiredValue(
+          'character.adventure_attribute_bonus.bonus_per_event_min',
+        );
+    final bonusPerEventMax =
+        adventureBonus['bonus_per_event_max'] as int? ??
+        _missingRequiredValue(
+          'character.adventure_attribute_bonus.bonus_per_event_max',
+        );
+    if (bonusPerEventMin < 1 || bonusPerEventMin > bonusPerEventMax) {
+      throw ArgumentError(
+        'character.adventure_attribute_bonus 范围非法：'
+        '[$bonusPerEventMin, $bonusPerEventMax]',
+      );
+    }
 
     return NumbersConfig(
+      bonusPerEventMin: bonusPerEventMin,
+      bonusPerEventMax: bonusPerEventMax,
       version: meta['version'] as String,
       combat: CombatNumbers.fromYaml(combat),
       attributeEffects: AttributeEffectRules.fromYaml(
