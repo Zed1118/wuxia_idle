@@ -1388,11 +1388,8 @@ retreat:
 
   # --- 时辰加成（GDD §7.3）---
   # 加成基于"开始闭关时刻"，不会因为跨时辰而动态切换
-  # UNUSED(2026-09-17 B2 复核·头注): 三条 time_range lib 零读取,固定时辰文档锚。
-  # ⚠ time_range 字段为固定时辰文档锚（审计 D6 2026-06-24）：NumbersConfig 只解析
-  #   multiplier/effect/target_attribute/applies_to_school，**不解析 time_range**。
-  #   实际时段判定硬编码在 seclusion_service.dart `_isZiShi`(h∈{23,0}) / `_isZhengWu`(h∈{11,12})。
-  #   子时(23:00-01:00)/正午(11:00-13:00)是固定传统时辰常量、非可调平衡项，编辑此处 time_range 不生效。
+  # time_range 已由 seclusion_service 经 NumbersConfig 读取（2026-09-19）。
+  # 区间左闭右开，支持跨午夜；other 显式 null 表示无专属加成时段。
   time_of_day_bonus:
     - period: ziShi                          # 子时
       time_range: ["23:00", "01:00"]
