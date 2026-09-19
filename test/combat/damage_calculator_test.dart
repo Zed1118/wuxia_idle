@@ -9,6 +9,7 @@ import 'package:wuxia_idle/core/domain/character.dart';
 import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/core/domain/equipment.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import '../support/test_data.dart';
 
 /// DamageCalculator 单元测试（phase1_tasks.md T10 §574 验收）。
@@ -29,6 +30,51 @@ void main() {
 
   tearDown(GameRepository.resetForTest);
 
+  for (final entry in <String, AttackContext Function()>{
+    'example_a': _ctxA,
+    'example_b': _ctxB,
+    'example_c': _ctxC,
+    'example_d': _ctxD,
+    'example_e': _ctxE,
+  }.entries) {
+    for (final key in ['cultivation_multiplier', 'school_counter']) {
+      test('${entry.key} 的 $key 变更进入真实伤害路径', () {
+        final numbers = GameRepository.instance.numbers;
+        final examples = numbers.raw['validation_examples'] as Map;
+        final attacker = (examples[entry.key] as Map)['attacker'] as Map;
+        final original = attacker[key];
+        final changed = key == 'cultivation_multiplier'
+            ? (original == 1.0 ? 1.75 : 1.0)
+            : (original == 1.0 ? 1.25 : 1.0);
+        try {
+          attacker[key] = changed;
+          final result = DamageCalculator.calculate(entry.value(), numbers);
+          expect(
+            key == 'cultivation_multiplier'
+                ? result.cultivationMultiplier
+                : result.schoolCounterMultiplier,
+            changed,
+          );
+        } finally {
+          attacker[key] = original;
+        }
+      });
+    }
+  }
+
+  test('战例 C 境界修正与固定境界不符时拒绝构造', () {
+    final examples =
+        GameRepository.instance.numbers.raw['validation_examples'] as Map;
+    final attacker = (examples['example_c'] as Map)['attacker'] as Map;
+    final original = attacker['realm_diff_modifier'];
+    try {
+      attacker['realm_diff_modifier'] = 0.3;
+      expect(_ctxC, throwsStateError);
+    } finally {
+      attacker['realm_diff_modifier'] = original;
+    }
+  });
+
   // ────────────────────────────────────────────────────────────────────────
   // 战例 A/B/C/D/E（numbers.yaml validation_examples）
   // ────────────────────────────────────────────────────────────────────────
@@ -47,7 +93,7 @@ void main() {
       _expectWithin5Percent(r.finalDamage, 826);
     });
 
-    test('战例 B：erLiu/yuanShu 强力技能同境界 → ~4879（yaml 注释 4889）', () {
+    test('战例 B：erLiu/yuanShu 强力技能同境界 → ~4879', () {
       final ctx = _ctxB();
       final r = DamageCalculator.calculate(
         ctx,
@@ -56,12 +102,12 @@ void main() {
       // (3000*0.4 + 580 + 1500) * 1.75 * 1.0 * 1.0 * 0.85 * 1.0
       // = 3280 * 1.75 * 0.85 = 4879.0 → 4879
       expect(r.finalDamage, 4879);
-      _expectWithin5Percent(r.finalDamage, 4889);
+      _expectWithin5Percent(r.finalDamage, 4879);
       // 红线：普通伤害 ≤ 8000（GDD §5.2）
       expect(r.finalDamage, lessThanOrEqualTo(8000));
     });
 
-    test('战例 C：sanLiu 三流挑战二流（差 1，低打高）→ ~1995（yaml 注释 1972）', () {
+    test('战例 C：sanLiu 三流挑战二流（差 1，低打高）→ ~1995', () {
       final ctx = _ctxC();
       final r = DamageCalculator.calculate(
         ctx,
@@ -69,7 +115,7 @@ void main() {
       );
       // (2000*0.4 + 280 + 1500) * 1.30 * 1.0 * 1.0 * 0.85 * 0.7 = 1995.6 → 1995
       expect(r.finalDamage, 1995);
-      _expectWithin5Percent(r.finalDamage, 1972);
+      _expectWithin5Percent(r.finalDamage, 1995);
       // 实际取守方修正 0.7（低打高），不是攻方 1.4
       expect(r.realmDiffDefenderMod, 0.7);
     });
@@ -81,6 +127,7 @@ void main() {
         GameRepository.instance.numbers,
       );
       expect(r.isCritical, true);
+      expect(r.criticalMultiplier, 1.5);
       // (5000*0.4+600+5500) * 1.75 * 1.25 * 1.5 * 0.80 * 1.0 = 21262
       // 注：phase1_tasks T10 §584 灵巧流派才用 2.0；攻方刚猛走 base 1.5。
       // 但 yaml 战例 D 注释写 critical: 2.00，说明 yaml 假定刚猛大招也用 2.0。
@@ -102,6 +149,7 @@ void main() {
       );
       expect(r.isCritical, true);
       expect(r.cultivationMultiplier, 3.00);
+      expect(r.criticalMultiplier, 1.5);
       // yaml 战例 E 无 calculated_damage 字段，公式真实值 ~52416。
       // phase1_tasks T10 §576 验收线已改为 ≤100000（公式 ×2 防崩盘 buffer）。
       expect(r.finalDamage, greaterThan(20000));
@@ -642,203 +690,297 @@ void main() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// 战例 A：学徒·入门 主角 vs 学徒·启蒙 山贼，普通攻击。
+Map _exampleInputs(String id) =>
+    (GameRepository.instance.numbers.raw['validation_examples'] as Map)[id]
+        as Map;
+
+/// 样例倍率反查生产修炼层，随后仍由真实伤害公式查表。
+CultivationLayer _exampleCultivation(Map values) => GameRepository
+    .instance
+    .numbers
+    .cultivationMultiplier
+    .entries
+    .singleWhere((entry) => entry.value == values['cultivation_multiplier'])
+    .key;
+
+/// 攻方仍为原战例的刚猛流派，由样例倍率确定对应守方流派。
+TechniqueSchool _exampleDefenderSchool(Map values) =>
+    TechniqueSchool.values.singleWhere(
+      (school) =>
+          GameRepository.instance.numbers.schoolCounter.multiplierFor(
+            TechniqueSchool.gangMeng,
+            school,
+          ) ==
+          values['school_counter'],
+    );
+
+/// 境界保持原战例；防御率和境界修正须与真实派生规则一致。
+/// critical 数值只决定是否触发暴击，实际倍率仍由生产流派规则决定。
+void _validateExampleDefender(
+  Map example,
+  Character attacker,
+  Character defender,
+) {
+  final defenseRate = (example['defender'] as Map)['defense_rate'] as num;
+  if (RealmUtils.defenseRateOf(defender.realmTier) != defenseRate) {
+    throw StateError('战例防御率与守方境界不符');
+  }
+  final values = example['attacker'] as Map;
+  if (values.containsKey('realm_diff_modifier')) {
+    final modifier = values['realm_diff_modifier'] as num;
+    final actual = RealmUtils.realmDiffModifier(
+      attacker.realmTier,
+      defender.realmTier,
+    ).$2;
+    if (actual != modifier) throw StateError('战例境界修正与双方境界不符');
+  }
+}
+
 AttackContext _ctxA() {
+  final example = _exampleInputs('example_a');
+  final values = example['attacker'] as Map;
+  final defenderSchool = _exampleDefenderSchool(values);
   final attacker = _mkChar(
     tier: RealmTier.xueTu,
     layer: RealmLayer.ruMen,
-    internalForce: 600,
+    internalForce: (values['internal_force'] as num).toInt(),
     school: TechniqueSchool.gangMeng,
   );
-  final attackerWeapon = _mkEquip(baseAttack: 130);
+  final attackerWeapon = _mkEquip(
+    baseAttack: (values['equipment_attack'] as num).toInt(),
+  );
   final attackerTech = _mkTech(
     tier: TechniqueTier.ruMenGong,
     school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.chuKui,
+    layer: _exampleCultivation(values),
   );
 
   final defender = _mkChar(
     tier: RealmTier.xueTu,
     layer: RealmLayer.qiMeng,
     internalForce: 500,
-    school: TechniqueSchool.gangMeng, // 同流派 → 中性
+    school: defenderSchool, // 同流派 → 中性
     agility: 0, // 关闭闪避，方便公式验证
   );
   final defenderTech = _mkTech(
     tier: TechniqueTier.ruMenGong,
-    school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.chuKui,
+    school: defenderSchool,
+    layer: _exampleCultivation(values),
   );
 
+  _validateExampleDefender(example, attacker, defender);
   return AttackContext(
     attacker: attacker,
     attackerEquipped: [attackerWeapon],
     attackerMainTech: attackerTech,
-    skill: _mkSkill(power: 500, type: SkillType.normalAttack),
+    skill: _mkSkill(
+      power: (values['skill_multiplier'] as num).toInt(),
+      type: SkillType.normalAttack,
+    ),
     defender: defender,
     defenderEquipped: const [],
     defenderMainTech: defenderTech,
+    forceCritical: (values['critical'] as num) > 1,
     rng: Random(99), // 稳定 seed，第一次 nextDouble > 0（不闪避，不暴击）
   );
 }
 
 /// 战例 B：二流·圆熟 vs 二流·圆熟，强力技能同境界。
 AttackContext _ctxB() {
+  final example = _exampleInputs('example_b');
+  final values = example['attacker'] as Map;
+  final defenderSchool = _exampleDefenderSchool(values);
   final attacker = _mkChar(
     tier: RealmTier.erLiu,
     layer: RealmLayer.yuanShu,
-    internalForce: 3000,
+    internalForce: (values['internal_force'] as num).toInt(),
     school: TechniqueSchool.gangMeng,
   );
-  final attackerWeapon = _mkEquip(baseAttack: 580);
+  final attackerWeapon = _mkEquip(
+    baseAttack: (values['equipment_attack'] as num).toInt(),
+  );
   final attackerTech = _mkTech(
     tier: TechniqueTier.mingJiaGong,
     school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.yuanMan, // 1.75x
+    layer: _exampleCultivation(values), // 1.75x
   );
 
   final defender = _mkChar(
     tier: RealmTier.erLiu,
     layer: RealmLayer.yuanShu,
     internalForce: 3000,
-    school: TechniqueSchool.gangMeng,
+    school: defenderSchool,
     agility: 0,
   );
   final defenderTech = _mkTech(
     tier: TechniqueTier.mingJiaGong,
-    school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.yuanMan,
+    school: defenderSchool,
+    layer: _exampleCultivation(values),
   );
 
+  _validateExampleDefender(example, attacker, defender);
   return AttackContext(
     attacker: attacker,
     attackerEquipped: [attackerWeapon],
     attackerMainTech: attackerTech,
-    skill: _mkSkill(power: 1500, type: SkillType.powerSkill),
+    skill: _mkSkill(
+      power: (values['skill_multiplier'] as num).toInt(),
+      type: SkillType.powerSkill,
+    ),
     defender: defender,
     defenderEquipped: const [],
     defenderMainTech: defenderTech,
+    forceCritical: (values['critical'] as num) > 1,
     rng: Random(99),
   );
 }
 
 /// 战例 C：三流·登峰（lv14）vs 二流·入门（lv16），低打高（差 1）。
 AttackContext _ctxC() {
+  final example = _exampleInputs('example_c');
+  final values = example['attacker'] as Map;
+  final defenderSchool = _exampleDefenderSchool(values);
   final attacker = _mkChar(
     tier: RealmTier.sanLiu,
     layer: RealmLayer.dengFeng,
-    internalForce: 2000,
+    internalForce: (values['internal_force'] as num).toInt(),
     school: TechniqueSchool.gangMeng,
   );
-  final attackerWeapon = _mkEquip(baseAttack: 280);
+  final attackerWeapon = _mkEquip(
+    baseAttack: (values['equipment_attack'] as num).toInt(),
+  );
   final attackerTech = _mkTech(
     tier: TechniqueTier.changLianGong,
     school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.zhongCheng, // 1.30x
+    layer: _exampleCultivation(values), // 1.30x
   );
 
   final defender = _mkChar(
     tier: RealmTier.erLiu,
     layer: RealmLayer.ruMen,
     internalForce: 2400,
-    school: TechniqueSchool.gangMeng,
+    school: defenderSchool,
     agility: 0,
   );
   final defenderTech = _mkTech(
     tier: TechniqueTier.mingJiaGong,
-    school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.zhongCheng,
+    school: defenderSchool,
+    layer: _exampleCultivation(values),
   );
 
+  _validateExampleDefender(example, attacker, defender);
   return AttackContext(
     attacker: attacker,
     attackerEquipped: [attackerWeapon],
     attackerMainTech: attackerTech,
-    skill: _mkSkill(power: 1500, type: SkillType.powerSkill),
+    skill: _mkSkill(
+      power: (values['skill_multiplier'] as num).toInt(),
+      type: SkillType.powerSkill,
+    ),
     defender: defender,
     defenderEquipped: const [],
     defenderMainTech: defenderTech,
+    forceCritical: (values['critical'] as num) > 1,
     rng: Random(99),
   );
 }
 
 /// 战例 D：一流·圆熟 刚猛大招暴击 vs 一流·启蒙 阴柔。
 AttackContext _ctxD() {
+  final example = _exampleInputs('example_d');
+  final values = example['attacker'] as Map;
+  final defenderSchool = _exampleDefenderSchool(values);
   final attacker = _mkChar(
     tier: RealmTier.yiLiu,
     layer: RealmLayer.yuanShu,
-    internalForce: 5000,
+    internalForce: (values['internal_force'] as num).toInt(),
     school: TechniqueSchool.gangMeng,
   );
-  final attackerWeapon = _mkEquip(baseAttack: 600);
+  final attackerWeapon = _mkEquip(
+    baseAttack: (values['equipment_attack'] as num).toInt(),
+  );
   final attackerTech = _mkTech(
     tier: TechniqueTier.menPaiJueXue,
     school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.yuanMan, // 1.75x
+    layer: _exampleCultivation(values), // 1.75x
   );
 
   final defender = _mkChar(
     tier: RealmTier.yiLiu,
     layer: RealmLayer.qiMeng,
     internalForce: 3800,
-    school: TechniqueSchool.yinRou, // 被克
+    school: defenderSchool, // 被克
     agility: 0,
   );
   final defenderTech = _mkTech(
     tier: TechniqueTier.menPaiJueXue,
-    school: TechniqueSchool.yinRou,
-    layer: CultivationLayer.yuanMan,
+    school: defenderSchool,
+    layer: _exampleCultivation(values),
   );
 
+  _validateExampleDefender(example, attacker, defender);
   return AttackContext(
     attacker: attacker,
     attackerEquipped: [attackerWeapon],
     attackerMainTech: attackerTech,
-    skill: _mkSkill(power: 5500, type: SkillType.ultimate),
+    skill: _mkSkill(
+      power: (values['skill_multiplier'] as num).toInt(),
+      type: SkillType.ultimate,
+    ),
     defender: defender,
     defenderEquipped: const [],
     defenderMainTech: defenderTech,
-    forceCritical: true,
+    forceCritical: (values['critical'] as num) > 1,
     rng: Random(99),
   );
 }
 
 /// 战例 E：武圣·登峰 vs 武圣·登峰，极境大招暴击。
 AttackContext _ctxE() {
+  final example = _exampleInputs('example_e');
+  final values = example['attacker'] as Map;
+  final defenderSchool = _exampleDefenderSchool(values);
   final attacker = _mkChar(
     tier: RealmTier.wuSheng,
     layer: RealmLayer.dengFeng,
-    internalForce: 15000,
+    internalForce: (values['internal_force'] as num).toInt(),
     school: TechniqueSchool.gangMeng,
   );
-  final attackerWeapon = _mkEquip(baseAttack: 3920);
+  final attackerWeapon = _mkEquip(
+    baseAttack: (values['equipment_attack'] as num).toInt(),
+  );
   final attackerTech = _mkTech(
     tier: TechniqueTier.chuanShuoShenGong,
     school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.jiJing, // 3.00x
+    layer: _exampleCultivation(values), // 3.00x
   );
 
   final defender = _mkChar(
     tier: RealmTier.wuSheng,
     layer: RealmLayer.dengFeng,
     internalForce: 15000,
-    school: TechniqueSchool.gangMeng,
+    school: defenderSchool,
     agility: 0,
   );
   final defenderTech = _mkTech(
     tier: TechniqueTier.chuanShuoShenGong,
-    school: TechniqueSchool.gangMeng,
-    layer: CultivationLayer.jiJing,
+    school: defenderSchool,
+    layer: _exampleCultivation(values),
   );
 
+  _validateExampleDefender(example, attacker, defender);
   return AttackContext(
     attacker: attacker,
     attackerEquipped: [attackerWeapon],
     attackerMainTech: attackerTech,
-    skill: _mkSkill(power: 8000, type: SkillType.ultimate),
+    skill: _mkSkill(
+      power: (values['skill_multiplier'] as num).toInt(),
+      type: SkillType.ultimate,
+    ),
     defender: defender,
     defenderEquipped: const [],
     defenderMainTech: defenderTech,
-    forceCritical: true,
+    forceCritical: (values['critical'] as num) > 1,
     rng: Random(99),
   );
 }
