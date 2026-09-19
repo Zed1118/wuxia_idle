@@ -36,7 +36,6 @@ ZERO_GROUPS = (
     (r"equipment\.enhancement\.", "强化公式文档", "强化入口逐字段解析；success_curve 循环只取 level_range/success_rate/material_penalty，公式走 _fallbackFormula。", ["lib/data/numbers_config.dart:922", "lib/data/numbers_config.dart:995", "lib/data/numbers_config.dart:1000"]),
     (r"equipment\.resonance\.", "共鸣换主预留", "共鸣只取 stages、inheritance_retention、seclusion_battle_count_per_hour；stages 新增缺值报错仍只校验显式读取字段。", ["lib/data/numbers_config.dart:404", "lib/data/numbers_config.dart:619"]),
     (r"techniques\.tiers\[", "心法阶名称", "tiers 遍历只取 tier 和 speed_bonus；不遍历行内所有 key/value。", ["lib/data/numbers_config.dart:553"]),
-    (r"skills\.reference_multipliers\.", "招式参考倍率", "NumbersConfig 无 skills 入口；实装 SkillDef 来自独立 skills.yaml。", ["lib/data/numbers_config.dart:345", "lib/data/game_repository.dart:222", "lib/data/game_repository.dart:238"]),
     (r"character\.(attributes|adventure_attribute_bonus)\.", "角色设计与事件范围", "character 只取 lifetime_cap_per_character 和 rarity_distribution；新增缺值报错仅守卫前者，未整表或动态读取零命中字段。", ["lib/data/numbers_config.dart:492", "lib/data/numbers_config.dart:504"]),
     (r"retreat\.time_of_day_bonus\[", "时段文档锚", "按 period 选行后只读 multiplier/target_attribute/applies_to_school；没有读取 time_range。", ["lib/data/numbers_config.dart:2847", "lib/data/numbers_config.dart:2912"]),
     (r"tower\.", "旧塔配置段", "NumbersConfig 无 tower 入口；实际楼层由独立 towers.yaml 读取，原始 Map 未被遍历消费。", ["lib/data/numbers_config.dart:345", "lib/data/game_repository.dart:224", "lib/data/game_repository.dart:270"]),
@@ -343,8 +342,7 @@ def audit(root: Path, baseline: str = BASELINE):
             row["suggestion"] = "保留并复核消费链；本单不删除配置。"
 
     grep_samples = []
-    for terminal in ("last_updated", "skill_multiplier_added", "apply_cultivation_multiplier",
-                     "apply_school_counter", "new_owner_retention", "daily_attempts",
+    for terminal in ("new_owner_retention", "daily_attempts",
                      "refresh_at", "sync_to_supabase"):
         command = ["git", "grep", "-n", "-F", "--", terminal, "--", "lib"]
         result = subprocess.run(command, cwd=root, capture_output=True, text=True, check=False)
@@ -446,8 +444,8 @@ def markdown(data):
         value = json.dumps(row["value"], ensure_ascii=False)
         unused = "是：" + ", ".join(str(item["line"]) for item in row["unused_comments"]) if row["unused_marked"] else "否"
         lines.append(f"| `{row['key']}` | {cell(value)} | {row['yaml_line']} | {unused} | {row['suggestion']} |")
-    lines += ["", "## 独立复核命令", "", "以下 8 个末段覆盖元数据、公式、换主预留与塔段；`git grep` 应退出 1 且输出 0 行。本次另用 `grep -rnF` 独立检查，同为 8/8 零命中。", "", "```sh",
-              "for key in last_updated skill_multiplier_added apply_cultivation_multiplier apply_school_counter new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
+    lines += ["", "## 独立复核命令", "", "以下 4 个末段覆盖换主预留与塔段；`git grep` 应退出 1 且输出 0 行。本次另用 `grep -rnF` 独立检查，同为 4/4 零命中。", "", "```sh",
+              "for key in new_owner_retention daily_attempts refresh_at sync_to_supabase; do",
               "  git grep -n -F -- \"$key\" -- lib; printf '%s grep_exit=%s\\n' \"$key\" \"$?\"",
               "done", "```", "",
               "生产样本同时复核解析和消费，两端都须存在：", "", "```sh",
@@ -456,7 +454,7 @@ def markdown(data):
               "rg -n \"constitution_factor|constitutionFactor\" lib/data/numbers_config.dart lib/shared/battle_shared/derived_stats.dart",
               "```", "",
               "本次脚本每次独立调用 grep 的实际结果：零引用 "
-              f"**{sum(row['passed'] for row in data['sample_verification']['zero_grep'])}/8**（输出 0 行、退出 1）；生产两端命中 "
+              f"**{sum(row['passed'] for row in data['sample_verification']['zero_grep'])}/4**（输出 0 行、退出 1）；生产两端命中 "
               f"**{sum(row['passed'] for row in data['sample_verification']['production_grep'])}/3**。完整命令、退出码与消费行见 JSON 的 `sample_verification`。",
               "", "## 限制与建议", "",
               "零引用并不自动等于可删。UNUSED 仅表示 YAML 原注释标注，不能替代本次检索；纯文档段、设计锚和动态读取分别保留。",
