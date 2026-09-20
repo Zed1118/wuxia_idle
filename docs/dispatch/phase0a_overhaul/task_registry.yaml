@@ -3276,7 +3276,7 @@ tasks:
       mac_1280x720_matrix_passed: 3
       mac_1440x900_recheck_passed: 3
     completion_evidence:
-      - test/tools/output/phase2_g2_stage_01_03_acceptance_record.md
+      - docs/audit/phase2_g2_stage_01_03_acceptance_record.md
     protected_behavior:
       - G2 closes only the Black Ridge production vertical slice
       - do not infer M2 M5 M6 or overall Phase 2 completion
