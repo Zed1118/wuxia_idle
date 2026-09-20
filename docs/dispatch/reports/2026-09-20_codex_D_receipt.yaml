@@ -1,0 +1,23 @@
+schema_version: 1
+base_sha: "cddf20b4ae4979b9e4544638f1f9fd09cdbeac5b"
+head_sha: "bcfa2fef26c8ab11e91d5ac18c45199101bb45d5"
+changed_files:
+  - "data/numbers.yaml"
+  - "lib/features/equipment/application/enhancement_service.dart"
+  - "lib/features/equipment/presentation/enhance_dialog.dart"
+  - "lib/shared/battle_shared/derived_stats.dart"
+  - "test/combat/derived_stats_test.dart"
+  - "test/features/equipment/application/enhancement_cap_realms_test.dart"
+full_test_last_line: "07:59 +7030: All tests passed!"
+error_block_count: 0
+analyze_last_line: "No issues found! (ran in 18.1s)"
+format_last_line: "Formatted 1764 files (0 changed) in 3.57 seconds."
+break_red:
+  - direction: "remove_implementation"
+    mutation: "将 _enhanceLevelCap 临时改回 characterAbsoluteLevel < 49 ? characterAbsoluteLevel : 49；复跑 test/features/equipment/application/enhancement_cap_realms_test.dart；失败测试：realms 上限 48 时展示等级 490 不能继续强化且不扣材料；还原后 00:00 +2: All tests passed!"
+    failed_count: 1
+    conclusion: "RED_CONFIRMED"
+  - direction: "force_degenerate_value"
+    mutation: "将 RealmUtils.maxAbsoluteLevel 临时改为 return 49；复跑 test/features/equipment/application/enhancement_cap_realms_test.dart；失败测试：修改 realms 表后最大绝对层数随表降至 48、realms 上限 48 时展示等级 490 不能继续强化且不扣材料；还原后 00:00 +2: All tests passed!"
+    failed_count: 2
+    conclusion: "RED_CONFIRMED"
