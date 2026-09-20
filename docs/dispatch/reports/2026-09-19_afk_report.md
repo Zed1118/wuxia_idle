@@ -30,12 +30,12 @@
 4. `~/Documents/Codex/2026-09-13/p2-ci-recovery/m4-54aed-worktree`(24 个未提交 lib 改动 + 未跟踪测试)🔴 仍留给你。
 5. B 报告登记的 2 处周目 3 败局(lingQiao 19_05 / 20_05)只登记不调值。
 
-## 决策菜单
+## 决策菜单(用户 2026-09-20 回复 `1A 2A 3A`,已执行)
 
-| # | 项 | A | B |
+| # | 项 | 拍板 | 执行结果 |
 |---|---|---|---|
-| 1 | 12 个 `test/tools/output/*` 跟踪产物 | 清出跟踪(单独小单) | 保留 |
-| 2 | `_enhanceLevelCap` 49 硬编码 | 立微修单读 realms 上限 | 留 |
-| 3 | gate.sh `--allow-forbidden` + preflight 只数执行端分支 | 两项都改(🟡 skill 改动) | 只改其一/不改 |
+| 1 | 12 个 `test/tools/output/*` 跟踪产物 | A 清出跟踪 | codex D 单 `cddf20b4a`+`6cb1622b4`:首轮 Gate 在干净 checkout 全量 `-3`,查明 **6 个是黄金文件**(`phase0a_idle_island_parity`/`full_content_balance`/`ch1_real_skill_profile` 三条 diagnostic 测试读它们比对)→ 恢复跟踪;实际清出 5 个产物,`phase2_g2_stage_01_03_acceptance_record.md` 是手写 G2 记录、`git mv` 到 `docs/audit/` 并改 4 处引用。🟡 若想连黄金文件也搬出 `test/tools/output/`,需改 3 条测试路径,另立单 |
+| 2 | `_enhanceLevelCap` 49 硬编码 | A 读 realms 上限 | `bcfa2fef2`:新增 `RealmUtils.maxAbsoluteLevel`(realms 表最大 `absolute_level`,非 release_cap),`enhancement_service` 与 `enhance_dialog._capHardLimit` 改读;新测 `enhancement_cap_realms_test` 注入表降 48 的 numbers 夹具,两向 mutation 各红 1/2 条,协调者复做 ① 红 1;`numbers.yaml:727` 注释同步(唯一 forbidden 命中,`--allow-forbidden` 明示豁免);Gate 全量 `08:29 +7030` 全绿 |
+| 3 | gate.sh `--allow-forbidden` + preflight 只数执行端分支 | A 两项都改 | `~/.claude` `4544d39`:executors.json 每端加 `branch_prefix`;`branch_states(prefixes, ignore)` 把非执行端前缀与主 checkout 检出链归 `other`;实仓 dry-run 7/2→1/2;test_preflight 新增 4 条(既有 `codebuddy` bin 缺失那条红与本改无关) |
 
-回复形如 `1A 2A 3A`。
+链 tip `ca92ec412`(合并 `--no-ff`),已推 `codex/p2-player-flow-20260910`;`origin/main` 仍 `342d19275`。
