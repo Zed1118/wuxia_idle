@@ -22,9 +22,9 @@ const _evidenceSeedCount = 100;
 const _smokeSeedCount = 2;
 const _update = 'UPDATE_PHASE0A_CH1_PROFILE_EVIDENCE';
 const _csvPath =
-    'test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.csv';
+    'test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.csv';
 const _mdPath =
-    'test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.md';
+    'test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.md';
 
 void main() {
   late GameRepository repo;

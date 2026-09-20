@@ -20,8 +20,8 @@ const _schools = ['gang_meng', 'ling_qiao', 'yin_rou'];
 const _seeds = [0];
 const _writeReport = 'UPDATE_PHASE0A_FULL_CONTENT_BALANCE';
 const _csvPath =
-    'test/tools/output/phase0a_full_content_balance_diagnostic.csv';
-const _mdPath = 'test/tools/output/phase0a_full_content_balance_diagnostic.md';
+    'test/tools/golden/phase0a_full_content_balance_diagnostic.csv';
+const _mdPath = 'test/tools/golden/phase0a_full_content_balance_diagnostic.md';
 
 final class _Run {
   const _Run(this.observation, this.uses, this.stage, this.damageMult);
@@ -182,6 +182,7 @@ void main() {
         proficiencyStages,
       );
       if (Platform.environment[_writeReport] == '1') {
+        File(_csvPath).parent.createSync(recursive: true);
         File(_csvPath).writeAsStringSync(csv);
         File(_mdPath).writeAsStringSync(md);
       } else {

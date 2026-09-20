@@ -4,8 +4,8 @@
 > 基线：`bf2ed846`（鼠标左键 + 数字 1–6 合入态）
 > 样本：3 个 production 创建页流派 × Ch1 五关 × 100 seeds = 1500 局
 > 性质：观察报告，不是平衡拍板；本批零 YAML/伤害公式/数值调整
-> 原始证据：[`test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.csv`](../../test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.csv)
-> 聚合表：[`test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.md`](../../test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.md)
+> 原始证据：[`test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.csv`](../../test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.csv)
+> 聚合表：[`test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.md`](../../test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.md)
 
 ## 1. 口径
 

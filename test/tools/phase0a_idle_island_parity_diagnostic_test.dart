@@ -14,8 +14,8 @@ const _levels = [1, 3, 5];
 const _windows = [1.0, 8.0, 24.0, 72.0, 100.0];
 const _segments = 4;
 const _epsilon = 1e-9;
-const _csvPath = 'test/tools/output/phase0a_idle_island_parity_diagnostic.csv';
-const _mdPath = 'test/tools/output/phase0a_idle_island_parity_diagnostic.md';
+const _csvPath = 'test/tools/golden/phase0a_idle_island_parity_diagnostic.csv';
+const _mdPath = 'test/tools/golden/phase0a_idle_island_parity_diagnostic.md';
 const _updateEnv = 'UPDATE_PHASE0A_IDLE_ISLAND_PARITY_EVIDENCE';
 const _header =
     'recipe_id,level,requested_hours,settled_hours,scenario,'
@@ -99,6 +99,7 @@ void main() {
         '$_header\n${observations.map((row) => row.csv()).join('\n')}\n';
     final md = _markdown(observations);
     if (Platform.environment[_updateEnv] == '1') {
+      File(_csvPath).parent.createSync(recursive: true);
       File(_csvPath).writeAsStringSync(csv);
       File(_mdPath).writeAsStringSync(md);
     } else {

@@ -1,0 +1,36 @@
+schema_version: 1
+base_sha: "b99cfa72da23b088d9d98891458d270b1028814a"
+head_sha: "f56ea20d4c132f77771c3903a53305489cb98a9c"
+changed_files:
+  - "docs/audit/phase0a_ch1_real_skill_profile_2026-08-20.md"
+  - "docs/audit/phase0a_ch1_starter_power_skill_profile_2026-08-21.md"
+  - "docs/superpowers/plans/2026-09-20-codex-e-golden-relocate.md"
+  - "test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.csv"
+  - "test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.md"
+  - "test/tools/golden/phase0a_full_content_balance_diagnostic.csv"
+  - "test/tools/golden/phase0a_full_content_balance_diagnostic.md"
+  - "test/tools/golden/phase0a_idle_island_parity_diagnostic.csv"
+  - "test/tools/golden/phase0a_idle_island_parity_diagnostic.md"
+  - "test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.csv"
+  - "test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.md"
+  - "test/tools/output/phase0a_full_content_balance_diagnostic.csv"
+  - "test/tools/output/phase0a_full_content_balance_diagnostic.md"
+  - "test/tools/output/phase0a_idle_island_parity_diagnostic.csv"
+  - "test/tools/output/phase0a_idle_island_parity_diagnostic.md"
+  - "test/tools/phase0a_ch1_real_skill_profile_diagnostic_test.dart"
+  - "test/tools/phase0a_full_content_balance_diagnostic_test.dart"
+  - "test/tools/phase0a_idle_island_parity_diagnostic_test.dart"
+  - "tools/audit/numbers_key_usage.py"
+full_test_last_line: "07:53 +7030: All tests passed!"
+error_block_count: 0
+analyze_last_line: "No issues found! (ran in 18.0s)"
+format_last_line: "Formatted 1866 files (0 changed) in 4.33 seconds."
+break_red:
+  - direction: "force_degenerate_value"
+    mutation: "将 test/tools/golden/phase0a_idle_island_parity_diagnostic.csv 的首字节 r 临时改为 R，复跑 phase0a_idle_island_parity_diagnostic_test.dart"
+    failed_count: 1
+    conclusion: "RED_CONFIRMED"
+audit_verification:
+  kind: "git_diff_check_and_patch_sha256"
+  diff_check_exit: 0
+  patch_sha256: "dde054fe13a70fff11ad8c2d436c31a0cc61f99441037eaf5b560e0aadde428c"
