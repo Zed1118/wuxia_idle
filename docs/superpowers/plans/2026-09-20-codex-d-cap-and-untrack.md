@@ -45,3 +45,31 @@
 - 阻塞项：无。
 - 残留边界：未运行协调者独立 Gate，未合并、推送或发布；本 READY 不代替集成、Windows 或真人验收。
 - 安全边界：未修改白名单外跟踪文件，未安装软件，未访问真实存档，未启动游戏 GUI，未操作 main 或其他分支。
+
+## Gate 打回 → 6 个黄金文件恢复跟踪
+
+- 2026-09-20 09:41 独立 Gate FAIL：干净临时 checkout 全量 `08:39 +7027 -3`，三条诊断测试因缺少 `test/tools/output/` 下已提交文件而报 `PathNotFoundException`。
+- 根因：三对 CSV/MD 是测试读取的黄金文件，原 S0 将其误当产物解除跟踪；本地磁盘仍保留文件，导致此前 `07:59 +7030` 不能证明干净 checkout 可通过。原子集 format 的 `1764 files` 也不符合 Gate 整仓命令口径。前文记录保留为历史，本节覆盖前文当前状态与交付口径。
+- 按 `67dca7567` 原样恢复三对黄金文件：`phase0a_idle_island_parity_diagnostic.{csv,md}`、`phase0a_full_content_balance_diagnostic.{csv,md}`、`phase0a_ch1_real_skill_profile_2026-08-20.{csv,md}`。已核 index、磁盘与基线逐字节一致，`git ls-files test/tools/output` 恰好六项。
+- 其余五个产物继续不跟踪并保留磁盘内容；G2 正式验收记录仍在 `docs/audit/phase2_g2_stage_01_03_acceptance_record.md`，内容与原始基线相同。本续单不改任何 `_test.dart`、`.gitignore` 或生产代码/数值。
+- 提交顺序：原 S0 → S → R `b81e626131246256841c9777faec200ff68aa5aa` → S'（仅六个黄金文件与本恢复点）→ R'（仅重出的收据，`R'^ == S'`）。收据 `base_sha` 仍为 S0，`head_sha` 为 S'，`changed_files` 完整取 `git diff --name-only S0..S'`（包含原 R 已加入的恢复点与旧收据路径）；原两组 `break_red` 保留。
+
+### 已跑验证（D-续）
+
+- `flutter test --no-pub test/tools/phase0a_idle_island_parity_diagnostic_test.dart`：退出码 0，`00:00 +1: All tests passed!`。
+- `flutter test --no-pub test/tools/phase0a_full_content_balance_diagnostic_test.dart`：退出码 0，`00:02 +1: All tests passed!`。
+- `flutter test --no-pub test/tools/phase0a_ch1_real_skill_profile_diagnostic_test.dart`：退出码 0，`00:01 +1: All tests passed!`。
+- 前台 `flutter test --no-pub 2>&1 | tee /Users/a10506/Codex/2026-09-20/full_test_2.log`（启用 `pipefail`）：退出码 0，`08:07 +7030: All tests passed!`；同份原始日志的 `grep -c '^\[E\]'` 为 0，带时间戳的 reporter 失败行也为 0。
+- `flutter analyze --no-pub lib test tool`：退出码 0，`No issues found! (ran in 3.8s)`。
+- `NO_COLOR=1 dart format --output=none --set-exit-if-changed .`：退出码 0，`Formatted 1866 files (0 changed) in 3.83 seconds.`；使用整仓命令，与 Gate 的文件数口径一致。
+- 全量后再次核对六个黄金文件：index、磁盘与 `67dca7567` 逐字节一致；本续单实质 diff 仅六个黄金文件与本恢复点；`git diff --check` 和 `git diff --cached --check` 均通过。
+- 本次原始验证日志目录：`/var/folders/qf/5z9_0qjx23d15ny1lv62rhqh0000gp/T/codex-d-followup-20260920-1_qkfw_8`。
+
+### 当前恢复点（D-续）
+
+- 状态：READY，本续单修复及本地自动验证完成，等待协调者独立 Gate 复核。
+- 最后完成：六个黄金文件原样恢复跟踪、三条逐文件验证、前台全量 7030 条、analyze 零问题、整仓 format 1866 files/0 changed；Gate 失败根因与修正后的收据边界已登记。
+- 下一步：协调者按 S0..S' 重跑独立 Gate，以仅含收据的 R' 作 wrap-tip；执行端交付后不继续修改。
+- 已跑验证：见本节；全量日志指定为 `/Users/a10506/Codex/2026-09-20/full_test_2.log`。
+- 阻塞项：无。
+- 残留边界：独立 Gate 待协调者重跑；不合并、不推送、不启动 GUI、不访问真实存档，不以本地验证替代独立 Gate 或真人/Windows 验收。
