@@ -39,3 +39,15 @@
 | 3 | gate.sh `--allow-forbidden` + preflight 只数执行端分支 | A 两项都改 | `~/.claude` `4544d39`:executors.json 每端加 `branch_prefix`;`branch_states(prefixes, ignore)` 把非执行端前缀与主 checkout 检出链归 `other`;实仓 dry-run 7/2→1/2;test_preflight 新增 4 条(既有 `codebuddy` bin 缺失那条红与本改无关) |
 
 链 tip `ca92ec412`(合并 `--no-ff`),已推 `codex/p2-player-flow-20260910`;`origin/main` 仍 `342d19275`。
+
+## 第二轮拍板(用户 2026-09-20 回复 `1合 2做 5做 6做`,已执行)
+
+| # | 项 | 结果 |
+|---|---|---|
+| 1 | 链 → main | `origin/main` 342d19275 → `b99cfa72d`(纯 ff,136 commit),CI run 35493047229 **success**;随后 E 单入链再 ff 到 `795114c37`,CI run 35494420672 见 PROGRESS |
+| 2+6 | 黄金文件搬家 + 审计脚本空登记 | codex E 单 `f56ea20d4`:6 个黄金文件 100% rename 到 `test/tools/golden/`(不再被 ignore),3 条 diagnostic 测试只改路径常量;`numbers_key_usage.py` 删 3 处 `combat.final_damage_formula` 登记,扫描 14/14 不变;Gate 全量 `08:32 +7030` 全绿。执行端打 `[BLOCKED]` 是派单包验收项「tools 零命中」与冻结的 `numbers_unused_keys_review.py:49` 互斥(派单包写错,🟢 放行);`test_deletions` 6 行 = 6 个路径常量,逐行核实豁免;`receipt_crosscheck` 因 gate 审计单口径要求 `break_red` 为空而派单包要求一组,以派单包为准 |
+| 5 | 注册表 | `~/.claude` `5a02399`:codebuddy `enabled=false` + caveat;冒烟测只查已启用端 bin,38/38 |
+
+🟡 gate.sh 待改:审计单(零 `lib/` 改动)若派单包要求证红,应接受非空 `break_red` 而非 schema 报错;rename 型 test 改动的 `-` 行需能按「路径常量替换」豁免。
+
+仍待你:③ `~/Documents/Codex/2026-09-13/p2-ci-recovery/m4-54aed-worktree` 24 个未提交 lib 改动;④ P13 死链口径拍板。
