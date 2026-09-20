@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wuxia_idle/shared/battle_shared/derived_stats.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
@@ -18,6 +20,14 @@ void main() {
   });
 
   tearDown(GameRepository.resetForTest);
+
+  test('RealmUtils.maxAbsoluteLevel 等于生产 realms 表最大绝对层数', () {
+    expect(RealmUtils.maxAbsoluteLevel, 49);
+    expect(
+      RealmUtils.maxAbsoluteLevel,
+      GameRepository.instance.realms.map((r) => r.absoluteLevel).reduce(max),
+    );
+  });
 
   group('RealmUtils.absoluteLevelOf', () {
     test('zongShi/huaJing 是绝对层 41', () {

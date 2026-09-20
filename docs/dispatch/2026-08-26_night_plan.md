@@ -311,7 +311,7 @@ N8 发现 CLAUDE.md 正文与代码实况的矛盾落在 🔴 红级,它只登�
 
 ### ⚠️ 纠正一条我一直带着的错误认知:G2 不是待办
 
-`test/tools/output/phase2_g2_stage_01_03_acceptance_record.md` **真实存在**(7675 bytes),
+`docs/audit/phase2_g2_stage_01_03_acceptance_record.md` **真实存在**(7675 bytes),
 `overall: 8/8 PASS`,八项逐条带证据:测试 `file:line` + 截图 SHA256 +
 真人 manual run `g2-manual-production-entry-81125630-20260824T123000Z`。
 **黑风岭 G2 在 2026-08-24 就已由用户签过**,按 §23 step 10,M3/M4/M7 扩面不卡在 G2。

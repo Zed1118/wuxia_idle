@@ -5,7 +5,7 @@
 N2 审计 `L55` 现取原文:
 
 > `:800-802/:1420-1428` LOD、低特效不改实体/难度及多密度 UI 可读性 | 7 组 |
-> `test/tools/output/phase2_g2_stage_01_03_acceptance_record.md:15-21` 只记录黑风岭双视口;
+> `docs/audit/phase2_g2_stage_01_03_acceptance_record.md:15-21` 只记录黑风岭双视口;
 > 未见塔14、群战18/24 或低特效领域 hash 证据 | **无法判定**(已查 `lib/`、`test/` 与 G2 记录)
 
 方案 `L800-802`:

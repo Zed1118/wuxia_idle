@@ -98,6 +98,6 @@ flutter run -d macos
 
 ## 附:08-24 那次签字为什么不算数
 
-`test/tools/output/phase2_g2_stage_01_03_acceptance_record.md:4` 记 `overall: 8/8 PASS`,
+`docs/audit/phase2_g2_stage_01_03_acceptance_record.md:4` 记 `overall: 8/8 PASS`,
 `:5` 绑定 candidate commit `811256300f`(08-24)。**那是对 08-24 代码态的签字**;
 此后 POSTURE 接线等改动是否影响其成立没人回答过,所以本轮重跑。

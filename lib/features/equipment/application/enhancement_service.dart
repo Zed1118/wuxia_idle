@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
 import '../../../data/numbers_config.dart';
+import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/utils/rng.dart';
 import '../../tutorial/application/tutorial_service.dart';
 
@@ -66,7 +69,7 @@ enum EnhanceOutcome {
 ///   - **fail-fast** 配置非法（`neverDegrade=false`）
 ///   - **永不破防降级**：失败时 enhanceLevel 不变，仅扣材料 + 心血结晶 +1
 ///
-/// 强化上限 = `min(49, characterAbsoluteLevel)`（GDD §6.2，与持有者境界
+/// 强化上限 = `min(realms 表最大 absoluteLevel, characterAbsoluteLevel)`（GDD §6.2，与持有者境界
 /// 总层数挂钩）。`absoluteLevel` 由 [RealmUtils.absoluteLevelOf] 计算。
 ///
 /// Phase 5 W6-S2 改实例化：构造函数接 [Isar],原 static API 改实例方法。
@@ -287,10 +290,10 @@ class EnhancementService {
     });
   }
 
-  /// 强化上限：`min(49, characterAbsoluteLevel)`。学徒-启蒙 absoluteLevel=1
-  /// 时只能 +1，武圣-极境 49 时满 +49。
+  /// 强化上限：`min(realms 表最大 absoluteLevel, characterAbsoluteLevel)`。
+  /// 学徒-启蒙 absoluteLevel=1 时只能 +1，realms 表当前最大值 49 时满 +49。
   static int _enhanceLevelCap(int characterAbsoluteLevel) {
-    return characterAbsoluteLevel < 49 ? characterAbsoluteLevel : 49;
+    return min(characterAbsoluteLevel, RealmUtils.maxAbsoluteLevel);
   }
 
   static int _applyPenalty(int cost, MaterialPenalty penalty) {
