@@ -31,7 +31,6 @@ DYNAMIC_MAPS = {
 ZERO_GROUPS = (
     (r"meta\.", "元数据", "NumbersConfig 只从 meta 取 version；未增加 meta 逐键守卫，其余未透传到字段。", ["lib/data/numbers_config.dart:346", "lib/data/numbers_config.dart:353"]),
     (r"combat\.damage_formula\.", "基础公式文档开关", "DamageFormula 只按字段取两个系数，没有整表遍历或额外逐键守卫。", ["lib/data/numbers_config.dart:2429"]),
-    (r"combat\.final_damage_formula\.", "最终公式文档开关", "CombatNumbers 构造器逐段解析，没有 final_damage_formula 入口或该段逐键守卫。", ["lib/data/numbers_config.dart:1361"]),
     (r"equipment\.tiers\[", "装备阶模板", "NumbersConfig 的 equipment 读取是强化、开锋、共鸣、遗物与处置；实装装备定义来自独立 equipment.yaml。", ["lib/data/numbers_config.dart:376", "lib/data/game_repository.dart:220", "lib/data/game_repository.dart:228"]),
     (r"equipment\.enhancement\.", "强化公式文档", "强化入口逐字段解析；success_curve 循环只取 level_range/success_rate/material_penalty，公式走 _fallbackFormula。", ["lib/data/numbers_config.dart:922", "lib/data/numbers_config.dart:995", "lib/data/numbers_config.dart:1000"]),
     (r"equipment\.resonance\.", "共鸣换主预留", "共鸣只取 stages、inheritance_retention、seclusion_battle_count_per_hour；stages 新增缺值报错仍只校验显式读取字段。", ["lib/data/numbers_config.dart:404", "lib/data/numbers_config.dart:619"]),
@@ -331,7 +330,7 @@ def audit(root: Path, baseline: str = BASELINE):
         row["verdict"] = verdict
         row["reason"] = reason
         if verdict == LABELS[2]:
-            if key.startswith(("meta.", "validation_examples.", "combat.final_damage_formula.",
+            if key.startswith(("meta.", "validation_examples.",
                                "combat.damage_formula.skill_multiplier_added", "retreat.time_of_day_bonus")):
                 row["suggestion"] = "保留理由：元数据/公式或时段文档锚；建议迁出可调配置，是否迁移或删除待用户拍板。"
             elif key.startswith("equipment.resonance.new_owner_retention"):
@@ -415,7 +414,7 @@ def markdown(data):
               "", "## 重点段交叉核对", "",
               "以下计数也由本次 JSON 逐行归集；同名导致待人判不能反推该段已消费。", "",
               "| 段 | 标量叶子 | 生产消费 | 仅测试消费 | 零引用 | 待人判 |", "|---|---:|---:|---:|---:|---:|"]
-    for prefix in ("tower.", "synergies.", "combat.final_damage_formula.", "validation_examples."):
+    for prefix in ("tower.", "synergies.", "validation_examples."):
         subset = [row for row in data["rows"] if row["key"].startswith(prefix)]
         subtotal = Counter(row["verdict"] for row in subset)
         lines.append(f"| `{prefix[:-1]}` | {len(subset)} | " + " | ".join(str(subtotal[label]) for label in LABELS) + " |")

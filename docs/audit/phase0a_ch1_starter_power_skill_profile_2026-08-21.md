@@ -37,7 +37,7 @@ D2-A / D3-A / D4-A 建立真实技能 behavior schema；真人 Ch1 小样仍是�
 
 原始证据沿既有稳定路径刷新：
 
-- `test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.csv`
-- `test/tools/output/phase0a_ch1_real_skill_profile_2026-08-20.md`
+- `test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.csv`
+- `test/tools/golden/phase0a_ch1_real_skill_profile_2026-08-20.md`
 
 文件名保留 08-20 是为了不改诊断入口；文件正文已标注 08-21 refresh。
