@@ -724,7 +724,7 @@ equipment:
   # --- 强化系统（GDD §6.2）---
   enhancement:
     bonus_per_level: 0.05            # 每级 +5% 数值（GDD 原值）
-    # UNUSED(2026-09-19 二轮·头注): max_level_formula 为公式名文档锚,上限规则写死 enhancement_service._enhanceLevelCap(min(49, absoluteLevel))。
+    # UNUSED(2026-09-19 二轮·头注): max_level_formula 为公式名文档锚,上限规则 = enhancement_service._enhanceLevelCap(min(realms 表最大 absolute_level, 角色 absoluteLevel)),2026-09-20 起读表不再写死 49。
     max_level_formula: "absolute_level"  # 强化上限 = 持有者境界总层数（最高 +49）
 
     # 成功率与失败惩罚（GDD §6.2 表）

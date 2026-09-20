@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/battle_shared/derived_stats.dart';
 import '../../../shared/battle_shared/enum_localizations.dart';
 import '../../../data/defs/equipment_def.dart';
 import '../../../core/domain/enums.dart';
@@ -25,7 +26,7 @@ import '../../../shared/widgets/wuxia_ui/ink_loading.dart';
 /// 强化对话框（phase2_tasks T29 §426-430 + T32 #22a writeTxn 补漏）。
 ///
 /// 设计：
-/// - **cap 硬顶 49**（Pen 拍板）：仓库视角不携带 character，强化能否 +N
+/// - **cap 读取 realms 表最大 absoluteLevel**（Pen 拍板）：仓库视角不携带 character，强化能否 +N
 ///   由 yaml success_curve + 玩家材料决策决定。
 /// - 成功反馈：边框金色 + AnimatedScale 弹一下（200ms）。
 /// - 失败反馈：共享 screen shake helper。
@@ -62,7 +63,7 @@ class EnhanceDialog extends ConsumerStatefulWidget {
 
 class _EnhanceDialogState extends ConsumerState<EnhanceDialog>
     with TickerProviderStateMixin {
-  static const int _capHardLimit = 49;
+  static int get _capHardLimit => RealmUtils.maxAbsoluteLevel;
 
   late final AnimationController _shakeCtrl;
   late final AnimationController _scaleCtrl;

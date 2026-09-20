@@ -21,6 +21,13 @@ class RealmUtils {
     return GameRepository.instance.getRealm(tier, layer).absoluteLevel;
   }
 
+  /// 强化上限事实源：realms 表最大 absoluteLevel，空表抛出 StateError。
+  static int get maxAbsoluteLevel {
+    return GameRepository.instance.realms
+        .map((realm) => realm.absoluteLevel)
+        .reduce((a, b) => a > b ? a : b);
+  }
+
   /// 给定攻方/守方大境界，返回 `(attacker, defender)` 修正系数。
   ///
   /// 取 `|attackerTier.index - defenderTier.index|` 查 numbers.yaml
