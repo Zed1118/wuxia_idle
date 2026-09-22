@@ -1,0 +1,86 @@
+schema_version: 1
+status: "BLOCKED"
+base_sha: "5e032cb8a8de76069ea382f615e92aa70a2fec9d"
+head_sha: "992da9bf147ae01508539ea71a47123af964940c"
+head_kind: "仅阻塞恢复点，无实质实现"
+changed_files:
+  - "docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md"
+full_test_last_line: null
+error_block_count: null
+analyze_last_line: null
+format_last_line: null
+validation_status: "未运行；落 patch 前命中派单白名单硬阻塞，空值不表示通过"
+break_red:
+  - direction: "remove_implementation"
+    mutation: "摘掉 GauntletController 关末写检查点"
+    attempted: false
+    failed_count: null
+    last_line: null
+    restored_green_last_line: null
+    conclusion: "未运行：尚未落实现"
+  - direction: "force_degenerate_value"
+    mutation: "将 phase0aCooldownsRecorded 写死为 false"
+    attempted: false
+    failed_count: null
+    last_line: null
+    compatibility_last_line: null
+    restored_green_last_line: null
+    conclusion: "未运行：尚未落实现"
+  - direction: "remove_implementation"
+    mutation: "摘掉 SkillLoadoutService 的占用读取"
+    attempted: false
+    failed_count: null
+    last_line: null
+    restored_green_last_line: null
+    conclusion: "未运行：尚未落实现"
+blockers:
+  - kind: "白名单缺少当前版本断言文件"
+    evidence:
+      - "test/data/isar_missing_field_migration_test.dart:63"
+      - "test/data/reward_claim_receipt_migration_test.dart:131"
+      - "test/data/reward_claim_receipt_migration_test.dart:185"
+      - "test/data/reward_claim_receipt_migration_test.dart:257"
+    reason: "均在迁移后断言当前存档版本为 0.50.0；isar_setup.dart:708 统一写入新当前版本，升至 0.51.0 必须同步四处断言，但两个文件均不在白名单"
+    required_resolution: "将两个文件加入白名单，仅允许这四处当前版本字面量替换，历史夹具与中间版本不动"
+    evidence_kind: "源码核对，未声称已运行失败测试"
+  - kind: "旧 schema 夹具生成口径冲突"
+    evidence:
+      - "build.yaml:10-19 的生成白名单为 include"
+      - "输入 patch 将 legacy_gauntlet_cooldown.dart 加入 include"
+      - "新夹具第 3 行引用 legacy_gauntlet_cooldown.g.dart，输入未提供生成物"
+    required_resolution: "确认按 patch 加入生成列表；严格排除无法满足夹具生成前置"
+input_verification:
+  patch_sha256: "2dce6a195d7ff0a7a4425527a14ac8bc275e0548ed371736da72b7a809565b87"
+  patch_applied: false
+  new_files_copied: false
+  original_patch_file_count: 20
+  excluded_patch_paths:
+    - "lib/shared/strings.dart"
+    - "test/tools/compare_phase0a_headless_baseline_test.dart"
+  filtered_patch_file_count: 18
+  input_new_file_count: 4
+initial_red:
+  status: "未运行"
+  failed_count: null
+  last_line: null
+static_review_findings:
+  - "UI 目前只有操作被拒后提示；续作需补灰显及预置文案"
+  - "输入 parity 测试有 74 删除行；续作须保留原测试行，以追加覆盖替代重写"
+  - "新增英文注释需转为简体中文"
+save_version_assertion_changes: []
+three_way_conflicts: []
+audit_verification:
+  kind: "基线、输入摘要、源码上下文与 Git 差异静态核对"
+  initial_head_matches_base: true
+  initial_worktree_clean: true
+  diff_check_exit: 0
+  code_changes: false
+  test_deletions: 0
+  generated_files_committed: false
+acceptance:
+  implementation: "未开始"
+  automated_tests: "未运行"
+  human_device_once: "真机一次未做，未启动游戏 GUI"
+  coordinator_gate: "未运行，不具备 READY 条件"
+  integration: "未合并、未推送"
+recovery_document: "docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md"

@@ -6,6 +6,7 @@
 - 工作目录：`/Users/a10506/Codex/2026-09-22/gauntlet-cooldown-checkpoint/wt`。
 - 分支：`codex/gauntlet-cooldown-checkpoint-20260922`。
 - 派单基线：`5e032cb8a8de76069ea382f615e92aa70a2fec9d`；开局 HEAD 相同，工作区干净。
+- 阻塞记录 commit S：`992da9bf147ae01508539ea71a47123af964940c`，仅含本恢复点，不是实质实现候选。包装 commit R 仅补本记录和收据，父提交固定为 S。
 - 输入：`../input/m4.patch`，SHA-256 为 `2dce6a195d7ff0a7a4425527a14ac8bc275e0548ed371736da72b7a809565b87`；另有 `../input/untracked/` 四个文件。
 - 合同：`docs/spec/2026-09-22-gauntlet-cooldown-checkpoint-design.md`，状态 `APPROVED`。不重议 S1/S2。
 
