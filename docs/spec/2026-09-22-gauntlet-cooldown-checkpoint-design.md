@@ -27,7 +27,7 @@
 
 - `ActivityMemberSnapshot` 加三字段（Isar 嵌入/collection 加法）：`phase0aCooldownsRecorded: bool`（默认 false）、`phase0aCooldownKeys: List<String>`、`phase0aCooldownSeconds: List<double>`。旧档缺字段读 false/空 → 视为「未记录」，下一关开场冷却全空（与现状一致）；旧 `skillCooldownTurns` 保留不换算、不删。
 - `saveVersion 0.50.0 → 0.51.0`，纯加法，迁移段只写注释与版本号，不回填、不推断历史冷却。**🔴 schema 加法需用户拍板**（与 S1 一并拍）。
-- 兼容夹具 `test/fixtures/legacy_gauntlet_cooldown.dart` 冻结旧 schema 做「旧档缺字段 → 未记录」回归；`build.yaml` 排除其代码生成。
+- 兼容夹具 `test/fixtures/legacy_gauntlet_cooldown.dart` 冻结旧 schema 做「旧档缺字段 → 未记录」回归；加入 `build.yaml` `generate_for.include` 列表让 build_runner 为它生成 `.g.dart`（gitignored 不入库；原稿误写「排除」，2026-09-22 codex 复核订正）。
 
 ## 4. 实装形态（收编 m4 patch）
 

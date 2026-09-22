@@ -48,6 +48,13 @@
 | 2+6 | 黄金文件搬家 + 审计脚本空登记 | codex E 单 `f56ea20d4`:6 个黄金文件 100% rename 到 `test/tools/golden/`(不再被 ignore),3 条 diagnostic 测试只改路径常量;`numbers_key_usage.py` 删 3 处 `combat.final_damage_formula` 登记,扫描 14/14 不变;Gate 全量 `08:32 +7030` 全绿。执行端打 `[BLOCKED]` 是派单包验收项「tools 零命中」与冻结的 `numbers_unused_keys_review.py:49` 互斥(派单包写错,🟢 放行);`test_deletions` 6 行 = 6 个路径常量,逐行核实豁免;`receipt_crosscheck` 因 gate 审计单口径要求 `break_red` 为空而派单包要求一组,以派单包为准 |
 | 5 | 注册表 | `~/.claude` `5a02399`:codebuddy `enabled=false` + caveat;冒烟测只查已启用端 bin,38/38 |
 
-🟡 gate.sh 待改:审计单(零 `lib/` 改动)若派单包要求证红,应接受非空 `break_red` 而非 schema 报错;rename 型 test 改动的 `-` 行需能按「路径常量替换」豁免。
+~~🟡 gate.sh 待改~~ 已改(`~/.claude` `ddc7e90`:审计单接受非空 `break_red`;字面量替换型 test 删除行按 `test_deletions.py` 豁免;`diff.renames=false`)。
 
-仍待你:③ `~/Documents/Codex/2026-09-13/p2-ci-recovery/m4-54aed-worktree` 24 个未提交 lib 改动;④ P13 死链口径拍板。
+## 第三/四轮(用户 2026-09-21 「按推荐执行」+ 2026-09-22 「两条都要」,已执行)
+
+| # | 项 | 结果 |
+|---|---|---|
+| ③ | m4 半成品收编 | spec `docs/spec/2026-09-22-gauntlet-cooldown-checkpoint-design.md` 用户拍 S1 冷却按秒跨关保留 + S2 在庄禁装卸;codex G 单 `81ed82539`(`[schema]` saveVersion 0.50.0→0.51.0 纯加法):RED 三入口各 `+0 -1`,定向 62 文件 540 例,全量 `08:35 +7080`,三向证红 3/3/8,parity `+121/-0` 零删除;首轮 [BLOCKED] 抓到派单包漏 2 个版本断言文件(协调者 grep `\| head` 截断)与 `build.yaml` include/排除口径写反,G-续修正后交付;收据为扩展版 YAML 偏离 schema(未加引号+多 2 顶层字段+三向而非两向),协调者逐值转写外置合规收据 `docs/dispatch/reports/2026-09-22_codex_G_receipt_schema.yaml` 对撞 matched,并自做 S2 占用读证红(红 8/还原绿 28)。GDD v1.78。m4 原 worktree(`~/Documents/…/m4-54aed-worktree`,TCC 受限)未删,待用户 Finder 删或下轮处理 |
+| ④ | P13 死链 (b) | codex F 单:扫描器新增「来源 basename 含 `YYYY-MM-DD`=历史快照」归档判据(比整目录 `docs/spec` 精确,活 spec 不被藏),两层测试 26/21;6 处活文档引用改纯文本+移除 commit 证据;dead 225→**0**、归档 1582→1801;首轮 [BLOCKED] 抓到派单包「220 条带日期」计错(实 219+1 无日期预检文档),F-续补授权后交付;合入 `81c2f06c8`,CI 35679748700 success;pool P13 销、P14 依赖解除待你一句话 |
+
+代拍决策(全 🟢/🟡):归档判据取「文件名日期」而非整目录(🟡 工具规则,无产品语义);`compare_phase0a_headless_baseline_test.dart` 与主题无关的 hunk 剔除不收编(🟢);`strings.dart` 一行文案由协调者预置(🟢 微修例外 ①–⑥ 满足);GDD v1.78 摘要记录用户已拍语义(🔴 语义本身已由用户拍板,GDD 行只是记录)。
