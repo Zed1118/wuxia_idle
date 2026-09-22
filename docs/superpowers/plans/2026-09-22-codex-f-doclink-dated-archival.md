@@ -49,8 +49,43 @@ OK
 
 - 基线 --rows 的 225 条与 --json rows 一一对应；按来源 basename 的短横日期分组，docs/spec 205、docs/phase0 7、docs/art 7，总计 219。
 - 其余六条是派单五条活文档引用，加 docs/phase0/route-c-external-gate-preflight.md:13 → data/app.so。仅按原范围实施会得 dead 1 / archival 1801，这是明细推算，未冒充实装复测。
-- 新增台账和恢复点入库会使扫描 md 1830→1832；两份均无可提取路径引用，四分类与明细应保持基线完全相同。包装收据目录本就排除。
+- 新增台账和恢复点入库会使扫描 md 1830→1832；两份均无可提取路径引用，已实测四分类与 --rows 明细保持基线完全相同。包装收据目录本就排除。
 - 生产接线：未实施；因明确的停线条件，不提交不可满足原验收的部分实现。
 - 定向测试：基线 19/20 全绿；新增 7+1 例及证红均未执行，收据 break_red 留空，不能捏造失败记录。
 - 红线影响：仅新增 Markdown 阻塞证据，不触及游戏数值、三系锁死、在线离线、反主流约束或 Dart 文案配置。
 - 残留风险：任务未实现、dead 仍为 225；本交付不能作为 READY 或 Gate 通过证据。
+
+## S 提交后复核与包装
+
+- S：7d403d76f0afdf8abcb68d568882d91ea4b3e2f3，消息以 [BLOCKED] 开头；相对基线仅新增台账和恢复点，白名单检查及 git diff --check 通过。
+- R 仅追加收据和本恢复点；收据 head_sha 绑定 S，三条 last_line 为 NOT_RUN、error_block_count 为 0，break_red 因开局停线未执行而留空，另附实际 patch SHA-256。
+- S 补丁 SHA-256：e6e5e759cef8110c3bec7b2f82f4e0ea3a3afc1e8fdbce16221d1fca502e579b。
+- 三条 Python 命令在 S 上再次退出 0；扫描 JSON 除 scanned_files 增加 2 外逐字段一致，--rows 死链明细逐字一致，台账 44 行。
+
+```text
+python3 tools/doc_link_scan.py
+============================================================
+docs/ 内部引用死链扫描报告
+============================================================
+
+汇总:
+  扫描 md 文件数:  1832
+  引用总数(存活+死+ignored+归档):  12372
+  ├─ 存活(已跟踪):  9784
+  ├─ ignored(gitignored,不计死链):  781
+  ├─ 归档类(归档文档内的失效引用,不进修复清单):  1582
+  └─ 死链(未跟踪且未被 ignore):  225
+  跳过类(通配/模板/worktree 名等):  607
+    (其中出 repo 边界:  102)
+  已跟踪文件总数(参考):  5548
+
+python3 tools/test_doc_link_scan.py
+Ran 19 tests in 0.017s
+OK
+
+python3 tools/test_doc_link_scan_gitfixture.py
+Ran 20 tests in 0.953s
+OK
+```
+
+仅提取现行 gate.sh 内嵌 Python 收据校验器进行对撞，结果 matched；未启动 Gate 主流程及其 Flutter 命令。
