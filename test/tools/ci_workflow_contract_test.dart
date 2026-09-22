@@ -98,7 +98,8 @@ void main() {
 
     expect(json['lineCoverageMinimum'], isA<num>());
     expect(json['lineCoverageMinimum'] as num, greaterThan(0));
-    expect(json['sampledAt'], '2026-07-12');
+    expect(json['lineCoverageMinimum'], 86.95);
+    expect(json['sampledAt'], '2026-09-22');
     expect(json['note'], isA<String>());
   });
 

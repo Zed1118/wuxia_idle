@@ -5,6 +5,11 @@ head_sha: 本文件随候选提交，外部收据记录 exact SHA
 summary: 本轮审查推进累计测试合同：0.52 疗养、实际参战者、49 层迁移与主线兼容退役；保留旧承诺并扩展生产验证。
 
 migrations:
+  # test/tools/ci_workflow_contract_test.dart
+  - deleted: expect(json['sampledAt'], '2026-07-12');
+    replacement: expect(json['sampledAt'], '2026-09-22');
+    reason: 覆盖率基线依据两次同口径成功 CI 更新日期，另新增86.95精确门槛断言，原类型与正数守卫保留。
+
   # test/data/expedition_milestone_record_migration_test.dart
   - deleted: expect(IsarSetup.currentSaveVersion, '0.51.0');
     replacement: expect(IsarSetup.currentSaveVersion, '0.52.0');
