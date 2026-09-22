@@ -224,7 +224,7 @@ void main() {
         (slot) => slot.slot == 'phase0a_skill_$hotkey',
       );
       void elapseUntilReady(int hotkey) {
-        // Real fixed simulation steps; bounded independently from the result.
+        // 使用真实固定步长推进；步数上限独立于结果。
         for (
           var tick = 0;
           tick < 40 && slot(hotkey).cooldownRemaining > 0;

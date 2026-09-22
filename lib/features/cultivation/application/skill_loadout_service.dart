@@ -110,9 +110,8 @@ class SkillLoadoutService {
     return result;
   }
 
-  // Must run inside the same write transaction as the slot mutation: entry may
-  // reserve this character while a picker is open. Only gauntlet is in scope;
-  // its checkpoint cooldowns identify fixed runtime slots, not skill IDs.
+  // 必须与槽位修改处于同一写事务：选择器打开期间角色仍可能入庄。
+  // 这里只限制断魂庄；检查点冷却按固定运行槽标识，不按招式 ID 标识。
   Future<bool> _isGauntletMember(int characterId) async {
     final occupancy = await CharacterOccupancyService(_isar).snapshot();
     return occupancy.entries.any(

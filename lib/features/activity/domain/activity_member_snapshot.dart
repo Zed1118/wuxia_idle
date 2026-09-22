@@ -35,15 +35,15 @@ class ActivityMemberSnapshot {
   /// 对应剩余冷却回合数（与 [skillCooldownKeys] 平行同序）。
   List<int> skillCooldownTurns = [];
 
-  /// A recorded empty seconds checkpoint overrides any retained legacy turns.
-  /// Missing old-schema bool/list fields read false/empty; legacy values remain
-  /// separate and are never reinterpreted as seconds.
+  /// 已记录的空秒制检查点优先于保留的历史回合值。
+  /// 旧 schema 缺失布尔/列表字段时读为 false/空；历史回合值独立保留，
+  /// 不将其重新解释为秒数。
   bool phase0aCooldownsRecorded = false;
   List<String> phase0aCooldownKeys = [];
   List<double> phase0aCooldownSeconds = [];
 
-  /// Keys identify fixed runtime slots. Two slots with the same skill keep
-  /// independent cooldowns; active gauntlet slots cannot be manually changed.
+  /// 键标识固定运行槽；相同招式的两个槽保留各自冷却。
+  /// 断魂庄进行期间禁止手动改变槽位。
   Map<String, double> phase0aCooldownSnapshot() {
     if (!phase0aCooldownsRecorded) {
       if (phase0aCooldownKeys.isNotEmpty || phase0aCooldownSeconds.isNotEmpty) {

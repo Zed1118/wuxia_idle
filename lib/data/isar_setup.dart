@@ -249,7 +249,8 @@ class IsarSetup {
   // 0.49.0 已批准 1A：按核实的角色关联重建 Sect.memberCount 负计数。
   // 冲突行原样保留并报告；以后重开仅重试负计数，不重跑旧业务迁移。
   // 0.50.0 Preserve island product identity and persistent ordinary idle fractions.
-  static const _currentSaveVersion = '0.50.0';
+  // 0.51.0 断魂庄冷却检查点：ActivityMemberSnapshot +phase0aCooldownsRecorded/Keys/Seconds，旧档缺字段读 false/空。
+  static const _currentSaveVersion = '0.51.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -705,6 +706,8 @@ class IsarSetup {
         PlayerYieldMigration.initializePassiveAnchor(save);
       }
 
+      // --- 段 21(0.51.0 断魂庄冷却检查点)---
+      // 纯加法字段由 Isar 缺字段默认值读取；只更新版本戳，不回填或推断历史冷却。
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });

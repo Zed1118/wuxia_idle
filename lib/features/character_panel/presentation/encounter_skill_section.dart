@@ -7,6 +7,7 @@ import '../../../data/game_repository.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/application/character_providers.dart';
+import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../encounter/application/encounter_service.dart';
 import '../../encounter/application/encounter_service_providers.dart';
 import '../../../shared/strings.dart';
@@ -72,12 +73,28 @@ class _Content extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final equipped = character.equippedEncounterSkillId;
     final hasUnlocks = unlocked.isNotEmpty;
+    final activeGauntlet = ref.watch(activeGauntletProvider);
+    final occupied =
+        activeGauntlet.asData?.value?.members.any(
+          (member) => member.characterId == character.id,
+        ) ??
+        false;
+    final loadoutBlocked =
+        activeGauntlet.isLoading || activeGauntlet.hasError || occupied;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SlotDisplay(equippedSkillId: equipped),
         const SizedBox(height: 10),
+        if (occupied)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              UiStrings.gauntletSkillLoadoutOccupied,
+              style: TextStyle(color: WuxiaColors.textMuted),
+            ),
+          ),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -87,15 +104,16 @@ class _Content extends ConsumerWidget {
                   ? UiStrings.encounterSkillPickButton
                   : UiStrings.encounterSkillNoneAvailable,
               primary: hasUnlocks,
-              disabled: !hasUnlocks,
-              onTap: hasUnlocks
+              disabled: !hasUnlocks || loadoutBlocked,
+              onTap: hasUnlocks && !loadoutBlocked
                   ? () => _openPicker(context, ref, unlocked)
                   : null,
             ),
             if (equipped != null)
               PlaqueButton(
                 label: UiStrings.encounterSkillUnequipButton,
-                onTap: () => _unequip(context, ref),
+                disabled: loadoutBlocked,
+                onTap: loadoutBlocked ? null : () => _unequip(context, ref),
               ),
           ],
         ),

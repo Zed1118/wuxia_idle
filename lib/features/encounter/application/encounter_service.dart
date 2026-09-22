@@ -561,8 +561,7 @@ class EncounterService {
     return hadEquipped;
   }
 
-  // Read the unified occupancy snapshot inside the slot's write transaction so
-  // a concurrently entered gauntlet cannot race a stale picker selection.
+  // 在槽位写事务内读取统一占用快照，防止选择器打开后入庄绕过限制。
   Future<bool> _isGauntletMember(int characterId) async {
     final occupancy = await CharacterOccupancyService(isar).snapshot();
     return occupancy.entries.any(

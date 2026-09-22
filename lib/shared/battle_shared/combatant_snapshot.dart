@@ -98,8 +98,8 @@ final class CombatantSnapshot {
   final List<SkillDef> availableSkills;
   final Map<String, int> openingSkillCooldowns, skillUses;
 
-  /// Seconds by runtime slot for a continued battle. Legacy skill-ID turn
-  /// cooldowns remain separate; they have no implicit unit conversion.
+  /// 连续战斗按运行槽保留的冷却秒数。历史按招式 ID 记录的回合冷却
+  /// 独立保留，不做隐式单位换算。
   final Map<String, double> openingSlotCooldownSeconds;
   final List<String> activeBuffs;
   final bool swordSongResonanceActive;
