@@ -58,6 +58,21 @@ def values(value):
     return [str(value)] if value is not None else []
 
 
+def integration_clues(task):
+    """Only registered integration fields; never infer authority from arbitrary SHAs."""
+    for key in ("integration_commits", "integration_commit"):
+        if key in task:
+            yield key, task[key]
+    evidence = task.get("evidence")
+    if isinstance(evidence, dict):
+        for key in (
+            "integration_commits", "integration_commit",
+            "integration_content_commit", "integration_governance_commit",
+        ):
+            if key in evidence:
+                yield f"evidence.{key}", evidence[key]
+
+
 def unique_merges(target, sha):
     return int(git("rev-list", "--count", "--merges", f"{target}..{sha}").stdout)
 
@@ -92,12 +107,13 @@ def run(target):
             "clues": {}, "refs": [], "invalid_commit_clues": [],
             "judgement": "未能判定", "method": None, "evidence": [],
         }
-        for key in ENDPOINTS + ("integration_commit", "integration_commits") + CORRECTIONS:
-            if key in task:
-                row["clues"][key] = task[key]
-                for value in values(task[key]):
-                    if not resolve(value):
-                        row["invalid_commit_clues"].append({"field": key, "value": value})
+        integration_fields = list(integration_clues(task))
+        commit_clues = [(key, task[key]) for key in ENDPOINTS + CORRECTIONS if key in task]
+        for key, raw_value in commit_clues + integration_fields:
+            row["clues"][key] = raw_value
+            for value in values(raw_value):
+                if not resolve(value):
+                    row["invalid_commit_clues"].append({"field": key, "value": value})
         branch = task.get("branch")
         if branch and branch != "none":
             for ref in (f"refs/heads/{branch}", f"refs/remotes/origin/{branch}"):
@@ -134,12 +150,16 @@ def run(target):
                 break
 
         if not row["method"]:
-            integration = values(task.get("integration_commits"))
-            integration += values(task.get("integration_commit"))
-            resolved = [resolve(value) for value in integration]
-            if resolved and all(sha and ancestor(sha, target_sha) == 0 for sha in resolved):
-                for sha in dict.fromkeys(resolved):
-                    integrated(sha, "全部登记集成提交祖先", "integration_commit(s)")
+            resolved = [
+                (key, resolve(value))
+                for key, raw_value in integration_fields for value in values(raw_value)
+            ]
+            if resolved and all(sha and ancestor(sha, target_sha) == 0 for _, sha in resolved):
+                seen = set()
+                for key, sha in resolved:
+                    if sha not in seen:
+                        integrated(sha, "全部登记集成提交祖先", key)
+                        seen.add(sha)
 
         # 精确 READY 主题优先，再搜任务 ID；搜索结果本身也必须在候选链。
         if not row["method"]:
