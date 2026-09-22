@@ -4405,6 +4405,9 @@ class UiStrings {
   // ── 断魂庄三关 · 装载 / 整备（§7.1/§7.2 · C2.5）──────────────────────
   static const String gauntletName = '断魂庄';
 
+  /// 在庄期间禁止手动装卸招式的提示（2026-09-22 用户拍板 S2）。
+  static const String gauntletSkillLoadoutOccupied = '该角色正在断魂庄，离庄后方可装卸招式';
+
   /// 战败结算里成员名缺失时的兜底称谓。
   static const String gauntletMemberFallbackName = '门人';
   static const String gauntletSubtitle = '三关连战，一气呵成；持帖入庄，生死自负。';

@@ -1,6 +1,6 @@
 # 断魂庄招式冷却跨关保留 + 在庄禁装卸 · 设计草案（待拍板）
 
-- 状态：`DRAFT_AWAITING_DECISION`（两条玩法语义 🔴，用户未拍前不派单、不实装）
+- 状态：`APPROVED`（2026-09-22 用户拍板「两条都要」：S1 + S2 + `saveVersion 0.50.0→0.51.0` 纯加法；实装单 G `docs/dispatch/2026-09-22_codex_G_收编断魂庄冷却跨关与在庄禁装卸.md`）
 - 日期：2026-09-22 · 基线 `8d8ae9195`（main）
 - 来源：m4 worktree 未提交半成品（`docs/audit/m4_worktree_uncommitted_summary_2026-09-21.md`），处置选项 A「收编」的前置 spec
 - 体量上限：本文 ≤150 行；实装单另出派单包
