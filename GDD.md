@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.77
+> **版本**:v1.78
+> **v1.78 变更**(2026-09-22 断魂庄招式冷却按秒跨关保留 + 在庄禁装卸 · [schema] saveVersion 0.50.0→0.51.0 纯加法 · 0 改数值):断魂庄一局三关现由 `GauntletMemberCheckpoint` 在关末把各槽剩余冷却**秒数**写入 `ActivityMemberSnapshot` 新增三字段（`phase0aCooldownsRecorded/Keys/Seconds`），下一关开场经 `CombatantSnapshot.openingSlotCooldownSeconds` 按运行槽恢复，未知槽位/负数/非有限值 fail-fast；live `GauntletController` 与 headless `Phase0aGauntletStageRunner` 共用同一检查点路径（parity 测试逐槽相等），旧档缺字段读「未记录」、不回填不推断，旧 `skillCooldownTurns` 保留不换算。角色处于断魂庄 active 会话期间，`SkillLoadoutService`/`EncounterService` 在写事务内读统一占用并拒绝手动装卸（`SlotEquipOccupied`/`EquipOccupied`），藏经阁与角色面板奇遇招式区按实际成员灰显并提示 `UiStrings.gauntletSkillLoadoutOccupied`；`applyAutoFill` 首关装配不拦。RED 三入口各 `+0 -1`，定向 62 文件 540 例、全量 `08:35 +7080`、analyze 0、format 0 changed；三向证红 3/3/8 还原绿；既有测试零删除（parity `+121/-0`），20 处当前版本断言字面量同步。不改冷却时长物化口径（`turns × 0.55s`）、敌人数值、奖励、门票、周目、解锁；不开放前台 bot；不推广到主线/塔。spec `docs/spec/2026-09-22-gauntlet-cooldown-checkpoint-design.md`。
 > **v1.77 变更**(2026-09-18 B2 复核 5A S-A · §4.5 心法相生改口径 · 0 改数值):§4.5 明确生产 12 组唯一数据源为 `data/synergies.yaml`(三类触发条件 + multipliers 六维,单项 0–0.30),原 5 行名门心法表降为「早期示例(未实装)」,同批删除 `numbers.yaml synergies.effect_values` 残留段(10 叶零读方)与退役 `tower` 段(29 叶零读方,T-A)。不改任何生产数值、schema 或战斗规则。
-> **v1.76 变更**(2026-08-25 二阶段 M5 九霄塔首通后 typed automation 准入生产纵切):既有玩家可达塔扫荡入口现只对已首通层开放 typed `direct + playerBot + headless + sweep`；请求经当前掌门、exact snapshot、占用与精确装配准入后进入既有 Phase 0A sweep runner，并在共享 settlement 前重验同一参与者，报告归该人。异常身份/代际、生死、疗养、主修、占用、装配、进度、stale admission 与错人 settlement 均 fail closed。只关闭九霄塔 automation 子门，顶层 M0–M9 仍 `1/10`，M5/M6/U14/Phase 2 仍开放；不新增战斗/结算真相源，不改 schema/saveVersion、YAML、TUNING、奖励、经济、解锁、叙事或战斗规则。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
