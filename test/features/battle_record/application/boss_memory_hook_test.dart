@@ -99,6 +99,7 @@ void main() {
     test('Boss 胜利 → 留档一条', () async {
       const drops = DropResult(equipments: [], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -123,6 +124,7 @@ void main() {
     test('重打同 bossKey → defeatCount 累加', () async {
       const drops = DropResult(equipments: [], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -131,6 +133,7 @@ void main() {
         drops: drops,
       );
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -159,6 +162,7 @@ void main() {
       );
       final drops = DropResult(equipments: [lowTier, highTier], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -175,6 +179,7 @@ void main() {
     test('无装备掉落时 treasureTier = null', () async {
       const drops = DropResult(equipments: [], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -191,6 +196,7 @@ void main() {
     test('topContributorName/Damage 传入后存入纪念', () async {
       const drops = DropResult(equipments: [], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -207,7 +213,7 @@ void main() {
       expect(m.topContributorDamage, 9000);
     });
 
-    test('roster 从 activeCharacterIds 读取 name + portrait', () async {
+    test('roster 按实际参与者读取 name + portrait，忽略当前编成', () async {
       final isar = IsarSetup.instance;
       final id1 = await _insertCharacter(
         isar,
@@ -219,10 +225,11 @@ void main() {
         name: '大弟子',
         portraitPath: 'portraits/senior.png',
       );
-      // 写 SaveData，activeCharacterIds = [id1, id2]
-      await _writeSaveData(isar, activeIds: [id1, id2]);
+      // 当前编成故意与实际参战者顺序不同，不能成为战绩来源。
+      await _writeSaveData(isar, activeIds: [id2, id1]);
 
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: [id1, id2],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -245,6 +252,7 @@ void main() {
       await IsarSetup.close();
       await expectLater(
         runBossMemoryHookAfterVictory(
+          participantCharacterIds: const [],
           source: BossMemorySource.mainline,
           bossKey: 'stage_01_05',
           groupIndex: 1,

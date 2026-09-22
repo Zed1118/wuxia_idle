@@ -1084,6 +1084,9 @@ Future<void> _runSingleStageFlow({
         bossName: boss,
         stats: outcome.stats,
         drops: outcome.drops,
+        participantCharacterIds: outcome.characters
+            .map((character) => character.id)
+            .toList(growable: false),
         topContributorName: outcome.heroCamera?.heroName,
         topContributorDamage: outcome.heroCamera?.topDamage,
       );

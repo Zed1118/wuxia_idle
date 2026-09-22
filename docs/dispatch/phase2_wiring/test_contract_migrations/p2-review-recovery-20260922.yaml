@@ -114,3 +114,8 @@ migrations:
   - deleted: expect((await isar.saveDatas.get(0))!.saveVersion, '0.51.0');
     replacement: expect((await isar.saveDatas.get(0))!.saveVersion, '0.52.0');
     reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/features/battle_record/application/boss_memory_hook_test.dart
+  - deleted: test('roster 从 activeCharacterIds 读取 name + portrait', () async {
+    replacement: test('roster 按实际参与者读取 name + portrait，忽略当前编成', () async {
+    reason: R4 首胜纪念以已核验结算参与者为准；保留姓名头像断言，反向编成顺序验证不再回读存档编成。

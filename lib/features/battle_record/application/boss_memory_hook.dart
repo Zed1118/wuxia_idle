@@ -4,7 +4,6 @@ import '../../../data/game_repository.dart';
 import '../../../data/isar_setup.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
-import '../../../core/domain/save_data.dart';
 import '../../combat_shared/domain/combat_stats_summary.dart';
 import '../../equipment/application/drop_service.dart';
 import '../domain/boss_memory_source.dart';
@@ -21,8 +20,8 @@ import 'boss_memory_service.dart';
 /// **treasure**：[drops.equipments] 中 tier.index 最高的一件装备名 + tier；
 /// 无装备掉落 → null。
 ///
-/// **roster**：从当前存档 `activeCharacterIds` 按序读角色 name + portraitPath
-/// （空字符串代替 null），与阵容顺序对齐。
+/// **roster**：从本次结算已核验的 [participantCharacterIds] 按序读角色
+/// name + portraitPath（空字符串代替 null），不回读当前存档编成。
 Future<void> runBossMemoryHookAfterVictory({
   required BossMemorySource source,
   required String bossKey,
@@ -30,6 +29,7 @@ Future<void> runBossMemoryHookAfterVictory({
   required String bossName,
   required CombatStatsSummary stats,
   required DropResult drops,
+  required List<int> participantCharacterIds,
   String? topContributorName,
   int? topContributorDamage,
 }) async {
@@ -42,12 +42,10 @@ Future<void> runBossMemoryHookAfterVictory({
     // 1. 取 saveDataId。
     final saveDataId = IsarSetup.currentSlotId;
 
-    // 2. roster：读 activeCharacterIds → 各 Character name + portraitPath。
-    final save = await isar.saveDatas.get(0);
-    final activeIds = save?.activeCharacterIds ?? const <int>[];
+    // 2. roster：只读取本次实际结算参与者。
     final rosterNames = <String>[];
     final rosterPortraits = <String>[];
-    for (final cid in activeIds) {
+    for (final cid in participantCharacterIds) {
       final c = await isar.characters.get(cid);
       if (c != null) {
         rosterNames.add(c.name);

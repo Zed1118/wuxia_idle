@@ -833,7 +833,7 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
         if (stage.isBossStage) {
           final rosterNames = <String>[];
           final rosterPortraits = <String>[];
-          for (final characterId in save?.activeCharacterIds ?? const <int>[]) {
+          for (final characterId in ids) {
             final character = await isar.characters.get(characterId);
             if (character == null) continue;
             rosterNames.add(character.name);
