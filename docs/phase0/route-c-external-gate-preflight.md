@@ -10,7 +10,7 @@
 Windows 证据必须同时绑定：
 
 - 待删候选 commit；
-- 根应用 `wuxia_idle` 的 Profile AOT 载荷 `data/app.so` SHA-256；
+- 根应用 `wuxia_idle` 的 Profile AOT 载荷 data/app.so（构建产物路径，不入库） SHA-256；
 - 生产循环负载路由 `phase0a_battle_profile`；
 - 1280×720 与 1440×900 各三次，六次使用同一 AOT、fixture 与主机 manifest。
 

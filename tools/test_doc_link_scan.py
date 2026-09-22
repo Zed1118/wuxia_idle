@@ -200,6 +200,76 @@ class DocLinkScanFixtureTest(unittest.TestCase):
             [row["target"] for row in result["archival_rows"]], ["lib/gone_b.dart"]
         )
 
+    # -- 带日期文件名归档：只认来源文件的短横日期，不扩大到目录 ---------
+
+    def test_dead_reference_in_date_prefix_doc_is_archival(self) -> None:
+        """文件名前缀带短横日期的历史快照，其失效引用归档。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`", source="docs/spec/2026-06-18-x-plan.md"
+        )
+        self.assertEqual(result["refs_total"], 1)
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]], ["lib/gone.dart"]
+        )
+
+    def test_dead_reference_in_date_suffix_doc_is_archival(self) -> None:
+        """文件名后缀带短横日期的历史快照，其失效引用归档。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`",
+            source="docs/phase0/p3_1_lightfoot_phase0_2026-05-23.md",
+        )
+        self.assertEqual(result["refs_total"], 1)
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]], ["lib/gone.dart"]
+        )
+
+    def test_dead_reference_in_date_infix_doc_is_archival(self) -> None:
+        """文件名中缀带短横日期的历史快照，其失效引用归档。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`",
+            source="docs/spec/full_review_2026-07-02_followup_backlog.md",
+        )
+        self.assertEqual(result["refs_total"], 1)
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]], ["lib/gone.dart"]
+        )
+
+    def test_dead_reference_in_undated_spec_stays_dead(self) -> None:
+        """同目录中无日期的活文档仍报告失效引用，不能被归档规则隐藏。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`", source="docs/spec/rejected_task_registry.md"
+        )
+        self.assert_dead_reference(result, "lib/gone.dart")
+
+    def test_dead_reference_in_compact_date_doc_stays_dead(self) -> None:
+        """八位无短横日期不触发归档，候选类活文档仍报告失效引用。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`",
+            source="docs/spec/phase2_combat_core_tuning_candidates_20260826.md",
+        )
+        self.assert_dead_reference(result, "lib/gone.dart")
+
+    def test_dead_reference_in_date_directory_stays_dead(self) -> None:
+        """日期只出现在目录名时不触发归档，判据只看文件名。"""
+        result = self.scan_fixture(
+            "`lib/gone.dart`", source="docs/2026-01-01/ROADMAP.md"
+        )
+        self.assert_dead_reference(result, "lib/gone.dart")
+
+    def test_alive_reference_in_dated_doc_stays_alive(self) -> None:
+        """带日期文档中的存活引用仍计存活，日期规则只改变失效引用去向。"""
+        result = self.scan_fixture(
+            "`lib/main.dart`", source="docs/spec/2026-06-18-x-plan.md",
+            tracked_targets={"lib/main.dart"},
+        )
+        self.assert_alive_reference(result)
+
 
     # -- Bug C 文内引用截断(2026-08-18,与 Bug B 冒号截断同体例) ----------
 
