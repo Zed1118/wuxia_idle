@@ -49,17 +49,36 @@ class GauntletController {
   static ActivityMemberSnapshot _mergeCheckpoint(
     ActivityMemberSnapshot prior,
     GauntletMemberCheckpoint checkpoint,
-  ) => ActivityMemberSnapshot()
-    ..characterId = prior.characterId
-    ..reservedEquipmentIds = List<int>.from(prior.reservedEquipmentIds)
-    ..reservedTechniqueIds = List<int>.from(prior.reservedTechniqueIds)
-    ..currentHp = checkpoint.currentHp
-    ..currentQi = checkpoint.currentQi
-    ..maxHp = checkpoint.maxHp
-    ..maxQi = checkpoint.maxQi
-    ..isDowned = checkpoint.currentHp <= 0
-    ..skillCooldownKeys = List<String>.from(prior.skillCooldownKeys)
-    ..skillCooldownTurns = List<int>.from(prior.skillCooldownTurns);
+  ) {
+    for (final entry in checkpoint.skillCooldownSeconds.entries) {
+      if (entry.key.trim().isEmpty ||
+          !entry.value.isFinite ||
+          entry.value < 0) {
+        throw StateError('Invalid gauntlet terminal cooldown: ${entry.key}');
+      }
+    }
+    final keys =
+        checkpoint.skillCooldownSeconds.keys
+            .where((key) => checkpoint.skillCooldownSeconds[key]! > 0)
+            .toList()
+          ..sort();
+    return ActivityMemberSnapshot()
+      ..characterId = prior.characterId
+      ..reservedEquipmentIds = List<int>.from(prior.reservedEquipmentIds)
+      ..reservedTechniqueIds = List<int>.from(prior.reservedTechniqueIds)
+      ..currentHp = checkpoint.currentHp
+      ..currentQi = checkpoint.currentQi
+      ..maxHp = checkpoint.maxHp
+      ..maxQi = checkpoint.maxQi
+      ..isDowned = checkpoint.currentHp <= 0
+      ..skillCooldownKeys = List<String>.from(prior.skillCooldownKeys)
+      ..skillCooldownTurns = List<int>.from(prior.skillCooldownTurns)
+      ..phase0aCooldownsRecorded = true
+      ..phase0aCooldownKeys = keys
+      ..phase0aCooldownSeconds = [
+        for (final key in keys) checkpoint.skillCooldownSeconds[key]!,
+      ];
+  }
 }
 
 /// Phase 0A 与断魂庄会话之间的最小关次边界事实。
@@ -70,6 +89,7 @@ final class GauntletMemberCheckpoint {
     required this.currentQi,
     required this.maxHp,
     required this.maxQi,
+    this.skillCooldownSeconds = const {},
   });
 
   final int characterId;
@@ -77,4 +97,5 @@ final class GauntletMemberCheckpoint {
   final int currentQi;
   final int maxHp;
   final int maxQi;
+  final Map<String, double> skillCooldownSeconds;
 }

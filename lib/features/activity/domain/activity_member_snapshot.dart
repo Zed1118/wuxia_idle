@@ -34,4 +34,38 @@ class ActivityMemberSnapshot {
 
   /// 对应剩余冷却回合数（与 [skillCooldownKeys] 平行同序）。
   List<int> skillCooldownTurns = [];
+
+  /// 已记录的空秒制检查点优先于保留的历史回合值。
+  /// 旧 schema 缺失布尔/列表字段时读为 false/空；历史回合值独立保留，
+  /// 不将其重新解释为秒数。
+  bool phase0aCooldownsRecorded = false;
+  List<String> phase0aCooldownKeys = [];
+  List<double> phase0aCooldownSeconds = [];
+
+  /// 键标识固定运行槽；相同招式的两个槽保留各自冷却。
+  /// 断魂庄进行期间禁止手动改变槽位。
+  Map<String, double> phase0aCooldownSnapshot() {
+    if (!phase0aCooldownsRecorded) {
+      if (phase0aCooldownKeys.isNotEmpty || phase0aCooldownSeconds.isNotEmpty) {
+        throw StateError('Unmarked Phase0a cooldown checkpoint');
+      }
+      return const {};
+    }
+    if (phase0aCooldownKeys.length != phase0aCooldownSeconds.length) {
+      throw StateError('Phase0a cooldown checkpoint lengths differ');
+    }
+    final result = <String, double>{};
+    for (var i = 0; i < phase0aCooldownKeys.length; i++) {
+      final key = phase0aCooldownKeys[i];
+      final seconds = phase0aCooldownSeconds[i];
+      if (key.trim().isEmpty ||
+          result.containsKey(key) ||
+          !seconds.isFinite ||
+          seconds <= 0) {
+        throw StateError('Invalid Phase0a cooldown checkpoint: $key');
+      }
+      result[key] = seconds;
+    }
+    return Map.unmodifiable(result);
+  }
 }

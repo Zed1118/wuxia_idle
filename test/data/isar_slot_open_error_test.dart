@@ -49,7 +49,7 @@ void main() {
         StateError(invalidFileMessage),
         const UnsupportedSaveVersionException(
           actualVersion: '0.99.0',
-          supportedVersion: '0.50.0',
+          supportedVersion: '0.51.0',
         ),
       ];
       for (final failure in failures) {

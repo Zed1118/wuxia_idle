@@ -93,6 +93,218 @@ void main() {
   });
 
   group('映射结构(真实数据底座)', () {
+    test('秒制冷却按固定槽位恢复，同一真实技能双槽互不合并', () {
+      final numbers = repo.numbers;
+      final basic = repo.getSkill('skill_gangmeng_jichu_basic');
+      final skill = repo.getSkill('skill_gangmeng_jichu_skill');
+      final opening = <String, double>{
+        numbers.phase0aArena.gatherSlot: 2.8,
+        numbers.phase0aArena.clearSlot: 0,
+        'phase0a_skill_1': 1.1,
+        'phase0a_skill_2': 0.125,
+      };
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: makeCh1Player(numbers).copyWith(
+          skillLoadout: CombatantSkillLoadout(
+            basicAttack: basic,
+            main1: skill,
+            main2: skill,
+          ),
+          openingSlotCooldownSeconds: opening,
+        ),
+        numbers: numbers,
+      );
+      expect(
+        mapping.playerAdapter.numericSkillBindings.equipped.map(
+          (binding) => (binding.hotkey, binding.slotId, binding.skill.id),
+        ),
+        [(1, 'phase0a_skill_1', skill.id), (2, 'phase0a_skill_2', skill.id)],
+      );
+      expect({
+        for (final slot in mapping.initialState.skillSlots)
+          slot.slot: slot.cooldownRemaining,
+      }, opening);
+      for (final slot in mapping.initialState.skillSlots) {
+        expect(
+          slot.availability,
+          slot.cooldownRemaining > 0
+              ? Phase0aSkillAvailability.cooldown
+              : Phase0aSkillAvailability.ready,
+          reason: slot.slot,
+        );
+      }
+    });
+
+    test('数字槽有空位时恢复原 hotkey，不向前压缩或借用未装配槽', () {
+      final numbers = repo.numbers;
+      final player = makeCh1Player(numbers).copyWith(
+        skillLoadout: CombatantSkillLoadout(
+          basicAttack: repo.getSkill('skill_gangmeng_jichu_basic'),
+          main2: repo.getSkill('skill_gangmeng_jichu_skill'),
+        ),
+        openingSlotCooldownSeconds: {'phase0a_skill_2': 1.1},
+      );
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: player,
+        numbers: numbers,
+      );
+      final numeric =
+          mapping.playerAdapter.numericSkillBindings.equipped.single;
+      expect((numeric.hotkey, numeric.slotId), (2, 'phase0a_skill_2'));
+      expect(
+        mapping.initialState.skillSlots
+            .singleWhere((slot) => slot.slot == numeric.slotId)
+            .cooldownRemaining,
+        1.1,
+      );
+      expect(
+        () => Phase0aStageContentMapper.map(
+          stage: repo.getStage('stage_01_01'),
+          playerSnapshot: player.copyWith(
+            openingSlotCooldownSeconds: {'phase0a_skill_1': 1.1},
+          ),
+          numbers: numbers,
+        ),
+        throwsStateError,
+      );
+    });
+
+    test('真实 input/reducer 拒绝未结束冷却，双槽分别到期后才可施放', () {
+      final numbers = repo.numbers;
+      final skill = repo.getSkill('skill_gangmeng_jichu_skill');
+      final mapping = Phase0aStageContentMapper.map(
+        stage: repo.getStage('stage_01_01'),
+        playerSnapshot: makeCh1Player(numbers).copyWith(
+          skillLoadout: CombatantSkillLoadout(
+            basicAttack: repo.getSkill('skill_gangmeng_jichu_basic'),
+            main1: skill,
+            main2: skill,
+          ),
+          openingSlotCooldownSeconds: {
+            numbers.phase0aArena.gatherSlot: 4.8,
+            numbers.phase0aArena.clearSlot: 4.1,
+            'phase0a_skill_1': 1.1,
+            'phase0a_skill_2': 2.8,
+          },
+        ),
+        numbers: numbers,
+      );
+      final flow = Phase0aProductionFlowAssembler.assemble(
+        initialState: mapping.initialState,
+        waves: mapping.waves,
+        combatants: mapping.combatants,
+        moveBindings: mapping.moveBindings,
+        numbers: numbers,
+        rng: Random(20260914),
+        playerAdapter: mapping.playerAdapter,
+        enemyAiAdapter: mapping.enemyAiAdapter,
+      );
+      const blockedCommand = Phase0aPlayerCommand(
+        gather: true,
+        clear: true,
+        skillHotkey: 1,
+      );
+      final intents = mapping.playerAdapter.intentsFor(
+        state: flow.state,
+        command: blockedCommand,
+      );
+      expect(intents.whereType<Phase0aGatherIntent>(), hasLength(1));
+      expect(intents.whereType<Phase0aClearIntent>(), hasLength(1));
+      expect(intents.whereType<Phase0aSkillIntent>(), hasLength(1));
+      final qiBefore = flow.state.player.qiCurrent;
+      final blocked = flow.advance(deltaSeconds: 0, command: blockedCommand);
+      expect(blocked.whereType<Phase0aGatherStarted>(), isEmpty);
+      expect(blocked.whereType<Phase0aClearStarted>(), isEmpty);
+      expect(blocked.whereType<Phase0aSkillStarted>(), isEmpty);
+      expect(flow.state.player.qiCurrent, qiBefore);
+
+      Phase0aSkillSlot slot(int hotkey) => flow.state.skillSlots.singleWhere(
+        (slot) => slot.slot == 'phase0a_skill_$hotkey',
+      );
+      void elapseUntilReady(int hotkey) {
+        // 使用真实固定步长推进；步数上限独立于结果。
+        for (
+          var tick = 0;
+          tick < 40 && slot(hotkey).cooldownRemaining > 0;
+          tick++
+        ) {
+          final events = flow.advance(
+            deltaSeconds: numbers.phase0aArena.fixedDeltaSeconds,
+            command: const Phase0aPlayerCommand(),
+          );
+          expect(events.whereType<Phase0aSkillStarted>(), isEmpty);
+        }
+        expect(slot(hotkey).cooldownRemaining, 0);
+        expect(slot(hotkey).availability, Phase0aSkillAvailability.ready);
+      }
+
+      elapseUntilReady(1);
+      expect(slot(2).cooldownRemaining, greaterThan(0));
+      expect(slot(2).availability, Phase0aSkillAvailability.cooldown);
+      final first = flow.advance(
+        deltaSeconds: 0,
+        command: const Phase0aPlayerCommand(skillHotkey: 1),
+      );
+      expect(
+        first.whereType<Phase0aSkillStarted>().map(
+          (event) => (event.hotkey, event.skillId),
+        ),
+        [(1, skill.id)],
+      );
+      final secondBefore = slot(2).cooldownRemaining;
+      final qiAfterFirst = flow.state.player.qiCurrent;
+      final secondBlocked = flow.advance(
+        deltaSeconds: 0,
+        command: const Phase0aPlayerCommand(skillHotkey: 2),
+      );
+      expect(secondBlocked.whereType<Phase0aSkillStarted>(), isEmpty);
+      expect(slot(2).cooldownRemaining, secondBefore);
+      expect(flow.state.player.qiCurrent, qiAfterFirst);
+      elapseUntilReady(2);
+      final second = flow.advance(
+        deltaSeconds: 0,
+        command: const Phase0aPlayerCommand(skillHotkey: 2),
+      );
+      expect(
+        second.whereType<Phase0aSkillStarted>().map(
+          (event) => (event.hotkey, event.skillId),
+        ),
+        [(2, skill.id)],
+      );
+    });
+
+    test('秒制开场冷却拒绝未知槽、负值及所有非有限值', () {
+      final numbers = repo.numbers;
+      for (final invalid in <Map<String, double>>[
+        {'missing_runtime_slot': 1.1},
+        {'skill_gangmeng_jichu_skill': 1.1},
+        {numbers.phase0aArena.gatherSlot: -0.1},
+        {numbers.phase0aArena.gatherSlot: double.nan},
+        {numbers.phase0aArena.gatherSlot: double.infinity},
+        {numbers.phase0aArena.gatherSlot: double.negativeInfinity},
+      ]) {
+        expect(
+          () => Phase0aStageContentMapper.map(
+            stage: repo.getStage('stage_01_01'),
+            playerSnapshot: makeCh1Player(
+              numbers,
+            ).copyWith(openingSlotCooldownSeconds: invalid),
+            numbers: numbers,
+          ),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              contains('Invalid player opening cooldown'),
+            ),
+          ),
+          reason: '$invalid',
+        );
+      }
+    });
+
     test('玩家快照缺真实 basicAttack 时 mapper fail-closed', () {
       final numbers = repo.numbers;
       expect(

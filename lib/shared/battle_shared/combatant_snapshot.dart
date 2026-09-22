@@ -29,6 +29,7 @@ final class CombatantSnapshot {
     this.skillLoadout = const CombatantSkillLoadout.empty(),
     required List<SkillDef> availableSkills,
     required Map<String, int> openingSkillCooldowns,
+    Map<String, double> openingSlotCooldownSeconds = const {},
     required Map<String, int> skillUses,
     required List<String> activeBuffs,
     required this.swordSongResonanceActive,
@@ -50,6 +51,9 @@ final class CombatantSnapshot {
     required this.guardInterceptsInterrupt,
   }) : availableSkills = List.unmodifiable(availableSkills),
        openingSkillCooldowns = Map.unmodifiable(openingSkillCooldowns),
+       openingSlotCooldownSeconds = Map.unmodifiable(
+         openingSlotCooldownSeconds,
+       ),
        skillUses = Map.unmodifiable(skillUses),
        activeBuffs = List.unmodifiable(activeBuffs),
        bossPhases = bossPhases == null
@@ -93,6 +97,10 @@ final class CombatantSnapshot {
   final CombatantSkillLoadout skillLoadout;
   final List<SkillDef> availableSkills;
   final Map<String, int> openingSkillCooldowns, skillUses;
+
+  /// 连续战斗按运行槽保留的冷却秒数。历史按招式 ID 记录的回合冷却
+  /// 独立保留，不做隐式单位换算。
+  final Map<String, double> openingSlotCooldownSeconds;
   final List<String> activeBuffs;
   final bool swordSongResonanceActive;
   final String? iconPath;
@@ -126,6 +134,7 @@ final class CombatantSnapshot {
     Map<String, int>? skillUses,
     List<SkillDef>? availableSkills,
     Map<String, int>? openingSkillCooldowns,
+    Map<String, double>? openingSlotCooldownSeconds,
     List<String>? guardianDefIds,
   }) => CombatantSnapshot(
     characterId: characterId,
@@ -151,6 +160,8 @@ final class CombatantSnapshot {
     skillLoadout: skillLoadout ?? this.skillLoadout,
     availableSkills: availableSkills ?? this.availableSkills,
     openingSkillCooldowns: openingSkillCooldowns ?? this.openingSkillCooldowns,
+    openingSlotCooldownSeconds:
+        openingSlotCooldownSeconds ?? this.openingSlotCooldownSeconds,
     skillUses: skillUses ?? this.skillUses,
     activeBuffs: activeBuffs,
     swordSongResonanceActive: swordSongResonanceActive,

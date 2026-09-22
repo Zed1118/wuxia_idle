@@ -20,6 +20,7 @@ import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/theme/colors.dart';
 import '../../../shared/widgets/wuxia_ui/wuxia_ui.dart';
+import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../cultivation/application/loadout_slot_candidates.dart';
 import '../../cultivation/application/skill_loadout_resolver.dart';
 import '../../cultivation/application/skill_loadout_service.dart';
@@ -227,14 +228,38 @@ class _CangJingGeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activeGauntlet = ref.watch(activeGauntletProvider);
+    final occupied =
+        activeGauntlet.asData?.value?.members.any(
+          (member) => member.characterId == character.id,
+        ) ??
+        false;
+    final loadoutBlocked =
+        activeGauntlet.isLoading || activeGauntlet.hasError || occupied;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _LoadoutSection(character: character, onChanged: onChanged),
+          if (occupied)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: Text(
+                UiStrings.gauntletSkillLoadoutOccupied,
+                style: TextStyle(color: WuxiaUi.muted),
+              ),
+            ),
+          _LoadoutSection(
+            character: character,
+            onChanged: onChanged,
+            loadoutBlocked: loadoutBlocked,
+          ),
           const SizedBox(height: 16),
-          _LibrarySection(character: character, onChanged: onChanged),
+          _LibrarySection(
+            character: character,
+            onChanged: onChanged,
+            loadoutBlocked: loadoutBlocked,
+          ),
           const SizedBox(height: 16),
           const _FragmentSection(),
         ],
@@ -251,10 +276,15 @@ class _CangJingGeBody extends ConsumerWidget {
 enum _SlotKind { main1, main2, assist, resonance, ultimate, key, encounter }
 
 class _LoadoutSection extends ConsumerWidget {
-  const _LoadoutSection({required this.character, required this.onChanged});
+  const _LoadoutSection({
+    required this.character,
+    required this.onChanged,
+    required this.loadoutBlocked,
+  });
 
   final Character character;
   final ValueChanged<int> onChanged;
+  final bool loadoutBlocked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -285,6 +315,7 @@ class _LoadoutSection extends ConsumerWidget {
                             character: character,
                             kind: kinds[start + col],
                             onChanged: onChanged,
+                            loadoutBlocked: loadoutBlocked,
                           )
                         : const SizedBox.shrink(),
                   ),
@@ -303,11 +334,13 @@ class _SlotTile extends ConsumerWidget {
     required this.character,
     required this.kind,
     required this.onChanged,
+    required this.loadoutBlocked,
   });
 
   final Character character;
   final _SlotKind kind;
   final ValueChanged<int> onChanged;
+  final bool loadoutBlocked;
 
   String get _label => switch (kind) {
     _SlotKind.main1 => UiStrings.cangjingSlotMain(1),
@@ -345,50 +378,57 @@ class _SlotTile extends ConsumerWidget {
     final skillName = (id != null && GameRepository.isLoaded)
         ? GameRepository.instance.skillDefs[id]?.name
         : null;
-    return InkWell(
-      onTap: () => _onTap(context, ref),
-      borderRadius: BorderRadius.circular(WuxiaUi.radius),
-      child: IntrinsicHeight(
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: WuxiaUi.panelFill,
-            borderRadius: BorderRadius.circular(WuxiaUi.radius),
-            border: Border.all(
-              color: id == null
-                  ? WuxiaUi.muted.withValues(alpha: 0.5)
-                  : WuxiaUi.qing,
-              width: 1.5,
+    return Semantics(
+      button: true,
+      enabled: !loadoutBlocked,
+      child: InkWell(
+        onTap: loadoutBlocked ? null : () => _onTap(context, ref),
+        canRequestFocus: !loadoutBlocked,
+        borderRadius: BorderRadius.circular(WuxiaUi.radius),
+        child: IntrinsicHeight(
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 56),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: WuxiaUi.panelFill,
+              borderRadius: BorderRadius.circular(WuxiaUi.radius),
+              border: Border.all(
+                color: loadoutBlocked || id == null
+                    ? WuxiaUi.muted.withValues(alpha: 0.5)
+                    : WuxiaUi.qing,
+                width: 1.5,
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _label,
-                style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                skillName ?? UiStrings.cangjingSlotEmpty,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: skillName != null ? WuxiaUi.ink : WuxiaUi.muted,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _label,
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 11),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                _hint,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  skillName ?? UiStrings.cangjingSlotEmpty,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: !loadoutBlocked && skillName != null
+                        ? WuxiaUi.ink
+                        : WuxiaUi.muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _hint,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: WuxiaUi.muted, fontSize: 9),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -423,6 +463,12 @@ class _SlotTile extends ConsumerWidget {
       skillId: picked.id,
     );
     if (!context.mounted) return;
+    if (result is SlotEquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is SlotEquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
@@ -501,6 +547,12 @@ class _SlotTile extends ConsumerWidget {
       saveDataId: IsarSetup.currentSlotId,
     );
     if (!context.mounted) return;
+    if (result is EquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is EquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
@@ -531,10 +583,15 @@ class _SlotTile extends ConsumerWidget {
 ///
 /// uses 从对应 [Technique.skillUsageCount] 取；equipped = 该招 id 在某装配槽。
 class _LibrarySection extends ConsumerWidget {
-  const _LibrarySection({required this.character, required this.onChanged});
+  const _LibrarySection({
+    required this.character,
+    required this.onChanged,
+    required this.loadoutBlocked,
+  });
 
   final Character character;
   final ValueChanged<int> onChanged;
+  final bool loadoutBlocked;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -557,23 +614,27 @@ class _LibrarySection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SectionHeader(UiStrings.cangjingLibraryTitle),
-          techsAsync.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Center(child: InkLoadingIndicator()),
-            ),
-            error: (e, _) => ErrorFallback(
-              error: e,
-              onRetry: () =>
-                  ref.invalidate(characterAllTechniquesProvider(character.id)),
-            ),
-            data: (techs) => _buildGroups(
-              context,
-              ref,
-              techs,
-              numbers,
-              equippedIds,
-              unlockedAsync.value ?? const <String>{},
+          Opacity(
+            opacity: loadoutBlocked ? 0.4 : 1,
+            child: techsAsync.when(
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: InkLoadingIndicator()),
+              ),
+              error: (e, _) => ErrorFallback(
+                error: e,
+                onRetry: () => ref.invalidate(
+                  characterAllTechniquesProvider(character.id),
+                ),
+              ),
+              data: (techs) => _buildGroups(
+                context,
+                ref,
+                techs,
+                numbers,
+                equippedIds,
+                unlockedAsync.value ?? const <String>{},
+              ),
             ),
           ),
         ],
@@ -616,7 +677,9 @@ class _LibrarySection extends ConsumerWidget {
             ),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skillId),
-            onTap: () => _equipFromLibrary(context, ref, skill),
+            onTap: loadoutBlocked
+                ? null
+                : () => _equipFromLibrary(context, ref, skill),
           ),
         );
       }
@@ -680,7 +743,9 @@ class _LibrarySection extends ConsumerWidget {
                   ),
             cfg: numbers.skillProficiency,
             equipped: equippedIds.contains(skill.id),
-            onTap: () => _equipFromLibrary(context, ref, skill),
+            onTap: loadoutBlocked
+                ? null
+                : () => _equipFromLibrary(context, ref, skill),
           ),
         );
       }
@@ -756,6 +821,12 @@ class _LibrarySection extends ConsumerWidget {
       isar,
     ).equipSkill(characterId: character.id, slot: slot, skillId: skill.id);
     if (!context.mounted) return;
+    if (result is SlotEquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is SlotEquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),

@@ -54,6 +54,10 @@ final class Phase0aGauntletStageResult {
       currentQi: finalState.player.qiCurrent,
       maxHp: finalState.player.maxHealth,
       maxQi: finalState.player.qiMax,
+      skillCooldownSeconds: Map.unmodifiable({
+        for (final slot in finalState.skillSlots)
+          if (slot.cooldownRemaining > 0) slot.slot: slot.cooldownRemaining,
+      }),
     );
   }
 

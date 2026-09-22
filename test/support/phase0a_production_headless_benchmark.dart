@@ -496,6 +496,7 @@ Map<String, Object?> headlessPlayerFacts(CombatantSnapshot s) => {
   ],
   'available_skills': [for (final skill in s.availableSkills) skill.id],
   'opening_skill_cooldowns': s.openingSkillCooldowns,
+  'opening_slot_cooldown_seconds': s.openingSlotCooldownSeconds,
   'skill_uses': s.skillUses,
   'active_buffs': s.activeBuffs,
   'sword_song_resonance': s.swordSongResonanceActive,

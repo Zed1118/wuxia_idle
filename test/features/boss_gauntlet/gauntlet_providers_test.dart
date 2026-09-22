@@ -325,6 +325,30 @@ void main() {
     );
   });
 
+  test(
+    'interludeView counts recorded slots and respects an empty checkpoint',
+    () async {
+      final (runId, _) = await enterRun();
+      final container = makeContainer();
+      for (final empty in [false, true]) {
+        await IsarSetup.instance.writeTxn(() async {
+          final run = (await IsarSetup.instance.bossGauntletRuns.get(runId))!
+            ..sessionPhase = GauntletPhase.interlude;
+          run.members.single
+            ..skillCooldownKeys = ['old-skill']
+            ..skillCooldownTurns = [3]
+            ..phase0aCooldownsRecorded = true
+            ..phase0aCooldownKeys = empty ? [] : ['gather', 'phase0a_skill_1']
+            ..phase0aCooldownSeconds = empty ? [] : [2.8, 1.1];
+          await IsarSetup.instance.bossGauntletRuns.put(run);
+        });
+        container.invalidate(gauntletInterludeViewProvider);
+        final view = await container.read(gauntletInterludeViewProvider.future);
+        expect(view!.members.single.cooldownCount, empty ? 0 : 2);
+      }
+    },
+  );
+
   test('rewardView:候选装备 def 解析成卡;非待选相位 → null', () async {
     final (runId, discipleId) = await enterRun();
     final container = makeContainer();

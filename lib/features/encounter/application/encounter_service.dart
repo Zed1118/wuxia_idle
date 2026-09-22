@@ -13,6 +13,8 @@ import '../../../core/domain/enums.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
 import '../../event/application/game_event_service.dart';
+import '../../activity/application/character_occupancy_service.dart';
+import '../../activity/domain/activity_occupancy.dart';
 import '../../tutorial/application/tutorial_service.dart';
 import '../../../data/defs/encounter_def.dart';
 import '../domain/encounter_progress.dart';
@@ -76,6 +78,16 @@ class EquipTierLocked extends EquipEncounterSkillResult {
 class EquipNotFound extends EquipEncounterSkillResult {
   final String reason;
   const EquipNotFound(this.reason);
+}
+
+/// 断魂庄会话保留当前招式槽；离庄后才可手动装卸。
+class EquipOccupied extends EquipEncounterSkillResult {
+  const EquipOccupied();
+}
+
+/// 保持 unequip 的既有 bool 返回契约，同时让 UI 区分占用与意外错误。
+class EncounterSkillOccupiedError extends StateError {
+  EncounterSkillOccupiedError() : super(UiStrings.gauntletSkillLoadoutOccupied);
 }
 
 /// P1.2 §3 reputation 应用 hook 签名(EncounterService 解耦,不强依赖 ReputationService)。
@@ -495,6 +507,10 @@ class EncounterService {
           );
           return;
         }
+        if (await _isGauntletMember(characterId)) {
+          result = const EquipOccupied();
+          return;
+        }
         // 波A A4 来源统一:解锁校验改读 SaveData.skillUnlockProgress。
         final save = await isar.saveDatas.get(0);
         if (save == null || !save.skillUnlockProgress.isUnlocked(skillDef.id)) {
@@ -521,22 +537,38 @@ class EncounterService {
   }
 
   /// 卸下 character 的奇遇 skill slot(返回 true 表示原本有装备)。
+  /// 断魂庄占用时抛 [EncounterSkillOccupiedError]，不改槽位。
   Future<bool> unequipEncounterSkill({required int characterId}) async {
     var hadEquipped = false;
     try {
       await isar.writeTxn(() async {
         final character = await isar.characters.get(characterId);
         if (character == null) return;
+        if (await _isGauntletMember(characterId)) {
+          throw EncounterSkillOccupiedError();
+        }
         hadEquipped = character.equippedEncounterSkillId != null;
         if (!hadEquipped) return;
         character.equippedEncounterSkillId = null;
         await isar.characters.put(character);
       });
+    } on EncounterSkillOccupiedError {
+      rethrow;
     } catch (e, st) {
       debugPrint('unequipEncounterSkill failed: $e\n$st');
       rethrow;
     }
     return hadEquipped;
+  }
+
+  // 在槽位写事务内读取统一占用快照，防止选择器打开后入庄绕过限制。
+  Future<bool> _isGauntletMember(int characterId) async {
+    final occupancy = await CharacterOccupancyService(isar).snapshot();
+    return occupancy.entries.any(
+      (entry) =>
+          entry.kind == ActivityKind.bossGauntlet &&
+          entry.characterIds.contains(characterId),
+    );
   }
 
   /// 静态 canEquip 校验(纯函数,UI 装备面板 disabled 判定用)。

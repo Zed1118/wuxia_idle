@@ -268,7 +268,7 @@ void main() {
       await IsarSetup.init(directory: directory, inspector: false);
       final isar = IsarSetup.instance;
       final save = (await isar.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.50.0');
+      expect(save.saveVersion, '0.51.0');
       expect(save.passiveLastSettledAt, lastOnlineAt);
       expect(save.passiveMojianshiRemainder, 0);
       expect(save.lastOnlineAt, lastOnlineAt);
@@ -388,7 +388,7 @@ void main() {
         });
         await IsarSetup.init(directory: directory, inspector: false);
         final repaired = (await IsarSetup.currentSaveData())!;
-        expect(repaired.saveVersion, '0.50.0');
+        expect(repaired.saveVersion, '0.51.0');
         expect(
           repaired.islandBuildings.first.productStored(
             good.recipes.first.outputItem,
@@ -438,7 +438,7 @@ void main() {
         await IsarSetup.close();
         await IsarSetup.init(directory: directory, inspector: false);
         final save = (await IsarSetup.currentSaveData())!;
-        expect(save.saveVersion, '0.50.0');
+        expect(save.saveVersion, '0.51.0');
         expect(save.passiveLastSettledAt, anchor);
         expect(save.passiveMojianshiRemainder, 0.375);
         expect(
