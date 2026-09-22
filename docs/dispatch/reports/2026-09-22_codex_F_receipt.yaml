@@ -1,15 +1,28 @@
 schema_version: 1
 base_sha: "8d8ae91951950d0fa8113e689491061da8047783"
-head_sha: "7d403d76f0afdf8abcb68d568882d91ea4b3e2f3"
+head_sha: "cd913f0f4c83de1b508fa3c8d30d9358376e5671"
 changed_files:
+  - "docs/PUBLISHING_ART_PASS_1_0.md"
+  - "docs/RELEASE_CHECKLIST_1_0.md"
+  - "docs/ROADMAP_1_0.md"
   - "docs/audit/doclink_residue_disposition_2026-09-22.md"
+  - "docs/dispatch/reports/2026-09-22_codex_F_receipt.yaml"
+  - "docs/phase0/route-c-external-gate-preflight.md"
   - "docs/superpowers/plans/2026-09-22-codex-f-doclink-dated-archival.md"
+  - "tools/README.md"
+  - "tools/doc_link_scan.py"
+  - "tools/test_doc_link_scan.py"
+  - "tools/test_doc_link_scan_gitfixture.py"
 full_test_last_line: "NOT_RUN"
 error_block_count: 0
 analyze_last_line: "NOT_RUN"
 format_last_line: "NOT_RUN"
 break_red:
+  - direction: "remove_implementation"
+    mutation: "在 S′ cd913f0f4c83de1b508fa3c8d30d9358376e5671 提交后，仅从 scan 归档分类点摘掉 or _has_archival_dated_name(ref[\"file\"])，保留 ARCHIVAL_DATED_NAME 常量与目录判据；运行 python3 tools/test_doc_link_scan.py（前缀/后缀/中缀三例失败）及 python3 tools/test_doc_link_scan_gitfixture.py（带日期文档真 git 新例失败），合计 4；逐字节还原后两层 26/21 复绿，扫描 dead 0 / archival 1801，工作树 clean。"
+    failed_count: 4
+    conclusion: "RED_CONFIRMED"
 audit_verification:
   kind: "git_diff_check_and_patch_sha256"
   diff_check_exit: 0
-  patch_sha256: "e6e5e759cef8110c3bec7b2f82f4e0ea3a3afc1e8fdbce16221d1fca502e579b"
+  patch_sha256: "7e4748f10877878fddbf85805118c92ba0bbaf42cceec3808c62c184aaa903e6"

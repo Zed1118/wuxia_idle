@@ -4,9 +4,9 @@
 - 分支：codex/doclink-dated-archival-20260922
 - 基线：8d8ae91951950d0fa8113e689491061da8047783
 - 续办起点：0b3b4d905；前轮阻塞台账提交 7d403d76f 保留在历史中。
-- 状态：READY（实现与定向验证完成；提交后证红和收据包装结果在末节续记）。
+- 状态：READY（实现、定向验证、S′ 提交后证红和还原复测完成；收据与本恢复点由 R′ 包装）。
 - 最后完成：219 条失效引用按来源文件名转归档，六条活文档引用串改为附证据的纯文本，台账重写为 RESIDUE_CLOSED（57 行），README 仅更新第 13/14 行。
-- 下一步：冻结实质提交 S′，仅摘掉日期判据完成 remove_implementation 证红，精确还原复跑绿，再生成绑定 S′ 的收据并以仅收据和恢复点的 R′ 包装。
+- 下一步：协调者以本次 F-续白名单对 S′ / R′ 执行 Gate 与独立证红；执行端完成包装后冻结分支，不推送或合并。
 - 阻塞项：无；原包计数差额已由本次补授权及归档预期 1801 更正解决。
 
 ## 验收标准与任务切片
@@ -88,4 +88,42 @@ OK
 
 ## S′ 提交后证红与包装
 
-实质提交后的证红、还原复测、完整 SHA、patch SHA-256 和收据校验在 R′ 包装时按实际结果补记。
+- S′：cd913f0f4c83de1b508fa3c8d30d9358376e5671，消息为 [READY] 落实带日期文档归档并处置六处活文档引用；本轮实质改动 10 文件，相对 base 累计 11 文件（包含前轮已添加的收据），均在 F-续白名单内。
+- 证红时 HEAD 已等于 S′，工作树 clean；只摘掉 scan 分类点的 or _has_archival_dated_name(ref["file"])，未改常量、目录判据或测试。以下为原始失败摘要，两条命令均退出 1：
+
+```text
+python3 tools/test_doc_link_scan.py
+FAIL: test_dead_reference_in_date_infix_doc_is_archival
+FAIL: test_dead_reference_in_date_prefix_doc_is_archival
+FAIL: test_dead_reference_in_date_suffix_doc_is_archival
+Ran 26 tests in 0.022s
+FAILED (failures=3)
+
+python3 tools/test_doc_link_scan_gitfixture.py
+FAIL: test_missing_reference_in_tracked_dated_doc_is_archival
+Ran 21 tests in 0.924s
+FAILED (failures=1)
+```
+
+- 随后从证红前保存的字节精确还原生产文件，并与 git show S′:tools/doc_link_scan.py 对照相等；工作树恢复 clean。重新扫描的 JSON 与实质提交前逐字段完全一致（dead 0 / archival 1801），两层完整复跑原文如下，均退出 0：
+
+```text
+python3 tools/test_doc_link_scan.py
+..........................
+----------------------------------------------------------------------
+Ran 26 tests in 0.021s
+
+OK
+
+python3 tools/test_doc_link_scan_gitfixture.py
+.....................
+----------------------------------------------------------------------
+Ran 21 tests in 0.946s
+
+OK
+```
+
+- 收据 head_sha 绑定 S′，changed_files 由 base..S′ 全部路径生成；三个 last_line 为 NOT_RUN，error_block_count 为 0，break_red 一组 remove_implementation，实测 failed_count 4 / RED_CONFIRMED。
+- audit_verification：git diff --check base..S′ 退出 0；按固定 binary/full-index/no-renames 命令所得 patch SHA-256 为 7e4748f10877878fddbf85805118c92ba0bbaf42cceec3808c62c184aaa903e6。
+- R′ 仅包装收据与本恢复点，父提交为 S′；不触碰实质文件。正式 Gate、Flutter/Dart 与 GUI 均未运行。
+- 仅提取现行 gate.sh 内嵌 Python 收据校验器做对撞，实测 matched; full_test fields skipped; doc-only audit: NOT_RUN accepted for analyze_last_line,format_last_line (Gate's own run is authoritative)；未执行 Gate 主流程及其 Flutter 命令。
