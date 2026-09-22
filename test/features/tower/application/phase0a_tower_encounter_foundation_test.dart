@@ -19,20 +19,21 @@ import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
 
 import '../../../support/combatant_snapshot_fixture.dart';
+import '../../../support/legacy_tower_session_reference.dart';
 import '../../../support/test_data.dart';
 
 void main() {
-  test('production route authority migrates only the first seven floors', () {
+  test('production route authority migrates all 49 floors', () {
     const authority = Phase0aTowerEncounterRouteAuthority.production();
     for (var floorIndex = 1; floorIndex <= 49; floorIndex += 1) {
       expect(
         authority.modeForFloor(floorIndex),
-        floorIndex <= 7
-            ? Phase0aTowerEncounterRouteMode.migrated
-            : Phase0aTowerEncounterRouteMode.legacy,
+        Phase0aTowerEncounterRouteMode.migrated,
       );
     }
-    expect(authority.migratedFloorIndices, {1, 2, 3, 4, 5, 6, 7});
+    expect(authority.migratedFloorIndices, {
+      for (var floor = 1; floor <= 49; floor++) floor,
+    });
 
     final candidateFloors = <int>{1};
     final candidate = Phase0aTowerEncounterRouteAuthority.migratedFloors(
@@ -40,10 +41,13 @@ void main() {
     );
     candidateFloors.add(2);
     expect(candidate.migratedFloorIndices, {1});
-    expect(
-      () => Phase0aTowerEncounterRouteAuthority.migratedFloors({0}),
-      throwsArgumentError,
-    );
+    for (final floor in [0, 50]) {
+      expect(() => authority.modeForFloor(floor), throwsArgumentError);
+      expect(
+        () => Phase0aTowerEncounterRouteAuthority.migratedFloors({floor}),
+        throwsArgumentError,
+      );
+    }
   });
 
   test('typed foundation binds every source enemy exactly once', () async {
@@ -145,11 +149,8 @@ void main() {
       for (final cycleIndex in const [1, 2]) {
         final floor = repo.getTowerFloor(floorIndex);
         final seed = 20260905 + floorIndex * 100 + cycleIndex;
-        final legacy = await createFreshPhase0aTowerCombatSession(
+        final legacy = await createLegacyTowerSessionForReference(
           Phase0aTowerCombatSessionBuildRequest(
-            routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors(
-              {},
-            ),
             contentRef: CombatContentRef.tower('tower_$floorIndex'),
             floor: floor,
             playerSnapshot: _player(),
@@ -349,10 +350,7 @@ void main() {
 
     expect(visible, isNot(contains('Phase0aStageContentMapper.mapTower(')));
     expect(headless, isNot(contains('Phase0aStageContentMapper.mapTower(')));
-    expect(
-      'Phase0aStageContentMapper.mapTower('.allMatches(factory),
-      hasLength(1),
-    );
+    expect('Phase0aStageContentMapper.mapTower('.allMatches(factory), isEmpty);
     expect(visible, contains('phase0aTowerCombatSessionFactoryProvider'));
     expect(
       'towerSessionFactory('.allMatches(headless),
@@ -431,9 +429,6 @@ Phase0aTowerCombatSessionBuildRequest _request({
   numbers: repo.numbers,
   cycleIndex: cycleIndex,
   rng: Random(seed),
-  routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors({
-    floor.floorIndex,
-  }),
   definitionSource: definitionSource,
   runtimeBindingSource: runtimeBindingSource,
 );

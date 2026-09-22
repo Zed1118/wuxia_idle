@@ -2,7 +2,7 @@ schema_version: 1
 ticket: p2-review-recovery-20260922
 base_sha: 02994529f80953a56172725aa04febbfaf1144da
 head_sha: 本文件随候选提交，外部收据记录 exact SHA
-summary: 修复在线疗养偏差并新增 0.52 时间锚；保留轻伤、资源归属和历史迁移守卫。
+summary: 本轮审查推进累计测试合同：0.52 疗养、实际参战者、49 层迁移与主线兼容退役；保留旧承诺并扩展生产验证。
 
 migrations:
   # test/data/expedition_milestone_record_migration_test.dart
@@ -119,3 +119,219 @@ migrations:
   - deleted: test('roster 从 activeCharacterIds 读取 name + portrait', () async {
     replacement: test('roster 按实际参与者读取 name + portrait，忽略当前编成', () async {
     reason: R4 首胜纪念以已核验结算参与者为准；保留姓名头像断言，反向编成顺序验证不再回读存档编成。
+
+  # Tower 1–49 and generic mainline/tower fallback retirement.
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "test('production routes exactly the first seven authored floors', () async {"
+    replacement: "test('production routes all 49 authored floors', () async {"
+    reason: "生产范围从1–7扩为1–49；仍通过真实factory检查每层源敌顺序、场景数与activeLimit。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "expect(authority.migratedFloorIndices, {1, 2, 3, 4, 5, 6, 7});"
+    replacement: "for (var floor = 1; floor <= 49; floor++) floor,"
+    reason: "明确生产迁移集合为1–49，拒绝缺层或多层；旧七层限制由新全层合同替代。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "expect(actual.outcome, Phase0aBattleOutcome.victory);"
+    replacement: "expect(actual.outcome, Phase0aBattleOutcome.victory);"
+    reason: "原1–7必胜断言原句保留且仍对原14例强制；移到全量parity后，新8–49要求明确终局及与旧参考完整相等，不把迁移变更为强制通关。27高层均已确认新旧同败，详victoryScopeEvidence。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "expect(actual.finalState.enemies, expected.finalState.enemies);"
+    replacement: "expected.finalState.enemies.map("
+    reason: "仅将guardian源ID引用按各session的精确映射转为runtime ID后仍作完整actor相等；45字段全部转发，其它44字段及actor id不变。四例原始唯一差及reducer双表示兼容证据见guardianIdentityEvidence。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "test("
+    replacement: "test('production rejects legacy authority for floor $floor', () async {"
+    reason: "第8层兼容返回合同退役，1/8/49层显式旧authority均须拒绝且不得查询typed sources；另有全批次缺源拒绝。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_migration_test.dart
+  - deleted: "expect(session.routeMode, Phase0aTowerEncounterRouteMode.legacy);"
+    replacement: "test('production rejects legacy authority for floor $floor', () async {"
+    reason: "生产已不允许创建legacy session；旧参考移到test/support保留用于精确状态/结算对照。"
+
+  # test/features/tower/application/phase0a_tower_encounter_foundation_test.dart
+  - deleted: "test('production route authority migrates only the first seven floors', () {"
+    replacement: "test('production route authority migrates all 49 floors', () {"
+    reason: "全49层必须为migrated，保留authority不可变快照与非法范围检查。"
+
+  # test/features/tower/application/phase0a_tower_encounter_foundation_test.dart
+  - deleted: "expect(authority.migratedFloorIndices, {1, 2, 3, 4, 5, 6, 7});"
+    replacement: "for (var floor = 1; floor <= 49; floor++) floor,"
+    reason: "明确生产迁移集合为1–49，拒绝缺层或多层；旧七层限制由新全层合同替代。"
+
+  # test/features/tower/application/phase0a_tower_encounter_foundation_test.dart
+  - deleted: "expect("
+    replacement: "expect(() => authority.modeForFloor(floor), throwsArgumentError);"
+    reason: "非法authority集合{0}检查扩为0和50，且同步验证production modeForFloor拒绝非法层。"
+
+  # test/features/tower/application/phase0a_tower_encounter_foundation_test.dart
+  - deleted: "expect("
+    replacement: "expect('Phase0aStageContentMapper.mapTower('.allMatches(factory), isEmpty);"
+    reason: "生产factory曾仅允许1处legacy mapTower兼容调用；改为0处，visible/headless禁旁路与共用factory断言保持。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "test("
+    replacement: "'authored vulnerability opens, takes damage and recovers floor $floorIndex cycle $cycle',"
+    reason: "原用例纳入参数矩阵：32原机制不变另加49；P3原1–7保留独立实例，另加合法终局1–49实例。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(bossSnapshot.vulnerabilityMult, isNotNull);"
+    replacement: "expect(bossSnapshot.vulnerabilityMult, isNotNull)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(bossSnapshot.vulnerabilityMult, lessThan(1));"
+    replacement: "expect(bossSnapshot.vulnerabilityMult, lessThan(1))"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(typed.flow.outcome, legacy.flow.outcome);"
+    replacement: "expect(typed.flow.outcome, legacy.flow.outcome)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect("
+    replacement: "event.eventType == PostureEventType.vulnerabilityEntered,"
+    reason: "保留 vulnerabilityEntered 的真实事件非空要求，仅补充故障诊断 reason。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(sawGuardedHit, isTrue);"
+    replacement: "expect(sawGuardedHit, isTrue)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect("
+    replacement: "'an observed window must also consume a real damaging action',"
+    reason: "原32 observed-window真实 damaging R 断言仍必验；新49独立契约验证护法存活时R真实命中、真实开窗及回落，未改32参数。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(sawRecovery, isTrue);"
+    replacement: "expect(sawRecovery, isTrue)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);"
+    replacement: "expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_entrypoint_parity_test.dart
+  - deleted: "expect(_combatEvents(events), _combatEvents(legacyEvents));"
+    replacement: "expect(_combatEvents(events), _combatEvents(legacyEvents))"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "testWidgets("
+    replacement: "'${profile.name} production floors 1-${profile.maxFloor} preserve legacy first-clear rewards and durable facts',"
+    reason: "原用例纳入参数矩阵：32原机制不变另加49；P3原1–7保留独立实例，另加合法终局1–49实例。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect("
+    replacement: "'same production data, profile and seeds must preserve every floor settlement',"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "testWidgets("
+    replacement: "'${profile.name} real sweep and reopened durable replay cannot regrant floors 1-${profile.maxFloor} first clears',"
+    reason: "原用例纳入参数矩阵：32原机制不变另加49；P3原1–7保留独立实例，另加合法终局1–49实例。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.timedOut, isFalse);"
+    replacement: "expect(result.timedOut, isFalse)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.settlement?.result, BattleResult.leftWin);"
+    replacement: "expect(result.settlement?.result, BattleResult.leftWin)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.expectedParticipantId, 1);"
+    replacement: "expect(result.expectedParticipantId, 1)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(recap, isNotNull);"
+    replacement: "expect(recap, isNotNull)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(recap!.equipmentDrops, 0);"
+    replacement: "expect(recap!.equipmentDrops, 0)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(recap.itemsByDefId, isEmpty);"
+    replacement: "expect(recap.itemsByDefId, isEmpty)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(recap.expGained, 0);"
+    replacement: "expect(recap.expGained, 0)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(recap.realmAdvances, 0);"
+    replacement: "expect(recap.realmAdvances, 0)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect((facts['progress'] as List)[1], 7 + floor);"
+    replacement: "expect((facts['progress'] as List)[1], profile.maxFloor + floor)"
+    reason: "原P3仍计算7/15；新增终局按maxFloor=49计算49/99，不降低次数或最高层要求。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.outcome, DurableActivityExecutionOutcome.victory);"
+    replacement: "expect(result.outcome, DurableActivityExecutionOutcome.victory)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.run.phase, DurableActivityPhase.settlementApplied);"
+    replacement: "expect(result.run.phase, DurableActivityPhase.settlementApplied)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(result.run.outcome, DurableActivityOutcome.victory);"
+    replacement: "expect(result.run.outcome, DurableActivityOutcome.victory)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect((settled['progress'] as List)[1], 15);"
+    replacement: "expect((settled['progress'] as List)[1], 2 * profile.maxFloor + 1)"
+    reason: "原P3仍计算7/15；新增终局按maxFloor=49计算49/99，不降低次数或最高层要求。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect("
+    replacement: "reason: 'settled durable dispatch cannot apply twice',"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect("
+    replacement: "await IsarSetup.instance.rewardClaimReceipts.count(),"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(await _runIo(tester, _facts), finalFacts);"
+    replacement: "expect(await _runIo(tester, _facts), finalFacts)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(durable!.phase, DurableActivityPhase.settlementApplied);"
+    replacement: "expect(durable!.phase, DurableActivityPhase.settlementApplied)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(durable.outcome, DurableActivityOutcome.victory);"
+    replacement: "expect(durable.outcome, DurableActivityOutcome.victory)"
+    reason: "同一断言仅移位/参数化缩进，匹配器和比较对象保留。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect(settlement.result, BattleResult.leftWin);"
+    replacement: "'floor $index must be won by the persisted profile through real combat',"
+    reason: "保留真实 reducer leftWin 匹配器，仅增加 floor/profile 诊断 reason。"
+
+  # test/features/tower/application/phase0a_tower_first_batch_settlement_test.dart
+  - deleted: "expect((after['progress'] as List)[0], 7);"
+    replacement: "expect((after['progress'] as List)[0], highestFloor)"
+    reason: "原P3仍计算7/15；新增终局按maxFloor=49计算49/99，不降低次数或最高层要求。"

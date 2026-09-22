@@ -160,7 +160,7 @@ enum _Route {
   lightFoot('stage_light_foot_01', 'legacy_waves'),
   massBattle('stage_mass_battle_01', 'legacy_waves'),
   towerTyped('tower_1', 'typed_encounter'),
-  towerLegacy('tower_8', 'legacy_waves'),
+  towerSecondBatch('tower_8', 'typed_encounter'),
   gauntlet('gauntlet_1', 'legacy_waves'),
   milestone('baicao_expedition:baicao_elite_fog_pass', 'legacy_waves');
 
@@ -175,7 +175,7 @@ enum _Route {
       contentId,
       formation: Formation.yanXing,
     ),
-    towerTyped || towerLegacy => HeadlessBenchmarkContent.tower(contentId),
+    towerTyped || towerSecondBatch => HeadlessBenchmarkContent.tower(contentId),
     gauntlet || milestone => null,
   };
 }
@@ -266,7 +266,7 @@ Widget _profileHost({
       onVictory: complete,
       onDefeat: complete,
     ),
-    _Route.towerTyped || _Route.towerLegacy => Phase0aTowerBattleHost(
+    _Route.towerTyped || _Route.towerSecondBatch => Phase0aTowerBattleHost(
       floor: repository.getTowerFloor(route == _Route.towerTyped ? 1 : 8),
       participantId: player.characterId,
       cycleIndexForTest: 1,

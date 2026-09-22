@@ -55,9 +55,9 @@ final class Phase0aMainlineEncounterRouteAuthority {
 
 /// Production binding seam for migrated mainline encounters.
 ///
-/// Return null only for an explicit legacy assignment. A runtime loader must
-/// provide the typed bundle for every migrated assignment; missing migrated
-/// data is a setup error and never a legacy fallback.
+/// Return null only for inner-demon, light-foot, and mass-battle stages, whose
+/// dedicated mappings live in the visible host. Every mainline stage requires
+/// a migrated assignment and typed runtime bundle; missing data is an error.
 typedef Phase0aMainlineEncounterHostFactory =
     FutureOr<Phase0aEncounterHost?> Function(
       Phase0aMainlineEncounterHostBuildRequest request,

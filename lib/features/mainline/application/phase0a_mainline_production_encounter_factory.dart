@@ -1,3 +1,4 @@
+import '../../../core/domain/enums.dart';
 import '../../../data/defs/combat_encounter_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/validation/combat_encounter_defeat_projection_mapper.dart';
@@ -23,30 +24,37 @@ import 'phase0a_mainline_encounter_host.dart';
 Future<Phase0aEncounterHost?> createFreshPhase0aMainlineEncounter(
   Phase0aMainlineEncounterHostBuildRequest request,
 ) async {
+  switch (request.stage.stageType) {
+    case StageType.innerDemon || StageType.lightFoot || StageType.massBattle:
+      return null;
+    case StageType.mainline:
+      break;
+    case StageType.tower || StageType.pvp:
+      throw StateError('unsupported mainline host stage: ${request.stage.id}');
+  }
   final repository = GameRepository.instance;
   final authoritativeMode = await request.routeAuthority?.modeForStage(
     stageId: request.stage.id,
   );
+  if (authoritativeMode == Phase0aMainlineEncounterRouteMode.legacy) {
+    throw StateError('legacy mainline route is retired: ${request.stage.id}');
+  }
   final catalog = request.catalogOverride ?? repository.combatCatalog;
-  // A repository without the optional production catalog is the pre-migration
-  // runtime. Keep that runtime on its legacy path; once a catalog is present,
-  // only an explicit legacy assignment may return null.
   if (catalog == null) {
-    if (authoritativeMode == Phase0aMainlineEncounterRouteMode.migrated) {
-      throw StateError(
-        'migrated mainline route has no combat catalog: ${request.stage.id}',
-      );
-    }
-    return null;
+    throw StateError(
+      'migrated mainline route has no combat catalog: ${request.stage.id}',
+    );
   }
   final assignment = catalog.assignmentForStage(request.stage.id);
   if (assignment == null) {
-    if (authoritativeMode == Phase0aMainlineEncounterRouteMode.migrated) {
-      throw StateError(
-        'migrated mainline route has no catalog assignment: ${request.stage.id}',
-      );
-    }
-    return null;
+    throw StateError(
+      'migrated mainline route has no catalog assignment: ${request.stage.id}',
+    );
+  }
+  if (assignment.migrationState != CombatEncounterMigrationState.migrated) {
+    throw StateError(
+      'legacy mainline assignment is retired: ${request.stage.id}',
+    );
   }
   final route = selectCombatStageEncounterRoute(
     manifest: catalog,
@@ -62,7 +70,7 @@ Future<Phase0aEncounterHost?> createFreshPhase0aMainlineEncounter(
     hasLegacyContent:
         assignment.migrationState == CombatEncounterMigrationState.legacy,
   );
-  if (route is LegacyCombatStageEncounterRoute) return null;
+
   final migratedRoute = route as MigratedCombatStageEncounterRoute;
   final runtime = await request.runtimeBindingSource.load(
     stageId: migratedRoute.stageId,

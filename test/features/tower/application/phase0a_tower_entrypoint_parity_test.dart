@@ -64,6 +64,7 @@ import 'package:wuxia_idle/shared/battle_shared/combatant_snapshot.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
 import '../../../support/isar_test_support.dart';
+import '../../../support/legacy_tower_session_reference.dart';
 import '../../../support/combatant_snapshot_fixture.dart';
 import '../../../support/test_data.dart';
 
@@ -109,8 +110,12 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  for (final floorIndex in [1, 2, 3, 4, 5, 6, 7, 14, 32, 42, 49]) {
-    for (final cycle in [1, 2]) {
+  for (var floorIndex = 1; floorIndex <= 49; floorIndex++) {
+    for (final cycle in [
+      1,
+      2,
+      if ([14, 32, 42, 49].contains(floorIndex)) 3,
+    ]) {
       testWidgets(
         'real visible / immediate / reopened durable parity $floorIndex/$cycle',
         (tester) async {
@@ -135,7 +140,7 @@ void main() {
           // Compare the complete immutable actors and every emitted combat event,
           // not just the final outcome or selected mechanic labels.
           final original = instantTrace.request!;
-          final legacy = await createFreshPhase0aTowerCombatSession(
+          final legacy = await createLegacyTowerSessionForReference(
             Phase0aTowerCombatSessionBuildRequest(
               contentRef: original.contentRef,
               floor: floor,
@@ -143,8 +148,6 @@ void main() {
               numbers: repo.numbers,
               cycleIndex: cycle,
               rng: Random(1),
-              routeAuthority:
-                  Phase0aTowerEncounterRouteAuthority.migratedFloors({}),
             ),
           );
           final legacyFlow = _TraceFlow(legacy.flow);
@@ -266,135 +269,211 @@ void main() {
   }
 
   for (final cycle in [1, 2]) {
-    test(
-      'authored vulnerability opens, takes damage and recovers cycle $cycle',
-      () async {
-        final floor = repo.getTowerFloor(32);
-        // Lower player output leaves the authored boss alive long enough to
-        // exercise the window. No enemy, skill, posture or damage rule is changed.
-        final player = testCombatantSnapshot(
-          realmTier: RealmTier.wuSheng,
-          maxHp: 20000,
-          defenseRate: 0.9,
-          includeProductionBasicAttack: true,
-        );
-        Future<Phase0aTowerCombatSession> build(Set<int> migrated) =>
-            createFreshPhase0aTowerCombatSession(
-              Phase0aTowerCombatSessionBuildRequest(
-                contentRef: const CombatContentRef.tower('tower_32'),
-                floor: floor,
-                playerSnapshot: player,
-                numbers: repo.numbers,
-                cycleIndex: cycle,
-                rng: Random(20260912),
-                routeAuthority:
-                    Phase0aTowerEncounterRouteAuthority.migratedFloors(
-                      migrated,
-                    ),
-              ),
-            );
-        final typed = await build({32});
-        final legacy = await build({});
-        final bossId = typed.flow.state.enemies.firstWhere((e) => e.isBoss).id;
-        final bossSnapshot = typed.combatants
-            .firstWhere((entry) => entry.actorId == bossId)
-            .snapshot;
-        expect(bossSnapshot.vulnerabilityMult, isNotNull);
-        expect(bossSnapshot.vulnerabilityMult, lessThan(1));
-        final events = <Phase0aEvent>[];
-        final legacyEvents = <Phase0aEvent>[];
-        var sawGuardedHit = false;
-        var sawWindowHit = false;
-        var sawRecovery = false;
-        while (typed.flow.outcome == Phase0aBattleOutcome.ongoing &&
-            typed.flow.state.tick <
-                repo.numbers.phase0aArena.maxSimulationTicks &&
-            !sawRecovery) {
-          final state = typed.flow.state;
-          final boss = state.enemies.firstWhere((e) => e.id == bossId);
-          final vulnerable = boss.posture?.isVulnerable ?? false;
-          final offset = boss.position - state.player.position;
-          final aim = offset.length > 0
-              ? offset.normalized()
-              : state.player.facing;
-          // Attack the actual boss through the normal input adapter. R is saved
-          // for an already open window, then input stops to observe its expiry.
-          final command = sawWindowHit
-              ? const Phase0aPlayerCommand()
-              : Phase0aPlayerCommand(
-                  moveDirection: offset.length > typed.playerAdapter.attackRange
-                      ? aim
-                      : null,
-                  attack: !vulnerable,
-                  attackAimDirection: aim,
-                  attackTargetId: bossId,
-                  clear: vulnerable,
-                );
-          final emitted = typed.flow.advance(
-            deltaSeconds: repo.numbers.phase0aArena.fixedDeltaSeconds,
-            command: command,
+    for (final floorIndex in [32, 49]) {
+      test(
+        'authored vulnerability opens, takes damage and recovers floor $floorIndex cycle $cycle',
+        () async {
+          final floor = repo.getTowerFloor(floorIndex);
+          // Lower player output leaves the authored boss alive long enough to
+          // exercise the window. No enemy, skill, posture or damage rule is changed.
+          // Floor 49's 0.9 evasion is a synthetic endurance fixture for mechanics,
+          // not a legal player build or a difficulty acceptance claim.
+          final player = testCombatantSnapshot(
+            realmTier: RealmTier.wuSheng,
+            maxHp: 20000,
+            defenseRate: 0.9,
+            evasionRate: floorIndex == 49 ? 0.9 : 0,
+            includeProductionBasicAttack: true,
           );
-          events.addAll(emitted);
-          legacyEvents.addAll(
-            legacy.flow.advance(
+          Future<Phase0aTowerCombatSession> build({bool legacy = false}) =>
+              (legacy
+              ? createLegacyTowerSessionForReference
+              : createFreshPhase0aTowerCombatSession)(
+                Phase0aTowerCombatSessionBuildRequest(
+                  contentRef: CombatContentRef.tower('tower_$floorIndex'),
+                  floor: floor,
+                  playerSnapshot: player,
+                  numbers: repo.numbers,
+                  cycleIndex: cycle,
+                  rng: Random(20260912),
+                ),
+              );
+          final typed = await build();
+          final legacy = await build(legacy: true);
+          final bossId = typed.flow.state.enemies
+              .firstWhere((e) => e.isBoss)
+              .id;
+          final bossSnapshot = typed.combatants
+              .firstWhere((entry) => entry.actorId == bossId)
+              .snapshot;
+          expect(bossSnapshot.vulnerabilityMult, isNotNull);
+          expect(bossSnapshot.vulnerabilityMult, lessThan(1));
+          if (floorIndex == 49) {
+            expect(bossSnapshot.guardianWardMult, isNotNull);
+            expect(bossSnapshot.guardianWardMult, lessThan(1));
+            expect(bossSnapshot.guardianDefIds, hasLength(2));
+          }
+          final events = <Phase0aEvent>[];
+          final legacyEvents = <Phase0aEvent>[];
+          var sawGuardedHit = false;
+          var sawWindowHit = false;
+          var sawRecovery = false;
+          var sawCompoundWardHit = false;
+          var sawWardedWindow = false;
+          while (typed.flow.outcome == Phase0aBattleOutcome.ongoing &&
+              typed.flow.state.tick <
+                  repo.numbers.phase0aArena.maxSimulationTicks &&
+              !sawRecovery) {
+            final state = typed.flow.state;
+            final boss = state.enemies.firstWhere((e) => e.id == bossId);
+            final vulnerable = boss.posture?.isVulnerable ?? false;
+            final wardActive = state.enemies.any(
+              (enemy) =>
+                  enemy.isAlive && boss.guardianDefIds.contains(enemy.id),
+            );
+            final needsQi =
+                state.player.qiCurrent < typed.playerAdapter.clearQiCost;
+            final attackTarget = floorIndex == 49 && needsQi
+                ? state.enemies.firstWhere(
+                    (enemy) =>
+                        enemy.isAlive && boss.guardianDefIds.contains(enemy.id),
+                    orElse: () => boss,
+                  )
+                : boss;
+            final offset = attackTarget.position - state.player.position;
+            final aim = offset.length > 0
+                ? offset.normalized()
+                : state.player.facing;
+            // Ordinary strikes cannot bypass live guardians. Floor 49 uses the
+            // authored break-capable R to hit through ward and open posture;
+            // floor 32 retains its observed-window damaging R contract.
+            final command = sawWindowHit || sawWardedWindow
+                ? const Phase0aPlayerCommand()
+                : Phase0aPlayerCommand(
+                    moveDirection:
+                        offset.length > typed.playerAdapter.attackRange
+                        ? aim
+                        : null,
+                    attack: !vulnerable && (floorIndex == 32 || needsQi),
+                    attackAimDirection: aim,
+                    attackTargetId: attackTarget.id,
+                    clear:
+                        vulnerable ||
+                        (floorIndex == 49 &&
+                            (boss.position - state.player.position).length <=
+                                typed.playerAdapter.clearEffectRadius),
+                  );
+            final emitted = typed.flow.advance(
               deltaSeconds: repo.numbers.phase0aArena.fixedDeltaSeconds,
               command: command,
-            ),
-          );
+            );
+            events.addAll(emitted);
+            legacyEvents.addAll(
+              legacy.flow.advance(
+                deltaSeconds: repo.numbers.phase0aArena.fixedDeltaSeconds,
+                command: command,
+              ),
+            );
+            expect(
+              _canonicalState(typed.flow.state, typed),
+              _canonicalState(legacy.flow.state, legacy),
+            );
+            expect(typed.flow.outcome, legacy.flow.outcome);
+            final bossHit = emitted.whereType<Phase0aHitLanded>().any(
+              (event) => event.target == bossId && event.resolvedDamage > 0,
+            );
+            final clearHit = emitted.whereType<Phase0aClearApplied>().any(
+              (event) => event.outcomes.any(
+                (outcome) =>
+                    outcome.target == bossId && outcome.resolvedDamage > 0,
+              ),
+            );
+            sawGuardedHit |=
+                (bossHit || (floorIndex == 49 && clearHit)) && !vulnerable;
+            sawCompoundWardHit |= clearHit && !vulnerable && wardActive;
+            sawWindowHit |=
+                clearHit &&
+                vulnerable &&
+                boss.posture!.vulnerabilityTicksRemaining > 1;
+            sawWardedWindow |=
+                floorIndex == 49 &&
+                wardActive &&
+                (typed.flow.state.enemies
+                        .firstWhere((enemy) => enemy.id == bossId)
+                        .posture
+                        ?.isVulnerable ??
+                    false);
+            sawRecovery =
+                (sawWindowHit || sawWardedWindow) &&
+                typed.flow.state.enemies.any(
+                  (enemy) =>
+                      enemy.id == bossId &&
+                      enemy.isAlive &&
+                      !(enemy.posture?.isVulnerable ?? false),
+                );
+          }
           expect(
-            _canonicalState(typed.flow.state, typed),
-            _canonicalState(legacy.flow.state, legacy),
-          );
-          expect(typed.flow.outcome, legacy.flow.outcome);
-          final bossHit = emitted.whereType<Phase0aHitLanded>().any(
-            (event) => event.target == bossId && event.resolvedDamage > 0,
-          );
-          final clearHit = emitted.whereType<Phase0aClearApplied>().any(
-            (event) => event.outcomes.any(
-              (outcome) =>
-                  outcome.target == bossId && outcome.resolvedDamage > 0,
+            events.whereType<Phase0aPostureChanged>().where(
+              (event) =>
+                  event.target == bossId &&
+                  event.eventType == PostureEventType.vulnerabilityEntered,
             ),
+            isNotEmpty,
+            reason:
+                'floor=$floorIndex cycle=$cycle outcome=${typed.flow.outcome} '
+                'tick=${typed.flow.state.tick} hp=${typed.flow.state.player.currentHealth} '
+                'boss=${typed.flow.state.enemies.firstWhere((e) => e.id == bossId).currentHealth} '
+                'guardedHit=$sawGuardedHit compoundHit=$sawCompoundWardHit '
+                'windowHit=$sawWindowHit',
           );
-          sawGuardedHit |= bossHit && !vulnerable;
-          sawWindowHit |=
-              clearHit &&
-              vulnerable &&
-              boss.posture!.vulnerabilityTicksRemaining > 1;
-          sawRecovery =
-              sawWindowHit &&
-              typed.flow.state.enemies.any(
+          expect(sawGuardedHit, isTrue);
+          if (floorIndex == 32) {
+            expect(
+              sawWindowHit,
+              isTrue,
+              reason:
+                  'an observed window must also consume a real damaging action',
+            );
+          }
+          expect(sawRecovery, isTrue);
+          if (floorIndex == 49) {
+            expect(
+              sawCompoundWardHit,
+              isTrue,
+              reason:
+                  'a real Boss hit must occur while living guardians and the '
+                  'closed vulnerability window both reduce incoming damage',
+            );
+            expect(
+              sawWardedWindow,
+              isTrue,
+              reason:
+                  'a real break-capable clear must open posture while '
+                  'guardian ward remains active',
+            );
+            expect(
+              typed.flow.state.enemies.where(
                 (enemy) =>
-                    enemy.id == bossId &&
                     enemy.isAlive &&
-                    !(enemy.posture?.isVulnerable ?? false),
-              );
-        }
-        expect(
-          events.whereType<Phase0aPostureChanged>().where(
-            (event) =>
-                event.target == bossId &&
-                event.eventType == PostureEventType.vulnerabilityEntered,
-          ),
-          isNotEmpty,
-        );
-        expect(sawGuardedHit, isTrue);
-        expect(
-          sawWindowHit,
-          isTrue,
-          reason: 'an observed window must also consume a real damaging action',
-        );
-        expect(sawRecovery, isTrue);
-        expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
-        expect(_combatEvents(events), _combatEvents(legacyEvents));
-        _expectObjectiveWaveSplit(
-          contentId: typed.contentRef.contentId,
-          typedFlow: typed.flow,
-          typedEvents: events,
-          legacyEvents: legacyEvents,
-          terminal: false,
-        );
-      },
-    );
+                    bossSnapshot.guardianDefIds.contains(enemy.id),
+              ),
+              isNotEmpty,
+              reason:
+                  'window recovery is observed with live authored guardians',
+            );
+          }
+          expect(typed.flow.outcome, Phase0aBattleOutcome.ongoing);
+          expect(_combatEvents(events), _combatEvents(legacyEvents));
+          _expectObjectiveWaveSplit(
+            contentId: typed.contentRef.contentId,
+            typedFlow: typed.flow,
+            typedEvents: events,
+            legacyEvents: legacyEvents,
+            terminal: false,
+          );
+        },
+      );
+    }
 
     test(
       'authored guardian interception coop and phase windows retain behavior cycle $cycle',
@@ -419,12 +498,9 @@ void main() {
             numbers: repo.numbers,
             cycleIndex: cycle,
             rng: Random(20260911),
-            routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors({
-              42,
-            }),
           ),
         );
-        final legacy = await createFreshPhase0aTowerCombatSession(
+        final legacy = await createLegacyTowerSessionForReference(
           Phase0aTowerCombatSessionBuildRequest(
             contentRef: const CombatContentRef.tower('tower_42'),
             floor: floor,
@@ -432,9 +508,6 @@ void main() {
             numbers: repo.numbers,
             cycleIndex: cycle,
             rng: Random(20260911),
-            routeAuthority: Phase0aTowerEncounterRouteAuthority.migratedFloors(
-              {},
-            ),
           ),
         );
         final events = <Phase0aEvent>[];
@@ -707,24 +780,19 @@ final class _FactoryTrace {
     calls++;
     request = incoming;
     final built = await createFreshPhase0aTowerCombatSession(
-      Phase0aTowerCombatSessionBuildRequest(
-        contentRef: incoming.contentRef,
-        floor: incoming.floor,
-        playerSnapshot: incoming.playerSnapshot,
-        numbers: incoming.numbers,
-        cycleIndex: incoming.cycleIndex,
-        rng: incoming.rng,
-        // Migrated floors must use the authority supplied by the real entrypoint.
-        // Later representative floors still exercise the opt-in parity fixture.
-        routeAuthority: invalid == null && incoming.floor.floorIndex <= 7
-            ? incoming.routeAuthority
-            : Phase0aTowerEncounterRouteAuthority.migratedFloors({
-                incoming.floor.floorIndex,
-              }),
-        definitionSource: invalid == null
-            ? const Phase0aDerivedTowerEncounterDefinitionSource()
-            : _InvalidObjectives(invalid!),
-      ),
+      invalid == null
+          ? incoming
+          : Phase0aTowerCombatSessionBuildRequest(
+              contentRef: incoming.contentRef,
+              floor: incoming.floor,
+              playerSnapshot: incoming.playerSnapshot,
+              numbers: incoming.numbers,
+              cycleIndex: incoming.cycleIndex,
+              rng: incoming.rng,
+              routeAuthority: incoming.routeAuthority,
+              definitionSource: _InvalidObjectives(invalid!),
+              runtimeBindingSource: incoming.runtimeBindingSource,
+            ),
     );
     session = built;
     trace = _TraceFlow(built.flow);

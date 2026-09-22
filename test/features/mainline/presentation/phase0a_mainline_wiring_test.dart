@@ -124,6 +124,37 @@ void main() {
     repo = await loadTestGameRepository();
   });
 
+  testWidgets(
+    'mainline host rejects a null encounter instead of legacy combat',
+    (tester) async {
+      var victories = 0;
+      var defeats = 0;
+      await tester.binding.setSurfaceSize(const Size(1280, 720));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Phase0aMainlineBattleHost(
+              stage: repo.getStage('stage_01_01'),
+              playerSnapshotForTest: _makeCh1Player(repo.numbers),
+              encounterHostFactory: (_) async => null,
+              onVictory: (_) => victories++,
+              onDefeat: (_) => defeats++,
+            ),
+          ),
+        ),
+      );
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 10));
+      }
+      expect(find.byType(Phase0aBattleScreen), findsNothing);
+      expect(find.byType(SelectableText), findsOneWidget);
+      expect(victories, 0);
+      expect(defeats, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('production first stage exposes its checkpoint objective', (
     tester,
   ) async {

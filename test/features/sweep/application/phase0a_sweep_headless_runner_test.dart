@@ -15,6 +15,7 @@ import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tacti
 import 'package:wuxia_idle/features/battle/domain/phase0a/activity_participation_request.dart';
 import 'package:wuxia_idle/features/sweep/application/phase0a_sweep_headless_runner.dart';
 import 'package:wuxia_idle/features/mainline/domain/mainline_progress.dart';
+import 'package:wuxia_idle/features/mainline/application/phase0a_mainline_encounter_host.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_automation_policy.dart';
 import 'package:wuxia_idle/features/tower/domain/tower_progress.dart';
 import 'package:wuxia_idle/features/activity/application/durable_activity_automation_service.dart';
@@ -172,6 +173,46 @@ void main() {
         ),
       );
     }
+  });
+
+  test('主线扫荡拒绝旧路由且不产生结算', () async {
+    final isar = IsarSetup.instance;
+    final before = (await isar.saveDatas.get(0))!;
+    final beforeCharacter = (await isar.characters.get(
+      before.founderCharacterId!,
+    ))!;
+    final runner = Phase0aSweepHeadlessRunner(
+      isar: isar,
+      numbers: GameRepository.instance.numbers,
+      rng: Random(22),
+      botPolicy: const Phase0aBotTacticPolicy.assault(),
+      routeAuthority: Phase0aMainlineEncounterRouteAuthority(
+        loader: ({required stageId}) =>
+            Phase0aMainlineEncounterRouteMode.legacy,
+      ),
+    );
+    await expectLater(
+      runner.runMainline(
+        stage: GameRepository.instance.getStage('stage_01_01'),
+        cycleIndex: 1,
+      ),
+      throwsA(
+        isA<StateError>().having(
+          (e) => e.message,
+          'reason',
+          contains('legacy mainline route is retired'),
+        ),
+      ),
+    );
+    final afterCharacter = (await isar.characters.get(
+      before.founderCharacterId!,
+    ))!;
+    expect(afterCharacter.experience, beforeCharacter.experience);
+    expect(afterCharacter.lightInjuryStacks, beforeCharacter.lightInjuryStacks);
+    expect(
+      afterCharacter.injuryHoursRemaining,
+      beforeCharacter.injuryHoursRemaining,
+    );
   });
 
   test('祖师已在远征时拒绝双占用，不进入战斗与结算', () async {
