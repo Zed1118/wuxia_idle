@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:isar_community/isar.dart';
 
 import '../../../core/domain/save_data.dart';
+import '../../../core/domain/character.dart';
 import '../../../data/game_repository.dart';
 import '../../seclusion/application/offline_passive_service.dart';
 import '../domain/expedition_rules.dart';
@@ -130,6 +131,19 @@ class ExpeditionTimeline {
         nodeAt: at,
       );
     }
+    for (final member in run.members) {
+      final character = await isar.characters.get(member.characterId);
+      final recoveryAt = character?.recoverySettledAt;
+      if (recoveryAt != null && recoveryAt.isAfter(at)) {
+        throw ExpeditionTimelineConflict.recovery(
+          runId: run.id,
+          nextNode: run.currentNode + 1,
+          characterId: member.characterId,
+          recoveryAt: recoveryAt,
+          nodeAt: at,
+        );
+      }
+    }
     await runZoned(
       () => OfflinePassiveService.settleWithinTxn(isar: isar, now: at),
       zoneValues: {
@@ -163,7 +177,7 @@ class ExpeditionTimeline {
   static Future<PassiveYield?> settlePassiveWindow({
     required Isar isar,
     required DateTime now,
-    required bool recoverInjuries,
+    required bool clearLightInjury,
     required bool updatePresence,
     required bool settleIslandBeforeGrowth,
     ExpeditionService? service,
@@ -174,7 +188,7 @@ class ExpeditionTimeline {
       () => OfflinePassiveService.settleWithinTxn(
         isar: isar,
         now: now,
-        recoverInjuries: recoverInjuries,
+        clearLightInjury: clearLightInjury,
         updatePresence: updatePresence,
         consumeRecap: updatePresence,
         settleIslandBeforeGrowth: settleIslandBeforeGrowth,
@@ -218,13 +232,27 @@ class ExpeditionTimelineConflict implements Exception {
     required this.nextNode,
     required this.passiveAt,
     required this.nodeAt,
-  });
+  }) : characterId = null,
+       recoveryAt = null;
+
+  const ExpeditionTimelineConflict.recovery({
+    required this.runId,
+    required this.nextNode,
+    required this.characterId,
+    required this.recoveryAt,
+    required this.nodeAt,
+  }) : passiveAt = null;
+
   final int runId;
   final int nextNode;
-  final DateTime passiveAt;
+  final DateTime? passiveAt;
+  final int? characterId;
+  final DateTime? recoveryAt;
   final DateTime nodeAt;
   @override
-  String toString() =>
-      'ExpeditionTimelineConflict(run: $runId, node: $nextNode, '
-      'passive: $passiveAt, nodeAt: $nodeAt)';
+  String toString() => recoveryAt == null
+      ? 'ExpeditionTimelineConflict(run: $runId, node: $nextNode, '
+            'passive: $passiveAt, nodeAt: $nodeAt)'
+      : 'ExpeditionTimelineConflict(run: $runId, node: $nextNode, '
+            'character: $characterId, recovery: $recoveryAt, nodeAt: $nodeAt)';
 }

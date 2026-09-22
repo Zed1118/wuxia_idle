@@ -277,7 +277,7 @@ void main() {
       await OfflinePassiveService.settleWindow(
         isar: IsarSetup.instance,
         now: DateTime(2026, 6, 15, 11),
-        recoverInjuries: true,
+        clearLightInjury: true,
         updatePresence: true,
       );
       character = (await IsarSetup.instance.characters.get(kCharId))!;

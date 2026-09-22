@@ -3,9 +3,11 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inner_breath_disorder.dart';
+import '../../../core/domain/save_data.dart';
 import '../../../core/domain/technique.dart';
 import '../../../data/numbers_config.dart';
 import '../../activity/application/character_occupancy_service.dart';
+import '../../injury/application/character_recovery_service.dart';
 
 /// 散功结果（phase2_tasks T25）。
 ///
@@ -204,6 +206,7 @@ class DispelService {
     required int expectedMainTechniqueId,
     required int newMainTechniqueId,
     required NumbersConfig n,
+    DateTime? now,
   }) async {
     return isar.writeTxn(() async {
       final occupancy = await CharacterOccupancyService(isar).snapshot();
@@ -230,6 +233,14 @@ class DispelService {
         return const DispelResult(outcome: DispelOutcome.canonicalStateChanged);
       }
 
+      final save = await isar.saveDatas.get(0);
+      CharacterRecoveryService.settleCharacter(
+        character: ch,
+        now: now ?? DateTime.now(),
+        fallbackAnchor: save != null && save.lastOnlineAt != save.createdAt
+            ? save.lastOnlineAt
+            : null,
+      );
       // Isar 反序列化的 int list 可能是 fixed-length typed list；纯函数需要
       // remove/add 辅修槽，先复制为可变列表，仍只作用于本事务 fresh 对象。
       ch.assistTechniqueIds = List<int>.from(ch.assistTechniqueIds);

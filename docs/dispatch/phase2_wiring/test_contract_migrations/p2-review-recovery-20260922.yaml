@@ -1,0 +1,116 @@
+schema_version: 1
+ticket: p2-review-recovery-20260922
+base_sha: 02994529f80953a56172725aa04febbfaf1144da
+head_sha: 本文件随候选提交，外部收据记录 exact SHA
+summary: 修复在线疗养偏差并新增 0.52 时间锚；保留轻伤、资源归属和历史迁移守卫。
+
+migrations:
+  # test/data/expedition_milestone_record_migration_test.dart
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.51.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/gauntlet_run_serial_migration_test.dart
+  - deleted: expect(save.saveVersion, '0.51.0');
+    replacement: expect(save.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/isar_missing_field_migration_test.dart
+  - deleted: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.51.0');
+    replacement: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/mainline_settlement_journal_migration_test.dart
+  - deleted: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.51.0');
+    replacement: expect((await IsarSetup.instance.saveDatas.get(0))!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/player_yield_migration_test.dart
+  - deleted: expect(save.saveVersion, '0.51.0');
+    replacement: expect(save.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/player_yield_migration_test.dart
+  - deleted: expect(repaired.saveVersion, '0.51.0');
+    replacement: expect(repaired.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/player_yield_migration_test.dart
+  - deleted: expect(save.saveVersion, '0.51.0');
+    replacement: expect(save.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/save_migration_version_gate_test.dart
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.51.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/sect_member_count_repair_test.dart
+  - deleted: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.51.0');
+    replacement: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/sect_member_count_repair_test.dart
+  - deleted: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.51.0');
+    replacement: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/sect_member_count_repair_test.dart
+  - deleted: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.51.0');
+    replacement: expect((await IsarSetup.currentSaveData())!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/data/tower_personal_record_migration_test.dart
+  - deleted: expect(IsarSetup.currentSaveVersion, '0.51.0');
+    replacement: expect(IsarSetup.currentSaveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: test(
+    replacement: 前台心跳按真实时间疗养，返回仅额外清轻伤
+    reason: 原标题锁定前台不疗养的已确认缺陷；新测试同时校验前台两小时与返回额外一小时的连续恢复。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.experience, 6);
+    replacement: expect(character.experience, 6);
+    reason: 测试标题修改后格式化缩进导致 diff 记为删除；资源收益或轻伤断言原样保留。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.lightInjuryStacks, 3);
+    replacement: expect(character.lightInjuryStacks, 3);
+    reason: 测试标题修改后格式化缩进导致 diff 记为删除；资源收益或轻伤断言原样保留。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.injuryHoursRemaining, 8);
+    replacement: expect(character.injuryHoursRemaining, 6);
+    reason: 初始重伤 8 小时，前台真实经过 2 小时应剩 6 小时，纠正旧缺陷断言。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.innerBreathDisorderHoursRemaining, 6);
+    replacement: expect(character.innerBreathDisorderHoursRemaining, 4);
+    reason: 初始紊乱 6 小时，前台真实经过 2 小时应剩 4 小时，纠正旧缺陷断言。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.experience, 9);
+    replacement: expect(character.experience, 9);
+    reason: 测试标题修改后格式化缩进导致 diff 记为删除；资源收益或轻伤断言原样保留。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.lightInjuryStacks, 0);
+    replacement: expect(character.lightInjuryStacks, 0);
+    reason: 测试标题修改后格式化缩进导致 diff 记为删除；资源收益或轻伤断言原样保留。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.injuryHoursRemaining, 7);
+    replacement: expect(character.injuryHoursRemaining, 5);
+    reason: 前台两小时再离线一小时合计恢复三小时，初始重伤 8 小时应剩 5 小时。
+
+  # test/features/seclusion/application/online_presence_controller_test.dart
+  - deleted: expect(character.innerBreathDisorderHoursRemaining, 5);
+    replacement: expect(character.innerBreathDisorderHoursRemaining, 3);
+    reason: 前台两小时再离线一小时合计恢复三小时，初始紊乱 6 小时应剩 3 小时。
+
+  # test/features/tower/presentation/tower_historical_tombstone_settlement_test.dart
+  - deleted: expect((await isar.saveDatas.get(0))!.saveVersion, '0.51.0');
+    replacement: expect((await isar.saveDatas.get(0))!.saveVersion, '0.52.0');
+    reason: 新增逐角色疗养时间锚迁移；当前版本断言随 0.52 更新，旧版本输入与既有字段守卫保留。

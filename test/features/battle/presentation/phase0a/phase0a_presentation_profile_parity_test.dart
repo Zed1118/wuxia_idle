@@ -108,6 +108,7 @@ class _GauntletPlanFixture extends GauntletService {
   @override
   Future<Phase0aGauntletStagePlan> preparePhase0aStage({
     required BossGauntletConfig config,
+    DateTime? now,
   }) async => plan;
 }
 
@@ -121,6 +122,7 @@ class _MilestonePlanFixture extends ExpeditionService {
   @override
   Future<ExpeditionManualMilestonePlan> prepareManualMilestone({
     required ActivityParticipationRequest request,
+    DateTime? now,
   }) async {
     expect(request.contentId, '${plan.routeId}:${plan.milestoneId}');
     expect(request.characterId, plan.playerSnapshot.characterId);

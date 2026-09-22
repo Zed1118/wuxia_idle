@@ -9,13 +9,16 @@ import '../../../core/application/character_providers.dart';
 import '../../../core/application/inventory_providers.dart';
 import '../../../core/domain/enums.dart';
 import '../../../data/isar_setup.dart';
+import '../../boss_gauntlet/application/gauntlet_providers.dart';
 import '../../expedition/application/expedition_providers.dart';
+import '../../light_foot/application/light_foot_participant_service.dart';
+import '../../mass_battle/application/mass_battle_participant_service.dart';
+import '../../tower/application/tower_providers.dart';
 import 'offline_passive_service.dart';
 
 /// Keeps lifecycle presence separate from the persistent passive reward ledger.
 /// Foreground heartbeats accrue the same configured rewards as a closed app.
-/// Only startup/return settlement performs the established offline injury
-/// recovery; a heartbeat or reward boundary never clears battle injuries.
+/// 重伤/紊乱在所有时间边界自然恢复；只有首启/返回保留既有轻伤调息事件。
 final onlinePresenceControllerProvider = Provider<OnlinePresenceController>((
   ref,
 ) {
@@ -26,7 +29,7 @@ final onlinePresenceControllerProvider = Provider<OnlinePresenceController>((
   // 负责 cancel 心跳 Timer:widget 测 ProviderScope 卸载时经此回收,防 pending timer。
   ref.onDispose(controller.dispose);
   return controller;
-});
+}, dependencies: [towerParticipantCandidatesProvider]);
 
 class OnlinePresenceController {
   OnlinePresenceController(
@@ -53,11 +56,10 @@ class OnlinePresenceController {
   @visibleForTesting
   Future<void> get settlementsComplete => _settlements;
 
-  /// Startup/return uses injury recovery. Heartbeats and the first blur pass
-  /// false, preserving the established recovery trigger and presence boundary.
+  /// 首启/返回清轻伤，心跳和首次失焦不清；定时疗养不受该事件参数控制。
   Future<PassiveYield?> settlePassiveWindow({
     DateTime? now,
-    bool recoverInjuries = true,
+    bool clearLightInjury = true,
   }) {
     if (_disposed) return Future<PassiveYield?>.value();
     final isar = IsarSetup.instanceOrNull;
@@ -72,7 +74,7 @@ class OnlinePresenceController {
         return await _settleLocked(
           isar: isar,
           now: at,
-          recoverInjuries: recoverInjuries,
+          clearLightInjury: clearLightInjury,
         );
       } finally {
         _busy = false;
@@ -88,12 +90,12 @@ class OnlinePresenceController {
   Future<PassiveYield?> _settleLocked({
     required Isar isar,
     required DateTime now,
-    required bool recoverInjuries,
+    required bool clearLightInjury,
   }) async {
     final result = await OfflinePassiveService.settleWindow(
       isar: isar,
       now: now,
-      recoverInjuries: recoverInjuries,
+      clearLightInjury: clearLightInjury,
       updatePresence: true,
       expeditionService: _ref.read(expeditionServiceProvider),
     );
@@ -104,6 +106,10 @@ class OnlinePresenceController {
     _ref.invalidate(expeditionCandidatesProvider);
     _ref.invalidate(pendingExpeditionMilestoneProvider);
     _ref.invalidate(expeditionMaxDepthProvider);
+    _ref.invalidate(gauntletCandidatesProvider);
+    _ref.invalidate(towerParticipantCandidatesProvider);
+    _ref.invalidate(lightFootParticipantCandidatesProvider);
+    _ref.invalidate(massBattleParticipantCandidatesProvider);
     _ref.invalidate(characterByIdProvider);
     _ref.invalidate(allInventoryItemsProvider);
     _ref.invalidate(inventoryQuantityByDefIdProvider('item_mojianshi'));
@@ -117,7 +123,7 @@ class OnlinePresenceController {
     _isFocused = true;
     if (!_startupSettleDone) return;
     if (_heartbeat != null) return; // 已在前台,幂等
-    unawaited(_settlePresenceSafe(recoverInjuries: true));
+    unawaited(_settlePresenceSafe(clearLightInjury: true));
     _startHeartbeat();
   }
 
@@ -129,7 +135,7 @@ class OnlinePresenceController {
     _isFocused = false;
     if (!_startupSettleDone || _heartbeat == null) return;
     _stopHeartbeat();
-    unawaited(_settlePresenceSafe(recoverInjuries: false));
+    unawaited(_settlePresenceSafe(clearLightInjury: false));
   }
 
   /// gate 首启结算路径完成后调:开闸,仅前台起心跳。
@@ -149,7 +155,7 @@ class OnlinePresenceController {
     _heartbeat?.cancel();
     _heartbeat = Timer.periodic(_heartbeatInterval, (_) {
       if (_busy) return;
-      unawaited(_settlePresenceSafe(recoverInjuries: false));
+      unawaited(_settlePresenceSafe(clearLightInjury: false));
     });
   }
 
@@ -158,10 +164,10 @@ class OnlinePresenceController {
     _heartbeat = null;
   }
 
-  Future<void> _settlePresenceSafe({required bool recoverInjuries}) async {
+  Future<void> _settlePresenceSafe({required bool clearLightInjury}) async {
     if (_disposed) return;
     try {
-      await settlePassiveWindow(recoverInjuries: recoverInjuries);
+      await settlePassiveWindow(clearLightInjury: clearLightInjury);
     } catch (e, st) {
       // 未 init / 切槽瞬间 → 安全忽略(与原 main._recordOnline catchError 一致)。
       // 若 Isar 已存在仍失败,说明存档写入路径异常,保留诊断线索。

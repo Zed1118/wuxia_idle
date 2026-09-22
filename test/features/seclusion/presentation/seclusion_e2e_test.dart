@@ -129,6 +129,33 @@ void main() {
 
   // ─── e2e #1 ────────────────────────────────────────────────────────────────
 
+  for (final size in [const Size(1280, 720), const Size(1440, 900)]) {
+    testWidgets('闭关被占用拒绝时显示原因并允许重试 $size', (tester) async {
+      final failure = StateError(UiStrings.seclusionCharacterOccupied);
+      final fake = _FakeSeclusionService()..startFactory = () => throw failure;
+      await pumpList(tester, fake: fake);
+      await tester.binding.setSurfaceSize(size);
+      await tester.tap(find.text('山林'));
+      await tester.pumpAndSettle();
+      final start = find.text(UiStrings.seclusionSetupStartButton);
+      await tester.ensureVisible(start);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(UiStrings.seclusionStartFailed(failure)),
+        findsOneWidget,
+      );
+      expect(find.byType(SeclusionSetupScreen), findsOneWidget);
+      expect(find.byType(ActiveRetreatScreen), findsNothing);
+      expect(fake.startCallCount, 1);
+      expect(tester.takeException(), isNull);
+      await tester.tap(start);
+      await tester.pumpAndSettle();
+      expect(fake.startCallCount, 2);
+    });
+  }
+
   testWidgets('e2e: list 点击可入山林 → push SetupScreen', (tester) async {
     final fake = _FakeSeclusionService();
     await pumpList(tester, fake: fake);

@@ -251,51 +251,47 @@ void main() {
       expect(ctl.isHeartbeatActive, isTrue);
     });
 
-    test(
-      'foreground heartbeat grants products without clearing battle injuries',
-      () async {
-        final t0 = DateTime(2026, 7, 7, 10);
-        var now = t0;
-        await IsarSetup.touchOnlineNow(now: t0);
-        await IsarSetup.instance.writeTxn(() async {
-          final character = (await IsarSetup.instance.characters.get(1))!;
-          character.lightInjuryStacks = 3;
-          character.injuryHoursRemaining = 8;
-          character.innerBreathDisorderHoursRemaining = 6;
-          await IsarSetup.instance.characters.put(character);
-        });
-        final ctl = shortBeat(clock: () => now);
-        ctl.markStartupSettleDone();
-        now = t0.add(const Duration(hours: 2));
-        final heartbeatDeadline = DateTime.now().add(
-          const Duration(seconds: 5),
-        );
-        while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
-            DateTime.now().isBefore(heartbeatDeadline)) {
-          await Future<void>.delayed(const Duration(milliseconds: 10));
-        }
-        var character = (await IsarSetup.instance.characters.get(1))!;
-        expect(character.experience, 6);
-        expect(character.lightInjuryStacks, 3);
-        expect(character.injuryHoursRemaining, 8);
-        expect(character.innerBreathDisorderHoursRemaining, 6);
+    test('前台心跳按真实时间疗养，返回仅额外清轻伤', () async {
+      final t0 = DateTime(2026, 7, 7, 10);
+      var now = t0;
+      await IsarSetup.touchOnlineNow(now: t0);
+      await IsarSetup.instance.writeTxn(() async {
+        final character = (await IsarSetup.instance.characters.get(1))!;
+        character.lightInjuryStacks = 3;
+        character.injuryHoursRemaining = 8;
+        character.innerBreathDisorderHoursRemaining = 6;
+        character.recoverySettledAt = t0;
+        await IsarSetup.instance.characters.put(character);
+      });
+      final ctl = shortBeat(clock: () => now);
+      ctl.markStartupSettleDone();
+      now = t0.add(const Duration(hours: 2));
+      final heartbeatDeadline = DateTime.now().add(const Duration(seconds: 5));
+      while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+          DateTime.now().isBefore(heartbeatDeadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      var character = (await IsarSetup.instance.characters.get(1))!;
+      expect(character.experience, 6);
+      expect(character.lightInjuryStacks, 3);
+      expect(character.injuryHoursRemaining, 6);
+      expect(character.innerBreathDisorderHoursRemaining, 4);
 
-        ctl.onAppBlurred();
-        await flushLifecycleWrite(ctl);
-        now = t0.add(const Duration(hours: 3));
-        ctl.onAppFocused();
-        final focusDeadline = DateTime.now().add(const Duration(seconds: 5));
-        while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
-            DateTime.now().isBefore(focusDeadline)) {
-          await Future<void>.delayed(const Duration(milliseconds: 10));
-        }
-        character = (await IsarSetup.instance.characters.get(1))!;
-        expect(character.experience, 9);
-        expect(character.lightInjuryStacks, 0);
-        expect(character.injuryHoursRemaining, 7);
-        expect(character.innerBreathDisorderHoursRemaining, 5);
-      },
-    );
+      ctl.onAppBlurred();
+      await flushLifecycleWrite(ctl);
+      now = t0.add(const Duration(hours: 3));
+      ctl.onAppFocused();
+      final focusDeadline = DateTime.now().add(const Duration(seconds: 5));
+      while ((await IsarSetup.currentSaveData())!.lastOnlineAt != now &&
+          DateTime.now().isBefore(focusDeadline)) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      character = (await IsarSetup.instance.characters.get(1))!;
+      expect(character.experience, 9);
+      expect(character.lightInjuryStacks, 0);
+      expect(character.injuryHoursRemaining, 5);
+      expect(character.innerBreathDisorderHoursRemaining, 3);
+    });
 
     test('disposed controller ignores late lifecycle calls', () async {
       final c = ProviderContainer(

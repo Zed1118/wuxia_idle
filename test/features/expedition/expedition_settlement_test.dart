@@ -210,6 +210,12 @@ void main() {
           ..currentHp = 0
           ..currentQi = 0
           ..isDowned = false;
+        // This helper starts an independent replay from departure, including
+        // the character's clock; retaining a later clock is a real conflict.
+        final character = (await IsarSetup.instance.characters.get(
+          m.characterId,
+        ))!..recoverySettledAt = r.departedAt;
+        await IsarSetup.instance.characters.put(character);
       }
       await IsarSetup.instance.expeditionRuns.put(r);
     });

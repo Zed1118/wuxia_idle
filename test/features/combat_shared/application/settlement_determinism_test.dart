@@ -13,6 +13,7 @@ import 'package:wuxia_idle/core/domain/game_event.dart';
 import 'package:wuxia_idle/core/domain/inventory_item.dart';
 import 'package:wuxia_idle/core/domain/save_data.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
+import 'package:wuxia_idle/core/domain/attribute_effect_policy.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/activity/domain/durable_activity_combat_run.dart';
@@ -39,6 +40,7 @@ import 'package:wuxia_idle/features/pvp/domain/pvp_record.dart';
 import 'package:wuxia_idle/features/pvp/domain/pvp_snapshot.dart';
 import 'package:wuxia_idle/features/reward/domain/reward_claim_receipt.dart';
 import 'package:wuxia_idle/features/seclusion/domain/retreat_session.dart';
+import 'package:wuxia_idle/features/seclusion/application/offline_passive_service.dart';
 import 'package:wuxia_idle/features/sect/domain/sect.dart';
 import 'package:wuxia_idle/features/sect/domain/sect_event.dart';
 import 'package:wuxia_idle/features/tower/application/tower_settlement.dart';
@@ -86,6 +88,21 @@ void main() {
     seed: seed ?? (path == _SettlementPath.towerVictory ? 2 : _seed),
   );
 
+  for (final path in [
+    _SettlementPath.mainlineDefeat,
+    _SettlementPath.towerCombat,
+  ]) {
+    test('$path：结算新伤不能吃到受伤前的时间，之后正常疗养', () async {
+      await _settleInFreshDatabase(
+        repository,
+        path,
+        at: _settlementAt,
+        seed: _seed,
+        verifyTimedRecovery: true,
+      );
+    });
+  }
+
   for (final entry in const {
     _SettlementPath.mainlineVictory: '主线首关胜利含装备延续典故',
     _SettlementPath.mainlineVictoryMilestone: '群战终关胜利含里程碑装备',
@@ -122,6 +139,7 @@ Future<_SettlementFacts> _settleInFreshDatabase(
   _SettlementPath path, {
   required DateTime at,
   required int seed,
+  bool verifyTimedRecovery = false,
 }) async {
   final directory = await Directory.systemTemp.createTemp(
     'settlement_determinism_',
@@ -136,17 +154,20 @@ Future<_SettlementFacts> _settleInFreshDatabase(
     await isar.writeTxn(() async {
       await isar.characters.put(
         Character.create(
-          name: '确定性守卫角色',
-          realmTier: RealmTier.xueTu,
-          realmLayer: RealmLayer.qiMeng,
-          attributes: Attributes(),
-          rarity: RarityTier.biaoZhun,
-          lineageRole: LineageRole.founder,
-          isFounder: true,
-          createdAt: _initialAt,
-          internalForce: 500,
-          mainTechniqueId: path == _SettlementPath.mainlineDefeat ? 1 : null,
-        )..id = 1,
+            name: '确定性守卫角色',
+            realmTier: RealmTier.xueTu,
+            realmLayer: RealmLayer.qiMeng,
+            attributes: Attributes(),
+            rarity: RarityTier.biaoZhun,
+            lineageRole: LineageRole.founder,
+            isFounder: true,
+            createdAt: _initialAt,
+            internalForce: 500,
+            mainTechniqueId: path == _SettlementPath.mainlineDefeat ? 1 : null,
+          )
+          ..id = 1
+          ..recoverySettledAt = _initialAt
+          ..injuryHoursRemaining = verifyTimedRecovery ? 8 : 0,
       );
       if (path == _SettlementPath.mainlineDefeat) {
         await isar.techniques.put(
@@ -299,6 +320,30 @@ Future<_SettlementFacts> _settleInFreshDatabase(
     final save = await isar.saveDatas.get(0);
     expect(save!.lastOnlineAt.isAtSameMomentAs(at), isTrue);
     expect(save.passiveLastSettledAt!.isAtSameMomentAs(at), isTrue);
+    if (verifyTimedRecovery) {
+      final character = (await isar.characters.get(1))!;
+      final freshHours =
+          AttributeEffectPolicy(
+            repository.numbers.attributeEffects,
+          ).heavyInjuryHours(
+            baseHours: repository.numbers.injury.heavyRecoveryHours,
+            constitution: character.attributes.constitution,
+          );
+      expect(
+        character.injuryHoursRemaining,
+        freshHours,
+        reason: '先结清旧伤，再写本场新伤；不能事后减掉之前八小时',
+      );
+      expect(character.recoverySettledAt!.isAtSameMomentAs(at), isTrue);
+      await OfflinePassiveService.settleWindow(
+        isar: isar,
+        now: at.add(const Duration(hours: 1)),
+      );
+      expect(
+        (await isar.characters.get(1))!.injuryHoursRemaining,
+        freshHours - 1,
+      );
+    }
     return (returned: returned, persisted: await _databaseFacts(isar));
   } finally {
     container.dispose();
@@ -531,6 +576,7 @@ Map<String, Object?> _characterFacts(Character value) {
     'founderCreationOriginId': value.founderCreationOriginId,
     'founderCreationFateId': value.founderCreationFateId,
     'createdAt': value.createdAt.toIso8601String(),
+    'recoverySettledAt': value.recoverySettledAt?.toIso8601String(),
   };
   expect(facts.keys.toSet(), {'id', ...CharacterSchema.properties.keys});
   return facts;

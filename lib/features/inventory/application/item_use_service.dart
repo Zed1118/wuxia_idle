@@ -11,6 +11,7 @@ import '../../../data/defs/item_def.dart';
 import '../../../data/defs/realm_def.dart';
 import '../../cultivation/application/character_advancement_service.dart';
 import '../../expedition/application/expedition_timeline.dart';
+import '../../injury/application/character_recovery_service.dart';
 import '../../seclusion/application/offline_passive_service.dart';
 
 /// 材料经济 P2：道具"使用"派发服务。
@@ -32,7 +33,7 @@ class ItemUseService {
     bool Function(RealmTier, RealmLayer)? isLayerLocked,
     DateTime? now,
   }) async {
-    final passiveAt = def.type == ItemType.jingYanDan
+    final passiveAt = def.type == ItemType.jingYanDan || def.hasRecoveryEffect
         ? now ?? DateTime.now()
         : null;
     Future<ItemUseResult> action() => isar.writeTxn(() async {
@@ -105,6 +106,10 @@ class ItemUseService {
 
         default:
           if (def.hasRecoveryEffect) {
+            await CharacterRecoveryService.settleWithinTxn(
+              isar: isar,
+              now: passiveAt!,
+            );
             final target = await _findRecoveryTarget(isar);
             if (target == null) {
               return const ItemUseResult(kind: ItemUseKind.noTarget);

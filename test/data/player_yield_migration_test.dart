@@ -180,7 +180,7 @@ void main() {
   }
 
   test(
-    'legacy fixtures retain every 0.49 property and omit only the new yield fields',
+    'legacy fixtures retain every 0.49 property and omit later yield and recovery fields',
     () {
       expect(LegacyPlayerYieldSaveDataSchema.name, 'SaveData');
       expect(LegacyPlayerYieldCharacterSchema.name, 'Character');
@@ -201,7 +201,7 @@ void main() {
       expect(
         LegacyPlayerYieldCharacterSchema.properties.keys.toSet(),
         CharacterSchema.properties.keys.toSet()
-          ..remove('passiveExperienceRemainder'),
+          ..removeAll({'passiveExperienceRemainder', 'recoverySettledAt'}),
       );
       expect(
         LegacyPlayerYieldIslandBuildingStateSchema.properties.keys.toSet(),
@@ -268,7 +268,7 @@ void main() {
       await IsarSetup.init(directory: directory, inspector: false);
       final isar = IsarSetup.instance;
       final save = (await isar.saveDatas.get(0))!;
-      expect(save.saveVersion, '0.51.0');
+      expect(save.saveVersion, '0.52.0');
       expect(save.passiveLastSettledAt, lastOnlineAt);
       expect(save.passiveMojianshiRemainder, 0);
       expect(save.lastOnlineAt, lastOnlineAt);
@@ -388,7 +388,7 @@ void main() {
         });
         await IsarSetup.init(directory: directory, inspector: false);
         final repaired = (await IsarSetup.currentSaveData())!;
-        expect(repaired.saveVersion, '0.51.0');
+        expect(repaired.saveVersion, '0.52.0');
         expect(
           repaired.islandBuildings.first.productStored(
             good.recipes.first.outputItem,
@@ -438,7 +438,7 @@ void main() {
         await IsarSetup.close();
         await IsarSetup.init(directory: directory, inspector: false);
         final save = (await IsarSetup.currentSaveData())!;
-        expect(save.saveVersion, '0.51.0');
+        expect(save.saveVersion, '0.52.0');
         expect(save.passiveLastSettledAt, anchor);
         expect(save.passiveMojianshiRemainder, 0.375);
         expect(

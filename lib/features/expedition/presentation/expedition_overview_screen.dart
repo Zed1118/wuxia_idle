@@ -619,7 +619,7 @@ class _ActiveViewState extends ConsumerState<_ActiveView> {
       }
       if (resolvedTimelineConflict) {
         final presence = ref.read(onlinePresenceControllerProvider);
-        await presence.settlePassiveWindow(recoverInjuries: false);
+        await presence.settlePassiveWindow(clearLightInjury: false);
         presence.markStartupSettleDone();
         if (!mounted) return;
       }

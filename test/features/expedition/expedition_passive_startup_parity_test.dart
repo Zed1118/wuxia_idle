@@ -306,7 +306,7 @@ void main() {
                   .read(onlinePresenceControllerProvider)
                   .settlePassiveWindow(
                     now: at ?? now,
-                    recoverInjuries: recover,
+                    clearLightInjury: recover,
                   );
               reportedExperience += yield_?.experience ?? 0;
               reportedMojianshi += yield_?.mojianshi ?? 0;

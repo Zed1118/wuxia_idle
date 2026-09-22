@@ -38,6 +38,7 @@ class _FakeDispelService implements DispelService {
     required int expectedMainTechniqueId,
     required int newMainTechniqueId,
     required NumbersConfig n,
+    DateTime? now,
   }) async {
     persistCalls += 1;
     return persistResult;
