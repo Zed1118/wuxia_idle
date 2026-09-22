@@ -74,6 +74,9 @@ EXCLUDE_FILES = {"docs/PATH_MIGRATION_MAP.md",
 ARCHIVAL_DIRS = {"docs/handoff", "docs/sessions", "docs/dispatch",
                  "docs/superpowers", "docs/audit"}
 
+# 带日期文件名=历史快照,引用指向写作当时的仓库状态;2026-09-21 用户拍板扩类。
+ARCHIVAL_DATED_NAME = re.compile(r"\d{4}-\d{2}-\d{2}")
+
 # 反引号路径:必须以这些顶级目录开头(允许 ./ ../ 前缀),才视为路径 token。
 # 与派单 §1.2 一致:docs / lib / test / data / tool / tools / assets。
 # build 仅用于识别文档中明确写出的 gitignored 生成物引用,由 check-ignore
@@ -522,6 +525,11 @@ def make_existence_checker(tracked: set[str]):
 # 主流程
 # --------------------------------------------------------------------------
 
+def _has_archival_dated_name(path: str) -> bool:
+    """只看来源 basename 的短横日期,目录日期与八位无横日期不算。"""
+    return ARCHIVAL_DATED_NAME.search(Path(path).name) is not None
+
+
 def scan():
     tracked_set = set(git_ls_files())
     scan_files = collect_scan_files(tracked_set)
@@ -609,7 +617,8 @@ def scan():
         if ref["target"] in ignored_targets:
             ignored_count += 1
             ignored_rows.append(ref)
-        elif _is_under_any_dir(ref["file"], ARCHIVAL_DIRS):
+        elif (_is_under_any_dir(ref["file"], ARCHIVAL_DIRS)
+              or _has_archival_dated_name(ref["file"])):
             # 归档类:判据是「引用写在哪个文件里」,不是「引用指向哪个路径」。
             # 非归档文档里指向归档目录的死引用仍归 dead。
             archival_rows.append(ref)

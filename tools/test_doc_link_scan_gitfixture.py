@@ -179,6 +179,18 @@ class RealGitVerdictRegressionTest(RealGitFixtureTestCase):
         self.doc("`lib/nope.dart`")
         self.assertEqual(self.verdict(self.repo.scan()), "dead")
 
+    def test_missing_reference_in_tracked_dated_doc_is_archival(self) -> None:
+        """带日期文档真实跟踪并提交后，失效引用经真 git 扫描仍归档。"""
+        self.doc("`lib/gone.dart`", rel="docs/spec/2026-06-18-x-plan.md")
+        self.repo.commit()
+        result = self.repo.scan()
+        self.assertEqual(self.verdict(result), "archival")
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(result["archival"], 1)
+        self.assertEqual(
+            [row["target"] for row in result["archival_rows"]], ["lib/gone.dart"]
+        )
+
     def test_tracked_directory_reference_is_alive(self) -> None:
         """引用一个目录,只要其下有已跟踪文件即算存活。"""
         self.repo.track("lib/features/battle/engine.dart")

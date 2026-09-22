@@ -44,7 +44,7 @@
 >
 > **v1.9 变更**(2026-05-29 · 1.0 路径方向调整 + 5h 挂机 D4 推进):
 > - **用户拍板「先打磨游戏再启 Steam」** → F Steam 段 + G 法律段 **搁置 ship 前 1-2 月**(F1 注册 guide `docs/handoff/m15_f1_*` 已 ready 待启)→ 聚焦 **D 性能 + 数值再平衡** + **H 内容打磨 / UX**(从 nice-to-have 升主聚焦)+ E 部分(E1 SoundManager + E5 BGM 1 套纳入 / E3-E7 ship 前)
-> - **5h 挂机方案 A 单线推 D4**:Batch A0-A5 · `test/tools/balance_simulator_test.dart` PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线 · 起床用户拍)+ R5 测族保护 + handoff
+> - **5h 挂机方案 A 单线推 D4**:Batch A0-A5 · test/tools/balance_simulator_test.dart（已随路线 C ca548a3a7 移除） PoC + 30 关全路径 1500 跑 + 难度曲线 csv + numbers tune 候选 diff(不上线 · 起床用户拍)+ R5 测族保护 + handoff
 > - **CHECKLIST v1.9** + **H spec 起草** + Q1-Q4 默认决议入档
 > - 1.0 整体 ~96% 维持(本批不改完成度,只改路径优先级 · D 段 0% → ~10-15% 视 D4 PoC 实际产出)
 
@@ -162,7 +162,7 @@
   - `BattleStrategy` 抽象基类(3 method 粗粒度)+ `DefaultGroundStrategy`(地面 3v3 实装,11 method 搬迁公式零变化)
   - `BattleEngine` 改 facade(467 → 50 行)委派 const DefaultGroundStrategy()
   - `BattleNotifier` 接 strategy injection(_strategy instance field + startBattle 可选参数)
-  - e2e 红线压测 `test/balance/battle_strategy_e2e_test.dart` 333 行 55 case(主线 15 + 爬塔 30 + 心法相生 5 + backwards compat 5,单文件 ~3s 全过)
+  - e2e 红线压测 test/balance/battle_strategy_e2e_test.dart（已随路线 C ca548a3a7 移除） 333 行 55 case(主线 15 + 爬塔 30 + 心法相生 5 + backwards compat 5,单文件 ~3s 全过)
 - **commit 链(4 commit 全 push)**:`6748582` [arch] Phase 1 → `456349b` [refactor] Phase 2 → `14d62b1` [refactor] Phase 3 → `68a6365` [test] Phase 4
 - **校正记录**:闭关地图实测 0 战斗(spec §2.4 reality check 修正原 R4 prompt "5 闭关地图战斗"误解)
 - **阻塞解除**:P3 §12.3 特殊战斗形态(轻功 / 群战)扩展时 implements BattleStrategy + startBattle 传自定义实装即可 plug-in,生产 4 callsite 不必改

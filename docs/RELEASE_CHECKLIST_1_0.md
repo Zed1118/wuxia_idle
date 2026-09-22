@@ -107,7 +107,7 @@
 - [x] **R4 声望面板**(1/1)
 - 4.2 门派持久:NOT_APPLICABLE(clean seed 无招募数据 · R2 已验证持久化)
 
-> R3 派单 `docs/handoff/codex_dispatch_r3_consolidated_visual_check_2026-05-28.md` · 16 截图归档 `docs/handoff/r3_visual_check_screenshots/` · closeout `docs/handoff/pen_visual_verify_r3_consolidated_2026-05-28.md`
+> R3 派单 `docs/handoff/codex_dispatch_r3_consolidated_visual_check_2026-05-28.md` · 16 截图归档 docs/handoff/r3_visual_check_screenshots/（证据图不入库，从未跟踪） · closeout `docs/handoff/pen_visual_verify_r3_consolidated_2026-05-28.md`
 
 ### C.4 R4 P2.1 内容扩充 + 装备 drop 验收(✅ 12/12 PASS 2026-05-28)
 

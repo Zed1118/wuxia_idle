@@ -50,7 +50,7 @@
 ### 0.5.3 真正的工作量在哪
 
 - **不在写渲染逻辑**（头像/背景/动效脚手架已在），**在美术资产 + 动效打磨 + 组件抽取**。
-- `assets/scenes/`（场景插画）和 `assets/techniques/`（心法图）是 **0 文件**——纯 greenfield 美术产出，成本最高。
+- `assets/scenes/`（场景插画）和 assets/techniques/（心法图目录，7 张零引用 cover 已于 d3cde5a33 清理，目录现不存在）是 **0 文件**——纯 greenfield 美术产出，成本最高。
 - characters(3) / enemies(22) / maps(5) / equipment(icon~81 + detail 35) 有底子，可复用起步。
 - "补头像"的真实动作 = 给角色/敌人填 `iconPath` + 出图，渲染代码已就绪。
 
@@ -245,7 +245,7 @@
 - `assets/maps/`：5 张闭关地图。
 - `assets/ui/`：纸纹、山景、印章、卷轴、图标、分隔线等 UI 资源。
 - `assets/scenes/`：目录存在，但实际场景插画仍是空白方向。
-- `assets/techniques/`：目录存在，但心法图尚未形成体系。
+- assets/techniques/：目录已于 d3cde5a33 随零引用 cover 清理移除，心法图尚未形成体系。
 
 ### 4.2 已有资产的价值
 
