@@ -100,7 +100,7 @@ void main() {
       profileId: 'wuSheng_endurance_production_basic',
       seed: 20260912,
       steps: 1200,
-      expectedRoute: 'legacy_tower',
+      expectedRoute: 'typed_tower',
       expectedOutcome: Phase0aBattleOutcome.defeat,
       fixtureName: 'tower_32_vulnerability',
       exerciseVulnerability: true,
