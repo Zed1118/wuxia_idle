@@ -1,6 +1,6 @@
 # 派单 G：断魂庄冷却检查点与在庄禁装卸恢复点
 
-- 状态：`READY`；实质生产实现及完整自动验证通过，待 commit 后三向证红与包装。
+- 状态：`READY`；实质生产实现、完整自动验证及 commit 后三向证红均完成。
 - 日期：2026-09-22。目标：落实已批准 S1 秒制跨关冷却、S2 在庄禁手动装卸，存档升至 `0.51.0`。
 - worktree：`/Users/a10506/Codex/2026-09-22/gauntlet-cooldown-checkpoint/wt`。
 - 分支：`codex/gauntlet-cooldown-checkpoint-20260922`。
@@ -12,7 +12,7 @@
 ## 当前恢复点
 
 - 已完成：测试先行 RED、生产 patch、纯加法 schema 与版本戳、版本断言订正、parity 零删除补强、S2 两界面按成员灰显、中文化新增注释、逐文件定向、analyze/format。
-- 当前恢复步骤：创建实质 S′，再三向证红并逐组精确还原重跑，最后仅收据与本恢复点包装 R′（`R′^ == S′`）。
+- 实质候选 S′：`81ed8253995c03d8653aa0af49ae366197ef34f3`。三向证红完成后仅收据与本恢复点包装 R′；以 `git rev-parse HEAD` 取得 R′，其父提交必须等于 S′。
 - 当前无范围阻塞；不得将当前状态冒充协调者 Gate 或真人验收。
 
 ## 前次阻塞解除与静态复核原文
@@ -91,7 +91,15 @@ G-续已明确授权 `isar_missing_field_migration_test.dart:63` 与 `reward_cla
 - `flutter analyze --no-pub lib test tool` → `No issues found! (ran in 20.4s)`。
 - `NO_COLOR=1 dart format --output=none --set-exit-if-changed .` → `Formatted 1871 files (0 changed) in 5.07 seconds.`
 - 前台全量 `flutter test --no-pub` → `08:35 +7080: All tests passed!`，退出码 0，`[E]` 块数 0；墙钟 517 秒。完整日志 `../full_test.log`，起止/退出证据 `../logs/full.start`、`full.end`、`full.exit`。
-- 三向破坏证红：待 S′ 后执行，脚本 `../logs/run_mutations.py` 精确备份还原，不使用 stash/checkout/revert。
+- 三向破坏证红：S′ 提交后执行，脚本 `../logs/run_mutations.py`；每组原文件逐字节备份还原并与 S′ 对照，源码零残留。日志汇总 `../logs/mutations.json`。
+
+| 方向 | 红末行 | 还原绿末行 |
+| --- | --- | --- |
+| 摘掉关末秒制检查点写入 | `00:01 +3 -3: Some tests failed.` | `00:01 +6: All tests passed!` |
+| 将关末 phase0aCooldownsRecorded 写死 false | `00:01 +3 -3: Some tests failed.` | `00:01 +6: All tests passed!` |
+| 摘掉技能槽服务统一占用读取 | `00:07 +20 -8: Some tests failed.` | `00:07 +28: All tests passed!` |
+
+第二向兼容夹具仍绿：`00:00 +4: All tests passed!`。
 
 ## 范围核对与残留验收
 

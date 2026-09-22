@@ -1,86 +1,217 @@
 schema_version: 1
-status: "BLOCKED"
-base_sha: "5e032cb8a8de76069ea382f615e92aa70a2fec9d"
-head_sha: "992da9bf147ae01508539ea71a47123af964940c"
-head_kind: "仅阻塞恢复点，无实质实现"
+status: READY
+base_sha: 5e032cb8a8de76069ea382f615e92aa70a2fec9d
+head_sha: 81ed8253995c03d8653aa0af49ae366197ef34f3
+head_kind: S′ 实质 schema/生产/测试候选；包装 R′ 直接父提交为该 SHA
 changed_files:
-  - "docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md"
-full_test_last_line: null
-error_block_count: null
-analyze_last_line: null
-format_last_line: null
-validation_status: "未运行；落 patch 前命中派单白名单硬阻塞，空值不表示通过"
+- build.yaml
+- docs/dispatch/reports/2026-09-22_codex_G_receipt.yaml
+- docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md
+- lib/data/isar_setup.dart
+- lib/features/activity/domain/activity_member_snapshot.dart
+- lib/features/battle/application/phase0a/phase0a_stage_content_mapper.dart
+- lib/features/boss_gauntlet/application/gauntlet_controller.dart
+- lib/features/boss_gauntlet/application/gauntlet_providers.dart
+- lib/features/boss_gauntlet/application/gauntlet_service.dart
+- lib/features/boss_gauntlet/application/phase0a_gauntlet_stage_runner.dart
+- lib/features/cangjingge/presentation/cangjingge_screen.dart
+- lib/features/character_panel/presentation/encounter_skill_section.dart
+- lib/features/cultivation/application/skill_loadout_service.dart
+- lib/features/encounter/application/encounter_service.dart
+- lib/shared/battle_shared/combatant_snapshot.dart
+- test/data/expedition_milestone_record_migration_test.dart
+- test/data/gauntlet_cooldown_compatibility_test.dart
+- test/data/gauntlet_run_serial_migration_test.dart
+- test/data/isar_missing_field_migration_test.dart
+- test/data/isar_slot_open_error_test.dart
+- test/data/mainline_settlement_journal_migration_test.dart
+- test/data/player_yield_migration_test.dart
+- test/data/progressive_unlock_migration_test.dart
+- test/data/reward_claim_receipt_migration_test.dart
+- test/data/save_migration_version_gate_test.dart
+- test/data/sect_member_count_repair_test.dart
+- test/data/tower_personal_record_migration_test.dart
+- test/features/activity/activity_member_snapshot_test.dart
+- test/features/battle/application/phase0a/phase0a_stage_content_mapper_test.dart
+- test/features/boss_gauntlet/gauntlet_live_headless_parity_test.dart
+- test/features/boss_gauntlet/gauntlet_providers_test.dart
+- test/features/boss_gauntlet/gauntlet_skill_loadout_occupancy_test.dart
+- test/features/boss_gauntlet/phase0a_gauntlet_cooldown_checkpoint_test.dart
+- test/features/tower/presentation/tower_historical_tombstone_settlement_test.dart
+- test/fixtures/legacy_gauntlet_cooldown.dart
+- test/shared/battle_shared/combatant_snapshot_test.dart
+- test/support/phase0a_production_headless_benchmark.dart
+full_test_last_line: '08:35 +7080: All tests passed!'
+error_block_count: 0
+full_test_exit_code: 0
+full_test_wall_seconds: 517
+full_test_log: /Users/a10506/Codex/2026-09-22/gauntlet-cooldown-checkpoint/full_test.log
+analyze_last_line: No issues found! (ran in 20.4s)
+format_last_line: Formatted 1871 files (0 changed) in 5.07 seconds.
+validation_status: 62 个定向入口、540 例全部通过；全量、analyze、format、三向破坏证红与逐组还原复绿均通过
+targeted:
+  command: flutter test --no-pub <file>（逐文件）
+  file_count: 62
+  test_count: 540
+  manifest: ../logs/targeted_files.json
+  results: ../logs/targeted_results.json
+  occupancy_last_line: '00:09 +28: All tests passed!'
+  occupancy_log: ../logs/ui-occupancy-targeted.log
 break_red:
-  - direction: "remove_implementation"
-    mutation: "摘掉 GauntletController 关末写检查点"
-    attempted: false
-    failed_count: null
-    last_line: null
-    restored_green_last_line: null
-    conclusion: "未运行：尚未落实现"
-  - direction: "force_degenerate_value"
-    mutation: "将 phase0aCooldownsRecorded 写死为 false"
-    attempted: false
-    failed_count: null
-    last_line: null
-    compatibility_last_line: null
-    restored_green_last_line: null
-    conclusion: "未运行：尚未落实现"
-  - direction: "remove_implementation"
-    mutation: "摘掉 SkillLoadoutService 的占用读取"
-    attempted: false
-    failed_count: null
-    last_line: null
-    restored_green_last_line: null
-    conclusion: "未运行：尚未落实现"
-blockers:
-  - kind: "白名单缺少当前版本断言文件"
-    evidence:
-      - "test/data/isar_missing_field_migration_test.dart:63"
-      - "test/data/reward_claim_receipt_migration_test.dart:131"
-      - "test/data/reward_claim_receipt_migration_test.dart:185"
-      - "test/data/reward_claim_receipt_migration_test.dart:257"
-    reason: "均在迁移后断言当前存档版本为 0.50.0；isar_setup.dart:708 统一写入新当前版本，升至 0.51.0 必须同步四处断言，但两个文件均不在白名单"
-    required_resolution: "将两个文件加入白名单，仅允许这四处当前版本字面量替换，历史夹具与中间版本不动"
-    evidence_kind: "源码核对，未声称已运行失败测试"
-  - kind: "旧 schema 夹具生成口径冲突"
-    evidence:
-      - "build.yaml:10-19 的生成白名单为 include"
-      - "输入 patch 将 legacy_gauntlet_cooldown.dart 加入 include"
-      - "新夹具第 3 行引用 legacy_gauntlet_cooldown.g.dart，输入未提供生成物"
-    required_resolution: "确认按 patch 加入生成列表；严格排除无法满足夹具生成前置"
+- direction: remove_implementation
+  mutation: 摘掉关末秒制检查点写入
+  file: lib/features/boss_gauntlet/application/gauntlet_controller.dart
+  attempted: true
+  failed_count: 3
+  last_line: '00:01 +3 -3: Some tests failed.'
+  error_block_count: 3
+  restored_green_last_line: '00:01 +6: All tests passed!'
+  restored_sha256: aefacb8dbe9d509ed1f6d004d9218ec0e9f0334715a3c18973d0f3c672d8dfa1
+  red_log: ../logs/mutation_1_red.log
+  restored_green_log: ../logs/mutation_1_restored.log
+- direction: force_degenerate_value
+  mutation: 将关末 phase0aCooldownsRecorded 写死 false
+  file: lib/features/boss_gauntlet/application/gauntlet_controller.dart
+  attempted: true
+  failed_count: 3
+  last_line: '00:01 +3 -3: Some tests failed.'
+  error_block_count: 3
+  restored_green_last_line: '00:01 +6: All tests passed!'
+  restored_sha256: aefacb8dbe9d509ed1f6d004d9218ec0e9f0334715a3c18973d0f3c672d8dfa1
+  red_log: ../logs/mutation_2_red.log
+  restored_green_log: ../logs/mutation_2_restored.log
+  compatibility_last_line: '00:00 +4: All tests passed!'
+  compatibility_log: ../logs/mutation_2_compatibility.log
+- direction: remove_implementation
+  mutation: 摘掉技能槽服务统一占用读取
+  file: lib/features/cultivation/application/skill_loadout_service.dart
+  attempted: true
+  failed_count: 8
+  last_line: '00:07 +20 -8: Some tests failed.'
+  error_block_count: 8
+  restored_green_last_line: '00:07 +28: All tests passed!'
+  restored_sha256: 7ff17e2fd6e16d4d6f40a215e9b5fd8a74fa9f2674d965fb89c9a19bf5c20cc7
+  red_log: ../logs/mutation_3_red.log
+  restored_green_log: ../logs/mutation_3_restored.log
+blockers: []
 input_verification:
-  patch_sha256: "2dce6a195d7ff0a7a4425527a14ac8bc275e0548ed371736da72b7a809565b87"
-  patch_applied: false
-  new_files_copied: false
+  patch_sha256: 2dce6a195d7ff0a7a4425527a14ac8bc275e0548ed371736da72b7a809565b87
+  patch_applied: true
+  new_files_copied: true
   original_patch_file_count: 20
   excluded_patch_paths:
-    - "lib/shared/strings.dart"
-    - "test/tools/compare_phase0a_headless_baseline_test.dart"
+  - lib/shared/strings.dart
+  - test/tools/compare_phase0a_headless_baseline_test.dart
   filtered_patch_file_count: 18
   input_new_file_count: 4
+  parity_handling: 保留全部旧行，以纯追加独立场景代替 patch 的重写段；最终 +121/-0
+  build_handling: 旧 schema 夹具加入 generate_for.include，.g.dart 生成且不入库
 initial_red:
-  status: "未运行"
-  failed_count: null
-  last_line: null
+  status: 先落测试与夹具并生成，lib 基线无实现时三入口全部红
+  kind: 新增接口不存在导致加载失败；非生成前置失败
+  results:
+  - file: test/features/boss_gauntlet/phase0a_gauntlet_cooldown_checkpoint_test.dart
+    exit: 1
+    last_line: '00:00 +0 -1: Some tests failed.'
+    error_blocks: 1
+    log: ../logs/red_phase0a_gauntlet_cooldown_checkpoint_test.log
+  - file: test/features/boss_gauntlet/gauntlet_skill_loadout_occupancy_test.dart
+    exit: 1
+    last_line: '00:00 +0 -1: Some tests failed.'
+    error_blocks: 1
+    log: ../logs/red_gauntlet_skill_loadout_occupancy_test.log
+  - file: test/data/gauntlet_cooldown_compatibility_test.dart
+    exit: 1
+    last_line: '00:00 +0 -1: Some tests failed.'
+    error_blocks: 1
+    log: ../logs/red_gauntlet_cooldown_compatibility_test.log
 static_review_findings:
-  - "UI 目前只有操作被拒后提示；续作需补灰显及预置文案"
-  - "输入 parity 测试有 74 删除行；续作须保留原测试行，以追加覆盖替代重写"
-  - "新增英文注释需转为简体中文"
-save_version_assertion_changes: []
+- 前次静态复核原文保留在恢复点
+- S2 已补实际成员灰显与预置文案；loading/error fail closed
+- parity 旧循环与旧断言全保留
+- 新增注释已改简体中文；applyAutoFill 不拦
+save_version_assertion_changes:
+- file: test/data/expedition_milestone_record_migration_test.dart
+  line: 33
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/expedition_milestone_record_migration_test.dart
+  line: 51
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/gauntlet_run_serial_migration_test.dart
+  line: 65
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/isar_missing_field_migration_test.dart
+  line: 63
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/isar_slot_open_error_test.dart
+  line: 52
+  reason: 受支持的当前版本字面量
+- file: test/data/mainline_settlement_journal_migration_test.dart
+  line: 41
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/player_yield_migration_test.dart
+  line: 271
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/player_yield_migration_test.dart
+  line: 391
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/player_yield_migration_test.dart
+  line: 441
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/progressive_unlock_migration_test.dart
+  line: 41
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/reward_claim_receipt_migration_test.dart
+  line: 131
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/reward_claim_receipt_migration_test.dart
+  line: 185
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/reward_claim_receipt_migration_test.dart
+  line: 257
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/save_migration_version_gate_test.dart
+  line: 253
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/sect_member_count_repair_test.dart
+  line: 175
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/sect_member_count_repair_test.dart
+  line: 410
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/sect_member_count_repair_test.dart
+  line: 423
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/tower_personal_record_migration_test.dart
+  line: 40
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/data/tower_personal_record_migration_test.dart
+  line: 78
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+- file: test/features/tower/presentation/tower_historical_tombstone_settlement_test.dart
+  line: 281
+  reason: 迁移完成后的当前版本或当前版本 getter 断言；历史起始版本不动
+whitelist_additions: []
 three_way_conflicts: []
 audit_verification:
-  kind: "基线、输入摘要、源码上下文与 Git 差异静态核对"
-  initial_head_matches_base: true
+  initial_head: 000672178
   initial_worktree_clean: true
+  allowed_path_count: 37
+  changed_path_count: 37
+  whitelist_outside_paths: []
   diff_check_exit: 0
-  code_changes: false
   test_deletions: 0
+  version_literal_replacements: 20
+  parity_added_lines: 121
+  parity_deleted_lines: 0
   generated_files_committed: false
+  mutation_restoration: 每组逐字节还原并与 git show S′:file 比较，重跑对应测试全绿，最终生产树与 S′ 一致
 acceptance:
-  implementation: "未开始"
-  automated_tests: "未运行"
-  human_device_once: "真机一次未做，未启动游戏 GUI"
-  coordinator_gate: "未运行，不具备 READY 条件"
-  integration: "未合并、未推送"
-recovery_document: "docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md"
+  implementation: S1/S2 与纯加法 0.51.0 已连接真实生产路径
+  automated_tests: 全量与定向通过
+  ui_widgets: 两界面 1280×720/1440×900 成员灰显提示与非成员可用；初始 loading/error；回调/focus/语义验证通过
+  refresh_with_previous_value: 显式 isLoading/hasError 静态核对，未声称独立动态覆盖
+  human_device_once: 未做；按派单不启动游戏 GUI，不触碰真实存档
+  coordinator_gate: 待协调者对 S′/R′ 运行正式 Gate
+  integration: 未合并、未推送；main CI、Windows、真人验收另行挂账
+recovery_document: docs/superpowers/plans/2026-09-22-codex-g-gauntlet-cooldown-checkpoint.md
