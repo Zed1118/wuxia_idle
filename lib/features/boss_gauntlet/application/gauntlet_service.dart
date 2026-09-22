@@ -821,10 +821,13 @@ class GauntletService {
         currentHp: member.currentHp,
         maxQi: member.maxQi,
         currentQi: member.currentQi,
-        openingSkillCooldowns: {
-          for (var i = 0; i < member.skillCooldownKeys.length; i++)
-            member.skillCooldownKeys[i]: member.skillCooldownTurns[i],
-        },
+        openingSkillCooldowns: member.phase0aCooldownsRecorded
+            ? const {}
+            : {
+                for (var i = 0; i < member.skillCooldownKeys.length; i++)
+                  member.skillCooldownKeys[i]: member.skillCooldownTurns[i],
+              },
+        openingSlotCooldownSeconds: member.phase0aCooldownSnapshot(),
       );
     }
     return (
@@ -1517,7 +1520,10 @@ class GauntletService {
         ..maxHp = source.maxHp
         ..maxQi = source.maxQi
         ..skillCooldownKeys = List.of(source.skillCooldownKeys)
-        ..skillCooldownTurns = List.of(source.skillCooldownTurns);
+        ..skillCooldownTurns = List.of(source.skillCooldownTurns)
+        ..phase0aCooldownsRecorded = source.phase0aCooldownsRecorded
+        ..phase0aCooldownKeys = List.of(source.phase0aCooldownKeys)
+        ..phase0aCooldownSeconds = List.of(source.phase0aCooldownSeconds);
 
   static bool _sameIds(List<int> left, List<int> right) {
     if (left.length != right.length) return false;

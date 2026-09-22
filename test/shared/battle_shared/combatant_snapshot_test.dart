@@ -22,6 +22,7 @@ CombatantSnapshot fixture({
   required List<List<SkillDef>> unlocks,
   List<BossPhaseDef>? phases,
   WeaponArchetype? weaponArchetype,
+  Map<String, double> openingSlotCooldownSeconds = const {},
 }) => CombatantSnapshot(
   characterId: -1,
   name: 'enemy',
@@ -45,6 +46,7 @@ CombatantSnapshot fixture({
   weaponArchetype: weaponArchetype,
   availableSkills: skills,
   openingSkillCooldowns: {'x': 1},
+  openingSlotCooldownSeconds: openingSlotCooldownSeconds,
   skillUses: {'x': 2},
   activeBuffs: ['b'],
   swordSongResonanceActive: false,
@@ -67,6 +69,66 @@ CombatantSnapshot fixture({
 );
 
 void main() {
+  test('秒制开场冷却复制来源 Map 且不与旧回合冷却混用', () {
+    final source = <String, double>{
+      'phase0a_skill_1': 1.1,
+      'phase0a_skill_2': 2.8,
+    };
+    final snapshot = fixture(
+      skills: [skill('a')],
+      unlocks: const [],
+      openingSlotCooldownSeconds: source,
+    );
+    source
+      ..['phase0a_skill_1'] = 99
+      ..remove('phase0a_skill_2')
+      ..['later'] = 3;
+
+    expect(snapshot.openingSlotCooldownSeconds, {
+      'phase0a_skill_1': 1.1,
+      'phase0a_skill_2': 2.8,
+    });
+    expect(snapshot.openingSkillCooldowns, {'x': 1});
+    expect(
+      () => snapshot.openingSlotCooldownSeconds['phase0a_skill_1'] = 0,
+      throwsUnsupportedError,
+    );
+    expect(snapshot.openingSlotCooldownSeconds.clear, throwsUnsupportedError);
+  });
+
+  test('copyWith 保留、替换及显式清空秒制冷却且各快照独立不可变', () {
+    final original = fixture(
+      skills: [skill('a')],
+      unlocks: const [],
+      openingSlotCooldownSeconds: {'phase0a_skill_1': 1.1},
+    );
+    final continued = original.copyWith(currentHp: 41, currentQi: 7);
+    final replacement = <String, double>{'phase0a_skill_2': 0.125};
+    final replaced = continued.copyWith(
+      openingSlotCooldownSeconds: replacement,
+    );
+    final cleared = continued.copyWith(openingSlotCooldownSeconds: const {});
+    replacement['phase0a_skill_2'] = 17;
+
+    expect(original.openingSlotCooldownSeconds, {'phase0a_skill_1': 1.1});
+    expect(continued.openingSlotCooldownSeconds, {'phase0a_skill_1': 1.1});
+    expect(replaced.openingSlotCooldownSeconds, {'phase0a_skill_2': 0.125});
+    expect(cleared.openingSlotCooldownSeconds, isEmpty);
+    for (final snapshot in [continued, replaced, cleared]) {
+      expect(snapshot.currentHp, 41);
+      expect(snapshot.currentQi, 7);
+      expect(snapshot.maxHp, original.maxHp);
+      expect(snapshot.maxQi, original.maxQi);
+      expect(snapshot.openingSkillCooldowns, original.openingSkillCooldowns);
+      expect(
+        () => snapshot.openingSlotCooldownSeconds['mutated'] = 2,
+        throwsUnsupportedError,
+      );
+    }
+    expect(original.currentHp, 100);
+    expect(original.currentQi, 20);
+  });
+
   test('copyWith 可独立续传当前生命与真气且保留上限', () {
     final original = fixture(
       skills: [skill('a')],

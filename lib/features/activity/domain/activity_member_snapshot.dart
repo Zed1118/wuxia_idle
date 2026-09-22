@@ -34,4 +34,38 @@ class ActivityMemberSnapshot {
 
   /// 对应剩余冷却回合数（与 [skillCooldownKeys] 平行同序）。
   List<int> skillCooldownTurns = [];
+
+  /// A recorded empty seconds checkpoint overrides any retained legacy turns.
+  /// Missing old-schema bool/list fields read false/empty; legacy values remain
+  /// separate and are never reinterpreted as seconds.
+  bool phase0aCooldownsRecorded = false;
+  List<String> phase0aCooldownKeys = [];
+  List<double> phase0aCooldownSeconds = [];
+
+  /// Keys identify fixed runtime slots. Two slots with the same skill keep
+  /// independent cooldowns; active gauntlet slots cannot be manually changed.
+  Map<String, double> phase0aCooldownSnapshot() {
+    if (!phase0aCooldownsRecorded) {
+      if (phase0aCooldownKeys.isNotEmpty || phase0aCooldownSeconds.isNotEmpty) {
+        throw StateError('Unmarked Phase0a cooldown checkpoint');
+      }
+      return const {};
+    }
+    if (phase0aCooldownKeys.length != phase0aCooldownSeconds.length) {
+      throw StateError('Phase0a cooldown checkpoint lengths differ');
+    }
+    final result = <String, double>{};
+    for (var i = 0; i < phase0aCooldownKeys.length; i++) {
+      final key = phase0aCooldownKeys[i];
+      final seconds = phase0aCooldownSeconds[i];
+      if (key.trim().isEmpty ||
+          result.containsKey(key) ||
+          !seconds.isFinite ||
+          seconds <= 0) {
+        throw StateError('Invalid Phase0a cooldown checkpoint: $key');
+      }
+      result[key] = seconds;
+    }
+    return Map.unmodifiable(result);
+  }
 }

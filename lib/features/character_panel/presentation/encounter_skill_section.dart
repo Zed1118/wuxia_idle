@@ -171,6 +171,11 @@ class _Content extends ConsumerWidget {
       messenger.showSnackBar(
         const SnackBar(content: Text(UiStrings.encounterSkillUnequipSuccess)),
       );
+    } on EncounterSkillOccupiedError {
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text(UiStrings.encounterSkillUnequipFailed(e))),
@@ -191,6 +196,8 @@ class _Content extends ConsumerWidget {
         );
       case EquipNotFound(:final reason):
         return UiStrings.encounterSkillEquipFailedReason(reason);
+      case EquipOccupied():
+        return UiStrings.gauntletSkillLoadoutOccupied;
     }
   }
 }

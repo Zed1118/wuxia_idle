@@ -160,7 +160,7 @@ class GauntletMemberView {
   final int maxQi;
   final bool downed;
 
-  /// 冷却中招数（快照 `skillCooldownKeys` 长度）。
+  /// 冷却中招数，已记录秒制检查点时不回退历史回合值。
   final int cooldownCount;
 }
 
@@ -223,7 +223,9 @@ Future<GauntletInterludeView?> gauntletInterludeView(Ref ref) async {
         currentQi: m.currentQi,
         maxQi: m.maxQi,
         downed: m.isDowned,
-        cooldownCount: m.skillCooldownKeys.length,
+        cooldownCount: m.phase0aCooldownsRecorded
+            ? m.phase0aCooldownSnapshot().length
+            : m.skillCooldownKeys.length,
       ),
     );
   }

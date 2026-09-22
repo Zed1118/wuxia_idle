@@ -151,7 +151,12 @@ final class Phase0aStageContentMapper {
     return Phase0aPlayerRuntimeMapping(
       snapshot: playerSnapshot,
       initialPlayer: player,
-      skillSlots: _skillSlots(numeric, tactical, playerSnapshot.currentQi),
+      skillSlots: _skillSlots(
+        numeric,
+        tactical,
+        playerSnapshot.currentQi,
+        playerSnapshot.openingSlotCooldownSeconds,
+      ),
       moveBindings: _moveBindings(playerBasicSkill, numeric, tactical),
       defenseTuning: defenseTuning,
       playerAdapter: _playerAdapter(
@@ -1162,39 +1167,54 @@ final class Phase0aStageContentMapper {
     Phase0aNumericSkillBindings numericSkills,
     _Phase0aTacticalSkillBindings tacticalSkills,
     int openingQi,
-  ) => List.unmodifiable([
-    Phase0aSkillSlot(
-      slot: tacticalSkills.gather.slot,
-      cooldownRemaining: 0,
-      qiCost: tacticalSkills.gather.qiCost,
-      availability: availabilityOf(
-        cooldownRemaining: 0,
-        qiCurrent: openingQi,
-        qiCost: tacticalSkills.gather.qiCost,
-      ),
-    ),
-    Phase0aSkillSlot(
-      slot: tacticalSkills.clear.slot,
-      cooldownRemaining: 0,
-      qiCost: tacticalSkills.clear.qiCost,
-      availability: availabilityOf(
-        cooldownRemaining: 0,
-        qiCurrent: openingQi,
-        qiCost: tacticalSkills.clear.qiCost,
-      ),
-    ),
-    for (final binding in numericSkills.equipped)
+    Map<String, double> openingCooldowns,
+  ) {
+    final validSlots = {
+      tacticalSkills.gather.slot,
+      tacticalSkills.clear.slot,
+      for (final binding in numericSkills.equipped) binding.slotId,
+    };
+    for (final entry in openingCooldowns.entries) {
+      if (!validSlots.contains(entry.key) ||
+          !entry.value.isFinite ||
+          entry.value < 0) {
+        throw StateError('Invalid player opening cooldown: ${entry.key}');
+      }
+    }
+    return List.unmodifiable([
       Phase0aSkillSlot(
-        slot: binding.slotId,
-        cooldownRemaining: 0,
-        qiCost: binding.qiCost,
+        slot: tacticalSkills.gather.slot,
+        cooldownRemaining: openingCooldowns[tacticalSkills.gather.slot] ?? 0,
+        qiCost: tacticalSkills.gather.qiCost,
         availability: availabilityOf(
-          cooldownRemaining: 0,
+          cooldownRemaining: openingCooldowns[tacticalSkills.gather.slot] ?? 0,
           qiCurrent: openingQi,
-          qiCost: binding.qiCost,
+          qiCost: tacticalSkills.gather.qiCost,
         ),
       ),
-  ]);
+      Phase0aSkillSlot(
+        slot: tacticalSkills.clear.slot,
+        cooldownRemaining: openingCooldowns[tacticalSkills.clear.slot] ?? 0,
+        qiCost: tacticalSkills.clear.qiCost,
+        availability: availabilityOf(
+          cooldownRemaining: openingCooldowns[tacticalSkills.clear.slot] ?? 0,
+          qiCurrent: openingQi,
+          qiCost: tacticalSkills.clear.qiCost,
+        ),
+      ),
+      for (final binding in numericSkills.equipped)
+        Phase0aSkillSlot(
+          slot: binding.slotId,
+          cooldownRemaining: openingCooldowns[binding.slotId] ?? 0,
+          qiCost: binding.qiCost,
+          availability: availabilityOf(
+            cooldownRemaining: openingCooldowns[binding.slotId] ?? 0,
+            qiCurrent: openingQi,
+            qiCost: binding.qiCost,
+          ),
+        ),
+    ]);
+  }
 
   /// 招式绑定:basic/Q/R 均保留仓库真实 SkillDef 身份与效果契约。
   static Map<Phase0aDamageKind, SkillDef?> _moveBindings(

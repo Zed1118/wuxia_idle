@@ -6,8 +6,11 @@ import 'package:wuxia_idle/core/domain/skill_unlock_entry.dart';
 import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/defs/skill_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
+import 'package:wuxia_idle/features/activity/application/character_occupancy_service.dart';
+import 'package:wuxia_idle/features/activity/domain/activity_occupancy.dart';
 import 'package:wuxia_idle/features/cultivation/domain/skill_loadout.dart';
 import 'package:wuxia_idle/features/cultivation/application/technique_skill_growth_gate.dart';
+import 'package:wuxia_idle/shared/strings.dart';
 
 enum SkillSlot { main1, main2, assist, resonance, ultimate, key }
 
@@ -25,6 +28,11 @@ class SlotEquipTierLocked extends EquipSlotResult {
 
 class SlotEquipNotFound extends EquipSlotResult {
   const SlotEquipNotFound();
+}
+
+/// 断魂庄会话保留当前招式槽；离庄后才可手动装卸。
+class SlotEquipOccupied extends EquipSlotResult {
+  const SlotEquipOccupied();
 }
 
 /// 波A:破招槽 style gate 失败(非 canInterrupt 招,或 style 与角色流派不符);
@@ -63,6 +71,10 @@ class SkillLoadoutService {
         result = const SlotEquipNotFound();
         return;
       }
+      if (await _isGauntletMember(characterId)) {
+        result = const SlotEquipOccupied();
+        return;
+      }
       if (!def.canEquipAtRealm(c.realmTier)) {
         result = const SlotEquipTierLocked();
         return;
@@ -96,6 +108,18 @@ class SkillLoadoutService {
       await _isar.characters.put(c);
     });
     return result;
+  }
+
+  // Must run inside the same write transaction as the slot mutation: entry may
+  // reserve this character while a picker is open. Only gauntlet is in scope;
+  // its checkpoint cooldowns identify fixed runtime slots, not skill IDs.
+  Future<bool> _isGauntletMember(int characterId) async {
+    final occupancy = await CharacterOccupancyService(_isar).snapshot();
+    return occupancy.entries.any(
+      (entry) =>
+          entry.kind == ActivityKind.bossGauntlet &&
+          entry.characterIds.contains(characterId),
+    );
   }
 
   Future<bool> _isTechniqueSkillGrowthLocked(
@@ -133,6 +157,9 @@ class SkillLoadoutService {
     await _isar.writeTxn(() async {
       final c = await _isar.characters.get(characterId);
       if (c == null) return;
+      if (await _isGauntletMember(characterId)) {
+        throw StateError(UiStrings.gauntletSkillLoadoutOccupied);
+      }
       _writeSlot(c, slot, null);
       await _isar.characters.put(c);
     });

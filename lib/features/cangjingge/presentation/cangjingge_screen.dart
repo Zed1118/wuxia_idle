@@ -423,6 +423,12 @@ class _SlotTile extends ConsumerWidget {
       skillId: picked.id,
     );
     if (!context.mounted) return;
+    if (result is SlotEquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is SlotEquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
@@ -501,6 +507,12 @@ class _SlotTile extends ConsumerWidget {
       saveDataId: IsarSetup.currentSlotId,
     );
     if (!context.mounted) return;
+    if (result is EquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is EquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
@@ -756,6 +768,12 @@ class _LibrarySection extends ConsumerWidget {
       isar,
     ).equipSkill(characterId: character.id, slot: slot, skillId: skill.id);
     if (!context.mounted) return;
+    if (result is SlotEquipOccupied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(UiStrings.gauntletSkillLoadoutOccupied)),
+      );
+      return;
+    }
     if (result is SlotEquipTierLocked) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(UiStrings.cangjingTierLocked)),
