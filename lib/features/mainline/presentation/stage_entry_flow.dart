@@ -1189,9 +1189,7 @@ Future<void> _runSingleStageFlow({
     await runEncounterHookAfterVictory(
       context: context,
       ref: ref,
-      defeatedSchools: stage.enemyTeam
-          .map((e) => e.school)
-          .toList(growable: false),
+      defeatedSchools: completedSettlement?.defeatedEnemySchools ?? const [],
     );
   } else {
     final drained = await _drainMainlinePendingJianghuAffairs(

@@ -1,3 +1,4 @@
+import '../../core/domain/enums.dart';
 import 'battle_result.dart';
 
 /// Engine-neutral terminal health for one combatant.
@@ -43,9 +44,11 @@ final class CombatSettlementSnapshot {
     required this.totalDamage,
     required this.criticalCount,
     required Map<int, int> damageByCharacterId,
+    List<TechniqueSchool> defeatedEnemySchools = const [],
   }) : participants = List.unmodifiable(participants),
        skillCasts = List.unmodifiable(skillCasts),
-       damageByCharacterId = Map.unmodifiable(damageByCharacterId);
+       damageByCharacterId = Map.unmodifiable(damageByCharacterId),
+       defeatedEnemySchools = List.unmodifiable(defeatedEnemySchools);
 
   final BattleResult? result;
   final int totalTicks;
@@ -56,6 +59,11 @@ final class CombatSettlementSnapshot {
   final int totalDamage;
   final int criticalCount;
   final Map<int, int> damageByCharacterId;
+
+  /// School of every enemy actually defeated in this battle, once per enemy
+  /// actor in first-defeat order. Enemies that survived, escaped or never
+  /// entered are absent; this is the only source for encounter kill ledgers.
+  final List<TechniqueSchool> defeatedEnemySchools;
 
   bool get isFinished => result != null;
 

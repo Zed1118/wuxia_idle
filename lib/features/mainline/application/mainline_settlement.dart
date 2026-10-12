@@ -825,9 +825,7 @@ Future<MainlineVictorySettlement?> applyVictoryResolution({
           attributeEffects: numbers.attributeEffects,
         ).recordKillInTxn(
           saveDataId: IsarSetup.currentSlotId,
-          defeatedSchools: stage.enemyTeam
-              .map((enemy) => enemy.school)
-              .toList(growable: false),
+          defeatedSchools: combatSettlement.defeatedEnemySchools,
         );
 
         if (stage.isBossStage) {

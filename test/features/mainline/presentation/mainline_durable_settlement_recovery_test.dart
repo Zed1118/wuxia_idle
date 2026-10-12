@@ -157,6 +157,11 @@ void main() {
         totalDamage: 321,
         criticalCount: 2,
         damageByCharacterId: {character.id: 321},
+        // stage_01_05 实战:Boss 与随从各被击败一次;击杀账按实际击败计。
+        defeatedEnemySchools: const [
+          TechniqueSchool.yinRou,
+          TechniqueSchool.yinRou,
+        ],
       );
 
       final outcome = await applyVictoryResolution(
@@ -223,7 +228,7 @@ void main() {
     expect(evidence.reputation!.value, lessThan(0));
     expect(
       evidence.encounter!.schoolKillCounts.countOf(TechniqueSchool.yinRou),
-      1,
+      2,
     );
 
     await tester.runAsync(() async {

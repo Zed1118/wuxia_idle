@@ -362,7 +362,35 @@ void _expectSameSettlement(
   expect(encounter.totalDamage, legacy.totalDamage);
   expect(encounter.criticalCount, legacy.criticalCount);
   expect(encounter.damageByCharacterId, legacy.damageByCharacterId);
+  expect(encounter.defeatedEnemySchools, legacy.defeatedEnemySchools);
 }
+
+List<Phase0aCombatantInput> _schoolCombatants() => [
+  for (final combatant in _combatants())
+    Phase0aCombatantInput(
+      actorId: combatant.actorId,
+      snapshot: switch (combatant.actorId) {
+        'enemy_exited' => testCombatantSnapshot(
+          characterId: 3,
+          maxHp: 100,
+          school: TechniqueSchool.lingQiao,
+        ),
+        'enemy_reserve' => testCombatantSnapshot(
+          characterId: 4,
+          maxHp: 100,
+          school: TechniqueSchool.yinRou,
+        ),
+        _ => combatant.snapshot,
+      },
+    ),
+];
+
+Phase0aEnemyDefeated _defeated(int seq, String target) => Phase0aEnemyDefeated(
+  seq: seq,
+  tick: seq,
+  target: target,
+  defeatKind: Phase0aDefeatKind.normal,
+);
 
 void main() {
   test('encounter and legacy mappings settle every field identically', () {
@@ -406,6 +434,71 @@ void main() {
     expect(encounter.totalDamage, 63);
     expect(encounter.criticalCount, 3);
     expect(encounter.damageByCharacterId, {1: 33, 2: 13});
+  });
+
+  test('defeated enemy schools follow actual defeat events once per actor', () {
+    final combatants = _schoolCombatants();
+    final events = [
+      ..._events(),
+      _defeated(11, 'enemy_exited'),
+      _defeated(12, 'enemy_reserve'),
+      _defeated(13, 'enemy_exited'),
+    ];
+    final legacy = Phase0aSettlementAdapter.fromMapping(
+      mapping: _legacyMapping(
+        combatants: combatants,
+        moveBindings: _moveBindings(),
+      ),
+      outcome: Phase0aBattleOutcome.victory,
+      finalState: _finalState(),
+      events: events,
+    );
+    final encounter = Phase0aSettlementAdapter.fromEncounterMapping(
+      mapping: _encounterMapping(
+        combatants: combatants,
+        moveBindings: _moveBindings(),
+      ),
+      outcome: Phase0aBattleOutcome.victory,
+      finalState: _finalState(),
+      events: events,
+    );
+
+    _expectSameSettlement(legacy, encounter);
+    expect(encounter.defeatedEnemySchools, [
+      TechniqueSchool.lingQiao,
+      TechniqueSchool.yinRou,
+    ]);
+    // 存活敌人(enemy_active)与未出场敌人都不计入。
+    expect(
+      Phase0aSettlementAdapter.fromEncounterMapping(
+        mapping: _encounterMapping(
+          combatants: combatants,
+          moveBindings: _moveBindings(),
+        ),
+        outcome: Phase0aBattleOutcome.victory,
+        finalState: _finalState(),
+        events: _events(),
+      ).defeatedEnemySchools,
+      isEmpty,
+    );
+  });
+
+  test('defeat of an unmapped or player actor fails closed', () {
+    for (final target in ['unmapped_actor', 'player']) {
+      expect(
+        () => Phase0aSettlementAdapter.fromEncounterMapping(
+          mapping: _encounterMapping(
+            combatants: _schoolCombatants(),
+            moveBindings: _moveBindings(),
+          ),
+          outcome: Phase0aBattleOutcome.victory,
+          finalState: _finalState(),
+          events: [_defeated(1, target)],
+        ),
+        throwsStateError,
+        reason: target,
+      );
+    }
   });
 
   test('parry counter damage is attributed to the defending player', () {

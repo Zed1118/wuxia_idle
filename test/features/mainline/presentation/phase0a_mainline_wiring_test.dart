@@ -776,6 +776,11 @@ void main() {
       expect(victorySettlement!.result, BattleResult.leftWin);
       expect(victorySettlement!.totalDamage, greaterThan(0));
       expect(victorySettlement!.participantFor(1)!.currentHp, greaterThan(0));
+      // R5:typed 首关 25 名山匪须全数击败才过关,击杀账逐人计入。
+      expect(
+        victorySettlement!.defeatedEnemySchools,
+        List.filled(25, TechniqueSchool.gangMeng),
+      );
     });
 
     testWidgets('极弱玩家 → defeat 回调且宿主自 pop', (tester) async {
@@ -959,6 +964,16 @@ void main() {
           for (final participant in headlessSettlement.participants)
             (participant.characterId, participant.currentHp),
         ],
+        reason: stage.id,
+      );
+      expect(
+        liveSettlement.defeatedEnemySchools,
+        headlessSettlement.defeatedEnemySchools,
+        reason: stage.id,
+      );
+      expect(
+        headlessSettlement.defeatedEnemySchools,
+        isNotEmpty,
         reason: stage.id,
       );
       expect(liveController.events, headless.events, reason: stage.id);

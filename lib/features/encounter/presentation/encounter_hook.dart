@@ -19,7 +19,8 @@ import 'encounter_dialog.dart';
 /// 战斗 victory 后的奇遇触发统一 hook(Phase 4 W14-2)。
 ///
 /// stage_entry_flow / tower_entry_flow victory 路径都调一次,共享同一逻辑:
-///   1. recordKill:按敌人 school +1
+///   1. recordKill:按结算快照中实际被击败的敌人 school 各 +1;
+///      零击杀胜利(守护/生存等)不加击杀,但仍照常判定奇遇
 ///   2. evaluateTriggers:武学领悟读悟性，其他奇遇读机缘
 ///   3. roll 中 → markTriggered + load events 文案 + 弹 dialog
 ///   4. 玩家选 outcome → applyOutcome + SnackBar 摘要
@@ -34,7 +35,6 @@ Future<void> runEncounterHookAfterVictory({
 }) async {
   final isar = IsarSetup.instanceOrNull;
   if (isar == null) return;
-  if (defeatedSchools.isEmpty) return;
 
   final encounters = GameRepository.instance.allEncounters;
   if (encounters.isEmpty) return;

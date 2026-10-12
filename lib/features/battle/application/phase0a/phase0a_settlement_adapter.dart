@@ -80,6 +80,9 @@ final class Phase0aSettlementAdapter {
       for (final combatant in combatantSnapshot)
         combatant.actorId: combatant.snapshot.characterId,
     };
+    final combatantByActor = {
+      for (final combatant in combatantSnapshot) combatant.actorId: combatant,
+    };
     final currentActors = <String, Phase0aActor>{
       finalState.player.id: finalState.player,
       for (final enemy in finalState.enemies) enemy.id: enemy,
@@ -147,6 +150,19 @@ final class Phase0aSettlementAdapter {
           skillId: skillId,
         ),
       );
+    }
+
+    // Actual defeats, once per enemy actor in first-defeat order. Every enemy
+    // the reducer can defeat carries a damage snapshot, so a defeat without a
+    // mapped enemy combatant is a broken mapping and must not be dropped.
+    final defeatedEnemyActorIds = <String>{};
+    void addDefeat(String actorId) {
+      if (actorId == playerActorId || !combatantByActor.containsKey(actorId)) {
+        throw StateError(
+          'Phase0a defeat has no mapped enemy combatant: $actorId',
+        );
+      }
+      defeatedEnemyActorIds.add(actorId);
     }
 
     void addSkillCast(String actorId, int tick, Phase0aDamageKind kind) {
@@ -244,8 +260,9 @@ final class Phase0aSettlementAdapter {
           }
         case Phase0aBossChargeStarted() || Phase0aEnemySkillStarted():
           hadActions = true;
-        case Phase0aEnemyDefeated() ||
-            Phase0aDefendedEntityDestroyed() ||
+        case Phase0aEnemyDefeated(:final target):
+          addDefeat(target);
+        case Phase0aDefendedEntityDestroyed() ||
             Phase0aBossPhaseChanged() ||
             Phase0aSkillAvailabilityChanged() ||
             Phase0aWaveStarted() ||
@@ -273,6 +290,10 @@ final class Phase0aSettlementAdapter {
       totalDamage: totalDamage,
       criticalCount: criticalCount,
       damageByCharacterId: damageByCharacterId,
+      defeatedEnemySchools: [
+        for (final actorId in defeatedEnemyActorIds)
+          combatantByActor[actorId]!.snapshot.school,
+      ],
     );
   }
 }

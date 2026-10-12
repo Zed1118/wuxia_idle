@@ -386,9 +386,7 @@ Future<void> runTowerFlow({
   await runEncounterHookAfterVictory(
     context: context,
     ref: ref,
-    defeatedSchools: floor.enemyTeam
-        .map((e) => e.school)
-        .toList(growable: false),
+    defeatedSchools: battleExit.settlement?.defeatedEnemySchools ?? const [],
   );
 
   // 塔首通掉落、Boss 留档、奇遇 hook 都发生在前面的主结算刷新之后。

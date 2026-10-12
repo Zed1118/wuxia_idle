@@ -154,7 +154,8 @@ class EncounterService {
     return fresh;
   }
 
-  /// 战斗 victory hook 调:按敌人流派 +1(每个 enemy 一次)。
+  /// 战斗 victory 后调:按实际被击败的敌人流派 +1(每名敌人一次,
+  /// 来源=结算快照 `defeatedEnemySchools`,不按关卡 enemyTeam 人头计)。
   ///
   /// W13 教训:Isar findAll list fixed-length,写前 `List.of`。
   Future<void> recordKill({
