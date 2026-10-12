@@ -303,6 +303,7 @@ Future<void> runTowerFlow({
       bossName: bossName,
       stats: victoryRes.stats,
       drops: drops,
+      participantCharacterIds: [participantId],
       topContributorName: heroCamera?.heroName,
       topContributorDamage: heroCamera?.topDamage,
     );

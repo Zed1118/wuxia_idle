@@ -1,5 +1,5 @@
 {
-  "lineCoverageMinimum": 81.25,
-  "sampledAt": "2026-07-12",
-  "note": "Fresh full-suite line coverage was 81.31% (27115/33348); the ratchet keeps one 0.05-point tolerance step after rounding down."
+  "lineCoverageMinimum": 86.95,
+  "sampledAt": "2026-09-22",
+  "note": "Two passing CI samples under the unchanged LCOV policy: 50904/58494 (87.0243%, run 35679748700, 81c2f06c8) and 51060/58611 (87.1168%, run 35681867388, 02994529f). Floor the lower sample to 0.05 percentage points, then retain the existing 0.05-point tolerance. The current candidate must pass this threshold independently."
 }

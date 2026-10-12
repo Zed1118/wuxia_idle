@@ -17,8 +17,6 @@ import '../../battle/application/phase0a/phase0a_enemy_ai_adapter.dart';
 import '../../battle/application/phase0a/phase0a_enemy_skill_binding.dart';
 import '../../battle/application/phase0a/phase0a_migrated_encounter_plan_builder.dart';
 import '../../battle/application/phase0a/phase0a_player_input_adapter.dart';
-import '../../battle/application/phase0a/phase0a_production_flow_assembler.dart';
-import '../../battle/application/phase0a/phase0a_settlement_adapter.dart';
 import '../../battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import '../../battle/domain/phase0a/attack_token_director.dart';
 import '../../battle/domain/phase0a/phase0a_combat_events.dart';
@@ -31,12 +29,61 @@ enum Phase0aTowerEncounterRouteMode { legacy, migrated }
 
 /// Production authority for tower migration routing.
 ///
-/// Floors 1–7 passed the first production migration batch. Remaining floors
-/// retain compatibility routing until their own batch is verified; all three
-/// entrypoints consume this same authority.
+/// All 49 floors use typed encounters. Visible battle, immediate sweep, and
+/// durable automation consume this same authority.
 final class Phase0aTowerEncounterRouteAuthority {
   const Phase0aTowerEncounterRouteAuthority.production()
-    : migratedFloorIndices = const <int>{1, 2, 3, 4, 5, 6, 7};
+    : migratedFloorIndices = const <int>{
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+      };
 
   Phase0aTowerEncounterRouteAuthority.migratedFloors(
     Set<int> migratedFloorIndices,
@@ -272,7 +319,9 @@ Future<Phase0aTowerCombatSession> createFreshPhase0aTowerCombatSession(
   _validateRequest(request);
   final mode = request.routeAuthority.modeForFloor(request.floor.floorIndex);
   if (mode == Phase0aTowerEncounterRouteMode.legacy) {
-    return _createLegacySession(request);
+    throw StateError(
+      'legacy tower route is retired: ${request.contentRef.contentId}',
+    );
   }
 
   final encounter = await request.definitionSource.load(
@@ -362,56 +411,6 @@ void _validateDefinition({
       'missing=$missing foreign=$foreign',
     );
   }
-}
-
-Phase0aTowerCombatSession _createLegacySession(
-  Phase0aTowerCombatSessionBuildRequest request,
-) {
-  final mapping = Phase0aStageContentMapper.mapTower(
-    floor: request.floor,
-    playerSnapshot: request.playerSnapshot,
-    numbers: request.numbers,
-    cycleIndex: request.cycleIndex,
-  );
-  final sourceByActor = <String, String>{};
-  for (final combatant in mapping.combatants.skip(1)) {
-    final sourceId = combatant.snapshot.enemyDefId;
-    if (sourceId == null) {
-      throw StateError('legacy tower mapping lost enemyDefId');
-    }
-    sourceByActor[combatant.actorId] = sourceId;
-  }
-  final flow = Phase0aProductionFlowAssembler.assemble(
-    initialState: mapping.initialState,
-    waves: mapping.waves,
-    combatants: mapping.combatants,
-    moveBindings: mapping.moveBindings,
-    numbers: request.numbers,
-    rng: request.rng,
-    playerAdapter: mapping.playerAdapter,
-    enemyAiAdapter: mapping.enemyAiAdapter,
-    waveTransitionPolicy: mapping.waveTransitionPolicy,
-  );
-  return Phase0aTowerCombatSession(
-    contentRef: request.contentRef,
-    routeMode: Phase0aTowerEncounterRouteMode.legacy,
-    flow: flow,
-    combatants: mapping.combatants,
-    playerAdapter: mapping.playerAdapter,
-    sourceEnemyDefIdByActorId: sourceByActor,
-    sourceEnemyDefIdsInEntryOrder: request.floor.enemyTeam
-        .map((enemy) => enemy.id)
-        .toList(),
-    encounterCount: 1,
-    activeLimit: request.floor.enemyTeam.length,
-    settle: ({required outcome, required finalState, required events}) =>
-        Phase0aSettlementAdapter.fromMapping(
-          mapping: mapping,
-          outcome: outcome,
-          finalState: finalState,
-          events: events,
-        ),
-  );
 }
 
 Phase0aTowerCombatSession _createMigratedSession(

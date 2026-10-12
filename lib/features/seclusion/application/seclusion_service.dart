@@ -6,13 +6,13 @@ import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/equipment.dart';
 import '../../../core/domain/inventory_item.dart';
-import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/reward_entry.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../../shared/strings.dart';
 import '../../../shared/utils/rng.dart';
+import '../../activity/application/character_occupancy_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../expedition/application/expedition_timeline.dart';
@@ -162,7 +162,7 @@ class SeclusionService {
 
   /// 开始闭关：
   ///   1. 拒绝替换未收功的 active session，保留累计收益
-  ///   2. 结清普通挂机，以结算后的角色境界校验并固化快照
+  ///   2. 复核角色活动占用，再结清普通挂机并固化角色实际境界
   ///   3. 写新 [RetreatSession] + 更新 [Character.currentRetreatSessionId]
   Future<RetreatSession> startRetreat({
     required RetreatMapType mapType,
@@ -187,6 +187,10 @@ class SeclusionService {
             .findFirst();
         if (old != null) {
           throw StateError(UiStrings.seclusionCollectBeforeSwitch);
+        }
+        final occupancy = await CharacterOccupancyService(isar).snapshot();
+        if (occupancy.isCharacterOccupied(characterId)) {
+          throw StateError(UiStrings.seclusionCharacterOccupied);
         }
 
         await OfflinePassiveService.settleWithinTxn(
@@ -559,16 +563,8 @@ class SeclusionService {
               await isar.equipments.put(eq);
             }
           }
-          InnerBreathDisorder.recover(
-            character: ch,
-            hours: outputs.actualHours,
-          );
-          // Task 8: 双层伤势疗养按整段真实经过时长累减。
-          // 重伤按时长累减 clamp ≥ 0；轻伤收功即调息，无条件清零。
-          if (ch.injuryHoursRemaining > 0) {
-            final left = ch.injuryHoursRemaining - settlement.elapsedHours;
-            ch.injuryHoursRemaining = left < 0 ? 0 : left;
-          }
+          // 定时疗养已在上方按角色时间锚结清；收功只执行轻伤调息事件，
+          // 不能再按整段闭关时长重复扣除重伤和紊乱。
           ch.lightInjuryStacks = 0;
           final totalExperience =
               outputs.experiencePoints + settlement.passive.experience;

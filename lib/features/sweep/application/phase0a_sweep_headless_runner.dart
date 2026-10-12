@@ -145,16 +145,8 @@ final class Phase0aSweepHeadlessRunner {
         participantName: player.name,
       );
     }
-    final mapping = Phase0aStageContentMapper.map(
-      stage: stage,
-      playerSnapshot: player,
-      numbers: numbers,
-      cycleIndex: cycleIndex,
-    );
-    return _run(
-      mapping,
-      expectedParticipantId: player.characterId,
-      participantName: player.name,
+    throw StateError(
+      'mainline encounter factory returned no host: ${stage.id}',
     );
   }
 

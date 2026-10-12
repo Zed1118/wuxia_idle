@@ -16,8 +16,9 @@ enum CombatCatalogLoadFailureKind {
 }
 
 /// Production catalog failures retain the source path and failure class so a
-/// caller can distinguish an absent optional catalog from damaged production
-/// data. Only a missing root manifest is non-fatal.
+/// caller can distinguish an absent fixture catalog from damaged data. Only a
+/// missing root manifest returns null here; GameRepository requires it in
+/// production.
 final class CombatCatalogLoadException extends FormatException {
   CombatCatalogLoadException({
     required this.kind,

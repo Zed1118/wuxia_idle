@@ -476,6 +476,25 @@ class GameRepository {
       fallback: null,
     );
     final combatCatalog = await loadProductionCombatCatalogIfPresent(load);
+    if (strict && combatCatalog == null) {
+      throw const FormatException(
+        'data/combat/manifest.yaml is required for production mainline combat',
+      );
+    }
+    if (strict) {
+      for (final stage in stageDefs.values) {
+        if (stage.stageType != StageType.mainline) continue;
+        final assignment = combatCatalog!.assignmentForStage(stage.id);
+        if (assignment == null ||
+            assignment.migrationState !=
+                CombatEncounterMigrationState.migrated) {
+          throw FormatException(
+            'data/combat/manifest/stage_assignments.yaml must provide a '
+            'migrated assignment for mainline stage ${stage.id}',
+          );
+        }
+      }
+    }
     final combatRuntimeBindings = combatCatalog == null
         ? null
         : await loadProductionCombatRuntimeBindings(

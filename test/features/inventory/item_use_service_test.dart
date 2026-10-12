@@ -21,6 +21,7 @@ void main() {
   late Directory tempDir;
   late Isar isar;
   late GameRepository repo;
+  final injuryAt = DateTime(2026, 9, 22, 12);
 
   setUpAll(() async {
     await initializeTestIsarCore();
@@ -83,7 +84,7 @@ void main() {
         injuryHoursRemaining: 6,
         innerBreathDisorderHoursRemaining: 3,
         lightInjuryStacks: 2,
-      );
+      )..recoverySettledAt = injuryAt;
       id = await isar.characters.put(c);
     });
     return id;
@@ -311,6 +312,7 @@ void main() {
       isar,
       def: def,
       realmLookup: repo.getRealm,
+      now: injuryAt,
     );
 
     expect(r.kind, ItemUseKind.recoveryApplied);
@@ -336,6 +338,7 @@ void main() {
       isar,
       def: def,
       realmLookup: repo.getRealm,
+      now: injuryAt,
     );
 
     expect(r.kind, ItemUseKind.noEffect);
@@ -360,6 +363,7 @@ void main() {
       isar,
       def: def,
       realmLookup: repo.getRealm,
+      now: injuryAt,
     );
 
     expect(r.kind, ItemUseKind.recoveryApplied);
@@ -368,6 +372,49 @@ void main() {
     expect(ch?.lightInjuryStacks, 0);
     final item = await isar.inventoryItems.getByDefId('item_xingnang_buji');
     expect(item?.quantity, 1);
+  });
+
+  test('用药前自然恢复已经痊愈时，不扣无效药品', () async {
+    final id = await seedInjuredFounder();
+    await isar.writeTxn(() async {
+      final character = (await isar.characters.get(id))!;
+      character.lightInjuryStacks = 0;
+      await isar.characters.put(character);
+    });
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 1);
+    final result = await ItemUseService.use(
+      isar,
+      def: repo.itemDefs['item_liaoshangdan']!,
+      realmLookup: repo.getRealm,
+      now: injuryAt.add(const Duration(hours: 8)),
+    );
+    expect(result.kind, ItemUseKind.noEffect);
+    expect(
+      (await isar.inventoryItems.getByDefId('item_liaoshangdan'))!.quantity,
+      1,
+    );
+    expect((await isar.characters.get(id))!.injuryHoursRemaining, 0);
+    expect(
+      (await isar.characters.get(id))!.innerBreathDisorderHoursRemaining,
+      0,
+    );
+  });
+
+  test('用药先扣真实经过时长，效果摘要只计算本次药品贡献', () async {
+    final id = await seedInjuredFounder();
+    await seedItem('item_liaoshangdan', ItemType.miscMaterial, 1);
+    final result = await ItemUseService.use(
+      isar,
+      def: repo.itemDefs['item_liaoshangdan']!,
+      realmLookup: repo.getRealm,
+      now: injuryAt.add(const Duration(hours: 2)),
+    );
+    expect(result.injuryHoursReduced, 4);
+    expect(result.residueHoursReduced, 1);
+    final character = (await isar.characters.get(id))!;
+    expect(character.injuryHoursRemaining, 0);
+    expect(character.innerBreathDisorderHoursRemaining, 0);
+    expect(character.recoverySettledAt, injuryAt.add(const Duration(hours: 2)));
   });
 
   test('经验丹但无 founder → 返 noTarget 不消费', () async {

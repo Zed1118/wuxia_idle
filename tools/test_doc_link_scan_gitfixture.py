@@ -399,5 +399,123 @@ class NonAsciiPathTest(RealGitFixtureTestCase):
         self.assertEqual(self.verdict(self.repo.scan()), "ignored")
 
 
+
+# ---------------------------------------------------------------------------
+# 六、symlink 不得使整批 check-ignore 失败,也不得改变 Git 跟踪判定
+# ---------------------------------------------------------------------------
+
+class SymlinkProbeRegressionTest(RealGitFixtureTestCase):
+    def symlink(self, rel: str, target: str, *, tracked: bool = False) -> None:
+        path = self.repo.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(target)
+        if tracked:
+            self.repo._git("add", "--", rel)
+
+    def test_ignored_framework_is_independent_of_build_and_symlink_state(self) -> None:
+        self.repo.gitignore("build/")
+        self.repo.track("lib/main.dart")
+        framework = "build/macos/App.framework/App"
+        self.doc(
+            f"`{framework}`\n`{framework}/`\n`{framework}/child`\n"
+            "`build`\n`lib/main.dart`\n`lib/missing.dart`"
+        )
+        # 同一 Git 内容:无 build → 有普通 build → 有 Framework symlink。
+        results = [self.repo.scan()]
+        self.repo.write("build/macos/App.framework/Versions/A/App")
+        results.append(self.repo.scan())
+        self.symlink(framework, "Versions/A/App")
+        results.append(self.repo.scan())
+        for result in results:
+            self.assertEqual(
+                (result["refs_total"], result["alive"], result["dead"],
+                 result["ignored"], result["archival"]),
+                (6, 1, 1, 4, 0),
+            )
+            self.assertEqual([r["target"] for r in result["rows"]],
+                             ["lib/missing.dart"])
+        self.assertEqual(results[0], results[1])
+        self.assertEqual(results[1], results[2])
+
+    def test_untracked_symlink_slash_and_child_stay_dead(self) -> None:
+        self.repo.track("lib/main.dart")
+        self.symlink("assets/local_link", "../lib")
+        self.symlink("assets/broken_link", "../absent")
+        self.doc(
+            "`assets/local_link/`\n`assets/local_link/main.dart`\n"
+            "`assets/broken_link/`\n`assets/broken_link/main.dart`"
+        )
+        result = self.repo.scan()
+        self.assertEqual(result["refs_total"], 4)
+        self.assertEqual(result["dead"], 4)
+        self.assertEqual(result["alive"], 0)
+        self.assertEqual(result["ignored"], 0)
+        self.assertEqual(
+            {r["target"] for r in result["rows"]},
+            {"assets/local_link", "assets/local_link/main.dart",
+             "assets/broken_link", "assets/broken_link/main.dart"},
+        )
+
+    def test_tracked_symlink_is_alive_but_children_are_missing(self) -> None:
+        self.repo.track("lib/main.dart")
+        self.symlink("assets/tracked_link", "../lib", tracked=True)
+        self.doc(
+            "`assets/tracked_link`\n`assets/tracked_link/main.dart`\n"
+            "`assets/tracked_link/missing.dart`"
+        )
+        result = self.repo.scan()
+        self.assertEqual(result["refs_total"], 3)
+        self.assertEqual(result["alive"], 1)
+        self.assertEqual(result["dead"], 2)
+        self.assertEqual(result["ignored"], 0)
+        self.assertEqual(
+            {r["target"] for r in result["rows"]},
+            {"assets/tracked_link/main.dart", "assets/tracked_link/missing.dart"},
+        )
+
+    def test_symlink_batch_preserves_true_missing_and_dated_archival(self) -> None:
+        self.repo.track("lib/main.dart")
+        self.symlink("assets/local_link", "../lib")
+        self.doc("`lib/main.dart`\n`lib/gone.dart`")
+        self.doc(
+            "`assets/local_link/missing.dart`\n`lib/gone.dart`",
+            rel="docs/spec/2026-09-22-link-record.md",
+        )
+        result = self.repo.scan()
+        self.assertEqual(
+            (result["refs_total"], result["alive"], result["dead"],
+             result["ignored"], result["archival"]),
+            (4, 1, 1, 0, 2),
+        )
+        self.assertEqual([r["target"] for r in result["rows"]], ["lib/gone.dart"])
+        self.assertEqual(
+            {r["target"] for r in result["archival_rows"]},
+            {"assets/local_link/missing.dart", "lib/gone.dart"},
+        )
+
+    def test_ignored_non_ascii_symlink_maps_back_to_complete_probes(self) -> None:
+        link = "assets/中文软链"
+        self.repo.gitignore(link)
+        self.symlink(link, "../absent")
+        probes = {link, link + "/", link + "/子文件.md", link + "/子文件.md/"}
+        with mock.patch.object(doc_link_scan, "REPO_ROOT", self.repo.root):
+            self.assertEqual(doc_link_scan.git_check_ignore(probes), probes)
+        self.doc(f"`{link}`\n`{link}/`\n`{link}/子文件.md`")
+        result = self.repo.scan()
+        self.assertEqual(result["refs_total"], 3)
+        self.assertEqual(result["ignored"], 3)
+        self.assertEqual(result["dead"], 0)
+        self.assertEqual(
+            [r["target"] for r in result["ignored_rows"]],
+            [link, link, link + "/子文件.md"],
+        )
+
+    def test_unrelated_git_failure_still_raises(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="doclink-nongit-") as directory:
+            with mock.patch.object(doc_link_scan, "REPO_ROOT", Path(directory)):
+                with self.assertRaisesRegex(RuntimeError, "rc=128"):
+                    doc_link_scan.git_check_ignore(["lib/missing.dart"])
+
+
 if __name__ == "__main__":
     unittest.main()

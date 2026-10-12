@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:wuxia_idle/core/domain/attributes.dart';
@@ -11,6 +12,7 @@ import 'package:wuxia_idle/core/domain/technique.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/data/isar_setup.dart';
 import 'package:wuxia_idle/features/tower/application/tower_providers.dart';
+import 'package:wuxia_idle/features/seclusion/application/online_presence_controller.dart';
 import 'package:wuxia_idle/features/tower/presentation/tower_floor_list_screen.dart';
 import 'package:wuxia_idle/shared/strings.dart';
 
@@ -88,6 +90,70 @@ void main() {
       await isar.saveDatas.put(save);
     });
   }
+
+  test('非 active 门人疗养结束后刷新候选，真实塔入口重新准入', () async {
+    final isar = IsarSetup.instance;
+    final leader = await insertCharacter(name: '掌门', founder: true);
+    final disciple = await insertCharacter(
+      name: '受伤门人',
+      founder: false,
+      masterId: leader.id,
+      injuryHoursRemaining: 2,
+    );
+    await pointLeader(leader);
+    final start = DateTime(2026, 9, 22, 10);
+    await isar.writeTxn(() async {
+      final character = (await isar.characters.get(disciple.id))!;
+      character.recoverySettledAt = start;
+      await isar.characters.put(character);
+      final save = (await isar.saveDatas.get(0))!;
+      save.createdAt = start.subtract(const Duration(days: 1));
+      save.lastOnlineAt = start;
+      save.passiveLastSettledAt = start;
+      await isar.saveDatas.put(save);
+    });
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      towerParticipantCandidatesProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    var candidates = await container.read(
+      towerParticipantCandidatesProvider.future,
+    );
+    expect(
+      candidates.singleWhere((c) => c.character.id == disciple.id).healing,
+      isTrue,
+    );
+    await expectLater(
+      resolveTowerParticipantSnapshot(
+        isar: isar,
+        requestedParticipantId: disciple.id,
+      ),
+      throwsStateError,
+    );
+
+    await container
+        .read(onlinePresenceControllerProvider)
+        .settlePassiveWindow(
+          now: start.add(const Duration(hours: 2)),
+          clearLightInjury: false,
+        );
+    candidates = await container.read(
+      towerParticipantCandidatesProvider.future,
+    );
+    expect(
+      candidates.singleWhere((c) => c.character.id == disciple.id).selectable,
+      isTrue,
+    );
+    final snapshot = await resolveTowerParticipantSnapshot(
+      isar: isar,
+      requestedParticipantId: disciple.id,
+    );
+    expect(snapshot.characterId, disciple.id);
+    expect((await isar.saveDatas.get(0))!.activeCharacterIds, [leader.id]);
+  });
 
   test('候选含当前掌门与非 active 门人，历史祖师/亡者排除并标记占用和主修', () async {
     final leader = await insertCharacter(name: '掌门', founder: true);

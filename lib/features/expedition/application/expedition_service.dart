@@ -25,6 +25,7 @@ import '../../cultivation/application/character_advancement_service.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../injury/application/injury_service.dart';
+import '../../injury/application/character_recovery_service.dart';
 import '../../lineup/application/disciple_scheduling_provider.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
@@ -162,16 +163,20 @@ class ExpeditionService {
       if (initialSave == null) throw StateError('远征派遣：无存档');
       var save = initialSave;
       // A clock rollback cannot backdate a newly dispatched run behind already
-      // awarded passive time and manufacture an impossible pending history.
+      // settled resource or participant recovery time and invent pending history.
       final established =
           save.passiveLastSettledAt != null ||
           save.lastOnlineAt != save.createdAt;
       final anchor = established
           ? save.passiveLastSettledAt ?? save.lastOnlineAt
           : null;
-      final at = anchor != null && anchor.isAfter(requestedAt)
+      var at = anchor != null && anchor.isAfter(requestedAt)
           ? anchor
           : requestedAt;
+      for (final character in await _isar.characters.getAll(characterIds)) {
+        final recoveryAt = character?.recoverySettledAt;
+        if (recoveryAt != null && recoveryAt.isAfter(at)) at = recoveryAt;
+      }
 
       final runs = await _isar.expeditionRuns.where().findAll();
       if (runs.any((r) => r.saveDataId == save.id)) {
@@ -382,7 +387,13 @@ class ExpeditionService {
   Future<void> _applySharedCombatLedger({
     required ActivityMemberSnapshot member,
     required CombatSettlementSnapshot settlement,
+    required DateTime at,
   }) async {
+    await CharacterRecoveryService.settleWithinTxn(
+      isar: _isar,
+      now: at,
+      characterIds: [member.characterId],
+    );
     final character = await _isar.characters.get(member.characterId);
     if (character == null || !character.isAlive) {
       throw StateError('Expedition settlement participant is missing or dead');
@@ -468,60 +479,81 @@ class ExpeditionService {
   /// 为百草岭生产入口准备一场可见、真人控制的险关战斗。
   Future<ExpeditionManualMilestonePlan> prepareManualMilestone({
     required ActivityParticipationRequest request,
+    DateTime? now,
   }) async {
-    final pending = await pendingManualMilestone();
-    if (pending == null) {
-      throw StateError('No expedition manual milestone is pending');
-    }
-    final expected = manualMilestoneRequestFor(
-      milestoneId: pending.milestoneId,
-      characterId: request.characterId,
-    );
-    if (request != expected) {
-      throw StateError(
-        'Expedition manual milestone request semantics mismatch',
-      );
-    }
-    if (await activeRun() != null) {
-      throw StateError('Expedition manual milestone requires no active run');
-    }
-
-    final scheduling = await loadDiscipleSchedulingSummary(_isar);
-    final scheduled = scheduling.members
-        .where((member) => member.characterId == request.characterId)
-        .toList(growable: false);
-    if (scheduled.length != 1 || !scheduled.single.isAlive) {
-      throw StateError('Expedition manual milestone participant is stale');
-    }
-    if (scheduled.single.activity != null) {
-      throw StateError('Expedition manual milestone participant is occupied');
-    }
-    final character = await _isar.characters.get(request.characterId);
-    if (character == null ||
-        !character.isAlive ||
-        character.injuryHoursRemaining > 0) {
-      throw StateError(
-        'Expedition manual milestone participant is unavailable',
-      );
-    }
-
-    final snapshots = await PlayerCombatantSnapshotAssembler(
+    final at = now ?? DateTime.now();
+    return ExpeditionTimeline.runAfterCatchUp(
       isar: _isar,
-    ).loadExactRoster([character.id]);
-    final refreshed = await _isar.characters.get(character.id);
-    if (refreshed == null) {
-      throw StateError('Expedition manual milestone participant disappeared');
-    }
-    final member = await _validatedMemberSnapshot(refreshed);
-    return ExpeditionManualMilestonePlan(
-      recordKey: pending.recordKey,
-      routeId: pending.routeId,
-      milestoneId: pending.milestoneId,
-      nodeIndex: pending.nodeIndex,
-      nodeSeed: pending.nodeSeed,
-      cycleIndex: pending.cycleIndex,
-      member: member,
-      playerSnapshot: snapshots.single,
+      now: at,
+      action: () async {
+        final pending = await pendingManualMilestone();
+        if (pending == null) {
+          throw StateError('No expedition manual milestone is pending');
+        }
+        final expected = manualMilestoneRequestFor(
+          milestoneId: pending.milestoneId,
+          characterId: request.characterId,
+        );
+        if (request != expected) {
+          throw StateError(
+            'Expedition manual milestone request semantics mismatch',
+          );
+        }
+        if (await activeRun() != null) {
+          throw StateError(
+            'Expedition manual milestone requires no active run',
+          );
+        }
+
+        await _isar.writeTxn(
+          () => CharacterRecoveryService.settleWithinTxn(
+            isar: _isar,
+            now: at,
+            characterIds: [request.characterId],
+          ),
+        );
+        final scheduling = await loadDiscipleSchedulingSummary(_isar);
+        final scheduled = scheduling.members
+            .where((member) => member.characterId == request.characterId)
+            .toList(growable: false);
+        if (scheduled.length != 1 || !scheduled.single.isAlive) {
+          throw StateError('Expedition manual milestone participant is stale');
+        }
+        if (scheduled.single.activity != null) {
+          throw StateError(
+            'Expedition manual milestone participant is occupied',
+          );
+        }
+        final character = await _isar.characters.get(request.characterId);
+        if (character == null ||
+            !character.isAlive ||
+            character.injuryHoursRemaining > 0) {
+          throw StateError(
+            'Expedition manual milestone participant is unavailable',
+          );
+        }
+
+        final snapshots = await PlayerCombatantSnapshotAssembler(
+          isar: _isar,
+        ).loadExactRoster([character.id]);
+        final refreshed = await _isar.characters.get(character.id);
+        if (refreshed == null) {
+          throw StateError(
+            'Expedition manual milestone participant disappeared',
+          );
+        }
+        final member = await _validatedMemberSnapshot(refreshed);
+        return ExpeditionManualMilestonePlan(
+          recordKey: pending.recordKey,
+          routeId: pending.routeId,
+          milestoneId: pending.milestoneId,
+          nodeIndex: pending.nodeIndex,
+          nodeSeed: pending.nodeSeed,
+          cycleIndex: pending.cycleIndex,
+          member: member,
+          playerSnapshot: snapshots.single,
+        );
+      },
     );
   }
 
@@ -541,76 +573,89 @@ class ExpeditionService {
     }
     final at = now ?? DateTime.now();
     final won = settlement.result == BattleResult.leftWin;
+    return ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () async {
+        if (!won) {
+          await _isar.writeTxn(() async {
+            final record = await _isar.expeditionMilestoneRecords
+                .getByRecordKey(plan.recordKey);
+            if (record == null || record.manualClearedAt != null) {
+              throw StateError(
+                'Expedition manual milestone is no longer pending',
+              );
+            }
+            await _applySharedCombatLedger(
+              member: plan.member,
+              settlement: settlement,
+              at: at,
+            );
+          });
+          return false;
+        }
 
-    if (!won) {
-      await _isar.writeTxn(() async {
-        final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
-          plan.recordKey,
+        final claimPlan = RewardClaimPlan.forSettlement(
+          contentKind: RewardContentKind.expedition,
+          contentId: '${plan.routeId}:${plan.milestoneId}',
+          saveDataId: IsarSetup.currentSlotId,
+          participantId: plan.member.characterId,
+          occurrenceId: plan.recordKey,
+          includesFirstClear: true,
         );
-        if (record == null || record.manualClearedAt != null) {
-          throw StateError('Expedition manual milestone is no longer pending');
+        final disposition = await DurableRewardClaimService(_isar)
+            .claimSettlement(
+              plan: claimPlan,
+              sourceSettlementId:
+                  'expedition-manual-milestone:${plan.recordKey}',
+              at: at,
+              applyInTxn: (_) async {
+                final record = await _isar.expeditionMilestoneRecords
+                    .getByRecordKey(plan.recordKey);
+                if (record == null || record.manualClearedAt != null) {
+                  throw StateError(
+                    'Expedition manual milestone is no longer pending',
+                  );
+                }
+                record.validateIdentity();
+                if (record.routeId != plan.routeId ||
+                    record.milestoneId != plan.milestoneId ||
+                    record.nodeIndex != plan.nodeIndex ||
+                    record.nodeSeed != plan.nodeSeed ||
+                    record.cycleIndex != plan.cycleIndex) {
+                  throw StateError('Expedition manual milestone plan is stale');
+                }
+                await OfflinePassiveService.settleWithinTxn(
+                  settleIslandBeforeGrowth: true,
+                  isar: _isar,
+                  now: at,
+                );
+                await _applySharedCombatLedger(
+                  member: plan.member,
+                  settlement: settlement,
+                  at: at,
+                );
+                // 同模板后续 headless 仍发相同节点经验与里程碑断魂帖；这些是本次
+                // 节点奖励，不是首通专属奖，不能因首通 receipt 已存在而扣除。
+                await _applyManualMilestoneRewardsInTxn(plan: plan, at: at);
+                record.manualClearedAt = at;
+                await _isar.expeditionMilestoneRecords.put(record);
+                final save = await _isar.saveDatas.get(0);
+                if (save != null && plan.nodeIndex > save.baicaoMaxDepth) {
+                  save.baicaoMaxDepth = plan.nodeIndex;
+                  await _isar.saveDatas.put(save);
+                }
+                await afterRewardsInTxnForTest?.call();
+              },
+            );
+        if (disposition != RewardClaimDisposition.applied) {
+          throw StateError(
+            'Expedition manual milestone reward already settled',
+          );
         }
-        await _applySharedCombatLedger(
-          member: plan.member,
-          settlement: settlement,
-        );
-      });
-      return false;
-    }
-
-    final claimPlan = RewardClaimPlan.forSettlement(
-      contentKind: RewardContentKind.expedition,
-      contentId: '${plan.routeId}:${plan.milestoneId}',
-      saveDataId: IsarSetup.currentSlotId,
-      participantId: plan.member.characterId,
-      occurrenceId: plan.recordKey,
-      includesFirstClear: true,
-    );
-    final disposition = await DurableRewardClaimService(_isar).claimSettlement(
-      plan: claimPlan,
-      sourceSettlementId: 'expedition-manual-milestone:${plan.recordKey}',
-      at: at,
-      applyInTxn: (_) async {
-        final record = await _isar.expeditionMilestoneRecords.getByRecordKey(
-          plan.recordKey,
-        );
-        if (record == null || record.manualClearedAt != null) {
-          throw StateError('Expedition manual milestone is no longer pending');
-        }
-        record.validateIdentity();
-        if (record.routeId != plan.routeId ||
-            record.milestoneId != plan.milestoneId ||
-            record.nodeIndex != plan.nodeIndex ||
-            record.nodeSeed != plan.nodeSeed ||
-            record.cycleIndex != plan.cycleIndex) {
-          throw StateError('Expedition manual milestone plan is stale');
-        }
-        await OfflinePassiveService.settleWithinTxn(
-          settleIslandBeforeGrowth: true,
-          isar: _isar,
-          now: at,
-        );
-        await _applySharedCombatLedger(
-          member: plan.member,
-          settlement: settlement,
-        );
-        // 同模板后续 headless 仍发相同节点经验与里程碑断魂帖；这些是本次
-        // 节点奖励，不是首通专属奖，不能因首通 receipt 已存在而扣除。
-        await _applyManualMilestoneRewardsInTxn(plan: plan, at: at);
-        record.manualClearedAt = at;
-        await _isar.expeditionMilestoneRecords.put(record);
-        final save = await _isar.saveDatas.get(0);
-        if (save != null && plan.nodeIndex > save.baicaoMaxDepth) {
-          save.baicaoMaxDepth = plan.nodeIndex;
-          await _isar.saveDatas.put(save);
-        }
-        await afterRewardsInTxnForTest?.call();
+        return true;
       },
     );
-    if (disposition != RewardClaimDisposition.applied) {
-      throw StateError('Expedition manual milestone reward already settled');
-    }
-    return true;
   }
 
   Future<void> _applyManualMilestoneRewardsInTxn({
@@ -982,6 +1027,7 @@ class ExpeditionService {
           await _applySharedCombatLedger(
             member: member,
             settlement: settlement,
+            at: nodeAt,
           );
         }
       }
@@ -1051,6 +1097,7 @@ class ExpeditionService {
     int maxNodesPerBatch = defaultMaxNodesPerBatch,
     int maxBatches = 4096,
   }) async {
+    final at = now ?? DateTime.now();
     var total = 0;
     var last = const ExpeditionSettlementResult(
       nodesSettled: 0,
@@ -1062,7 +1109,7 @@ class ExpeditionService {
       final r = await settle(
         combat: combat,
         config: config,
-        now: now,
+        now: at,
         maxNodesPerBatch: maxNodesPerBatch,
       );
       total += r.nodesSettled;
@@ -1081,7 +1128,7 @@ class ExpeditionService {
         );
         final automaticReturn = await recall(
           manualMilestoneGate: gate,
-          now: gateAt ?? now,
+          now: gateAt ?? at,
         );
         if (!automaticReturn.returned) {
           return ExpeditionSettlementResult(

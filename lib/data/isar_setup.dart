@@ -250,7 +250,8 @@ class IsarSetup {
   // 冲突行原样保留并报告；以后重开仅重试负计数，不重跑旧业务迁移。
   // 0.50.0 Preserve island product identity and persistent ordinary idle fractions.
   // 0.51.0 断魂庄冷却检查点：ActivityMemberSnapshot +phase0aCooldownsRecorded/Keys/Seconds，旧档缺字段读 false/空。
-  static const _currentSaveVersion = '0.51.0';
+  // 0.52.0 角色独立疗养时间锚：保留旧在线边界与进行中闭关的 startedAt 权益。
+  static const _currentSaveVersion = '0.52.0';
 
   /// 打开 Isar 实例。`directory` 可注入用于测试；生产由 path_provider 提供。
   static Future<void> init({
@@ -708,6 +709,43 @@ class IsarSetup {
 
       // --- 段 21(0.51.0 断魂庄冷却检查点)---
       // 纯加法字段由 Isar 缺字段默认值读取；只更新版本戳，不回填或推断历史冷却。
+
+      // --- 段 22(0.52.0 角色独立疗养时间锚)---
+      // 只补锚，不在迁移中疗养或改轻伤。active 闭关过去收功才扣完整时长，
+      // 必须保留 startedAt；不能改用较新的在线心跳或资源时钟截掉这段权益。
+      if (_compareVersion(fromVersion, '0.52.0') < 0) {
+        final retreatStarts = <int, DateTime>{};
+        for (final session in activeRetreats) {
+          final owners = characters
+              .where(
+                (character) => character.currentRetreatSessionId == session.id,
+              )
+              .toList(growable: false);
+          if (session.saveDataId != save.slotId || owners.length != 1) {
+            throw StateError(
+              'Recovery migration cannot identify active retreat ${session.id}: '
+              'session slot ${session.saveDataId}, save slot ${save.slotId}, '
+              'owners ${owners.map((character) => character.id).toList()}',
+            );
+          }
+          retreatStarts[owners.single.id] = session.startedAt;
+        }
+        final migrationAt = DateTime.now();
+        final establishedPresence = save.lastOnlineAt != save.createdAt
+            ? save.lastOnlineAt
+            : null;
+        for (final character in characters) {
+          // Earlier migration segments may already have rewritten this row.
+          final current = await isar.characters.get(character.id) ?? character;
+          if (current.recoverySettledAt != null) continue;
+          final anchor =
+              retreatStarts[current.id] ?? establishedPresence ?? migrationAt;
+          current.recoverySettledAt = anchor.isBefore(current.createdAt)
+              ? current.createdAt
+              : anchor;
+          await isar.characters.put(current);
+        }
+      }
       save.saveVersion = _currentSaveVersion;
       await isar.saveDatas.put(save);
     });

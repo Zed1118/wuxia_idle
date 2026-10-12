@@ -158,11 +158,8 @@ class _Phase0aMainlineBattleHostState
                   cycleIndex: widget.cycleIndex,
                   formation: widget.massBattleFormation,
                 ),
-                _ => Phase0aStageContentMapper.map(
-                  stage: widget.stage,
-                  playerSnapshot: playerSnapshot,
-                  numbers: numbers,
-                  cycleIndex: widget.cycleIndex,
+                _ => throw StateError(
+                  'mainline encounter factory returned no host: ${widget.stage.id}',
                 ),
               }
             : null;

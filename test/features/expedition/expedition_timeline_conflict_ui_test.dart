@@ -124,9 +124,9 @@ class _Presence extends OnlinePresenceController {
   @override
   Future<PassiveYield?> settlePassiveWindow({
     DateTime? now,
-    bool recoverInjuries = true,
+    bool clearLightInjury = true,
   }) async {
-    events.add('presence:$recoverInjuries');
+    events.add('presence:$clearLightInjury');
     if (failure case final error?) throw error;
     return null;
   }

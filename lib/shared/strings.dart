@@ -2446,6 +2446,7 @@ class UiStrings {
   static const String seclusionSetupTitle = '闭关安排';
   static const String seclusionSetupStartButton = '开始闭关';
   static const String seclusionCollectBeforeSwitch = '请先收功领取当前闭关收益，再选择新的地图。';
+  static const String seclusionCharacterOccupied = '该角色正在其他活动中，请先结束活动再闭关。';
   static const String seclusionOpenEndedTitle = '此行不设归期';
   static String seclusionOpenEndedRule(int fullRateHours) =>
       '开始后将持续修炼，由你上线后主动收功。前 $fullRateHours 小时按当前地图完整结算。';

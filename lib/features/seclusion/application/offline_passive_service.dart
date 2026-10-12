@@ -3,13 +3,13 @@ import 'package:isar_community/isar.dart';
 import '../../../core/domain/character.dart';
 import '../../../core/domain/enums.dart';
 import '../../../core/domain/inventory_item.dart';
-import '../../../core/domain/inner_breath_disorder.dart';
 import '../../../core/domain/save_data.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
 import '../../cultivation/application/progression_gate_service.dart';
 import '../../expedition/application/expedition_service.dart';
 import '../../expedition/application/expedition_timeline.dart';
+import '../../injury/application/character_recovery_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../taohua_island/application/island_settle_service.dart';
 import '../domain/retreat_session.dart';
@@ -52,20 +52,19 @@ class OfflinePassiveService {
     );
   }
 
-  /// Settles the persistent passive ledger atomically. Lifecycle presence and
-  /// injury recovery are separate opt-ins; ordinary reward boundaries use the
-  /// defaults and cannot heal the character or overwrite the recovery window.
+  /// 同一时间线内分别结算角色疗养与掌门资源收益。重伤/紊乱始终按真实时间
+  /// 推进；轻伤仍只由原有首启/返回调息事件清除，不随心跳清零。
   static Future<PassiveYield?> settleWindow({
     required Isar isar,
     required DateTime now,
-    bool recoverInjuries = false,
+    bool clearLightInjury = false,
     bool updatePresence = false,
     bool settleIslandBeforeGrowth = false,
     ExpeditionService? expeditionService,
   }) => ExpeditionTimeline.settlePassiveWindow(
     isar: isar,
     now: now,
-    recoverInjuries: recoverInjuries,
+    clearLightInjury: clearLightInjury,
     updatePresence: updatePresence,
     settleIslandBeforeGrowth: settleIslandBeforeGrowth,
     service: expeditionService,
@@ -75,16 +74,17 @@ class OfflinePassiveService {
   /// this call before applying another reward: passive experience can advance it.
   /// External growth and succession also settle an already opened island at the
   /// current realm before they change it. Routine heartbeats leave its window.
-  /// Reward writers may update presence to protect injury timing. Only the
-  /// actual presence consumer opts into consuming the durable recap.
+  /// Only the actual presence consumer opts into consuming the durable recap.
   static Future<PassiveYield?> settleWithinTxn({
     required Isar isar,
     required DateTime now,
-    bool recoverInjuries = false,
+    bool clearLightInjury = false,
     bool updatePresence = false,
     bool consumeRecap = false,
     bool settleIslandBeforeGrowth = false,
   }) async {
+    await ExpeditionTimeline.assertPassiveBoundary(isar, now);
+    await CharacterRecoveryService.settleWithinTxn(isar: isar, now: now);
     final save = await isar.saveDatas.get(0);
     if (save == null) return null;
     final ownerId = save.founderCharacterId;
@@ -94,7 +94,6 @@ class OfflinePassiveService {
 
     final anchor = save.passiveLastSettledAt ?? save.lastOnlineAt;
     if (now.isBefore(anchor)) return null;
-    await ExpeditionTimeline.assertPassiveBoundary(isar, now);
     _validateRemainder(save.passiveMojianshiRemainder);
     _validateRemainder(character.passiveExperienceRemainder);
 
@@ -183,14 +182,10 @@ class OfflinePassiveService {
     character.passiveExperienceRemainder = accrual.experienceRemainder;
     save.passiveMojianshiRemainder = accrual.mojianshiRemainder;
 
-    if (recoverInjuries) {
-      final recoveryHours =
-          now.difference(save.lastOnlineAt).inMicroseconds /
-          Duration.microsecondsPerHour;
-      if (recoveryHours > 0) {
-        InnerBreathDisorder.recover(character: character, hours: recoveryHours);
-        final remaining = character.injuryHoursRemaining - recoveryHours;
-        character.injuryHoursRemaining = remaining < 0 ? 0 : remaining;
+    if (clearLightInjury) {
+      // 保留既有轻伤调息范围与触发：普通挂机中的掌门在首启/返回时清除。
+      // 定时疗养已经由每角色时间锚结清，不再使用 presence 时间重复恢复。
+      if (now.isAfter(save.lastOnlineAt)) {
         character.lightInjuryStacks = 0;
       }
     }

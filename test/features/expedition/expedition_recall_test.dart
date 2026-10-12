@@ -491,7 +491,7 @@ void main() {
     await OfflinePassiveService.settleWindow(
       isar: isar,
       now: at,
-      recoverInjuries: true,
+      clearLightInjury: true,
       updatePresence: true,
     );
     expect((await isar.characters.get(1))!.injuryHoursRemaining, newHeavyHours);

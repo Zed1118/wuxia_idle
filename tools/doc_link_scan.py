@@ -134,8 +134,20 @@ def git_check_ignore(paths: Iterable[str]) -> set[str]:
     paths = list(paths)
     if not paths:
         return set()
-    # git check-ignore --stdin 一次吃 N 条,输出命中的那批。
-    stdin = "\0".join(paths) + "\0"
+    def safe_probe(path: str) -> str:
+        # Git 拒绝 symlink/ 或 symlink/child。只查询首个链接自身,
+        # 不 resolve/跟随目标;is_symlink 只决定安全 probe,不判定存活。
+        prefix = Path()
+        for part in Path(path).parts:
+            prefix /= part
+            if (REPO_ROOT / prefix).is_symlink():
+                return prefix.as_posix()
+        return path
+
+    # 普通路径保留 target/ 变体,让不存在的 ignored 目录仍正确命中。
+    # 多条引用可以共用链接 probe,但返回时必须恢复每条完整原路径。
+    aliases = {path: safe_probe(path) for path in paths}
+    stdin = "\0".join(sorted(set(aliases.values()))) + "\0"
     proc = subprocess.run(
         ["git", "check-ignore", "-z", "--stdin"],
         cwd=REPO_ROOT, input=stdin,
@@ -146,7 +158,8 @@ def git_check_ignore(paths: Iterable[str]) -> set[str]:
         raise RuntimeError(
             f"git check-ignore 异常 rc={proc.returncode} stderr={proc.stderr!r}"
         )
-    return {p for p in proc.stdout.split("\0") if p}
+    ignored_probes = {p for p in proc.stdout.split("\0") if p}
+    return {path for path, probe in aliases.items() if probe in ignored_probes}
 
 
 def git_ls_files_for_ignore_test(paths: Iterable[str]) -> set[str]:

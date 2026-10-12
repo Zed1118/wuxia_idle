@@ -620,7 +620,13 @@ const legacyNumericSchemas = <CollectionSchema>[
 
 Future<void> seedLegacyNumericRows(Isar db, {int slotId = 1}) async {
   await db.writeTxn(() async {
-    await db.collection<Legacy048Character>().put(Legacy048Character());
+    // This numeric-compatibility fixture contains an active retreat. Keep its
+    // owner explicit so later identity-sensitive migrations see a valid save.
+    await db.collection<Legacy048Character>().put(
+      Legacy048Character()
+        ..isInRetreat = true
+        ..currentRetreatSessionId = 1,
+    );
     await db.collection<Legacy048Equipment>().put(Legacy048Equipment());
     await db.collection<Legacy048GameEvent>().put(Legacy048GameEvent());
     await db.collection<Legacy048InventoryItem>().put(Legacy048InventoryItem());
@@ -659,7 +665,7 @@ Future<void> seedLegacyNumericRows(Isar db, {int slotId = 1}) async {
       Legacy048RewardClaimReceipt(),
     );
     await db.collection<Legacy048RetreatSession>().put(
-      Legacy048RetreatSession(),
+      Legacy048RetreatSession()..saveDataId = slotId,
     );
     await db.collection<Legacy048Sect>().put(Legacy048Sect());
     await db.collection<Legacy048SectEvent>().put(Legacy048SectEvent());

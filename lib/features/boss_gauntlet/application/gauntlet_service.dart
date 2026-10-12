@@ -34,6 +34,7 @@ import '../../cultivation/application/progression_gate_service.dart';
 import '../../equipment/application/drop_service.dart';
 import '../../equipment/application/equipment_factory.dart';
 import '../../injury/application/injury_service.dart';
+import '../../injury/application/character_recovery_service.dart';
 import '../../mainline/domain/mainline_progress.dart';
 import '../../reward/application/durable_reward_claim_service.dart';
 import '../../reward/application/reward_claim_plan.dart';
@@ -462,6 +463,7 @@ class GauntletService {
       config: config,
       numbers: numbers,
       durableRunId: durableRunId,
+      now: advancedAt,
     );
   }
 
@@ -588,29 +590,38 @@ class GauntletService {
     required BossGauntletConfig config,
     required NumbersConfig numbers,
     int? durableRunId,
+    DateTime? now,
   }) async {
-    await GauntletAutomationAdmissionService(_isar).revalidate(admission);
-    final plan = await preparePhase0aStage(config: config);
-    if (admission.sessionPhase != GauntletPhase.inBattle ||
-        plan.stage != admission.currentStage) {
-      throw StateError('Gauntlet automation stage admission changed');
-    }
-    final result = await Phase0aGauntletStageRunner.run(
-      contentId: 'gauntlet_${plan.stage}',
-      playerSnapshot: plan.playerSnapshot,
-      enemyTeam: plan.enemyDefs,
-      numbers: numbers,
-      seed: plan.seed,
-      cycleIndex: plan.cycleIndex,
+    final at = now ?? DateTime.now();
+    return ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () async {
+        await GauntletAutomationAdmissionService(_isar).revalidate(admission);
+        final plan = await preparePhase0aStage(config: config, now: at);
+        if (admission.sessionPhase != GauntletPhase.inBattle ||
+            plan.stage != admission.currentStage) {
+          throw StateError('Gauntlet automation stage admission changed');
+        }
+        final result = await Phase0aGauntletStageRunner.run(
+          contentId: 'gauntlet_${plan.stage}',
+          playerSnapshot: plan.playerSnapshot,
+          enemyTeam: plan.enemyDefs,
+          numbers: numbers,
+          seed: plan.seed,
+          cycleIndex: plan.cycleIndex,
+        );
+        await _settleAdmittedPhase0aStageResult(
+          admission: admission,
+          result: result.settlement,
+          config: config,
+          numbers: numbers,
+          durableRunId: durableRunId,
+          at: at,
+        );
+        return result;
+      },
     );
-    await _settleAdmittedPhase0aStageResult(
-      admission: admission,
-      result: result.settlement,
-      config: config,
-      numbers: numbers,
-      durableRunId: durableRunId,
-    );
-    return result;
   }
 
   void _requireAdmittedRunState({
@@ -646,6 +657,7 @@ class GauntletService {
     required GauntletStageSettlement result,
     required BossGauntletConfig config,
     required NumbersConfig numbers,
+    required DateTime at,
     int? durableRunId,
   }) async {
     await _isar.writeTxn(() async {
@@ -670,6 +682,7 @@ class GauntletService {
         run: run,
         result: result,
         numbers: numbers,
+        at: at,
       );
       final isBoss = config.stages[run.currentStage - 1].role == 'boss';
       GauntletController.advancePhase0a(
@@ -690,7 +703,7 @@ class GauntletService {
           durableRunId: durableRunId,
           gauntletRunId: run.id,
           outcome: DurableActivityOutcome.victory,
-          at: DateTime.now(),
+          at: at,
         );
       }
     });
@@ -703,67 +716,80 @@ class GauntletService {
     required BossGauntletConfig config,
     required NumbersConfig numbers,
     int? durableRunId,
+    DateTime? now,
   }) async {
-    final admissionService = GauntletAutomationAdmissionService(_isar);
-    final initialAdmission = await admissionService.admit(request: request);
-    var stagesCompleted = 0;
+    final at = now ?? DateTime.now();
+    return ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () async {
+        final admissionService = GauntletAutomationAdmissionService(_isar);
+        final initialAdmission = await admissionService.admit(request: request);
+        var stagesCompleted = 0;
 
-    while (true) {
-      final admission = await admissionService.admit(request: request);
-      if (admission.saveDataId != initialAdmission.saveDataId ||
-          admission.runId != initialAdmission.runId ||
-          admission.memberCharacterId != initialAdmission.memberCharacterId) {
-        throw StateError('Gauntlet automation active run changed');
-      }
-
-      switch (admission.sessionPhase) {
-        case GauntletPhase.inBattle:
-          final stage = admission.currentStage;
-          final result = await fightCurrentStagePhase0a(
-            admission: admission,
-            config: config,
-            numbers: numbers,
-            durableRunId: durableRunId,
-          );
-          if (!result.leftWin) {
-            final defeatAdmission = await admissionService.admit(
-              request: request,
-            );
-            if (defeatAdmission.saveDataId != initialAdmission.saveDataId ||
-                defeatAdmission.runId != initialAdmission.runId ||
-                defeatAdmission.memberCharacterId !=
-                    initialAdmission.memberCharacterId ||
-                defeatAdmission.currentStage != stage ||
-                defeatAdmission.sessionPhase != GauntletPhase.inBattle) {
-              throw StateError('Gauntlet defeat admission changed');
-            }
-            final summary = await settleDefeat(
-              config: config,
-              numbers: numbers,
-              automationAdmission: defeatAdmission,
-              durableRunId: durableRunId,
-            );
-            return GauntletAutomationDriveResult(
-              terminal: GauntletAutomationDriveTerminal.defeated,
-              stagesCompleted: stagesCompleted,
-              defeatedAtStage: stage,
-              defeatSummary: summary,
-            );
+        while (true) {
+          final admission = await admissionService.admit(request: request);
+          if (admission.saveDataId != initialAdmission.saveDataId ||
+              admission.runId != initialAdmission.runId ||
+              admission.memberCharacterId !=
+                  initialAdmission.memberCharacterId) {
+            throw StateError('Gauntlet automation active run changed');
           }
-          stagesCompleted += 1;
-          continue;
-        case GauntletPhase.interlude:
-          await _continueAdmittedToNextStage(admission);
-          continue;
-        case GauntletPhase.awaitingRewardChoice:
-          return GauntletAutomationDriveResult(
-            terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
-            stagesCompleted: stagesCompleted,
-          );
-        case GauntletPhase.settled:
-          throw StateError('Gauntlet automation cannot drive a settled run');
-      }
-    }
+
+          switch (admission.sessionPhase) {
+            case GauntletPhase.inBattle:
+              final stage = admission.currentStage;
+              final result = await fightCurrentStagePhase0a(
+                admission: admission,
+                config: config,
+                numbers: numbers,
+                durableRunId: durableRunId,
+                now: at,
+              );
+              if (!result.leftWin) {
+                final defeatAdmission = await admissionService.admit(
+                  request: request,
+                );
+                if (defeatAdmission.saveDataId != initialAdmission.saveDataId ||
+                    defeatAdmission.runId != initialAdmission.runId ||
+                    defeatAdmission.memberCharacterId !=
+                        initialAdmission.memberCharacterId ||
+                    defeatAdmission.currentStage != stage ||
+                    defeatAdmission.sessionPhase != GauntletPhase.inBattle) {
+                  throw StateError('Gauntlet defeat admission changed');
+                }
+                final summary = await settleDefeat(
+                  config: config,
+                  numbers: numbers,
+                  automationAdmission: defeatAdmission,
+                  durableRunId: durableRunId,
+                  now: at,
+                );
+                return GauntletAutomationDriveResult(
+                  terminal: GauntletAutomationDriveTerminal.defeated,
+                  stagesCompleted: stagesCompleted,
+                  defeatedAtStage: stage,
+                  defeatSummary: summary,
+                );
+              }
+              stagesCompleted += 1;
+              continue;
+            case GauntletPhase.interlude:
+              await _continueAdmittedToNextStage(admission);
+              continue;
+            case GauntletPhase.awaitingRewardChoice:
+              return GauntletAutomationDriveResult(
+                terminal: GauntletAutomationDriveTerminal.awaitingRewardChoice,
+                stagesCompleted: stagesCompleted,
+              );
+            case GauntletPhase.settled:
+              throw StateError(
+                'Gauntlet automation cannot drive a settled run',
+              );
+          }
+        }
+      },
+    );
   }
 
   Future<void> _continueAdmittedToNextStage(
@@ -791,92 +817,114 @@ class GauntletService {
 
   Future<Phase0aGauntletStagePlan> preparePhase0aStage({
     required BossGauntletConfig config,
+    DateTime? now,
   }) async {
-    final save = await _isar.saveDatas.get(0);
-    if (save == null) throw StateError('断魂庄开打：无存档');
-    final run = await _activeRun(save.id);
-    if (run == null) throw StateError('断魂庄开打：无进行中会话');
-    if (run.sessionPhase != GauntletPhase.inBattle) {
-      throw StateError('断魂庄开打：仅关次开打态可战斗（当前 ${run.sessionPhase.name}）');
-    }
-    if (run.members.length != 1) {
-      throw StateError('Phase0a gauntlet requires exactly one member');
-    }
-    if (run.currentStage < 1 || run.currentStage > config.stages.length) {
-      throw StateError('断魂庄开打：关次越界 ${run.currentStage}');
-    }
-    final stageCfg = config.stages[run.currentStage - 1];
-    final enemyDefs = config.enemiesForTeam(stageCfg.enemyTeamId);
-    if (enemyDefs.isEmpty) {
-      throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
-    }
-    final member = run.members.single;
-    final snapshots = await PlayerCombatantSnapshotAssembler(
+    final at = now ?? DateTime.now();
+    return ExpeditionTimeline.runAfterCatchUp(
       isar: _isar,
-    ).loadExactRoster([member.characterId]);
-    var player = snapshots.single;
-    if (member.maxHp > 0) {
-      player = player.copyWith(
-        maxHp: member.maxHp,
-        currentHp: member.currentHp,
-        maxQi: member.maxQi,
-        currentQi: member.currentQi,
-        openingSkillCooldowns: member.phase0aCooldownsRecorded
-            ? const {}
-            : {
-                for (var i = 0; i < member.skillCooldownKeys.length; i++)
-                  member.skillCooldownKeys[i]: member.skillCooldownTurns[i],
-              },
-        openingSlotCooldownSeconds: member.phase0aCooldownSnapshot(),
-      );
-    }
-    return (
-      playerSnapshot: player,
-      enemyDefs: enemyDefs,
-      seed: _stageSeed(
-        run.seed,
-        run.currentStage,
-        run.cycleSeedEnabled ? run.cycleIndex : 1,
-      ),
-      isBoss: stageCfg.role == 'boss',
-      cycleIndex: run.cycleIndex,
-      stage: run.currentStage,
+      now: at,
+      action: () async {
+        final save = await _isar.saveDatas.get(0);
+        if (save == null) throw StateError('断魂庄开打：无存档');
+        final run = await _activeRun(save.id);
+        if (run == null) throw StateError('断魂庄开打：无进行中会话');
+        if (run.sessionPhase != GauntletPhase.inBattle) {
+          throw StateError('断魂庄开打：仅关次开打态可战斗（当前 ${run.sessionPhase.name}）');
+        }
+        if (run.members.length != 1) {
+          throw StateError('Phase0a gauntlet requires exactly one member');
+        }
+        if (run.currentStage < 1 || run.currentStage > config.stages.length) {
+          throw StateError('断魂庄开打：关次越界 ${run.currentStage}');
+        }
+        final stageCfg = config.stages[run.currentStage - 1];
+        final enemyDefs = config.enemiesForTeam(stageCfg.enemyTeamId);
+        if (enemyDefs.isEmpty) {
+          throw StateError('断魂庄开打：关次 ${run.currentStage} 敌队为空（配置损坏）');
+        }
+        final member = run.members.single;
+        await _isar.writeTxn(
+          () => CharacterRecoveryService.settleWithinTxn(
+            isar: _isar,
+            now: at,
+            characterIds: [member.characterId],
+          ),
+        );
+        final snapshots = await PlayerCombatantSnapshotAssembler(
+          isar: _isar,
+        ).loadExactRoster([member.characterId]);
+        var player = snapshots.single;
+        if (member.maxHp > 0) {
+          player = player.copyWith(
+            maxHp: member.maxHp,
+            currentHp: member.currentHp,
+            maxQi: member.maxQi,
+            currentQi: member.currentQi,
+            openingSkillCooldowns: member.phase0aCooldownsRecorded
+                ? const {}
+                : {
+                    for (var i = 0; i < member.skillCooldownKeys.length; i++)
+                      member.skillCooldownKeys[i]: member.skillCooldownTurns[i],
+                  },
+            openingSlotCooldownSeconds: member.phase0aCooldownSnapshot(),
+          );
+        }
+        return (
+          playerSnapshot: player,
+          enemyDefs: enemyDefs,
+          seed: _stageSeed(
+            run.seed,
+            run.currentStage,
+            run.cycleSeedEnabled ? run.cycleIndex : 1,
+          ),
+          isBoss: stageCfg.role == 'boss',
+          cycleIndex: run.cycleIndex,
+          stage: run.currentStage,
+        );
+      },
     );
   }
 
   Future<void> settlePhase0aStageResult({
     required GauntletStageSettlement result,
     required BossGauntletConfig config,
+    DateTime? now,
   }) async {
-    await _isar.writeTxn(() async {
-      final save = await _isar.saveDatas.get(0);
-      if (save == null) return;
-      final fresh = await _activeRun(save.id);
-      if (fresh == null) return;
-      if (fresh.members.length != 1 ||
-          fresh.currentStage < 1 ||
-          fresh.currentStage > config.stages.length) {
-        return;
-      }
-      await _applySharedCombatLedger(
-        run: fresh,
-        result: result,
-        numbers: GameRepository.instance.numbers,
-      );
-      final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
-      GauntletController.advancePhase0a(
-        run: fresh,
-        checkpoint: result.checkpoint,
-        leftWin: result.leftWin,
-        isBossStage: isBoss,
-      );
-      GauntletController.stageBossReward(
-        run: fresh,
-        config: config,
-        alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
-      );
-      await _isar.bossGauntletRuns.put(fresh);
-    });
+    final at = now ?? DateTime.now();
+    await ExpeditionTimeline.runAfterCatchUp(
+      isar: _isar,
+      now: at,
+      action: () => _isar.writeTxn(() async {
+        final save = await _isar.saveDatas.get(0);
+        if (save == null) return;
+        final fresh = await _activeRun(save.id);
+        if (fresh == null) return;
+        if (fresh.members.length != 1 ||
+            fresh.currentStage < 1 ||
+            fresh.currentStage > config.stages.length) {
+          return;
+        }
+        await _applySharedCombatLedger(
+          run: fresh,
+          result: result,
+          numbers: GameRepository.instance.numbers,
+          at: at,
+        );
+        final isBoss = config.stages[fresh.currentStage - 1].role == 'boss';
+        GauntletController.advancePhase0a(
+          run: fresh,
+          checkpoint: result.checkpoint,
+          leftWin: result.leftWin,
+          isBossStage: isBoss,
+        );
+        GauntletController.stageBossReward(
+          run: fresh,
+          config: config,
+          alreadyCleared: save.clearedGauntletIds.contains(gauntletId),
+        );
+        await _isar.bossGauntletRuns.put(fresh);
+      }),
+    );
   }
 
   /// 将单关终局写入全模式共享战斗账本。断魂庄的经验、领悟、奖励与伤势仍在
@@ -886,6 +934,7 @@ class GauntletService {
     required BossGauntletRun run,
     required GauntletStageSettlement result,
     required NumbersConfig numbers,
+    required DateTime at,
   }) async {
     final member = run.members.length == 1 ? run.members.single : null;
     final settlement = result.combatSettlement;
@@ -906,6 +955,11 @@ class GauntletService {
       );
     }
 
+    await CharacterRecoveryService.settleWithinTxn(
+      isar: _isar,
+      now: at,
+      characterIds: [member.characterId],
+    );
     final character = await _isar.characters.get(member.characterId);
     if (character == null) {
       throw StateError('Gauntlet combat participant is missing');
@@ -1290,7 +1344,7 @@ class GauntletService {
             durableRunId: durableRunId,
             gauntletRunId: run.id,
             outcome: DurableActivityOutcome.defeat,
-            at: now ?? DateTime.now(),
+            at: at,
           );
         }
         await _isar.bossGauntletRuns.delete(run.id);

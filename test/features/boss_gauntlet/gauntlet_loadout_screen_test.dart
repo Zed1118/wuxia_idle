@@ -166,6 +166,7 @@ class _SpyGauntletService extends GauntletService {
     required BossGauntletConfig config,
     required NumbersConfig numbers,
     int? durableRunId,
+    DateTime? now,
   }) async {
     driveAutomationRequest = request;
     return const GauntletAutomationDriveResult(

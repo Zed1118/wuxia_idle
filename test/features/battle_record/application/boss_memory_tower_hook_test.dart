@@ -73,6 +73,7 @@ void main() {
     test('爬塔 Boss 层胜利 → 留档(source=tower, bossKey=tower_floor_10)', () async {
       const floorIndex = 10;
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.tower,
         bossKey: towerBossKey(floorIndex),
         groupIndex: floorIndex,
@@ -104,6 +105,7 @@ void main() {
     test('爬塔 Boss 层第 5 层 → bossKey = tower_floor_5', () async {
       const floorIndex = 5;
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.tower,
         bossKey: towerBossKey(floorIndex),
         groupIndex: floorIndex,
@@ -125,6 +127,7 @@ void main() {
       const drops = DropResult(equipments: [], items: []);
       for (var i = 0; i < 3; i++) {
         await runBossMemoryHookAfterVictory(
+          participantCharacterIds: const [],
           source: BossMemorySource.tower,
           bossKey: towerBossKey(floorIndex),
           groupIndex: floorIndex,
@@ -146,6 +149,7 @@ void main() {
     test('主线 + 爬塔 bossKey 不冲突(各自独立条目)', () async {
       const drops = DropResult(equipments: [], items: []);
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.mainline,
         bossKey: 'stage_01_05',
         groupIndex: 1,
@@ -154,6 +158,7 @@ void main() {
         drops: drops,
       );
       await runBossMemoryHookAfterVictory(
+        participantCharacterIds: const [],
         source: BossMemorySource.tower,
         bossKey: towerBossKey(5),
         groupIndex: 5,

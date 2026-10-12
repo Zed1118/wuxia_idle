@@ -12,6 +12,7 @@ import 'package:wuxia_idle/features/activity/domain/activity_member_snapshot.dar
 import 'package:wuxia_idle/features/boss_gauntlet/domain/boss_gauntlet_run.dart';
 import 'package:wuxia_idle/features/dispel/application/dispel_service.dart';
 import 'package:wuxia_idle/features/expedition/domain/expedition_run.dart';
+import 'package:wuxia_idle/features/injury/application/character_recovery_service.dart';
 
 import '../../../support/isar_test_support.dart';
 import '../../../support/test_data.dart';
@@ -212,6 +213,44 @@ void main() {
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }
+  });
+
+  test('主动散功先恢复旧伤，再施加新紊乱并持久化本次时间锚', () async {
+    final isar = IsarSetup.instance;
+    final fixture = await _seedDispelFixture(isar);
+    final start = DateTime(2026, 9, 22, 10);
+    final at = start.add(const Duration(hours: 2));
+    final numbers = GameRepository.instance.numbers;
+    await isar.writeTxn(() async {
+      final character = (await isar.characters.get(fixture.character.id))!;
+      character.injuryHoursRemaining = 8;
+      character.innerBreathDisorderHoursRemaining = 4;
+      character.recoverySettledAt = start;
+      await isar.characters.put(character);
+    });
+    final result = await DispelService(isar: isar).dispelAndPersist(
+      characterId: fixture.character.id,
+      expectedMainTechniqueId: fixture.mainTechnique.id,
+      newMainTechniqueId: fixture.newMainTechnique.id,
+      n: numbers,
+      now: at,
+    );
+    expect(result.success, isTrue);
+    var character = (await isar.characters.get(fixture.character.id))!;
+    final expectedDisorder = (2 + numbers.innerBreathDisorder.dispelHours)
+        .clamp(0.0, numbers.innerBreathDisorder.maxHours);
+    expect(character.injuryHoursRemaining, 6);
+    expect(character.innerBreathDisorderHoursRemaining, expectedDisorder);
+    expect(character.recoverySettledAt, at);
+    await isar.writeTxn(
+      () => CharacterRecoveryService.settleWithinTxn(
+        isar: isar,
+        now: at.add(const Duration(hours: 1)),
+      ),
+    );
+    character = (await isar.characters.get(fixture.character.id))!;
+    expect(character.injuryHoursRemaining, 5);
+    expect(character.innerBreathDisorderHoursRemaining, expectedDisorder - 1);
   });
 
   test('dispelAndPersist → 关闭再读，3 个对象字段全部落地', () async {

@@ -6220,7 +6220,9 @@ tasks:
       factual_failure_display_implemented: true
       decision_batch: docs/audit/phase2_m0_decision_batch_2026-09-04.md
       weapon_timeline_qi_mapping_approved_on: 2026-09-11
-      weapon_timeline_qi_production_wiring: connected_verified_uncommitted_candidate
+      weapon_timeline_qi_production_wiring: connected_in_unified_candidate
+      weapon_mapping_integration_commit: 8bb82d2c4
+      review_fact_refresh_on: "2026-09-22"
       weapon_mapping_evidence: docs/audit/phase2_m0_production_mapping_2026-09-11.md
       formal_M0_closed: false
     blockers:
@@ -6238,16 +6240,24 @@ tasks:
     acceptance_target: 1_of_1_formal_M2_gate
     acceptance_result: 0_of_1_formal_M2_gate
     evidence:
-      engineering_candidate_integrated: true
       human_desktop_acceptance: pending_actual_human_signoff
-      delegated_work_resumed_on: 2026-09-05
-      delegated_work_authorization: process_all_remaining_tasks_in_priority_order
-      frozen_production_sha: 6d8ffa1445b4082535b2aa32a4a71afb7c990275
-      delegated_blackwind_terminal_attempts: 2_explicit_defeats_retry_and_return_verified
-      legal_fresh_save_first_clear: first_stage_not_won
-      real_save_control_matrix: 2_saves_x_3_stages_x_3_tactics_x_3_seeds_diagnostic_only
-      first_stage_and_blackwind_matrix_wins: 0_of_36
-      evidence_report: docs/audit/phase2_m2_priority_acceptance_2026-09-05.md
+      historical_20260905:
+        engineering_candidate_integrated: true
+        frozen_production_sha: 6d8ffa1445b4082535b2aa32a4a71afb7c990275
+        delegated_blackwind_terminal_attempts: 2_explicit_defeats_retry_and_return_verified
+        legal_fresh_save_first_clear: first_stage_not_won
+        real_save_control_matrix: 2_saves_x_3_stages_x_3_tactics_x_3_seeds_diagnostic_only
+        first_stage_and_blackwind_matrix_wins: 0_of_36
+        evidence_report: docs/audit/phase2_m2_priority_acceptance_2026-09-05.md
+      current_review_20260922:
+        frozen_production_sha: 29d2fb009aefb1969036550a0d4b1b9032432d3b
+        baseline_legal_chain: gang_and_ling_win_first_two_stages_then_lose_blackwind
+        followup_action_separated_with_Q: gang_loses_second_stage_ling_loses_blackwind
+        chapter_04_and_05: not_entered
+        native_engineering_smoke: two_viewports_isolated_new_saves_menu_battle_pause_and_1280_reopen
+        human_signoff: NOT_RUN
+        exact_final_candidate_revalidation: required_source_must_match_package
+        evidence_root: /Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough
     blockers:
       - "第一章新档连续推进与操作容错证据不足：本配置（gang_meng / mountain_wanderer / balanced_seed）01_01/01_02 风筝可通；01_03 黑风岭固定种子连续链 0/1，118 拍败；粗放/慢反应（每 3 拍决策）/站桩三变体在 01_01、01_02 全败；真人验证待补。"
       - real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff
@@ -6344,6 +6354,17 @@ tasks:
       macos_profile_runs_passed: 6
       macos_profile_runs_total: 6
       worst_observed_p99_total_ms: 10.569
+      above_profile_numbers_scope: historical_24_entity_technical_fixture_not_current_production_matrix
+      current_review_20260922:
+        frozen_production_sha: 29d2fb009aefb1969036550a0d4b1b9032432d3b
+        tower_raw_valid_rounds: 6
+        tower_frame_and_rss_passed: 6
+        tower_quiet_qualified_rounds: 3
+        tower_actual_visible_enemies: 1
+        remaining_matrix_not_sampled: 28
+        historical_stage_01_05_raster_59_678_ms_root_cause: open_insufficient_trace
+        native_sampling_running: false
+        evidence_report: /Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough/m4/性能采样结果.md
       human_visual_audio_acceptance: deferred_by_user
       windows_profile_acceptance: deferred
     blockers:
@@ -8212,22 +8233,26 @@ tasks:
     status: in_progress
     current_authoritative_wip: false
     completion_scope: migrate_all_supported_content_to_the_new_system_and_retire_legacy_runtime_consumers
-    acceptance_target: mainline_105_of_105_tower_49_of_49_and_legacy_runtime_consumers_0
-    acceptance_result: mainline_105_of_105_integrated_tower_7_of_49_verified_local_candidate_legacy_retirement_open
+    acceptance_target: mainline_105_of_105_tower_49_of_49_and_generic_mainline_tower_legacy_consumers_0
+    acceptance_result: mainline_105_of_105_tower_49_of_49_targeted_verified_unified_local_candidate_formal_M7_open
     evidence:
       mainline_catalog_integrated: 105_of_105
       mainline_catalog_local_candidate: 105_of_105
       remaining_mainline_stages_integrated: 0_of_105
       remaining_mainline_stages_in_local_candidate: 0_of_105
-      next_authoritative_task: P2-M7-TOWER-FIRST-SEVEN
-      next_recommended_gate: remaining_tower_floors_8_through_49_require_next_batch_authorization
+      next_authoritative_task: P2-M2-HUMAN-G2-ACCEPTANCE
+      next_recommended_gate: verify_unified_candidate_full_suite_then_complete_formal_M2_M6_dependencies
       local_candidate_counts_as_integrated_stage: false
       chapter_13_status: integrated_origin_main_ci_success
       chapter_13_decision: COMBAT-ECOLOGY-CH13-LAYERED-EXAMINATION-01
       tower_foundation_before_denominator_increment: multi_enemy_runtime_binding_guardian_id_translation_and_three_production_entrypoints
       tower_foundation_counts_as_migrated_floor: false
       tower_foundation_status: integrated_main_1_of_1
-      legacy_production_seams: two_mainline_null_fallbacks_and_three_tower_direct_mapper_paths
+      generic_mainline_tower_legacy_consumers: 0
+      tower_local_candidate: 49_of_49
+      special_mode_dedicated_mappers_preserved: true
+      full_tower_audit: docs/audit/phase2_m7_tower_full_migration_2026-09-22.md
+      exact_candidate_verification_receipt: /Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough/tower/delivery.json
       next_batch_audit: docs/audit/phase2_m7_next_batch_and_tower_foundation_audit_2026-09-04.md
       chapter_13_candidate_audit: docs/audit/phase2_m7_ch13_content_migration_2026-09-04.md
       dependency_decision: M7-DEPENDENCY-SEMANTICS-01

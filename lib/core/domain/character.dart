@@ -39,6 +39,11 @@ class Character {
   /// 带伤可出战(debuff 生效)。
   double injuryHoursRemaining = 0;
 
+  /// Last settled real-time recovery boundary for this character (saveVer 0.52).
+  /// Null means no trustworthy character-specific boundary has been established.
+  /// Independent of presence, passive rewards, and the current leader identity.
+  DateTime? recoverySettledAt;
+
   int experience = 0;
 
   /// Fractional idle experience stays with its recipient across succession.
@@ -187,6 +192,7 @@ class Character {
     double innerDemonResidueHoursRemaining = 0,
     int lightInjuryStacks = 0,
     double injuryHoursRemaining = 0,
+    DateTime? recoverySettledAt,
     int experience = 0,
     double passiveExperienceRemainder = 0,
     int experienceToNextLayer = 100,
@@ -237,6 +243,7 @@ class Character {
       ..innerDemonResidueHoursRemaining = innerDemonResidueHoursRemaining
       ..lightInjuryStacks = lightInjuryStacks
       ..injuryHoursRemaining = injuryHoursRemaining
+      ..recoverySettledAt = recoverySettledAt
       ..experience = experience
       ..passiveExperienceRemainder = passiveExperienceRemainder
       ..experienceToNextLayer = experienceToNextLayer

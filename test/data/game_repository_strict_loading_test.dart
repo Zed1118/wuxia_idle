@@ -79,6 +79,68 @@ void main() {
     'data/boss_gauntlets.yaml',
   ];
 
+  test('production requires the migrated combat root manifest', () async {
+    overrides['data/combat/manifest.yaml'] = null;
+    await expectLater(
+      GameRepository.loadAllDefs(),
+      throwsA(assetFailure('data/combat/manifest.yaml')),
+    );
+    expect(GameRepository.isLoaded, isFalse);
+  });
+
+  for (final legacy in [false, true]) {
+    test(
+      'production rejects ${legacy ? 'legacy' : 'missing'} mainline assignment',
+      () async {
+        // Reclassify an existing, fully authored special stage to prove coverage
+        // follows the actual stage set, rather than a hard-coded 105-count.
+        const stageId = 'stage_light_foot_01';
+        final stages = parseYamlMap(
+          await File('data/stages.yaml').readAsString(),
+        );
+        final stage = (stages['stages'] as List).cast<Map>().singleWhere(
+          (s) => s['id'] == stageId,
+        );
+        stage['stageType'] = 'mainline';
+        overrides['data/stages.yaml'] = jsonEncode(stages);
+        if (legacy) {
+          const path = 'data/combat/manifest/stage_assignments.yaml';
+          final assignments = parseYamlMap(await File(path).readAsString());
+          (assignments['stage_assignments'] as List).add({
+            'stage_id': stageId,
+            'migration_state': 'legacy',
+          });
+          overrides[path] = jsonEncode(assignments);
+        }
+        await expectLater(
+          GameRepository.loadAllDefs(),
+          throwsA(
+            assetFailure('data/combat/manifest/stage_assignments.yaml', [
+              stageId,
+            ]),
+          ),
+        );
+        expect(GameRepository.isLoaded, isFalse);
+      },
+    );
+  }
+
+  test('isolated fixture may still omit the combat catalog', () async {
+    final repo = await GameRepository.loadAllDefs(
+      loader: (path) {
+        if (path == 'data/combat/manifest.yaml') {
+          throw FileSystemException(
+            'missing',
+            path,
+            const OSError('missing', 2),
+          );
+        }
+        return fixtureLoader(path);
+      },
+    );
+    expect(repo.combatCatalog, isNull);
+  });
+
   test(
     'production rootBundle loads the complete shipped configuration',
     () async {

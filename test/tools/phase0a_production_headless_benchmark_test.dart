@@ -107,8 +107,8 @@ void main() {
     const HeadlessBenchmarkContent.mainline('stage_01_03'): 'typed_mainline',
     const HeadlessBenchmarkContent.tower('tower_1'): 'typed_tower',
     const HeadlessBenchmarkContent.tower('tower_7'): 'typed_tower',
-    const HeadlessBenchmarkContent.tower('tower_8'): 'legacy_tower',
-    const HeadlessBenchmarkContent.tower('tower_49'): 'legacy_tower',
+    const HeadlessBenchmarkContent.tower('tower_8'): 'typed_tower',
+    const HeadlessBenchmarkContent.tower('tower_49'): 'typed_tower',
   }.entries) {
     test(
       '${entry.key.contentId} measures production route and preserves async/replay result',
