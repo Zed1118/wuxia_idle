@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 纯迁移(生产 `IsarSetup.init` 打开副本) | PASS | PASS | PASS |
 | 纯迁移幂等(再开一次) | 0 差异 | 0 差异 | 0 差异 |
-| 原生首开→退出(独立 bundle `com.pen.wuxia.realsavemig20261012`) | 进主页+离线弹窗正常;**退出与字段审计未完成**(用户需用电脑,暂停) | PASS(21 处差异全归因) | 未跑 |
+| 原生首开→退出(独立 bundle `com.pen.wuxia.realsavemig20261012`) | 进主页+离线弹窗正常;**退出与字段审计未完成**(用户需用电脑,暂停;用户 2026-10-12 定:以后补跑,结论标「含调试数据」) | PASS(21 处差异全归因) | 未跑 |
 | 原生再开→退出 | 未跑 | PASS(13 处差异全归因) | 未跑 |
 
 ## 真档身份(只读)
@@ -36,7 +36,7 @@
 
 ## 发现(待用户定夺,本次未修)
 
-1. **slot1 残留闭关指针**:角色 6「闭关行者」`currentRetreatSessionId=1`,该会话 `status=completed`(08-05 已收功,且 `realmTierAtStart=zongShi` 与角色学徒境界不符)。`CharacterOccupancyService` 只看指针非空,会把该角色永久判为闭关中;R1 合入后闭关入口也读此占用。属迁移前已存在的数据异常,非本次迁移引入。slot1 角色创建时间全为 07-14 00:00,疑为调试造档。
+1. **slot1 残留闭关指针**:角色 6「闭关行者」`currentRetreatSessionId=1`,该会话 `status=completed`(08-05 已收功,且 `realmTierAtStart=zongShi` 与角色学徒境界不符)。`CharacterOccupancyService` 只看指针非空,会把该角色永久判为闭关中;R1 合入后闭关入口也读此占用。属迁移前已存在的数据异常,非本次迁移引入。**根因已定位为调试造档,非生产缺陷**:`Phase2SeedService.seedTeamLineup()`(`lib/features/debug/application/phase2_seed_service.dart:1288-1392`)固定 `now = 2026-07-14`,直接给「闭关行者」写 `retreatSessionId: 1` 而不建会话;id=1 的会话来自另一条调试种子(`visual_route_host.dart:383-405`,宗师·藏经阁,归属角色 1)。生产路径的开始/收功都校验归属并成对写清指针(`seclusion_service.dart:226/594`),无法造出此状态。故 slot1 是含调试数据的档,其原生复验结论只代表「迁移不崩、不改数据」,不代表正常玩家档;本次不改代码。
 2. **心魔个人进度展示**:slot1 心魔第 1 关的突破门槛(读全局 `MainlineProgress`)不受影响;但角色面板/心魔列表改读个人收据,会显示无人通过,原通关者可再领一次首通奖励。属 v1.97「旧档不猜人」的既定后果。
 3. **退出确认框正文对比度过低**:宣纸底上浅灰字几乎不可读(截图 `shots/04-quit-confirm.png`)。
 
