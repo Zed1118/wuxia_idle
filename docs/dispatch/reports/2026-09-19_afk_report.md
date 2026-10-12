@@ -58,3 +58,12 @@
 | ④ | P13 死链 (b) | codex F 单:扫描器新增「来源 basename 含 `YYYY-MM-DD`=历史快照」归档判据(比整目录 `docs/spec` 精确,活 spec 不被藏),两层测试 26/21;6 处活文档引用改纯文本+移除 commit 证据;dead 225→**0**、归档 1582→1801;首轮 [BLOCKED] 抓到派单包「220 条带日期」计错(实 219+1 无日期预检文档),F-续补授权后交付;合入 `81c2f06c8`,CI 35679748700 success;pool P13 销、P14 依赖解除待你一句话 |
 
 代拍决策(全 🟢/🟡):归档判据取「文件名日期」而非整目录(🟡 工具规则,无产品语义);`compare_phase0a_headless_baseline_test.dart` 与主题无关的 hunk 剔除不收编(🟢);`strings.dart` 一行文案由协调者预置(🟢 微修例外 ①–⑥ 满足);GDD v1.78 摘要记录用户已拍语义(🔴 语义本身已由用户拍板,GDD 行只是记录)。
+
+## 第五轮(用户 2026-10-12 「按推荐先做」+「现阶段所有工作自己处理，不派发任何外部agent」)
+
+| 项 | 结果 |
+|---|---|
+| review-followthrough 候选 `c46a769e0` | 协调者独立 `gate.sh`(`--allow-forbidden PROGRESS.md,lib/shared/strings.dart`):full_test `08:35 +7340` / analyze 0 / format 1884·0 / forbidden·clean PASS;三项 FAIL 已判读——`test_deletions` 149 行经 29 个文件 `expect(` 计数对比无一减少(重构/改名,塔结算测 48→66),`commit_msg` tip 无 `[READY]` 属 CLAUDE §8.3 用户点名例外,`receipt_crosscheck` 因非派单产物无收据(未代编)。合并后自做两向证红:R1 闭关占用 去检查红 2/恒拒红 3、R2/R3 疗养 去锚写入红 5/恒不疗养红 9,均还原绿。GDD v1.79 登记 saveVersion 0.52.0 |
+| 两条 08-22 旧远端分支 | `codex/phase0a-gauntlet-main-0822`(6)与 `codex/phase0a-gauntlet-compat-0822`(3)经 `git cherry` 全为等价补丁已在 main,删除远端分支 |
+
+代拍决策:三项 Gate FAIL 判读放行(🟡 已在本段列证据);旧分支删除(🟢 内容零丢失)。R5 奇遇击杀计数、P14 销留、m4 旧 worktree 删除仍待用户。

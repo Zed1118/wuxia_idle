@@ -3,12 +3,12 @@
 > 1.0 长线打磨期，质量优先、不设上线时间压力。操作规则见 CLAUDE.md；产品权威见 GDD.md。
 > 本页只保留当前摘要；历史快照由 git、对应 audit 与 dispatch 报告追溯。
 
-## 当前状态（2026-09-22）
+## 当前状态（2026-10-12）
 
 - **正式 Gate：M0–M9 为 1/10，仅 M1。主 WIP 为 M2。** M0 的20项数值方向已选，等待验证，不重投票；心魔逐身份签认仍缺。M2–M6 人工/平台门未关闭，M7 工程迁移不能代签，M8/M9 尚未解锁。
-- **统一候选**：分支 `codex/review-followthrough-20260922`，工作树 `/Users/a10506/.codex/worktrees/wuxia-review-followthrough/挂机武侠`。本轮基线 `02994529f80953a56172725aa04febbfaf1144da`；最终 SHA、测试、coverage 与 clean 收据见外部 `wuxia-review-followthrough/execution-checkpoint.json` 及 `tower/delivery.json`。候选未合 main、未 push、未发布。
-- **已连接能力**：G 单断魂庄跨关冷却/参战装备锁已在基线；R1 拒绝同角色闭关双占用、R2/R3 逐角色真实时间疗养及0.52存档加法、R4 Boss首胜按实际参战者记录在候选。塔49层已使用 typed 工厂，主线105与塔通用旧路由消费归零，特殊活动专用路径保留。详 `docs/audit/phase2_m7_tower_full_migration_2026-09-22.md`。
-- **验证口径**：R4冻结SHA `00982ba029` 完整7131通过；塔批定向114+141+111+4通过。后续完整套件结果以最终候选收据为准，不将旧版本绿测转记为当前结果。当前候选无远端CI或物理Windows验收。
+- **已合 main（2026-10-12）**：候选 `codex/review-followthrough-20260922` @ `c46a769e0` 经协调者独立 Gate 后 `--no-ff` 合入 main 与集成链（GDD v1.79，saveVersion 0.52.0）。外部证据目录 `/Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough/`；收账见 `docs/dispatch/reports/2026-09-19_afk_report.md` 第五轮。
+- **已连接能力**：G 单断魂庄跨关冷却/参战装备锁已在基线；R1 拒绝同角色闭关双占用、R2/R3 逐角色真实时间疗养及0.52存档加法、R4 Boss首胜按实际参战者记录均已合 main。塔49层已使用 typed 工厂，主线105与塔通用旧路由消费归零，特殊活动专用路径保留。详 `docs/audit/phase2_m7_tower_full_migration_2026-09-22.md`。
+- **验证口径**：协调者独立 Gate 全量 `08:35 +7340` 全绿、analyze 0、format 1884/0；R1 占用与 R2/R3 疗养两向证红（2/3、5/9 红，还原绿）。远端 CI 以合入 commit 为准；物理 Windows、真人与真实存档 0.40→0.52 迁移仍未验收。
 - **前三阻塞**：①合法新档第一章连续体验：两条固定脚本均未通过黑风岭，04/05未进入，真人容错待验；②M4同版本合格生产矩阵与历史长帧定位；③同冻结版M2–M6真人及物理Windows。各项不能以自动诊断、Mac短样本或UI smoke替代。
 - **M4实测边界**：`29d2fb009` 双视口塔6轮帧/RSS均通过，3轮静默基线合格，矩阵另28格未采；历史01_05@1440的59.678ms raster根因未定。后台干扰后已结束本批采样，不结束用户应用或放宽阈值。证据见外部 `m4/性能采样结果.md`。
 - **待决与下一步**：R5奇遇击杀账需明确真实击杀或旧通关配额口径；不先改经济倍率。完成本轮工具/状态收口与统一回归后，准备同一候选的人工验收入口；M2/M4反馈与Windows条件就绪后按依赖继续。真人待决不视为默认批准。
