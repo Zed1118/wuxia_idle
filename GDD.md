@@ -4,9 +4,9 @@
 >
 > **维护规则**：本文档由 Mac 端 Claude Code 维护。修改需附带变更说明。**版本管理体例**(2026-06-11 起):in-place 修订 + 版本号;头部只留最近 2 版摘要,更早的迁 `docs/_archive/GDD_CHANGELOG.md`;重大阶段切换点冻结全文快照入 `docs/_archive/`(现有基线:`GDD_v1.16_frozen_2026-06-11.md` = 进入打磨期时点)。
 >
-> **版本**:v1.79
+> **版本**:v1.80
+> **v1.80 变更**(2026-10-12 R5 奇遇击杀账口径 · 用户拍板「真实击杀」 · 0 改门槛/概率/奖励/schema):§7.2「击败 N 名敌人」按字面落实——结算快照新增 `CombatSettlementSnapshot.defeatedEnemySchools`,由 Phase 0A 击败事件按敌方单位去重生成,查不到映射单位即 fail-closed;主线结算、主线可见重打与爬塔三处记账点改读该列表,不再按关卡 `enemyTeam` 人头每关记 1。typed 首关 25 名山匪逐名计入;存活/逃离/未出场敌人不计;零击杀胜利(守护/生存类)不加击杀但照常判定奇遇;扫荡与即时快速重打维持既有「不记击杀」。影响:首通主线 105 关+塔 49 层后可开门的击杀门槛奇遇由 7/15 增至 12/15 且开门显著提前(分析见 `docs/audit/r5_encounter_kill_ledger_2026-10-12.md`),门槛数值未重标。
 > **v1.79 变更**(2026-10-12 合入 review-followthrough 候选 `c46a769e0` · [schema] saveVersion 0.51.0→0.52.0 纯加法 · 0 改数值):① 活动占用:闭关开始在写事务内读 `CharacterOccupancyService`,正在远征/断魂庄的同一角色被拒(`UiStrings.seclusionCharacterOccupied`),反向顺序远征/断魂庄入口亦拒,空闲角色与其他门人不受影响;② 逐角色真实时间疗养:新增 nullable `Character.recoverySettledAt` 作为每名角色独立的疗养结算锚,掌门、非出战门人与旧掌门按同一真实时间恢复重伤/内息紊乱,与在线心跳、挂机收益和当前掌门身份解耦;闭关收功不再按整段时长重复扣减,轻伤调息事件保留;迁移段 22 只补锚不疗养,进行中闭关保留 `startedAt` 权益,无可信锚时从迁移时刻起算不追溯;③ Boss 首胜按已核验结算的实际参战者记录,换人重打保留历史首胜、只加击败次数;④ 九霄塔 49 层全部走 typed 工厂,主线 105 关与塔的通用旧路由兜底退役(三类特殊模式专用 mapper 保留)。执行端完整套件 7340 PASS、覆盖率 87.24%;协调者独立 Gate 与证红见 `docs/dispatch/reports/2026-09-19_afk_report.md` 第五轮。不改敌人、技能、奖励、经济、解锁或伤势数值;R5 奇遇击杀计数口径未决未动。详 `docs/audit/phase2_m7_tower_full_migration_2026-09-22.md`。
-> **v1.78 变更**(2026-09-22 断魂庄招式冷却按秒跨关保留 + 在庄禁装卸 · [schema] saveVersion 0.50.0→0.51.0 纯加法 · 0 改数值):断魂庄一局三关现由 `GauntletMemberCheckpoint` 在关末把各槽剩余冷却**秒数**写入 `ActivityMemberSnapshot` 新增三字段（`phase0aCooldownsRecorded/Keys/Seconds`），下一关开场经 `CombatantSnapshot.openingSlotCooldownSeconds` 按运行槽恢复，未知槽位/负数/非有限值 fail-fast；live `GauntletController` 与 headless `Phase0aGauntletStageRunner` 共用同一检查点路径（parity 测试逐槽相等），旧档缺字段读「未记录」、不回填不推断，旧 `skillCooldownTurns` 保留不换算。角色处于断魂庄 active 会话期间，`SkillLoadoutService`/`EncounterService` 在写事务内读统一占用并拒绝手动装卸（`SlotEquipOccupied`/`EquipOccupied`），藏经阁与角色面板奇遇招式区按实际成员灰显并提示 `UiStrings.gauntletSkillLoadoutOccupied`；`applyAutoFill` 首关装配不拦。RED 三入口各 `+0 -1`，定向 62 文件 540 例、全量 `08:35 +7080`、analyze 0、format 0 changed；三向证红 3/3/8 还原绿；既有测试零删除（parity `+121/-0`），20 处当前版本断言字面量同步。不改冷却时长物化口径（`turns × 0.55s`）、敌人数值、奖励、门票、周目、解锁；不开放前台 bot；不推广到主线/塔。spec `docs/spec/2026-09-22-gauntlet-cooldown-checkpoint-design.md`。
 >
 > **当前状态块(GDD 唯一权威快照 · truth_source_guard_test 自动校验 · 加章 reconcile 必更)**:
 > - 发布上限:绝对境界层 **49**(武圣·登峰 = 武圣段收官 = **主线终章**·49 为绝对终点无第 50 层;真相源 `data/numbers.yaml` `progression.release_cap.max_absolute_realm_level`)
@@ -510,7 +510,7 @@
 
 ### 7.2 武学领悟（替代抽卡）
 
-挂机 / 探索时累积各类触发进度。条件满足后按**悟性**计算武学领悟概率，命中时弹出“灵光一现”事件；不另设可积攒的“机缘值”。普通奇遇仍按**机缘**计算概率，少量选项会明确显示机缘门槛，未达标时保持可见但不可选择。
+挂机 / 探索时累积各类触发进度。击杀进度按每场胜利中**实际被击败的敌人**逐名累计(同一敌人只计一次,存活或未出场者不计),不按关卡敌人配置人头计;扫荡与即时快速重打不累计。条件满足后按**悟性**计算武学领悟概率，命中时弹出“灵光一现”事件；不另设可积攒的“机缘值”。普通奇遇仍按**机缘**计算概率，少量选项会明确显示机缘门槛，未达标时保持可见但不可选择。
 
 **示例**：
 
