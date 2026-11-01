@@ -245,6 +245,7 @@ Future<void> runStageFlow({
           stage: launch.stage,
           targetCycle: targetCycle,
           playerSnapshot: launch.playerSnapshot,
+          isFirstClear: true,
           allowEnterNextStage: nextStage != null,
           completesChapter: boundary != null,
           victoryActionSink: (value) => action = value,
@@ -808,6 +809,7 @@ Future<void> _runSingleStageFlow({
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
   ActivityController battleController = ActivityController.human,
+  bool isFirstClear = false,
   bool allowEnterNextStage = false,
   bool completesChapter = false,
   ValueChanged<StageVictoryAction>? victoryActionSink,
@@ -938,6 +940,7 @@ Future<void> _runSingleStageFlow({
         targetCycle: targetCycle,
         playerSnapshot: playerSnapshot,
         controller: battleController,
+        isFirstClear: isFirstClear,
         onDefeatReason: (reason) => defeatReason = reason,
       );
     }
@@ -1594,6 +1597,7 @@ Future<MainlineBattleExit> _runBattle({
   int targetCycle = 1,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  bool isFirstClear = false,
   ValueChanged<String>? onDefeatReason,
 }) async {
   return _runPhase0aBattle(
@@ -1602,6 +1606,7 @@ Future<MainlineBattleExit> _runBattle({
     targetCycle: targetCycle,
     playerSnapshot: playerSnapshot,
     controller: controller,
+    isFirstClear: isFirstClear,
     onDefeatReason: onDefeatReason,
   );
 }
@@ -1618,6 +1623,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
   required int targetCycle,
   CombatantSnapshot? playerSnapshot,
   ActivityController controller = ActivityController.human,
+  bool isFirstClear = false,
   ValueChanged<String>? onDefeatReason,
 }) async {
   final massBattleFormation = stage.stageType == StageType.massBattle
@@ -1639,6 +1645,7 @@ Future<MainlineBattleExit> _runPhase0aBattle({
             cycleIndex: targetCycle,
             playerSnapshot: playerSnapshot,
             controller: controller,
+            isFirstClear: isFirstClear,
             massBattleFormation: massBattleFormation,
             onDefeatReason: onDefeatReason,
             onVictory: (settlement) {

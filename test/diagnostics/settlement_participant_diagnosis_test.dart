@@ -263,7 +263,7 @@ void main() {
       );
       expect(terminatedBeforeEffect, isEmpty);
       expect(settlement.result, BattleResult.leftWin);
-      expect(settlement.damageByCharacterId[-2], greaterThan(0));
+      expect(settlement.damageByCharacterId[run.participantId], greaterThan(0));
       expect(
         settlement.skillCasts.where(
           (cast) => cast.characterId == run.participantId,

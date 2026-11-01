@@ -2,6 +2,7 @@ import '../../../core/domain/enums.dart';
 import '../../../data/defs/combat_encounter_def.dart';
 import '../../../data/defs/combat_enemy_archetype_def.dart';
 import '../../../data/defs/combat_runtime_binding_def.dart';
+import '../../../data/defs/mainline_wave_def.dart';
 import '../../../data/defs/skill_def.dart';
 import '../../../data/game_repository.dart';
 import '../../../data/numbers_config.dart';
@@ -23,10 +24,12 @@ loadPhase0aMainlineRuntimeBindingBundleFromRepository({
   required String stageId,
   required String encounterId,
   required int cycleIndex,
+  bool readableFirstClearTuning = false,
 }) => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
   stageId: stageId,
   encounterId: encounterId,
   cycleIndex: cycleIndex,
+  readableFirstClearTuning: readableFirstClearTuning,
 );
 
 /// Resolves the typed production catalog/runtime closure into the encounter
@@ -41,6 +44,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
   required String encounterId,
   required int cycleIndex,
   GameRepository? repository,
+  bool readableFirstClearTuning = false,
 }) {
   if (cycleIndex < 1) {
     throw ArgumentError.value(cycleIndex, 'cycleIndex', 'must be positive');
@@ -100,6 +104,7 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       slotIndex: ordinal,
       cycleIndex: cycleIndex,
       isTower: false,
+      readableFirstClearTuning: readableFirstClearTuning,
     );
     final binding = runtime.bindingForEntry(entry.entryId);
     if (binding == null) {
@@ -147,6 +152,10 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       visualAssetPath: binding.visualVariant.assetPath,
       preserveBaseIdentity: preserveBaseIdentity,
       preserveSourceContract: entry.preserveSourceContract,
+      deriveSchoolFromAttackSet: stageId.startsWith('stage_01_'),
+      waveProfile: repo.numbers.mainlineWave.profileFor(
+        isBossStage: stage.isBossStage,
+      ),
     );
     final basicSkill = _requiredBasicSkill(
       snapshot.availableSkills,
@@ -320,6 +329,15 @@ Phase0aEnemyBehaviorProfile _behaviorProfile(CombatRuntimeAiProfile profile) {
   );
 }
 
+TechniqueSchool? _schoolFromBasicSkill(
+  SkillDef basic,
+  GameRepository repository,
+) {
+  final parentId = basic.parentTechniqueDefId;
+  if (parentId == null) return null;
+  return repository.techniqueDefs[parentId]?.school;
+}
+
 CombatantSnapshot _applyVariant({
   required CombatantSnapshot base,
   required CombatArchetypeVariant variant,
@@ -328,6 +346,8 @@ CombatantSnapshot _applyVariant({
   required String visualAssetPath,
   required bool preserveBaseIdentity,
   required bool preserveSourceContract,
+  required bool deriveSchoolFromAttackSet,
+  required MainlineWaveProfile waveProfile,
 }) {
   if (preserveSourceContract) return base;
   final resolvedSkills = preserveBaseIdentity ? base.availableSkills : skills;
@@ -336,23 +356,44 @@ CombatantSnapshot _applyVariant({
     stageId: 'runtime',
     entryId: variant.roleId,
   );
-  final maxHp = (base.maxHp * variant.hpMultiplier)
+  // The legacy mainline mapper scales each mob by numbers.mainline_wave
+  // (hp/attack/output/speed). The migrated runtime-binding path must apply the
+  // same profile; without it a 40-enemy encounter inherits full base stats,
+  // about 10x the designed HP and 4x the designed damage.
+  final maxHp = (base.maxHp * variant.hpMultiplier * waveProfile.hpMultiplier)
       .round()
       .clamp(1, repository.numbers.combat.redLines.bossHpMax)
       .toInt();
-  final attack = (base.totalEquipmentAttack * variant.attackMultiplier).round();
+  final attack =
+      (base.totalEquipmentAttack *
+              variant.attackMultiplier *
+              waveProfile.attackMultiplier)
+          .round();
   final defense = (base.defenseRate * variant.defenseMultiplier)
       .clamp(0.0, repository.numbers.cycleEvolution.defenseRateCap)
       .toDouble();
-  final speed = (base.speed * variant.speedMultiplier).round();
+  final speed =
+      (base.speed * variant.speedMultiplier * waveProfile.speedMultiplier)
+          .round();
   final preserveBaseBossContract = preserveBaseIdentity && base.isBoss;
   final stripBossIdentity = base.isBoss && !preserveBaseIdentity;
+  // Role variants own their attack set: 弩手 uses the lingQiao starter skill,
+  // 绳索掠袭者 uses the yinRou starter skill, 刀匪/鸣锣头目 use gangMeng.
+  // Carrying the base enemy's school made every Ch1 enemy gangMeng, so the
+  // player school counter was a 1.25/0.75 wall for the whole chapter. Apply
+  // that derivation only to the Ch1 readability candidate; later chapters keep
+  // their authored schools, which their content and balance tests pin. Keep the
+  // base school whenever the entry deliberately preserves the commander/boss
+  // identity.
+  final variantSchool = preserveBaseIdentity || !deriveSchoolFromAttackSet
+      ? base.school
+      : _schoolFromBasicSkill(basic, repository) ?? base.school;
   return CombatantSnapshot(
     characterId: base.characterId,
     name: preserveBaseIdentity ? base.name : variant.displayName,
     realmTier: base.realmTier,
     realmLayer: base.realmLayer,
-    school: base.school,
+    school: variantSchool,
     maxHp: maxHp,
     currentHp: maxHp,
     internalForce: base.internalForce,
@@ -382,7 +423,7 @@ CombatantSnapshot _applyVariant({
         preserveBaseIdentity && base.swordSongResonanceActive,
     iconPath: preserveBaseIdentity ? base.iconPath : visualAssetPath,
     attackPowerMultiplier: base.attackPowerMultiplier,
-    outputMultiplier: base.outputMultiplier,
+    outputMultiplier: base.outputMultiplier * waveProfile.outputMultiplier,
     isBoss: preserveBaseBossContract,
     chargeSkillId: preserveBaseBossContract ? base.chargeSkillId : null,
     bossPhases: preserveBaseBossContract ? base.bossPhases : null,

@@ -250,7 +250,7 @@ void main() {
     expect(corpus.stages.where((stage) => stage.isBoss), hasLength(42));
     expect(corpus.skills, hasLength(221));
     expect(corpus.encounterEntries, hasLength(40));
-    expect(corpus.encounterActiveLimit, 12);
+    expect(corpus.encounterActiveLimit, 8);
   });
 
   test('TUNE-POSTURE-01 generates three materially different candidates', () {

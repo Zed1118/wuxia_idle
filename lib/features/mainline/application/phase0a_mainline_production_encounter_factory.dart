@@ -158,8 +158,20 @@ Phase0aEncounterHost _assemble({
       );
     }
     runtimeIds[entry.entryId] = runtimeId;
+    final enemyAttackMultiplier = request.readableFirstClearTuning
+        ? request.numbers.combat.readableFirstClear.enemyAttackMultiplier
+        : 1.0;
     combatants.add(
-      Phase0aCombatantInput(actorId: runtimeId, snapshot: binding.combatant),
+      Phase0aCombatantInput(
+        actorId: runtimeId,
+        snapshot: enemyAttackMultiplier == 1.0
+            ? binding.combatant
+            : binding.combatant.copyWith(
+                attackPowerMultiplier:
+                    binding.combatant.attackPowerMultiplier *
+                    enemyAttackMultiplier,
+              ),
+      ),
     );
     skillsByActor[runtimeId] = binding.enemySkillBindings;
     basicQiByActor[runtimeId] = binding.basicQiDelta;

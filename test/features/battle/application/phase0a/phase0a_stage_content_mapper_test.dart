@@ -454,7 +454,12 @@ void main() {
       // 玩家 actor HP 口径 = 玩家中立快照。
       expect(mapping.initialState.player.maxHealth, 15000);
       // 小怪 HP 口径 = 原快照 × YAML mainline_wave ordinary.hp_multiplier。
-      expect(mapping.waves.first.enemies.first.maxHealth, 150);
+      final expectedMobHp =
+          (stage.enemyTeam.first.baseHp *
+                  numbers.mainlineWave.ordinary.hpMultiplier)
+              .round()
+              .clamp(1, stage.enemyTeam.first.baseHp);
+      expect(mapping.waves.first.enemies.first.maxHealth, expectedMobHp);
       // 非阶段敌人保持旧的中性内力/CD 路径。
       expect(
         mapping.waves.first.enemies.first.qiCurrent,

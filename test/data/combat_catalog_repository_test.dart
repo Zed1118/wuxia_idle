@@ -256,7 +256,7 @@ stage_assignments:
         tickDuration: const Duration(milliseconds: 100),
         resolveEnemyId: (entry) => 'runtime_${entry.entryId}',
       );
-      expect(contract.spawnDirector.config.activeLimit, 12);
+      expect(contract.spawnDirector.config.activeLimit, 8);
       expect(contract.spawnDirector.state.units, hasLength(40));
       // stage_01_03 的当前攻击令牌预算经生产 YAML 加载。
       expect(contract.attackTokenBudgets.melee, 1);

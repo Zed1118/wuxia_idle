@@ -59,6 +59,7 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
     this.massBattleFormation,
     this.encounterHostFactory,
     this.controller = ActivityController.human,
+    this.isFirstClear = false,
   });
 
   final StageDef stage;
@@ -69,6 +70,10 @@ class Phase0aMainlineBattleHost extends ConsumerStatefulWidget {
   final Formation? massBattleFormation;
   final CombatantSnapshot? playerSnapshot;
   final ActivityController controller;
+
+  /// First-clear readability tuning. The first mainline run passes true;
+  /// replay, sweep and debug routes keep the normal production values.
+  final bool isFirstClear;
 
   @visibleForTesting
   final Phase0aMainlineEncounterHostFactory? encounterHostFactory;
@@ -135,6 +140,7 @@ class _Phase0aMainlineBattleHostState
             rng: rng,
             runtimeBindingSource: runtimeBindingSource,
             routeAuthority: routeAuthority,
+            readableFirstClearTuning: widget.isFirstClear,
           ),
         );
         final mapping = encounterHost == null

@@ -72,10 +72,10 @@ void main() {
     final encounter = manifest.encounterForStage('stage_01_03')!;
 
     expect(encounter.spawnEntries, hasLength(40));
-    expect(encounter.spawnConfig.activeLimit, 12);
-    expect(encounter.spawnConfig.reinforcementThreshold, 3);
-    expect(encounter.spawnConfig.entryWarningTicks, 30);
-    expect(encounter.spawnConfig.attackGraceTicks, 15);
+    expect(encounter.spawnConfig.activeLimit, 8);
+    expect(encounter.spawnConfig.reinforcementThreshold, 2);
+    expect(encounter.spawnConfig.entryWarningTicks, 40);
+    expect(encounter.spawnConfig.attackGraceTicks, 25);
     // stage_01_03 的当前攻击令牌预算经生产 YAML 加载。
     expect(encounter.tokenBudgets.melee, 1);
     expect(encounter.tokenBudgets.ranged, 1);

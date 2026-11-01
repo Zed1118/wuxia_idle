@@ -143,8 +143,8 @@ combat:
     evasion_rate: 0.05               # 基础闪避率
 
   readable_first_clear:
-    enemy_hp_multiplier: 3.0          # 主线首通可读节奏:拉长到技能真参战(§十三 #2 T2 校准 2.4→3.0:技能占比 39.9%→47.1%、动作行 5.6→6.3;单发/时机/CD/气四杠杆探针均证伪,时长是唯一强杠杆,证据见 plan)
-    boss_enemy_hp_multiplier: 1.5     # Boss 同轴校准(1.35→1.5),建立关底节奏,攻击仍压低避免硬墙
+    enemy_hp_multiplier: 1.0          # G2 diagnostic: 旧 3.0 为 2/3/4 波路径标定,迁移 40 敌路径会拉长血线;本次只测敌攻杠杆
+    boss_enemy_hp_multiplier: 1.0     # G2 diagnostic: 同上,先不动 Boss 血线
     enemy_attack_multiplier: 0.70     # 首通略降敌攻,保留压力但避免拉长血线后变硬墙
     opening_auto_skill_cooldown_turns: 1 # 首通开局自动技能冷却 1 轮,先露出普攻交换再让技能登场
     auto_skill_power_multiplier: 0.75 # 首通自动技能保留存在感,但压低二轮技能直接收尾的概率
