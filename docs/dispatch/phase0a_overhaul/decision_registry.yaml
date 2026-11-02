@@ -33,7 +33,9 @@ decisions:
   - id: G2-CH1-READABILITY-01
     status: frozen_with_tuning_edges
     summary: 迁移 runtime binding 补回 mainline_wave 倍率、Ch1 总血线重标、首通敌攻×0.70、01_03 密度/宽限、敌方 school 跟随 attack set（仅 Ch1）
-    batch_status: engineering_candidate_local_only
+    batch_status: merged_to_main
+    merge_commit: 9f1602949
+    ci_run: 41373274789_success
     changes:
       ch1_base_hp: {thug: 800, ruffian: 900, bandit: 900}
       mainline_wave_profile: {hp: 0.10, attack: 0.25, output: 0.25, speed: 0.85, applied_to: migrated_runtime_binding}

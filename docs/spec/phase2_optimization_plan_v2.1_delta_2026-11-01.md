@@ -9,7 +9,7 @@
 |---|---|
 | M0 | blocked：20 条 tuning 已选待验证；七心魔逐身份签认缺 1；武器时间轴/真气映射已接 `8bb82d2c4` |
 | M1 | 已关闭 |
-| M2 | blocked 于 G2：工程候选已让 gang_meng / ling_qiao 合法新档连续通关 01_01→01_05；yin_rou 待复测；真人 NOT_RUN |
+| M2 | blocked 于 G2：候选已合 main `9f1602949`，gang_meng / ling_qiao 合法新档连续通关 01_01→01_05；yin_rou 01_01 objective 待收口；真人 NOT_RUN |
 | M3 | 工程 5/5 武器画像、45/45 矩阵；真人 deferred；`applyCombatModifiers`/`action_timeline` 生产消费者 0 |
 | M4 | blocked：塔 6 轮/实际可见 1 敌、矩阵 28 格未采、59.678ms raster 根因未定 |
 | M5 | 工程 42/42，真人 deferred |
@@ -31,7 +31,7 @@
 
 ## 3. 2026-11-01 G2 第一章可读性候选（3A+3B）
 
-**性质：工程候选，本地验证；不是 G2 PASS，真人签字 NOT_RUN。**
+**性质：工程候选已合 main `9f1602949`（CI run 41373274789 success）；不是 G2 PASS，真人签字 NOT_RUN。**
 
 ### 3.1 迁移路径补回 `mainline_wave` 倍率（根因）
 

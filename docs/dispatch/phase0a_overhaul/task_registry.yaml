@@ -6259,7 +6259,9 @@ tasks:
         exact_final_candidate_revalidation: required_source_must_match_package
         evidence_root: /Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough
       ch1_readability_candidate_20261101:
-        status: engineering_candidate_local_only
+        status: merged_to_main
+        merge_commit: 9f1602949
+        ci_run: 41373274789_success
         ch1_base_hp: {thug: 800, ruffian: 900, bandit: 900}
         mainline_wave_profile: {hp: 0.10, attack: 0.25, output: 0.25, speed: 0.85, applied_to: migrated_runtime_binding}
         first_clear_enemy_attack_multiplier: 0.70
