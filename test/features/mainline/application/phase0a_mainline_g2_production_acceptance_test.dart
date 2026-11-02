@@ -55,6 +55,18 @@ void main() {
             cycleIndex: cycleIndex,
             repository: repository,
           ),
+      readableFirstClearLoader:
+          ({
+            required String stageId,
+            required String encounterId,
+            required int cycleIndex,
+          }) async => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+            stageId: stageId,
+            encounterId: encounterId,
+            cycleIndex: cycleIndex,
+            repository: repository,
+            readableFirstClearTuning: true,
+          ),
     );
     return (await createFreshPhase0aMainlineEncounter(
       Phase0aMainlineEncounterHostBuildRequest(

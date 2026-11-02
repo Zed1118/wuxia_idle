@@ -534,5 +534,6 @@ final class _ProductionRuntimeSource
     required String stageId,
     required String encounterId,
     required int cycleIndex,
+    bool readableFirstClearTuning = false,
   }) async => bundle;
 }

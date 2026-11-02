@@ -125,19 +125,19 @@ final class EnemyCombatantSnapshotAssembler {
     final ce = numbers.cycleEvolution;
     final scale = 1.0 + ce.scalePerCycle * (cycleIndex - 1);
     final readable = numbers.combat.readableFirstClear;
+    // First-clear readability has separate sinks: this assembler owns the HP
+    // and auto-skill levers; the mainline production factory owns the attack
+    // lever. Keeping attack out of the snapshot prevents double application
+    // when both the tuned bundle and the factory multiplier are active.
     final readableHpMult = readableFirstClearTuning
         ? readable.hpMultiplierFor(isBoss: enemy.isBoss)
-        : 1.0;
-    final readableAttackMult = readableFirstClearTuning
-        ? readable.enemyAttackMultiplier
         : 1.0;
 
     final scaledHp = (enemy.baseHp * scale * readableHpMult).toInt().clamp(
       0,
       numbers.combat.redLines.bossHpMax,
     );
-    final scaledAttack = (enemy.baseAttack * scale * readableAttackMult)
-        .toInt();
+    final scaledAttack = (enemy.baseAttack * scale).toInt();
     final baseIf =
         (realm.internalForceMax * enemyDefaults.internalForceScale * scale)
             .round();
@@ -255,27 +255,46 @@ final class EnemyCombatantSnapshotAssembler {
     final config = GameRepository.instance.numbers.combat.readableFirstClear;
     final tunedSkills = [
       for (final skill in character.availableSkills)
-        _tuneReadableFirstClearSkill(skill, config.autoSkillPowerMultiplier),
+        tuneReadableFirstClearSkill(skill, config.autoSkillPowerMultiplier),
     ];
     final tuned = character.copyWith(availableSkills: tunedSkills);
     final turns = config.openingAutoSkillCooldownTurns;
     if (turns <= 0) return tuned;
-    final ticksPerAction = (1000 / character.speed).ceil();
-    final cooldownTicks = turns * ticksPerAction + 1;
     final cooldowns = Map<String, int>.from(tuned.openingSkillCooldowns);
-    for (final skill in tuned.availableSkills) {
-      if (skill.requiresManualTrigger || skill.type == SkillType.normalAttack) {
-        continue;
-      }
-      final existing = cooldowns[skill.id] ?? 0;
-      if (existing < cooldownTicks) cooldowns[skill.id] = cooldownTicks;
+    for (final entry in readableOpeningCooldowns(
+      tuned.availableSkills,
+      turns,
+    ).entries) {
+      final existing = cooldowns[entry.key] ?? 0;
+      if (existing < entry.value) cooldowns[entry.key] = entry.value;
     }
     return cooldowns.isEmpty
         ? tuned
         : tuned.copyWith(openingSkillCooldowns: Map.unmodifiable(cooldowns));
   }
 
-  static SkillDef _tuneReadableFirstClearSkill(
+  /// Opening cooldowns are stored in enemy attack intervals. The Phase 0A
+  /// adapters multiply each value by
+  /// `numbers.phase0a_arena.enemy.attack_cooldown_seconds`, so one turn means
+  /// one attack interval.
+  static Map<String, int> readableOpeningCooldowns(
+    Iterable<SkillDef> skills,
+    int turns,
+  ) {
+    if (turns <= 0) return const {};
+    return {
+      for (final skill in skills)
+        if (!skill.requiresManualTrigger &&
+            skill.type != SkillType.normalAttack)
+          skill.id: turns,
+    };
+  }
+
+  /// Applies the first-clear auto-skill power lever to one skill.
+  ///
+  /// Preserved base identities are tuned here; variant attack sets are tuned
+  /// by the mainline runtime binding adapter when it rebuilds the snapshot.
+  static SkillDef tuneReadableFirstClearSkill(
     SkillDef skill,
     double autoSkillPowerMultiplier,
   ) {

@@ -205,6 +205,18 @@ Future<Phase0aEncounterHost> _fresh({
           cycleIndex: cycleIndex,
           repository: repository,
         ),
+    readableFirstClearLoader:
+        ({
+          required String stageId,
+          required String encounterId,
+          required int cycleIndex,
+        }) async => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+          stageId: stageId,
+          encounterId: encounterId,
+          cycleIndex: cycleIndex,
+          repository: repository,
+          readableFirstClearTuning: true,
+        ),
   );
   final host = await createFreshPhase0aMainlineEncounter(
     Phase0aMainlineEncounterHostBuildRequest(

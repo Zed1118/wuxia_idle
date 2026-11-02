@@ -156,6 +156,9 @@ buildPhase0aMainlineRuntimeBindingBundleFromRepository({
       waveProfile: repo.numbers.mainlineWave.profileFor(
         isBossStage: stage.isBossStage,
       ),
+      readableFirstClear: readableFirstClearTuning
+          ? repo.numbers.combat.readableFirstClear
+          : null,
     );
     final basicSkill = _requiredBasicSkill(
       snapshot.availableSkills,
@@ -348,9 +351,23 @@ CombatantSnapshot _applyVariant({
   required bool preserveSourceContract,
   required bool deriveSchoolFromAttackSet,
   required MainlineWaveProfile waveProfile,
+  ReadableFirstClearConfig? readableFirstClear,
 }) {
   if (preserveSourceContract) return base;
-  final resolvedSkills = preserveBaseIdentity ? base.availableSkills : skills;
+  final List<SkillDef> resolvedSkills;
+  if (preserveBaseIdentity) {
+    resolvedSkills = base.availableSkills;
+  } else if (readableFirstClear == null) {
+    resolvedSkills = skills;
+  } else {
+    resolvedSkills = [
+      for (final skill in skills)
+        EnemyCombatantSnapshotAssembler.tuneReadableFirstClearSkill(
+          skill,
+          readableFirstClear.autoSkillPowerMultiplier,
+        ),
+    ];
+  }
   final basic = _requiredBasicSkill(
     resolvedSkills,
     stageId: 'runtime',
@@ -416,7 +433,10 @@ CombatantSnapshot _applyVariant({
     availableSkills: List<SkillDef>.unmodifiable(resolvedSkills),
     openingSkillCooldowns: preserveBaseIdentity
         ? base.openingSkillCooldowns
-        : const {},
+        : EnemyCombatantSnapshotAssembler.readableOpeningCooldowns(
+            resolvedSkills,
+            readableFirstClear?.openingAutoSkillCooldownTurns ?? 0,
+          ),
     skillUses: preserveBaseIdentity ? base.skillUses : const {},
     activeBuffs: preserveBaseIdentity ? base.activeBuffs : const [],
     swordSongResonanceActive:

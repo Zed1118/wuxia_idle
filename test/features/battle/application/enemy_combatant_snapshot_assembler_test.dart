@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:wuxia_idle/core/domain/enums.dart';
 import 'package:wuxia_idle/data/defs/stage_def.dart';
 import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/shared/battle_shared/enemy_combatant_snapshot_assembler.dart';
@@ -55,6 +56,50 @@ void main() {
     final four = <EnemyDef>[template, template, template, template];
 
     expect(EnemyCombatantSnapshotAssembler.assembleAll(four), hasLength(4));
+  });
+
+  test('readable first-clear tuning applies HP and auto skills once', () {
+    final config = repo.numbers.combat.readableFirstClear;
+    final enemy = repo.getStage('stage_01_05').enemyTeam.single;
+    final neutral = EnemyCombatantSnapshotAssembler.assembleAll([enemy]).single;
+    final tuned = EnemyCombatantSnapshotAssembler.assembleAll([
+      enemy,
+    ], readableFirstClearTuning: true).single;
+
+    expect(
+      tuned.maxHp,
+      (neutral.maxHp * config.hpMultiplierFor(isBoss: enemy.isBoss)).round(),
+    );
+    // The mainline production factory owns the attack lever; the assembler
+    // must not scale it a second time.
+    expect(tuned.totalEquipmentAttack, neutral.totalEquipmentAttack);
+
+    final neutralSkills = {
+      for (final skill in neutral.availableSkills) skill.id: skill,
+    };
+    var tunedAutoSkills = 0;
+    for (final skill in tuned.availableSkills) {
+      final base = neutralSkills[skill.id]!;
+      if (skill.requiresManualTrigger || skill.type == SkillType.normalAttack) {
+        expect(skill.powerMultiplier, base.powerMultiplier);
+        continue;
+      }
+      tunedAutoSkills++;
+      expect(
+        skill.powerMultiplier,
+        (base.powerMultiplier * config.autoSkillPowerMultiplier).round().clamp(
+          1,
+          base.powerMultiplier,
+        ),
+        reason: skill.id,
+      );
+      expect(
+        tuned.openingSkillCooldowns[skill.id],
+        config.openingAutoSkillCooldownTurns,
+        reason: skill.id,
+      );
+    }
+    expect(tunedAutoSkills, greaterThan(0));
   });
 
   test('assembler 直接构造 neutral snapshot，不回引已退役战斗角色', () {

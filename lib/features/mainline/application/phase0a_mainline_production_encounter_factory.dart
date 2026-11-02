@@ -76,6 +76,7 @@ Future<Phase0aEncounterHost?> createFreshPhase0aMainlineEncounter(
     stageId: migratedRoute.stageId,
     encounterId: migratedRoute.encounter.id,
     cycleIndex: request.cycleIndex,
+    readableFirstClearTuning: request.readableFirstClearTuning,
   );
   if (runtime.stageId != migratedRoute.stageId ||
       runtime.encounterId != migratedRoute.encounter.id) {

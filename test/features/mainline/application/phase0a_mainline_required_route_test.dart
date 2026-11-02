@@ -150,6 +150,7 @@ final class _UnusedRuntime
     required String stageId,
     required String encounterId,
     required int cycleIndex,
+    bool readableFirstClearTuning = false,
   }) async {
     calls++;
     throw StateError('Invalid route reached the runtime loader');
