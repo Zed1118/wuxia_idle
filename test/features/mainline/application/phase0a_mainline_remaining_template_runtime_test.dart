@@ -46,6 +46,7 @@ Future<Phase0aEncounterHost> _host(
   int maxHp = 15000,
   int attack = 130,
   double defense = 0.05,
+  int speed = 100,
 }) async {
   final playerMapping = Phase0aStageContentMapper.mapPlayerOnly(
     contentId: stageId,
@@ -54,6 +55,7 @@ Future<Phase0aEncounterHost> _host(
       currentHp: maxHp,
       totalEquipmentAttack: attack,
       defenseRate: defense,
+      speed: speed,
       includeProductionBasicAttack: true,
     ),
     numbers: repository.numbers,
@@ -411,12 +413,19 @@ void main() {
         repository,
         'stage_07_04',
         maxHp: 20000,
-        attack: 2000,
+        attack: 300,
         defense: 0.8,
+        // The pursuit target keeps its authored evasion speed; the control
+        // player must be able to close the distance within maxTicks. Keep the
+        // attack below a one-shot so the target survives until the capture
+        // proximity fires.
+        speed: 600,
       );
       final result = headless.runHeadless(
         bot: Phase0aPlayerBotAdapter(
           playerAdapter: headless.mapping!.playerAdapter,
+          objectiveContinuationCommandBuilder:
+              headless.objectiveContinuationCommandBuilder,
         ),
         deltaSeconds: repository.numbers.phase0aArena.fixedDeltaSeconds,
         maxTicks: repository.numbers.phase0aArena.maxSimulationTicks,

@@ -5,6 +5,7 @@ import 'package:wuxia_idle/data/game_repository.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_encounter_host.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_bot_tactic.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_bot_adapter.dart';
+import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_player_input_adapter.dart';
 import 'package:wuxia_idle/features/battle/application/phase0a/phase0a_stage_content_mapper.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_combat_events.dart';
 import 'package:wuxia_idle/features/battle/domain/phase0a/phase0a_wave.dart';
@@ -38,7 +39,10 @@ void main() {
     );
   });
 
-  Future<Phase0aEncounterHost> fresh(int seed) async {
+  Future<Phase0aEncounterHost> fresh(
+    int seed, {
+    bool readableFirstClear = false,
+  }) async {
     final source = Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
       loader:
           ({
@@ -61,9 +65,30 @@ void main() {
         rng: Random(seed),
         runtimeBindingSource: source,
         catalogOverride: repository.combatCatalog,
+        readableFirstClearTuning: readableFirstClear,
       ),
     ))!;
   }
+
+  test('first-clear tuning scales enemy attack, not the player', () async {
+    final host = await fresh(20260824, readableFirstClear: true);
+    final mapping = host.mapping!;
+    final playerId = mapping.initialState.player.id;
+    final enemies = mapping.combatants
+        .where((combatant) => combatant.actorId != playerId)
+        .toList(growable: false);
+    expect(enemies, isNotEmpty);
+    for (final enemy in enemies) {
+      expect(
+        enemy.snapshot.attackPowerMultiplier,
+        closeTo(
+          repository.numbers.combat.readableFirstClear.enemyAttackMultiplier,
+          1e-9,
+        ),
+      );
+    }
+    expect(mapping.playerAdapter, isNotNull);
+  });
 
   test('production stage_01_03 continuously clears all 40 enemies', () async {
     final host = await fresh(20260824);
@@ -73,8 +98,61 @@ void main() {
     final events = <Phase0aEvent>[];
     var ticks = 0;
     var maxActive = 0;
-    var moveAndAttackCommands = 0;
-    var moveAndAttackResolved = 0;
+
+    // Deterministic move+attack guard. The tuned first-clear density lets the
+    // steady-guard bot often stand still, so the incidental bot counter no
+    // longer exercises this path. Assert the production command contract
+    // directly before the loop.
+    // The migrated flow starts with an empty arena and spawns its first wave
+    // on the first advance.
+    for (
+      var spawnTick = 0;
+      spawnTick < 80 && host.flow.state.enemies.isEmpty;
+      spawnTick++
+    ) {
+      events.addAll(
+        host.advanceManual(
+          deltaSeconds: delta,
+          command: const Phase0aPlayerCommand(),
+        ),
+      );
+    }
+    maxActive = max(maxActive, host.flow.state.enemies.length);
+    expect(
+      host.flow.state.enemies,
+      isNotEmpty,
+      reason: 'production encounter must spawn its first wave',
+    );
+    final preState = host.flow.state;
+    final prePlayer = preState.player;
+    final preTarget = preState.enemies.first;
+    final preAim = (preTarget.position - prePlayer.position).normalized();
+    final arena = repository.numbers.phase0aArena;
+    final moveRight =
+        prePlayer.position.x <= (arena.arenaMinX + arena.arenaMaxX) / 2;
+    final preEvents = host.advanceManual(
+      deltaSeconds: delta,
+      command: Phase0aPlayerCommand(
+        left: !moveRight,
+        right: moveRight,
+        attack: true,
+        attackAimDirection: preAim,
+      ),
+    );
+    events.addAll(preEvents);
+    maxActive = max(maxActive, host.flow.state.enemies.length);
+    expect(
+      host.flow.state.player.position,
+      isNot(prePlayer.position),
+      reason: 'move+attack command must actually move the player',
+    );
+    expect(
+      preEvents.whereType<Phase0aAttackStarted>().any(
+        (event) => event.actor == prePlayer.id,
+      ),
+      isTrue,
+      reason: 'move+attack command must start a player attack',
+    );
 
     while (host.flow.outcome == Phase0aBattleOutcome.ongoing &&
         ticks < maxTicks) {
@@ -83,17 +161,6 @@ void main() {
       final emitted = host.advanceManual(deltaSeconds: delta, command: command);
       events.addAll(emitted);
       maxActive = max(maxActive, host.flow.state.enemies.length);
-      final moving =
-          command.left || command.right || command.up || command.down;
-      if (moving && command.attack) {
-        moveAndAttackCommands += 1;
-        final playerMoved =
-            host.flow.state.player.position != before.player.position;
-        final playerAttacked = emitted.whereType<Phase0aAttackStarted>().any(
-          (event) => event.actor == before.player.id,
-        );
-        if (playerMoved && playerAttacked) moveAndAttackResolved += 1;
-      }
       ticks += 1;
     }
 
@@ -102,9 +169,7 @@ void main() {
     expect(ticks, lessThan(maxTicks));
     expect(defeated, hasLength(40));
     expect(defeated.map((event) => event.target).toSet(), hasLength(40));
-    expect(maxActive, 12);
-    expect(moveAndAttackCommands, greaterThan(0));
-    expect(moveAndAttackResolved, greaterThan(0));
+    expect(maxActive, 8);
     final settlement = host.settle(
       outcome: host.flow.outcome,
       finalState: host.flow.state,

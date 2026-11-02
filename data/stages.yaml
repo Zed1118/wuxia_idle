@@ -44,7 +44,7 @@ stages:
         realmTier: xueTu
         realmLayer: qiMeng
         school: gangMeng
-        baseHp: 1500
+        baseHp: 800
         baseAttack: 80
         baseSpeed: 100
         skillIds: [skill_gangmeng_jichu_basic]
@@ -84,7 +84,7 @@ stages:
         realmTier: xueTu
         realmLayer: ruMen
         school: gangMeng
-        baseHp: 2100
+        baseHp: 900
         baseAttack: 110
         baseSpeed: 100
         skillIds: [skill_gangmeng_jichu_basic]
@@ -122,7 +122,7 @@ stages:
         realmTier: xueTu
         realmLayer: jingTong
         school: gangMeng
-        baseHp: 2900
+        baseHp: 900
         baseAttack: 130
         baseSpeed: 110
         skillIds: [skill_gangmeng_jichu_basic]

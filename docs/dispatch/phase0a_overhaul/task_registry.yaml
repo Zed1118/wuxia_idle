@@ -6258,8 +6258,22 @@ tasks:
         human_signoff: NOT_RUN
         exact_final_candidate_revalidation: required_source_must_match_package
         evidence_root: /Users/a10506/Documents/Codex/2026-09-22/wuxia-review-followthrough
+      ch1_readability_candidate_20261101:
+        status: engineering_candidate_local_only
+        ch1_base_hp: {thug: 800, ruffian: 900, bandit: 900}
+        mainline_wave_profile: {hp: 0.10, attack: 0.25, output: 0.25, speed: 0.85, applied_to: migrated_runtime_binding}
+        first_clear_enemy_attack_multiplier: 0.70
+        stage_01_03_spawn: {active_limit: 8, reinforcement_threshold: 2, entry_warning_ticks: 40, attack_grace_ticks: 25}
+        enemy_school_source: attack_set_basic_parent_technique_scoped_to_stage_01
+        legal_new_save_chain:
+          gang_meng: {01_01: victory_25_kills, 01_02: victory, 01_03: victory_40_kills, 01_04: victory, 01_05: victory}
+          ling_qiao: {01_01: victory_25_kills, 01_02: victory, 01_03: victory_40_kills, 01_04: victory, 01_05: victory}
+          yin_rou: {01_01: 25_kills_objective_ongoing, 01_02: 6_of_9_victories, 01_03: 8_of_9_victories, chain_not_run: true}
+        human_g2: NOT_RUN
+        full_test: pass_7345
     blockers:
-      - "第一章新档连续推进与操作容错证据不足：本配置（gang_meng / mountain_wanderer / balanced_seed）01_01/01_02 风筝可通；01_03 黑风岭固定种子连续链 0/1，118 拍败；粗放/慢反应（每 3 拍决策）/站桩三变体在 01_01、01_02 全败；真人验证待补。"
+      - "G2 仍需真人签字：自动连续链已让 gang_meng / ling_qiao 合法新档 5/5 通关；真人操作容错、yin_rou 路径与章末卷轴/机缘后的体感未签，不得以自动化代签。"
+      - "2026-11-01 候选后仍开放：yin_rou 01_01 objective 未收口/连续链未跑、真人 G2 未签；首通 HP/自动技能字段当前无生产消费者。"
       - real_desktop_combat_visual_readability_control_feel_and_stage_flow_signoff
     protected_behavior:
       - automated_driving_screenshots_or_test_results_do_not_replace_human_control_feel

@@ -24,6 +24,7 @@ final class Phase0aMainlineEncounterHostBuildRequest {
     required this.runtimeBindingSource,
     this.routeAuthority,
     this.catalogOverride,
+    this.readableFirstClearTuning = false,
   });
 
   final StageDef stage;
@@ -34,6 +35,12 @@ final class Phase0aMainlineEncounterHostBuildRequest {
   final Phase0aMainlineEncounterRuntimeBindingSource runtimeBindingSource;
   final Phase0aMainlineEncounterRouteAuthority? routeAuthority;
   final CombatCatalogManifestDef? catalogOverride;
+
+  /// First-clear readability: enemy attack damage is scaled by
+  /// `numbers.combat.readableFirstClear.enemyAttackMultiplier`. Replays keep
+  /// the normal production values. This is a G2 first-chapter pre-check lever,
+  /// not a global balance change.
+  final bool readableFirstClearTuning;
 }
 
 enum Phase0aMainlineEncounterRouteMode { legacy, migrated }

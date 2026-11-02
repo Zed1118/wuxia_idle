@@ -22,7 +22,7 @@ void main() {
       const expected = {
         'stage_01_01': ('ch1_encounter_01_roadbreak', 25, 10),
         'stage_01_02': ('ch1_encounter_02_stronghold', 25, 10),
-        'stage_01_03': ('ch1_encounter_03_ambush', 40, 12),
+        'stage_01_03': ('ch1_encounter_03_ambush', 40, 8),
         'stage_01_04': ('ch1_encounter_04_commander', 3, 3),
         'stage_01_05': ('ch1_encounter_05_commander', 2, 2),
       };
@@ -87,7 +87,7 @@ void main() {
     const expectedTuning = {
       'stage_01_01': (25, 10, 2, 20, 10, 2, 1, 1, 0),
       'stage_01_02': (25, 10, 2, 24, 12, 1, 1, 1, 1),
-      'stage_01_03': (40, 12, 3, 30, 15, 1, 1, 1, 1),
+      'stage_01_03': (40, 8, 2, 40, 25, 1, 1, 1, 1),
       'stage_01_04': (3, 3, 0, 20, 10, 1, 0, 1, 1),
       'stage_01_05': (2, 2, 0, 30, 15, 1, 0, 0, 1),
     };

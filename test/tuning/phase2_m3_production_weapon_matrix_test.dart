@@ -50,7 +50,7 @@ void main() {
   tearDownAll(GameRepository.resetForTest);
 
   test(
-    'five production profiles x three schools clear real encounters with a capped control player',
+    'five production profiles x three schools clear real encounters with a tanky control player',
     () async {
       final results =
           <WeaponArchetype, Map<TechniqueSchool, Map<_Scenario, _Metrics>>>{};
@@ -151,22 +151,22 @@ Future<_Metrics> _simulate({
   required TechniqueSchool school,
   required _Scenario scenario,
 }) async {
-  // This red-line-capped control profile isolates weapon/runtime compatibility.
-  // It is not evidence that a normal save clears the stages or that the five
-  // profiles feel equally good under human control.
+  // This control profile keeps the tanky/defensive cap but uses a
+  // Chapter-2-appropriate attack so the enemies survive long enough to
+  // exercise posture settlement under the mainline wave profile.
   final playerSnapshot = testCombatantSnapshot(
     characterId: 1,
     name: 'm3_player',
     school: school,
     maxHp: 20000,
     currentHp: 20000,
-    internalForce: 15000,
+    internalForce: 500,
     maxQi: 100,
     currentQi: 0,
     criticalRate: 0,
     evasionRate: 0,
     defenseRate: repository.numbers.cycleEvolution.defenseRateCap,
-    totalEquipmentAttack: 2000,
+    totalEquipmentAttack: 174,
     weaponArchetype: archetype,
     includeProductionBasicAttack: true,
   );

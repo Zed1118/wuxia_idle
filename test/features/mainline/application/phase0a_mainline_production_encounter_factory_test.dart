@@ -52,7 +52,7 @@ void main() {
   });
 
   test(
-    'production catalog -> factory builds 40 actors, 12 cap and roster',
+    'production catalog -> factory builds 40 actors, 8 cap and roster',
     () async {
       final host = await createFreshPhase0aMainlineEncounter(
         Phase0aMainlineEncounterHostBuildRequest(
@@ -69,14 +69,14 @@ void main() {
       expect(host, isNotNull);
       final mapping = host!.mapping!;
       expect(mapping.combatants, hasLength(41));
-      expect(mapping.director.config.activeLimit, 12);
+      expect(mapping.director.config.activeLimit, 8);
       final enemyIds = mapping.combatants.skip(1).map((item) => item.actorId);
       expect(enemyIds.toSet(), hasLength(40));
       expect(enemyIds, everyElement(matches(RegExp(r'actor-\d{3}$'))));
       expect(enemyIds, everyElement(isNot(contains('ch1_s03_'))));
 
-      final activePositions = runtimeSource.positions.take(12).toSet();
-      expect(activePositions, hasLength(12));
+      final activePositions = runtimeSource.positions.take(8).toSet();
+      expect(activePositions, hasLength(8));
       final arena = repository.numbers.phase0aArena;
       for (final position in activePositions) {
         expect(position.x, inInclusiveRange(arena.arenaMinX, arena.arenaMaxX));
@@ -140,14 +140,14 @@ void main() {
     final rope = bundle.actorBindingsByEntryId['ch1_s03_rope_01']!;
     final leader = bundle.actorBindingsByEntryId['ch1_s03_leader_01']!;
 
-    expect(blade.combatant.maxHp, 2900);
-    expect(crossbow.combatant.maxHp, 2320);
-    expect(rope.combatant.maxHp, 3190);
-    expect(leader.combatant.maxHp, 3770);
-    expect(blade.combatant.speed, 110);
-    expect(crossbow.combatant.speed, 110);
-    expect(rope.combatant.speed, 121);
-    expect(leader.combatant.speed, 99);
+    expect(blade.combatant.maxHp, 90);
+    expect(crossbow.combatant.maxHp, 72);
+    expect(rope.combatant.maxHp, 99);
+    expect(leader.combatant.maxHp, 117);
+    expect(blade.combatant.speed, 94);
+    expect(crossbow.combatant.speed, 94);
+    expect(rope.combatant.speed, 103);
+    expect(leader.combatant.speed, 84);
     expect(
       leader.combatant.defenseRate,
       closeTo(
@@ -207,7 +207,7 @@ void main() {
     final ropeActor = rope.createActor('runtime-rope');
     expect(ropeActor.id, 'runtime-rope');
     expect(ropeActor.position, const ArenaVector(120, 120));
-    expect(ropeActor.moveSpeed, 121);
+    expect(ropeActor.moveSpeed, 103.0);
 
     final host = await createFreshPhase0aMainlineEncounter(
       Phase0aMainlineEncounterHostBuildRequest(

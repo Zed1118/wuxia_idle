@@ -7,10 +7,10 @@
 encounters:
   - id: ch1_encounter_03_ambush
     spawn_config:
-      active_limit: 12
-      reinforcement_threshold: 3
-      entry_warning_ticks: 30
-      attack_grace_ticks: 15
+      active_limit: 8
+      reinforcement_threshold: 2
+      entry_warning_ticks: 40
+      attack_grace_ticks: 25
     token_budgets:
       melee: 1
       ranged: 1

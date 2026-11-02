@@ -777,9 +777,22 @@ void main() {
       expect(victorySettlement!.totalDamage, greaterThan(0));
       expect(victorySettlement!.participantFor(1)!.currentHp, greaterThan(0));
       // R5:typed 首关 25 名山匪须全数击败才过关,击杀账逐人计入。
+      // Chapter 1 production composition: 14 刀匪(gangMeng) + 6 弩手
+      // (lingQiao) + 5 索匪(yinRou); the role variant owns its attack-set
+      // school, so the ledger is a school mix, not 25 gangMeng.
+      final defeatedSchools = victorySettlement!.defeatedEnemySchools;
+      expect(defeatedSchools, hasLength(25));
       expect(
-        victorySettlement!.defeatedEnemySchools,
-        List.filled(25, TechniqueSchool.gangMeng),
+        defeatedSchools.where((s) => s == TechniqueSchool.gangMeng),
+        hasLength(14),
+      );
+      expect(
+        defeatedSchools.where((s) => s == TechniqueSchool.lingQiao),
+        hasLength(6),
+      );
+      expect(
+        defeatedSchools.where((s) => s == TechniqueSchool.yinRou),
+        hasLength(5),
       );
     });
 

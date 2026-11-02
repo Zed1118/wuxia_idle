@@ -1,8 +1,10 @@
 schema_version: 1
 phase: phase2_phase0a_overhaul
-source_plan: /Users/a10506/Desktop/二阶段优化方案.md
+source_plan: docs/spec/phase2_optimization_plan_v2.0_frozen_2026-08-23.md
+plan_delta: docs/spec/phase2_optimization_plan_v2.1_delta_2026-11-01.md
 base_commit: e292d3a069fbc0e129dd74fafc1ebb3746f53557
-updated_at: "2026-09-04"
+current_base_commit: 509bd3a4c1bb558c64c55258c596c42fd13e05c6
+updated_at: "2026-11-01"
 
 policy:
   frozen_may_implement: true
@@ -16,6 +18,41 @@ policy:
   g0_approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
 decisions:
+  - id: G2-CURRENT-CONTRACT-01
+    status: frozen
+    summary: G2 以现行合并真人验收单为准：J 按住单段普攻、1–6 招式、Space 闪避、无护盾/化解玩家入口、攻击令牌 1/1/1/1；合法新档必须能进入 01_03
+    evidence: docs/dispatch/phase2_consolidated_human_acceptance_template.md
+    supersedes:
+      - 二阶段优化方案 §2.1 鼠标左键/1–4
+      - 二阶段优化方案 §4.2 护盾/化解玩家入口
+      - 二阶段优化方案 :1037 G2 八项旧表
+    human_signoff: NOT_RUN
+    approved_at: "2026-11-01"
+    approval_basis: '用户 2026-11-01 决策 2A'
+
+  - id: G2-CH1-READABILITY-01
+    status: frozen_with_tuning_edges
+    summary: 迁移 runtime binding 补回 mainline_wave 倍率、Ch1 总血线重标、首通敌攻×0.70、01_03 密度/宽限、敌方 school 跟随 attack set（仅 Ch1）
+    batch_status: engineering_candidate_local_only
+    changes:
+      ch1_base_hp: {thug: 800, ruffian: 900, bandit: 900}
+      mainline_wave_profile: {hp: 0.10, attack: 0.25, output: 0.25, speed: 0.85, applied_to: migrated_runtime_binding}
+      first_clear_enemy_attack_multiplier: 0.70
+      first_clear_enemy_hp_multiplier: 1.0
+      stage_01_03_spawn: {active_limit: 8, reinforcement_threshold: 2, entry_warning_ticks: 40, attack_grace_ticks: 25}
+      enemy_school_source: attack_set_basic_parent_technique_scoped_to_stage_01
+    measured:
+      gang_meng_chain: {stage_01_01: 25_of_25, stage_01_02: victory, stage_01_03: 40_of_40, stage_01_04: victory, stage_01_05: victory}
+      ling_qiao_chain: {stage_01_01: 25_of_25, stage_01_02: victory, stage_01_03: 40_of_40, stage_01_04: victory, stage_01_05: victory}
+      yin_rou: {01_01: 25_kills_objective_ongoing, 01_02: 6_of_9_victories, 01_03: 8_of_9_victories, chain_not_run: true}
+      human_g2: NOT_RUN
+    remaining:
+      - yin_rou_01_01_objective_and_chain
+      - first_clear_hp_and_auto_skill_field_wiring
+      - human_g2_signoff
+    approved_at: "2026-11-01"
+    approval_basis: '用户 2026-11-01 决策 3A+3B'
+
   - id: M7-DEPENDENCY-SEMANTICS-01
     status: frozen_governance_interpretation
     summary: M7 内容工程可在已集成 M3/M4 工程基础上继续，M2–M6 真人与 Windows 依赖只在正式关闭 M7 时强制满足
@@ -453,9 +490,11 @@ decisions:
     approval_basis: '当前 Codex 会话：用户明确回复“按推荐方案执行 G0”'
 
   - id: COLLAB-WIP-01
-    status: frozen
-    summary: Qoder 与 DeepSeek 作为受控补丁生产者，不直写 main
-    batch_action: active
+    status: retired_superseded_by_user_rule_20261012
+    summary: Qoder/DeepSeek 执行通道已退役；当前单窗口 + Claude/subagent，不再派外部 agent
+    batch_action: retired
+    superseded_by: user_rule_20261012_no_external_agents
+    retired_at: "2026-11-01"
 
   - id: SKILL-COOLDOWN-SECONDS-01
     status: frozen_implemented

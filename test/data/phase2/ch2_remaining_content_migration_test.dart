@@ -35,33 +35,36 @@ const _chapter2StageIds = [
   'stage_02_05',
 ];
 
+// Effective signatures are after both the authored role multipliers and the
+// mainline wave profile (hp 0.10 / attack 0.25 / speed 0.85). Keeping the full
+// product here makes a missed profile application fail loudly.
 const _expectedEffectiveRoleProfiles = <String, Set<String>>{
   'stage_02_01': {
-    'poison_blood_blade:2750:100:0.05:150:false',
-    'poison_dart:2000:100:0.04:150:false',
-    'poison_master:3250:100:0.06:135:false',
-    'poison_shadow_assassin:2750:100:0.05:165:false',
+    'poison_blood_blade:275:25:0.05:128:false',
+    'poison_dart:200:25:0.04:128:false',
+    'poison_master:325:25:0.06:115:false',
+    'poison_shadow_assassin:275:25:0.05:140:false',
   },
   'stage_02_02': {
-    'sect_hidden_weapon:3280:290:0.04:145:false',
-    'sect_instructor:5330:290:0.06:131:false',
-    'sect_lightfoot:4510:290:0.05:160:false',
-    'sect_outer:4100:290:0.05:145:false',
+    'sect_hidden_weapon:328:73:0.04:123:false',
+    'sect_instructor:533:73:0.06:111:false',
+    'sect_lightfoot:451:73:0.05:136:false',
+    'sect_outer:410:73:0.05:123:false',
   },
   'stage_02_03': {
-    'sect_hidden_weapon:1760:170:0.04:165:false',
-    'sect_instructor:2860:170:0.06:149:false',
-    'sect_lightfoot:2420:170:0.05:182:false',
-    'sect_outer:2200:170:0.05:165:false',
+    'sect_hidden_weapon:176:43:0.04:140:false',
+    'sect_instructor:286:43:0.06:126:false',
+    'sect_lightfoot:242:43:0.05:154:false',
+    'sect_outer:220:43:0.05:140:false',
   },
   'stage_02_04': {
-    'sect_instructor:2990:60:0.06:135:true',
-    'sect_lightfoot:2530:60:0.05:165:false',
-    'sect_outer:2300:60:0.05:150:false',
+    'sect_instructor:299:15:0.06:115:true',
+    'sect_lightfoot:253:15:0.05:140:false',
+    'sect_outer:230:15:0.05:128:false',
   },
   'stage_02_05': {
-    'sect_instructor:10530:770:0.06:158:true',
-    'sect_outer:8100:770:0.05:175:false',
+    'sect_instructor:1053:193:0.06:134:true',
+    'sect_outer:810:193:0.05:149:false',
   },
 };
 
