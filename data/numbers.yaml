@@ -143,10 +143,10 @@ combat:
     evasion_rate: 0.05               # 基础闪避率
 
   readable_first_clear:
-    enemy_hp_multiplier: 1.0          # G2 diagnostic: 旧 3.0 为 2/3/4 波路径标定,迁移 40 敌路径会拉长血线;本次只测敌攻杠杆
-    boss_enemy_hp_multiplier: 1.0     # G2 diagnostic: 同上,先不动 Boss 血线
+    enemy_hp_multiplier: 1.0          # 首通普通敌 HP 乘子;2026-11-02 已接入生产路径,当前保持中性(旧 3.0 会拉长迁移 40 敌血线)
+    boss_enemy_hp_multiplier: 1.0     # 首通 Boss HP 乘子;同上,已接线但当前中性
     enemy_attack_multiplier: 0.70     # 首通略降敌攻,保留压力但避免拉长血线后变硬墙
-    opening_auto_skill_cooldown_turns: 1 # 首通开局自动技能冷却 1 轮,先露出普攻交换再让技能登场
+    opening_auto_skill_cooldown_turns: 1 # 首通开局自动技能冷却 1 轮(=1 次普攻间隔 1.0s),先露出普攻交换再让技能登场
     auto_skill_power_multiplier: 0.75 # 首通自动技能保留存在感,但压低二轮技能直接收尾的概率
 
   # --- 数值红线 cap（GDD §5.4 硬上限，单一真相源）---

@@ -84,6 +84,8 @@ void main() {
                   bot: Phase0aPlayerBotAdapter(
                     playerAdapter: host.mapping!.playerAdapter,
                     policy: Phase0aBotTacticPolicy.forTactic(tactic),
+                    objectiveContinuationCommandBuilder:
+                        host.objectiveContinuationCommandBuilder,
                   ),
                   deltaSeconds: delta,
                   maxTicks: maxTicks,
@@ -117,6 +119,7 @@ void main() {
                     command: _kiteCommand(
                       host.flow.state,
                       host.mapping!.playerAdapter.attackRange,
+                      continuation: host.objectiveContinuationCommandBuilder,
                     ),
                   ),
                 );
@@ -143,10 +146,16 @@ void main() {
   );
 }
 
-Phase0aPlayerCommand _kiteCommand(Phase0aArenaState state, double attackRange) {
+Phase0aPlayerCommand _kiteCommand(
+  Phase0aArenaState state,
+  double attackRange, {
+  Phase0aObjectiveContinuationCommandBuilder? continuation,
+}) {
   final player = state.player;
   final enemies = state.enemies.where((enemy) => enemy.isAlive).toList();
-  if (enemies.isEmpty) return const Phase0aPlayerCommand();
+  if (enemies.isEmpty) {
+    return continuation?.call(state) ?? const Phase0aPlayerCommand();
+  }
   var target = enemies.first;
   var best = (target.position - player.position).length;
   for (final enemy in enemies.skip(1)) {
@@ -195,6 +204,18 @@ Future<Phase0aEncounterHost> _fresh({
           encounterId: encounterId,
           cycleIndex: cycleIndex,
           repository: repository,
+        ),
+    readableFirstClearLoader:
+        ({
+          required String stageId,
+          required String encounterId,
+          required int cycleIndex,
+        }) async => buildPhase0aMainlineRuntimeBindingBundleFromRepository(
+          stageId: stageId,
+          encounterId: encounterId,
+          cycleIndex: cycleIndex,
+          repository: repository,
+          readableFirstClearTuning: true,
         ),
   );
   final host = await createFreshPhase0aMainlineEncounter(

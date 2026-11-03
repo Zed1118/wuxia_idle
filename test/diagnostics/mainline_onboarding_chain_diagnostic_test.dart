@@ -8,11 +8,20 @@ void main() {
   testWidgets(
     'legal fresh-save chain records actual outcomes including unproven Blackwind',
     (tester) async {
-      final output = Platform.environment['P2_ONBOARDING_EVIDENCE_DIR'];
+      final environment = Platform.environment;
+      final output = environment['P2_ONBOARDING_EVIDENCE_DIR'];
+      final school = environment['P2_ONBOARDING_SCHOOL'] ?? 'gang_meng';
+      final throughStage =
+          int.tryParse(environment['P2_ONBOARDING_THROUGH_STAGE'] ?? '') ?? 5;
+      final requireVictoriesThrough =
+          int.tryParse(environment['P2_ONBOARDING_REQUIRE_VICTORIES'] ?? '') ??
+          1;
       await runOnboardingChain(
         tester,
-        requireVictoriesThrough: 1,
+        throughStage: throughStage,
+        requireVictoriesThrough: requireVictoriesThrough,
         checkpoints: output == null ? null : Directory('$output/checkpoints'),
+        school: school,
       );
     },
     timeout: const Timeout(Duration(minutes: 12)),

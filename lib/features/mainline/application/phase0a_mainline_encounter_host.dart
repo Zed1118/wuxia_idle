@@ -36,10 +36,12 @@ final class Phase0aMainlineEncounterHostBuildRequest {
   final Phase0aMainlineEncounterRouteAuthority? routeAuthority;
   final CombatCatalogManifestDef? catalogOverride;
 
-  /// First-clear readability: enemy attack damage is scaled by
-  /// `numbers.combat.readableFirstClear.enemyAttackMultiplier`. Replays keep
-  /// the normal production values. This is a G2 first-chapter pre-check lever,
-  /// not a global balance change.
+  /// First-clear readability. The production factory scales enemy attack by
+  /// `numbers.combat.readableFirstClear.enemyAttackMultiplier`; the runtime
+  /// binding source additionally applies the configured enemy HP and
+  /// auto-skill levers when this flag is set. Replays keep the normal
+  /// production values. This is a first-clear readability lever, not a global
+  /// balance change.
   final bool readableFirstClearTuning;
 }
 
@@ -75,6 +77,7 @@ abstract interface class Phase0aMainlineEncounterRuntimeBindingSource {
     required String stageId,
     required String encounterId,
     required int cycleIndex,
+    bool readableFirstClearTuning = false,
   });
 }
 
@@ -127,23 +130,41 @@ final class Phase0aMainlineEncounterRuntimeBindingSourceAdapter
     implements Phase0aMainlineEncounterRuntimeBindingSource {
   const Phase0aMainlineEncounterRuntimeBindingSourceAdapter({
     required this.loader,
+    this.readableFirstClearLoader,
   });
 
   const Phase0aMainlineEncounterRuntimeBindingSourceAdapter.unconfigured()
-    : loader = _unconfiguredRuntimeBindingLoader;
+    : loader = _unconfiguredRuntimeBindingLoader,
+      readableFirstClearLoader = null;
 
   final Phase0aMainlineEncounterRuntimeBindingLoader loader;
+
+  /// Loads the same bundle with first-clear readability applied to enemy HP
+  /// and auto skills. Attack tuning remains in the production factory.
+  final Phase0aMainlineEncounterRuntimeBindingLoader? readableFirstClearLoader;
 
   @override
   Future<Phase0aMainlineEncounterRuntimeBindingBundle> load({
     required String stageId,
     required String encounterId,
     required int cycleIndex,
-  }) async => await loader(
-    stageId: stageId,
-    encounterId: encounterId,
-    cycleIndex: cycleIndex,
-  );
+    bool readableFirstClearTuning = false,
+  }) async {
+    final selected = readableFirstClearTuning
+        ? readableFirstClearLoader
+        : loader;
+    if (selected == null) {
+      throw StateError(
+        'readable first-clear runtime binding loader is not configured for '
+        '$stageId/$encounterId',
+      );
+    }
+    return await selected(
+      stageId: stageId,
+      encounterId: encounterId,
+      cycleIndex: cycleIndex,
+    );
+  }
 }
 
 Future<Phase0aMainlineEncounterRuntimeBindingBundle>
@@ -166,6 +187,17 @@ final phase0aMainlineEncounterRuntimeBindingSourceProvider =
     Provider<Phase0aMainlineEncounterRuntimeBindingSource>(
       (ref) => Phase0aMainlineEncounterRuntimeBindingSourceAdapter(
         loader: ref.read(phase0aMainlineEncounterRuntimeBindingLoaderProvider),
+        readableFirstClearLoader:
+            ({
+              required String stageId,
+              required String encounterId,
+              required int cycleIndex,
+            }) => loadPhase0aMainlineRuntimeBindingBundleFromRepository(
+              stageId: stageId,
+              encounterId: encounterId,
+              cycleIndex: cycleIndex,
+              readableFirstClearTuning: true,
+            ),
       ),
     );
 
